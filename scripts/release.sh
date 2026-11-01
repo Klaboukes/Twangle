@@ -2,37 +2,50 @@
 # Twangle's release routine for Google Play (docs/release.md, the release skill).
 #
 #   scripts/release.sh bump patch|minor|major
-#       Raises twangle.version in gradle.properties (1.0.0 -> 1.0.1 | 1.1.0 | 2.0.0) and says which
-#       release-notes files to write: fastlane/metadata/android/<Play locale>/changelogs/<versionCode>.txt.
+#       Sets twangle.version in gradle.properties to the last released version (the highest v* tag)
+#       raised by one step (1.0.0 -> 1.0.1 | 1.1.0 | 2.0.0) and says which release-notes files to write:
+#       fastlane/metadata/android/<Play locale>/changelogs/<versionCode>.txt. A version that was bumped
+#       but never released (no v<version> tag) is kept when it is already that high, and its notes are
+#       rewritten rather than left behind; one that isn't high enough is raised, its notes moved along.
 #   scripts/release.sh notes
 #       Prints the release notes of the current version as one block for the Play Console's
 #       "Release notes" box (<en-US> ... </en-US> and so on for every language).
-#   scripts/release.sh bundle
+#   scripts/release.sh profile
+#       Whether the Baseline Profile (app/src/release/generated/) is newer than the last change to the
+#       app's screens (app/src/main, feature/*/src/main, core/designsystem/src/main). Only reads git.
+#   scripts/release.sh bundle [--keep-old-profile]
 #       On main, once the version bump has landed: checks that every language is complete and up to
-#       date (LocalizationTest in strict mode, docs/architecture/languages.md, *Day and night*), builds
-#       the phone app's bundle signed with the upload key, checks that its manifest asks for no
-#       permission outside the allowlist (no INTERNET; the root build.gradle.kts) and the signature, puts it with its notes in release/ (git-ignored), then tags the commit
+#       date (LocalizationTest in strict mode, docs/architecture/languages.md, *Day and night*) and that
+#       the Baseline Profile is current (as `profile`; --keep-old-profile releases with an older one),
+#       builds the phone app's and the watch app's bundles signed with the upload key, checks that their
+#       manifests ask for no permission outside the allowlist (no INTERNET; the root build.gradle.kts)
+#       and the signatures, puts them with the notes in release/ (git-ignored), then tags the commit
 #       v<version> and pushes the tag. Refuses a version that already has a tag.
-#   scripts/release.sh upload [draft|completed]
+#   scripts/release.sh upload [watch] [draft|completed]
 #       After bundle: sends release/Twangle-<version>.aab and its notes in every language to the
 #       internal track on Google Play, through the Google Play API (Gradle Play Publisher in :app). As a
 #       draft by default, the only kind Play takes while Twangle itself is still a draft there: the owner
 #       starts it in the Play Console with one click. "completed" makes it live on the internal track at
 #       once (for later, once the app is out of draft). Needs the robot user's key (a service account):
 #       ~/.twangle-keys/play-service-account.json, or the file in $TWANGLE_PLAY_SERVICE_ACCOUNT.
-#   scripts/release.sh promote closed [draft|completed]
+#   scripts/release.sh promote [watch] closed [draft|completed]
 #       Once the owner has checked the internal build: moves that same build (this version) from the
 #       internal track to the closed test (Play's track "alpha", or $TWANGLE_PLAY_CLOSED_TRACK) with its
 #       notes. A draft by default, as upload; "completed" makes it live for the testers at once.
-#   scripts/release.sh promote production [draft]
+#   scripts/release.sh promote [watch] production [draft]
 #       Moves this version from the internal track to production (whether or not it went to the closed
 #       test too) as a staged rollout to 20 % of people (Google reviews it first). "draft" leaves it a
 #       draft release to start in the Play Console.
-#   scripts/release.sh rollout <percent>
+#   scripts/release.sh rollout [watch] <percent>
 #       Raises this version's staged rollout on production to <percent> (1..100); 100 is everyone and
 #       ends the staged rollout.
-#   scripts/release.sh halt
+#   scripts/release.sh halt [watch]
 #       Halts this version's rollout on production: nobody new gets it, who has it keeps it.
+#   "watch" in upload, promote, rollout and halt: the same for the watch app's bundle
+#       (release/Twangle-<version>-watch.aab, versionCode + 1,000,000) on Play's dedicated Wear OS
+#       tracks: "wear:qa" (internal testing), "wear:<closed test>" ($TWANGLE_PLAY_WATCH_CLOSED_TRACK,
+#       "alpha" by default) and "wear:production". Play takes no watch bundle on the phone's tracks
+#       (since September 2023; docs/release.md, *The watch app*).
 #   scripts/release.sh listing
 #       Sends the store listing to Google Play: every language's title, short and full description and
 #       phone and tablet screenshots, the icon and feature graphic (one pair for every language), and the
@@ -63,8 +76,8 @@
 # asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
 # must be released (tagged), and ask nothing themselves.
 #
-# The watch app is not part of a release yet (it follows in an update, decision 3): none of these
-# touches it.
+# The watch app follows in an update (decision 3): bundle builds its bundle with every release, but it
+# reaches Play only through the "watch" commands, which nothing runs until that update.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -78,6 +91,17 @@ APP_ID="io.github.klaboukes.twangle"
 PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
 # Play's API name of the closed test the Play Console makes first ("Closed testing - Alpha").
 CLOSED_TRACK="${TWANGLE_PLAY_CLOSED_TRACK:-alpha}"
+# The watch app's tracks on Play: its own Wear OS tracks, "wear:" and the track's name (Play's API docs,
+# developers.google.com/android-publisher/tracks: internal testing is "qa" there, so "wear:qa"). A closed
+# test is named by hand in the Play Console; scripts/release.sh status shows the names Play has.
+WATCH_PREFIX="wear:"
+WATCH_INTERNAL_TRACK="${WATCH_PREFIX}qa"
+WATCH_CLOSED_TRACK="$WATCH_PREFIX${TWANGLE_PLAY_WATCH_CLOSED_TRACK:-alpha}"
+# The watch build's versionCode is the phone's plus this (root build.gradle.kts, twangleWatchVersionCode).
+WATCH_CODE_OFFSET=1000000
+# What the Baseline Profile covers: the app's screens and what they draw (docs/architecture/performance.md).
+PROFILE="app/src/release/generated"
+PROFILE_SOURCES=(app/src/main ':(glob)feature/*/src/main/**' core/designsystem/src/main)
 # The first step of a staged rollout to production, in percent (docs/release.md, The idea).
 FIRST_ROLLOUT=20
 
@@ -105,21 +129,81 @@ notes_block() {
     [[ ${#missing[@]} -eq 0 ]] || fail "no release notes for versionCode $code in: ${missing[*]} (changelogs/$code.txt)"
 }
 
+is_released() { git rev-parse --quiet --verify "refs/tags/v$1" >/dev/null; }
+
+# The next version after the last release, one step up. The last release is the highest v* tag; a
+# version bumped earlier but never released (no tag: the release stopped before bundle) doesn't count,
+# so a second bump keeps it instead of skipping a number and leaving its notes behind.
 bump() {
-    local current major minor patch next
+    local level="${1:-}" current base major minor patch next current_code next_code moved=() locale
+    [[ "$level" == patch || "$level" == minor || "$level" == major ]] ||
+        fail "usage: scripts/release.sh bump patch|minor|major"
+    git fetch --quiet origin --tags 2>/dev/null || true
     current="$(version)"
-    IFS=. read -r major minor patch <<<"$current"
-    case "${1:-}" in
+    if is_released "$current"; then
+        base="$current"
+    else
+        base="$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 | sed 's/^v//')"
+        [[ -n "$base" ]] || fail "no release tag (v*) to count from; set twangle.version by hand"
+    fi
+    IFS=. read -r major minor patch <<<"$base"
+    case "$level" in
         patch) patch=$((10#$patch + 1)) ;;
         minor) minor=$((10#$minor + 1)); patch=0 ;;
         major) major=$((10#$major + 1)); minor=0; patch=0 ;;
-        *) fail "usage: scripts/release.sh bump patch|minor|major" ;;
     esac
     (( major <= 99 && minor <= 99 && patch <= 99 )) || fail "each part of the version stays 0..99"
     next="$major.$minor.$patch"
+    current_code="$(code_of "$current")"
+    next_code="$(code_of "$next")"
+
+    if [[ "$current" != "$base" ]] && (( current_code >= next_code )); then
+        echo "Version $current is kept: it was never released (no tag v$current; the last release is v$base),"
+        echo "and it is already at least a $level step up from it."
+        echo "Rewrite its release notes for everything since v$base, one file a language (they may already"
+        echo "hold an older draft): $LISTINGS/<locale>/changelogs/$current_code.txt"
+        return
+    fi
+
     sed -i "s/^twangle.version=.*/twangle.version=$next/" gradle.properties
-    echo "Version $current -> $next (versionCode $(code_of "$next"))."
-    echo "Write the release notes, one file a language: $LISTINGS/<locale>/changelogs/$(code_of "$next").txt"
+    echo "Version $current -> $next (versionCode $next_code)."
+    # An unreleased version's notes would stay behind under a versionCode nothing uses: move them along
+    # as the draft to rewrite.
+    if [[ "$current" != "$base" ]]; then
+        for locale in $(locales); do
+            if [[ -f "$LISTINGS/$locale/changelogs/$current_code.txt" && ! -e "$LISTINGS/$locale/changelogs/$next_code.txt" ]]; then
+                mv "$LISTINGS/$locale/changelogs/$current_code.txt" "$LISTINGS/$locale/changelogs/$next_code.txt"
+                moved+=("$locale")
+            fi
+        done
+        if [[ ${#moved[@]} -gt 0 ]]; then
+            echo "$current was never released (no tag v$current): its notes moved to $next_code.txt in ${#moved[@]} languages,"
+            echo "as the draft to rewrite for everything since v$base."
+        fi
+    fi
+    echo "Write the release notes, one file a language: $LISTINGS/<locale>/changelogs/$next_code.txt"
+}
+
+# Whether the Baseline Profile was regenerated after the last change to what it covers; says which and
+# returns 1 when it wasn't. It only reads git.
+profile_current() {
+    local made changes count
+    made="$(git log -1 --format=%H -- "$PROFILE")"
+    [[ -n "$made" ]] || { echo "No Baseline Profile in $PROFILE."; return 1; }
+    changes="$(git log --oneline "$made..HEAD" -- "${PROFILE_SOURCES[@]}")"
+    if [[ -z "$changes" ]]; then
+        echo "The Baseline Profile is current (regenerated $(git log -1 --format=%cs "$made"), no change to the app's screens since)."
+        return 0
+    fi
+    count="$(wc -l <<<"$changes")"
+    echo "The Baseline Profile is older than the app's screens: regenerated $(git log -1 --format=%cs "$made") (${made:0:8}),"
+    echo "and $count commits changed app/src/main, feature/*/src/main or core/designsystem/src/main since, the newest:"
+    echo "$changes" | head -5 | sed 's/^/  /'
+    echo "Regenerate it with the Xiaomi connected (about 15 minutes; docs/architecture/performance.md, *Baseline Profile*):"
+    echo "  uninstall the debug build, then"
+    echo "  ./gradlew :app:generateBaselineProfile -Pandroid.testInstrumentationRunnerArguments.class=io.github.klaboukes.twangle.baselineprofile.BaselineProfileGenerator"
+    echo "and land $PROFILE/ through a chore/ branch."
+    return 1
 }
 
 # Gradle runs on Android Studio's JDK (CLAUDE.md, Dev machine environment).
@@ -131,7 +215,13 @@ use_java() {
 }
 
 bundle() {
-    local v code tag aab
+    local v code tag aab watch_aab keep_profile=false
+    [[ $# -le 1 ]] || fail "usage: scripts/release.sh bundle [--keep-old-profile]"
+    case "${1:-}" in
+        "") ;;
+        --keep-old-profile) keep_profile=true ;;
+        *) fail "usage: scripts/release.sh bundle [--keep-old-profile]" ;;
+    esac
     v="$(version)"
     code="$(code_of "$v")"
     tag="v$v"
@@ -144,6 +234,12 @@ bundle() {
         fail "$tag is already released; raise the version (scripts/release.sh bump patch)"
     fi
     notes_block "$code" >/dev/null
+    # A profile older than the screens leaves the new code to the JIT at startup: slower on slow phones.
+    if ! profile_current; then
+        $keep_profile || fail "the Baseline Profile is older than the app's screens (above). Regenerate it first, or
+release with the old one: scripts/release.sh bundle --keep-old-profile. Nothing was built or tagged."
+        echo "Going ahead with the old Baseline Profile (--keep-old-profile)."
+    fi
     use_java
 
     # By day only English and Dutch are written; the overnight run's /translate does the rest. A
@@ -152,20 +248,27 @@ bundle() {
     ./gradlew --quiet :app:testDebugUnitTest --tests '*LocalizationTest' -Ptwangle.strictTranslations=true ||
         fail "a language lacks a text or has a stale one (above; python -I scripts/translations.py status lists them): the overnight run translates them (/translate), release after it"
 
-    echo "Building Twangle $v (versionCode $code)..."
-    ./gradlew --quiet :app:bundleRelease
+    # The watch app's bundle too, from the same commit, so the update that brings it needs no other
+    # build (it goes to Play only through upload watch).
+    echo "Building Twangle $v (versionCode $code; the watch app $((code + WATCH_CODE_OFFSET)))..."
+    ./gradlew --quiet :app:bundleRelease :wear:bundleRelease
     aab="app/build/outputs/bundle/release/app-release.aab"
+    watch_aab="wear/build/outputs/bundle/release/wear-release.aab"
     [[ -f "$aab" ]] || fail "no bundle at $aab"
-    # The "no internet" promise on the bundle itself: bundletool's dump of its manifest may ask only
-    # for the permissions on the allowlist (allowedPermissions, the root build.gradle.kts).
-    ./gradlew --quiet :app:checkReleaseBundlePermissions ||
-        fail "the bundle asks for a permission outside the allowlist (above): no INTERNET, ACCESS_NETWORK_STATE or AD_ID; nothing was tagged"
+    [[ -f "$watch_aab" ]] || fail "no bundle at $watch_aab"
+    # The "no internet" promise on the bundles themselves: bundletool's dump of each manifest may ask
+    # only for the permissions on the allowlist (allowedPermissions, the root build.gradle.kts).
+    ./gradlew --quiet :app:checkReleaseBundlePermissions :wear:checkReleaseBundlePermissions ||
+        fail "a bundle asks for a permission outside the allowlist (above): no INTERNET, ACCESS_NETWORK_STATE or AD_ID; nothing was tagged"
     # Play takes only a bundle signed with the upload key; without ~/.twangle-keys the build is unsigned.
     "$JAVA_HOME/bin/jarsigner" -verify "$aab" | grep -q "jar verified" ||
         fail "the bundle is not signed: is the upload key in ~/.twangle-keys/ (docs/architecture/performance.md)?"
+    "$JAVA_HOME/bin/jarsigner" -verify "$watch_aab" | grep -q "jar verified" ||
+        fail "the watch app's bundle is not signed: is the upload key in ~/.twangle-keys/ (docs/architecture/performance.md)?"
 
     mkdir -p "$OUT"
     cp "$aab" "$OUT/Twangle-$v.aab"
+    cp "$watch_aab" "$OUT/Twangle-$v-watch.aab"
     notes_block "$code" >"$OUT/Twangle-$v-release-notes.txt"
 
     git tag -a "$tag" -m "Twangle $v (versionCode $code)"
@@ -178,6 +281,7 @@ bundle() {
     echo
     echo "Twangle $v is ready for the Play Console (docs/release.md):"
     echo "  bundle:        $OUT/Twangle-$v.aab"
+    echo "  watch app:     $OUT/Twangle-$v-watch.aab (to Play only with upload watch)"
     echo "  release notes: $OUT/Twangle-$v-release-notes.txt"
     echo "  tagged $tag at $(git rev-parse --short HEAD) and pushed"
 }
@@ -221,31 +325,50 @@ play_gradle() {
 # A whole percent as Play's user fraction: 20 -> 0.20.
 fraction() { printf '%d.%02d' $(($1 / 100)) $(($1 % 100)); }
 
+# Which app the Play steps act on: the phone app, or with "watch" first the watch app, which Play keeps
+# on its own Wear OS tracks ("wear:...") under its own versionCode (the phone's + 1,000,000). Sets
+# APP_NAME, the tracks INTERNAL, CLOSED and PRODUCTION, AAB_SUFFIX and WATCH_ARG (for the hints).
+APP_NAME="Twangle" INTERNAL=internal CLOSED="$CLOSED_TRACK" PRODUCTION=production AAB_SUFFIX="" WATCH_ARG=""
+for_watch() {
+    APP_NAME="Twangle's watch app" INTERNAL="$WATCH_INTERNAL_TRACK" CLOSED="$WATCH_CLOSED_TRACK"
+    PRODUCTION="${WATCH_PREFIX}production" AAB_SUFFIX="-watch" WATCH_ARG="watch "
+}
+
+# The versionCode of this app's build of version $1.
+app_code() {
+    local code
+    code="$(code_of "$1")"
+    [[ -z "$AAB_SUFFIX" ]] || code=$((code + WATCH_CODE_OFFSET))
+    echo "$code"
+}
+
 upload() {
     local v code aab status
     v="$(version)"
-    code="$(code_of "$v")"
-    aab="$OUT/Twangle-$v.aab"
+    code="$(app_code "$v")"
+    aab="$OUT/Twangle-$v$AAB_SUFFIX.aab"
     status="${1:-draft}"
-    [[ "$status" == draft || "$status" == completed ]] || fail "usage: scripts/release.sh upload [draft|completed]"
+    [[ $# -le 1 && ( "$status" == draft || "$status" == completed ) ]] ||
+        fail "usage: scripts/release.sh upload [watch] [draft|completed]"
 
     need_play_key
     [[ -f "$aab" ]] || fail "no $aab: make it first with scripts/release.sh bundle"
-    need_release "$v" "$code"
+    # The notes are the phone's versionCode's, for both apps.
+    need_release "$v" "$(code_of "$v")"
     use_java
     "$JAVA_HOME/bin/jarsigner" -verify "$aab" | grep -q "jar verified" || fail "$aab is not signed"
 
-    echo "Sending Twangle $v (versionCode $code) to the internal track on Google Play, as $status..."
+    echo "Sending $APP_NAME $v (versionCode $code) to the internal track${WATCH_ARG:+ ($INTERNAL)} on Google Play, as $status..."
     play_gradle :app:publishReleaseBundle \
         --artifact-dir "$aab" \
-        --track internal \
+        --track "$INTERNAL" \
         --release-status "$status" \
         --release-name "$v ($code)"
 
     echo
-    echo "Twangle $v is on the internal track of Google Play, with its notes in every language."
+    echo "$APP_NAME $v is on the internal track${WATCH_ARG:+ ($INTERNAL)} of Google Play, with its notes in every language."
     if [[ "$status" == draft ]]; then
-        echo "It is a draft: in the Play Console, Test and release -> Testing -> Internal testing, open the"
+        echo "It is a draft: in the Play Console, Test and release -> Testing -> Internal testing$([[ -n "$WATCH_ARG" ]] && echo " (Wear OS)"), open the"
         echo "draft release, then Next and Save and publish (docs/release.md)."
     fi
 }
@@ -257,19 +380,20 @@ promote() {
     local v code target="${1:-}" status="${2:-}" from to name
     local -a args
     v="$(version)"
-    code="$(code_of "$v")"
+    code="$(app_code "$v")"
+    [[ $# -le 2 ]] || target=""
     case "$target" in
         closed)
             status="${status:-draft}"
             [[ "$status" == draft || "$status" == completed ]] ||
-                fail "usage: scripts/release.sh promote closed [draft|completed]"
-            from=internal to="$CLOSED_TRACK" name="the closed test"
+                fail "usage: scripts/release.sh promote [watch] closed [draft|completed]"
+            from="$INTERNAL" to="$CLOSED" name="the closed test ($CLOSED)"
             args=(--release-status "$status")
             ;;
         production)
-            [[ -z "$status" || "$status" == draft ]] || fail "usage: scripts/release.sh promote production [draft]
-(production starts as a staged rollout to $FIRST_ROLLOUT %; raise it with scripts/release.sh rollout <percent>)"
-            from=internal to=production name="production"
+            [[ -z "$status" || "$status" == draft ]] || fail "usage: scripts/release.sh promote [watch] production [draft]
+(production starts as a staged rollout to $FIRST_ROLLOUT %; raise it with scripts/release.sh rollout ${WATCH_ARG}<percent>)"
+            from="$INTERNAL" to="$PRODUCTION" name="production${WATCH_ARG:+ ($PRODUCTION)}"
             if [[ "$status" == draft ]]; then
                 args=(--release-status draft)
             else
@@ -277,13 +401,13 @@ promote() {
                 args=(--release-status inProgress --user-fraction "$(fraction "$FIRST_ROLLOUT")")
             fi
             ;;
-        *) fail "usage: scripts/release.sh promote closed [draft|completed] | promote production [draft]" ;;
+        *) fail "usage: scripts/release.sh promote [watch] closed [draft|completed] | promote [watch] production [draft]" ;;
     esac
 
     need_play_key
-    need_release "$v" "$code"
+    need_release "$v" "$(code_of "$v")"
 
-    echo "Moving Twangle $v (versionCode $code) from $from to $name on Google Play, as $status..."
+    echo "Moving $APP_NAME $v (versionCode $code) from $from to $name on Google Play, as $status..."
     play_gradle :app:promoteReleaseArtifact \
         --from-track "$from" \
         --promote-track "$to" \
@@ -292,12 +416,12 @@ promote() {
         "${args[@]}"
 
     echo
-    echo "Twangle $v is on $name on Google Play, as $status."
+    echo "$APP_NAME $v is on $name on Google Play, as $status."
     if [[ "$status" == draft ]]; then
         echo "It is a draft: open it in the Play Console under Test and release, then Next and Save and publish."
-    elif [[ "$to" == production ]]; then
+    elif [[ "$to" == "$PRODUCTION" ]]; then
         echo "Google reviews it first (a few hours to a few days). After two or three quiet days, raise it"
-        echo "with scripts/release.sh rollout 50, later rollout 100; something wrong: scripts/release.sh halt."
+        echo "with scripts/release.sh rollout ${WATCH_ARG}50, later rollout ${WATCH_ARG}100; something wrong: scripts/release.sh halt${WATCH_ARG:+ watch}."
     fi
 }
 
@@ -306,9 +430,9 @@ rollout() {
     local v code percent="${1:-}"
     local -a args
     v="$(version)"
-    code="$(code_of "$v")"
-    [[ "$percent" =~ ^[0-9]{1,3}$ ]] && (( 10#$percent >= 1 && 10#$percent <= 100 )) ||
-        fail "usage: scripts/release.sh rollout <percent>, a whole number from 1 to 100 (100 is everyone)"
+    code="$(app_code "$v")"
+    [[ $# -le 1 && "$percent" =~ ^[0-9]{1,3}$ ]] && (( 10#$percent >= 1 && 10#$percent <= 100 )) ||
+        fail "usage: scripts/release.sh rollout [watch] <percent>, a whole number from 1 to 100 (100 is everyone)"
     percent=$((10#$percent))
     if (( percent == 100 )); then
         args=(--release-status completed)
@@ -317,20 +441,20 @@ rollout() {
     fi
 
     need_play_key
-    need_release "$v" "$code"
+    need_release "$v" "$(code_of "$v")"
 
-    echo "Setting the rollout of Twangle $v (versionCode $code) on production to $percent %..."
+    echo "Setting the rollout of $APP_NAME $v (versionCode $code) on production${WATCH_ARG:+ ($PRODUCTION)} to $percent %..."
     play_gradle :app:promoteReleaseArtifact \
-        --update production \
+        --update "$PRODUCTION" \
         --version-code "$code" \
         --release-name "$v ($code)" \
         "${args[@]}"
 
     echo
     if (( percent == 100 )); then
-        echo "Twangle $v now goes to everyone on production; the staged rollout is over."
+        echo "$APP_NAME $v now goes to everyone on production; the staged rollout is over."
     else
-        echo "Twangle $v now goes to $percent % of people on production."
+        echo "$APP_NAME $v now goes to $percent % of people on production."
     fi
 }
 
@@ -338,23 +462,23 @@ rollout() {
 halt() {
     local v code
     v="$(version)"
-    code="$(code_of "$v")"
-    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh halt"
+    code="$(app_code "$v")"
+    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh halt [watch]"
 
     need_play_key
-    need_release "$v" "$code"
+    need_release "$v" "$(code_of "$v")"
 
-    echo "Halting the rollout of Twangle $v (versionCode $code) on production..."
+    echo "Halting the rollout of $APP_NAME $v (versionCode $code) on production${WATCH_ARG:+ ($PRODUCTION)}..."
     play_gradle :app:promoteReleaseArtifact \
-        --update production \
+        --update "$PRODUCTION" \
         --version-code "$code" \
         --release-name "$v ($code)" \
         --release-status halted
 
     echo
-    echo "Twangle $v is halted on production: nobody new gets it, who has it keeps it. Fix it on main and"
+    echo "$APP_NAME $v is halted on production: nobody new gets it, who has it keeps it. Fix it on main and"
     echo "make the next release (the fix gets a higher version). A false alarm: scripts/release.sh rollout"
-    echo "<percent> starts it again."
+    echo "${WATCH_ARG}<percent> starts it again."
 }
 
 # Width, height and PNG colour type of a picture, from its header: "1080 1920 6"; empty if not a PNG.
@@ -556,20 +680,28 @@ reviews() {
     play_read reviews "$language"
 }
 
-case "${1:-}" in
-    bump) bump "${2:-}" ;;
+COMMAND="${1:-}"
+[[ $# -eq 0 ]] || shift
+# "watch" right after a Play step: the watch app's bundle on its Wear OS tracks.
+case "$COMMAND" in
+    upload|promote|rollout|halt) if [[ "${1:-}" == watch ]]; then for_watch; shift; fi ;;
+esac
+case "$COMMAND" in
+    bump) bump "${1:-}" ;;
     notes) notes_block "$(code_of "$(version)")" ;;
-    bundle) bundle ;;
-    upload) upload "${2:-}" ;;
-    promote) promote "${2:-}" "${3:-}" ;;
-    rollout) rollout "${2:-}" ;;
-    halt) shift; halt "$@" ;;
-    listing) shift; listing "$@" ;;
-    listing-changes) shift; listing_changes "$@" ;;
-    status) shift; status "$@" ;;
-    health) shift; health "$@" ;;
-    reviews) shift; reviews "$@" ;;
-    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]
-       | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt | listing
+    profile) [[ $# -eq 0 ]] || fail "usage: scripts/release.sh profile"; profile_current ;;
+    bundle) bundle "$@" ;;
+    upload) upload "$@" ;;
+    promote) promote "$@" ;;
+    rollout) rollout "$@" ;;
+    halt) halt "$@" ;;
+    listing) listing "$@" ;;
+    listing-changes) listing_changes "$@" ;;
+    status) status "$@" ;;
+    health) health "$@" ;;
+    reviews) reviews "$@" ;;
+    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | profile | bundle [--keep-old-profile]
+       | upload [watch] [draft|completed] | promote [watch] closed [draft|completed]
+       | promote [watch] production [draft] | rollout [watch] <percent> | halt [watch] | listing
        | listing-changes | status | health [days] | reviews [language]" ;;
 esac

@@ -254,7 +254,12 @@ public class PlayReports {
             case "alpha" -> "Closed testing (alpha)";
             case "beta" -> "Open testing (beta)";
             case "production" -> "Production";
-            default -> name.contains(":") ? "Track " + name + " (another device type)" : "Closed testing (" + name + ")";
+            // The watch app's own Wear OS tracks (docs/release.md, *The watch app*).
+            case "wear:qa", "wear:internal" -> "Watch, internal testing (" + name + ")";
+            case "wear:beta" -> "Watch, open testing (" + name + ")";
+            case "wear:production" -> "Watch, production (" + name + ")";
+            default -> name.startsWith("wear:") ? "Watch, closed testing (" + name + ")"
+                : name.contains(":") ? "Track " + name + " (another device type)" : "Closed testing (" + name + ")";
         };
     }
 

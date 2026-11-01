@@ -12,12 +12,12 @@ steps below point to, not the whole file. Talk to the owner in plain language: w
 they do next.
 
 **Ask before anything reaches Google Play.** `upload`, `promote`, `rollout`, `halt` and `listing`
-change what people get or see, so each one waits for the owner's clear yes in chat, every time. Name
+change what people get or see (the watch app's too, with `watch`), so each one waits for the owner's clear yes in chat, every time. Name
 exactly what goes where: "Send Twangle 1.0.1 (versionCode 10001) and its notes in every language to
 the internal track on Google Play, as a draft?" A yes to one step is not a yes to the next. When the
 owner's own message asks for that very step ("halt the rollout", "raise it to 50 %"), that is the
-yes. Everything else only builds or reads (`bump`, `notes`, `bundle`, `status`, `health`, `reviews`,
-`listing-changes`) and needs no ask.
+yes. Everything else only builds or reads (`bump`, `notes`, `profile`, `bundle`, `status`, `health`,
+`reviews`, `listing-changes`) and needs no ask.
 
 ## Where to start
 Begin every request with `scripts/release.sh status`: what is on each Play track now. For a release
@@ -54,7 +54,8 @@ Steps 6–8 follow later, each on the owner's word.
   of `build/overnight/summary.txt` says which commit it ran on and whether everything passed. It counts
   when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (the
   morning summary says so), and `git diff --stat <that commit>..main` shows no code change since but
-  that fix, docs, `.claude/` or `scripts/`. Otherwise **stop here, before any branch, version or note**:
+  that fix, docs, `.claude/`, `scripts/` or a regenerated Baseline Profile (`app/src/release/generated/`,
+  which the debug builds the overnight run tests don't use). Otherwise **stop here, before any branch, version or note**:
   tell the owner in one line that the release waits for a clean overnight run, and that `/release`
   picks it up the morning after. The summary is git-ignored, so on the other PC (or with none) the
   answer is also: wait for the overnight run.
@@ -74,13 +75,24 @@ Steps 6–8 follow later, each on the owner's word.
   run there is often nothing to run. A phone that still has Twangle from Play (the last release's
   check) can't take the test build (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`): once that check is over,
   uninstall it as CLAUDE.md says and run again.
+- **The Baseline Profile** (the launch review, 2026-11-01): `scripts/release.sh profile` says whether
+  it was regenerated after the last change to the app's screens; `bundle` refuses otherwise. When it
+  is older, regenerate it now, with the Xiaomi connected (about 15 minutes; uninstall the debug build
+  first and put it back after; [performance.md](../../../docs/architecture/performance.md), *Baseline
+  Profile*): `./gradlew :app:generateBaselineProfile -Pandroid.testInstrumentationRunnerArguments.class=io.github.klaboukes.twangle.baselineprofile.BaselineProfileGenerator`,
+  then land `app/src/release/generated/` through a `chore/baseline-profile` branch. Without the phone,
+  ask the owner whether to release with the old profile (`bundle --keep-old-profile`) or wait.
 - Fix failures first, each through its own `fix/` branch.
 
 ## 2. The version and the notes
 - `git log --oneline <last tag>..main`: only fixes → `patch`; anything new to see or hear → `minor` (an
   argument from the owner wins). Tell the owner the new version in one line and go on.
 - `git switch -c release/v<version>`, then `scripts/release.sh bump patch|minor`. It prints the
-  versionCode and where the notes go.
+  versionCode and where the notes go. It counts from the last tag, not from `gradle.properties`: a
+  version that was raised but never released (no `v<version>` tag; the release stopped before its
+  bundle) is kept when it is already high enough (it says so), or raised with its notes moved to the
+  new versionCode. Either way those notes are an old draft: **rewrite them** in every language for
+  everything since the last tag, rather than adding to them.
 - Write `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`: what changed for the player,
   in the app's own words, short lines starting with "- ", at most 500 characters, no emoji, no
   promotion words, nothing about code or tests. Calm and plain, like the store texts
@@ -100,6 +112,10 @@ Steps 6–8 follow later, each on the owner's word.
 - Without the upload key (`~/.twangle-keys/`, only on the owner's machines) it stops: tell the owner to
   run the release from a machine that has it. Never make or move a key.
 - A version that already has a tag is refused: raise the version again rather than reusing it.
+- An out-of-date Baseline Profile is refused (step 1 regenerates it); `--keep-old-profile` only on the
+  owner's word.
+- It builds the watch app's bundle too (`release/Twangle-<version>-watch.aab`), which goes to Play only
+  with the update that brings the watch app (*The watch app* below).
 
 ## 4. To the internal track (ask first)
 - Ask: "Send Twangle <version> (versionCode <code>) and its notes in every language to the internal
@@ -166,6 +182,16 @@ moves on.
   Play Console." On a yes: `scripts/release.sh listing` (it tags the send `listing/<date-time>` for
   next time), then offer to look at it with the owner in the Play Console.
 
+## The watch app (with the update that brings it)
+Play takes a watch bundle only on the watch's own Wear OS tracks, never on the phone's
+(docs/release.md, *The watch app*: Play's rule, and the owner's one-time steps in the Play Console:
+the Wear OS form factor, later its opt-in). Each phone step has a `watch` twin, after its own yes:
+`upload watch` (to `wear:qa`), `promote watch closed|production`, `rollout watch <percent>`,
+`halt watch`. Ask as for the phone, naming the watch app: "Send Twangle <version>'s watch app
+(versionCode <code + 1,000,000>) to the watch's internal track on Google Play, as a draft?" The first
+`upload watch` is the first try of the track name on Play: if it is refused, `status` shows the names
+Play gives the watch's tracks (docs/release.md says what to change).
+
 ## 9. Without the Play key (another machine)
 `release.sh` stops at once, saying the key is missing, and sends nothing. Never make, copy or move a
 key. Either the owner runs the step on the machine that has the key, or does it by hand in the Play
@@ -188,4 +214,5 @@ True in October 2026; drop each line once it no longer is.
   click), make `completed` their default in `release.sh`, and remove this line.
 - **The closed test comes first:** Google's 14 days in a row of closed testing, then the owner applies
   for production access. Until Google grants it, step 6 is the closed test only.
-- **The watch app** is not part of a release yet (decision 3); `release.sh` doesn't touch it.
+- **The watch app** is not part of a release yet (decision 3): `bundle` builds it, but only the
+  `watch` steps send it, and only once the owner says the update that brings it goes out.

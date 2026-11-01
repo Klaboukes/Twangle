@@ -18,6 +18,11 @@ further, and does the few things only the Play Console can do (the checklist bel
   `twangle.version` in `gradle.properties`. Fixes raise the last number (1.0.0 → 1.0.1), new features
   the middle one (1.0.1 → 1.1.0), something big the first (2.0.0). The build turns it into Play's
   versionCode, major × 10000 + minor × 100 + patch (1.0.1 is 10001; [performance.md](architecture/performance.md), *Release build*).
+  A version counts as released once it has its `v<version>` tag. One that was raised but never
+  released (a release that stopped before its bundle, such as 1.1.0 in October 2026) is not raised
+  again: `scripts/release.sh bump` counts from the last tag, keeps that version when it is already
+  high enough, and its notes are rewritten for everything since the last tag, so no version number is
+  skipped and no unused notes stay behind.
 - **Internal first, then promote the same build.** Each release goes to the internal track, the owner
   installs it from Play and checks it, and then that same build is promoted to the closed track or to
   production, so what people get is exactly what was checked.
@@ -31,17 +36,29 @@ further, and does the few things only the Play Console can do (the checklist bel
    very commit, and `scripts/ui-tests.sh --since-pass` on a test phone, which runs only the parts of
    the app changed since their UI tests last passed on this PC (after a good overnight run, often none).
 2. Reads what changed since the last tag (`git log v<last>..main`) and picks patch or minor.
-3. On a branch `release/v<version>`: `scripts/release.sh bump patch|minor`, then the release notes,
+3. On a branch `release/v<version>`: `scripts/release.sh bump patch|minor` (it keeps a version that
+   was never released, above), then the release notes,
    one file a language: `fastlane/metadata/android/<Play locale>/changelogs/<versionCode>.txt`
    (the fastlane layout; F-Droid reads it too once the code is open). At most 500 characters (Play's
    limit), plain text, no emoji, in the app's own words; `StoreListingTest` checks every language has
    them and keeps within the limit. Then a pull request, merged like any other.
-4. On `main`: `scripts/release.sh bundle` builds the phone app's bundle signed with the upload key
-   (`~/.twangle-keys/`), checks the signature, and puts two files in `release/` (git-ignored):
-   `Twangle-<version>.aab` and `Twangle-<version>-release-notes.txt`, every language in one block in
-   the Play Console's format (`<en-US>` … `</en-US>`, `<nl-NL>` …, for sending it by hand). Then it
-   tags the commit and pushes the tag (a push that fails takes the tag back). It refuses a version that already has a tag, uncommitted
-   changes, or a `main` that differs from GitHub's.
+4. On `main`: `scripts/release.sh bundle` builds the phone app's and the watch app's bundles signed
+   with the upload key (`~/.twangle-keys/`), checks the signatures, and puts three files in `release/`
+   (git-ignored): `Twangle-<version>.aab`, `Twangle-<version>-watch.aab` (sent only with the update that
+   brings the watch app, *The watch app* below) and `Twangle-<version>-release-notes.txt`, every
+   language in one block in the Play Console's format (`<en-US>` … `</en-US>`, `<nl-NL>` …, for sending
+   it by hand). Then it tags the commit and pushes the tag (a push that fails takes the tag back). It
+   refuses a version that already has a tag, uncommitted changes, a `main` that differs from GitHub's,
+   or an out-of-date Baseline Profile (below).
+   - **The Baseline Profile** (`app/src/release/generated/`, [performance.md](architecture/performance.md),
+     *Baseline Profile*) tells phones which code to compile ahead of time, so the app starts and draws
+     quickly; it is made on the Xiaomi and committed, and a screen changed since it was made runs
+     slower on slow phones until it is made again. `bundle` refuses when the profile's last commit is
+     older than the last change under `app/src/main`, `feature/*/src/main` or
+     `core/designsystem/src/main` (`scripts/release.sh profile` says the same without building). Claude
+     then regenerates it (Xiaomi connected, about 15 minutes) and lands it through a `chore/` branch
+     before the release, or, on the owner's word, releases with the old one:
+     `scripts/release.sh bundle --keep-old-profile`.
 5. With the owner's yes: `scripts/release.sh upload`, the bundle to the internal track (below).
 6. Hands the owner the check on the Xiaomi (*What the owner does*, step 3) and waits for it to pass.
 7. With the owner's yes each time: `promote closed` or `promote production`, later `rollout 50` and
@@ -77,7 +94,8 @@ texts and notes from `fastlane/metadata/android/` too, so they still live in one
 - It refuses a version without its tag or its bundle (run `bundle` first), notes missing in a
   language, or notes changed since the tag. Only the very first release (1.0.0, already tagged and
   bundled) may go without notes. Play itself refuses a versionCode it has seen.
-- Only the phone app is uploaded; the watch app follows in an update (decision 3).
+- Only the phone app is uploaded; the watch app follows in an update (decision 3) and goes to its own
+  tracks (*The watch app* below).
 
 Then the same build moves on, without building or uploading anything again. Each
 command acts on the version in `gradle.properties`, which must be tagged, and sends its notes again.
@@ -150,8 +168,43 @@ listing isn't tied to a version.
   that the repo doesn't have are left alone. The category, tags and the rest of *Store settings*
   stay in the Play Console.
 
-The watch app isn't part of a release yet: it follows in an update (decision 3). When it goes out, its
-bundle (`:wear:bundleRelease`, versionCode + 1,000,000) is uploaded to the same release.
+## The watch app
+The watch app isn't part of a release yet: it follows in an update (decision 3). `bundle` already
+builds its bundle with every release (`release/Twangle-<version>-watch.aab`, `:wear:bundleRelease`,
+versionCode + 1,000,000, the same tag), so the update that brings it needs no other build.
+
+**Play's rule (checked 2026-11-01):** a watch bundle no longer goes on the phone's tracks. Play
+gave Wear OS its own tracks in March 2023, and since September 2023 a Wear OS release on the phone's
+tracks can't be updated: "you must use dedicated Wear OS tracks and create new releases on these
+tracks", and once they exist, the API can no longer put a watch bundle on the phone's tracks
+([Play Console Help, *Manage different form factor releases on dedicated tracks*](https://support.google.com/googleplay/android-developer/answer/13295490)).
+In Play's API a Wear OS track is `wear:` and the track's name: `wear:qa` for internal testing (the
+API's name for it, though phone releases may say `internal`), `wear:beta`, `wear:production`, and a
+closed test `wear:<its name>` ([Google Play Developer API, *APKs and Tracks*](https://developers.google.com/android-publisher/tracks)).
+To reach people, the watch app also needs a closed test release and the opt-in to Wear OS, which
+starts Google's review against the Wear OS quality rules
+([Android developers, *Package and distribute Wear OS apps*](https://developer.android.com/training/wearables/packaging)).
+
+So the watch app's release runs beside the phone's, with `watch` in each step, each again after the
+owner's yes:
+- `scripts/release.sh upload watch`: the watch bundle and the same notes to `wear:qa`.
+- `scripts/release.sh promote watch closed`: to the watch's closed test, `wear:alpha` unless
+  `TWANGLE_PLAY_WATCH_CLOSED_TRACK` names another (the Play Console names it when it is made;
+  `scripts/release.sh status` lists the watch's tracks as *Watch, …* with their API names).
+- `scripts/release.sh promote watch production`, `rollout watch <percent>`, `halt watch`: as for the
+  phone, on `wear:production`.
+
+**Once, in the Play Console, before the first `upload watch`** (the owner, with Claude reading along):
+- [ ] *Test and release → Advanced settings → Form factors → + Add form factor → Wear OS*, and under
+      *Releases* choose *Use a dedicated release track for Wear OS* if Play still offers the choice.
+- [ ] The Wear OS screenshots in the store listing (Phase 56, *The watch app in the listing*).
+- [ ] After the first watch release is on its closed test: the same page, *Wear OS → Manage*, *Opt in
+      to Wear OS* and agree to its review, then *Start rollout* once Google has approved it.
+
+Not tried on Play yet: the first `upload watch` is a draft, and if Gradle Play Publisher or Play
+refuses the track name (`wear:qa`), `scripts/release.sh status` shows the names Play gives the
+watch's tracks; the name in `release.sh` (`WATCH_INTERNAL_TRACK`) follows it. By hand, the watch
+bundle goes in the Play Console under the Wear OS form factor's own *Internal testing*.
 
 ## What the owner does
 The menu names were right in October 2026; Google moves them now and then.
@@ -193,6 +246,8 @@ say yes.
       applying for production access.
 - [ ] Play's pre-launch report after an upload, with Claude reading along if you like.
 - [ ] *Users and permissions*: the testers and the robot user's rights.
+- [ ] With the update that brings the watch app: the Wear OS form factor, its screenshots and the
+      opt-in to Wear OS (*The watch app* above).
 
 **By hand, without the key** (a machine without `~/.twangle-keys/play-service-account.json`:
 `scripts/release.sh` stops and sends nothing). Easiest is to run the step on the machine that has
