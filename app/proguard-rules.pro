@@ -21,3 +21,9 @@
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.scale.ScaleType { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.drone.DroneSound { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.Subdivision { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.eartraining.Exercise { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.eartraining.Interval { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection { public static final ** *; }

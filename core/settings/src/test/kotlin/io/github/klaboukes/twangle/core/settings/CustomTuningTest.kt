@@ -7,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CustomTuningTest {
@@ -38,6 +39,22 @@ class CustomTuningTest {
         val long = CustomTuning.normalizeName("x".repeat(39) + " yz")
         assertEquals("cut to the limit, without a trailing space", "x".repeat(39), long)
         assertEquals(CustomTuning.MAX_NAME_LENGTH, CustomTuning.normalizeName("y".repeat(100)).length)
+    }
+
+    @Test
+    fun `a long name is cut at a whole character, never inside an emoji or before its accent`() {
+        // A guitar emoji is two chars (a surrogate pair): one straddling the limit goes whole.
+        val guitar = "🎸"
+        assertEquals("x".repeat(39), CustomTuning.cutName("x".repeat(39) + guitar + "y"))
+        assertEquals("x".repeat(38) + guitar, CustomTuning.cutName("x".repeat(38) + guitar + "y"))
+        // An e with its combining accent (two chars) stays together too.
+        val accented = "é"
+        assertEquals("x".repeat(39), CustomTuning.cutName("x".repeat(39) + accented + "z"))
+        // As saved: no lone half of an emoji, so the name reads back as typed.
+        val saved = CustomTuning.normalizeName(guitar.repeat(25))
+        assertEquals(guitar.repeat(20), saved)
+        assertEquals("unchanged at or under the limit", guitar.repeat(20), CustomTuning.cutName(guitar.repeat(20)))
+        assertTrue("no lone surrogate", saved.codePoints().noneMatch { it in 0xD800..0xDFFF })
     }
 
     @Test

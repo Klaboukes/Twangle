@@ -2,8 +2,11 @@ package io.github.klaboukes.twangle.app
 
 import android.app.Application
 import android.content.res.Configuration
+import android.os.StrictMode
+import android.util.Log
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.app.widget.WidgetState
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,10 +20,11 @@ class TwangleApplication : Application() {
         private set
 
     /** Work that lasts as long as the app's process: keeping the home-screen widget up to date. */
-    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val appScope = loggingScope("TwangleApp")
 
     override fun onCreate() {
         super.onCreate()
+        if (BuildConfig.DEBUG) logStrictModeViolations()
         container = AppContainer(this)
         // The home-screen widget shows the tuning picked in the app, so it follows the settings.
         TuningWidget.follow(this, container.settingsRepository.settings, appScope)
@@ -36,4 +40,23 @@ class TwangleApplication : Application() {
     fun redrawWidgets() {
         appScope.launch { TuningWidget.update(this@TwangleApplication, WidgetState.from(container.settingsRepository.settings.first())) }
     }
+
+    /**
+     * Debug builds only: StrictMode writes to logcat (tag `StrictMode`) whatever reads or writes files
+     * on the main thread, or leaks a closeable, so such slips show while building. Only a log line:
+     * nothing is stopped, and release builds never run this.
+     */
+    private fun logStrictModeViolations() {
+        StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build())
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build())
+    }
 }
+
+/**
+ * A scope for work that outlives every screen (the widget's redraws), on [Dispatchers.Default]. An
+ * exception that escapes a coroutine in it is logged under [tag] instead of closing the app: a
+ * widget that can't be redrawn once must not take the tuner down with it.
+ */
+internal fun loggingScope(tag: String): CoroutineScope = CoroutineScope(
+    SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e -> Log.e(tag, "Background work failed", e) },
+)

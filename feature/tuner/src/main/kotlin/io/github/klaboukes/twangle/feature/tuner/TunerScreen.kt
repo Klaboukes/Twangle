@@ -104,6 +104,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -160,11 +161,9 @@ import kotlin.math.min
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
  * with the lifecycle releases the mic when the screen isn't visible. Settings and the metronome are
  * reached from the app's navigation bar or rail, which stays in every layout, the compact one too.
- * [savedMode] is the mode in the settings already read, so the
- * first frame shows the right mode instead of switching a moment later; [savedFocusMode]
- * likewise keeps a turned phone from switching layout, and [savedInstrument] the instrument
- * and tuning panel from showing the guitar a moment first ([savedCustomTunings] likewise lists the
- * player's own tunings from the start). The panel shows while [pickerOpen] (the navigation bar's
+ * [saved] are the settings the app already read at its start, so the first frame shows the
+ * player's mode, looks, layout and instrument instead of switching from the defaults a moment later
+ * ([TunerViewModel]). The panel shows while [pickerOpen] (the navigation bar's
  * Instrument item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used only in focus mode
  * (the "Focus mode" setting). The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
@@ -173,9 +172,8 @@ import kotlin.math.min
  * While the first-start tour runs ([tourOpen]) the compact layout on its side shows its controls, so
  * the tour can point at them. [onMicGrantedChange] says whether the tuner itself shows (the
  * microphone is allowed), and false when it leaves. Without the microphone the permission prompt shows
- * instead, and [pickerOpen] opens the panel over it all the same. [savedMicRefused] is the saved
- * [io.github.klaboukes.twangle.core.settings.AppSettings.micRefused], which tells a dismissed dialog
- * from one Android no longer shows ([MicPermissionRules]).
+ * instead, and [pickerOpen] opens the panel over it all the same. The saved
+ * [AppSettings.micRefused] tells a dismissed dialog from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
  * [closeToolsRequest] (a tap on the navigation bar's Tuner tab, or "Show me around") turns the tool that is on off.
@@ -191,16 +189,12 @@ fun TunerScreen(
     tonePlayer: TonePlayer,
     tools: ToolSwitches,
     modifier: Modifier = Modifier,
-    savedMode: TunerMode = TunerMode.AUTO,
-    savedFocusMode: Boolean = false,
-    savedInstrument: Instrument = Instruments.DEFAULT,
-    savedCustomTunings: List<CustomTuning> = emptyList(),
+    saved: AppSettings = AppSettings(),
     onOpenTuningEditor: (instrument: Instrument, customTuningId: String?) -> Unit = { _, _ -> },
     pickerOpen: Boolean = false,
     onPickerOpenChange: (Boolean) -> Unit = {},
     tourOpen: Boolean = false,
     onMicGrantedChange: (Boolean) -> Unit = {},
-    savedMicRefused: Boolean = false,
     closeToolsRequest: Int = 0,
     onFullScreenChange: (Boolean) -> Unit = {},
     ratingWindow: RatingWindow = RatingWindow.NONE,
@@ -211,12 +205,8 @@ fun TunerScreen(
             audioRecorder,
             settingsRepository,
             tonePlayer,
-            savedMode = savedMode,
-            savedFocusMode = savedFocusMode,
-            savedInstrument = savedInstrument,
-            savedCustomTunings = savedCustomTunings,
+            saved = saved,
             language = language,
-            savedMicRefused = savedMicRefused,
             tools = tools,
         )
     }

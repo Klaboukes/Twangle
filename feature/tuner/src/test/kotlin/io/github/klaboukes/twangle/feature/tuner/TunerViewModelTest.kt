@@ -146,7 +146,7 @@ class TunerViewModelTest {
     @Test
     fun `shows the mode the screen already read before the settings arrive`() = runTest(dispatcher) {
         settings.current = AppSettings(mode = TunerMode.CHROMATIC)
-        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), TunerMode.CHROMATIC)
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), settings.current)
 
         assertEquals(TunerMode.CHROMATIC, vm.mode.value)
         runCurrent()
@@ -350,8 +350,35 @@ class TunerViewModelTest {
         assertTrue(settings.current.micRefused)
         assertTrue(vm.micRefused.value)
 
-        val started = TunerViewModel(a2Recorder(), FakeSettingsRepository(), FakeTonePlayer(), savedMicRefused = true)
+        val started = TunerViewModel(a2Recorder(), FakeSettingsRepository(), FakeTonePlayer(), saved = AppSettings(micRefused = true))
         assertTrue("the saved value before the settings arrive", started.micRefused.value)
+    }
+
+    @Test
+    fun `the looks start as the settings read at start, never the defaults for a frame`() = runTest(dispatcher) {
+        val saved = AppSettings(
+            display = TunerDisplay.entries.first { it != AppSettings().display },
+            meterLook = MeterLook.entries.first { it != MeterLook.DEFAULT },
+            waveLook = WaveLook.entries.first { it != WaveLook.DEFAULT },
+            inTuneEffect = InTuneEffect.entries.first { it != InTuneEffect.DEFAULT },
+            inTunePrecision = InTunePrecision.entries.first { it != InTunePrecision.DEFAULT },
+            showTuneHint = !AppSettings().showTuneHint,
+            showSignalBars = !AppSettings().showSignalBars,
+            keepScreenOn = !AppSettings().keepScreenOn,
+            vibrateInTune = !AppSettings().vibrateInTune,
+        )
+        val vm = TunerViewModel(a2Recorder(), FakeSettingsRepository(saved), FakeTonePlayer(), StandardTestDispatcher(testScheduler), saved = saved)
+
+        // Before anything has been read or collected: what the screen shows on its first frame.
+        assertEquals(saved.display, vm.display.value)
+        assertEquals(saved.meterLook, vm.meterLook.value)
+        assertEquals(saved.waveLook, vm.waveLook.value)
+        assertEquals(saved.inTuneEffect, vm.inTuneEffect.value)
+        assertEquals(saved.inTunePrecision, vm.inTunePrecision.value)
+        assertEquals(saved.showTuneHint, vm.showTuneHint.value)
+        assertEquals(saved.showSignalBars, vm.showSignalBars.value)
+        assertEquals(saved.keepScreenOn, vm.keepScreenOn.value)
+        assertEquals(saved.vibrateInTune, vm.vibrateInTune.value)
     }
 
     @Test
@@ -361,7 +388,7 @@ class TunerViewModelTest {
             FakeSettingsRepository(AppSettings(instrument = Instruments.CELLO, tuning = Instruments.CELLO.defaultTuning)),
             FakeTonePlayer(),
             StandardTestDispatcher(testScheduler),
-            savedInstrument = Instruments.CELLO,
+            saved = AppSettings(instrument = Instruments.CELLO, tuning = Instruments.CELLO.defaultTuning),
         )
 
         assertEquals(Instruments.CELLO, vm.instrument.value)
@@ -487,7 +514,7 @@ class TunerViewModelTest {
     @Test
     fun `focusMode starts from the saved value and follows the setting`() = runTest(dispatcher) {
         settings.current = AppSettings(focusMode = true)
-        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), savedFocusMode = true)
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), saved = AppSettings(focusMode = true))
         assertTrue("before the settings arrive", vm.focusMode.value)
         backgroundScope.launch { vm.focusMode.collect {} }
         runCurrent()

@@ -41,7 +41,7 @@ Twangle remembers the choices you make in the app, and nothing else. These are s
 
 The home-screen widget shows the instrument and tuning you chose. It never uses the microphone.
 
-If you have turned on Android's own backup (for example Google backup), Android may include these settings in your phone's backup or copy them to a new phone, so they come back after a reinstall. That backup is run by Android and your backup provider, not by Twangle, and you control it in the phone's settings. It never contains sound.
+If you have turned on Android's own backup (for example Google backup), Android may include these settings in your phone's backup or copy them to a new phone, so they come back after a reinstall. Only whether you said no to the microphone stays out of it: a new phone hasn't asked you yet. That backup is run by Android and your backup provider, not by Twangle, and you control it in the phone's settings. It never contains sound.
 
 ## Vibration
 Twangle can vibrate briefly when a string is in tune, and on the metronome's beat if you turn that on. This needs Android's vibrate permission, which is granted on install and gives no access to any data.

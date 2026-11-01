@@ -5,16 +5,14 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import io.github.klaboukes.twangle.app.TwangleApplication
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import io.github.klaboukes.twangle.app.loggingScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
  * Android's side of [TuningWidget]: draws a widget when it is placed or the launcher asks, and
  * redraws them all when the phone's language changes (the names are in the app's language).
- * The settings are read off the main thread ([goAsync]).
+ * The settings are read off the main thread ([goAsync]); a drawing that fails is logged, never a crash.
  */
 class TuningWidgetReceiver : AppWidgetProvider() {
 
@@ -41,6 +39,6 @@ class TuningWidgetReceiver : AppWidgetProvider() {
     }
 
     private companion object {
-        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val scope = loggingScope("TuningWidget")
     }
 }

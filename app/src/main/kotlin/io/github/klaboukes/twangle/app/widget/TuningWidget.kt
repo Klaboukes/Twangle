@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.toArgb
@@ -51,14 +52,33 @@ object TuningWidget {
 
     /**
      * Keeps the widgets in step with [settings] for as long as [scope] lives: a redraw at once and
-     * then on every change of what they show (not on A4, the meter's look and so on).
+     * then on every change of what they show (not on A4, the meter's look and so on). A redraw that
+     * fails ([draw] throws: the launcher gone, a drawing too big to send) is logged through [logError]
+     * and the widget follows on from the next change; it never closes the app.
      */
-    fun follow(context: Context, settings: Flow<AppSettings>, scope: CoroutineScope): Job = scope.launch {
+    fun follow(context: Context, settings: Flow<AppSettings>, scope: CoroutineScope): Job =
+        follow(settings, scope, draw = { update(context, it) }, logError = { Log.w(TAG, "Widget not redrawn", it) })
+
+    /** [follow] with the drawing and the log passed in, for tests. */
+    internal fun follow(
+        settings: Flow<AppSettings>,
+        scope: CoroutineScope,
+        draw: (WidgetState) -> Unit,
+        logError: (RuntimeException) -> Unit,
+    ): Job = scope.launch {
         settings.map(WidgetState::from)
             .distinctUntilChanged()
             .catch { /* Settings that can't be read leave the widget as it is. */ }
-            .collect { update(context, it) }
+            .collect {
+                try {
+                    draw(it)
+                } catch (e: RuntimeException) {
+                    logError(e)
+                }
+            }
     }
+
+    private const val TAG = "TuningWidget"
 
     /** The widget's views for [state], with their texts in the app's language. */
     internal fun views(context: Context, state: WidgetState): RemoteViews {

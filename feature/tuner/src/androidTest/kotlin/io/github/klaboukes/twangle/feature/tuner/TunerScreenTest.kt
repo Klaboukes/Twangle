@@ -56,7 +56,7 @@ class TunerScreenTest {
                         settingsRepository = settings,
                         tonePlayer = FakeTonePlayer(),
                         tools = ToolSwitches.ALL_ON,
-                        savedFocusMode = settings.current.focusMode,
+                        saved = settings.current,
                     )
                 }
             }

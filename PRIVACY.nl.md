@@ -41,7 +41,7 @@ Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan al
 
 De widget op je startscherm laat het instrument en de stemming zien die je hebt gekozen. Hij gebruikt nooit de microfoon.
 
-Heb je de back-up van Android zelf aangezet (bijvoorbeeld Google-back-up), dan kan Android deze instellingen meenemen in de back-up van je telefoon of overzetten naar een nieuwe telefoon, zodat ze na een herinstallatie terugkomen. Die back-up wordt geregeld door Android en je back-updienst, niet door Twangle, en je beheert hem in de instellingen van je telefoon. Er zit nooit geluid in.
+Heb je de back-up van Android zelf aangezet (bijvoorbeeld Google-back-up), dan kan Android deze instellingen meenemen in de back-up van je telefoon of overzetten naar een nieuwe telefoon, zodat ze na een herinstallatie terugkomen. Alleen of je nee hebt gezegd tegen de microfoon blijft erbuiten: een nieuwe telefoon heeft het je nog niet gevraagd. Die back-up wordt geregeld door Android en je back-updienst, niet door Twangle, en je beheert hem in de instellingen van je telefoon. Er zit nooit geluid in.
 
 ## Trillen
 Twangle kan kort trillen als een snaar gestemd is, en op de tel van de metronoom als je dat aanzet. Daarvoor is de triltoestemming van Android nodig, die bij installatie wordt gegeven en geen toegang tot gegevens geeft.

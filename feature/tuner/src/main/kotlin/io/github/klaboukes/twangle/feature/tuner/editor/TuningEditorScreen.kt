@@ -149,7 +149,7 @@ fun TuningEditorScreen(
         problem = problem,
         notSaved = phase == SavePhase.FAILED,
         onNameChange = {
-            draft = draft.copy(name = it.take(CustomTuning.MAX_NAME_LENGTH))
+            draft = draft.copy(name = CustomTuning.cutName(it))
             // A message goes as soon as the name changes and only comes back on the next Save.
             problem = null
         },

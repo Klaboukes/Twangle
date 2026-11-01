@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older: what Android's backup leaves out. The settings go with it; this phone's
+     own file doesn't (DataStoreSettingsRepository, DEVICE_FILE_NAME): it says whether the microphone
+     was refused here, which a new phone, never asked, must not take over. -->
+<full-backup-content>
+    <exclude domain="file" path="datastore/this_device.preferences_pb" />
+</full-backup-content>

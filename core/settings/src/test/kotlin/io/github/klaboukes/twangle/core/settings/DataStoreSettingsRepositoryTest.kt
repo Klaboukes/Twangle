@@ -33,7 +33,10 @@ import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.emitAll
@@ -44,6 +47,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.junit.After
@@ -1320,5 +1324,83 @@ class DataStoreSettingsRepositoryTest {
             assertEquals("$name keeps the old values", before, repo.settings.first())
         }
         assertEquals("every failed write is logged", writes.size, logged.size)
+    }
+
+    private val deviceFile: File get() = folder.root.resolve("this_device.preferences_pb")
+
+    /** Storage on [on], Okio's as in [dataStore] (Windows), for the app's own factory. */
+    private fun storage(on: File) = OkioStorage(FileSystem.SYSTEM, PreferencesSerializer) { on.absolutePath.toPath() }
+
+    /** The repository as the app makes it ([DataStoreSettingsRepository.create]): two files, the damage handler and the move. */
+    private fun appRepository(): DataStoreSettingsRepository {
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob()).also { scopes += it }
+        return DataStoreSettingsRepository.create(storage(file), storage(deviceFile), scope)
+    }
+
+    /** A plain DataStore on this phone's own file, to look inside it. */
+    private fun deviceDataStore(): DataStore<Preferences> {
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob()).also { scopes += it }
+        return PreferenceDataStoreFactory.create(storage = storage(deviceFile), scope = scope)
+    }
+
+    @Test
+    fun `damaged files through the app's own factory give the defaults, and saving works again`() = runTest {
+        file.writeText("this is not a preferences file")
+        deviceFile.writeText("nor is this")
+        val repo = appRepository()
+
+        assertEquals(AppSettings(), repo.settings.first())
+        repo.setStyle(VisualStyle.FUTURISTIC)
+        repo.setMicRefused(true)
+        close()
+
+        val reopened = appRepository().settings.first()
+        assertEquals("the damaged settings were replaced", VisualStyle.FUTURISTIC, reopened.style)
+        assertEquals("and this phone's own file too", true, reopened.micRefused)
+    }
+
+    @Test
+    fun `a refused microphone is kept apart from the settings, which backups carry to a new phone`() = runTest {
+        val micRefusedKey = booleanPreferencesKey("mic_refused")
+        // A version before Phase 65 kept it with the settings.
+        dataStore().edit {
+            it[micRefusedKey] = true
+            it[stringPreferencesKey("visual_style")] = "RETRO"
+        }
+        close()
+
+        val repo = appRepository()
+        assertEquals("still refused after the update", true, repo.settings.first().micRefused)
+        assertEquals(VisualStyle.RETRO, repo.settings.first().style)
+        repo.setTheme(ThemeMode.DARK)
+        close()
+
+        val settingsFile = dataStore().data.first()
+        assertNull("moved out of the settings file", settingsFile[micRefusedKey])
+        assertEquals("the rest stays", "RETRO", settingsFile[stringPreferencesKey("visual_style")])
+        close()
+        assertEquals("into this phone's own file", true, deviceDataStore().data.first()[micRefusedKey])
+        close()
+
+        // A refusal saved now goes to this phone's file alone.
+        appRepository().setMicRefused(false)
+        close()
+        assertNull(dataStore().data.first()[micRefusedKey])
+        close()
+        assertEquals(false, deviceDataStore().data.first()[micRefusedKey])
+    }
+
+    @Test
+    fun `every collector shares one reading of a change`() = runBlocking {
+        val repo = repository()
+        repo.settings.first()
+        val readers = List(10) { async { repo.settings.first { it.style == VisualStyle.FUTURISTIC } } }
+        delay(200) // every reader has the settings as they are
+        val before = repo.parseCount
+
+        repo.setStyle(VisualStyle.FUTURISTIC)
+        withTimeout(5_000) { readers.awaitAll() }
+
+        assertEquals("one change, read once for all ten", 1, repo.parseCount - before)
     }
 }

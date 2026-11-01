@@ -58,10 +58,10 @@ import kotlin.math.ceil
  * it (CLAUDE.md, hard rule 4). Switching [mode] takes effect on the next frame without reopening
  * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation, in-tune precision) are
  * followed live, also while listening.
- * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
- * shown until the saved settings arrive, so a screen that already read them starts in the right one;
- * [savedInstrument] and [savedCustomTunings] do the same for the instrument and tuning panel, and [savedFocusMode] for the
- * layout on its side, and [savedMicRefused] for [micRefused]. [language] is the app's language (e.g. "de"): note names follow its habit
+ * Smoothing runs on [dspDispatcher] together with the pitch detection. [saved] are the settings the
+ * app already read at its start: every saved option here ([mode], [instrument], [display], [meterLook],
+ * [waveLook] and the rest) starts from them until this ViewModel's own reading arrives, so the first
+ * frames show the player's looks and layout instead of the defaults for a moment. [language] is the app's language (e.g. "de"): note names follow its habit
  * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
  *
  * A long-press on a string plays its note through [tonePlayer] ([playString]). While that tone
@@ -85,12 +85,8 @@ class TunerViewModel(
     private val settingsRepository: SettingsRepository,
     private val tonePlayer: TonePlayer,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    savedMode: TunerMode = AppSettings().mode,
-    savedFocusMode: Boolean = AppSettings().focusMode,
-    savedInstrument: Instrument = AppSettings().instrument,
-    savedCustomTunings: List<CustomTuning> = AppSettings().customTunings,
+    saved: AppSettings = AppSettings(),
     language: String = "",
-    savedMicRefused: Boolean = AppSettings().micRefused,
     val tools: ToolSwitches = ToolSwitches.ALL_ON,
     private val clock: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
@@ -111,42 +107,42 @@ class TunerViewModel(
     /** Guitar or chromatic: the one last picked, which starts as the saved one. */
     val mode: StateFlow<TunerMode> =
         combine(settingsRepository.settings, pickedMode) { settings, picked -> picked ?: settings.mode }
-            .stateIn(viewModelScope, SharingStarted.Eagerly, savedMode)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, saved.mode)
 
     /** The instrument whose strings guitar mode tunes (a saved setting); the tuning is always one of its presets. */
     val instrument: StateFlow<Instrument> = settingsRepository.settings
         .map { it.instrument }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, savedInstrument)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, saved.instrument)
 
     /** The player's own tunings, every instrument's (a saved setting); the button names a picked one by its name. */
     val customTunings: StateFlow<List<CustomTuning>> = settingsRepository.settings
         .map { it.customTunings }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, savedCustomTunings)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, saved.customTunings)
 
     /** Whether the screen should stay on while the tuner is shown (a saved setting). */
     val keepScreenOn: StateFlow<Boolean> = settingsRepository.settings
         .map { it.keepScreenOn }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.keepScreenOn)
 
     /** Whether reaching "in tune" gives a haptic tick (a saved setting). */
     val vibrateInTune: StateFlow<Boolean> = settingsRepository.settings
         .map { it.vibrateInTune }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune)
 
     /** What shows how far off a note is under it: cents or the wave (a saved setting). */
     val display: StateFlow<TunerDisplay> = settingsRepository.settings
         .map { it.display }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().display)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.display)
 
     /** Whether "Tune up ↑" / "Tune down ↓" shows under an off-pitch note and TalkBack says it (a saved setting). */
     val showTuneHint: StateFlow<Boolean> = settingsRepository.settings
         .map { it.showTuneHint }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showTuneHint)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.showTuneHint)
 
     /** Whether small signal bars by the note show how well the tuner hears (a saved setting, off by default). */
     val showSignalBars: StateFlow<Boolean> = settingsRepository.settings
         .map { it.showSignalBars }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showSignalBars)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.showSignalBars)
 
     private val signal = MutableStateFlow<SignalFigures?>(null)
 
@@ -168,22 +164,22 @@ class TunerViewModel(
     /** What the wave view looks like (a saved setting). */
     val waveLook: StateFlow<WaveLook> = settingsRepository.settings
         .map { it.waveLook }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WaveLook.DEFAULT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.waveLook)
 
     /** What the meter above the note looks like (a saved setting). */
     val meterLook: StateFlow<MeterLook> = settingsRepository.settings
         .map { it.meterLook }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MeterLook.DEFAULT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.meterLook)
 
     /** How strong the meter's in-tune glow is: Calm or Bold (a saved setting). */
     val inTuneEffect: StateFlow<InTuneEffect> = settingsRepository.settings
         .map { it.inTuneEffect }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InTuneEffect.DEFAULT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.inTuneEffect)
 
     /** How close to the note counts as in tune: Relaxed or Precise (a saved setting), for the meter's in-tune window. */
     val inTunePrecision: StateFlow<InTunePrecision> = settingsRepository.settings
         .map { it.inTunePrecision }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InTunePrecision.DEFAULT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.inTunePrecision)
 
     /**
      * Whether focus mode is on, so a phone on its side shows the compact layout instead of the
@@ -192,7 +188,7 @@ class TunerViewModel(
      */
     val focusMode: StateFlow<Boolean> = settingsRepository.settings
         .map { it.focusMode }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), savedFocusMode)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.focusMode)
 
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)
@@ -244,7 +240,7 @@ class TunerViewModel(
     val tunerTools: StateFlow<List<TunerTool>> = settingsRepository.settings
         .map { tunerToolsFor(tools, it.instrument) }
         .distinctUntilChanged()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, tunerToolsFor(tools, savedInstrument))
+        .stateIn(viewModelScope, SharingStarted.Eagerly, tunerToolsFor(tools, saved.instrument))
 
     /** Strum check, the 12th-fret check and its string, and the chord name, in one flow, so the options combine stays small. */
     private val toolChoice = combine(strumCheckOn, intonationOn, intonationChoice, chordNameOn) { strum, intonation, choice, chord ->
@@ -285,7 +281,7 @@ class TunerViewModel(
     /** Whether the microphone was ever refused in Android's dialog on this install (a saved setting, see [MicPermissionRules]). */
     val micRefused: StateFlow<Boolean> = settingsRepository.settings
         .map { it.micRefused }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, savedMicRefused)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, saved.micRefused)
 
     /** When the app was first used and whether the rating window was asked for (saved settings); null until loaded. */
     private val ratingRecord: StateFlow<RatingRecord?> = settingsRepository.settings

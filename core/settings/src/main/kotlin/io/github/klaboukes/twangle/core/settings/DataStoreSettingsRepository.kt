@@ -2,11 +2,15 @@ package io.github.klaboukes.twangle.core.settings
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.core.DataMigration
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.FileStorage
+import androidx.datastore.core.Storage
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferencesFileSerializer
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
@@ -39,12 +43,17 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
+import java.io.File
 import java.io.IOException
 import java.util.UUID
 
@@ -59,19 +68,57 @@ import java.util.UUID
  * [logWriteError] and changes nothing, so the app keeps running with the old value ([save]). Create it
  * once per process with [create]: DataStore allows only one instance per file. [newId] makes the ids
  * of new custom tunings.
+ *
+ * [deviceStore] holds what belongs to this phone alone and is left out of Android's backups
+ * (`app/src/main/res/xml/backup_rules.xml`, `data_extraction_rules.xml`): today only
+ * [AppSettings.micRefused], since a phone restored from a backup has never asked for the microphone.
+ * Tests may pass the settings' own store.
+ *
+ * The ~40 collectors (each ViewModel's flows, the widget, the app's theme) all get the same
+ * [Preferences] from DataStore after a write; they are turned into [AppSettings] once for all of them
+ * ([parse]), not once per collector. A state shared in a scope (`stateIn`) was the other way, but it
+ * would lag a write: a read just after one could still give the old value.
  */
 class DataStoreSettingsRepository internal constructor(
     private val dataStore: DataStore<Preferences>,
+    private val deviceStore: DataStore<Preferences> = dataStore,
     private val newId: () -> String = { CustomTuning.ID_PREFIX + UUID.randomUUID() },
     private val logWriteError: (IOException) -> Unit = { Log.w(TAG, "Settings not saved", it) },
 ) : SettingsRepository {
 
-    override val settings: Flow<AppSettings> = flow {
+    override val settings: Flow<AppSettings> =
+        if (deviceStore === dataStore) {
+            readable(dataStore).map { parse(it, it) }
+        } else {
+            combine(readable(dataStore), readable(deviceStore), ::parse)
+        }.distinctUntilChanged()
+
+    /** The last files read and the settings made of them, shared by every collector of [settings]. */
+    private class Parsed(val prefs: Preferences, val device: Preferences, val settings: AppSettings)
+
+    @Volatile
+    private var lastParsed: Parsed? = null
+
+    /** How many times the files were turned into settings ([parse]); for tests. */
+    @Volatile
+    internal var parseCount = 0
+        private set
+
+    /** [prefs] and [device] as settings, made only when they differ from the last ones. */
+    private fun parse(prefs: Preferences, device: Preferences): AppSettings {
+        lastParsed?.let { if (it.prefs == prefs && it.device == device) return it.settings }
+        parseCount++
+        return toSettings(prefs, device).also { lastParsed = Parsed(prefs, device, it) }
+    }
+
+    /**
+     * [store]'s data, where a read that fails (an I/O error, not a damaged file: that is replaced,
+     * see [create]) shows empty preferences (the defaults) if nothing was shown yet, then tries again,
+     * so one failed read doesn't keep the settings at their defaults, or stop later changes, for the session.
+     */
+    private fun readable(store: DataStore<Preferences>): Flow<Preferences> = flow {
         var shown = false
-        dataStore.data
-            // A read that fails (an I/O error, not a damaged file: that is replaced, see create)
-            // shows the defaults if nothing was shown yet, then tries again, so one failed read
-            // doesn't keep the settings at their defaults, or stop later changes, for the session.
+        store.data
             .retryWhen { cause, attempt ->
                 if (cause !is IOException) return@retryWhen false
                 if (!shown) emit(emptyPreferences())
@@ -83,17 +130,15 @@ class DataStoreSettingsRepository internal constructor(
                 emit(it)
             }
     }
-        .map(::toSettings)
-        .distinctUntilChanged()
 
     /**
-     * Every write goes through here: [change] in one DataStore edit. A write that fails with an
-     * [IOException] (a full phone, a storage error) is logged and returns false, the saved values
-     * unchanged, instead of reaching the caller's coroutine and closing the app; most of the ~50
-     * callers launch their write bare. True when it was saved.
+     * Every write goes through here: [change] in one DataStore edit (of [store], the settings unless
+     * said). A write that fails with an [IOException] (a full phone, a storage error) is logged and
+     * returns false, the saved values unchanged, instead of reaching the caller's coroutine and
+     * closing the app; most of the ~50 callers launch their write bare. True when it was saved.
      */
-    private suspend fun save(change: (MutablePreferences) -> Unit): Boolean = try {
-        dataStore.edit { change(it) }
+    private suspend fun save(store: DataStore<Preferences> = dataStore, change: (MutablePreferences) -> Unit): Boolean = try {
+        store.edit { change(it) }
         true
     } catch (e: IOException) {
         logWriteError(e)
@@ -248,7 +293,7 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setMicRefused(refused: Boolean) {
-        save { it[MIC_REFUSED] = refused }
+        save(deviceStore) { it[MIC_REFUSED] = refused }
     }
 
     override suspend fun noteFirstUseOnce(nowMillis: Long) {
@@ -367,7 +412,8 @@ class DataStoreSettingsRepository internal constructor(
         save { it[EAR_CHORD_TYPES] = types.mapTo(HashSet()) { type -> type.name } }
     }
 
-    private fun toSettings(prefs: Preferences): AppSettings {
+    /** The settings in [prefs], with what belongs to this phone alone from [device]. */
+    private fun toSettings(prefs: Preferences, device: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
         val oldStrobe = prefs[DISPLAY] == OLD_STROBE_DISPLAY
@@ -398,7 +444,7 @@ class DataStoreSettingsRepository internal constructor(
             inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
             tourSeen = tourSeen(prefs),
-            micRefused = prefs[MIC_REFUSED] ?: defaults.micRefused,
+            micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
             firstUseMillis = prefs[FIRST_USE_MILLIS] ?: defaults.firstUseMillis,
             ratingAsked = prefs[RATING_ASKED] ?: defaults.ratingAsked,
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
@@ -431,6 +477,12 @@ class DataStoreSettingsRepository internal constructor(
 
     companion object {
         private const val FILE_NAME = "settings"
+
+        /**
+         * This phone's own store, `files/datastore/this_device.preferences_pb`: left out of backups and
+         * transfers to a new phone. Keep the name in step with the backup rules in `app/src/main/res/xml`.
+         */
+        private const val DEVICE_FILE_NAME = "this_device"
         private const val TAG = "Settings"
 
         // Saved keys. Never rename them, or users lose their settings on update.
@@ -549,13 +601,63 @@ class DataStoreSettingsRepository internal constructor(
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")
 
-        /** The app's settings, stored in `files/datastore/settings.preferences_pb`. Call once per process. */
-        fun create(context: Context): SettingsRepository = DataStoreSettingsRepository(
-            PreferenceDataStoreFactory.create(
-                // A damaged file is replaced with defaults, so saving works again afterwards.
+        /**
+         * The app's settings, stored in `files/datastore/settings.preferences_pb`, and this phone's own
+         * in `this_device.preferences_pb` ([DEVICE_FILE_NAME]). Call once per process.
+         */
+        fun create(context: Context): SettingsRepository {
+            val app = context.applicationContext
+            return create(
+                fileStorage { app.preferencesDataStoreFile(FILE_NAME) },
+                fileStorage { app.preferencesDataStoreFile(DEVICE_FILE_NAME) },
+            )
+        }
+
+        /** DataStore's own file storage, as `PreferenceDataStoreFactory.create(produceFile)` makes it. */
+        private fun fileStorage(file: () -> File): Storage<Preferences> =
+            FileStorage(PreferencesFileSerializer) { file().absoluteFile }
+
+        /**
+         * The repository on [settingsStorage] and [deviceStorage], as the app makes it (tests pass
+         * storage of their own): a damaged file is replaced with defaults, so saving works again
+         * afterwards, and a `mic_refused` that versions before Phase 65 kept with the settings moves
+         * to this phone's store ([MoveMicRefused]).
+         */
+        internal fun create(
+            settingsStorage: Storage<Preferences>,
+            deviceStorage: Storage<Preferences>,
+            scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+        ): DataStoreSettingsRepository {
+            val device = PreferenceDataStoreFactory.create(
+                storage = deviceStorage,
                 corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
-            ) { context.applicationContext.preferencesDataStoreFile(FILE_NAME) },
-        )
+                scope = scope,
+            )
+            val settings = PreferenceDataStoreFactory.create(
+                storage = settingsStorage,
+                corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+                migrations = listOf(MoveMicRefused(device)),
+                scope = scope,
+            )
+            return DataStoreSettingsRepository(settings, device)
+        }
+
+        /**
+         * Moves `mic_refused` from the settings, where versions before Phase 65 kept it, to [device],
+         * which backups leave out. Runs before the settings are first read, while the key is there; a
+         * value already in this phone's store wins.
+         */
+        private class MoveMicRefused(private val device: DataStore<Preferences>) : DataMigration<Preferences> {
+            override suspend fun shouldMigrate(currentData: Preferences): Boolean = MIC_REFUSED in currentData
+
+            override suspend fun migrate(currentData: Preferences): Preferences {
+                val refused = currentData[MIC_REFUSED] ?: return currentData
+                device.edit { if (MIC_REFUSED !in it) it[MIC_REFUSED] = refused }
+                return currentData.toMutablePreferences().apply { remove(MIC_REFUSED) }.toPreferences()
+            }
+
+            override suspend fun cleanUp() = Unit
+        }
 
         /** The wait after failed read number [attempt] + 1 before trying again: 0.5 s, doubling up to 30 s. */
         internal fun readRetryMillis(attempt: Long): Long = (500L shl attempt.coerceAtMost(6).toInt()).coerceAtMost(30_000L)

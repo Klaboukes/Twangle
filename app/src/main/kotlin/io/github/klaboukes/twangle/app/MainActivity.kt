@@ -274,10 +274,7 @@ class MainActivity : AppCompatActivity() {
                                         settingsRepository = container.settingsRepository,
                                         tonePlayer = container.tonePlayer,
                                         tools = tools,
-                                        savedMode = settings.mode,
-                                        savedFocusMode = settings.focusMode,
-                                        savedInstrument = settings.instrument,
-                                        savedCustomTunings = settings.customTunings,
+                                        saved = settings,
                                         onOpenTuningEditor = { instrument, customTuningId ->
                                             openTuningEditor(instrument, customTuningId, Screen.TUNER)
                                         },
@@ -285,7 +282,6 @@ class MainActivity : AppCompatActivity() {
                                         onPickerOpenChange = { tuningPanelOpen = it },
                                         tourOpen = tourOpen,
                                         onMicGrantedChange = { tunerShown = it },
-                                        savedMicRefused = settings.micRefused,
                                         closeToolsRequest = closeTunerToolsRequests,
                                         onFullScreenChange = { tunerFullScreen = it },
                                         ratingWindow = container.ratingWindow,

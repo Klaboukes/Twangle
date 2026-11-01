@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.text.BreakIterator
 
 /**
  * A tuning the player made: a [name] they typed, the [instrument] it is for and one note per
@@ -43,7 +44,7 @@ data class CustomTuning(
         /** Every custom tuning id starts with this; preset ids never do. */
         const val ID_PREFIX = "custom_"
 
-        /** The longest name kept; a longer one is cut off. */
+        /** The longest name kept, in UTF-16 chars as [String.length] counts them; a longer one is cut off ([cutName]). */
         const val MAX_NAME_LENGTH = 40
 
         /** Notes a string may be set to: the MIDI range, far wider than any instrument needs. */
@@ -54,11 +55,25 @@ data class CustomTuning(
 
         /**
          * [raw] as it is saved and compared: trimmed, every run of spaces, tabs or line breaks
-         * made one space, and cut to [MAX_NAME_LENGTH]. Empty means there is no usable name. The
+         * made one space, and cut to [MAX_NAME_LENGTH] ([cutName]). Empty means there is no usable name. The
          * editor's checks for empty and duplicate names should compare these.
          */
         fun normalizeName(raw: String): String =
-            raw.trim().replace(WHITESPACE, " ").take(MAX_NAME_LENGTH).trimEnd()
+            cutName(raw.trim().replace(WHITESPACE, " ")).trimEnd()
+
+        /**
+         * [text] cut to at most [MAX_NAME_LENGTH] chars at a whole character, as the player sees one
+         * ([BreakIterator]'s character boundaries): never inside an emoji (a surrogate pair, or a
+         * family of several joined), nor between a letter and its accent. The editor's name field cuts
+         * the typed text with this too, so what is typed is what is saved.
+         */
+        fun cutName(text: String): String {
+            if (text.length <= MAX_NAME_LENGTH) return text
+            val characters = BreakIterator.getCharacterInstance()
+            characters.setText(text)
+            // The last boundary at or before the limit: preceding() gives the last one before its offset.
+            return text.substring(0, characters.preceding(MAX_NAME_LENGTH + 1))
+        }
 
         private val WHITESPACE = Regex("\\s+")
     }
