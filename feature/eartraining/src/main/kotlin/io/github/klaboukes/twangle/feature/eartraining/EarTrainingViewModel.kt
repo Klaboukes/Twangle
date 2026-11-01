@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -47,6 +48,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
@@ -87,6 +89,11 @@ data class EarTrainingState(
     val chordTypes: Set<ChordQuality> = ChordTypeQuestions.DEFAULT,
     /** Chord type can't be asked on the tuning picked: why, shown in the question's place; null where it can. */
     val chordsUnavailable: ChordsUnavailable? = null,
+    /**
+     * Play it back: the microphone stopped (taken by a call or another app, silenced by Android when the
+     * screen went, or it failed to open), until it listens again when the screen comes back or ▶ is tapped.
+     */
+    val micStopped: Boolean = false,
 ) {
     /** Play it back's question was found, every note of it: "Right", glowing softly. */
     val allFound: Boolean get() = notes != null && found == notes.notes.size
@@ -130,7 +137,11 @@ enum class ChordsUnavailable {
  *
  * **Listening.** Only Play it back listens ([Exercise.listens]), and only while the microphone is
  * allowed ([setMicAllowed]) and [heard] is collected: `WhileSubscribed(5 s)`, as the tuner, so the
- * microphone is held only while the tool is shown. [listener] is the tuner's own pipeline. While the
+ * microphone is held only while the tool is shown. [listener] is the tuner's own pipeline. If the
+ * microphone stops (a call or another app takes it, Android silences it when the screen goes within
+ * those 5 s, Android 12's microphone switch, or it fails to open), Play it back says so
+ * ([EarTrainingState.micStopped]) instead of the app closing, and listens again when the screen comes
+ * back ([shownAgain]) or ▶ sounds the question again, as the watch's tuner. While the
  * question sounds, and for [TONE_TAIL_SECONDS] after it has faded from the speaker, the microphone
  * stays open but what it hears is set aside and the smoothing starts afresh, so the question's own
  * sound (or its echo in the room) is never taken for the player's answer. The heard note is the
@@ -205,15 +216,20 @@ class EarTrainingViewModel(
 
     private val micAllowed = MutableStateFlow(false)
 
+    // Counts the times the microphone was opened again after it stopped, so a new listening session starts.
+    private val listenAttempt = MutableStateFlow(0)
+
     /**
      * The note the microphone hears as the player plays (the tuner's note, smoothed), or null: nothing
      * heard, the question still sounding or fading, the microphone not allowed, or an exercise that
-     * doesn't listen. Collecting it opens the microphone (and lets Play it back judge what it hears);
-     * it closes 5 s after the last collector goes.
+     * doesn't listen, or the microphone stopped. Collecting it opens the microphone (and lets Play it
+     * back judge what it hears); it closes 5 s after the last collector goes.
      */
-    val heard: StateFlow<Note?> = combine(micAllowed, shown) { allowed, state -> allowed && state.exercise.listens }
+    val heard: StateFlow<Note?> = combine(micAllowed, shown, listenAttempt) { allowed, state, attempt ->
+        if (allowed && state.exercise.listens) attempt else NOT_LISTENING
+    }
         .distinctUntilChanged()
-        .flatMapLatest { listening -> if (listening) hear() else flowOf(Hearing.ASIDE) }
+        .flatMapLatest { attempt -> if (attempt == NOT_LISTENING) flowOf(Hearing.ASIDE) else listen() }
         .onEach(::judge)
         .map { it.midi }
         .distinctUntilChanged()
@@ -234,6 +250,22 @@ class EarTrainingViewModel(
     /** The tool is shown: the exercise picked starts asking at once, unless its visit is already going (a turned phone). */
     fun show() {
         if (visitOf(shown.value.exercise) == null) start(shown.value.exercise)
+    }
+
+    /**
+     * The screen shows again (`ON_START`: back from the background, the phone unlocked): a microphone
+     * that stopped meanwhile listens again, and a next question held back while it was hidden
+     * ([stopSound]) comes [NEXT_DELAY_MILLIS] later.
+     */
+    fun shownAgain() {
+        listenAgain()
+        val visit = visitOf(shown.value.exercise) ?: return
+        if (visit.answered && nextJob?.isActive != true) {
+            nextJob = viewModelScope.launch {
+                delay(NEXT_DELAY_MILLIS)
+                ask(visit)
+            }
+        }
     }
 
     /** Picks [exercise] (saved): its own questions and tally, its first question at once if it has none yet. */
@@ -314,6 +346,7 @@ class EarTrainingViewModel(
      * been heard again.
      */
     fun replay() {
+        listenAgain()
         when (shown.value.exercise) {
             Exercise.PLAY_IT_BACK -> playBack?.current?.let {
                 playAnswer?.replayed()
@@ -391,8 +424,13 @@ class EarTrainingViewModel(
         if (!micRefused.value) viewModelScope.launch { settingsRepository.setMicRefused(true) }
     }
 
-    /** Silences the question (the screen was hidden): the tone fades out within a few tens of ms. */
+    /**
+     * Silences the question (the screen was hidden): the tone fades out within a few tens of ms, and a
+     * next question due after an answer waits for the screen to show again ([shownAgain]), so nothing
+     * sounds in the background.
+     */
     fun stopSound() {
+        nextJob?.cancel()
         soundJob?.cancel()
         questionStarting.value = false
         if (tonePlayer.isPlaying.value) tonePlayer.stop()
@@ -532,6 +570,23 @@ class EarTrainingViewModel(
             is ChordTypeQuestion -> strum(question)
         }
     }
+
+    /** Opens the microphone again if it stopped. */
+    private fun listenAgain() {
+        if (shown.value.micStopped) listenAttempt.value++
+    }
+
+    /**
+     * One listening session of Play it back: what the microphone hears ([hear]), the line that it
+     * stopped gone as it opens. A failure of the microphone ends the session with that line instead of
+     * reaching [viewModelScope] (which would close the app), as the tuner's and the watch's `catch`.
+     */
+    private fun listen(): Flow<Hearing> = hear()
+        .onStart { if (shown.value.micStopped) shown.value = shown.value.copy(micStopped = false) }
+        .catch {
+            shown.value = shown.value.copy(micStopped = true)
+            emit(Hearing.ASIDE)
+        }
 
     /** Judges a change in what Play it back hears against its question, on the main thread. */
     private fun judge(hearing: Hearing) {
@@ -687,6 +742,9 @@ class EarTrainingViewModel(
     }
 
     companion object {
+        /** [heard]'s key while nothing listens; else the listening session's number ([listenAttempt]). */
+        private const val NOT_LISTENING = -1
+
         /** After an answer, the next question comes by itself this much later (the owner's pick A: about 1½ s). */
         const val NEXT_DELAY_MILLIS = 1_500L
 

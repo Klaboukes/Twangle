@@ -110,7 +110,8 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
  * the saved settings from [settingsRepository]); Play it back hears the instrument through [listener]
  * (the tuner's pipeline), asking for the microphone the first time it is shown, as the tuner does. The
  * microphone is held only while this screen is shown. The question stops sounding when the screen is
- * hidden; leaving the tool ends the visit (its tally and questions are dropped, never saved), while a
+ * hidden, and no next question comes until it shows again, when a microphone that stopped meanwhile
+ * listens again too; leaving the tool ends the visit (its tally and questions are dropped, never saved), while a
  * turned phone keeps it. [header] is the top row (the tool button, the instrument button and the
  * tuning line), which `:app` builds; note names follow [notation].
  */
@@ -138,7 +139,7 @@ fun EarTrainingScreen(
     val allowed = permission.status == MicPermissionStatus.GRANTED
     LaunchedEffect(allowed) { viewModel.setMicAllowed(allowed) }
     LaunchedEffect(viewModel) { viewModel.show() }
-    EndVisitWhenLeft(onHidden = viewModel::stopSound, onLeft = viewModel::endVisit)
+    EndVisitWhenLeft(onShown = viewModel::shownAgain, onHidden = viewModel::stopSound, onLeft = viewModel::endVisit)
 
     EarTrainingContent(
         state = state,
@@ -302,7 +303,7 @@ object EarTrainingTestTags {
     /** Play it back: the note the tuner hears (a dimmed dash while none, hidden from TalkBack). */
     const val HEARD = "ear_heard"
 
-    /** Play it back: the small line under it ("Listening…", "Hold the note you heard", "Note 2 of 3", "Right", "Not that one"). */
+    /** Play it back: the small line under it ("Listening…", "Hold the note you heard", "Note 2 of 3", "Right", "Not that one", "Microphone stopped"). */
     const val HEARD_LINE = "ear_heard_line"
 
     /** Play it back with notes in a row: a dot for each, the ones found filled in the in-tune colour. */
@@ -547,7 +548,8 @@ private fun HeardNote(heard: Note?, notation: Notation, glowing: Boolean) {
 }
 
 /**
- * The small line under the note heard, one at a time: "Right" in the in-tune colour once every note
+ * The small line under the note heard, one at a time: "Microphone stopped" while it has (the dash
+ * above it; it listens again when the screen comes back); "Right" in the in-tune colour once every note
  * is found; "Not that one" after a wrong note held, until a right one (never red); for notes in a row
  * "Note 2 of 3"; else "Hold the note you heard" while a note is heard, "Listening…" while none.
  */
@@ -555,13 +557,14 @@ private fun HeardNote(heard: Note?, notation: Notation, glowing: Boolean) {
 private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: Note?) {
     val size = question.notes.size
     val text = when {
+        state.micStopped -> stringResource(R.string.ear_mic_stopped)
         state.allFound -> stringResource(R.string.ear_right)
         state.wrongHeld -> stringResource(R.string.ear_not_that_one)
         size > 1 -> stringResource(R.string.ear_note_of, (state.found + 1).coerceAtMost(size), size)
         heard != null -> stringResource(R.string.ear_hold)
         else -> stringResource(R.string.ear_listening)
     }
-    val right = state.allFound
+    val right = state.allFound && !state.micStopped
     Text(
         text,
         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = if (right) FontWeight.Medium else FontWeight.Normal),
@@ -593,18 +596,26 @@ private fun NoteDots(count: Int, found: Int) {
 }
 
 /**
- * The question stops sounding when the screen is hidden ([onHidden]: the app goes to the background,
- * or another tool or tab takes its place), and the visit ends when the tool is left ([onLeft]), but
+ * The question stops sounding when the screen is hidden ([onHidden], `ON_STOP`: the app goes to the
+ * background, the phone locks) and goes on when it shows again ([onShown], `ON_START`, also as the tool
+ * opens); the visit ends when the tool is left ([onLeft]: another tool or tab takes its place), but
  * not when the activity is only recreated (the phone turns, dark mode switches): then the visit goes on.
  */
 @Composable
-private fun EndVisitWhenLeft(onHidden: () -> Unit, onLeft: () -> Unit) {
+private fun EndVisitWhenLeft(onShown: () -> Unit, onHidden: () -> Unit, onLeft: () -> Unit) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val activity = LocalContext.current.findActivity()
+    val currentOnShown by rememberUpdatedState(onShown)
     val currentOnHidden by rememberUpdatedState(onHidden)
     val currentOnLeft by rememberUpdatedState(onLeft)
     DisposableEffect(lifecycle, activity) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) currentOnHidden() }
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> currentOnShown()
+                Lifecycle.Event.ON_STOP -> currentOnHidden()
+                else -> Unit
+            }
+        }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)

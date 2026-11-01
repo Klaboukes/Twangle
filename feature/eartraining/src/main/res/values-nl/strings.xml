@@ -83,4 +83,5 @@
     <string name="ear_chord_half_diminished">halfverminderd</string>
     <string name="ear_chord_augmented">overmatig</string>
     <string name="ear_chord_none">Geen greep binnen bereik in deze stemming</string>
+    <string name="ear_mic_stopped">Microfoon gestopt</string>
 </resources>

@@ -168,4 +168,6 @@
     <string name="ear_chord_augmented">augmented</string>
     <!-- Chord type where none of the chord types chosen has a shape on the tuning (a player's own tuning), in place of the question: as practice_chord_none in the Chords tool. -->
     <string name="ear_chord_none">No shape within reach in this tuning</string>
+    <!-- Play it back, under the note heard (a dash then) when the microphone stopped: a call or another app took it, or Android stopped it while the app was away. It listens again when the screen comes back. -->
+    <string name="ear_mic_stopped">Microphone stopped</string>
 </resources>

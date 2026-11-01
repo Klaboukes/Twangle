@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -258,6 +259,30 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         node(EarTrainingTestTags.HEARD).assert(hasText("G2"))
         assertEquals("nothing moves", before.map { it.top }, tags.map { node(it).getBoundsInRoot().top })
         assertEquals(before[0], node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
+    }
+
+    @Test
+    fun aMicrophoneThatStoppedIsSaidPolitelyUnderTheDashAndNothingMoves() {
+        show()
+        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.HEARD_LINE)
+        val before = tags.map { node(it).getBoundsInRoot() }
+        shownState.value = shownState.value.copy(micStopped = true)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Microphone stopped")).assertIsDisplayed()
+        node(EarTrainingTestTags.HEARD_LINE).assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+        assertEquals("the dash says nothing", "", spoken(EarTrainingTestTags.HEARD))
+        assertTrue("no microphone button: it listens again by itself", !exists(EarTrainingTestTags.MIC_BUTTON))
+        assertEquals("nothing moves", before.map { it.top }, tags.map { node(it).getBoundsInRoot().top })
+        assertEquals(before[0], node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
+
+        // Said before "Right" too, so the player knows why nothing more is heard.
+        shownState.value = shownState.value.copy(found = 1, answered = true)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Microphone stopped"))
+        // Listening again: the line goes back to the usual one.
+        shownState.value = shownState.value.copy(micStopped = false, found = 0, answered = false)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Listening…"))
     }
 
     @Test
@@ -775,6 +800,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             "note 2 of 4" to base.copy(found = 1),
             "right" to base.copy(found = 4, answered = true),
             "hold it" to base.copy(notes = NoteQuestion(listOf(Note.of(PitchClass.G, 3))), notesInRow = 1),
+            "microphone stopped" to base.copy(found = 1, micStopped = true),
         )
     }
 

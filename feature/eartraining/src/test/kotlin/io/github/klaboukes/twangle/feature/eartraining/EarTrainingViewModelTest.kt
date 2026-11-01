@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.eartraining
 
+import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -356,6 +357,132 @@ class EarTrainingViewModelTest {
         runCurrent()
         assertTrue(repository.settings.value.micRefused)
         assertTrue(vm.micRefused.value)
+    }
+
+    @Test
+    fun `a hidden screen holds the next question back, and asks it when the screen shows again`() = runTest(dispatcher) {
+        val vm = viewModel()
+        vm.show()
+        runCurrent()
+        val first = vm.state.value.notes
+        vm.answer(true)
+        // Home pressed (or the phone locked) at once: the next question is due 1½ s later, but must not sound in the background.
+        vm.stopSound()
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS * 10)
+        runCurrent()
+        assertEquals("no question sounds while hidden", 1, tone.played.size)
+        assertEquals(first, vm.state.value.notes)
+        assertTrue("still answered", vm.state.value.answered)
+
+        // The screen shows again: the next question comes 1½ s later, as after an answer.
+        vm.shownAgain()
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS - 100)
+        runCurrent()
+        assertEquals("not at once", 1, tone.played.size)
+        advanceTimeBy(200)
+        runCurrent()
+        assertEquals("the next one sounds", 2, tone.played.size)
+        assertFalse(vm.state.value.answered)
+        assertNotEquals(first, vm.state.value.notes)
+
+        // Shown again with the question still open: nothing extra is asked.
+        vm.stopSound()
+        vm.shownAgain()
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS * 2)
+        runCurrent()
+        assertEquals(2, tone.played.size)
+    }
+
+    @Test
+    fun `a hidden screen holds back Intervals' next question too, after a wrong button`() = runTest(dispatcher) {
+        val vm = viewModel(AppSettings(earExercise = Exercise.INTERVALS))
+        vm.show()
+        advanceTimeBy(EarTrainingViewModel.NOTE_SPACING_MILLIS + 100)
+        runCurrent()
+        val question = vm.state.value.interval!!
+        val sounded = tone.played.size + tone.together.size
+        vm.pickInterval(Interval.entries.first { !question.isRight(it) })
+        vm.stopSound()
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_AFTER_MISS_MILLIS * 4)
+        runCurrent()
+        assertEquals("nothing more sounds while hidden", sounded, tone.played.size + tone.together.size)
+        assertEquals(question, vm.state.value.interval)
+        assertTrue(vm.state.value.answered)
+
+        vm.shownAgain()
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+        runCurrent()
+        assertFalse("the next one asked", vm.state.value.answered)
+        assertTrue("and sounded", tone.played.size + tone.together.size > sounded)
+    }
+
+    @Test
+    fun `the microphone stopping while Play it back listens says so, and it listens again when the screen comes back`() = runTest(dispatcher) {
+        val vm = listening()
+        val asked = vm.state.value.notes!!.notes.single()
+        assertTrue(recorder.isRecording.value)
+        assertFalse(vm.state.value.micStopped)
+
+        // The phone locks: Android silences the microphone and the recorder ends with MicrophoneBusy.
+        recorder.failure = AudioRecorderException.MicrophoneBusy()
+        recorder.loop = false
+        advanceTimeBy(100)
+        runCurrent()
+        assertTrue("the line says so", vm.state.value.micStopped)
+        assertFalse("the microphone is let go", recorder.isRecording.value)
+        assertNull(vm.heard.value)
+        assertEquals("the question stays", asked, vm.state.value.notes!!.notes.single())
+
+        // The phone is unlocked: it listens again, and hears the player.
+        recorder.failure = null
+        recorder.loop = true
+        val opened = recorder.startCount
+        vm.shownAgain()
+        runCurrent()
+        assertFalse("the line is gone", vm.state.value.micStopped)
+        assertTrue("open again", recorder.isRecording.value)
+        assertEquals(opened + 1, recorder.startCount)
+        ears.playedHz = NoteMapper().frequencyOf(asked)
+        advanceTimeBy(150 + STEADY_MILLIS)
+        runCurrent()
+        assertTrue("the answer heard", vm.state.value.answered && vm.state.value.allFound)
+    }
+
+    @Test
+    fun `a microphone that fails to open says so instead of closing the app, and ▶ tries again`() = runTest(dispatcher) {
+        recorder.signal = FloatArray(0)
+        recorder.loop = false
+        recorder.failure = AudioRecorderException.InitializationFailed("no microphone")
+        val vm = viewModel()
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        vm.show()
+        runCurrent()
+        assertTrue("the line says so", vm.state.value.micStopped)
+        assertNotNull("the question is still asked", vm.state.value.notes)
+        assertEquals(1, recorder.startCount)
+
+        // Nothing tries again by itself.
+        advanceTimeBy(10_000)
+        runCurrent()
+        assertEquals(1, recorder.startCount)
+
+        // ▶ sounds the question again and opens the microphone again: still failing, still said, no crash.
+        vm.replay()
+        runCurrent()
+        assertEquals(2, recorder.startCount)
+        assertTrue(vm.state.value.micStopped)
+
+        // Another exercise and back opens it afresh too; this time it opens.
+        recorder.failure = null
+        recorder.signal = FloatArray(recorder.config.chunkSize)
+        recorder.loop = true
+        vm.pickExercise(Exercise.INTERVALS)
+        runCurrent()
+        vm.pickExercise(Exercise.PLAY_IT_BACK)
+        runCurrent()
+        assertFalse(vm.state.value.micStopped)
+        assertTrue(recorder.isRecording.value)
     }
 
     // ---------- Play it back: the player's answer ----------
