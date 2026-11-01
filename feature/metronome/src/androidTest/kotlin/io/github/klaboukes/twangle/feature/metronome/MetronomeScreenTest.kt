@@ -241,7 +241,7 @@ class MetronomeScreenTest {
     @Test
     fun talkBackHearsTheDialAsASliderThatStepsOneBpm() {
         show()
-        dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Tempo, drag to change")))
+        dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Tempo")))
         dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "96 beats per minute, Andante"))
         val range = dial.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)!!
         assertEquals(96f, range.current)
@@ -578,13 +578,13 @@ class MetronomeScreenTest {
         row.performClick()
         compose.waitForIdle()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS).assertIsDisplayed()
-        for (name in listOf("Terug naar de opties", "Langzamer beginnen", "Sneller beginnen", "Lager doel", "Hoger doel")) {
+        for (name in listOf("Terug naar de opties", "Lager begintempo", "Hoger begintempo", "Lager doel", "Hoger doel")) {
             assertWhollyShown(compose.onNodeWithContentDescription(name).performScrollTo(), "$case $name")
         }
         for (tag in listOf(MetronomeTestTags.TRAINER_START, MetronomeTestTags.TRAINER_GOAL)) {
             assertWhollyShown(compose.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo(), "$case $tag")
         }
-        for (words in listOf("Begin", "Doel", "Stap", "Maten")) {
+        for (words in listOf("Begintempo", "Doel", "Stap", "Maten")) {
             assertWhollyShown(compose.onNodeWithText(words, useUnmergedTree = true).performScrollTo(), "$case $words")
         }
         for (step in SpeedTrainer.STEPS) {
@@ -630,7 +630,7 @@ class MetronomeScreenTest {
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_GOAL, useUnmergedTree = true).assert(hasText("116"))
         compose.onNodeWithTag(MetronomeTestTags.trainerStep(5)).assertIsSelected().assertContentDescriptionEquals("+5 BPM")
         compose.onNodeWithTag(MetronomeTestTags.trainerBars(4)).assertIsSelected().assertContentDescriptionEquals("4 bars")
-        compose.onNodeWithContentDescription("Start, 96 BPM").assertExists()
+        compose.onNodeWithContentDescription("Start tempo, 96 BPM").assertExists()
         assertEquals(SpeedTrainer(96, 116, 5, 4), settings.current.metronomeTrainer)
         assertTrue(settings.current.metronomeTrainerOn)
         // The back arrow returns to the rows, the trainer still on.
@@ -653,7 +653,7 @@ class MetronomeScreenTest {
         openPanel()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().performClick()
         compose.waitForIdle()
-        val startFaster = compose.onNodeWithContentDescription("Start faster")
+        val startFaster = compose.onNodeWithContentDescription("Higher start tempo")
         startFaster.performClick()
         compose.waitForIdle()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_START, useUnmergedTree = true).assert(hasText("85"))

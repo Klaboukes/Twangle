@@ -128,7 +128,7 @@ All allocation-free (byte-counting tests). **No meters** for these (owner's deci
 `TipCue` (`ReceptionTip.kt`, pure, counted in frames) picks the `ReceptionTip` the sound asks for, with separate on and off limits so a level hovering at a limit can't flicker:
 - **Too loud** ("Too loud, move the phone back"): peak reaches −0.5 dBFS (clipping), until it stays below −3 dBFS. A pluck that clips only in its attack is shorter than the tip's settle time. Comes first, because clipping distorts everything else.
 - **Too soft** ("Play a bit louder"): the note's *loudest* level so far is below −44 dBFS, so a well-played note's fading tail never asks.
-- **Too noisy** ("Too noisy here"): room background ≥ −38 dBFS, until below −42 dBFS (also between notes); or the note's best SNR stays below 8 dB. Too soft comes first, since playing louder also beats noise.
+- **Too noisy** ("Too noisy, move the phone closer"; until Phase 65 "Too noisy here", which didn't say what to do): room background ≥ −38 dBFS, until below −42 dBFS (also between notes); or the note's best SNR stays below 8 dB. Too soft comes first, since playing louder also beats noise.
 - A note's verdict holds 2.5 s after it ends, so a tip stays through the gap to the next pluck.
 
 The wanted tip passes through its own `SteadyHint<ReceptionTip>` (not restarted per note): settles in 0.5 s (loud), 0.6 s (soft) or 1 s (noisy), stays at least **3 s**, then the line stays tip-free for 1 s. `Detected.tip` and `Listening.tip` carry it.

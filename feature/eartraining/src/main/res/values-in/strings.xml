@@ -12,7 +12,6 @@
     <string name="ear_listening">Mendengarkan…</string>
     <string name="ear_spoken_heard">Terdengar: %1$s</string>
     <string name="ear_tally">%1$d dari %2$d</string>
-    <string name="ear_tally_spoken">%1$d benar dari %2$d</string>
     <string name="ear_choices">Yang ditanyakan</string>
     <string name="ear_notes">Nada</string>
     <string name="ear_notes_open_strings">Senar lepas</string>

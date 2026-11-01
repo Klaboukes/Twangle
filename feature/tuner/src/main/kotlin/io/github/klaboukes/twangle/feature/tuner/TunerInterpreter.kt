@@ -26,7 +26,7 @@ import kotlin.math.abs
  * with every pitched frame's level, SNR and clarity; it starts afresh with each note. [reception]
  * gives the tracker itself, e.g. for which factor holds the figure down.
  *
- * Tips about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone back") come
+ * Tips about the sound ("Play a bit louder", "Too noisy, move the phone closer", "Too loud, move the phone back") come
  * from a [TipCue] fed with every frame, through their own [SteadyHint] that is *not* restarted per
  * note: a tip stays through the gap between two plucks instead of going and coming back with each.
  *

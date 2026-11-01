@@ -472,7 +472,7 @@ private fun holePath(hole: Spotlight, cut: Float): Path = Path().apply {
  * lifted by a soft shadow (Futuristic: an accent glow) that also falls under the pointer, which
  * points at the part from the side [placement] says. Above the text the style's mark and the step
  * count; under it Skip tour and Next (Done on the last step), side by side or on two rows. TalkBack
- * hears a pane titled "Show me around" reading "Step 3 of 4. Tap to lock, hold to hear.", then the buttons.
+ * hears a pane titled "Show me around" reading "Step 3 of 4. Tap: tune only this string. Hold: hear it.", then the buttons.
  */
 @Composable
 private fun TourBalloon(

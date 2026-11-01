@@ -6,13 +6,16 @@
     <string name="ear_exercise_chord_type">Akkoordsoort</string>
     <string name="ear_exercise_word_play_back">Naspelen</string>
     <string name="ear_exercise_word_intervals">Intervallen</string>
-    <string name="ear_exercise_word_chord_type">Akkoorden</string>
+    <string name="ear_exercise_word_chord_type">Akkoordsoort</string>
     <string name="ear_replay">Nog eens horen</string>
     <string name="ear_play_prompt">Speel de toon op je instrument</string>
     <string name="ear_listening">Luisteren…</string>
     <string name="ear_spoken_heard">Gehoord: %1$s</string>
     <string name="ear_tally">%1$d van %2$d</string>
-    <string name="ear_tally_spoken">%1$d van %2$d goed</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%1$d van %2$d goed</item>
+        <item quantity="other">%1$d van %2$d goed</item>
+    </plurals>
     <string name="ear_choices">Wat er gevraagd wordt</string>
     <string name="ear_notes">Tonen</string>
     <string name="ear_notes_open_strings">Losse snaren</string>

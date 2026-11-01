@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.breaksBetweenWords
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -160,13 +162,20 @@ private val INSTRUMENT_TOUCH = 48.dp
 
 /**
  * The quiet line in the capo table's place for a tuning with a short string (the banjo's fifth,
- * [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings]), which Capo doesn't know yet (Chords
- * and Scales draw it since Phase 59): [text], in the look of the chart's "No shape within reach in this
- * tuning", centred in its room, set smaller where the room is short. TalkBack reads it as it is.
+ * [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings]), which Capo leaves out (Chords
+ * and Scales draw it since Phase 59): [text], saying why, in the look of the chart's "No shape within reach in
+ * this tuning", centred in its room, set smaller where the room is short. TalkBack reads it as it is. With
+ * [onPickInstrument] (Phase 65) a text button under it ([pickLabel], "Pick another instrument") opens the
+ * instrument and tuning panel, so the player sees where to go.
  */
 @Composable
-internal fun ShortStringLine(text: String, modifier: Modifier = Modifier) {
-    Box(modifier, contentAlignment = Alignment.Center) {
+internal fun ShortStringLine(
+    text: String,
+    modifier: Modifier = Modifier,
+    pickLabel: String? = null,
+    onPickInstrument: (() -> Unit)? = null,
+) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         val style = MaterialTheme.typography.bodyLarge
         Text(
             text,
@@ -176,8 +185,23 @@ internal fun ShortStringLine(text: String, modifier: Modifier = Modifier) {
             textAlign = TextAlign.Center,
             // Set smaller where its room is short (a phone on its side at 2x text), never cut off.
             autoSize = TextAutoSize.StepBased(minFontSize = SHORT_STRING_MIN_SIZE, maxFontSize = style.fontSize, stepSize = 0.5.sp),
-            modifier = Modifier.padding(horizontal = 16.dp).testTag(PracticeTestTags.SHORT_STRING),
+            modifier = Modifier.weight(1f, fill = false).padding(horizontal = 16.dp).testTag(PracticeTestTags.SHORT_STRING),
         )
+        if (onPickInstrument != null && pickLabel != null) {
+            Spacer(Modifier.height(8.dp))
+            val buttonStyle = MaterialTheme.typography.labelLarge
+            TwangleTextButton(onClick = onPickInstrument, modifier = Modifier.testTag(PracticeTestTags.SHORT_STRING_PICK)) {
+                Text(
+                    pickLabel,
+                    style = buttonStyle,
+                    maxLines = 1,
+                    // Never wrapped, so the auto-size sees a long label too wide (Ear training's AnswerButton in
+                    // IntervalsPart.kt says why): set smaller rather than cut off.
+                    softWrap = false,
+                    autoSize = TextAutoSize.StepBased(minFontSize = SHORT_STRING_MIN_SIZE, maxFontSize = buttonStyle.fontSize, stepSize = 0.5.sp),
+                )
+            }
+        }
     }
 }
 

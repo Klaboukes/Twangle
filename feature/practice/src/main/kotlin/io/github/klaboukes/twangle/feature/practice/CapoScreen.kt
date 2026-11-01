@@ -46,6 +46,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
@@ -100,7 +101,9 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  *
  * With [shortString] (a tuning with a short string, the 5-string banjo's, [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings])
  * the table's place shows a quiet line instead ([ShortStringLine]): on a banjo the short string needs a capo of its
- * own, so the table's sums don't hold for it (Phase 59 left that for when players ask); nothing else moves.
+ * own, so the table's sums don't hold for it (Phase 59 left that for when players ask); nothing else moves. Since
+ * Phase 65 the line says why, a button under it opens the instrument panel ([onPickInstrument]), and the capo
+ * stepper and "Sounds in" are dimmed, as they mean nothing without the table.
  */
 @Composable
 fun CapoScreen(
@@ -142,14 +145,23 @@ fun CapoScreen(
             }
         })
     }
-    val stepper = @Composable { tight: Boolean -> CapoStepper(fret, spokenSoundsIn, step, if (tight) STEP_BUTTON_SIZE else STEPPER_HEIGHT) }
+    val stepper = @Composable { tight: Boolean ->
+        CapoStepper(fret, spokenSoundsIn, step, if (tight) STEP_BUTTON_SIZE else STEPPER_HEIGHT, dimmed = shortString)
+    }
     val soundsInLine = @Composable {
         Text(
             musicText(soundsIn),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
-            modifier = Modifier.testTag(PracticeTestTags.CAPO_SOUNDS_IN).clearAndSetSemantics { contentDescription = spokenSoundsIn },
+            modifier = Modifier
+                .testTag(PracticeTestTags.CAPO_SOUNDS_IN)
+                // Dimmed on the banjo (Phase 65): without the table it says nothing the player can use.
+                .alpha(if (shortString) DIMMED_ALPHA else 1f)
+                .clearAndSetSemantics {
+                    contentDescription = spokenSoundsIn
+                    if (shortString) disabled()
+                },
         )
     }
     val table = @Composable {
@@ -158,7 +170,12 @@ fun CapoScreen(
             // content centred in the height since Phase 63, a line only about as tall moved the capo too).
             Box(Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth()) {
                 CapoTableView(plan, notation, speech, onOpenChord, shown = false)
-                ShortStringLine(stringResource(R.string.practice_capo_short_string), Modifier.matchParentSize())
+                ShortStringLine(
+                    stringResource(R.string.practice_capo_short_string),
+                    Modifier.matchParentSize(),
+                    pickLabel = stringResource(R.string.practice_capo_pick_instrument),
+                    onPickInstrument = onPickInstrument,
+                )
             }
         } else {
             CapoTableView(plan, notation, speech, onOpenChord)
@@ -320,10 +337,11 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
 /**
  * ‹ "Capo 3" › : the style's buttons ([StyleButton]) of one steady size ("Capo one fret down", "Capo one fret up"),
  * resting at no capo ("No capo" between them) and at [Capo.HIGHEST_FRET]. The fret is a polite
- * live region, said with the key the shapes then sound in ([spokenSoundsIn]).
+ * live region, said with the key the shapes then sound in ([spokenSoundsIn]). [dimmed] on the banjo (Phase 65,
+ * [ShortStringLine] in the table's place): both buttons rest and the fret is faint, in the same place.
  */
 @Composable
-private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, height: Dp = STEPPER_HEIGHT) {
+private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, height: Dp = STEPPER_HEIGHT, dimmed: Boolean = false) {
     val none = stringResource(R.string.practice_capo_none)
     val spokenFret = if (fret == 0) none else stringResource(R.string.practice_capo_on_fret, fret)
     val spoken = spokenFret + stringResource(R.string.practice_spoken_separator) + spokenSoundsIn
@@ -332,14 +350,15 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
     ) {
-        StepButton(higher = false, enabled = fret > 0, onClick = { step(-1) })
+        StepButton(higher = false, enabled = !dimmed && fret > 0, onClick = { step(-1) })
         // One width and height whatever it says, so the buttons never move: FRET_SLOT_WIDTH, or what
         // the buttons leave on a narrow phone, and the height of "Capo 3". A longer text is set smaller
         // (Russian at 2× text).
         Box(
             Modifier
                 .weight(1f, fill = false)
-                .width(FRET_SLOT_WIDTH),
+                .width(FRET_SLOT_WIDTH)
+                .alpha(if (dimmed) DIMMED_ALPHA else 1f),
             contentAlignment = Alignment.Center,
         ) {
             // TalkBack hears the slot through this layer, as one; the texts in it are skipped (still there for UI tests).
@@ -350,6 +369,7 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
                     .clearAndSetSemantics {
                         contentDescription = spoken
                         liveRegion = LiveRegionMode.Polite
+                        if (dimmed) disabled()
                     },
             )
             val atTheNut = fret == 0
@@ -401,7 +421,7 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
                 }
             }
         }
-        StepButton(higher = true, enabled = fret < Capo.HIGHEST_FRET, onClick = { step(1) })
+        StepButton(higher = true, enabled = !dimmed && fret < Capo.HIGHEST_FRET, onClick = { step(1) })
     }
 }
 
@@ -547,6 +567,9 @@ private val MIN_LABEL_SIZE = 8.sp
 private val LAST_RESORT_LABEL_SIZE = 6.sp
 
 private val STEPPER_HEIGHT = 56.dp
+
+/** The capo's fret and "Sounds in" on the banjo, as faint as a button at rest ([StyleButton]'s). */
+private const val DIMMED_ALPHA = 0.38f
 
 /** Upright, a screen shorter than this gets the gaps half as wide and the stepper no taller than its buttons. */
 private val ROOMY_HEIGHT = 610.dp

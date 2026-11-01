@@ -191,8 +191,8 @@
     <string name="tuner_tune_down">Tune down ↓</string>
     <!-- Tips shown only when the player can fix how the tuner hears them (also read out by TalkBack). -->
     <string name="tuner_tip_too_soft">Play a bit louder</string>
-    <!-- Tip under the note when there is too much background noise to hear the note well. Short, one line. -->
-    <string name="tuner_tip_too_noisy">Too noisy here</string>
+    <!-- Tip under the note when there is too much background noise to hear the note well: says what to do, hold the phone closer to the instrument (as tuner_tip_too_loud says the opposite). Short, one line. -->
+    <string name="tuner_tip_too_noisy">Too noisy, move the phone closer</string>
     <!-- Tip under the note when the sound is so loud it distorts: hold the phone further away. Short, one line. -->
     <string name="tuner_tip_too_loud">Too loud, move the phone back</string>
     <!-- The optional signal bars by the note: %1$d bars lit of %2$d (TalkBack). -->
@@ -329,8 +329,8 @@
     <string name="tour_readout">How far off, and which note</string>
     <!-- Tour balloon pointing at the strum check's switch: strum once to check all strings. Short. -->
     <string name="tour_strum">Strum to check every string</string>
-    <!-- Tour balloon pointing at the string buttons: tap one to lock the tuner to it, hold one to hear its note. Short. -->
-    <string name="tour_strings">Tap to lock, hold to hear</string>
+    <!-- Tour balloon pointing at the string buttons: tap one and the tuner tunes only that string (it listens for it alone), hold one to hear its note. Short. -->
+    <string name="tour_strings">Tap: tune only this string. Hold: hear it</string>
     <!-- Tour balloon pointing at the instrument button: it picks the instrument and its tuning. Short. -->
     <string name="tour_picker">Pick instrument and tuning</string>
     <!-- Tour balloon's button that ends the tour at once. Short. -->
@@ -415,7 +415,7 @@
     <!-- TalkBack, a string in the 12th-fret check not checked yet. %1$s is the string ("A 2"). -->
     <string name="tuner_intonation_spoken_not_checked">%1$s, not checked yet</string>
     <!-- The tour's step for the "more tools" button (instead of tour_strum, where the button replaces the strum check's switch). -->
-    <string name="tour_more_tools">More tools, like strum check</string>
+    <string name="tour_more_tools">More tools, like the strum check</string>
     <!-- Phase 30: the chord name, a tool in the tuner's "more tools" menu: strum a chord and its name shows. -->
     <string name="tuner_chord_name">Chord name</string>
     <!-- A chord's name in words, under its symbol ("Am") and as TalkBack says it. %1$s is the chord's root ("A", "B♭", "La"). -->
@@ -446,16 +446,16 @@
     <string name="tuner_chord_bass">bass</string>
     <!-- The line under the chord: waiting for a strum (with the detail under it), and once a chord is named. -->
     <string name="tuner_chord_strum">Strum a chord</string>
-    <!-- Chord name tool, the line under "Strum a chord": strum every string of the chord. -->
-    <string name="tuner_chord_strum_detail">All the strings of it</string>
+    <!-- Chord name tool, the line under "Strum a chord": strum every string of the chord and let them all sound. -->
+    <string name="tuner_chord_strum_detail">Let every string ring</string>
     <!-- Chord name tool, the line under a named chord: strum again to name the next chord. -->
-    <string name="tuner_chord_next">Strum again for the next</string>
+    <string name="tuner_chord_next">Strum again for the next chord</string>
     <!-- Detail under "Listening…" while a strum is heard and not named yet. -->
     <string name="tuner_chord_let_ring">Let it ring</string>
     <!-- A strum that named no chord for 1.5 s; never a guess. -->
     <string name="tuner_chord_unclear">Not a clear chord</string>
-    <!-- Chord name tool, the line under "Not a clear chord". -->
-    <string name="tuner_chord_unclear_detail">Strum all the strings of it</string>
+    <!-- Chord name tool, the line under "Not a clear chord": what to do, strum all the strings of the chord. -->
+    <string name="tuner_chord_unclear_detail">Strum every string of the chord</string>
     <!-- TalkBack, the chord's place before any chord is named. -->
     <string name="tuner_chord_none">No chord yet</string>
     <!-- TalkBack, after the chord's name: its notes, %1$s e.g. "A, C, E". -->

@@ -66,8 +66,10 @@
     <string name="practice_chart_fret">%1$dfr</string>
     <!-- In the chart's place when the chord has no comfortable shape in the picked tuning. -->
     <string name="practice_chord_none">No shape within reach in this tuning</string>
-    <!-- Capo helper: shown in the table's place for the 5-string banjo, whose short fifth string the tool doesn't handle yet. The instrument button is at the top of the screen. -->
-    <string name="practice_capo_short_string">The capo table doesn\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>
+    <!-- Capo helper: shown in the table's place for the 5-string banjo, saying why there is no table: the banjo's short fifth string (it starts at the fifth fret) needs a capo of its own, so the table's sums don't hold. The button practice_capo_pick_instrument stands under it. -->
+    <string name="practice_capo_short_string">The capo table leaves out the banjo: its short fifth string needs a capo of its own.</string>
+    <!-- Capo helper, on the 5-string banjo: the text button under practice_capo_short_string that opens the instrument and tuning panel, to pick an instrument the table knows. Short. -->
+    <string name="practice_capo_pick_instrument">Pick another instrument</string>
     <!-- TalkBack: between the parts of a spoken chart. -->
     <string name="practice_spoken_separator">", "</string>
     <!-- TalkBack, a chart: %1$s the chord in words ("C major"), then which shape of how many. -->

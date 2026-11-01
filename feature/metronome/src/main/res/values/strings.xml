@@ -2,8 +2,8 @@
 <resources>
     <!-- The meter picker at the top: one button per time signature. -->
     <string name="metronome_beats_in_bar">Beats in a bar</string>
-    <!-- The tempo dial, for TalkBack: what it is, and what it is set to. -->
-    <string name="metronome_tempo">Tempo, drag to change</string>
+    <!-- The tempo dial, for TalkBack: its name only (TalkBack itself says how to change it, and says the value from metronome_tempo_value). -->
+    <string name="metronome_tempo">Tempo</string>
     <!-- TalkBack: the tempo dial's value. %1$d is the number of beats per minute, %2$s the Italian tempo marking (e.g. "Andante", not translated). -->
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d beat per minute, %2$s</item>
@@ -56,13 +56,13 @@
     <!-- TalkBack name of the back arrow at the top of the speed trainer's settings: back to the options panel's list. -->
     <string name="metronome_trainer_back">Back to the options</string>
     <!-- Speed trainer settings: the label of the tempo it starts at (a number with − and + beside it). -->
-    <string name="metronome_trainer_start">Start</string>
+    <string name="metronome_trainer_start">Start tempo</string>
     <!-- Speed trainer settings: the label of the tempo it climbs to and then holds (a number with − and + beside it). -->
     <string name="metronome_trainer_goal">Goal</string>
     <!-- TalkBack name of the − beside the speed trainer's start tempo: start 5 beats per minute slower. -->
-    <string name="metronome_trainer_start_slower">Start slower</string>
+    <string name="metronome_trainer_start_slower">Lower start tempo</string>
     <!-- TalkBack name of the + beside the speed trainer's start tempo: start 5 beats per minute faster. -->
-    <string name="metronome_trainer_start_faster">Start faster</string>
+    <string name="metronome_trainer_start_faster">Higher start tempo</string>
     <!-- TalkBack name of the − beside the speed trainer's goal tempo: a goal 5 beats per minute slower. -->
     <string name="metronome_trainer_goal_slower">Lower goal</string>
     <!-- TalkBack name of the + beside the speed trainer's goal tempo: a goal 5 beats per minute faster. -->

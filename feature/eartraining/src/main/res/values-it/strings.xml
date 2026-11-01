@@ -12,7 +12,6 @@
     <string name="ear_listening">In ascolto…</string>
     <string name="ear_spoken_heard">Sentita: %1$s</string>
     <string name="ear_tally">%1$d di %2$d</string>
-    <string name="ear_tally_spoken">%1$d giuste su %2$d</string>
     <string name="ear_choices">Cosa viene chiesto</string>
     <string name="ear_notes">Note</string>
     <string name="ear_notes_open_strings">Corde a vuoto</string>

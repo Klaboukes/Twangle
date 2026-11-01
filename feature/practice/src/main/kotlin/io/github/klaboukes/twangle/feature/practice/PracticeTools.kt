@@ -66,10 +66,11 @@ object PracticeTestTags {
 
     /**
      * The quiet line in the capo table's place for a tuning with a short string
-     * ([io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings], the banjo's), which Capo doesn't
-     * know yet (Chords and Scales draw it since Phase 59).
+     * ([io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings], the banjo's), which Capo leaves
+     * out (Chords and Scales draw it since Phase 59), and its "Pick another instrument" button under it.
      */
     const val SHORT_STRING = "practice_short_string"
+    const val SHORT_STRING_PICK = "practice_short_string_pick"
 
     /** The neck's drawing as it lies, e.g. "practice_neck_sideways". */
     internal fun neckLie(lie: NeckLie): String = "practice_neck_" + lie.name.lowercase()

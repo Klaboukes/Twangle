@@ -11,7 +11,6 @@
     <string name="ear_listening">Слухаю…</string>
     <string name="ear_spoken_heard">Почуто: %1$s</string>
     <string name="ear_tally">%1$d з %2$d</string>
-    <string name="ear_tally_spoken">%1$d правильно з %2$d</string>
     <string name="ear_choices">Що питати</string>
     <string name="ear_notes">Ноти</string>
     <string name="ear_notes_open_strings">Відкриті струни</string>

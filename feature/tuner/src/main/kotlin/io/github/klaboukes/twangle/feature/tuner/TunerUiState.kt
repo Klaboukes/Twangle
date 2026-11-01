@@ -32,7 +32,7 @@ sealed interface TunerUiState {
         val lockedString: Int? = null,
         /** How note names (strings, hint) are written. */
         val notation: Notation = Notation.DEFAULT,
-        /** A tip about the sound, e.g. "Too noisy here", shown instead of "Play a string"; null for none. */
+        /** A tip about the sound, e.g. "Too noisy, move the phone closer", shown instead of "Play a string"; null for none. */
         val tip: ReceptionTip? = null,
     ) : TunerUiState
 
@@ -76,7 +76,7 @@ sealed interface TunerUiState {
          */
         val reception: Float = 1f,
         /**
-         * A tip about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone
+         * A tip about the sound ("Play a bit louder", "Too noisy, move the phone closer", "Too loud, move the phone
          * back"), held steady by [SteadyHint]; null for none. [TunerInterpreter] sets it.
          */
         val tip: ReceptionTip? = null,

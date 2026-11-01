@@ -12,7 +12,6 @@
     <string name="ear_listening">กำลังฟัง…</string>
     <string name="ear_spoken_heard">ได้ยิน: %1$s</string>
     <string name="ear_tally">%1$d จาก %2$d</string>
-    <string name="ear_tally_spoken">ถูก %1$d จาก %2$d</string>
     <string name="ear_choices">เลือกคำถาม</string>
     <string name="ear_notes">โน้ต</string>
     <string name="ear_notes_open_strings">สายเปล่า</string>

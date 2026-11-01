@@ -12,7 +12,6 @@
     <string name="ear_listening">듣는 중…</string>
     <string name="ear_spoken_heard">들린 음: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
-    <string name="ear_tally_spoken">%2$d개 중 %1$d개 정답</string>
     <string name="ear_choices">출제 범위</string>
     <string name="ear_notes">음</string>
     <string name="ear_notes_open_strings">개방현</string>

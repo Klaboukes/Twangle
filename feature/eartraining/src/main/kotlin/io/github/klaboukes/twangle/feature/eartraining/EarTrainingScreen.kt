@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -351,7 +352,7 @@ private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> 
             ExerciseSwitch(exercise, onPick, Modifier.width(switchWidth))
             Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp), contentAlignment = Alignment.CenterEnd) {
                 if (tally.asked > 0) {
-                    val spoken = stringResource(R.string.ear_tally_spoken, tally.right, tally.asked)
+                    val spoken = pluralStringResource(R.plurals.ear_tally_spoken, tally.right, tally.right, tally.asked)
                     val style = MaterialTheme.typography.bodyMedium
                     Text(
                         stringResource(R.string.ear_tally, tally.right, tally.asked),
@@ -388,7 +389,8 @@ internal fun exerciseSwitchWidth(row: Dp): Dp = (row - OPTIONS_FACE - TALLY_ROOM
 
 /**
  * The three exercises in the app's switch of words ([SegmentedSwitch], as the tuner's Strings · Chromatic; Phase 63:
- * three note-symbol icons were hard to tell apart): a short word each ("Play back · Intervals · Chords"), TalkBack
+ * three note-symbol icons were hard to tell apart): a short word each ("Play back · Intervals · Chord type"; until
+ * Phase 65 "Chords", the Chords tool's name), TalkBack
  * hearing its whole name ("Play it back", "Chord type") in the group "Exercise".
  */
 @Composable

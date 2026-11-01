@@ -339,9 +339,10 @@ class CapoScreenTest(private val style: VisualStyle) {
 
 
     /**
-     * The banjo's short fifth string (Phase 57): the table's place says Capo doesn't know it yet, the shapes, the
-     * capo and "Sounds in" stay where they are; another instrument brings the table straight back. Upright and on
-     * its side, at normal and 2x text.
+     * The banjo's short fifth string (Phase 57): the table's place says why Capo leaves it out, the shapes, the
+     * capo and "Sounds in" stay where they are; another instrument brings the table straight back. Since Phase 65
+     * the capo's buttons rest and "Sounds in" is heard as unavailable, and a button under the line opens the
+     * instrument panel. Upright and on its side, at normal and 2x text.
      */
     @Test
     fun theBanjoGetsAQuietLineInTheTablesPlace() {
@@ -360,10 +361,18 @@ class CapoScreenTest(private val style: VisualStyle) {
             assertFalse("$case: no table", exists(firstRow))
             assertWhollyShown(node(PracticeTestTags.SHORT_STRING).assertTextEquals(line), "$case: the banjo's line", scroll = true)
             assertEquals("$case: the capo stays", stepper, node(PracticeTestTags.CAPO_FRET).getBoundsInRoot())
-            node(PracticeTestTags.CAPO_SOUNDS_IN).assertExists()
+            node(PracticeTestTags.CAPO_LOWER).assertIsNotEnabled()
+            node(PracticeTestTags.CAPO_HIGHER).assertIsNotEnabled()
+            node(PracticeTestTags.CAPO_SOUNDS_IN).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Disabled))
+            val taps = instrumentTaps
+            assertWhollyShown(node(PracticeTestTags.SHORT_STRING_PICK), "$case: the button to another instrument", scroll = true)
+            node(PracticeTestTags.SHORT_STRING_PICK).performClick()
+            assertEquals("$case: the button opens the instrument panel", taps + 1, instrumentTaps)
             shownShortString.value = false
             compose.waitForIdle()
             node(firstRow).assertExists()
+            node(PracticeTestTags.CAPO_LOWER).assertIsEnabled()
+            node(PracticeTestTags.CAPO_SOUNDS_IN).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Disabled))
             assertEquals("$case: Sounds in is back in its place", soundsIn, node(PracticeTestTags.CAPO_SOUNDS_IN).getBoundsInRoot())
         }
     }

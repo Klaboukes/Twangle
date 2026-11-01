@@ -12,7 +12,6 @@
     <string name="ear_listening">聞き取り中…</string>
     <string name="ear_spoken_heard">聞こえた音：%1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
-    <string name="ear_tally_spoken">%2$d 問中 %1$d 問正解</string>
     <string name="ear_choices">出題の内容</string>
     <string name="ear_notes">音</string>
     <string name="ear_notes_open_strings">開放弦</string>

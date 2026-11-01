@@ -12,7 +12,6 @@
     <string name="ear_listening">Kuunnellaan…</string>
     <string name="ear_spoken_heard">Kuultu: %1$s</string>
     <string name="ear_tally">%1$d/%2$d</string>
-    <string name="ear_tally_spoken">%1$d oikein, yhteensä %2$d</string>
     <string name="ear_choices">Mitä kysytään</string>
     <string name="ear_notes">Sävelet</string>
     <string name="ear_notes_open_strings">Avoimet kielet</string>

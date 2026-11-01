@@ -11,7 +11,6 @@
     <string name="ear_listening">শুনছে…</string>
     <string name="ear_spoken_heard">শোনা গেছে: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
-    <string name="ear_tally_spoken">%2$d-এর মধ্যে %1$dটি সঠিক</string>
     <string name="ear_choices">কী জিজ্ঞেস করা হবে</string>
     <string name="ear_notes">নোট</string>
     <string name="ear_notes_open_strings">খোলা তার</string>

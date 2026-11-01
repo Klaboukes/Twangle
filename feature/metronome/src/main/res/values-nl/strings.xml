@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Tellen per maat</string>
-    <string name="metronome_tempo">Tempo, sleep om te wijzigen</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d slag per minuut, %2$s</item>
         <item quantity="other">%1$d slagen per minuut, %2$s</item>
@@ -28,10 +28,10 @@
     <string name="metronome_options">Opties</string>
     <string name="metronome_trainer">Tempotrainer</string>
     <string name="metronome_trainer_back">Terug naar de opties</string>
-    <string name="metronome_trainer_start">Begin</string>
+    <string name="metronome_trainer_start">Begintempo</string>
     <string name="metronome_trainer_goal">Doel</string>
-    <string name="metronome_trainer_start_slower">Langzamer beginnen</string>
-    <string name="metronome_trainer_start_faster">Sneller beginnen</string>
+    <string name="metronome_trainer_start_slower">Lager begintempo</string>
+    <string name="metronome_trainer_start_faster">Hoger begintempo</string>
     <string name="metronome_trainer_goal_slower">Lager doel</string>
     <string name="metronome_trainer_goal_faster">Hoger doel</string>
     <string name="metronome_trainer_step">Stap</string>

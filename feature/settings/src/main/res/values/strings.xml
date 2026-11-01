@@ -127,8 +127,8 @@
     <string name="settings_vibrate_in_tune_summary">A short buzz when the note reaches pitch</string>
     <!-- Switch title: show the hint under the meter that says whether to tune up or down. -->
     <string name="settings_show_tune_hint_title">Show tune up/down hint</string>
-    <!-- The line under the tune up/down hint switch. The peg is the tuning peg (machine head) on the instrument's head. -->
-    <string name="settings_show_tune_hint_summary">Says which way to turn the peg while a note is off pitch</string>
+    <!-- The line under the tune up/down hint switch: the hint says whether to tune the string up (higher) or down (lower). -->
+    <string name="settings_show_tune_hint_summary">Says whether to tune up or down while a note is off pitch</string>
     <!-- Switch title: show small bars by the note for how loud and clear the sound is heard. -->
     <string name="settings_show_signal_bars_title">Show signal bars</string>
     <!-- The line under the Show signal bars switch. -->

@@ -12,7 +12,6 @@
     <string name="ear_listening">सुन रहा है…</string>
     <string name="ear_spoken_heard">सुना गया: %1$s</string>
     <string name="ear_tally">%2$d में से %1$d</string>
-    <string name="ear_tally_spoken">%2$d में से %1$d सही</string>
     <string name="ear_choices">क्या पूछा जाए</string>
     <string name="ear_notes">सुर</string>
     <string name="ear_notes_open_strings">खुले तार</string>

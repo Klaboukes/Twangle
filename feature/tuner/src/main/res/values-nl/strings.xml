@@ -104,7 +104,7 @@
     <string name="tuner_tune_up">Hoger stemmen ↑</string>
     <string name="tuner_tune_down">Lager stemmen ↓</string>
     <string name="tuner_tip_too_soft">Speel wat harder</string>
-    <string name="tuner_tip_too_noisy">Te veel lawaai hier</string>
+    <string name="tuner_tip_too_noisy">Te veel lawaai, leg de telefoon dichterbij</string>
     <string name="tuner_tip_too_loud">Te hard, leg de telefoon verder weg</string>
     <string name="tuner_signal_bars">Signaalstreepjes: %1$d van %2$d</string>
     <string name="tuner_signal_no_note">Signaal: nog geen noot</string>
@@ -176,7 +176,7 @@
     <string name="tour_step_spoken">Stap %1$d van %2$d. %3$s.</string>
     <string name="tour_readout">Hoe ver je ernaast zit, en welke noot</string>
     <string name="tour_strum">Sla aan en check alle snaren</string>
-    <string name="tour_strings">Kies om vast te zetten, houd vast om te horen</string>
+    <string name="tour_strings">Kies: stem alleen deze snaar. Houd vast: hoor hem</string>
     <string name="tour_picker">Kies instrument en stemming</string>
     <string name="tour_skip">Overslaan</string>
     <string name="tour_next">Volgende</string>
@@ -236,11 +236,11 @@
     <string name="tuner_chord_slash">%1$s, %2$s in de bas</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Strum een akkoord</string>
-    <string name="tuner_chord_strum_detail">Met alle snaren ervan</string>
-    <string name="tuner_chord_next">Strum opnieuw voor het volgende</string>
+    <string name="tuner_chord_strum_detail">Laat alle snaren klinken</string>
+    <string name="tuner_chord_next">Strum opnieuw voor het volgende akkoord</string>
     <string name="tuner_chord_let_ring">Laat het doorklinken</string>
     <string name="tuner_chord_unclear">Geen duidelijk akkoord</string>
-    <string name="tuner_chord_unclear_detail">Strum alle snaren ervan</string>
+    <string name="tuner_chord_unclear_detail">Strum alle snaren van het akkoord</string>
     <string name="tuner_chord_none">Nog geen akkoord</string>
     <string name="tuner_chord_spoken_notes">noten %1$s</string>
     <string name="tuner_chord_spoken_recent">daarvoor %1$s</string>

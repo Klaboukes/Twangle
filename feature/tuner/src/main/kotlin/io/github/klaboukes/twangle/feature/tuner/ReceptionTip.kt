@@ -15,7 +15,7 @@ enum class ReceptionTip(override val settleSeconds: Float, override val minShowS
     /** The note starts too quietly to read well: "Play a bit louder". */
     TOO_SOFT(0.6f, TIP_MIN_SHOW_SECONDS),
 
-    /** The room is loud, or the note barely rises above it: "Too noisy here". */
+    /** The room is loud, or the note barely rises above it: "Too noisy, move the phone closer". */
     TOO_NOISY(1f, TIP_MIN_SHOW_SECONDS),
 }
 

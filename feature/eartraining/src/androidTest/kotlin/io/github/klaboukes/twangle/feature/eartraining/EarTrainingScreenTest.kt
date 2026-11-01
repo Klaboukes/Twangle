@@ -22,6 +22,7 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -186,7 +187,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 .assertIsDisplayed()
         }
-        val words = mapOf(Exercise.PLAY_IT_BACK to "Play back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chords")
+        val words = mapOf(Exercise.PLAY_IT_BACK to "Play back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chord type")
         for (exercise in Exercise.entries) node(EarTrainingTestTags.exercise(exercise)).assert(hasText(words.getValue(exercise)))
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsSelected()
         val before = Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() }
@@ -609,7 +610,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         // Chord type's column doesn't scroll (its answers do, in their own box).
         node(EarTrainingTestTags.CHOICES).performClick()
         compose.waitForIdle()
-        compose.onNode(hasText("Chord type")).assertExists()
+        // The panel's heading (the switch's word is "Chord type" too since Phase 65).
+        compose.onNode(hasText("Chord type") and hasAnyAncestor(hasTestTag(EarTrainingTestTags.CHOICES_PANEL))).assertExists()
         val widths = ChordQuality.inPanel.map { type ->
             val chip = node(EarTrainingTestTags.askChordType(type)).performScrollTo()
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))

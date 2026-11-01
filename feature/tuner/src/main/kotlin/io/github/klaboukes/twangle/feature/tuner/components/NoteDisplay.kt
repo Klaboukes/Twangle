@@ -137,7 +137,7 @@ data class NoteReadout(
  * fills the otherwise empty pill; with cents it gets its own line under the pill, which keeps its
  * height while empty so nothing jumps when the note comes in tune.
  *
- * A [tip] about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone back")
+ * A [tip] about the sound ("Play a bit louder", "Too noisy, move the phone closer", "Too loud, move the phone back")
  * takes the place of something less needed at that moment, so nothing is added to the screen and
  * nothing moves: without a note it replaces [hint] in the note's slot; with the wave it fills the pill instead of the
  * direction; with the needle it replaces the frequency, so "Tune up" / "Tune down" stays in view.

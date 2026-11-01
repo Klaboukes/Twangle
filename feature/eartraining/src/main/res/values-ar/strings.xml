@@ -12,7 +12,6 @@
     <string name="ear_listening">جارٍ الاستماع…</string>
     <string name="ear_spoken_heard">المسموع: %1$s</string>
     <string name="ear_tally">%1$d من %2$d</string>
-    <string name="ear_tally_spoken">%1$d صحيحة من %2$d</string>
     <string name="ear_choices">ما يُسأل عنه</string>
     <string name="ear_notes">النغمات</string>
     <string name="ear_notes_open_strings">الأوتار المفتوحة</string>

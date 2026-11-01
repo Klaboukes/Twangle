@@ -12,7 +12,6 @@
     <string name="ear_listening">Lytter…</string>
     <string name="ear_spoken_heard">Hørt: %1$s</string>
     <string name="ear_tally">%1$d af %2$d</string>
-    <string name="ear_tally_spoken">%1$d rigtige af %2$d</string>
     <string name="ear_choices">Hvad der spørges om</string>
     <string name="ear_notes">Toner</string>
     <string name="ear_notes_open_strings">Løse strenge</string>

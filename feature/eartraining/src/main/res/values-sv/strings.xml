@@ -12,7 +12,6 @@
     <string name="ear_listening">Lyssnar…</string>
     <string name="ear_spoken_heard">Hört: %1$s</string>
     <string name="ear_tally">%1$d av %2$d</string>
-    <string name="ear_tally_spoken">%1$d rätt av %2$d</string>
     <string name="ear_choices">Vad som frågas</string>
     <string name="ear_notes">Toner</string>
     <string name="ear_notes_open_strings">Lösa strängar</string>
