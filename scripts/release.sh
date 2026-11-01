@@ -10,7 +10,8 @@
 #   scripts/release.sh bundle
 #       On main, once the version bump has landed: checks that every language is complete and up to
 #       date (LocalizationTest in strict mode, docs/architecture/languages.md, *Day and night*), builds
-#       the phone app's bundle signed with the upload key, checks the signature, puts it with its notes in release/ (git-ignored), then tags the commit
+#       the phone app's bundle signed with the upload key, checks that its manifest asks for no
+#       permission outside the allowlist (no INTERNET; the root build.gradle.kts) and the signature, puts it with its notes in release/ (git-ignored), then tags the commit
 #       v<version> and pushes the tag. Refuses a version that already has a tag.
 #   scripts/release.sh upload [draft|completed]
 #       After bundle: sends release/Twangle-<version>.aab and its notes in every language to the
@@ -155,6 +156,10 @@ bundle() {
     ./gradlew --quiet :app:bundleRelease
     aab="app/build/outputs/bundle/release/app-release.aab"
     [[ -f "$aab" ]] || fail "no bundle at $aab"
+    # The "no internet" promise on the bundle itself: bundletool's dump of its manifest may ask only
+    # for the permissions on the allowlist (allowedPermissions, the root build.gradle.kts).
+    ./gradlew --quiet :app:checkReleaseBundlePermissions ||
+        fail "the bundle asks for a permission outside the allowlist (above): no INTERNET, ACCESS_NETWORK_STATE or AD_ID; nothing was tagged"
     # Play takes only a bundle signed with the upload key; without ~/.twangle-keys the build is unsigned.
     "$JAVA_HOME/bin/jarsigner" -verify "$aab" | grep -q "jar verified" ||
         fail "the bundle is not signed: is the upload key in ~/.twangle-keys/ (docs/architecture/performance.md)?"
