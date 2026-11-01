@@ -33,7 +33,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.BiasAbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
@@ -104,7 +104,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
  * a tap on any string stops it, and TalkBack says so.
  *
  * A course with a second string an octave up ([Tuning.octaveCourses], a 12-string's lower four)
- * carries a small "8" in its button's top corner, and TalkBack says "with octave string" after its
+ * carries a small "8" in its button's top left corner, across from a badge, and TalkBack says "with octave string" after its
  * name; the compact layout's small chips leave it out.
  *
  * A string that starts partway up the neck ([Tuning.shortStrings], a 5-string banjo's fifth, first
@@ -424,8 +424,8 @@ private fun StringChip(
                 autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL, maxFontSize = textStyle.fontSize, stepSize = 0.5.sp),
                 modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING * fit.buttonScale) else Modifier,
             )
-            // A 12-string's octave pair: a small "8" in the top corner, as an octave is marked in
-            // music (8va); TalkBack has it in the button's name.
+            // A 12-string's octave pair: a small "8" in the top left corner, as an octave is marked in
+            // music (8va), across from a tick's badge; TalkBack has it in the button's name.
             if (octaveString && !small) {
                 Text(
                     OCTAVE_MARK,
@@ -510,8 +510,13 @@ private const val OCTAVE_MARK = "8"
 private const val OCTAVE_MARK_SIZE = 0.75f
 private const val OCTAVE_MARK_ALPHA = 0.8f
 
-/** Up and to the end of the button, clear of the name, inside a round button's edge too. */
-private val OCTAVE_MARK_PLACE = BiasAlignment(0.55f, -0.7f)
+/**
+ * Up and to the left of the button, clear of the name, inside a round button's edge too: across from
+ * the tick or the 12th-fret result, whose badge sits at the top right (`stringMarkBadge`), so both show
+ * (until Phase 65 the 8 sat at the top right, under the badge). Left in a right-to-left language too,
+ * as the badge stays right there.
+ */
+private val OCTAVE_MARK_PLACE = BiasAbsoluteAlignment(-0.62f, -0.82f)
 
 /** The small chips' labels don't grow with the system font: they are only 32 dp. */
 private const val MAX_SMALL_CHIP_FONT_SCALE = 1f

@@ -33,7 +33,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -51,8 +54,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.VerticalAlignmentLine
-import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -1098,18 +1099,20 @@ private fun TwoPaneLayout(
 /**
  * The controls pane's [header] (the mode switch, focus mode's button and the signal bars) over the
  * [guitarSlot], [SECTION_SPACING] apart, the header as wide as the string buttons' faces
- * ([StringFacesLeft]), so on its side focus mode's button ends where the last string's button and the
+ * ([StringFacesSpan]), so on its side focus mode's button ends where the last string's button and the
  * tools button do, and the signal bars start where the instrument button does (Phase 65: they stood a
  * few dp further out, the header taking the pane's whole width). Without strings it takes the width.
  */
 @Composable
 private fun HeaderOverSlot(header: @Composable () -> Unit, guitarSlot: @Composable () -> Unit) {
-    Layout(contents = listOf(header, guitarSlot)) { (headerMeasurables, slotMeasurables), constraints ->
+    val faces = remember { StringFacesSpan() }
+    val slotContent = @Composable { CompositionLocalProvider(LocalStringFacesSpan provides faces, guitarSlot) }
+    Layout(contents = listOf(header, slotContent)) { (headerMeasurables, slotMeasurables), constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val slot = slotMeasurables.single().measure(loose)
-        val faces = slot[StringFacesLeft]
-        val span = slot.width - 2 * faces
-        val headerConstraints = if (faces == AlignmentLine.Unspecified || span <= 0) loose else loose.copy(minWidth = span, maxWidth = span)
+        // Written by the guitar controls as the slot measured them; read here, so a change measures this again.
+        val span = faces.width
+        val headerConstraints = if (span <= 0 || span > loose.maxWidth) loose else loose.copy(minWidth = span, maxWidth = span)
         val headerPlaceable = headerMeasurables.single().measure(headerConstraints)
         val gap = SECTION_SPACING.roundToPx()
         val width = maxOf(slot.width, headerPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
@@ -1122,10 +1125,20 @@ private fun HeaderOverSlot(header: @Composable () -> Unit, guitarSlot: @Composab
 }
 
 /**
- * Where the first string button's face starts in the guitar slot, from its left (the inset is the same
- * at the right end), for the header over it on its side ([HeaderOverSlot]).
+ * How wide the string buttons' faces span, first face's start to last one's end, in px: the guitar
+ * controls write it as they measure, and the header over them on its side ([HeaderOverSlot]) takes
+ * that width; 0 without strings. Every part between them is centred, so the width alone places it.
+ * Snapshot state, so the header follows a change. (Until Phase 65's last step a vertical alignment
+ * line carried it; reading it during measuring left the string buttons' place on screen and their
+ * place for touch and TalkBack apart, StringRowStylesTest found it.)
  */
-private val StringFacesLeft = VerticalAlignmentLine(::minOf)
+@Stable
+private class StringFacesSpan {
+    var width by mutableIntStateOf(0)
+}
+
+/** The [StringFacesSpan] of the header over the strings on its side; none where nothing reads it. */
+private val LocalStringFacesSpan = staticCompositionLocalOf<StringFacesSpan?> { null }
 
 /**
  * The compact landscape layout (focus mode). With a [focusNote] (the plain tuner) the [gauge] fills
@@ -1614,6 +1627,9 @@ private fun GuitarControls(
         }
     }
     val style = MaterialTheme.styleTokens.style
+    val facesSpan = LocalStringFacesSpan.current
+    // Without the strings, the header over them takes its own width again.
+    if (facesSpan != null) DisposableEffect(facesSpan) { onDispose { facesSpan.width = 0 } }
     Layout(contents = listOf(strings, toggle, instrument, label)) { (stringMeasurables, toggleMeasurables, instrumentMeasurables, labelMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
@@ -1649,8 +1665,9 @@ private fun GuitarControls(
         val rowHeight = maxOf(togglePlaceable?.height ?: 0, instrumentPlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
         val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
         val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
-        // The faces' inset is the same at both ends, so one line from the left says where both are.
-        layout(width, height, alignmentLines = mapOf<AlignmentLine, Int>(StringFacesLeft to facesStart)) {
+        // For the header over the strings on its side: as wide as the faces (they are centred, as it is).
+        facesSpan?.width = (facesEnd - facesStart).coerceAtLeast(0)
+        layout(width, height) {
             if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
             if (instrumentPlaceable != null && instrumentX != null) instrumentPlaceable.placeRelative(instrumentX, (rowHeight - instrumentPlaceable.height) / 2)
             labelPlaceable?.placeRelative(labelStart, (rowHeight - labelPlaceable.height) / 2)
@@ -1686,11 +1703,9 @@ private fun ModeSlot(
         val parts = listOfNotNull(guitarPlaceable, chromaticPlaceable)
         val width = (parts.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
         val height = (parts.maxOfOrNull { it.height } ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
-        // Where the string buttons' faces start, in both modes (chromatic mode places no strings), so the
-        // header over the slot on its side keeps the same edges in both ([HeaderOverSlot]).
-        val faces = guitarPlaceable?.get(StringFacesLeft)?.takeIf { it != AlignmentLine.Unspecified }
-        val lines: Map<AlignmentLine, Int> = if (faces != null && guitarPlaceable != null) mapOf(StringFacesLeft to (width - guitarPlaceable.width) / 2 + faces) else emptyMap()
-        layout(width, height, alignmentLines = lines) {
+        // Both parts are measured in either mode, so the guitar controls tell the header over the slot on
+        // its side the faces' width in chromatic mode too ([StringFacesSpan]), and its edges stay put.
+        layout(width, height) {
             val shown = if (guitarShown) guitarPlaceable else chromaticPlaceable
             shown?.placeRelative((width - shown.width) / 2, height - shown.height)
         }

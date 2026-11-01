@@ -77,6 +77,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
     private val shownLayout = mutableStateOf(Layout.UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownLocale = mutableStateOf("en")
+    private val shownTuned = mutableStateOf<TunedStrings?>(null)
     private val clicked = mutableListOf<Int>()
 
     private enum class Layout(val size: DpSize) {
@@ -84,7 +85,8 @@ class StringRowStylesTest(private val style: VisualStyle) {
         FULL_ON_ITS_SIDE(DpSize(780.dp, 330.dp)),
     }
 
-    private fun show(listening: Boolean = false) {
+    /** [focusButton]: focus mode's button at the end of the header, as in the app. */
+    private fun show(listening: Boolean = false, focusButton: Boolean = false) {
         compose.setContent {
             val layout = shownLayout.value
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
@@ -119,6 +121,8 @@ class StringRowStylesTest(private val style: VisualStyle) {
                         compactLandscape = false,
                         // As in the app: the strum check's switch above the strings.
                         onStrumCheckChange = {},
+                        tunedStrings = shownTuned.value,
+                        onFocusModeChange = if (focusButton) ({}) else null,
                     )
                 }
             }
@@ -232,6 +236,55 @@ class StringRowStylesTest(private val style: VisualStyle) {
     }
 
     /**
+     * On a 12-string with every course ticked off as tuned, each "8" stays clear of its button's tick
+     * (the badge at the button's top right, drawn, not a node: its square is worked out from the
+     * button as `stringMarkBadge` places it), so both show; the buttons keep their size. Upright and
+     * on its side, at normal and 2× text.
+     */
+    @Test
+    fun theTwelveStringsEightShowsBesideItsTick() {
+        val tuning = Instruments.GUITAR_12.defaultTuning
+        shownTuning.value = tuning
+        show(listening = true)
+        val labels = labels(tuning, Notation.SHARPS)
+        val tuned = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.tuner_string_tuned)
+        for (scale in listOf(1f, 2f)) {
+            shownFontScale.value = scale
+            for (layout in Layout.entries) {
+                shownLayout.value = layout
+                shownTuned.value = null
+                compose.waitForIdle()
+                val before = labels.map { compose.onNodeWithText(it).getBoundsInRoot() }
+                shownTuned.value = TunedStrings(tuning, (1L shl tuning.strings.size) - 1)
+                compose.waitForIdle()
+                val case = "$style $layout at ${scale}x"
+                val marks = compose.onAllNodesWithTag(TunerTestTags.OCTAVE_MARK, useUnmergedTree = true).assertCountEquals(4)
+                labels.forEachIndexed { index, label ->
+                    val chip = compose.onNodeWithText(label)
+                    val state = chip.fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription)
+                    assertEquals("$case: TalkBack's state for $label", tuned, state)
+                    val face = chip.getBoundsInRoot()
+                    assertEquals("$case: $label's button keeps its place and size", before[index], face)
+                    if (index < 4) {
+                        val eight = marks[index].getBoundsInRoot()
+                        assertWhollyShown(marks[index], "$case: the 8 on $label", scroll = true)
+                        val badge = DpRect(
+                            left = face.right - BADGE_FROM_CORNER - BADGE_REACH,
+                            top = face.top + BADGE_FROM_CORNER - BADGE_REACH,
+                            right = face.right - BADGE_FROM_CORNER + BADGE_REACH,
+                            bottom = face.top + BADGE_FROM_CORNER + BADGE_REACH,
+                        )
+                        val clear = eight.right <= badge.left || eight.left >= badge.right ||
+                            eight.bottom <= badge.top || eight.top >= badge.bottom
+                        assertTrue("$case: the 8 $eight on $label is clear of its tick $badge", clear)
+                    }
+                }
+            }
+        }
+        shownTuned.value = null
+    }
+
+    /**
      * The 12-string in every language at 2× text, upright and on its side: every string's name and
      * every "8" wholly shown, and the instrument button says the 12-string's name in that language.
      * The name beside it may end in "…" there, as every long name does at that size (the buttons
@@ -335,11 +388,12 @@ class StringRowStylesTest(private val style: VisualStyle) {
 
     /**
      * The strum check's switch sits above the strings at their end, in the window, for every instrument
-     * (4 to 8 strings), upright and on its side, at normal and at 2x text.
+     * (4 to 8 strings), upright and on its side, at normal and at 2x text; on its side focus mode's
+     * button above it ends where it does.
      */
     @Test
     fun theStrumSwitchSitsAboveTheStringsAtTheirEnd() {
-        show(listening = true)
+        show(listening = true, focusButton = true)
         for (scale in listOf(1f, 2f)) {
             shownFontScale.value = scale
             for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
@@ -363,6 +417,13 @@ class StringRowStylesTest(private val style: VisualStyle) {
                     val switchEnd = switchNode.positionInRoot.x + switchNode.size.width
                     val stringsEnd = last.positionInRoot.x + last.size.width
                     assertTrue("$case: the switch ends at $switchEnd px, the strings at $stringsEnd", switchEnd <= stringsEnd + 1f)
+                    if (layout == Layout.FULL_ON_ITS_SIDE) {
+                        // On its side the header over the strings is as wide as their faces: focus mode's
+                        // button ends where the switch does (Phase 65).
+                        val focus = compose.onNodeWithTag(TunerTestTags.ENTER_FOCUS).fetchSemanticsNode()
+                        val focusEnd = focus.positionInRoot.x + focus.size.width
+                        assertEquals("$case: focus mode's button ends where the switch does", switchEnd, focusEnd, 1.5f)
+                    }
                 }
             }
         }
@@ -398,6 +459,14 @@ class StringRowStylesTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp
+
+        /**
+         * The tick's badge as `stringMarkBadge` (IntonationView.kt) draws it: its centre 0.35 of its
+         * 8 dp radius in from the button's top right corner, and its reach, the radius and the 1.5 dp
+         * ring of background round it.
+         */
+        private val BADGE_FROM_CORNER = 8.dp * 0.35f
+        private val BADGE_REACH = 8.dp + 1.5.dp
 
         /** The extra gap after a banjo's short string, as StringSelector sets it. */
         private val SHORT_STRING_GAP = 12.dp

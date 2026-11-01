@@ -191,7 +191,7 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     components/ MeterFrame, NoteDisplay, WaveView, ChromaticReadout, StringSelector (+ StringRowFit),
                 InstrumentTuningPanel (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
-                IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint
+                IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
     tour/       TourHost + TourOverlay (dim, spotlight, balloon), TourTargets (+ tourTarget), TourPart, TourGeometry (pure)
 
@@ -219,7 +219,7 @@ feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
                 LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker, LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour, SystemBars,
+    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour,
     BuildToolSwitches (toolSwitchesFor), TunerPitchListener (Ear training's ears: the tuner's PitchPipeline),
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
