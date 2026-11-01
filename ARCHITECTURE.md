@@ -120,7 +120,8 @@ Rules:
 ```
 core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
-                AnalysisSettings, PitchRange, LowPassFilter, SignalGate, SustainCheck, FftDifference,
+                AnalysisSettings, PitchRange, PitchChain (the frame chain every listener shares),
+                LowPassFilter, SignalGate, SustainCheck, FftDifference,
                 Fft, Clarity
     level/      NoiseFloorTracker, ReceptionTracker
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling,

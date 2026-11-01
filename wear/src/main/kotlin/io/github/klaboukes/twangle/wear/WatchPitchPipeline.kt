@@ -5,7 +5,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
-import io.github.klaboukes.twangle.core.dsp.pitch.PitchResult
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchChain
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
@@ -19,9 +19,9 @@ import kotlin.math.roundToInt
 
 /**
  * The watch's chromatic tuner chain, the phone's pitch engine from `:core:dsp` without the phone's
- * extras (reception, tips, strum check): microphone → `FrameAssembler` → [SignalGate] → `SustainCheck` → YIN
- * (`AnalysisSettings.newPitchDetector`) → [PitchSmoother] → note and cents
- * (docs/architecture/signal-pipeline.md), and
+ * extras (reception, tips, strum check): microphone → [PitchChain] (the phone's own frame chain:
+ * `FrameAssembler` → [SignalGate] → `SustainCheck` → YIN → noise floor, standard range) →
+ * [PitchSmoother] → note and cents (docs/architecture/signal-pipeline.md), and
  * the phone's [InTuneDetector] (within 5 cents for 300 ms, released past 7) for the in-tune ring.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so a watch
@@ -68,33 +68,25 @@ class WatchPitchPipeline(
                 val rate = supportedRate()
                 if (rate != analysis.rate) analysis = Analysis(rate)
             }
-            val assembler = analysis.assembler
-            val frame = analysis.frame
-            val gate = analysis.gate
-            val sustain = analysis.sustain
-            val noise = analysis.noise
-            val detector = analysis.detector
+            val chain = analysis.chain
             val frameSeconds = analysis.frameSeconds
             val holdFrames = analysis.holdFrames
             var pos = 0
             while (pos < chunk.size) {
-                pos += assembler.push(chunk, pos, chunk.size - pos)
-                if (!assembler.isFrameReady) continue
-                assembler.readFrame(frame)
+                pos += chain.push(chunk, pos, chunk.size - pos)
+                if (!chain.isFrameReady) continue
                 if (tapFrames > 0) {
                     // These frames may hear the wrist tap's buzz: the reading holds as it is.
+                    chain.skipFrame()
                     tapFrames--
                     continue
                 }
-                val open = gate.process(frame)
-                // A tick that has already died away is not a note, nor the end of one (SustainCheck).
-                val sustained = !open || sustain.isSustained(frame, floorDbfs = noise.floorDbfs)
-                val pitch = if (open && sustained) detector.detect(frame) else PitchResult.NONE
-                noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
+                chain.analyse()
+                val pitch = chain.pitch
                 if (pitch.isPitched) {
-                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold, gate.levelDbfs)
+                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, chain.isAboveThreshold, chain.levelDbfs)
                 } else {
-                    smoother.noReading(sustained, gate.levelDbfs)
+                    smoother.noReading(chain.sustained, chain.levelDbfs)
                 }
                 if (!smoother.hasReading && shownMidi != NO_NOTE && lostFrames < holdFrames) {
                     // The note is lost for a moment: keep showing it, glow and all, so a brief
@@ -132,14 +124,9 @@ class WatchPitchPipeline(
     // (again only if the microphone opened at another rate).
     private class Analysis(val rate: Int) {
         private val settings = AnalysisSettings.forSampleRate(rate)
-        val assembler = settings.newFrameAssembler()
-        val frame = FloatArray(settings.windowSize)
-        val gate = SignalGate()
-        val sustain = settings.newSustainCheck()
 
-        // Only for SustainCheck: what the room sounds like between notes.
-        val noise = settings.newNoiseFloorTracker()
-        val detector = settings.newPitchDetector()
+        // The phone's frame chain, in the standard range only (no hum canceller: its 62 Hz floor keeps hum out).
+        val chain = PitchChain(rate)
         val frameSeconds = settings.hopSeconds
         val holdFrames = ceil(HOLD_SECONDS / frameSeconds).toInt()
 

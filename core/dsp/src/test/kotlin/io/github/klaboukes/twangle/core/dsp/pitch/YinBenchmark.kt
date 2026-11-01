@@ -97,6 +97,25 @@ class YinBenchmark {
         assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS)
     }
 
+    @Test
+    fun `the shared frame chain takes under 2 ms per hop in either range`() {
+        // PitchChain as the phone's tuner, Ear training and the watch run it: one hop pushed, one frame analysed.
+        val stream = TestSignals.withNoise(TestSignals.pluck(41.2f, 48_000, decaySeconds = 2.0), snrDb = 30f)
+        for (range in PitchRange.entries) {
+            val chain = PitchChain(48_000).also { it.range = range }
+            val hop = FrameAssembler.DEFAULT_HOP_SIZE
+            var pos = 0
+            val stats = time {
+                if (pos + hop > stream.size) pos = 0
+                chain.push(stream, pos, hop)
+                pos += hop
+                chain.analyse() && chain.pitch.isPitched
+            }
+            report("PitchChain hop, $range", stats)
+            assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS)
+        }
+    }
+
     private class Stats(val medianMs: Double, val p95Ms: Double, val minMs: Double)
 
     // Runs [frame] WARM_UP times untimed, then MEASURED times individually timed.

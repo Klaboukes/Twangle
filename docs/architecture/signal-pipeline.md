@@ -4,6 +4,7 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 
 ## Contents
 - [Pipeline](#pipeline)
+- [One frame chain](#one-frame-chain)
 - [Key numbers](#key-numbers)
 - [Other sample rates](#other-sample-rates)
 - [Frame assembly](#frame-assembly)
@@ -57,6 +58,15 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
  Compose UI            meter, note name, cents or wave, string row, in-tune indicator + haptic
 ```
 
+## One frame chain
+`PitchChain` (`:core:dsp`, Phase 65) is the part of the pipeline above from the `FrameAssembler` to the noise floor: chunks in, then per hop gate → `SustainCheck` → detector → mains-pitch rule (low range) → `NoiseFloorTracker`, with the low range's longer window and hum canceller sharing one ring buffer, gate and noise floor, so `range` can change at any hop without losing audio. It is the one copy every listener runs: the phone's `PitchPipeline` (which adds the microphone, the strum check and the chord name), Ear training (through `TunerPitchListener`, the tuner's `PitchPipeline`), the watch's `WatchPitchPipeline` (standard range only; the low range's detector, sustain check and hum canceller are made when first asked for, so the watch never makes them, only its ring buffer is the long window's length) and the tests' `TunerChain`, so `EdgeCaseTest`, `LowPitchRangeTest` and `RealPluckTest` test the app's own chain, not a mirror of it. A fix to the frame chain (the sustain check, the noise floor's rule, a non-finite sample) now lands once. `PitchChainTest` checks it on synthetic signals: within 1 cent at 8–96 kHz, the low range after one long window, a range switch with no lost frame, hum never a note, the floor and SNR, skipped frames unheard, a restart, no allocation per frame. One hop costs what the copies did (`YinBenchmark`, *the shared frame chain*).
+
+**What stayed with each listener, and why (decided 2026-11-01).** Setting aside the app's own sound with its tail was compared too and is *not* shared: the three look alike but differ in every rule that matters, so one class would need an option per difference and be longer than the few lines each has now.
+- **The tuner** (`TunerViewModel`): while a reference tone plays and for 0.3 s after (`TONE_TAIL_SECONDS`), the readings still flow through the chain (the gate and noise floor keep following the room) but are shown as the listening state; the strum check and the chord name are held off for the same frames; the smoothing starts afresh when the count runs out; the pitch trail gets a gap.
+- **Ear training** (`EarTrainingViewModel.hear`): the same 0.3 s after the question, but per `HeardFrame`, outside the pipeline (it can't see `:feature:tuner`), and its smoother and held note are reset on every set-aside frame.
+- **The watch** (`WatchPitchPipeline`): its own sound is the wrist tap's buzz, started by its own in-tune moment, not by a player; those frames (the tap plus one window) are skipped *before* the gate (`PitchChain.skipFrame`, so the noise floor never hears the motor) and the reading holds still instead of starting afresh.
+The smoothing after the chain stays apart likewise: the phone's `TunerInterpreter` (reception, tips, precision), Ear training's `PitchSmoother` with `HeldNote`, and the watch's `PitchSmoother` with its 0.6 s hold all use `:core:dsp`'s `PitchSmoother`, and what they add on top is each one's own.
+
 ## Key numbers
 - **Sample rate:** 48 000 Hz, the native rate on most phones. `SampleRateSelector` uses `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` if it is 44 100–48 000 Hz (higher only costs CPU), then tries 48 000, 44 100, 32 000, 16 000 and 8 000; the first rate `AudioRecord.getMinBufferSize` accepts is expected. If no input opens at it, `AndroidAudioRecorder` tries the other accepted rates in that order (`openFirst`: every input at a rate before the next rate) and its `config` moves to the rate that opened; the pipelines read the rate again with the first chunk. Any rate from 8 to 96 kHz works end to end (see *Other sample rates*).
 - **Analysis window:** 4096 samples (≈ 85 ms), about 7 periods of low E (82.41 Hz); YIN needs at least 2. Tunings that go lower (7- and 8-string guitar, bass, cello) use **8192** (≈ 171 ms, see *Low notes*).
@@ -67,7 +77,7 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - **"In tune":** |cents| ≤ 5 held for 300 ms (15 hops at 48 kHz), released past 7 cents, so a note hovering at 5 doesn't flicker. That is **Relaxed**, the default; **Precise** is ≤ 2, released past 3 ([Lifecycle](lifecycle.md), *Settings*). The shown "in tune" goes through the steady hint line (see [Notes, tunings and audio](notes-and-audio.md), *Audio capture*), so it also lasts at least 0.5 s.
 
 ## Other sample rates
-`AnalysisSettings.forSampleRate(rate)` (8–96 kHz) scales window and hop so they always last ≈ 85 ms and ≈ 21 ms and the smoother's frame counts keep their meaning (44.1 kHz: 3763 / 941 samples). `PitchPipeline` builds its `FrameAssembler` and detector from it, and `AudioConfig.forSampleRate` makes the recorder's chunks one hop long. A rate outside 8–96 kHz ends the flow with `InitializationFailed`.
+`AnalysisSettings.forSampleRate(rate)` (8–96 kHz) scales window and hop so they always last ≈ 85 ms and ≈ 21 ms and the smoother's frame counts keep their meaning (44.1 kHz: 3763 / 941 samples). `PitchChain` builds its `FrameAssembler` and detectors from it, and `AudioConfig.forSampleRate` makes the recorder's chunks one hop long. A rate outside 8–96 kHz ends the flow with `InitializationFailed`.
 
 Below 32 kHz a period spans too few samples for ±1 cent, so `UpsamplingPitchDetector` first interpolates by an integer factor to ≥ 32 kHz (polyphase windowed-sinc FIR: Kaiser β = 8, 32 taps per phase, cut-off 0.45 × input rate), and YIN's low-pass drops to 0.4 × the input rate so no images get through. Measured: every rate from 8 to 96 kHz within 1 cent on sines, saws, plucks and weak fundamentals; 8 kHz costs 0.5 ms per frame on the JVM.
 

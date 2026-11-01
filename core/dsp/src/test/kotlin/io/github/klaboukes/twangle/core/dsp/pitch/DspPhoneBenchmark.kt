@@ -16,7 +16,8 @@ import java.io.File
 /**
  * CPU time per frame of the pitch detector on a phone, for the standard (4096-sample) and low-note
  * (8192-sample) windows at 48 kHz, of the strum detector (16 384 / 32 768 samples), of the
- * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz, of one microphone chunk into the tempo
+ * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz, of the frame chain every listener shares
+ * (`PitchChain`) per hop, of one microphone chunk into the tempo
  * detector, and of a 10 ms chunk of each drone sound. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this class and runs it with
  * `dalvikvm` on the connected phone: the same ART runtime and JIT as the app, without a debuggable
  * build's slowdown. Plain `main`, so it also runs on the JVM.
@@ -114,6 +115,25 @@ object DspPhoneBenchmark {
                         smoother.noReading(sustained)
                     }
                     smoother.hasReading && inTune.update(smoother.cents, settings.hopSeconds)
+                },
+            )
+        }
+
+        // The frame chain every listener shares (PitchChain, Phase 65): one hop pushed and one frame
+        // analysed, as the phone's tuner runs it in either range and the watch at 16 kHz. Without the
+        // smoother, so a little less than the chains above.
+        for ((rate, range) in listOf(48_000 to PitchRange.STANDARD, 48_000 to PitchRange.LOW, 16_000 to PitchRange.STANDARD)) {
+            val chain = PitchChain(rate).also { it.range = range }
+            val hop = AnalysisSettings.forSampleRate(rate).hopSize
+            val stream = TestSignals.withNoise(TestSignals.pluck(if (range == PitchRange.LOW) 41.2f else 110f, rate, sampleRate = rate, decaySeconds = 2.0), snrDb = 30f)
+            var pos = 0
+            report(
+                "PitchChain ${rate / 1000} kHz $range hop",
+                time { _ ->
+                    if (pos + hop > stream.size) pos = 0
+                    chain.push(stream, pos, hop)
+                    pos += hop
+                    chain.analyse() && chain.pitch.isPitched
                 },
             )
         }

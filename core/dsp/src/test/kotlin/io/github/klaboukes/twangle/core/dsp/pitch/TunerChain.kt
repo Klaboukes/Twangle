@@ -5,15 +5,16 @@ import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 
 /**
- * The per-frame DSP chain as the app runs it (frame assembly → gate → sustain check → YIN →
- * smoother, plus the noise floor and clarity), for tests that feed whole recordings through it. Mirrors
- * `PitchPipeline` plus `TunerInterpreter`: in the low range, mains hum is cancelled on the way into the
- * frames ([MainsHumCanceller]) and a pitch at mains hum's own frequency is no note.
+ * The tuner as the app runs it, for tests that feed whole recordings through it: the app's own frame
+ * chain ([PitchChain]: frame assembly → gate → sustain check → YIN → noise floor; in the low range,
+ * mains hum cancelled on the way into the frames and a pitch at mains hum's own frequency no note) and
+ * then the smoother, as `TunerInterpreter` has it. [settings] (from [AnalysisSettings.forSampleRate])
+ * give the rate and the range.
  */
 internal class TunerChain(
     val settings: AnalysisSettings = AnalysisSettings.forSampleRate(YinPitchDetector.DEFAULT_SAMPLE_RATE),
     private val mapper: NoteMapper = NoteMapper(),
-    /** The hum canceller, as the range has it (none in the standard range); null for none, to compare. */
+    /** The hum canceller, as the range has it (none in the standard range); `{ null }` for none, to compare. */
     private val humCanceller: () -> MainsHumCanceller? = { settings.newHumCanceller() },
     /** The refinement on the lowest partials, as the tuner has it; false to compare (the whole waveform). */
     private val refineOnLowestPartials: Boolean = true,
@@ -45,14 +46,9 @@ internal class TunerChain(
 
     /** Feeds [stream] in chunks of [chunkSize] samples and returns one [Frame] per hop. */
     fun run(stream: FloatArray, chunkSize: Int = settings.hopSize): List<Frame> {
-        val assembler = settings.newFrameAssembler()
-        assembler.filter = humCanceller()
-        val gate = SignalGate()
-        val sustain = settings.newSustainCheck()
-        val detector = settings.newPitchDetector(refineOnLowestPartials)
+        val chain = PitchChain(settings.sampleRate, refineOnLowestPartials, cancelHum = humCanceller() != null)
+        chain.range = settings.range
         val smoother = smoother()
-        val noise = settings.newNoiseFloorTracker()
-        val window = FloatArray(settings.windowSize)
         val frames = ArrayList<Frame>()
         var position = 0
         var start = 0
@@ -60,25 +56,20 @@ internal class TunerChain(
             val end = minOf(start + chunkSize, stream.size)
             var pos = start
             while (pos < end) {
-                val consumed = assembler.push(stream, pos, end - pos)
+                val consumed = chain.push(stream, pos, end - pos)
                 pos += consumed
                 position += consumed
-                if (!assembler.isFrameReady) continue
-                assembler.readFrame(window)
-                val open = gate.process(window)
-                val sustained = !open || sustain.isSustained(window, floorDbfs = noise.floorDbfs)
-                val heard = if (open && sustained) detector.detect(window) else PitchResult.NONE
-                val pitch = if (assembler.filter != null && MainsHumCanceller.isMainsPitch(heard.frequencyHz)) PitchResult.NONE else heard
+                if (!chain.analyse()) continue
+                val pitch = chain.pitch
                 if (pitch.isPitched) {
-                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold, gate.levelDbfs)
+                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, chain.isAboveThreshold, chain.levelDbfs)
                 } else {
-                    smoother.noReading(sustained, gate.levelDbfs)
+                    smoother.noReading(chain.sustained, chain.levelDbfs)
                 }
                 val shown = if (smoother.hasReading) mapper.frequencyOf(smoother.midi) else 0f
-                noise.update(gate.levelDbfs, pitch.isPitched)
                 frames += Frame(
-                    position, open, gate.levelDbfs, pitch.frequencyHz, pitch.confidence, shown,
-                    noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence), sustained,
+                    position, chain.gateOpen, chain.levelDbfs, pitch.frequencyHz, pitch.confidence, shown,
+                    chain.noiseFloorDbfs, chain.snrDb, Clarity.of(pitch.confidence), chain.sustained,
                 )
             }
             start = end

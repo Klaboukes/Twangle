@@ -7,8 +7,8 @@ import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
 import io.github.klaboukes.twangle.core.dsp.pitch.Clarity
 import io.github.klaboukes.twangle.core.dsp.pitch.MainsHumCanceller
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchChain
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
-import io.github.klaboukes.twangle.core.dsp.pitch.PitchResult
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.pitch.SustainCheck
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
@@ -49,7 +49,8 @@ data class PitchReading(
 /**
  * Microphone → [FrameAssembler] (in the low range through the [MainsHumCanceller]) → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
- * clarity ([Clarity]). See docs/architecture/signal-pipeline.md.
+ * clarity ([Clarity]). That chain is `:core:dsp`'s [PitchChain], the one the watch runs too; this class
+ * adds the microphone, the strum check and the chord name. See docs/architecture/signal-pipeline.md.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
  * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside
@@ -57,10 +58,10 @@ data class PitchReading(
  * [AudioRecorderException.InitializationFailed]. If the microphone opens at another rate than
  * the recorder expected, the frame sizes follow it from the first chunk.
  *
- * The DSP objects and the frame buffer are created once per collection, so the per-frame loop
- * doesn't allocate; only the small immutable reading handed to the UI is new each frame. Chunks
- * are copied into the assembler inside `collect`, as [AudioRecorder.chunks] requires. DSP runs on
- * [dspDispatcher] (`Dispatchers.Default` in the app).
+ * The [PitchChain] is created once per collection (again only if the microphone opened at another
+ * rate), so the per-frame loop doesn't allocate; only the small immutable reading handed to the UI is
+ * new each frame. Chunks are copied into the chain inside `collect`, as [AudioRecorder.chunks]
+ * requires. DSP runs on [dspDispatcher] (`Dispatchers.Default` in the app).
  */
 class PitchPipeline(
     private val recorder: AudioRecorder,
@@ -91,7 +92,7 @@ class PitchPipeline(
         chordA4Hz: () -> Float = { Float.NaN },
         strumStrings: () -> FloatArray?,
     ): Flow<PipelineReading> = flow {
-        var tuner = TunerAnalysis(supportedRate())
+        var tuner = PitchChain(supportedRate())
         // Made the first time strum check starts: its buffers are large.
         var strum: StrumAnalysis? = null
         var strumming = false
@@ -105,14 +106,9 @@ class PitchPipeline(
                 first = false
                 // The microphone may have opened at another rate than expected (AudioRecorder.config).
                 val rate = supportedRate()
-                if (rate != tuner.rate) tuner = TunerAnalysis(rate)
+                if (rate != tuner.sampleRate) tuner = PitchChain(rate)
             }
-            val rate = tuner.rate
-            val standard = tuner.standard
-            val low = tuner.low
-            val assembler = tuner.assembler
-            val gate = tuner.gate
-            val noise = tuner.noise
+            val rate = tuner.sampleRate
             val strings = strumStrings()
             val chordA4 = if (strings == null) chordA4Hz() else Float.NaN
             if (!chordA4.isNaN()) {
@@ -149,37 +145,18 @@ class PitchPipeline(
                 // and the hum canceller learns the hum afresh (it missed the audio in between).
                 strumming = false
                 naming = false
-                assembler.reset()
-                assembler.filter = null
+                tuner.restart()
             }
             var pos = 0
             while (pos < chunk.size) {
-                // The low range hears 50 and 60 Hz, so its audio goes through the hum canceller.
-                val lowRange = range() == PitchRange.LOW
-                assembler.filter = if (lowRange) tuner.humCanceller else null
-                pos += assembler.push(chunk, pos, chunk.size - pos)
-                if (assembler.isFrameReady) {
-                    val analysis = if (lowRange) low else standard
-                    if (assembler.available < analysis.windowSize) {
-                        // The mic opened less than one long window ago: wait for the next hop.
-                        assembler.skipFrame()
-                        continue
-                    }
-                    val frame = analysis.frame
-                    val detector = analysis.detector
-                    val sustain = analysis.sustain
-                    assembler.readFrame(frame, analysis.windowSize)
-                    val open = gate.process(frame)
-                    // A tick that has already died away is not a note (see SustainCheck).
-                    val sustained = !open || sustain.isSustained(frame, floorDbfs = noise.floorDbfs)
-                    val heard = if (open && sustained) detector.detect(frame) else PitchResult.NONE
-                    // Hum the canceller hasn't learned yet reads at mains frequency: no note.
-                    val pitch = if (lowRange && MainsHumCanceller.isMainsPitch(heard.frequencyHz)) PitchResult.NONE else heard
-                    noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
+                tuner.range = range()
+                pos += tuner.push(chunk, pos, chunk.size - pos)
+                if (tuner.analyse()) {
+                    val pitch = tuner.pitch
                     emit(
                         PitchReading(
-                            pitch.frequencyHz, pitch.confidence, gate.levelDbfs, open,
-                            noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence), gate.peakDbfs, sustained,
+                            pitch.frequencyHz, pitch.confidence, tuner.levelDbfs, tuner.gateOpen,
+                            tuner.noiseFloorDbfs, tuner.snrDb, Clarity.of(pitch.confidence), tuner.peakDbfs, tuner.sustained,
                         ),
                     )
                 }
@@ -189,25 +166,6 @@ class PitchPipeline(
 
     private fun supportedRate(): Int = sampleRate.also { rate ->
         if (rate !in SUPPORTED_RATES) throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
-    }
-
-    // Everything the tuner needs at one sample rate, made once per collection (again only if the
-    // microphone opened at another rate).
-    private class TunerAnalysis(val rate: Int) {
-        val standard = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.STANDARD))
-        val low = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.LOW))
-        val assembler = FrameAssembler(standard.windowSize, standard.settings.hopSize, capacity = low.windowSize)
-        val humCanceller = low.settings.newHumCanceller()
-        val gate = SignalGate()
-        val noise = standard.settings.newNoiseFloorTracker()
-    }
-
-    // The frame buffer and detector for one range, made once per collection.
-    private class Analysis(val settings: AnalysisSettings) {
-        val windowSize: Int = settings.windowSize
-        val frame = FloatArray(windowSize)
-        val detector = settings.newPitchDetector()
-        val sustain = settings.newSustainCheck()
     }
 
     private companion object {
