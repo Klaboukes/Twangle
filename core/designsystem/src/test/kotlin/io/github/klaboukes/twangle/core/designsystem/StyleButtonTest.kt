@@ -24,6 +24,15 @@ class StyleButtonTest {
     }
 
     @Test
+    fun `the joined bar is a capsule where the buttons are round, else the style's small corners`() {
+        for (style in VisualStyle.entries) {
+            val small = shapesFor(style).small
+            val expected = if (style == VisualStyle.CONTEMPORARY || style == VisualStyle.SPACE_AGE) CircleShape else small
+            assertSame(style.name, expected, segmentedShapeFor(style, small))
+        }
+    }
+
+    @Test
     fun `Ancient's pebble, as the instrument button's`() {
         assertSame(PICKER_PEBBLE, buttonShapeFor(VisualStyle.ANCIENT, shapesFor(VisualStyle.ANCIENT).small))
         assertSame(PICKER_PEBBLE, pickerButtonShape(VisualStyle.ANCIENT, CircleShape))

@@ -497,7 +497,7 @@ private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = headingStyle(MaterialTheme.typography.titleLarge),
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(horizontal = ROW_INSET)

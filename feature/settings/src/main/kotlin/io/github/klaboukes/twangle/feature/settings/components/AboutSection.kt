@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
+import io.github.klaboukes.twangle.feature.settings.headingStyle
 import io.github.klaboukes.twangle.feature.settings.websiteLink
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -92,7 +93,7 @@ fun AboutSection(
 @Composable
 private fun AboutText(title: String, body: String) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(text = title, style = headingStyle(MaterialTheme.typography.titleMedium))
         Text(text = body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

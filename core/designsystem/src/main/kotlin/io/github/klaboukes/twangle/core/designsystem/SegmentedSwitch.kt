@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +61,7 @@ fun <T> SegmentedSwitch(
     // Futuristic's buttons are neon outlines in the accent, the unpicked one on a solid tint.
     val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
     val crowded = options.size >= CROWDED_SEGMENTS
+    val base = segmentedShapeFor(MaterialTheme.styleTokens.style, MaterialTheme.shapes.small)
     val measurer = rememberTextMeasurer()
     val smallest = lastResortLabelSize(LocalDensity.current)
     // The press effect in place of Material's ripple, the light over the segment's own fill; the
@@ -66,7 +69,7 @@ fun <T> SegmentedSwitch(
     OwnTouchArea { touch ->
         SingleChoiceSegmentedButtonRow(modifier = modifier) {
             options.forEachIndexed { index, option ->
-                val shape = SegmentedButtonDefaults.itemShape(index, options.size)
+                val shape = SegmentedButtonDefaults.itemShape(index, options.size, base)
                 val press = remember { MutableInteractionSource() }
                 val name = spoken?.invoke(option)
                 SegmentedButton(
@@ -141,6 +144,17 @@ fun <T> SegmentedSwitch(
             }
         }
     }
+}
+
+/**
+ * The joined bar's outer shape in [style] (Phase 63's review): the round ends of a capsule where the
+ * style's buttons are round (Contemporary, Space Age), else the style's [small] corners, as the
+ * buttons and faces beside it: Classic's square, Retro's soft, Futuristic's cut, Ancient's uneven ones.
+ * Until then it was a capsule in every style, beside Classic's square and Futuristic's eight-sided buttons.
+ */
+internal fun segmentedShapeFor(style: VisualStyle, small: CornerBasedShape): CornerBasedShape = when (style) {
+    VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> CircleShape
+    VisualStyle.ANCIENT, VisualStyle.CLASSIC, VisualStyle.RETRO, VisualStyle.FUTURISTIC -> small
 }
 
 /**
