@@ -1,9 +1,9 @@
 Twangle is a guitar tuner that also tunes bass, ukulele, violin and more, with every feature free. No ads, no account, no in-app purchases and no tracking. Twangle doesn't even have permission to use the internet: the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
 
-Twangle is simple to use and precise to a single cent. Play a string, and Twangle shows the note and how far it is from being in tune, on a big clear meter. "Tune up" or "Tune down" tells you which way to turn the peg. Once you're in tune, Twangle helps you play: it names the chords you strum, shows chord charts and scales, works out the capo and keeps time.
+Twangle is simple to use and precise to a single cent. Play a string, and Twangle shows the note and how far it is from being in tune, on a big clear meter. "Tune up" or "Tune down" tells you which way to turn the peg. Once you're in tune, Twangle helps you play: it names the chords you strum, shows chord charts and scales, works out the capo, trains your ear and keeps time.
 
 TUNE ANY INSTRUMENT
-• Guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (baritone too), violin, viola, cello and mandolin
+• Guitar (6, 7, 8 or 12 strings), bass (4 or 5 strings), ukulele (baritone too), violin, viola, cello, mandolin and 5-string banjo
 • Guitar tunings: Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D, Open E and Open C
 • Make your own tunings for any instrument
 • Chromatic tuner for any other instrument or your voice
@@ -20,9 +20,12 @@ PRACTICE
 • Chord charts for your instrument and tuning, your own tunings included
 • Scales on the fretboard: major, minor, pentatonic and blues, every note named
 • Capo helper: pick the song's key and the shapes you like, and see where the capo goes
+• Ear training: Play it back (play the notes you hear on your instrument), Intervals and Chord type
 • Metronome: 30 to 250 beats per minute on a round tempo dial, with tap tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on the first beat and lights to follow along
 • Clicks over your own music or backing track, and can vibrate on the beat
+• Between the beats: extra clicks in eighths, triplets or sixteenths
+• Speed trainer: the tempo climbs step by step to your goal
 
 MADE FOR EVERYONE
 • Works with TalkBack: Twangle says the note and how far off it is ("E 2, 12 cents flat, tune up"), reads chord charts and scales string by string, every button has a clear name, and it never floods you with speech

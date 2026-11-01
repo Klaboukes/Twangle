@@ -1,9 +1,9 @@
 Twangle on kitaraviritin, joka virittää myös basson, ukulelen, viulun ja muita soittimia, ja kaikki sen ominaisuudet ovat ilmaisia. Ei mainoksia, ei tiliä, ei sovelluksen sisäisiä ostoja eikä seurantaa. Twanglella ei ole edes lupaa käyttää internetiä: mikrofonisi ääni analysoidaan reaaliajassa puhelimessasi, eikä sitä koskaan nauhoiteta tai lähetetä minnekään.
 
-Twangle on helppokäyttöinen ja sentilleen tarkka. Soita kieli, niin Twangle näyttää isolla, selkeällä mittarilla sävelen ja sen, kuinka paljon se heittää vireestä. ”Kiristä” tai ”Löysää” kertoo, kumpaan suuntaan viritystappia käännetään. Kun soitin on vireessä, Twangle auttaa soittamaan: se tunnistaa soittamasi soinnut, näyttää sointukaaviot ja asteikot, laskee kapon paikan ja pitää tahdin.
+Twangle on helppokäyttöinen ja sentilleen tarkka. Soita kieli, niin Twangle näyttää isolla, selkeällä mittarilla sävelen ja sen, kuinka paljon se heittää vireestä. ”Kiristä” tai ”Löysää” kertoo, kumpaan suuntaan viritystappia käännetään. Kun soitin on vireessä, Twangle auttaa soittamaan: se tunnistaa soittamasi soinnut, näyttää sointukaaviot ja asteikot, laskee kapon paikan, harjoittaa korvaasi ja pitää tahdin.
 
 VIRITÄ MIKÄ TAHANSA SOITIN
-• Kitara (6, 7 tai 8 kieltä), basso (4 tai 5 kieltä), ukulele (myös baritoni), viulu, alttoviulu, sello ja mandoliini
+• Kitara (6, 7, 8 tai 12 kieltä), basso (4 tai 5 kieltä), ukulele (myös baritoni), viulu, alttoviulu, sello, mandoliini ja 5-kielinen banjo
 • Kitaran viritykset: standardi, Drop D, puolisävel alas, kokosävel alas, DADGAD, Open G, Open D, Open E ja Open C
 • Tee omia virityksiä mille tahansa soittimelle
 • Kromaattinen viritin kaikille muille soittimille ja äänellesi
@@ -20,9 +20,12 @@ HARJOITTELE
 • Sointukaaviot soittimellesi ja viritykseesi, myös omiin virityksiisi
 • Asteikot otelaudalla: duuri, molli, pentatoninen ja blues, jokainen sävel nimettynä
 • Kapoapu: valitse kappaleen sävellaji ja mieleisesi otteet, niin näet, mihin kapo tulee
+• Korvaharjoitus: Soita perässä (soita kuulemasi sävelet soittimellasi), Intervallit ja Sointutyyppi
 • Metronomi: 30–250 iskua minuutissa pyöreällä tempovalitsimella, ja tempon voi myös napauttaa
 • 2/4, 3/4, 4/4, 5/4, 6/8 ja 7/8, painotus ensimmäisellä iskulla ja valot, joita voi seurata
 • Naksuttaa oman musiikkisi tai taustanauhan päälle ja voi väristä iskun tahdissa
+• Iskujen välissä: lisänaksut kahdeksasosina, trioleina tai kuudestoistaosina
+• Tempovalmentaja: tempo nousee askel kerrallaan tavoitteeseesi
 
 KAIKILLE TEHTY
 • Toimii TalkBackin kanssa: Twangle kertoo sävelen ja kuinka paljon se heittää (”E 2, 12 senttiä matalalla, kiristä”), lukee sointukaaviot ja asteikot kieli kieleltä, jokaisella painikkeella on selkeä nimi, eikä se koskaan hukuta sinua puheeseen

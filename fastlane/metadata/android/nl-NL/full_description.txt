@@ -1,9 +1,9 @@
 Twangle is een gitaarstemmer, ook voor bas, ukelele, viool en meer, en elke functie is gratis. Geen advertenties, geen account, geen aankopen in de app en geen tracking. Twangle heeft zelfs geen toestemming om internet te gebruiken: het geluid van je microfoon wordt live op je telefoon geanalyseerd en nooit opgenomen of verstuurd.
 
-Twangle werkt eenvoudig en is precies tot op de cent. Speel een snaar, en Twangle laat op een grote, duidelijke meter zien welke noot het is en hoe ver die van zuiver zit. "Hoger stemmen" of "Lager stemmen" zegt welke kant je de stemknop op draait. Ben je eenmaal gestemd, dan helpt Twangle je spelen: het noemt de akkoorden die je aanslaat, toont akkoordschema's en toonladders, rekent de capo uit en houdt de maat.
+Twangle werkt eenvoudig en is precies tot op de cent. Speel een snaar, en Twangle laat op een grote, duidelijke meter zien welke noot het is en hoe ver die van zuiver zit. "Hoger stemmen" of "Lager stemmen" zegt welke kant je de stemknop op draait. Ben je eenmaal gestemd, dan helpt Twangle je spelen: het noemt de akkoorden die je aanslaat, toont akkoordschema's en toonladders, rekent de capo uit, traint je gehoor en houdt de maat.
 
 ELK INSTRUMENT STEMMEN
-• Gitaar (6, 7 of 8 snaren), bas (4 of 5 snaren), ukelele (ook bariton), viool, altviool, cello en mandoline
+• Gitaar (6, 7, 8 of 12 snaren), bas (4 of 5 snaren), ukelele (ook bariton), viool, altviool, cello, mandoline en 5-snarige banjo
 • Gitaarstemmingen: Standaard, Drop D, halve toon lager, hele toon lager, DADGAD, Open G, Open D, Open E en Open C
 • Maak je eigen stemmingen voor elk instrument
 • Chromatische stemmer voor elk ander instrument of je stem
@@ -20,9 +20,12 @@ OEFENEN
 • Akkoordschema's voor je instrument en stemming, ook voor je eigen stemmingen
 • Toonladders op de hals: majeur, mineur, pentatonisch en blues, elke noot met naam
 • Capo: kies de toonsoort van het nummer en de grepen die je graag speelt, en zie waar de capo moet
+• Gehoortraining: Naspelen (speel de noten die je hoort op je instrument), Intervallen en Akkoordsoort
 • Metronoom: 30 tot 250 tellen per minuut op een ronde tempoknop, met tempo tikken
 • 2/4, 3/4, 4/4, 5/4, 6/8 en 7/8, met een accent op de eerste tel en lampjes om mee te volgen
 • Klinkt boven je eigen muziek of backingtrack uit, en kan trillen op de tel
+• Tussen de tellen: extra tikken in achtsten, triolen of zestienden
+• Tempotrainer: het tempo klimt stap voor stap naar je doel
 
 VOOR IEDEREEN
 • Werkt met TalkBack: Twangle zegt de noot en hoe ver die ernaast zit ("E 2, 12 cent te laag, hoger stemmen"), leest akkoordschema's en toonladders snaar voor snaar voor, elke knop heeft een duidelijke naam, en je wordt nooit bedolven onder spraak

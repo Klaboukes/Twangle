@@ -1,9 +1,9 @@
 Twangle är en gitarrstämmare som även stämmer bas, ukulele, fiol och mer, och varje funktion är gratis. Ingen reklam, inget konto, inga köp i appen och ingen spårning. Twangle har inte ens behörighet att använda internet: ljudet från din mikrofon analyseras direkt på din telefon och spelas aldrig in eller skickas någonstans.
 
-Twangle är enkel att använda och exakt ner till en cent. Spela en sträng, så visar Twangle tonen och hur långt den är från att vara stämd, på en stor och tydlig mätare. ”Stäm upp” eller ”Stäm ner” säger åt vilket håll du ska vrida stämskruven. När allt är stämt hjälper Twangle dig att spela: den känner igen ackorden du slår an, visar ackordscheman och skalor, räknar ut var capon ska sitta och håller takten.
+Twangle är enkel att använda och exakt ner till en cent. Spela en sträng, så visar Twangle tonen och hur långt den är från att vara stämd, på en stor och tydlig mätare. ”Stäm upp” eller ”Stäm ner” säger åt vilket håll du ska vrida stämskruven. När allt är stämt hjälper Twangle dig att spela: den känner igen ackorden du slår an, visar ackordscheman och skalor, räknar ut var capon ska sitta, tränar ditt gehör och håller takten.
 
 STÄM VILKET INSTRUMENT SOM HELST
-• Gitarr (6, 7 eller 8 strängar), bas (4 eller 5 strängar), ukulele (även baryton), fiol, altfiol, cello och mandolin
+• Gitarr (6, 7, 8 eller 12 strängar), bas (4 eller 5 strängar), ukulele (även baryton), fiol, altfiol, cello, mandolin och 5-strängad banjo
 • Gitarrstämningar: Standard, Drop D, halvt tonsteg ner, helt tonsteg ner, DADGAD, Open G, Open D, Open E och Open C
 • Gör egna stämningar för vilket instrument som helst
 • Kromatisk stämmare för alla andra instrument eller din röst
@@ -20,9 +20,12 @@ VERKTYG SOM LYSSNAR
 • Ackordscheman för ditt instrument och din stämning, även dina egna stämningar
 • Skalor på greppbrädan: dur, moll, pentatonisk och blues, med varje ton namngiven
 • Capohjälp: välj låtens tonart och de grepp du gillar, och se var capon ska sitta
+• Gehörsträning: Spela efter (spela tonerna du hör på ditt instrument), Intervall och Ackordtyp
 • Metronom: 30 till 250 slag per minut på en rund temporatt, med tap tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 och 7/8, med betoning på första slaget och lampor att följa
 • Klickar över din egen musik eller ditt kompspår och kan vibrera på slaget
+• Mellan slagen: extra klick i åttondelar, trioler eller sextondelar
+• Tempotränare: tempot höjs steg för steg till ditt mål
 
 FÖR ALLA
 • Fungerar med TalkBack: Twangle säger tonen och hur långt ifrån den är (”E 2, 12 cent för lågt, stäm upp”), läser upp ackordscheman och skalor sträng för sträng, varje knapp har ett tydligt namn och du dränks aldrig i tal

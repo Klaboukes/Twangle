@@ -1,9 +1,9 @@
 Twangle er et stemmeapparat til guitar, der også stemmer bas, ukulele, violin og mere, og alle funktioner er gratis. Ingen reklamer, ingen konto, ingen køb i appen og ingen sporing. Twangle har ikke engang tilladelse til at bruge internettet: Lyden fra din mikrofon analyseres live på din telefon og bliver aldrig optaget eller sendt nogen steder hen.
 
-Twangle er nem at bruge og præcis ned til én cent. Spil en streng, og Twangle viser tonen, og hvor langt den er fra at være stemt, på en stor, tydelig måler. »Stem op« eller »Stem ned« fortæller dig, hvilken vej du skal dreje stemmeskruen. Når du er stemt, hjælper Twangle dig med at spille: Den sætter navn på de akkorder, du slår an, viser akkorddiagrammer og skalaer, regner capoen ud og holder takten.
+Twangle er nem at bruge og præcis ned til én cent. Spil en streng, og Twangle viser tonen, og hvor langt den er fra at være stemt, på en stor, tydelig måler. »Stem op« eller »Stem ned« fortæller dig, hvilken vej du skal dreje stemmeskruen. Når du er stemt, hjælper Twangle dig med at spille: Den sætter navn på de akkorder, du slår an, viser akkorddiagrammer og skalaer, regner capoen ud, træner dit gehør og holder takten.
 
 STEM ETHVERT INSTRUMENT
-• Guitar (6, 7 eller 8 strenge), bas (4 eller 5 strenge), ukulele (også baryton), violin, bratsch, cello og mandolin
+• Guitar (6, 7, 8 eller 12 strenge), bas (4 eller 5 strenge), ukulele (også baryton), violin, bratsch, cello, mandolin og 5-strenget banjo
 • Guitarstemninger: Standard, Drop D, en halv tone ned, en hel tone ned, DADGAD, Open G, Open D, Open E og Open C
 • Lav dine egne stemninger til ethvert instrument
 • Kromatisk tuner til alle andre instrumenter eller din stemme
@@ -20,9 +20,12 @@ VÆRKTØJER, DER LYTTER
 • Akkorddiagrammer til dit instrument og din stemning, også dine egne stemninger
 • Skalaer på gribebrættet: dur, mol, pentatonik og blues, med navn på hver tone
 • Capohjælper: Vælg sangens toneart og de greb, du kan lide, og se, hvor capoen skal sidde
+• Gehørtræning: Spil efter (spil de toner, du hører, på dit instrument), Intervaller og Akkordtype
 • Metronom: 30 til 250 slag i minuttet på et rundt tempohjul, med tap tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 og 7/8, med accent på første slag og lys at følge med i
 • Klik over din egen musik eller dit backingtrack, og den kan vibrere på slaget
+• Mellem slagene: ekstra klik i ottendedele, trioler eller sekstendedele
+• Tempotræner: Tempoet stiger trin for trin til dit mål
 
 LAVET TIL ALLE
 • Virker med TalkBack: Twangle siger tonen, og hvor meget den er ved siden af (»E 2, 12 cent for lav, stem op«), læser akkorddiagrammer og skalaer op streng for streng, hver knap har et tydeligt navn, og den overdynger dig aldrig med tale

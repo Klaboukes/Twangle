@@ -1,9 +1,9 @@
 Twangle bir gitar akort cihazıdır; bas, ukulele, keman ve daha fazlası için de çalışır ve tüm özellikleri ücretsizdir. Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Twangle'ın internet kullanma izni bile yok: mikrofonundan gelen ses canlı olarak telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.
 
-Twangle'ın kullanımı kolaydır ve bir sente kadar hassastır. Bir tel çal; Twangle notayı ve doğru akordan ne kadar uzak olduğunu büyük, net bir göstergede gösterir. "Yükselt" ya da "Düşür", burguyu hangi yöne çevireceğini söyler. Akort bitince Twangle çalmana da yardım eder: çaldığın akorların adını söyler, akor şemalarını ve gamları gösterir, kaponun yerini hesaplar ve tempoyu tutar.
+Twangle'ın kullanımı kolaydır ve bir sente kadar hassastır. Bir tel çal; Twangle notayı ve doğru akordan ne kadar uzak olduğunu büyük, net bir göstergede gösterir. "Yükselt" ya da "Düşür", burguyu hangi yöne çevireceğini söyler. Akort bitince Twangle çalmana da yardım eder: çaldığın akorların adını söyler, akor şemalarını ve gamları gösterir, kaponun yerini hesaplar, kulağını eğitir ve tempoyu tutar.
 
 HER ENSTRÜMANI AKORT ET
-• Gitar (6, 7 veya 8 tel), bas (4 veya 5 tel), ukulele (bariton da), keman, viyola, çello ve mandolin
+• Gitar (6, 7, 8 veya 12 tel), bas (4 veya 5 tel), ukulele (bariton da), keman, viyola, çello, mandolin ve 5 telli banjo
 • Gitar akortları: Standart, Drop D, yarım ses düşük, tam ses düşük, DADGAD, Open G, Open D, Open E ve Open C
 • Her enstrüman için kendi akortlarını oluştur
 • Diğer tüm enstrümanlar ya da sesin için kromatik akort cihazı
@@ -20,9 +20,12 @@ PRATİK
 • Enstrümanına ve akorduna uygun akor şemaları, kendi akortların dahil
 • Klavye üzerinde gamlar: majör, minör, pentatonik ve blues, her notanın adıyla
 • Kapo: şarkının tonunu ve sevdiğin basışları seç, kaponun nereye takılacağını gör
+• Kulak eğitimi: Duyduğunu çal (duyduğun notaları kendi enstrümanında çal), Aralıklar ve Akor türü
 • Metronom: yuvarlak tempo kadranında dakikada 30 ile 250 vuruş, dokunarak tempo ile
 • 2/4, 3/4, 4/4, 5/4, 6/8 ve 7/8, ilk vuruşta vurgu ve takip etmek için ışıklar
 • Kendi müziğinin ya da altyapının üzerinden duyulur ve vuruşta titreşebilir
+• Vuruşlar arası: sekizlik, üçleme veya on altılık ek klikler
+• Tempo antrenörü: tempo adım adım hedefine kadar yükselir
 
 HERKES İÇİN
 • TalkBack ile çalışır: Twangle notayı ve ne kadar saptığını söyler ("Mi 2, 12 sent düşük, yükselt"), akor şemalarını ve gamları tel tel okur, her düğmenin anlaşılır bir adı vardır ve seni asla konuşmaya boğmaz

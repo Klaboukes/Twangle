@@ -1,14 +1,14 @@
 Twangle est un accordeur de guitare, aussi pour la basse, le ukulélé, le violon et bien plus, et toutes ses fonctions sont gratuites. Pas de pub, pas de compte, pas d'achats intégrés, pas de pistage. Twangle n'a même pas l'autorisation d'accéder à Internet : le son de votre micro est analysé en direct sur votre téléphone, jamais enregistré ni envoyé.
 
-Twangle est simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Plus haut » ou « Plus bas » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo et garde le tempo.
+Twangle est simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Plus haut » ou « Plus bas » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo, entraîne votre oreille et garde le tempo.
 
 ACCORDEZ TOUS VOS INSTRUMENTS
-• Guitare (6, 7 ou 8 cordes), basse (4 ou 5 cordes), ukulélé (baryton aussi), violon, alto, violoncelle et mandoline
+• Guitare (6, 7, 8 ou 12 cordes), basse (4 ou 5 cordes), ukulélé (baryton aussi), violon, alto, violoncelle, mandoline et banjo 5 cordes
 • Accordages de guitare : Standard, Drop D, un demi-ton plus bas, un ton plus bas, DADGAD, Open G, Open D, Open E et Open C
 • Créez vos propres accordages pour chaque instrument
-• Accordeur chromatique pour tout autre instrument ou pour votre voix
-• Maintenez une corde à l'écran pour entendre sa note et accorder à l'oreille
-• Réglez le diapason (A4) de 415 à 466 Hz, par exemple 442 Hz pour jouer avec un orchestre
+• Accordeur chromatique pour tout autre instrument ou votre voix
+• Maintenez une corde pour entendre sa note et accorder à l'oreille
+• Réglez le diapason (A4) de 415 à 466 Hz, par exemple 442 Hz pour l'orchestre
 
 DES OUTILS QUI ÉCOUTENT
 • Test en grattant : grattez toutes les cordes à la fois et voyez lesquelles sont trop basses, trop hautes ou justes
@@ -17,18 +17,21 @@ DES OUTILS QUI ÉCOUTENT
 • Test de la 12e case : jouez une corde à vide puis à la 12e case pour savoir s'il faut déplacer le pontet
 
 PRATIQUE
-• Diagrammes d'accords pour votre instrument et votre accordage, y compris vos propres accordages
+• Diagrammes d'accords pour votre instrument et votre accordage, y compris les vôtres
 • Gammes sur le manche : majeure, mineure, pentatonique et blues, chaque note nommée
 • Capo : choisissez la tonalité du morceau et les doigtés que vous aimez, et voyez où placer le capo
+• Oreille musicale : Rejouer (jouez sur votre instrument les notes entendues), Intervalles et Type d'accord
 • Métronome : de 30 à 250 battements par minute sur un cadran de tempo rond, avec tap tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 et 7/8, avec un accent sur le premier temps et des voyants pour suivre
 • S'entend par-dessus votre musique ou votre backing track, et peut vibrer sur le temps
+• Entre les temps : des clics en croches, triolets ou doubles croches
+• Entraîneur de tempo : le tempo monte pas à pas jusqu'à votre objectif
 
 POUR TOUT LE MONDE
 • Fonctionne avec TalkBack : Twangle dit la note et son écart (« Mi 2, 12 cents trop bas, plus haut »), lit les diagrammes d'accords et les gammes corde par corde, chaque bouton a un nom clair, et il ne vous submerge jamais de paroles
 • Chaque écran fonctionne avec un texte agrandi, jusqu'à deux fois la taille normale
 • Une courte vibration quand une corde est juste, pour la sentir aussi
-• En 25 langues : français, allemand, anglais, arabe, bengali, chinois simplifié, chinois traditionnel, coréen, danois, espagnol, finnois, hindi, indonésien, italien, japonais, néerlandais, norvégien, polonais, portugais, russe, suédois, thaï, turc, ukrainien et vietnamien
+• En 25 langues : français, allemand, anglais, arabe, bengali, chinois (simplifié et traditionnel), coréen, danois, espagnol, finnois, hindi, indonésien, italien, japonais, néerlandais, norvégien, polonais, portugais, russe, suédois, thaï, turc, ukrainien et vietnamien
 • Les noms de notes comme vous les avez appris : Do Ré Mi, ou les lettres C D E, à l'anglaise ou à l'allemande
 
 À VOTRE GOÛT
