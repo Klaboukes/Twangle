@@ -1,6 +1,6 @@
 <resources>
     <string name="metronome_beats_in_bar">প্রতি বারে বিট</string>
-    <string name="metronome_tempo">টেম্পো, বদলাতে টেনে সরান</string>
+    <string name="metronome_tempo">টেম্পো</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">প্রতি মিনিটে %1$d বিট, %2$s</item>
         <item quantity="other">প্রতি মিনিটে %1$d বিট, %2$s</item>
@@ -27,10 +27,10 @@
     <string name="metronome_options">বিকল্প</string>
     <string name="metronome_trainer">স্পিড ট্রেনার</string>
     <string name="metronome_trainer_back">বিকল্পে ফিরে যান</string>
-    <string name="metronome_trainer_start">শুরু</string>
+    <string name="metronome_trainer_start">শুরুর টেম্পো</string>
     <string name="metronome_trainer_goal">লক্ষ্য</string>
-    <string name="metronome_trainer_start_slower">আরও ধীরে শুরু করুন</string>
-    <string name="metronome_trainer_start_faster">আরও দ্রুত শুরু করুন</string>
+    <string name="metronome_trainer_start_slower">শুরুর টেম্পো কমান</string>
+    <string name="metronome_trainer_start_faster">শুরুর টেম্পো বাড়ান</string>
     <string name="metronome_trainer_goal_slower">লক্ষ্য কমান</string>
     <string name="metronome_trainer_goal_faster">লক্ষ্য বাড়ান</string>
     <string name="metronome_trainer_step">ধাপ</string>
@@ -72,6 +72,7 @@
     <string name="metronome_pick_double">দ্বিগুণ</string>
     <string name="metronome_no_beat">স্থির কোনো বিট শোনা যায়নি</string>
     <string name="metronome_try_again">আবার চেষ্টা করুন</string>
+    <string name="metronome_mic_busy">মাইক্রোফোন ব্যস্ত</string>
     <string name="metronome_mic_off">মাইক্রোফোন বন্ধ</string>
     <string name="metronome_open_settings">সেটিংস খুলুন</string>
 </resources>

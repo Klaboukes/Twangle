@@ -4,6 +4,17 @@
         <item quantity="other">%1$s cent</item>
     </plurals>
     <string name="wear_in_tune">chuẩn</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="other">thấp %1$d cent</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="other">cao %1$d cent</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">căng lên</string>
+    <string name="wear_spoken_tune_down">chùng xuống</string>
+    <string name="wear_spoken_sharp">%1$s thăng</string>
     <string name="wear_mic_needed">Twangle nghe nhạc cụ của bạn qua micrô của đồng hồ.</string>
     <string name="wear_allow_mic">Cho phép micrô</string>
     <string name="wear_open_settings">Mở cài đặt</string>

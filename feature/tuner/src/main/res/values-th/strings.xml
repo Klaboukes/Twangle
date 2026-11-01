@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">หากไม่มีไมโครโฟน Twangle จะไม่ได้ยินเสียงสาย จึงบอกไม่ได้ว่าเสียงตรงหรือไม่ เสียงไม่เคยออกจากอุปกรณ์ของคุณ</string>
     <string name="mic_permission_settings_hint">การเข้าถึงไมโครโฟนของ Twangle ปิดอยู่ เปิดการตั้งค่า แตะสิทธิ์ แล้วแตะไมโครโฟน และเลือกอนุญาตเฉพาะขณะใช้แอป</string>
     <string name="mic_permission_settings_hint_switch">การเข้าถึงไมโครโฟนของ Twangle ปิดอยู่ เปิดการตั้งค่า แตะสิทธิ์ แล้วเปิดไมโครโฟน</string>
+    <string name="mic_permission_without_mic">เมโทรนอมและเครื่องมือในแท็บฝึกซ้อมใช้ได้โดยไม่ต้องใช้ไมโครโฟน</string>
+    <string name="mic_permission_without_mic_metronome">เมโทรนอมใช้ได้โดยไม่ต้องใช้ไมโครโฟน</string>
     <string name="mic_permission_allow">อนุญาตไมโครโฟน</string>
     <string name="mic_permission_open_settings">เปิดการตั้งค่า</string>
 
     <string name="error_mic_permission">การเข้าถึงไมโครโฟนถูกปิด อนุญาตอีกครั้งเพื่อจูนต่อ</string>
-    <string name="error_mic_busy">มีแอปอื่นกำลังใช้ไมโครโฟน ปิดแอปนั้นแล้วลองอีกครั้ง</string>
-    <string name="error_mic_unavailable">เปิดไมโครโฟนบนอุปกรณ์นี้ไม่ได้</string>
-    <string name="error_mic_stopped">ไมโครโฟนหยุดทำงานกะทันหัน</string>
+    <string name="error_mic_busy">การโทรหรือแอปอื่นกำลังใช้ไมโครโฟน เมื่อว่างแล้วแตะลองอีกครั้ง</string>
+    <string name="error_mic_unavailable">เปิดไมโครโฟนไม่ได้ ปิดแอปอื่นที่ใช้ไมโครโฟนอยู่แล้วแตะลองอีกครั้ง หรือรีสตาร์ทอุปกรณ์</string>
+    <string name="error_mic_stopped">ไมโครโฟนหยุดทำงาน อาจเป็นเพราะการโทรหรือแอปอื่น แตะลองอีกครั้งเพื่อจูนต่อ</string>
     <string name="error_retry">ลองอีกครั้ง</string>
 
     <string name="tuner_mode_strings">สาย</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">หยุดเสียง</string>
     <string name="tuner_string_sounding">กำลังเล่น</string>
     <string name="tuner_string_locked_sounding">ล็อกอยู่ กำลังเล่น</string>
+    <string name="tuner_string_tuned">จูนแล้ว</string>
+    <string name="tuner_string_locked_tuned">ล็อกอยู่ จูนแล้ว</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 เซนต์</string>
     <plurals name="tuner_cents_flat">
@@ -93,7 +97,7 @@
     <string name="tuner_tune_up">จูนขึ้น ↑</string>
     <string name="tuner_tune_down">จูนลง ↓</string>
     <string name="tuner_tip_too_soft">เล่นดังขึ้นอีกนิด</string>
-    <string name="tuner_tip_too_noisy">เสียงรบกวนเยอะเกินไป</string>
+    <string name="tuner_tip_too_noisy">เสียงรบกวนเยอะ วางโทรศัพท์ให้ใกล้ขึ้น</string>
     <string name="tuner_tip_too_loud">ดังเกินไป วางโทรศัพท์ให้ห่างขึ้น</string>
     <string name="tuner_signal_bars">แถบสัญญาณ: %1$d จาก %2$d</string>
     <string name="tuner_signal_no_note">สัญญาณ: ยังไม่มีโน้ต</string>
@@ -124,6 +128,7 @@
     <string name="tuning_editor_name">ชื่อ</string>
     <string name="tuning_editor_name_empty">ตั้งชื่อให้การตั้งสายนี้</string>
     <string name="tuning_editor_name_taken">มีการตั้งสายชื่อนี้อยู่แล้ว</string>
+    <string name="tuning_editor_not_saved">บันทึกการตั้งสายไม่ได้ พื้นที่เก็บข้อมูลของโทรศัพท์เต็มหรือเปล่า</string>
     <string name="tuning_editor_discard_title">ทิ้งการเปลี่ยนแปลงไหม</string>
     <string name="tuning_editor_discard">ทิ้ง</string>
     <string name="tuning_editor_keep_editing">แก้ไขต่อ</string>
@@ -160,7 +165,7 @@
     <string name="tour_step_spoken">ขั้นที่ %1$d จาก %2$d %3$s</string>
     <string name="tour_readout">เพี้ยนแค่ไหน และเป็นโน้ตอะไร</string>
     <string name="tour_strum">ตีทีเดียว เช็กทุกสาย</string>
-    <string name="tour_strings">แตะเพื่อล็อก กดค้างเพื่อฟัง</string>
+    <string name="tour_strings">เลือก: จูนเฉพาะสายนี้ กดค้าง: ฟังเสียง</string>
     <string name="tour_picker">เลือกเครื่องดนตรีและการตั้งสาย</string>
     <string name="tour_skip">ข้าม</string>
     <string name="tour_next">ถัดไป</string>
@@ -219,7 +224,7 @@
     <string name="tuner_chord_slash">%1$s, %2$s เป็นเสียงเบส</string>
     <string name="tuner_chord_bass">เบส</string>
     <string name="tuner_chord_strum">ตีคอร์ด</string>
-    <string name="tuner_chord_strum_detail">ให้ครบทุกสายของคอร์ด</string>
+    <string name="tuner_chord_strum_detail">ปล่อยให้ทุกสายดังก้อง</string>
     <string name="tuner_chord_next">ตีอีกครั้งเพื่อคอร์ดถัดไป</string>
     <string name="tuner_chord_let_ring">ปล่อยให้เสียงก้อง</string>
     <string name="tuner_chord_unclear">ไม่ใช่คอร์ดที่ชัดเจน</string>

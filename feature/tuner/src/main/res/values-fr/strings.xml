@@ -5,13 +5,15 @@
     <string name="mic_permission_rationale">Sans le micro, Twangle ne peut pas entendre vos cordes, ni savoir si elles sont justes. Le son ne quitte jamais votre appareil.</string>
     <string name="mic_permission_settings_hint">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations, puis Micro, et autorisez-le pendant l\'utilisation de l\'application.</string>
     <string name="mic_permission_settings_hint_switch">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations et activez Micro.</string>
+    <string name="mic_permission_without_mic">Le métronome et les outils de Pratique fonctionnent sans le micro.</string>
+    <string name="mic_permission_without_mic_metronome">Le métronome fonctionne sans le micro.</string>
     <string name="mic_permission_allow">Autoriser le micro</string>
     <string name="mic_permission_open_settings">Ouvrir les paramètres</string>
 
     <string name="error_mic_permission">L\'accès au micro a été désactivé. Autorisez-le à nouveau pour continuer à accorder.</string>
-    <string name="error_mic_busy">Une autre app utilise le micro. Fermez-la, puis réessayez.</string>
-    <string name="error_mic_unavailable">Impossible d\'ouvrir le micro sur cet appareil.</string>
-    <string name="error_mic_stopped">Le micro s\'est arrêté de façon inattendue.</string>
+    <string name="error_mic_busy">Un appel ou une autre app utilise le micro. Quand il est libre, touchez Réessayer.</string>
+    <string name="error_mic_unavailable">Impossible d\'ouvrir le micro. Fermez les autres apps qui l\'utilisent et touchez Réessayer, ou redémarrez votre appareil.</string>
+    <string name="error_mic_stopped">Le micro s\'est arrêté, peut-être pour un appel ou une autre app. Touchez Réessayer pour continuer à accorder.</string>
     <string name="error_retry">Réessayer</string>
 
     <string name="tuner_mode_strings">Cordes</string>
@@ -82,6 +84,8 @@
     <string name="tuner_string_stop_tone">Arrêter le son</string>
     <string name="tuner_string_sounding">Son en cours</string>
     <string name="tuner_string_locked_sounding">Verrouillée, son en cours</string>
+    <string name="tuner_string_tuned">Accordée</string>
+    <string name="tuner_string_locked_tuned">Verrouillée, accordée</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
@@ -98,7 +102,7 @@
     <string name="tuner_tune_up">Plus haut ↑</string>
     <string name="tuner_tune_down">Plus bas ↓</string>
     <string name="tuner_tip_too_soft">Jouez un peu plus fort</string>
-    <string name="tuner_tip_too_noisy">Trop de bruit ici</string>
+    <string name="tuner_tip_too_noisy">Trop de bruit, rapprochez le téléphone</string>
     <string name="tuner_tip_too_loud">Trop fort, éloignez le téléphone</string>
     <string name="tuner_signal_bars">Barres de signal : %1$d sur %2$d</string>
     <string name="tuner_signal_no_note">Signal : pas encore de note</string>
@@ -129,6 +133,7 @@
     <string name="tuning_editor_name">Nom</string>
     <string name="tuning_editor_name_empty">Donnez un nom à l\'accordage</string>
     <string name="tuning_editor_name_taken">Un accordage porte déjà ce nom</string>
+    <string name="tuning_editor_not_saved">Impossible d\'enregistrer l\'accordage. Le stockage du téléphone est-il plein ?</string>
     <string name="tuning_editor_discard_title">Abandonner les modifications ?</string>
     <string name="tuning_editor_discard">Abandonner</string>
     <string name="tuning_editor_keep_editing">Continuer</string>
@@ -167,7 +172,7 @@
     <string name="tour_step_spoken">Étape %1$d sur %2$d. %3$s.</string>
     <string name="tour_readout">Votre écart, et quelle note</string>
     <string name="tour_strum">Grattez pour tester toutes les cordes</string>
-    <string name="tour_strings">Touchez pour verrouiller, maintenez pour écouter</string>
+    <string name="tour_strings">Touchez : cette corde seule. Maintenez : écoutez-la</string>
     <string name="tour_picker">Choisissez l\'instrument et l\'accordage</string>
     <string name="tour_skip">Passer</string>
     <string name="tour_next">Suivant</string>
@@ -228,11 +233,11 @@
     <string name="tuner_chord_slash">%1$s, %2$s à la basse</string>
     <string name="tuner_chord_bass">basse</string>
     <string name="tuner_chord_strum">Grattez un accord</string>
-    <string name="tuner_chord_strum_detail">Avec toutes ses cordes</string>
-    <string name="tuner_chord_next">Grattez à nouveau pour le suivant</string>
+    <string name="tuner_chord_strum_detail">Laissez sonner toutes les cordes</string>
+    <string name="tuner_chord_next">Grattez à nouveau pour l\'accord suivant</string>
     <string name="tuner_chord_let_ring">Laissez-le sonner</string>
     <string name="tuner_chord_unclear">Aucun accord net</string>
-    <string name="tuner_chord_unclear_detail">Grattez toutes ses cordes</string>
+    <string name="tuner_chord_unclear_detail">Grattez toutes les cordes de l\'accord</string>
     <string name="tuner_chord_none">Pas encore d\'accord</string>
     <string name="tuner_chord_spoken_notes">notes %1$s</string>
     <string name="tuner_chord_spoken_recent">avant cela, %1$s</string>

@@ -6,11 +6,14 @@
     <string name="ear_exercise_chord_type">和弦類型</string>
     <string name="ear_exercise_word_play_back">聽音彈奏</string>
     <string name="ear_exercise_word_intervals">音程</string>
-    <string name="ear_exercise_word_chord_type">和弦</string>
+    <string name="ear_exercise_word_chord_type">和弦類型</string>
     <string name="ear_replay">再聽一次</string>
     <string name="ear_play_prompt">在你的樂器上彈出來</string>
     <string name="ear_spoken_heard">聽到：%1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="other">%2$d 題中答對 %1$d 題</item>
+    </plurals>
     <string name="ear_choices">出題範圍</string>
     <string name="ear_notes">音</string>
     <string name="ear_notes_open_strings">空弦</string>
@@ -81,4 +84,5 @@
     <string name="ear_chord_half_diminished">半減七和弦</string>
     <string name="ear_chord_augmented">增三和弦</string>
     <string name="ear_chord_none">此調音下沒有順手的按法</string>
+    <string name="ear_mic_stopped">麥克風已停止</string>
 </resources>

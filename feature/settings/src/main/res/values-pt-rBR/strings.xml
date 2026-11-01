@@ -66,8 +66,8 @@
     <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto você afina</string>
     <string name="settings_vibrate_in_tune_title">Vibrar quando afinado</string>
     <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota fica afinada</string>
-    <string name="settings_show_tune_hint_title">Mostrar se é para subir ou baixar</string>
-    <string name="settings_show_tune_hint_summary">Diz para que lado girar a tarraxa enquanto uma nota está desafinada</string>
+    <string name="settings_show_tune_hint_title">Mostrar ajuda para afinar</string>
+    <string name="settings_show_tune_hint_summary">Diz se é para subir ou baixar e marca cada corda assim que ela estiver afinada</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de sinal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: barrinhas ao lado da nota mostram se o afinador ouve você bem. Toque nelas para ver os números</string>
 

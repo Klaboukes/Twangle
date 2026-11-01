@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Tiempos por compás</string>
-    <string name="metronome_tempo">Tempo, arrastra para cambiar</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d pulso por minuto, %2$s</item>
         <item quantity="many">%1$d pulsos por minuto, %2$s</item>
@@ -29,10 +29,10 @@
     <string name="metronome_options">Opciones</string>
     <string name="metronome_trainer">Entrenador de tempo</string>
     <string name="metronome_trainer_back">Volver a las opciones</string>
-    <string name="metronome_trainer_start">Inicio</string>
+    <string name="metronome_trainer_start">Tempo inicial</string>
     <string name="metronome_trainer_goal">Objetivo</string>
-    <string name="metronome_trainer_start_slower">Empezar más lento</string>
-    <string name="metronome_trainer_start_faster">Empezar más rápido</string>
+    <string name="metronome_trainer_start_slower">Tempo inicial más bajo</string>
+    <string name="metronome_trainer_start_faster">Tempo inicial más alto</string>
     <string name="metronome_trainer_goal_slower">Objetivo más bajo</string>
     <string name="metronome_trainer_goal_faster">Objetivo más alto</string>
     <string name="metronome_trainer_step">Paso</string>
@@ -78,6 +78,7 @@
     <string name="metronome_pick_double">Doble</string>
     <string name="metronome_no_beat">No se oye un ritmo claro</string>
     <string name="metronome_try_again">Reintentar</string>
+    <string name="metronome_mic_busy">Micrófono ocupado</string>
     <string name="metronome_mic_off">Micrófono desactivado</string>
     <string name="metronome_open_settings">Abrir ajustes</string>
 </resources>

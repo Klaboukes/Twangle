@@ -6,6 +6,19 @@
         <item quantity="other">%1$s सेंट</item>
     </plurals>
     <string name="wear_in_tune">सुर में</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d सेंट नीचे</item>
+        <item quantity="other">%1$d सेंट नीचे</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d सेंट ऊपर</item>
+        <item quantity="other">%1$d सेंट ऊपर</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">ऊपर ट्यून करें</string>
+    <string name="wear_spoken_tune_down">नीचे ट्यून करें</string>
+    <string name="wear_spoken_sharp">%1$s शार्प</string>
     <string name="wear_mic_needed">Twangle घड़ी के माइक्रोफ़ोन से आपका वाद्य सुनता है।</string>
     <string name="wear_allow_mic">माइक्रोफ़ोन की अनुमति दें</string>
     <string name="wear_open_settings">सेटिंग्स खोलें</string>

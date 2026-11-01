@@ -5,6 +5,17 @@
         <item quantity="other">%1$s sen</item>
     </plurals>
     <string name="wear_in_tune">pas</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="other">%1$d sen terlalu rendah</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="other">%1$d sen terlalu tinggi</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">naikkan</string>
+    <string name="wear_spoken_tune_down">turunkan</string>
+    <string name="wear_spoken_sharp">%1$s kres</string>
     <string name="wear_mic_needed">Twangle mendengarkan instrumen Anda lewat mikrofon jam tangan.</string>
     <string name="wear_allow_mic">Izinkan mikrofon</string>
     <string name="wear_open_settings">Buka setelan</string>

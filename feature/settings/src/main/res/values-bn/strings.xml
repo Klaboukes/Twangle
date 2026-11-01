@@ -58,8 +58,8 @@
     <string name="settings_keep_screen_on_summary">টিউন করার সময় স্ক্রিন চালু থাকে</string>
     <string name="settings_vibrate_in_tune_title">সুরে এলে ভাইব্রেট</string>
     <string name="settings_vibrate_in_tune_summary">নোট ঠিক পিচে পৌঁছালে একটি ছোট ভাইব্রেশন</string>
-    <string name="settings_show_tune_hint_title">সুর চড়ান/নামান সংকেত দেখান</string>
-    <string name="settings_show_tune_hint_summary">নোট বেসুরো হলে বলে দেয় খুঁটি কোন দিকে ঘোরাতে হবে</string>
+    <string name="settings_show_tune_hint_title">টিউন করার সহায়তা দেখান</string>
+    <string name="settings_show_tune_hint_summary">সুর চড়াতে হবে না নামাতে হবে বলে দেয়, আর সুরে এলে প্রতিটি তারে টিক চিহ্ন দেয়</string>
     <string name="settings_show_signal_bars_title">সিগন্যাল বার দেখান</string>
     <string name="settings_show_signal_bars_summary">কৌতূহলীদের জন্য: নোটের পাশে ছোট বারগুলো দেখায় টিউনার আপনাকে কতটা ভালো শুনছে। সংখ্যা দেখতে সেগুলোতে ট্যাপ করুন</string>
     <string name="settings_language_title">ভাষা</string>

@@ -6,6 +6,21 @@
         <item quantity="other">%1$s cents</item>
     </plurals>
     <string name="wear_in_tune">juste</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent trop bas</item>
+        <item quantity="many">%1$d cents trop bas</item>
+        <item quantity="other">%1$d cents trop bas</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent trop haut</item>
+        <item quantity="many">%1$d cents trop haut</item>
+        <item quantity="other">%1$d cents trop haut</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">plus haut</string>
+    <string name="wear_spoken_tune_down">plus bas</string>
+    <string name="wear_spoken_sharp">%1$s dièse</string>
     <string name="wear_mic_needed">Twangle écoute votre instrument avec le micro de la montre.</string>
     <string name="wear_allow_mic">Autoriser le micro</string>
     <string name="wear_open_settings">Ouvrir les paramètres</string>

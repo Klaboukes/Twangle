@@ -10,6 +10,27 @@
         <item quantity="other">%1$s سنت</item>
     </plurals>
     <string name="wear_in_tune">مضبوط</string>
+    <string name="wear_spoken_reading">%1$s %2$d، %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d، %3$s، %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="zero">أخفض بـ%1$d سنت</item>
+        <item quantity="one">أخفض بسنت واحد</item>
+        <item quantity="two">أخفض بسنتين</item>
+        <item quantity="few">أخفض بـ%1$d سنتات</item>
+        <item quantity="many">أخفض بـ%1$d سنتًا</item>
+        <item quantity="other">أخفض بـ%1$d سنت</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="zero">أعلى بـ%1$d سنت</item>
+        <item quantity="one">أعلى بسنت واحد</item>
+        <item quantity="two">أعلى بسنتين</item>
+        <item quantity="few">أعلى بـ%1$d سنتات</item>
+        <item quantity="many">أعلى بـ%1$d سنتًا</item>
+        <item quantity="other">أعلى بـ%1$d سنت</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">شُدّ</string>
+    <string name="wear_spoken_tune_down">أرخِ</string>
+    <string name="wear_spoken_sharp">%1$s دييز</string>
     <string name="wear_mic_needed">يستمع Twangle إلى آلتك عبر ميكروفون الساعة.</string>
     <string name="wear_allow_mic">اسمح بالميكروفون</string>
     <string name="wear_open_settings">افتح الإعدادات</string>

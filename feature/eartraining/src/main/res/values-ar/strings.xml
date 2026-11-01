@@ -6,11 +6,19 @@
     <string name="ear_exercise_chord_type">نوع الكورد</string>
     <string name="ear_exercise_word_play_back">الإعادة</string>
     <string name="ear_exercise_word_intervals">الأبعاد</string>
-    <string name="ear_exercise_word_chord_type">الكوردات</string>
+    <string name="ear_exercise_word_chord_type">نوع الكورد</string>
     <string name="ear_replay">استمع مرة أخرى</string>
     <string name="ear_play_prompt">اعزفها على آلتك</string>
     <string name="ear_spoken_heard">المسموع: %1$s</string>
     <string name="ear_tally">%1$d من %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="zero">%1$d إجابة صحيحة من %2$d</item>
+        <item quantity="one">إجابة صحيحة واحدة من %2$d</item>
+        <item quantity="two">إجابتان صحيحتان من %2$d</item>
+        <item quantity="few">%1$d إجابات صحيحة من %2$d</item>
+        <item quantity="many">%1$d إجابة صحيحة من %2$d</item>
+        <item quantity="other">%1$d إجابة صحيحة من %2$d</item>
+    </plurals>
     <string name="ear_choices">ما يُسأل عنه</string>
     <string name="ear_notes">النغمات</string>
     <string name="ear_notes_open_strings">الأوتار المفتوحة</string>
@@ -81,4 +89,5 @@
     <string name="ear_chord_half_diminished">نصف ناقص</string>
     <string name="ear_chord_augmented">زائد</string>
     <string name="ear_chord_none">لا يوجد شكل في المتناول بهذا الدوزان</string>
+    <string name="ear_mic_stopped">توقف الميكروفون</string>
 </resources>

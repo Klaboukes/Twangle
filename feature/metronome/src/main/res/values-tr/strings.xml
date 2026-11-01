@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Ölçüdeki vuruş</string>
-    <string name="metronome_tempo">Tempo, değiştirmek için sürükle</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">Dakikada %1$d vuruş, %2$s</item>
         <item quantity="other">Dakikada %1$d vuruş, %2$s</item>
@@ -28,10 +28,10 @@
     <string name="metronome_options">Seçenekler</string>
     <string name="metronome_trainer">Tempo antrenörü</string>
     <string name="metronome_trainer_back">Seçeneklere dön</string>
-    <string name="metronome_trainer_start">Başlangıç</string>
+    <string name="metronome_trainer_start">Başlangıç temposu</string>
     <string name="metronome_trainer_goal">Hedef</string>
-    <string name="metronome_trainer_start_slower">Daha yavaş başla</string>
-    <string name="metronome_trainer_start_faster">Daha hızlı başla</string>
+    <string name="metronome_trainer_start_slower">Daha düşük başlangıç temposu</string>
+    <string name="metronome_trainer_start_faster">Daha yüksek başlangıç temposu</string>
     <string name="metronome_trainer_goal_slower">Daha düşük hedef</string>
     <string name="metronome_trainer_goal_faster">Daha yüksek hedef</string>
     <string name="metronome_trainer_step">Adım</string>
@@ -74,6 +74,7 @@
     <string name="metronome_pick_double">İki kat</string>
     <string name="metronome_no_beat">Belirgin bir ritim duyulmadı</string>
     <string name="metronome_try_again">Tekrar dene</string>
+    <string name="metronome_mic_busy">Mikrofon meşgul</string>
     <string name="metronome_mic_off">Mikrofon kapalı</string>
     <string name="metronome_open_settings">Ayarları aç</string>
 </resources>

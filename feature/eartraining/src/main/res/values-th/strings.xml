@@ -6,11 +6,14 @@
     <string name="ear_exercise_chord_type">ชนิดคอร์ด</string>
     <string name="ear_exercise_word_play_back">เล่นตาม</string>
     <string name="ear_exercise_word_intervals">ขั้นคู่</string>
-    <string name="ear_exercise_word_chord_type">คอร์ด</string>
+    <string name="ear_exercise_word_chord_type">ชนิดคอร์ด</string>
     <string name="ear_replay">ฟังอีกครั้ง</string>
     <string name="ear_play_prompt">เล่นตามบนเครื่องดนตรีของคุณ</string>
     <string name="ear_spoken_heard">ได้ยิน: %1$s</string>
     <string name="ear_tally">%1$d จาก %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="other">ถูก %1$d จาก %2$d</item>
+    </plurals>
     <string name="ear_choices">เลือกคำถาม</string>
     <string name="ear_notes">โน้ต</string>
     <string name="ear_notes_open_strings">สายเปล่า</string>
@@ -81,4 +84,5 @@
     <string name="ear_chord_half_diminished">ฮาล์ฟดิมินิช</string>
     <string name="ear_chord_augmented">ออกเมนเต็ด</string>
     <string name="ear_chord_none">ไม่มีฟอร์มที่จับถึงในการตั้งสายนี้</string>
+    <string name="ear_mic_stopped">ไมโครโฟนหยุดทำงาน</string>
 </resources>

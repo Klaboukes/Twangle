@@ -5,11 +5,15 @@
     <string name="ear_exercise_chord_type">কর্ডের ধরন</string>
     <string name="ear_exercise_word_play_back">অনুকরণ</string>
     <string name="ear_exercise_word_intervals">ইন্টারভাল</string>
-    <string name="ear_exercise_word_chord_type">কর্ড</string>
+    <string name="ear_exercise_word_chord_type">কর্ডের ধরন</string>
     <string name="ear_replay">আবার শুনুন</string>
     <string name="ear_play_prompt">এটি আপনার বাদ্যযন্ত্রে বাজান</string>
     <string name="ear_spoken_heard">শোনা গেছে: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%2$d-এর মধ্যে %1$dটি সঠিক</item>
+        <item quantity="other">%2$d-এর মধ্যে %1$dটি সঠিক</item>
+    </plurals>
     <string name="ear_choices">কী জিজ্ঞেস করা হবে</string>
     <string name="ear_notes">নোট</string>
     <string name="ear_notes_open_strings">খোলা তার</string>
@@ -80,4 +84,5 @@
     <string name="ear_chord_half_diminished">হাফ-ডিমিনিশড</string>
     <string name="ear_chord_augmented">অগমেন্টেড</string>
     <string name="ear_chord_none">এই টিউনিংয়ে হাতের নাগালে কোনো শেপ নেই</string>
+    <string name="ear_mic_stopped">মাইক্রোফোন থেমে গেছে</string>
 </resources>

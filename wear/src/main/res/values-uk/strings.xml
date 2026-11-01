@@ -7,6 +7,23 @@
         <item quantity="other">%1$s цента</item>
     </plurals>
     <string name="wear_in_tune">налаштовано</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d цент нижче</item>
+        <item quantity="few">%1$d центи нижче</item>
+        <item quantity="many">%1$d центів нижче</item>
+        <item quantity="other">%1$d цента нижче</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d цент вище</item>
+        <item quantity="few">%1$d центи вище</item>
+        <item quantity="many">%1$d центів вище</item>
+        <item quantity="other">%1$d цента вище</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">підтягни</string>
+    <string name="wear_spoken_tune_down">послаб</string>
+    <string name="wear_spoken_sharp">%1$s дієз</string>
     <string name="wear_mic_needed">Twangle слухає твій інструмент через мікрофон годинника.</string>
     <string name="wear_allow_mic">Дозволити мікрофон</string>
     <string name="wear_open_settings">Відкрити налаштування</string>

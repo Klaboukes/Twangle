@@ -66,8 +66,8 @@
     <string name="settings_keep_screen_on_summary">ट्यून करते समय स्क्रीन चालू रहती है</string>
     <string name="settings_vibrate_in_tune_title">सुर में आने पर वाइब्रेट करें</string>
     <string name="settings_vibrate_in_tune_summary">नोट सही पिच पर पहुँचते ही हल्का-सा वाइब्रेशन</string>
-    <string name="settings_show_tune_hint_title">ऊपर/नीचे ट्यून करने का संकेत दिखाएँ</string>
-    <string name="settings_show_tune_hint_summary">नोट बेसुरा होने पर बताता है कि खूँटी किस ओर घुमानी है</string>
+    <string name="settings_show_tune_hint_title">ट्यून करने में मदद दिखाएँ</string>
+    <string name="settings_show_tune_hint_summary">बताता है कि ऊपर ट्यून करें या नीचे, और सुर में आते ही हर तार पर सही का निशान लगाता है</string>
     <string name="settings_show_signal_bars_title">सिग्नल बार दिखाएँ</string>
     <string name="settings_show_signal_bars_summary">जिज्ञासुओं के लिए: नोट के पास छोटे बार दिखाते हैं कि ट्यूनर आपको कितनी अच्छी तरह सुन रहा है। आँकड़े देखने के लिए उन पर टैप करें</string>
 

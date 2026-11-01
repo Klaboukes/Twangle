@@ -1,6 +1,6 @@
 <resources>
     <string name="metronome_beats_in_bar">Долі в такті</string>
-    <string name="metronome_tempo">Темп, потягни, щоб змінити</string>
+    <string name="metronome_tempo">Темп</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d удар за хвилину, %2$s</item>
         <item quantity="few">%1$d удари за хвилину, %2$s</item>
@@ -29,10 +29,10 @@
     <string name="metronome_options">Параметри</string>
     <string name="metronome_trainer">Тренажер темпу</string>
     <string name="metronome_trainer_back">Назад до параметрів</string>
-    <string name="metronome_trainer_start">Старт</string>
+    <string name="metronome_trainer_start">Початковий темп</string>
     <string name="metronome_trainer_goal">Ціль</string>
-    <string name="metronome_trainer_start_slower">Почати повільніше</string>
-    <string name="metronome_trainer_start_faster">Почати швидше</string>
+    <string name="metronome_trainer_start_slower">Знизити початковий темп</string>
+    <string name="metronome_trainer_start_faster">Підвищити початковий темп</string>
     <string name="metronome_trainer_goal_slower">Знизити ціль</string>
     <string name="metronome_trainer_goal_faster">Підвищити ціль</string>
     <string name="metronome_trainer_step">Крок</string>
@@ -80,6 +80,7 @@
     <string name="metronome_pick_double">Удвічі швидше</string>
     <string name="metronome_no_beat">Рівного ритму не чути</string>
     <string name="metronome_try_again">Ще раз</string>
+    <string name="metronome_mic_busy">Мікрофон зайнятий</string>
     <string name="metronome_mic_off">Мікрофон вимкнено</string>
     <string name="metronome_open_settings">До налаштувань</string>
 </resources>

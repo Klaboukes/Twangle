@@ -4,12 +4,14 @@
     <string name="mic_permission_rationale">Без мікрофона Twangle не чує твоїх струн, тож не може сказати, чи вони налаштовані. Звук ніколи не залишає твого пристрою.</string>
     <string name="mic_permission_settings_hint">Доступ до мікрофона для Twangle вимкнено. Відкрий «Налаштування», торкнися «Дозволи», потім «Мікрофон» і дозволь доступ лише під час використання додатка.</string>
     <string name="mic_permission_settings_hint_switch">Доступ до мікрофона для Twangle вимкнено. Відкрий «Налаштування», торкнися «Дозволи» й увімкни «Мікрофон».</string>
+    <string name="mic_permission_without_mic">Метроном і функції вкладки «Практика» працюють без мікрофона.</string>
+    <string name="mic_permission_without_mic_metronome">Метроном працює без мікрофона.</string>
     <string name="mic_permission_allow">Дозволити мікрофон</string>
     <string name="mic_permission_open_settings">Відкрити налаштування</string>
     <string name="error_mic_permission">Доступ до мікрофона вимкнено. Дозволь його знову, щоб продовжити налаштування.</string>
-    <string name="error_mic_busy">Мікрофон використовує інший додаток. Закрий його й спробуй ще раз.</string>
-    <string name="error_mic_unavailable">Не вдалося відкрити мікрофон на цьому пристрої.</string>
-    <string name="error_mic_stopped">Мікрофон несподівано вимкнувся.</string>
+    <string name="error_mic_busy">Мікрофон зайнятий дзвінком або іншим додатком. Коли він звільниться, торкнися «Спробувати ще раз».</string>
+    <string name="error_mic_unavailable">Не вдалося відкрити мікрофон. Закрий інші додатки, що його використовують, і торкнися «Спробувати ще раз» або перезапусти пристрій.</string>
+    <string name="error_mic_stopped">Мікрофон вимкнувся, можливо, через дзвінок або інший додаток. Торкнися «Спробувати ще раз», щоб далі налаштовувати.</string>
     <string name="error_retry">Спробувати ще раз</string>
     <string name="tuner_mode_strings">Струни</string>
     <string name="tuner_mode_chromatic">Хроматичний</string>
@@ -77,6 +79,8 @@
     <string name="tuner_string_stop_tone">Зупинити звук</string>
     <string name="tuner_string_sounding">Звучить</string>
     <string name="tuner_string_locked_sounding">Закріплена, звучить</string>
+    <string name="tuner_string_tuned">Налаштована</string>
+    <string name="tuner_string_locked_tuned">Закріплена, налаштована</string>
     <string name="tuner_frequency">%1$.1f Гц</string>
     <string name="tuner_cents_zero">0 центів</string>
     <plurals name="tuner_cents_flat">
@@ -95,7 +99,7 @@
     <string name="tuner_tune_up">Підтягни ↑</string>
     <string name="tuner_tune_down">Послаб ↓</string>
     <string name="tuner_tip_too_soft">Грай трохи голосніше</string>
-    <string name="tuner_tip_too_noisy">Тут надто шумно</string>
+    <string name="tuner_tip_too_noisy">Надто шумно, присунь телефон</string>
     <string name="tuner_tip_too_loud">Надто гучно, відсунь телефон</string>
     <string name="tuner_signal_bars">Смужки сигналу: %1$d з %2$d</string>
     <string name="tuner_signal_no_note">Сигнал: ноти ще немає</string>
@@ -123,6 +127,7 @@
     <string name="tuning_editor_name">Назва</string>
     <string name="tuning_editor_name_empty">Дай строю назву</string>
     <string name="tuning_editor_name_taken">Стрій із такою назвою вже є</string>
+    <string name="tuning_editor_not_saved">Не вдалося зберегти стрій. Може, пам’ять телефона заповнена?</string>
     <string name="tuning_editor_discard_title">Відкинути зміни?</string>
     <string name="tuning_editor_discard">Відкинути</string>
     <string name="tuning_editor_keep_editing">Продовжити</string>
@@ -161,7 +166,7 @@
     <string name="tour_step_spoken">Крок %1$d з %2$d. %3$s.</string>
     <string name="tour_readout">Нота та її відхилення</string>
     <string name="tour_strum">Проведи по струнах, щоб перевірити всі</string>
-    <string name="tour_strings">Торкнися — закріпити, утримуй — послухати</string>
+    <string name="tour_strings">Торкнися — налаштувати лише цю струну, утримуй — послухати</string>
     <string name="tour_picker">Вибери інструмент і стрій</string>
     <string name="tour_skip">Пропустити</string>
     <string name="tour_next">Далі</string>
@@ -223,11 +228,11 @@
     <string name="tuner_chord_slash">%1$s, у басі %2$s</string>
     <string name="tuner_chord_bass">бас</string>
     <string name="tuner_chord_strum">Зіграй акорд</string>
-    <string name="tuner_chord_strum_detail">Усіма його струнами</string>
-    <string name="tuner_chord_next">Зіграй наступний</string>
+    <string name="tuner_chord_strum_detail">Нехай звучать усі струни</string>
+    <string name="tuner_chord_next">Зіграй ще раз для наступного акорду</string>
     <string name="tuner_chord_let_ring">Дай йому прозвучати</string>
     <string name="tuner_chord_unclear">Акорд не розпізнано</string>
-    <string name="tuner_chord_unclear_detail">Проведи по всіх його струнах</string>
+    <string name="tuner_chord_unclear_detail">Проведи по всіх струнах акорду</string>
     <string name="tuner_chord_none">Акорду ще немає</string>
     <string name="tuner_chord_spoken_notes">ноти %1$s</string>
     <string name="tuner_chord_spoken_recent">перед цим %1$s</string>

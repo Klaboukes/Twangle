@@ -8,6 +8,23 @@
         <item quantity="other">%1$s цента</item>
     </plurals>
     <string name="wear_in_tune">настроено</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d цент ниже</item>
+        <item quantity="few">%1$d цента ниже</item>
+        <item quantity="many">%1$d центов ниже</item>
+        <item quantity="other">%1$d цента ниже</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d цент выше</item>
+        <item quantity="few">%1$d цента выше</item>
+        <item quantity="many">%1$d центов выше</item>
+        <item quantity="other">%1$d цента выше</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">подтяни</string>
+    <string name="wear_spoken_tune_down">ослабь</string>
+    <string name="wear_spoken_sharp">%1$s диез</string>
     <string name="wear_mic_needed">Twangle слушает твой инструмент через микрофон часов.</string>
     <string name="wear_allow_mic">Разрешить микрофон</string>
     <string name="wear_open_settings">Открыть настройки</string>

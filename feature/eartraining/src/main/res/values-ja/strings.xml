@@ -6,11 +6,14 @@
     <string name="ear_exercise_chord_type">コードの種類</string>
     <string name="ear_exercise_word_play_back">聞いて弾く</string>
     <string name="ear_exercise_word_intervals">音程</string>
-    <string name="ear_exercise_word_chord_type">コード</string>
+    <string name="ear_exercise_word_chord_type">コードの種類</string>
     <string name="ear_replay">もう一度聞く</string>
     <string name="ear_play_prompt">楽器で弾いてください</string>
     <string name="ear_spoken_heard">聞こえた音：%1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="other">%2$d 問中 %1$d 問正解</item>
+    </plurals>
     <string name="ear_choices">出題の内容</string>
     <string name="ear_notes">音</string>
     <string name="ear_notes_open_strings">開放弦</string>
@@ -81,4 +84,5 @@
     <string name="ear_chord_half_diminished">マイナーセブンスフラットファイブ</string>
     <string name="ear_chord_augmented">オーギュメント</string>
     <string name="ear_chord_none">このチューニングでは手の届く押さえ方がありません</string>
+    <string name="ear_mic_stopped">マイクが停止しました</string>
 </resources>

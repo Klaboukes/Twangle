@@ -66,8 +66,8 @@
     <string name="settings_keep_screen_on_summary">Näyttö pysyy päällä, kun virität</string>
     <string name="settings_vibrate_in_tune_title">Värinä vireessä</string>
     <string name="settings_vibrate_in_tune_summary">Lyhyt värähdys, kun sävel osuu vireeseen</string>
-    <string name="settings_show_tune_hint_title">Näytä kiristä/löysää-vihje</string>
-    <string name="settings_show_tune_hint_summary">Kertoo, kumpaan suuntaan viritystappia käännetään, kun sävel ei ole vireessä</string>
+    <string name="settings_show_tune_hint_title">Näytä viritysapu</string>
+    <string name="settings_show_tune_hint_summary">Kertoo, pitääkö kiristää vai löysätä, ja merkitsee kielen valmiiksi, kun se on vireessä</string>
     <string name="settings_show_signal_bars_title">Näytä signaalipalkit</string>
     <string name="settings_show_signal_bars_summary">Uteliaille: pienet palkit sävelen vieressä näyttävät, kuinka hyvin viritin kuulee sinut. Napauta niitä, niin näet luvut</string>
 

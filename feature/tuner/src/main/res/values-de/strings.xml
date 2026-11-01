@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Ohne Mikrofon hört Twangle deine Saiten nicht und kann nicht sagen, ob sie gestimmt sind. Der Ton verlässt nie dein Gerät.</string>
     <string name="mic_permission_settings_hint">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen, dann auf Mikrofon und wähle „Nur während der Nutzung der App zulassen“.</string>
     <string name="mic_permission_settings_hint_switch">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen und schalte Mikrofon ein.</string>
+    <string name="mic_permission_without_mic">Das Metronom und die Werkzeuge unter Üben funktionieren ohne Mikrofon.</string>
+    <string name="mic_permission_without_mic_metronome">Das Metronom funktioniert ohne Mikrofon.</string>
     <string name="mic_permission_allow">Mikrofon erlauben</string>
     <string name="mic_permission_open_settings">Einstellungen öffnen</string>
 
     <string name="error_mic_permission">Der Mikrofonzugriff wurde ausgeschaltet. Erlaube ihn wieder, um weiter zu stimmen.</string>
-    <string name="error_mic_busy">Eine andere App nutzt das Mikrofon. Schließe sie und versuche es erneut.</string>
-    <string name="error_mic_unavailable">Das Mikrofon ließ sich auf diesem Gerät nicht öffnen.</string>
-    <string name="error_mic_stopped">Das Mikrofon ist unerwartet ausgefallen.</string>
+    <string name="error_mic_busy">Ein Anruf oder eine andere App nutzt das Mikrofon. Wenn es frei ist, tippe auf „Erneut versuchen“.</string>
+    <string name="error_mic_unavailable">Das Mikrofon ließ sich nicht öffnen. Schließe andere Apps, die es nutzen, und tippe auf „Erneut versuchen“, oder starte dein Gerät neu.</string>
+    <string name="error_mic_stopped">Das Mikrofon wurde gestoppt, vielleicht für einen Anruf oder eine andere App. Tippe auf „Erneut versuchen“, um weiter zu stimmen.</string>
     <string name="error_retry">Erneut versuchen</string>
 
     <string name="tuner_mode_strings">Saiten</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Ton stoppen</string>
     <string name="tuner_string_sounding">Spielt</string>
     <string name="tuner_string_locked_sounding">Festgelegt, spielt</string>
+    <string name="tuner_string_tuned">Gestimmt</string>
+    <string name="tuner_string_locked_tuned">Festgelegt, gestimmt</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Nach einer Zahl bleibt „Cent“ in der Einzahl: „12 Cent“. -->
     <string name="tuner_cents_zero">0 Cent</string>
@@ -96,7 +100,7 @@
     <string name="tuner_tune_up">Höher stimmen ↑</string>
     <string name="tuner_tune_down">Tiefer stimmen ↓</string>
     <string name="tuner_tip_too_soft">Spiel etwas lauter</string>
-    <string name="tuner_tip_too_noisy">Zu viel Lärm hier</string>
+    <string name="tuner_tip_too_noisy">Zu viel Lärm, Handy näher ran</string>
     <string name="tuner_tip_too_loud">Zu laut, Handy weiter weg</string>
     <string name="tuner_signal_bars">Signalbalken: %1$d von %2$d</string>
     <string name="tuner_signal_no_note">Signal: noch kein Ton</string>
@@ -127,6 +131,7 @@
     <string name="tuning_editor_name">Name</string>
     <string name="tuning_editor_name_empty">Gib der Stimmung einen Namen</string>
     <string name="tuning_editor_name_taken">Es gibt schon eine Stimmung mit diesem Namen</string>
+    <string name="tuning_editor_not_saved">Die Stimmung ließ sich nicht speichern. Ist der Speicher des Handys voll?</string>
     <string name="tuning_editor_discard_title">Änderungen verwerfen?</string>
     <string name="tuning_editor_discard">Verwerfen</string>
     <string name="tuning_editor_keep_editing">Weiter bearbeiten</string>
@@ -164,7 +169,7 @@
     <string name="tour_step_spoken">Schritt %1$d von %2$d. %3$s.</string>
     <string name="tour_readout">Wie weit daneben und welcher Ton</string>
     <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
-    <string name="tour_strings">Tippen zum Festlegen, halten zum Anhören</string>
+    <string name="tour_strings">Tippen: nur diese Saite stimmen. Halten: anhören</string>
     <string name="tour_picker">Instrument und Stimmung wählen</string>
     <string name="tour_skip">Überspringen</string>
     <string name="tour_next">Weiter</string>
@@ -224,8 +229,8 @@
     <string name="tuner_chord_slash">%1$s, %2$s im Bass</string>
     <string name="tuner_chord_bass">Bass</string>
     <string name="tuner_chord_strum">Schlag einen Akkord an</string>
-    <string name="tuner_chord_strum_detail">Mit allen Saiten des Akkords</string>
-    <string name="tuner_chord_next">Schlag den nächsten an</string>
+    <string name="tuner_chord_strum_detail">Lass alle Saiten klingen</string>
+    <string name="tuner_chord_next">Schlag den nächsten Akkord an</string>
     <string name="tuner_chord_let_ring">Lass ihn klingen</string>
     <string name="tuner_chord_unclear">Kein klarer Akkord</string>
     <string name="tuner_chord_unclear_detail">Schlag alle Saiten des Akkords an</string>

@@ -5,6 +5,17 @@
         <item quantity="other">%1$s센트</item>
     </plurals>
     <string name="wear_in_tune">음이 맞음</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="other">%1$d센트 낮음</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="other">%1$d센트 높음</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">올리기</string>
+    <string name="wear_spoken_tune_down">내리기</string>
+    <string name="wear_spoken_sharp">%1$s 샵</string>
     <string name="wear_mic_needed">Twangle은 워치의 마이크로 악기 소리를 들어요.</string>
     <string name="wear_allow_mic">마이크 허용</string>
     <string name="wear_open_settings">설정 열기</string>

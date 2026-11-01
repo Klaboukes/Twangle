@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Iskuja tahdissa</string>
-    <string name="metronome_tempo">Tempo, muuta vetämällä</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d isku minuutissa, %2$s</item>
         <item quantity="other">%1$d iskua minuutissa, %2$s</item>
@@ -28,10 +28,10 @@
     <string name="metronome_options">Valinnat</string>
     <string name="metronome_trainer">Tempovalmentaja</string>
     <string name="metronome_trainer_back">Takaisin valintoihin</string>
-    <string name="metronome_trainer_start">Alku</string>
+    <string name="metronome_trainer_start">Alkutempo</string>
     <string name="metronome_trainer_goal">Tavoite</string>
-    <string name="metronome_trainer_start_slower">Hitaampi alku</string>
-    <string name="metronome_trainer_start_faster">Nopeampi alku</string>
+    <string name="metronome_trainer_start_slower">Hitaampi alkutempo</string>
+    <string name="metronome_trainer_start_faster">Nopeampi alkutempo</string>
     <string name="metronome_trainer_goal_slower">Hitaampi tavoite</string>
     <string name="metronome_trainer_goal_faster">Nopeampi tavoite</string>
     <string name="metronome_trainer_step">Askel</string>
@@ -75,6 +75,7 @@
     <string name="metronome_pick_double">Tupla</string>
     <string name="metronome_no_beat">Tasaista sykettä ei kuulunut</string>
     <string name="metronome_try_again">Yritä uudelleen</string>
+    <string name="metronome_mic_busy">Mikrofoni on varattu</string>
     <string name="metronome_mic_off">Mikrofoni on pois päältä</string>
     <string name="metronome_open_settings">Avaa asetukset</string>
 </resources>

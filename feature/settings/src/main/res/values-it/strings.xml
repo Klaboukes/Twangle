@@ -66,8 +66,8 @@
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso durante l\'accordatura</string>
     <string name="settings_vibrate_in_tune_title">Vibra quando è intonato</string>
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
-    <string name="settings_show_tune_hint_title">Indica se alzare o abbassare</string>
-    <string name="settings_show_tune_hint_summary">Dice in che verso girare la chiavetta quando una nota è stonata</string>
+    <string name="settings_show_tune_hint_title">Mostra l\'aiuto per accordare</string>
+    <string name="settings_show_tune_hint_summary">Dice se alzare o abbassare, e spunta ogni corda appena è intonata</string>
     <string name="settings_show_signal_bars_title">Mostra le barre del segnale</string>
     <string name="settings_show_signal_bars_summary">Per i curiosi: piccole barre vicino alla nota mostrano quanto bene ti sente l\'accordatore. Toccale per vedere i valori</string>
 

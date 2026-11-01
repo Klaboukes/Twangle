@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Долей в такте</string>
-    <string name="metronome_tempo">Темп, потяни, чтобы изменить</string>
+    <string name="metronome_tempo">Темп</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d удар в минуту, %2$s</item>
         <item quantity="few">%1$d удара в минуту, %2$s</item>
@@ -30,10 +30,10 @@
     <string name="metronome_options">Параметры</string>
     <string name="metronome_trainer">Тренажёр темпа</string>
     <string name="metronome_trainer_back">Назад к параметрам</string>
-    <string name="metronome_trainer_start">Старт</string>
+    <string name="metronome_trainer_start">Начальный темп</string>
     <string name="metronome_trainer_goal">Цель</string>
-    <string name="metronome_trainer_start_slower">Начать медленнее</string>
-    <string name="metronome_trainer_start_faster">Начать быстрее</string>
+    <string name="metronome_trainer_start_slower">Снизить начальный темп</string>
+    <string name="metronome_trainer_start_faster">Повысить начальный темп</string>
     <string name="metronome_trainer_goal_slower">Снизить цель</string>
     <string name="metronome_trainer_goal_faster">Повысить цель</string>
     <string name="metronome_trainer_step">Шаг</string>
@@ -82,6 +82,7 @@
     <string name="metronome_pick_double">Вдвое быстрее</string>
     <string name="metronome_no_beat">Чёткого ритма не слышно</string>
     <string name="metronome_try_again">Ещё раз</string>
+    <string name="metronome_mic_busy">Микрофон занят</string>
     <string name="metronome_mic_off">Микрофон выключен</string>
     <string name="metronome_open_settings">Открыть настройки</string>
 </resources>

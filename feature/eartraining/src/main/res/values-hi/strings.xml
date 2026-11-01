@@ -6,11 +6,15 @@
     <string name="ear_exercise_chord_type">कॉर्ड का प्रकार</string>
     <string name="ear_exercise_word_play_back">दोहराएँ</string>
     <string name="ear_exercise_word_intervals">अंतराल</string>
-    <string name="ear_exercise_word_chord_type">कॉर्ड</string>
+    <string name="ear_exercise_word_chord_type">कॉर्ड प्रकार</string>
     <string name="ear_replay">फिर से सुनें</string>
     <string name="ear_play_prompt">इसे अपने वाद्य पर बजाएँ</string>
     <string name="ear_spoken_heard">सुना गया: %1$s</string>
     <string name="ear_tally">%2$d में से %1$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%2$d में से %1$d सही</item>
+        <item quantity="other">%2$d में से %1$d सही</item>
+    </plurals>
     <string name="ear_choices">क्या पूछा जाए</string>
     <string name="ear_notes">सुर</string>
     <string name="ear_notes_open_strings">खुले तार</string>
@@ -81,4 +85,5 @@
     <string name="ear_chord_half_diminished">हाफ़-डिमिनिश्ड</string>
     <string name="ear_chord_augmented">ऑगमेंटेड</string>
     <string name="ear_chord_none">इस ट्यूनिंग में कोई शेप पहुँच में नहीं</string>
+    <string name="ear_mic_stopped">माइक्रोफ़ोन रुक गया</string>
 </resources>

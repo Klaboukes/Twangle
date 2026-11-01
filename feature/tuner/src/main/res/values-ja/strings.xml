@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">マイクがないと Twangle は弦の音を聞き取れず、合っているかどうかを判断できません。音が端末の外に出ることはありません。</string>
     <string name="mic_permission_settings_hint">Twangle のマイクへのアクセスがオフになっています。設定を開き、「権限」→「マイク」の順にタップして、アプリの使用中のみ許可してください。</string>
     <string name="mic_permission_settings_hint_switch">Twangle のマイクへのアクセスがオフになっています。設定を開き、「権限」をタップして「マイク」をオンにしてください。</string>
+    <string name="mic_permission_without_mic">メトロノームと「練習」のツールはマイクなしで使えます。</string>
+    <string name="mic_permission_without_mic_metronome">メトロノームはマイクなしで使えます。</string>
     <string name="mic_permission_allow">マイクを許可</string>
     <string name="mic_permission_open_settings">設定を開く</string>
 
     <string name="error_mic_permission">マイクへのアクセスがオフになりました。チューニングを続けるには、もう一度許可してください。</string>
-    <string name="error_mic_busy">別のアプリがマイクを使用中です。そのアプリを閉じてから、もう一度お試しください。</string>
-    <string name="error_mic_unavailable">この端末ではマイクを開けませんでした。</string>
-    <string name="error_mic_stopped">マイクが予期せず停止しました。</string>
+    <string name="error_mic_busy">通話または別のアプリがマイクを使用中です。空いたら「再試行」をタップしてください。</string>
+    <string name="error_mic_unavailable">マイクを開けませんでした。マイクを使っている他のアプリを閉じて「再試行」をタップするか、端末を再起動してください。</string>
+    <string name="error_mic_stopped">通話や別のアプリのためか、マイクが停止しました。「再試行」をタップしてチューニングを続けてください。</string>
     <string name="error_retry">再試行</string>
 
     <string name="tuner_mode_strings">弦</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">音を止める</string>
     <string name="tuner_string_sounding">再生中</string>
     <string name="tuner_string_locked_sounding">固定中、再生中</string>
+    <string name="tuner_string_tuned">チューニング済み</string>
+    <string name="tuner_string_locked_tuned">固定中、チューニング済み</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 セント</string>
     <plurals name="tuner_cents_flat">
@@ -93,7 +97,7 @@
     <string name="tuner_tune_up">上げる ↑</string>
     <string name="tuner_tune_down">下げる ↓</string>
     <string name="tuner_tip_too_soft">強めに弾いてください</string>
-    <string name="tuner_tip_too_noisy">周りがうるさすぎます</string>
+    <string name="tuner_tip_too_noisy">周りがうるさすぎます。スマホを近づけてください</string>
     <string name="tuner_tip_too_loud">音が大きすぎます。スマホを離してください</string>
     <string name="tuner_signal_bars">信号バー：%2$d 本中 %1$d 本</string>
     <string name="tuner_signal_no_note">信号：まだ音がありません</string>
@@ -124,6 +128,7 @@
     <string name="tuning_editor_name">名前</string>
     <string name="tuning_editor_name_empty">チューニングに名前を付けてください</string>
     <string name="tuning_editor_name_taken">同じ名前のチューニングがすでにあります</string>
+    <string name="tuning_editor_not_saved">チューニングを保存できませんでした。スマホの空き容量はありますか？</string>
     <string name="tuning_editor_discard_title">変更を破棄しますか？</string>
     <string name="tuning_editor_discard">破棄</string>
     <string name="tuning_editor_keep_editing">編集を続ける</string>
@@ -160,7 +165,7 @@
     <string name="tour_step_spoken">ステップ %1$d / %2$d。%3$s。</string>
     <string name="tour_readout">ずれ具合と音名</string>
     <string name="tour_strum">まとめて弾いて全弦をチェック</string>
-    <string name="tour_strings">タップで固定、長押しで試聴</string>
+    <string name="tour_strings">タップでこの弦だけ調整、長押しで試聴</string>
     <string name="tour_picker">楽器とチューニングを選ぶ</string>
     <string name="tour_skip">ツアーをスキップ</string>
     <string name="tour_next">次へ</string>
@@ -203,7 +208,7 @@
     <string name="tuner_intonation_mark_back">サドルを後ろへ</string>
     <string name="tuner_intonation_mark_forward">サドルを前へ</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s、未チェック</string>
-    <string name="tour_more_tools">ストロークチェックなどのツール</string>
+    <string name="tour_more_tools">ストロークチェックなど、その他のツール</string>
     <string name="tuner_chord_name">コード名</string>
     <string name="tuner_chord_major">%1$s メジャー</string>
     <string name="tuner_chord_minor">%1$s マイナー</string>
@@ -219,11 +224,11 @@
     <string name="tuner_chord_slash">%1$s、ベースは %2$s</string>
     <string name="tuner_chord_bass">ベース</string>
     <string name="tuner_chord_strum">コードを弾いてください</string>
-    <string name="tuner_chord_strum_detail">全部の弦で</string>
-    <string name="tuner_chord_next">次のコードも弾いてください</string>
+    <string name="tuner_chord_strum_detail">全部の弦を鳴らしてください</string>
+    <string name="tuner_chord_next">もう一度弾いて次のコードへ</string>
     <string name="tuner_chord_let_ring">そのまま鳴らしてください</string>
     <string name="tuner_chord_unclear">コードを判別できません</string>
-    <string name="tuner_chord_unclear_detail">全部の弦を弾いてください</string>
+    <string name="tuner_chord_unclear_detail">コードの全部の弦を弾いてください</string>
     <string name="tuner_chord_none">まだコードはありません</string>
     <string name="tuner_chord_spoken_notes">構成音 %1$s</string>
     <string name="tuner_chord_spoken_recent">その前は %1$s</string>

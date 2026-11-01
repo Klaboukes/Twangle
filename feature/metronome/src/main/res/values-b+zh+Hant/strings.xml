@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">每小節拍數</string>
-    <string name="metronome_tempo">速度，拖曳以調整</string>
+    <string name="metronome_tempo">速度</string>
     <plurals name="metronome_tempo_value">
         <item quantity="other">每分鐘 %1$d 拍，%2$s</item>
     </plurals>
@@ -27,10 +27,10 @@
     <string name="metronome_options">選項</string>
     <string name="metronome_trainer">速度訓練</string>
     <string name="metronome_trainer_back">返回選項</string>
-    <string name="metronome_trainer_start">起始</string>
+    <string name="metronome_trainer_start">起始速度</string>
     <string name="metronome_trainer_goal">目標</string>
-    <string name="metronome_trainer_start_slower">起始速度調慢</string>
-    <string name="metronome_trainer_start_faster">起始速度調快</string>
+    <string name="metronome_trainer_start_slower">降低起始速度</string>
+    <string name="metronome_trainer_start_faster">提高起始速度</string>
     <string name="metronome_trainer_goal_slower">降低目標</string>
     <string name="metronome_trainer_goal_faster">提高目標</string>
     <string name="metronome_trainer_step">遞增</string>
@@ -71,6 +71,7 @@
     <string name="metronome_pick_double">加倍</string>
     <string name="metronome_no_beat">沒有聽到穩定的節拍</string>
     <string name="metronome_try_again">重試</string>
+    <string name="metronome_mic_busy">麥克風被佔用</string>
     <string name="metronome_mic_off">麥克風已關閉</string>
     <string name="metronome_open_settings">開啟設定</string>
 </resources>

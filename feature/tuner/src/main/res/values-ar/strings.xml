@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">بدون الميكروفون لا يسمع Twangle أوتارك، فلا يعرف إن كانت مضبوطة. الصوت لا يغادر جهازك أبدًا.</string>
     <string name="mic_permission_settings_hint">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، ثم «الميكروفون»، واسمح بالوصول أثناء استخدام التطبيق.</string>
     <string name="mic_permission_settings_hint_switch">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، وشغّل «الميكروفون».</string>
+    <string name="mic_permission_without_mic">المترونوم وأدوات «تدريب» تعمل بدون الميكروفون.</string>
+    <string name="mic_permission_without_mic_metronome">المترونوم يعمل بدون الميكروفون.</string>
     <string name="mic_permission_allow">اسمح بالميكروفون</string>
     <string name="mic_permission_open_settings">افتح الإعدادات</string>
 
     <string name="error_mic_permission">أُوقف الوصول إلى الميكروفون. اسمح به مجددًا لمتابعة الضبط.</string>
-    <string name="error_mic_busy">تطبيق آخر يستخدم الميكروفون. أغلقه، ثم حاول مرة أخرى.</string>
-    <string name="error_mic_unavailable">تعذّر فتح الميكروفون على هذا الجهاز.</string>
-    <string name="error_mic_stopped">توقف الميكروفون فجأة.</string>
+    <string name="error_mic_busy">مكالمة أو تطبيق آخر يستخدم الميكروفون. حين يصبح متاحًا، انقر على «حاول مرة أخرى».</string>
+    <string name="error_mic_unavailable">تعذّر فتح الميكروفون. أغلق التطبيقات الأخرى التي تستخدمه وانقر على «حاول مرة أخرى»، أو أعد تشغيل جهازك.</string>
+    <string name="error_mic_stopped">توقف الميكروفون، ربما بسبب مكالمة أو تطبيق آخر. انقر على «حاول مرة أخرى» لمتابعة الضبط.</string>
     <string name="error_retry">حاول مرة أخرى</string>
 
     <string name="tuner_mode_strings">الأوتار</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">أوقف النغمة</string>
     <string name="tuner_string_sounding">قيد التشغيل</string>
     <string name="tuner_string_locked_sounding">مثبّت، قيد التشغيل</string>
+    <string name="tuner_string_tuned">مضبوط</string>
+    <string name="tuner_string_locked_tuned">مثبّت، مضبوط</string>
     <string name="tuner_frequency">%1$.1f هرتز</string>
     <!-- 0, 100+: سنت; 1: بسنت واحد; 2: بسنتين; 3–10: سنتات; 11–99: سنتًا. -->
     <string name="tuner_cents_zero">٠ سنت</string>
@@ -104,7 +108,7 @@
     <string name="tuner_tune_up">شُدّ ↑</string>
     <string name="tuner_tune_down">أرخِ ↓</string>
     <string name="tuner_tip_too_soft">اعزف بصوت أعلى قليلًا</string>
-    <string name="tuner_tip_too_noisy">المكان صاخب جدًا</string>
+    <string name="tuner_tip_too_noisy">ضجيج كثير، قرّب الهاتف</string>
     <string name="tuner_tip_too_loud">الصوت عالٍ جدًا، أبعد الهاتف</string>
     <string name="tuner_signal_bars">أشرطة الإشارة: %1$d من %2$d</string>
     <string name="tuner_signal_no_note">الإشارة: لا نغمة بعد</string>
@@ -135,6 +139,7 @@
     <string name="tuning_editor_name">الاسم</string>
     <string name="tuning_editor_name_empty">أعطِ الدوزان اسمًا</string>
     <string name="tuning_editor_name_taken">يوجد دوزان بهذا الاسم بالفعل</string>
+    <string name="tuning_editor_not_saved">تعذّر حفظ الدوزان. هل مساحة تخزين الهاتف ممتلئة؟</string>
     <string name="tuning_editor_discard_title">هل تريد تجاهل التغييرات؟</string>
     <string name="tuning_editor_discard">تجاهل</string>
     <string name="tuning_editor_keep_editing">متابعة التعديل</string>
@@ -177,7 +182,7 @@
     <string name="tour_step_spoken">الخطوة %1$d من %2$d. %3$s.</string>
     <string name="tour_readout">كم تبعد عن النغمة، وأي نغمة هي</string>
     <string name="tour_strum">اضرب لفحص كل الأوتار</string>
-    <string name="tour_strings">انقر للتثبيت، واضغط مطولًا للاستماع</string>
+    <string name="tour_strings">اختر: اضبط هذا الوتر وحده. اضغط مطولًا: استمع إليه</string>
     <string name="tour_picker">اختر الآلة والدوزان</string>
     <string name="tour_skip">تخطَّ الجولة</string>
     <string name="tour_next">التالي</string>
@@ -241,11 +246,11 @@
     <string name="tuner_chord_slash">%1$s، و%2$s في الباص</string>
     <string name="tuner_chord_bass">الباص</string>
     <string name="tuner_chord_strum">اضرب كوردًا</string>
-    <string name="tuner_chord_strum_detail">بكل أوتاره</string>
-    <string name="tuner_chord_next">اضرب مجددًا للتالي</string>
+    <string name="tuner_chord_strum_detail">دع كل الأوتار ترنّ</string>
+    <string name="tuner_chord_next">اضرب مجددًا للكورد التالي</string>
     <string name="tuner_chord_let_ring">دعه يرنّ</string>
     <string name="tuner_chord_unclear">ليس كوردًا واضحًا</string>
-    <string name="tuner_chord_unclear_detail">اضرب كل أوتاره</string>
+    <string name="tuner_chord_unclear_detail">اضرب كل أوتار الكورد</string>
     <string name="tuner_chord_none">لا كورد بعد</string>
     <string name="tuner_chord_spoken_notes">النغمات %1$s</string>
     <string name="tuner_chord_spoken_recent">قبل ذلك %1$s</string>

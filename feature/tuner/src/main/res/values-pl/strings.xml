@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Bez mikrofonu Twangle nie słyszy twoich strun, więc nie wie, czy są nastrojone. Dźwięk nigdy nie opuszcza urządzenia.</string>
     <string name="mic_permission_settings_hint">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia, potem Mikrofon i zezwól tylko podczas używania aplikacji.</string>
     <string name="mic_permission_settings_hint_switch">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia i włącz Mikrofon.</string>
+    <string name="mic_permission_without_mic">Metronom i narzędzia z zakładki Ćwiczenia działają bez mikrofonu.</string>
+    <string name="mic_permission_without_mic_metronome">Metronom działa bez mikrofonu.</string>
     <string name="mic_permission_allow">Zezwól na mikrofon</string>
     <string name="mic_permission_open_settings">Otwórz ustawienia</string>
 
     <string name="error_mic_permission">Dostęp do mikrofonu został wyłączony. Zezwól na niego ponownie, aby dalej stroić.</string>
-    <string name="error_mic_busy">Inna aplikacja używa mikrofonu. Zamknij ją i spróbuj ponownie.</string>
-    <string name="error_mic_unavailable">Nie udało się otworzyć mikrofonu na tym urządzeniu.</string>
-    <string name="error_mic_stopped">Mikrofon nieoczekiwanie przestał działać.</string>
+    <string name="error_mic_busy">Rozmowa lub inna aplikacja używa mikrofonu. Gdy się zwolni, dotknij Spróbuj ponownie.</string>
+    <string name="error_mic_unavailable">Nie udało się otworzyć mikrofonu. Zamknij inne aplikacje, które go używają, i dotknij Spróbuj ponownie albo uruchom urządzenie ponownie.</string>
+    <string name="error_mic_stopped">Mikrofon przestał działać, może przez rozmowę lub inną aplikację. Dotknij Spróbuj ponownie, aby dalej stroić.</string>
     <string name="error_retry">Spróbuj ponownie</string>
 
     <string name="tuner_mode_strings">Struny</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Zatrzymaj dźwięk</string>
     <string name="tuner_string_sounding">Brzmi</string>
     <string name="tuner_string_locked_sounding">Zablokowana, brzmi</string>
+    <string name="tuner_string_tuned">Nastrojona</string>
+    <string name="tuner_string_locked_tuned">Zablokowana, nastrojona</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- 1 cent; 2–4, 22–24 … centy (ale 12–14 centów); 0, 5–21, 25 … centów. -->
     <string name="tuner_cents_zero">0 centów</string>
@@ -100,7 +104,7 @@
     <string name="tuner_tune_up">Podciągnij ↑</string>
     <string name="tuner_tune_down">Popuść ↓</string>
     <string name="tuner_tip_too_soft">Graj trochę głośniej</string>
-    <string name="tuner_tip_too_noisy">Za dużo hałasu</string>
+    <string name="tuner_tip_too_noisy">Za dużo hałasu, przysuń telefon</string>
     <string name="tuner_tip_too_loud">Za głośno, odsuń telefon</string>
     <string name="tuner_signal_bars">Paski sygnału: %1$d z %2$d</string>
     <string name="tuner_signal_no_note">Sygnał: jeszcze brak dźwięku</string>
@@ -131,6 +135,7 @@
     <string name="tuning_editor_name">Nazwa</string>
     <string name="tuning_editor_name_empty">Nadaj strojowi nazwę</string>
     <string name="tuning_editor_name_taken">Strój o tej nazwie już istnieje</string>
+    <string name="tuning_editor_not_saved">Nie udało się zapisać stroju. Czy pamięć telefonu jest pełna?</string>
     <string name="tuning_editor_discard_title">Odrzucić zmiany?</string>
     <string name="tuning_editor_discard">Odrzuć</string>
     <string name="tuning_editor_keep_editing">Edytuj dalej</string>
@@ -170,7 +175,7 @@
     <string name="tour_step_spoken">Krok %1$d z %2$d. %3$s.</string>
     <string name="tour_readout">Odchylenie i jaki to dźwięk</string>
     <string name="tour_strum">Uderz, by sprawdzić wszystkie struny</string>
-    <string name="tour_strings">Dotknij, by zablokować, przytrzymaj, by posłuchać</string>
+    <string name="tour_strings">Dotknij, by stroić tylko tę strunę, przytrzymaj, by posłuchać</string>
     <string name="tour_picker">Wybierz instrument i strój</string>
     <string name="tour_skip">Pomiń</string>
     <string name="tour_next">Dalej</string>
@@ -232,11 +237,11 @@
     <string name="tuner_chord_slash">%1$s, w basie %2$s</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Zagraj akord</string>
-    <string name="tuner_chord_strum_detail">Wszystkimi jego strunami</string>
-    <string name="tuner_chord_next">Zagraj znowu, aby zobaczyć następny</string>
+    <string name="tuner_chord_strum_detail">Niech brzmią wszystkie struny</string>
+    <string name="tuner_chord_next">Uderz znowu, by zobaczyć następny akord</string>
     <string name="tuner_chord_let_ring">Niech wybrzmi</string>
     <string name="tuner_chord_unclear">Niewyraźny akord</string>
-    <string name="tuner_chord_unclear_detail">Uderz we wszystkie jego struny</string>
+    <string name="tuner_chord_unclear_detail">Uderz we wszystkie struny akordu</string>
     <string name="tuner_chord_none">Jeszcze brak akordu</string>
     <string name="tuner_chord_spoken_notes">dźwięki %1$s</string>
     <string name="tuner_chord_spoken_recent">wcześniej %1$s</string>

@@ -6,11 +6,15 @@
     <string name="ear_exercise_chord_type">Akor türü</string>
     <string name="ear_exercise_word_play_back">Tekrarla</string>
     <string name="ear_exercise_word_intervals">Aralıklar</string>
-    <string name="ear_exercise_word_chord_type">Akorlar</string>
+    <string name="ear_exercise_word_chord_type">Akor türü</string>
     <string name="ear_replay">Tekrar dinle</string>
     <string name="ear_play_prompt">Enstrümanında çal</string>
     <string name="ear_spoken_heard">Duyulan: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%2$d sorudan %1$d doğru</item>
+        <item quantity="other">%2$d sorudan %1$d doğru</item>
+    </plurals>
     <string name="ear_choices">Sorulanlar</string>
     <string name="ear_notes">Notalar</string>
     <string name="ear_notes_open_strings">Açık teller</string>
@@ -81,4 +85,5 @@
     <string name="ear_chord_half_diminished">yarım eksik</string>
     <string name="ear_chord_augmented">artık</string>
     <string name="ear_chord_none">Bu akortta erişilebilir bir basış yok</string>
+    <string name="ear_mic_stopped">Mikrofon durdu</string>
 </resources>

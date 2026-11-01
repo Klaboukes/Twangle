@@ -66,8 +66,8 @@
     <string name="settings_keep_screen_on_summary">Ekran nie gaśnie podczas strojenia</string>
     <string name="settings_vibrate_in_tune_title">Wibruj po nastrojeniu</string>
     <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
-    <string name="settings_show_tune_hint_title">Podpowiedź podciągnij/popuść</string>
-    <string name="settings_show_tune_hint_summary">Pokazuje, w którą stronę kręcić kluczem, gdy dźwięk nie stroi</string>
+    <string name="settings_show_tune_hint_title">Pokazuj pomoc w strojeniu</string>
+    <string name="settings_show_tune_hint_summary">Mówi, czy podciągnąć, czy popuścić, i zaznacza każdą strunę, gdy już stroi</string>
     <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
     <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski przy dźwięku pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
 

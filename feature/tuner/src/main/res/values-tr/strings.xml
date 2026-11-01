@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Mikrofon olmadan Twangle tellerini duyamaz, bu yüzden akortlu olup olmadıklarını söyleyemez. Ses cihazından hiç çıkmaz.</string>
     <string name="mic_permission_settings_hint">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e, sonra Mikrofon\'a dokun ve uygulama kullanılırken izin ver.</string>
     <string name="mic_permission_settings_hint_switch">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e dokun ve Mikrofon\'u aç.</string>
+    <string name="mic_permission_without_mic">Metronom ve Pratik araçları mikrofon olmadan çalışır.</string>
+    <string name="mic_permission_without_mic_metronome">Metronom mikrofon olmadan çalışır.</string>
     <string name="mic_permission_allow">Mikrofona izin ver</string>
     <string name="mic_permission_open_settings">Ayarları aç</string>
 
     <string name="error_mic_permission">Mikrofon erişimi kapatıldı. Akort etmeye devam etmek için yeniden izin ver.</string>
-    <string name="error_mic_busy">Mikrofonu başka bir uygulama kullanıyor. Onu kapat ve tekrar dene.</string>
-    <string name="error_mic_unavailable">Bu cihazda mikrofon açılamadı.</string>
-    <string name="error_mic_stopped">Mikrofon beklenmedik şekilde durdu.</string>
+    <string name="error_mic_busy">Bir arama veya başka bir uygulama mikrofonu kullanıyor. Boşalınca Tekrar dene\'ye dokun.</string>
+    <string name="error_mic_unavailable">Mikrofon açılamadı. Onu kullanan diğer uygulamaları kapat ve Tekrar dene\'ye dokun ya da cihazını yeniden başlat.</string>
+    <string name="error_mic_stopped">Mikrofon durdu, belki bir arama veya başka bir uygulama yüzünden. Akorda devam etmek için Tekrar dene\'ye dokun.</string>
     <string name="error_retry">Tekrar dene</string>
 
     <string name="tuner_mode_strings">Teller</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Sesi durdur</string>
     <string name="tuner_string_sounding">Çalıyor</string>
     <string name="tuner_string_locked_sounding">Sabitlendi, çalıyor</string>
+    <string name="tuner_string_tuned">Akortlandı</string>
+    <string name="tuner_string_locked_tuned">Sabitlendi, akortlandı</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Sayıdan sonra isim tekil kalır: "12 sent". -->
     <string name="tuner_cents_zero">0 sent</string>
@@ -96,7 +100,7 @@
     <string name="tuner_tune_up">Yükselt ↑</string>
     <string name="tuner_tune_down">Düşür ↓</string>
     <string name="tuner_tip_too_soft">Biraz daha güçlü çal</string>
-    <string name="tuner_tip_too_noisy">Burası çok gürültülü</string>
+    <string name="tuner_tip_too_noisy">Çok gürültülü, telefonu yaklaştır</string>
     <string name="tuner_tip_too_loud">Çok yüksek, telefonu uzaklaştır</string>
     <string name="tuner_signal_bars">Sinyal çubukları: %1$d / %2$d</string>
     <string name="tuner_signal_no_note">Sinyal: henüz nota yok</string>
@@ -127,6 +131,7 @@
     <string name="tuning_editor_name">Ad</string>
     <string name="tuning_editor_name_empty">Akorda bir ad ver</string>
     <string name="tuning_editor_name_taken">Bu adda bir akort zaten var</string>
+    <string name="tuning_editor_not_saved">Akort kaydedilemedi. Telefonun depolama alanı dolu mu?</string>
     <string name="tuning_editor_discard_title">Değişiklikler silinsin mi?</string>
     <string name="tuning_editor_discard">Sil</string>
     <string name="tuning_editor_keep_editing">Düzenlemeye devam et</string>
@@ -164,7 +169,7 @@
     <string name="tour_step_spoken">Adım %1$d / %2$d. %3$s.</string>
     <string name="tour_readout">Ne kadar sapma var, hangi nota</string>
     <string name="tour_strum">Tüm telleri kontrol etmek için vur</string>
-    <string name="tour_strings">Sabitlemek için dokun, dinlemek için basılı tut</string>
+    <string name="tour_strings">Yalnızca bu teli akort etmek için dokun, dinlemek için basılı tut</string>
     <string name="tour_picker">Enstrüman ve akort seç</string>
     <string name="tour_skip">Turu atla</string>
     <string name="tour_next">İleri</string>
@@ -224,11 +229,11 @@
     <string name="tuner_chord_slash">%1$s, basta %2$s</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Bir akora vur</string>
-    <string name="tuner_chord_strum_detail">Tüm telleriyle</string>
-    <string name="tuner_chord_next">Sonraki için yine vur</string>
+    <string name="tuner_chord_strum_detail">Tüm teller çınlasın</string>
+    <string name="tuner_chord_next">Sonraki akor için yine vur</string>
     <string name="tuner_chord_let_ring">Bırak çınlasın</string>
     <string name="tuner_chord_unclear">Net bir akor değil</string>
-    <string name="tuner_chord_unclear_detail">Tüm tellerine vur</string>
+    <string name="tuner_chord_unclear_detail">Akorun tüm tellerine vur</string>
     <string name="tuner_chord_none">Henüz akor yok</string>
     <string name="tuner_chord_spoken_notes">notalar %1$s</string>
     <string name="tuner_chord_spoken_recent">öncesinde %1$s</string>

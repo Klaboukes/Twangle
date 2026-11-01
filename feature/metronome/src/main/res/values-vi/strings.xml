@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Số phách trong ô nhịp</string>
-    <string name="metronome_tempo">Nhịp độ, kéo để đổi</string>
+    <string name="metronome_tempo">Nhịp độ</string>
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d phách mỗi phút, %2$s</item>
     </plurals>
@@ -27,10 +27,10 @@
     <string name="metronome_options">Tùy chọn</string>
     <string name="metronome_trainer">Luyện tốc độ</string>
     <string name="metronome_trainer_back">Quay lại tùy chọn</string>
-    <string name="metronome_trainer_start">Bắt đầu</string>
+    <string name="metronome_trainer_start">Nhịp độ đầu</string>
     <string name="metronome_trainer_goal">Mục tiêu</string>
-    <string name="metronome_trainer_start_slower">Bắt đầu chậm hơn</string>
-    <string name="metronome_trainer_start_faster">Bắt đầu nhanh hơn</string>
+    <string name="metronome_trainer_start_slower">Nhịp độ đầu thấp hơn</string>
+    <string name="metronome_trainer_start_faster">Nhịp độ đầu cao hơn</string>
     <string name="metronome_trainer_goal_slower">Mục tiêu thấp hơn</string>
     <string name="metronome_trainer_goal_faster">Mục tiêu cao hơn</string>
     <string name="metronome_trainer_step">Bước</string>
@@ -71,6 +71,7 @@
     <string name="metronome_pick_double">Gấp đôi</string>
     <string name="metronome_no_beat">Không nghe thấy nhịp đều</string>
     <string name="metronome_try_again">Thử lại</string>
+    <string name="metronome_mic_busy">Micrô đang bận</string>
     <string name="metronome_mic_off">Micrô đang tắt</string>
     <string name="metronome_open_settings">Mở cài đặt</string>
 </resources>

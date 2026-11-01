@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">1小節の拍数</string>
-    <string name="metronome_tempo">テンポ、ドラッグで変更</string>
+    <string name="metronome_tempo">テンポ</string>
     <plurals name="metronome_tempo_value">
         <item quantity="other">1分間に%1$d拍、%2$s</item>
     </plurals>
@@ -27,10 +27,10 @@
     <string name="metronome_options">オプション</string>
     <string name="metronome_trainer">スピードトレーナー</string>
     <string name="metronome_trainer_back">オプションに戻る</string>
-    <string name="metronome_trainer_start">開始</string>
+    <string name="metronome_trainer_start">開始テンポ</string>
     <string name="metronome_trainer_goal">目標</string>
-    <string name="metronome_trainer_start_slower">開始を遅く</string>
-    <string name="metronome_trainer_start_faster">開始を速く</string>
+    <string name="metronome_trainer_start_slower">開始テンポを下げる</string>
+    <string name="metronome_trainer_start_faster">開始テンポを上げる</string>
     <string name="metronome_trainer_goal_slower">目標を下げる</string>
     <string name="metronome_trainer_goal_faster">目標を上げる</string>
     <string name="metronome_trainer_step">上げ幅</string>
@@ -70,6 +70,7 @@
     <string name="metronome_pick_double">倍</string>
     <string name="metronome_no_beat">はっきりした拍が聞こえません</string>
     <string name="metronome_try_again">もう一度</string>
+    <string name="metronome_mic_busy">マイクが使用中です</string>
     <string name="metronome_mic_off">マイクがオフです</string>
     <string name="metronome_open_settings">設定を開く</string>
 </resources>

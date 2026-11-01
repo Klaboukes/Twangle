@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Tanpa mikrofon, Twangle tidak bisa mendengar senar Anda, jadi tidak bisa tahu apakah senarnya sudah pas. Suara tidak pernah keluar dari perangkat Anda.</string>
     <string name="mic_permission_settings_hint">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu Mikrofon, dan izinkan saat aplikasi digunakan.</string>
     <string name="mic_permission_settings_hint_switch">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu aktifkan Mikrofon.</string>
+    <string name="mic_permission_without_mic">Metronom dan alat Latihan berfungsi tanpa mikrofon.</string>
+    <string name="mic_permission_without_mic_metronome">Metronom berfungsi tanpa mikrofon.</string>
     <string name="mic_permission_allow">Izinkan mikrofon</string>
     <string name="mic_permission_open_settings">Buka setelan</string>
 
     <string name="error_mic_permission">Akses mikrofon dinonaktifkan. Izinkan lagi untuk terus menyetem.</string>
-    <string name="error_mic_busy">Aplikasi lain sedang memakai mikrofon. Tutup aplikasi itu, lalu coba lagi.</string>
-    <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka di perangkat ini.</string>
-    <string name="error_mic_stopped">Mikrofon berhenti tiba-tiba.</string>
+    <string name="error_mic_busy">Panggilan atau aplikasi lain sedang memakai mikrofon. Jika sudah bebas, ketuk Coba lagi.</string>
+    <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka. Tutup aplikasi lain yang memakainya lalu ketuk Coba lagi, atau mulai ulang perangkat Anda.</string>
+    <string name="error_mic_stopped">Mikrofon berhenti, mungkin karena panggilan atau aplikasi lain. Ketuk Coba lagi untuk terus menyetem.</string>
     <string name="error_retry">Coba lagi</string>
 
     <string name="tuner_mode_strings">Senar</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Hentikan nada</string>
     <string name="tuner_string_sounding">Sedang diputar</string>
     <string name="tuner_string_locked_sounding">Terkunci, sedang diputar</string>
+    <string name="tuner_string_tuned">Sudah pas</string>
+    <string name="tuner_string_locked_tuned">Terkunci, sudah pas</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 sen</string>
     <plurals name="tuner_cents_flat">
@@ -93,7 +97,7 @@
     <string name="tuner_tune_up">Naikkan ↑</string>
     <string name="tuner_tune_down">Turunkan ↓</string>
     <string name="tuner_tip_too_soft">Mainkan lebih keras</string>
-    <string name="tuner_tip_too_noisy">Terlalu bising di sini</string>
+    <string name="tuner_tip_too_noisy">Terlalu bising, dekatkan ponsel</string>
     <string name="tuner_tip_too_loud">Terlalu keras, jauhkan ponsel</string>
     <string name="tuner_signal_bars">Bar sinyal: %1$d dari %2$d</string>
     <string name="tuner_signal_no_note">Sinyal: belum ada nada</string>
@@ -124,6 +128,7 @@
     <string name="tuning_editor_name">Nama</string>
     <string name="tuning_editor_name_empty">Beri nama stem ini</string>
     <string name="tuning_editor_name_taken">Sudah ada stem dengan nama ini</string>
+    <string name="tuning_editor_not_saved">Stem tidak dapat disimpan. Apakah penyimpanan ponsel penuh?</string>
     <string name="tuning_editor_discard_title">Buang perubahan?</string>
     <string name="tuning_editor_discard">Buang</string>
     <string name="tuning_editor_keep_editing">Lanjutkan mengedit</string>
@@ -160,7 +165,7 @@
     <string name="tour_step_spoken">Langkah %1$d dari %2$d. %3$s.</string>
     <string name="tour_readout">Nada dan selisihnya</string>
     <string name="tour_strum">Genjreng untuk cek semua senar</string>
-    <string name="tour_strings">Ketuk untuk mengunci, tahan untuk mendengar</string>
+    <string name="tour_strings">Ketuk: stem senar ini saja. Tahan: dengarkan</string>
     <string name="tour_picker">Pilih instrumen dan stem</string>
     <string name="tour_skip">Lewati tur</string>
     <string name="tour_next">Berikutnya</string>
@@ -219,11 +224,11 @@
     <string name="tuner_chord_slash">%1$s, bas %2$s</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Genjreng satu akor</string>
-    <string name="tuner_chord_strum_detail">Dengan semua senarnya</string>
-    <string name="tuner_chord_next">Genjreng lagi untuk berikutnya</string>
+    <string name="tuner_chord_strum_detail">Biarkan semua senar berbunyi</string>
+    <string name="tuner_chord_next">Genjreng lagi untuk akor berikutnya</string>
     <string name="tuner_chord_let_ring">Biarkan berbunyi</string>
     <string name="tuner_chord_unclear">Bukan akor yang jelas</string>
-    <string name="tuner_chord_unclear_detail">Genjreng semua senarnya</string>
+    <string name="tuner_chord_unclear_detail">Genjreng semua senar akornya</string>
     <string name="tuner_chord_none">Belum ada akor</string>
     <string name="tuner_chord_spoken_notes">nada %1$s</string>
     <string name="tuner_chord_spoken_recent">sebelumnya %1$s</string>

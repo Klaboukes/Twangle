@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">จำนวนจังหวะในห้อง</string>
-    <string name="metronome_tempo">เทมโป ลากเพื่อเปลี่ยน</string>
+    <string name="metronome_tempo">เทมโป</string>
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d จังหวะต่อนาที, %2$s</item>
     </plurals>
@@ -27,10 +27,10 @@
     <string name="metronome_options">ตัวเลือก</string>
     <string name="metronome_trainer">ฝึกเร่งความเร็ว</string>
     <string name="metronome_trainer_back">กลับไปที่ตัวเลือก</string>
-    <string name="metronome_trainer_start">เริ่มต้น</string>
+    <string name="metronome_trainer_start">เทมโปเริ่มต้น</string>
     <string name="metronome_trainer_goal">เป้าหมาย</string>
-    <string name="metronome_trainer_start_slower">เริ่มช้าลง</string>
-    <string name="metronome_trainer_start_faster">เริ่มเร็วขึ้น</string>
+    <string name="metronome_trainer_start_slower">ลดเทมโปเริ่มต้น</string>
+    <string name="metronome_trainer_start_faster">เพิ่มเทมโปเริ่มต้น</string>
     <string name="metronome_trainer_goal_slower">ลดเป้าหมาย</string>
     <string name="metronome_trainer_goal_faster">เพิ่มเป้าหมาย</string>
     <string name="metronome_trainer_step">เพิ่มทีละ</string>
@@ -71,6 +71,7 @@
     <string name="metronome_pick_double">สองเท่า</string>
     <string name="metronome_no_beat">ไม่ได้ยินจังหวะที่สม่ำเสมอ</string>
     <string name="metronome_try_again">ลองอีกครั้ง</string>
+    <string name="metronome_mic_busy">ไมโครโฟนไม่ว่าง</string>
     <string name="metronome_mic_off">ไมโครโฟนปิดอยู่</string>
     <string name="metronome_open_settings">เปิดการตั้งค่า</string>
 </resources>

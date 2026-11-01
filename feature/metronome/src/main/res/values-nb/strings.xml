@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Slag i takten</string>
-    <string name="metronome_tempo">Tempo, dra for å endre</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d slag i minuttet, %2$s</item>
         <item quantity="other">%1$d slag i minuttet, %2$s</item>
@@ -28,10 +28,10 @@
     <string name="metronome_options">Alternativer</string>
     <string name="metronome_trainer">Tempotrener</string>
     <string name="metronome_trainer_back">Tilbake til alternativene</string>
-    <string name="metronome_trainer_start">Start</string>
+    <string name="metronome_trainer_start">Starttempo</string>
     <string name="metronome_trainer_goal">Mål</string>
-    <string name="metronome_trainer_start_slower">Start saktere</string>
-    <string name="metronome_trainer_start_faster">Start raskere</string>
+    <string name="metronome_trainer_start_slower">Senk starttempoet</string>
+    <string name="metronome_trainer_start_faster">Øk starttempoet</string>
     <string name="metronome_trainer_goal_slower">Lavere mål</string>
     <string name="metronome_trainer_goal_faster">Høyere mål</string>
     <string name="metronome_trainer_step">Steg</string>
@@ -75,6 +75,7 @@
     <string name="metronome_pick_double">Dobbel</string>
     <string name="metronome_no_beat">Hørte ingen jevn puls</string>
     <string name="metronome_try_again">Prøv igjen</string>
+    <string name="metronome_mic_busy">Mikrofonen er opptatt</string>
     <string name="metronome_mic_off">Mikrofonen er av</string>
     <string name="metronome_open_settings">Åpne innstillinger</string>
 </resources>

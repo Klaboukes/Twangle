@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Tempos por compasso</string>
-    <string name="metronome_tempo">Andamento, arraste para mudar</string>
+    <string name="metronome_tempo">Andamento</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d batida por minuto, %2$s</item>
         <item quantity="many">%1$d batidas por minuto, %2$s</item>
@@ -29,10 +29,10 @@
     <string name="metronome_options">Opções</string>
     <string name="metronome_trainer">Treino de andamento</string>
     <string name="metronome_trainer_back">Voltar às opções</string>
-    <string name="metronome_trainer_start">Início</string>
+    <string name="metronome_trainer_start">Andamento inicial</string>
     <string name="metronome_trainer_goal">Meta</string>
-    <string name="metronome_trainer_start_slower">Começar mais lento</string>
-    <string name="metronome_trainer_start_faster">Começar mais rápido</string>
+    <string name="metronome_trainer_start_slower">Andamento inicial mais baixo</string>
+    <string name="metronome_trainer_start_faster">Andamento inicial mais alto</string>
     <string name="metronome_trainer_goal_slower">Meta mais baixa</string>
     <string name="metronome_trainer_goal_faster">Meta mais alta</string>
     <string name="metronome_trainer_step">Passo</string>
@@ -78,6 +78,7 @@
     <string name="metronome_pick_double">Dobro</string>
     <string name="metronome_no_beat">Sem pulso regular</string>
     <string name="metronome_try_again">Tentar de novo</string>
+    <string name="metronome_mic_busy">Microfone ocupado</string>
     <string name="metronome_mic_off">Microfone desligado</string>
     <string name="metronome_open_settings">Abrir configurações</string>
 </resources>

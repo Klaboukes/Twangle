@@ -5,6 +5,19 @@
         <item quantity="other">%1$s cent</item>
     </plurals>
     <string name="wear_in_tune">stemt</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent for lav</item>
+        <item quantity="other">%1$d cent for lav</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent for høj</item>
+        <item quantity="other">%1$d cent for høj</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">stem op</string>
+    <string name="wear_spoken_tune_down">stem ned</string>
+    <string name="wear_spoken_sharp">%1$s med kryds</string>
     <string name="wear_mic_needed">Twangle lytter til dit instrument med urets mikrofon.</string>
     <string name="wear_allow_mic">Tillad mikrofon</string>
     <string name="wear_open_settings">Åbn indstillinger</string>

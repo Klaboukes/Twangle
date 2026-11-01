@@ -67,8 +67,8 @@
     <string name="settings_keep_screen_on_summary">L\'écran reste allumé pendant l\'accordage</string>
     <string name="settings_vibrate_in_tune_title">Vibrer quand c\'est juste</string>
     <string name="settings_vibrate_in_tune_summary">Une courte vibration quand la note est juste</string>
-    <string name="settings_show_tune_hint_title">Indiquer plus haut ou plus bas</string>
-    <string name="settings_show_tune_hint_summary">Indique dans quel sens tourner la mécanique tant qu\'une note n\'est pas juste</string>
+    <string name="settings_show_tune_hint_title">Afficher l\'aide à l\'accordage</string>
+    <string name="settings_show_tune_hint_summary">Indique s\'il faut accorder plus haut ou plus bas, et coche chaque corde dès qu\'elle est juste</string>
     <string name="settings_show_signal_bars_title">Afficher les barres de signal</string>
     <string name="settings_show_signal_bars_summary">Pour les curieux : de petites barres près de la note montrent si l\'accordeur vous entend bien. Touchez-les pour voir les chiffres</string>
 

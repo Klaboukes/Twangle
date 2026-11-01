@@ -5,6 +5,19 @@
         <item quantity="other">%1$s cent</item>
     </plurals>
     <string name="wear_in_tune">stämd</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent för lågt</item>
+        <item quantity="other">%1$d cent för lågt</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent för högt</item>
+        <item quantity="other">%1$d cent för högt</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">stäm upp</string>
+    <string name="wear_spoken_tune_down">stäm ner</string>
+    <string name="wear_spoken_sharp">%1$s med kors</string>
     <string name="wear_mic_needed">Twangle lyssnar på ditt instrument med klockans mikrofon.</string>
     <string name="wear_allow_mic">Tillåt mikrofon</string>
     <string name="wear_open_settings">Öppna inställningar</string>

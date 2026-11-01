@@ -58,8 +58,8 @@
     <string name="settings_keep_screen_on_summary">Екран не гасне, поки ти налаштовуєш</string>
     <string name="settings_vibrate_in_tune_title">Вібрація, коли налаштовано</string>
     <string name="settings_vibrate_in_tune_summary">Коротка вібрація, коли нота досягає потрібної висоти</string>
-    <string name="settings_show_tune_hint_title">Підказка «підтягни/послаб»</string>
-    <string name="settings_show_tune_hint_summary">Показує, у який бік крутити кілок, поки нота неточна</string>
+    <string name="settings_show_tune_hint_title">Підказки тюнера</string>
+    <string name="settings_show_tune_hint_summary">Підказує, підтягнути чи послабити, і позначає кожну струну, щойно вона налаштована</string>
     <string name="settings_show_signal_bars_title">Смужки сигналу</string>
     <string name="settings_show_signal_bars_summary">Для допитливих: смужки біля ноти показують, як добре тюнер тебе чує. Торкнися їх, щоб побачити цифри</string>
     <string name="settings_language_title">Мова</string>

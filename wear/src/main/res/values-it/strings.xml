@@ -7,6 +7,21 @@
         <item quantity="other">%1$s cent</item>
     </plurals>
     <string name="wear_in_tune">intonato</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent calante</item>
+        <item quantity="many">%1$d cent calante</item>
+        <item quantity="other">%1$d cent calante</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent crescente</item>
+        <item quantity="many">%1$d cent crescente</item>
+        <item quantity="other">%1$d cent crescente</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">alza</string>
+    <string name="wear_spoken_tune_down">abbassa</string>
+    <string name="wear_spoken_sharp">%1$s diesis</string>
     <string name="wear_mic_needed">Twangle ascolta il tuo strumento con il microfono dell\'orologio.</string>
     <string name="wear_allow_mic">Consenti microfono</string>
     <string name="wear_open_settings">Apri impostazioni</string>

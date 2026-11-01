@@ -6,11 +6,15 @@
     <string name="ear_exercise_chord_type">Akkordtype</string>
     <string name="ear_exercise_word_play_back">Spil efter</string>
     <string name="ear_exercise_word_intervals">Intervaller</string>
-    <string name="ear_exercise_word_chord_type">Akkorder</string>
+    <string name="ear_exercise_word_chord_type">Akkordtype</string>
     <string name="ear_replay">Hør igen</string>
     <string name="ear_play_prompt">Spil den på dit instrument</string>
     <string name="ear_spoken_heard">Hørt: %1$s</string>
     <string name="ear_tally">%1$d af %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%1$d af %2$d rigtig</item>
+        <item quantity="other">%1$d af %2$d rigtige</item>
+    </plurals>
     <string name="ear_choices">Hvad der spørges om</string>
     <string name="ear_notes">Toner</string>
     <string name="ear_notes_open_strings">Løse strenge</string>
@@ -81,4 +85,5 @@
     <string name="ear_chord_half_diminished">halvformindsket</string>
     <string name="ear_chord_augmented">forstørret</string>
     <string name="ear_chord_none">Intet greb inden for rækkevidde i denne stemning</string>
+    <string name="ear_mic_stopped">Mikrofonen stoppede</string>
 </resources>

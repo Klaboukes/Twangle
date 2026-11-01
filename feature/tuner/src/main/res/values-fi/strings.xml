@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Ilman mikrofonia Twangle ei kuule kieliäsi eikä voi kertoa, ovatko ne vireessä. Ääni ei koskaan poistu laitteeltasi.</string>
     <string name="mic_permission_settings_hint">Twangle ei saa käyttää mikrofonia. Avaa Asetukset, napauta Käyttöoikeudet ja sitten Mikrofoni ja valitse ”Salli vain sovelluksen käytön aikana”.</string>
     <string name="mic_permission_settings_hint_switch">Twangle ei saa käyttää mikrofonia. Avaa Asetukset, napauta Käyttöoikeudet ja ota Mikrofoni käyttöön.</string>
+    <string name="mic_permission_without_mic">Metronomi ja Harjoitus-välilehden työkalut toimivat ilman mikrofonia.</string>
+    <string name="mic_permission_without_mic_metronome">Metronomi toimii ilman mikrofonia.</string>
     <string name="mic_permission_allow">Salli mikrofoni</string>
     <string name="mic_permission_open_settings">Avaa asetukset</string>
 
     <string name="error_mic_permission">Mikrofonin käyttö estettiin. Salli se uudelleen, niin voit jatkaa virittämistä.</string>
-    <string name="error_mic_busy">Toinen sovellus käyttää mikrofonia. Sulje se ja yritä uudelleen.</string>
-    <string name="error_mic_unavailable">Mikrofonia ei voitu avata tällä laitteella.</string>
-    <string name="error_mic_stopped">Mikrofoni pysähtyi odottamatta.</string>
+    <string name="error_mic_busy">Puhelu tai toinen sovellus käyttää mikrofonia. Kun se vapautuu, napauta ”Yritä uudelleen”.</string>
+    <string name="error_mic_unavailable">Mikrofonia ei voitu avata. Sulje muut sitä käyttävät sovellukset ja napauta ”Yritä uudelleen”, tai käynnistä laite uudelleen.</string>
+    <string name="error_mic_stopped">Mikrofoni pysähtyi, ehkä puhelun tai toisen sovelluksen takia. Jatka virittämistä napauttamalla ”Yritä uudelleen”.</string>
     <string name="error_retry">Yritä uudelleen</string>
 
     <string name="tuner_mode_strings">Kielet</string>
@@ -82,6 +84,8 @@
     <string name="tuner_string_stop_tone">Pysäytä ääni</string>
     <string name="tuner_string_sounding">Soi</string>
     <string name="tuner_string_locked_sounding">Lukittu, soi</string>
+    <string name="tuner_string_tuned">Vireessä</string>
+    <string name="tuner_string_locked_tuned">Lukittu, vireessä</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 senttiä</string>
     <!-- Luvun jälkeen partitiivi: 1 sentti, 2 senttiä. -->
@@ -97,7 +101,7 @@
     <string name="tuner_tune_up">Kiristä ↑</string>
     <string name="tuner_tune_down">Löysää ↓</string>
     <string name="tuner_tip_too_soft">Soita vähän kovempaa</string>
-    <string name="tuner_tip_too_noisy">Liian meluisaa</string>
+    <string name="tuner_tip_too_noisy">Liian meluisaa, tuo puhelin lähemmäs</string>
     <string name="tuner_tip_too_loud">Liian kovaa, vie puhelin kauemmas</string>
     <string name="tuner_signal_bars">Signaalipalkit: %1$d, yhteensä %2$d</string>
     <string name="tuner_signal_no_note">Signaali: ei vielä säveltä</string>
@@ -128,6 +132,7 @@
     <string name="tuning_editor_name">Nimi</string>
     <string name="tuning_editor_name_empty">Anna viritykselle nimi</string>
     <string name="tuning_editor_name_taken">Tämän niminen viritys on jo olemassa</string>
+    <string name="tuning_editor_not_saved">Viritystä ei voitu tallentaa. Onko puhelimen tallennustila täynnä?</string>
     <string name="tuning_editor_discard_title">Hylätäänkö muutokset?</string>
     <string name="tuning_editor_discard">Hylkää</string>
     <string name="tuning_editor_keep_editing">Jatka muokkausta</string>
@@ -166,7 +171,7 @@
     <string name="tour_step_spoken">Vaihe %1$d, yhteensä %2$d. %3$s.</string>
     <string name="tour_readout">Paljonko heittää ja mikä sävel</string>
     <string name="tour_strum">Yksi lyönti tarkistaa kaikki kielet</string>
-    <string name="tour_strings">Napauta lukitaksesi, pidä kuullaksesi</string>
+    <string name="tour_strings">Napauta: viritä vain tämä kieli. Pidä: kuuntele</string>
     <string name="tour_picker">Valitse soitin ja viritys</string>
     <string name="tour_skip">Ohita</string>
     <string name="tour_next">Seuraava</string>
@@ -227,11 +232,11 @@
     <string name="tuner_chord_slash">%1$s, bassossa %2$s</string>
     <string name="tuner_chord_bass">basso</string>
     <string name="tuner_chord_strum">Soita sointu</string>
-    <string name="tuner_chord_strum_detail">Kaikki sen kielet</string>
+    <string name="tuner_chord_strum_detail">Anna kaikkien kielten soida</string>
     <string name="tuner_chord_next">Soita seuraava sointu</string>
     <string name="tuner_chord_let_ring">Anna soida</string>
     <string name="tuner_chord_unclear">Epäselvä sointu</string>
-    <string name="tuner_chord_unclear_detail">Soita sen kaikki kielet</string>
+    <string name="tuner_chord_unclear_detail">Soita soinnun kaikki kielet</string>
     <string name="tuner_chord_none">Ei vielä sointua</string>
     <string name="tuner_chord_spoken_notes">sävelet %1$s</string>
     <string name="tuner_chord_spoken_recent">ennen sitä %1$s</string>

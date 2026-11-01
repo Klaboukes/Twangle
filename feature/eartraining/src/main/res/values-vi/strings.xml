@@ -6,11 +6,14 @@
     <string name="ear_exercise_chord_type">Loại hợp âm</string>
     <string name="ear_exercise_word_play_back">Đàn lại</string>
     <string name="ear_exercise_word_intervals">Quãng</string>
-    <string name="ear_exercise_word_chord_type">Hợp âm</string>
+    <string name="ear_exercise_word_chord_type">Loại hợp âm</string>
     <string name="ear_replay">Nghe lại</string>
     <string name="ear_play_prompt">Đàn nốt đó trên nhạc cụ của bạn</string>
     <string name="ear_spoken_heard">Nghe được: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="other">%1$d câu đúng trên %2$d</item>
+    </plurals>
     <string name="ear_choices">Hỏi gì</string>
     <string name="ear_notes">Nốt</string>
     <string name="ear_notes_open_strings">Dây buông</string>
@@ -81,4 +84,5 @@
     <string name="ear_chord_half_diminished">nửa giảm</string>
     <string name="ear_chord_augmented">tăng</string>
     <string name="ear_chord_none">Không có thế bấm vừa tầm tay với kiểu lên dây này</string>
+    <string name="ear_mic_stopped">Micrô đã dừng</string>
 </resources>

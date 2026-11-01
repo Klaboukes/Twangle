@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Ketukan per birama</string>
-    <string name="metronome_tempo">Tempo, seret untuk mengubah</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d ketukan per menit, %2$s</item>
     </plurals>
@@ -27,10 +27,10 @@
     <string name="metronome_options">Opsi</string>
     <string name="metronome_trainer">Pelatih tempo</string>
     <string name="metronome_trainer_back">Kembali ke opsi</string>
-    <string name="metronome_trainer_start">Awal</string>
+    <string name="metronome_trainer_start">Tempo awal</string>
     <string name="metronome_trainer_goal">Target</string>
-    <string name="metronome_trainer_start_slower">Mulai lebih lambat</string>
-    <string name="metronome_trainer_start_faster">Mulai lebih cepat</string>
+    <string name="metronome_trainer_start_slower">Tempo awal lebih rendah</string>
+    <string name="metronome_trainer_start_faster">Tempo awal lebih tinggi</string>
     <string name="metronome_trainer_goal_slower">Target lebih rendah</string>
     <string name="metronome_trainer_goal_faster">Target lebih tinggi</string>
     <string name="metronome_trainer_step">Kenaikan</string>
@@ -70,6 +70,7 @@
     <string name="metronome_pick_double">Dua kali</string>
     <string name="metronome_no_beat">Tak ada ketukan yang jelas</string>
     <string name="metronome_try_again">Coba lagi</string>
+    <string name="metronome_mic_busy">Mikrofon sedang dipakai</string>
     <string name="metronome_mic_off">Mikrofon mati</string>
     <string name="metronome_open_settings">Buka setelan</string>
 </resources>

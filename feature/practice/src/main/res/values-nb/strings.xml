@@ -33,7 +33,8 @@
     <string name="practice_shape_next">Neste grep</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Ingen grep innen rekkevidde i denne stemmingen</string>
-    <string name="practice_capo_short_string">Capotabellen kjenner ikke banjoens korte streng ennå. Velg et annet instrument øverst.</string>
+    <string name="practice_capo_short_string">Capotabellen tar ikke med banjoen: den korte femte strengen trenger sin egen capo.</string>
+    <string name="practice_capo_pick_instrument">Velg et annet instrument</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, grep %2$d av %3$d</string>
     <string name="practice_spoken_string">%1$s-streng</string>

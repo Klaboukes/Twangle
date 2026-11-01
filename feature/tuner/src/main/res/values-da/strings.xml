@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Uden mikrofonen kan Twangle ikke høre dine strenge, så den kan ikke se, om de er stemt. Lyden forlader aldrig din enhed.</string>
     <string name="mic_permission_settings_hint">Mikrofonadgang er slået fra for Twangle. Åbn Indstillinger, tryk på Tilladelser og derefter Mikrofon, og vælg Tillad kun, mens appen er i brug.</string>
     <string name="mic_permission_settings_hint_switch">Mikrofonadgang er slået fra for Twangle. Åbn Indstillinger, tryk på Tilladelser, og slå Mikrofon til.</string>
+    <string name="mic_permission_without_mic">Metronomen og værktøjerne under Øvelse virker uden mikrofon.</string>
+    <string name="mic_permission_without_mic_metronome">Metronomen virker uden mikrofon.</string>
     <string name="mic_permission_allow">Tillad mikrofon</string>
     <string name="mic_permission_open_settings">Åbn indstillinger</string>
 
     <string name="error_mic_permission">Mikrofonadgang blev slået fra. Tillad den igen for at stemme videre.</string>
-    <string name="error_mic_busy">En anden app bruger mikrofonen. Luk den, og prøv igen.</string>
-    <string name="error_mic_unavailable">Mikrofonen kunne ikke åbnes på denne enhed.</string>
-    <string name="error_mic_stopped">Mikrofonen stoppede uventet.</string>
+    <string name="error_mic_busy">Et opkald eller en anden app bruger mikrofonen. Tryk på Prøv igen, når den er ledig.</string>
+    <string name="error_mic_unavailable">Mikrofonen kunne ikke åbnes. Luk andre apps, der bruger den, og tryk på Prøv igen, eller genstart din enhed.</string>
+    <string name="error_mic_stopped">Mikrofonen stoppede, måske på grund af et opkald eller en anden app. Tryk på Prøv igen for at stemme videre.</string>
     <string name="error_retry">Prøv igen</string>
 
     <string name="tuner_mode_strings">Strenge</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Stoppe tonen</string>
     <string name="tuner_string_sounding">Spiller</string>
     <string name="tuner_string_locked_sounding">Låst, spiller</string>
+    <string name="tuner_string_tuned">Stemt</string>
+    <string name="tuner_string_locked_tuned">Låst, stemt</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
@@ -95,7 +99,7 @@
     <string name="tuner_tune_up">Stem op ↑</string>
     <string name="tuner_tune_down">Stem ned ↓</string>
     <string name="tuner_tip_too_soft">Spil lidt kraftigere</string>
-    <string name="tuner_tip_too_noisy">For meget støj her</string>
+    <string name="tuner_tip_too_noisy">For meget støj, flyt telefonen tættere på</string>
     <string name="tuner_tip_too_loud">For højt, flyt telefonen væk</string>
     <string name="tuner_signal_bars">Signalbjælker: %1$d af %2$d</string>
     <string name="tuner_signal_no_note">Signal: ingen tone endnu</string>
@@ -126,6 +130,7 @@
     <string name="tuning_editor_name">Navn</string>
     <string name="tuning_editor_name_empty">Giv stemningen et navn</string>
     <string name="tuning_editor_name_taken">Der findes allerede en stemning med dette navn</string>
+    <string name="tuning_editor_not_saved">Kunne ikke gemme stemningen. Er telefonens lager fuldt?</string>
     <string name="tuning_editor_discard_title">Kassér ændringer?</string>
     <string name="tuning_editor_discard">Kassér</string>
     <string name="tuning_editor_keep_editing">Redigér videre</string>
@@ -163,7 +168,7 @@
     <string name="tour_step_spoken">Trin %1$d af %2$d. %3$s.</string>
     <string name="tour_readout">Hvor meget ved siden af, og hvilken tone</string>
     <string name="tour_strum">Slå an for at tjekke alle strenge</string>
-    <string name="tour_strings">Tryk for at låse, hold for at høre</string>
+    <string name="tour_strings">Tryk: stem kun denne streng. Hold: hør den</string>
     <string name="tour_picker">Vælg instrument og stemning</string>
     <string name="tour_skip">Spring over</string>
     <string name="tour_next">Næste</string>
@@ -207,7 +212,7 @@
     <string name="tuner_intonation_mark_back">flyt sadlen tilbage</string>
     <string name="tuner_intonation_mark_forward">flyt sadlen frem</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ikke tjekket endnu</string>
-    <string name="tour_more_tools">Flere værktøjer, fx anslagstjek</string>
+    <string name="tour_more_tools">Flere værktøjer, fx anslagstjekket</string>
     <string name="tuner_chord_name">Akkordnavn</string>
     <string name="tuner_chord_major">%1$s-dur</string>
     <string name="tuner_chord_minor">%1$s-mol</string>
@@ -223,11 +228,11 @@
     <string name="tuner_chord_slash">%1$s, %2$s i bassen</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Slå en akkord an</string>
-    <string name="tuner_chord_strum_detail">Med alle dens strenge</string>
-    <string name="tuner_chord_next">Slå an igen for den næste</string>
+    <string name="tuner_chord_strum_detail">Lad alle strenge klinge</string>
+    <string name="tuner_chord_next">Slå an igen for næste akkord</string>
     <string name="tuner_chord_let_ring">Lad den klinge</string>
     <string name="tuner_chord_unclear">Ikke en tydelig akkord</string>
-    <string name="tuner_chord_unclear_detail">Slå alle dens strenge an</string>
+    <string name="tuner_chord_unclear_detail">Slå alle akkordens strenge an</string>
     <string name="tuner_chord_none">Ingen akkord endnu</string>
     <string name="tuner_chord_spoken_notes">toner %1$s</string>
     <string name="tuner_chord_spoken_recent">før det %1$s</string>

@@ -8,6 +8,23 @@
         <item quantity="other">%1$s centa</item>
     </plurals>
     <string name="wear_in_tune">nastrojone</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent za nisko</item>
+        <item quantity="few">%1$d centy za nisko</item>
+        <item quantity="many">%1$d centów za nisko</item>
+        <item quantity="other">%1$d centa za nisko</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent za wysoko</item>
+        <item quantity="few">%1$d centy za wysoko</item>
+        <item quantity="many">%1$d centów za wysoko</item>
+        <item quantity="other">%1$d centa za wysoko</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">podciągnij</string>
+    <string name="wear_spoken_tune_down">popuść</string>
+    <string name="wear_spoken_sharp">%1$s z krzyżykiem</string>
     <string name="wear_mic_needed">Twangle słucha twojego instrumentu przez mikrofon zegarka.</string>
     <string name="wear_allow_mic">Zezwól na mikrofon</string>
     <string name="wear_open_settings">Otwórz ustawienia</string>

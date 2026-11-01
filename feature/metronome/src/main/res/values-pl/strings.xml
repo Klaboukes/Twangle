@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">Metrum</string>
-    <string name="metronome_tempo">Tempo, przeciągnij, aby zmienić</string>
+    <string name="metronome_tempo">Tempo</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d uderzenie na minutę, %2$s</item>
         <item quantity="few">%1$d uderzenia na minutę, %2$s</item>
@@ -30,10 +30,10 @@
     <string name="metronome_options">Opcje</string>
     <string name="metronome_trainer">Trener tempa</string>
     <string name="metronome_trainer_back">Wróć do opcji</string>
-    <string name="metronome_trainer_start">Start</string>
+    <string name="metronome_trainer_start">Tempo startowe</string>
     <string name="metronome_trainer_goal">Cel</string>
-    <string name="metronome_trainer_start_slower">Zacznij wolniej</string>
-    <string name="metronome_trainer_start_faster">Zacznij szybciej</string>
+    <string name="metronome_trainer_start_slower">Niższe tempo startowe</string>
+    <string name="metronome_trainer_start_faster">Wyższe tempo startowe</string>
     <string name="metronome_trainer_goal_slower">Niższy cel</string>
     <string name="metronome_trainer_goal_faster">Wyższy cel</string>
     <string name="metronome_trainer_step">Krok</string>
@@ -82,6 +82,7 @@
     <string name="metronome_pick_double">Podwójnie</string>
     <string name="metronome_no_beat">Brak wyraźnego rytmu</string>
     <string name="metronome_try_again">Spróbuj ponownie</string>
+    <string name="metronome_mic_busy">Mikrofon zajęty</string>
     <string name="metronome_mic_off">Mikrofon wyłączony</string>
     <string name="metronome_open_settings">Otwórz ustawienia</string>
 </resources>

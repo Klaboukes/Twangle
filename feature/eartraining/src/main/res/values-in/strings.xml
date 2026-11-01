@@ -6,11 +6,14 @@
     <string name="ear_exercise_chord_type">Jenis akor</string>
     <string name="ear_exercise_word_play_back">Tirukan</string>
     <string name="ear_exercise_word_intervals">Interval</string>
-    <string name="ear_exercise_word_chord_type">Akor</string>
+    <string name="ear_exercise_word_chord_type">Jenis akor</string>
     <string name="ear_replay">Dengarkan lagi</string>
     <string name="ear_play_prompt">Mainkan di instrumen Anda</string>
     <string name="ear_spoken_heard">Terdengar: %1$s</string>
     <string name="ear_tally">%1$d dari %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="other">%1$d benar dari %2$d</item>
+    </plurals>
     <string name="ear_choices">Yang ditanyakan</string>
     <string name="ear_notes">Nada</string>
     <string name="ear_notes_open_strings">Senar lepas</string>
@@ -81,4 +84,5 @@
     <string name="ear_chord_half_diminished">half-diminished</string>
     <string name="ear_chord_augmented">augmented</string>
     <string name="ear_chord_none">Tidak ada bentuk yang terjangkau di stem ini</string>
+    <string name="ear_mic_stopped">Mikrofon berhenti</string>
 </resources>

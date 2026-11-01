@@ -5,11 +5,17 @@
     <string name="ear_exercise_chord_type">Тип акорду</string>
     <string name="ear_exercise_word_play_back">Повтори</string>
     <string name="ear_exercise_word_intervals">Інтервали</string>
-    <string name="ear_exercise_word_chord_type">Акорди</string>
+    <string name="ear_exercise_word_chord_type">Тип акорду</string>
     <string name="ear_replay">Послухати ще раз</string>
     <string name="ear_play_prompt">Зіграй цю ноту на інструменті</string>
     <string name="ear_spoken_heard">Почуто: %1$s</string>
     <string name="ear_tally">%1$d з %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%1$d з %2$d правильно</item>
+        <item quantity="few">%1$d з %2$d правильно</item>
+        <item quantity="many">%1$d з %2$d правильно</item>
+        <item quantity="other">%1$d з %2$d правильно</item>
+    </plurals>
     <string name="ear_choices">Що питати</string>
     <string name="ear_notes">Ноти</string>
     <string name="ear_notes_open_strings">Відкриті струни</string>
@@ -80,4 +86,5 @@
     <string name="ear_chord_half_diminished">напівзменшений</string>
     <string name="ear_chord_augmented">збільшений</string>
     <string name="ear_chord_none">У цьому строї немає зручної аплікатури</string>
+    <string name="ear_mic_stopped">Мікрофон зупинено</string>
 </resources>

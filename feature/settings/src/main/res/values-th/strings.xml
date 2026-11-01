@@ -66,8 +66,8 @@
     <string name="settings_keep_screen_on_summary">หน้าจอเปิดอยู่ตลอดขณะที่คุณจูน</string>
     <string name="settings_vibrate_in_tune_title">สั่นเมื่อตรงเสียง</string>
     <string name="settings_vibrate_in_tune_summary">สั่นสั้นๆ เมื่อโน้ตตรงเสียง</string>
-    <string name="settings_show_tune_hint_title">แสดงคำแนะนำจูนขึ้น/ลง</string>
-    <string name="settings_show_tune_hint_summary">บอกว่าควรหมุนลูกบิดไปทางไหนขณะที่โน้ตเพี้ยน</string>
+    <string name="settings_show_tune_hint_title">แสดงตัวช่วยจูน</string>
+    <string name="settings_show_tune_hint_summary">บอกว่าควรจูนขึ้นหรือจูนลง และติ๊กถูกที่แต่ละสายเมื่อตรงเสียงแล้ว</string>
     <string name="settings_show_signal_bars_title">แสดงแถบสัญญาณ</string>
     <string name="settings_show_signal_bars_summary">สำหรับคนที่อยากรู้: แถบเล็กๆ ข้างโน้ตบอกว่าจูนเนอร์ได้ยินคุณชัดแค่ไหน แตะเพื่อดูตัวเลข</string>
 

@@ -6,11 +6,16 @@
     <string name="ear_exercise_chord_type">Tipo di accordo</string>
     <string name="ear_exercise_word_play_back">Risuonala</string>
     <string name="ear_exercise_word_intervals">Intervalli</string>
-    <string name="ear_exercise_word_chord_type">Accordi</string>
+    <string name="ear_exercise_word_chord_type">Tipo di accordo</string>
     <string name="ear_replay">Riascolta</string>
     <string name="ear_play_prompt">Suonala sul tuo strumento</string>
     <string name="ear_spoken_heard">Sentita: %1$s</string>
     <string name="ear_tally">%1$d di %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%1$d risposta giusta su %2$d</item>
+        <item quantity="many">%1$d risposte giuste su %2$d</item>
+        <item quantity="other">%1$d risposte giuste su %2$d</item>
+    </plurals>
     <string name="ear_choices">Cosa viene chiesto</string>
     <string name="ear_notes">Note</string>
     <string name="ear_notes_open_strings">Corde a vuoto</string>
@@ -81,4 +86,5 @@
     <string name="ear_chord_half_diminished">semidiminuito</string>
     <string name="ear_chord_augmented">aumentato</string>
     <string name="ear_chord_none">Nessuna diteggiatura alla portata in questa accordatura</string>
+    <string name="ear_mic_stopped">Microfono interrotto</string>
 </resources>

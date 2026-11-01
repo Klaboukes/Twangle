@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">沒有麥克風，Twangle 就聽不到你的琴弦，也就無法判斷音準。聲音永遠不會離開你的裝置。</string>
     <string name="mic_permission_settings_hint">Twangle 的麥克風存取權已關閉。請開啟「設定」，輕觸「權限」，再輕觸「麥克風」，然後選擇「僅在使用該應用程式時允許」。</string>
     <string name="mic_permission_settings_hint_switch">Twangle 的麥克風存取權已關閉。請開啟「設定」，輕觸「權限」，然後開啟「麥克風」。</string>
+    <string name="mic_permission_without_mic">節拍器和「練習」中的工具不需要麥克風也能使用。</string>
+    <string name="mic_permission_without_mic_metronome">節拍器不需要麥克風也能使用。</string>
     <string name="mic_permission_allow">允許使用麥克風</string>
     <string name="mic_permission_open_settings">開啟設定</string>
 
     <string name="error_mic_permission">麥克風存取權已關閉。重新允許後即可繼續調音。</string>
-    <string name="error_mic_busy">另一個應用程式正在使用麥克風。請關閉該應用程式後再試一次。</string>
-    <string name="error_mic_unavailable">無法在這部裝置上開啟麥克風。</string>
-    <string name="error_mic_stopped">麥克風意外停止。</string>
+    <string name="error_mic_busy">通話或其他應用程式正在使用麥克風。等它空出來後，輕觸「重試」。</string>
+    <string name="error_mic_unavailable">無法開啟麥克風。請關閉正在使用它的其他應用程式，然後輕觸「重試」，或重新啟動裝置。</string>
+    <string name="error_mic_stopped">麥克風停止了，可能是因為通話或其他應用程式。輕觸「重試」繼續調音。</string>
     <string name="error_retry">重試</string>
 
     <string name="tuner_mode_strings">琴弦</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">停止參考音</string>
     <string name="tuner_string_sounding">正在播放</string>
     <string name="tuner_string_locked_sounding">已鎖定，正在播放</string>
+    <string name="tuner_string_tuned">已調準</string>
+    <string name="tuner_string_locked_tuned">已鎖定，已調準</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 音分</string>
     <plurals name="tuner_cents_flat">
@@ -93,7 +97,7 @@
     <string name="tuner_tune_up">調高 ↑</string>
     <string name="tuner_tune_down">調低 ↓</string>
     <string name="tuner_tip_too_soft">彈大聲一點</string>
-    <string name="tuner_tip_too_noisy">這裡太吵了</string>
+    <string name="tuner_tip_too_noisy">太吵了，把手機拿近一點</string>
     <string name="tuner_tip_too_loud">太大聲了，把手機拿遠一點</string>
     <string name="tuner_signal_bars">訊號格：%2$d 格中亮 %1$d 格</string>
     <string name="tuner_signal_no_note">訊號：還沒聽到音</string>
@@ -124,6 +128,7 @@
     <string name="tuning_editor_name">名稱</string>
     <string name="tuning_editor_name_empty">為這個調音命名</string>
     <string name="tuning_editor_name_taken">已有同名的調音</string>
+    <string name="tuning_editor_not_saved">無法儲存調音。手機的儲存空間滿了嗎？</string>
     <string name="tuning_editor_discard_title">要捨棄變更嗎？</string>
     <string name="tuning_editor_discard">捨棄</string>
     <string name="tuning_editor_keep_editing">繼續編輯</string>
@@ -160,7 +165,7 @@
     <string name="tour_step_spoken">第 %1$d 步，共 %2$d 步。%3$s。</string>
     <string name="tour_readout">偏了多少，是哪個音</string>
     <string name="tour_strum">刷弦，檢查每根弦</string>
-    <string name="tour_strings">輕觸鎖定，按住試聽</string>
+    <string name="tour_strings">輕觸：只調這根弦。按住：試聽</string>
     <string name="tour_picker">選擇樂器和調音</string>
     <string name="tour_skip">略過導覽</string>
     <string name="tour_next">下一步</string>
@@ -219,11 +224,11 @@
     <string name="tuner_chord_slash">%1$s，低音 %2$s</string>
     <string name="tuner_chord_bass">低音</string>
     <string name="tuner_chord_strum">刷一個和弦</string>
-    <string name="tuner_chord_strum_detail">刷到它的所有弦</string>
-    <string name="tuner_chord_next">再刷一次，看下一個</string>
+    <string name="tuner_chord_strum_detail">讓每根弦都響起來</string>
+    <string name="tuner_chord_next">再刷一次，辨識下一個和弦</string>
     <string name="tuner_chord_let_ring">讓它繼續響</string>
     <string name="tuner_chord_unclear">和弦不夠清楚</string>
-    <string name="tuner_chord_unclear_detail">把它的所有弦都刷到</string>
+    <string name="tuner_chord_unclear_detail">刷到和弦的每一根弦</string>
     <string name="tuner_chord_none">還沒有和弦</string>
     <string name="tuner_chord_spoken_notes">音 %1$s</string>
     <string name="tuner_chord_spoken_recent">之前是 %1$s</string>

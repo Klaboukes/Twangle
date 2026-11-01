@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Utan mikrofonen kan Twangle inte höra dina strängar och kan därför inte säga om de är stämda. Ljudet lämnar aldrig din enhet.</string>
     <string name="mic_permission_settings_hint">Mikrofonen är avstängd för Twangle. Öppna Inställningar, tryck på Behörigheter och sedan Mikrofon, och välj Tillåt bara när appen används.</string>
     <string name="mic_permission_settings_hint_switch">Mikrofonen är avstängd för Twangle. Öppna Inställningar, tryck på Behörigheter och slå på Mikrofon.</string>
+    <string name="mic_permission_without_mic">Metronomen och verktygen under Öva fungerar utan mikrofon.</string>
+    <string name="mic_permission_without_mic_metronome">Metronomen fungerar utan mikrofon.</string>
     <string name="mic_permission_allow">Tillåt mikrofon</string>
     <string name="mic_permission_open_settings">Öppna inställningar</string>
 
     <string name="error_mic_permission">Mikrofonen har stängts av. Tillåt den igen för att fortsätta stämma.</string>
-    <string name="error_mic_busy">En annan app använder mikrofonen. Stäng den och försök igen.</string>
-    <string name="error_mic_unavailable">Mikrofonen kunde inte öppnas på den här enheten.</string>
-    <string name="error_mic_stopped">Mikrofonen slutade oväntat att fungera.</string>
+    <string name="error_mic_busy">Ett samtal eller en annan app använder mikrofonen. Tryck på Försök igen när den är ledig.</string>
+    <string name="error_mic_unavailable">Mikrofonen kunde inte öppnas. Stäng andra appar som använder den och tryck på Försök igen, eller starta om enheten.</string>
+    <string name="error_mic_stopped">Mikrofonen stoppades, kanske av ett samtal eller en annan app. Tryck på Försök igen för att fortsätta stämma.</string>
     <string name="error_retry">Försök igen</string>
 
     <string name="tuner_mode_strings">Strängar</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Stoppa tonen</string>
     <string name="tuner_string_sounding">Spelar</string>
     <string name="tuner_string_locked_sounding">Låst, spelar</string>
+    <string name="tuner_string_tuned">Stämd</string>
+    <string name="tuner_string_locked_tuned">Låst, stämd</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
@@ -95,7 +99,7 @@
     <string name="tuner_tune_up">Stäm upp ↑</string>
     <string name="tuner_tune_down">Stäm ner ↓</string>
     <string name="tuner_tip_too_soft">Spela lite starkare</string>
-    <string name="tuner_tip_too_noisy">För mycket brus här</string>
+    <string name="tuner_tip_too_noisy">För mycket brus, flytta telefonen närmare</string>
     <string name="tuner_tip_too_loud">För starkt, flytta bort telefonen</string>
     <string name="tuner_signal_bars">Signalstaplar: %1$d av %2$d</string>
     <string name="tuner_signal_no_note">Signal: ingen ton än</string>
@@ -126,6 +130,7 @@
     <string name="tuning_editor_name">Namn</string>
     <string name="tuning_editor_name_empty">Ge stämningen ett namn</string>
     <string name="tuning_editor_name_taken">Det finns redan en stämning med det här namnet</string>
+    <string name="tuning_editor_not_saved">Kunde inte spara stämningen. Är telefonens lagring full?</string>
     <string name="tuning_editor_discard_title">Släng ändringarna?</string>
     <string name="tuning_editor_discard">Släng</string>
     <string name="tuning_editor_keep_editing">Fortsätt redigera</string>
@@ -163,7 +168,7 @@
     <string name="tour_step_spoken">Steg %1$d av %2$d. %3$s.</string>
     <string name="tour_readout">Hur långt ifrån, och vilken ton</string>
     <string name="tour_strum">Slå an och testa alla strängar</string>
-    <string name="tour_strings">Välj för att låsa, håll för att höra</string>
+    <string name="tour_strings">Välj: stäm bara den här strängen. Håll: hör den</string>
     <string name="tour_picker">Välj instrument och stämning</string>
     <string name="tour_skip">Hoppa över</string>
     <string name="tour_next">Nästa</string>
@@ -223,8 +228,8 @@
     <string name="tuner_chord_slash">%1$s, %2$s i basen</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Slå an ett ackord</string>
-    <string name="tuner_chord_strum_detail">Alla ackordets strängar</string>
-    <string name="tuner_chord_next">Slå an igen för nästa</string>
+    <string name="tuner_chord_strum_detail">Låt alla strängar klinga</string>
+    <string name="tuner_chord_next">Slå an igen för nästa ackord</string>
     <string name="tuner_chord_let_ring">Låt det klinga</string>
     <string name="tuner_chord_unclear">Inget tydligt ackord</string>
     <string name="tuner_chord_unclear_detail">Slå an alla ackordets strängar</string>

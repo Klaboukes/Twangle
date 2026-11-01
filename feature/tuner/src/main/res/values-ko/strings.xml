@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">마이크가 없으면 Twangle이 줄 소리를 들을 수 없어서 음이 맞는지 알 수 없어요. 소리는 절대 기기 밖으로 나가지 않아요.</string>
     <string name="mic_permission_settings_hint">Twangle의 마이크 접근이 꺼져 있어요. 설정을 열고 권한, 마이크를 차례로 탭한 다음 앱 사용 중에만 허용을 선택하세요.</string>
     <string name="mic_permission_settings_hint_switch">Twangle의 마이크 접근이 꺼져 있어요. 설정을 열고 권한을 탭한 다음 마이크를 켜세요.</string>
+    <string name="mic_permission_without_mic">메트로놈과 연습 탭의 도구는 마이크 없이 쓸 수 있어요.</string>
+    <string name="mic_permission_without_mic_metronome">메트로놈은 마이크 없이 쓸 수 있어요.</string>
     <string name="mic_permission_allow">마이크 허용</string>
     <string name="mic_permission_open_settings">설정 열기</string>
 
     <string name="error_mic_permission">마이크 접근이 꺼졌어요. 튜닝을 계속하려면 다시 허용하세요.</string>
-    <string name="error_mic_busy">다른 앱이 마이크를 사용 중이에요. 그 앱을 닫고 다시 시도하세요.</string>
-    <string name="error_mic_unavailable">이 기기에서 마이크를 열 수 없었어요.</string>
-    <string name="error_mic_stopped">마이크가 예기치 않게 멈췄어요.</string>
+    <string name="error_mic_busy">통화나 다른 앱이 마이크를 사용 중이에요. 마이크가 비면 다시 시도를 탭하세요.</string>
+    <string name="error_mic_unavailable">마이크를 열 수 없었어요. 마이크를 쓰는 다른 앱을 닫고 다시 시도를 탭하거나 기기를 다시 시작하세요.</string>
+    <string name="error_mic_stopped">마이크가 멈췄어요. 통화나 다른 앱 때문일 수 있어요. 튜닝을 계속하려면 다시 시도를 탭하세요.</string>
     <string name="error_retry">다시 시도</string>
 
     <string name="tuner_mode_strings">줄</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">소리 멈추기</string>
     <string name="tuner_string_sounding">재생 중</string>
     <string name="tuner_string_locked_sounding">고정됨, 재생 중</string>
+    <string name="tuner_string_tuned">튜닝됨</string>
+    <string name="tuner_string_locked_tuned">고정됨, 튜닝됨</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0센트</string>
     <plurals name="tuner_cents_flat">
@@ -93,7 +97,7 @@
     <string name="tuner_tune_up">올리기 ↑</string>
     <string name="tuner_tune_down">내리기 ↓</string>
     <string name="tuner_tip_too_soft">조금 더 세게 연주하세요</string>
-    <string name="tuner_tip_too_noisy">여기는 너무 시끄러워요</string>
+    <string name="tuner_tip_too_noisy">너무 시끄러워요. 휴대폰을 가까이 두세요</string>
     <string name="tuner_tip_too_loud">너무 커요. 휴대폰을 멀리 두세요</string>
     <string name="tuner_signal_bars">신호 막대: %2$d개 중 %1$d개</string>
     <string name="tuner_signal_no_note">신호: 아직 음이 없음</string>
@@ -124,6 +128,7 @@
     <string name="tuning_editor_name">이름</string>
     <string name="tuning_editor_name_empty">튜닝 이름을 입력하세요</string>
     <string name="tuning_editor_name_taken">같은 이름의 튜닝이 이미 있어요</string>
+    <string name="tuning_editor_not_saved">튜닝을 저장할 수 없었어요. 휴대폰 저장 공간이 가득 찼나요?</string>
     <string name="tuning_editor_discard_title">변경사항을 버릴까요?</string>
     <string name="tuning_editor_discard">버리기</string>
     <string name="tuning_editor_keep_editing">계속 수정</string>
@@ -160,7 +165,7 @@
     <string name="tour_step_spoken">%2$d단계 중 %1$d단계. %3$s.</string>
     <string name="tour_readout">어긋난 정도와 음</string>
     <string name="tour_strum">스트럼으로 모든 줄 확인</string>
-    <string name="tour_strings">탭하여 고정, 길게 눌러 듣기</string>
+    <string name="tour_strings">탭하면 이 줄만 튜닝, 길게 누르면 듣기</string>
     <string name="tour_picker">악기와 튜닝 선택</string>
     <string name="tour_skip">둘러보기 건너뛰기</string>
     <string name="tour_next">다음</string>
@@ -219,8 +224,8 @@
     <string name="tuner_chord_slash">%1$s, 베이스 %2$s</string>
     <string name="tuner_chord_bass">베이스</string>
     <string name="tuner_chord_strum">코드를 치세요</string>
-    <string name="tuner_chord_strum_detail">코드의 모든 줄을</string>
-    <string name="tuner_chord_next">다음 코드도 치세요</string>
+    <string name="tuner_chord_strum_detail">모든 줄이 울리게 하세요</string>
+    <string name="tuner_chord_next">다음 코드는 다시 치세요</string>
     <string name="tuner_chord_let_ring">울리게 두세요</string>
     <string name="tuner_chord_unclear">뚜렷한 코드가 아니에요</string>
     <string name="tuner_chord_unclear_detail">코드의 모든 줄을 치세요</string>

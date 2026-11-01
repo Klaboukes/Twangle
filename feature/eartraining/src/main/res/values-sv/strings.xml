@@ -6,11 +6,15 @@
     <string name="ear_exercise_chord_type">Ackordtyp</string>
     <string name="ear_exercise_word_play_back">Spela efter</string>
     <string name="ear_exercise_word_intervals">Intervall</string>
-    <string name="ear_exercise_word_chord_type">Ackord</string>
+    <string name="ear_exercise_word_chord_type">Ackordtyp</string>
     <string name="ear_replay">Lyssna igen</string>
     <string name="ear_play_prompt">Spela tonen på ditt instrument</string>
     <string name="ear_spoken_heard">Hört: %1$s</string>
     <string name="ear_tally">%1$d av %2$d</string>
+    <plurals name="ear_tally_spoken">
+        <item quantity="one">%1$d av %2$d rätt</item>
+        <item quantity="other">%1$d av %2$d rätt</item>
+    </plurals>
     <string name="ear_choices">Vad som frågas</string>
     <string name="ear_notes">Toner</string>
     <string name="ear_notes_open_strings">Lösa strängar</string>
@@ -81,4 +85,5 @@
     <string name="ear_chord_half_diminished">halvförminskad</string>
     <string name="ear_chord_augmented">överstigande</string>
     <string name="ear_chord_none">Inget grepp inom räckhåll i den här stämningen</string>
+    <string name="ear_mic_stopped">Mikrofonen stoppade</string>
 </resources>

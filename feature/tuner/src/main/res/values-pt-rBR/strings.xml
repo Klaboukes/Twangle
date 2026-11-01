@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Sem o microfone, o Twangle não ouve suas cordas e não consegue dizer se estão afinadas. O som nunca sai do seu dispositivo.</string>
     <string name="mic_permission_settings_hint">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões, depois em Microfone, e permita durante o uso do app.</string>
     <string name="mic_permission_settings_hint_switch">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões e ative Microfone.</string>
+    <string name="mic_permission_without_mic">O metrônomo e as ferramentas de Prática funcionam sem o microfone.</string>
+    <string name="mic_permission_without_mic_metronome">O metrônomo funciona sem o microfone.</string>
     <string name="mic_permission_allow">Permitir microfone</string>
     <string name="mic_permission_open_settings">Abrir configurações</string>
 
     <string name="error_mic_permission">O acesso ao microfone foi desativado. Permita de novo para continuar afinando.</string>
-    <string name="error_mic_busy">Outro app está usando o microfone. Feche-o e tente de novo.</string>
-    <string name="error_mic_unavailable">Não foi possível abrir o microfone neste dispositivo.</string>
-    <string name="error_mic_stopped">O microfone parou de repente.</string>
+    <string name="error_mic_busy">Uma ligação ou outro app está usando o microfone. Quando ele estiver livre, toque em Tentar de novo.</string>
+    <string name="error_mic_unavailable">Não foi possível abrir o microfone. Feche outros apps que o usam e toque em Tentar de novo, ou reinicie o dispositivo.</string>
+    <string name="error_mic_stopped">O microfone parou, talvez por uma ligação ou outro app. Toque em Tentar de novo para continuar afinando.</string>
     <string name="error_retry">Tentar de novo</string>
 
     <string name="tuner_mode_strings">Cordas</string>
@@ -82,6 +84,8 @@
     <string name="tuner_string_stop_tone">Parar o som</string>
     <string name="tuner_string_sounding">Tocando</string>
     <string name="tuner_string_locked_sounding">Travada, tocando</string>
+    <string name="tuner_string_tuned">Afinada</string>
+    <string name="tuner_string_locked_tuned">Travada, afinada</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cents</string>
     <plurals name="tuner_cents_flat">
@@ -98,7 +102,7 @@
     <string name="tuner_tune_up">Subir ↑</string>
     <string name="tuner_tune_down">Baixar ↓</string>
     <string name="tuner_tip_too_soft">Toque um pouco mais forte</string>
-    <string name="tuner_tip_too_noisy">Barulho demais aqui</string>
+    <string name="tuner_tip_too_noisy">Barulho demais, aproxime o celular</string>
     <string name="tuner_tip_too_loud">Alto demais, afaste o celular</string>
     <string name="tuner_signal_bars">Barras de sinal: %1$d de %2$d</string>
     <string name="tuner_signal_no_note">Sinal: nenhuma nota ainda</string>
@@ -129,6 +133,7 @@
     <string name="tuning_editor_name">Nome</string>
     <string name="tuning_editor_name_empty">Dê um nome à afinação</string>
     <string name="tuning_editor_name_taken">Já existe uma afinação com este nome</string>
+    <string name="tuning_editor_not_saved">Não foi possível salvar a afinação. O armazenamento do celular está cheio?</string>
     <string name="tuning_editor_discard_title">Descartar as alterações?</string>
     <string name="tuning_editor_discard">Descartar</string>
     <string name="tuning_editor_keep_editing">Continuar editando</string>
@@ -167,7 +172,7 @@
     <string name="tour_step_spoken">Passo %1$d de %2$d. %3$s.</string>
     <string name="tour_readout">O desvio e qual é a nota</string>
     <string name="tour_strum">Toque todas e confira cada corda</string>
-    <string name="tour_strings">Toque para travar, segure para ouvir</string>
+    <string name="tour_strings">Toque: afine só esta corda. Segure: ouça a nota</string>
     <string name="tour_picker">Escolha instrumento e afinação</string>
     <string name="tour_skip">Pular</string>
     <string name="tour_next">Próximo</string>
@@ -228,11 +233,11 @@
     <string name="tuner_chord_slash">%1$s, %2$s no baixo</string>
     <string name="tuner_chord_bass">baixo</string>
     <string name="tuner_chord_strum">Toque um acorde</string>
-    <string name="tuner_chord_strum_detail">Com todas as cordas dele</string>
-    <string name="tuner_chord_next">Toque de novo para o próximo</string>
+    <string name="tuner_chord_strum_detail">Deixe todas as cordas soarem</string>
+    <string name="tuner_chord_next">Toque de novo para o próximo acorde</string>
     <string name="tuner_chord_let_ring">Deixe soar</string>
     <string name="tuner_chord_unclear">Não é um acorde claro</string>
-    <string name="tuner_chord_unclear_detail">Toque todas as cordas dele</string>
+    <string name="tuner_chord_unclear_detail">Toque todas as cordas do acorde</string>
     <string name="tuner_chord_none">Nenhum acorde ainda</string>
     <string name="tuner_chord_spoken_notes">notas %1$s</string>
     <string name="tuner_chord_spoken_recent">antes %1$s</string>

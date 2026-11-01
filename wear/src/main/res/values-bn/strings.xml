@@ -5,6 +5,19 @@
         <item quantity="other">%1$s সেন্ট</item>
     </plurals>
     <string name="wear_in_tune">সুরে আছে</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d সেন্ট নিচে</item>
+        <item quantity="other">%1$d সেন্ট নিচে</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d সেন্ট উপরে</item>
+        <item quantity="other">%1$d সেন্ট উপরে</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">সুর চড়ান</string>
+    <string name="wear_spoken_tune_down">সুর নামান</string>
+    <string name="wear_spoken_sharp">%1$s শার্প</string>
     <string name="wear_mic_needed">Twangle ঘড়ির মাইক্রোফোন দিয়ে আপনার বাদ্যযন্ত্র শোনে।</string>
     <string name="wear_allow_mic">মাইক্রোফোনের অনুমতি দিন</string>
     <string name="wear_open_settings">সেটিংস খুলুন</string>

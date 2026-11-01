@@ -5,6 +5,17 @@
         <item quantity="other">%1$s セント</item>
     </plurals>
     <string name="wear_in_tune">合っています</string>
+    <string name="wear_spoken_reading">%1$s %2$d、%3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d、%3$s、%4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="other">%1$d セント低い</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="other">%1$d セント高い</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">上げる</string>
+    <string name="wear_spoken_tune_down">下げる</string>
+    <string name="wear_spoken_sharp">%1$sシャープ</string>
     <string name="wear_mic_needed">Twangle はウォッチのマイクで楽器の音を聞き取ります。</string>
     <string name="wear_allow_mic">マイクを許可</string>
     <string name="wear_open_settings">設定を開く</string>

@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">Không có micrô, Twangle không nghe được dây đàn nên không thể biết dây đã chuẩn chưa. Âm thanh không bao giờ rời khỏi thiết bị của bạn.</string>
     <string name="mic_permission_settings_hint">Quyền dùng micrô của Twangle đang tắt. Mở Cài đặt, chạm vào Quyền, rồi Micrô, và chọn Chỉ cho phép khi dùng ứng dụng.</string>
     <string name="mic_permission_settings_hint_switch">Quyền dùng micrô của Twangle đang tắt. Mở Cài đặt, chạm vào Quyền, rồi bật Micrô.</string>
+    <string name="mic_permission_without_mic">Máy đếm nhịp và các công cụ Luyện tập vẫn dùng được khi không có micrô.</string>
+    <string name="mic_permission_without_mic_metronome">Máy đếm nhịp vẫn dùng được khi không có micrô.</string>
     <string name="mic_permission_allow">Cho phép micrô</string>
     <string name="mic_permission_open_settings">Mở cài đặt</string>
 
     <string name="error_mic_permission">Quyền dùng micrô đã bị tắt. Hãy cho phép lại để tiếp tục lên dây.</string>
-    <string name="error_mic_busy">Một ứng dụng khác đang dùng micrô. Hãy đóng ứng dụng đó rồi thử lại.</string>
-    <string name="error_mic_unavailable">Không mở được micrô trên thiết bị này.</string>
-    <string name="error_mic_stopped">Micrô đột ngột dừng.</string>
+    <string name="error_mic_busy">Một cuộc gọi hoặc ứng dụng khác đang dùng micrô. Khi micrô rảnh, hãy chạm vào Thử lại.</string>
+    <string name="error_mic_unavailable">Không mở được micrô. Hãy đóng các ứng dụng khác đang dùng micrô rồi chạm vào Thử lại, hoặc khởi động lại thiết bị.</string>
+    <string name="error_mic_stopped">Micrô đã dừng, có thể vì một cuộc gọi hoặc ứng dụng khác. Hãy chạm vào Thử lại để tiếp tục lên dây.</string>
     <string name="error_retry">Thử lại</string>
 
     <string name="tuner_mode_strings">Dây đàn</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">Dừng âm mẫu</string>
     <string name="tuner_string_sounding">Đang phát</string>
     <string name="tuner_string_locked_sounding">Đã khóa, đang phát</string>
+    <string name="tuner_string_tuned">Đã chuẩn</string>
+    <string name="tuner_string_locked_tuned">Đã khóa, đã chuẩn</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
@@ -93,7 +97,7 @@
     <string name="tuner_tune_up">Căng lên ↑</string>
     <string name="tuner_tune_down">Chùng xuống ↓</string>
     <string name="tuner_tip_too_soft">Gảy to hơn một chút</string>
-    <string name="tuner_tip_too_noisy">Ở đây ồn quá</string>
+    <string name="tuner_tip_too_noisy">Ồn quá, để điện thoại gần lại</string>
     <string name="tuner_tip_too_loud">To quá, để điện thoại xa ra</string>
     <string name="tuner_signal_bars">Vạch tín hiệu: %1$d trên %2$d</string>
     <string name="tuner_signal_no_note">Tín hiệu: chưa có nốt</string>
@@ -124,6 +128,7 @@
     <string name="tuning_editor_name">Tên</string>
     <string name="tuning_editor_name_empty">Hãy đặt tên cho kiểu lên dây</string>
     <string name="tuning_editor_name_taken">Đã có kiểu lên dây trùng tên này</string>
+    <string name="tuning_editor_not_saved">Không lưu được kiểu lên dây. Bộ nhớ điện thoại đã đầy?</string>
     <string name="tuning_editor_discard_title">Bỏ các thay đổi?</string>
     <string name="tuning_editor_discard">Bỏ</string>
     <string name="tuning_editor_keep_editing">Tiếp tục sửa</string>
@@ -160,7 +165,7 @@
     <string name="tour_step_spoken">Bước %1$d trên %2$d. %3$s.</string>
     <string name="tour_readout">Lệch bao nhiêu, và nốt nào</string>
     <string name="tour_strum">Quét để kiểm tra mọi dây</string>
-    <string name="tour_strings">Chọn để khóa, giữ để nghe</string>
+    <string name="tour_strings">Chọn: chỉ lên dây này. Giữ: nghe thử</string>
     <string name="tour_picker">Chọn nhạc cụ và kiểu lên dây</string>
     <string name="tour_skip">Bỏ qua</string>
     <string name="tour_next">Tiếp</string>
@@ -219,7 +224,7 @@
     <string name="tuner_chord_slash">%1$s, bass %2$s</string>
     <string name="tuner_chord_bass">bass</string>
     <string name="tuner_chord_strum">Quét một hợp âm</string>
-    <string name="tuner_chord_strum_detail">Đủ các dây của hợp âm</string>
+    <string name="tuner_chord_strum_detail">Để mọi dây cùng ngân</string>
     <string name="tuner_chord_next">Quét lại cho hợp âm tiếp theo</string>
     <string name="tuner_chord_let_ring">Để dây ngân</string>
     <string name="tuner_chord_unclear">Chưa rõ hợp âm</string>

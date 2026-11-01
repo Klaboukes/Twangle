@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="metronome_beats_in_bar">बीट प्रति बार</string>
-    <string name="metronome_tempo">टेम्पो, बदलने के लिए खींचें</string>
+    <string name="metronome_tempo">टेम्पो</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d बीट प्रति मिनट, %2$s</item>
         <item quantity="other">%1$d बीट प्रति मिनट, %2$s</item>
@@ -28,10 +28,10 @@
     <string name="metronome_options">विकल्प</string>
     <string name="metronome_trainer">स्पीड ट्रेनर</string>
     <string name="metronome_trainer_back">विकल्पों पर वापस</string>
-    <string name="metronome_trainer_start">शुरुआत</string>
+    <string name="metronome_trainer_start">शुरुआती टेम्पो</string>
     <string name="metronome_trainer_goal">लक्ष्य</string>
-    <string name="metronome_trainer_start_slower">धीमे शुरू करें</string>
-    <string name="metronome_trainer_start_faster">तेज़ शुरू करें</string>
+    <string name="metronome_trainer_start_slower">शुरुआती टेम्पो घटाएँ</string>
+    <string name="metronome_trainer_start_faster">शुरुआती टेम्पो बढ़ाएँ</string>
     <string name="metronome_trainer_goal_slower">लक्ष्य घटाएँ</string>
     <string name="metronome_trainer_goal_faster">लक्ष्य बढ़ाएँ</string>
     <string name="metronome_trainer_step">स्टेप</string>
@@ -75,6 +75,7 @@
     <string name="metronome_pick_double">दोगुना</string>
     <string name="metronome_no_beat">स्थिर बीट सुनाई नहीं दी</string>
     <string name="metronome_try_again">फिर से करें</string>
+    <string name="metronome_mic_busy">माइक्रोफ़ोन व्यस्त है</string>
     <string name="metronome_mic_off">माइक्रोफ़ोन बंद है</string>
     <string name="metronome_open_settings">सेटिंग्स खोलें</string>
 </resources>

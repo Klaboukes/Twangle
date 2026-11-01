@@ -4,13 +4,15 @@
     <string name="mic_permission_rationale">माइक्रोफ़ोन के बिना Twangle आपके तार नहीं सुन सकता, इसलिए वह नहीं बता सकता कि वे सुर में हैं या नहीं। आवाज़ कभी आपके डिवाइस से बाहर नहीं जाती।</string>
     <string name="mic_permission_settings_hint">Twangle के लिए माइक्रोफ़ोन की अनुमति बंद है। सेटिंग्स खोलें, अनुमतियाँ पर टैप करें, फिर माइक्रोफ़ोन पर, और ऐप इस्तेमाल करते समय अनुमति दें।</string>
     <string name="mic_permission_settings_hint_switch">Twangle के लिए माइक्रोफ़ोन की अनुमति बंद है। सेटिंग्स खोलें, अनुमतियाँ पर टैप करें, और माइक्रोफ़ोन चालू करें।</string>
+    <string name="mic_permission_without_mic">मेट्रोनोम और अभ्यास के टूल माइक्रोफ़ोन के बिना काम करते हैं।</string>
+    <string name="mic_permission_without_mic_metronome">मेट्रोनोम माइक्रोफ़ोन के बिना काम करता है।</string>
     <string name="mic_permission_allow">माइक्रोफ़ोन की अनुमति दें</string>
     <string name="mic_permission_open_settings">सेटिंग्स खोलें</string>
 
     <string name="error_mic_permission">माइक्रोफ़ोन की अनुमति बंद कर दी गई। ट्यूनिंग जारी रखने के लिए फिर से अनुमति दें।</string>
-    <string name="error_mic_busy">कोई दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा है। उसे बंद करें, फिर दोबारा कोशिश करें।</string>
-    <string name="error_mic_unavailable">इस डिवाइस पर माइक्रोफ़ोन नहीं खुल सका।</string>
-    <string name="error_mic_stopped">माइक्रोफ़ोन अचानक बंद हो गया।</string>
+    <string name="error_mic_busy">कोई कॉल या दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा है। उसके खाली होने पर फिर से कोशिश करें पर टैप करें।</string>
+    <string name="error_mic_unavailable">माइक्रोफ़ोन नहीं खुल सका। उसे इस्तेमाल करने वाले दूसरे ऐप बंद करें और फिर से कोशिश करें पर टैप करें, या अपना डिवाइस रीस्टार्ट करें।</string>
+    <string name="error_mic_stopped">माइक्रोफ़ोन रुक गया, शायद किसी कॉल या दूसरे ऐप के लिए। ट्यूनिंग जारी रखने के लिए फिर से कोशिश करें पर टैप करें।</string>
     <string name="error_retry">फिर से कोशिश करें</string>
 
     <string name="tuner_mode_strings">तार</string>
@@ -81,6 +83,8 @@
     <string name="tuner_string_stop_tone">टोन रोकें</string>
     <string name="tuner_string_sounding">बज रहा है</string>
     <string name="tuner_string_locked_sounding">लॉक है, बज रहा है</string>
+    <string name="tuner_string_tuned">ट्यून हो गया</string>
+    <string name="tuner_string_locked_tuned">लॉक है, ट्यून हो गया</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 सेंट</string>
     <plurals name="tuner_cents_flat">
@@ -95,7 +99,7 @@
     <string name="tuner_tune_up">ऊपर ट्यून करें ↑</string>
     <string name="tuner_tune_down">नीचे ट्यून करें ↓</string>
     <string name="tuner_tip_too_soft">थोड़ा ज़ोर से बजाएँ</string>
-    <string name="tuner_tip_too_noisy">यहाँ बहुत शोर है</string>
+    <string name="tuner_tip_too_noisy">बहुत शोर है, फ़ोन को पास रखें</string>
     <string name="tuner_tip_too_loud">बहुत तेज़ है, फ़ोन को दूर रखें</string>
     <string name="tuner_signal_bars">सिग्नल बार: %2$d में से %1$d</string>
     <string name="tuner_signal_no_note">सिग्नल: अभी कोई नोट नहीं</string>
@@ -126,6 +130,7 @@
     <string name="tuning_editor_name">नाम</string>
     <string name="tuning_editor_name_empty">ट्यूनिंग को नाम दें</string>
     <string name="tuning_editor_name_taken">इस नाम की ट्यूनिंग पहले से है</string>
+    <string name="tuning_editor_not_saved">ट्यूनिंग सेव नहीं हो सकी। क्या फ़ोन का स्टोरेज भरा है?</string>
     <string name="tuning_editor_discard_title">बदलाव छोड़ दें?</string>
     <string name="tuning_editor_discard">छोड़ दें</string>
     <string name="tuning_editor_keep_editing">बदलाव जारी रखें</string>
@@ -163,7 +168,7 @@
     <string name="tour_step_spoken">%2$d में से चरण %1$d। %3$s।</string>
     <string name="tour_readout">आप कितना हटकर हैं, और कौन-सा नोट</string>
     <string name="tour_strum">हर तार जाँचने के लिए स्ट्रम करें</string>
-    <string name="tour_strings">लॉक करने के लिए टैप करें, सुनने के लिए दबाए रखें</string>
+    <string name="tour_strings">टैप: सिर्फ़ यह तार ट्यून करें। दबाए रखें: सुनें</string>
     <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
     <string name="tour_skip">टूर छोड़ें</string>
     <string name="tour_next">आगे</string>
@@ -223,11 +228,11 @@
     <string name="tuner_chord_slash">%1$s, बेस में %2$s</string>
     <string name="tuner_chord_bass">बेस</string>
     <string name="tuner_chord_strum">एक कॉर्ड स्ट्रम करें</string>
-    <string name="tuner_chord_strum_detail">उसके सभी तार</string>
-    <string name="tuner_chord_next">अगले के लिए फिर स्ट्रम करें</string>
+    <string name="tuner_chord_strum_detail">हर तार बजने दें</string>
+    <string name="tuner_chord_next">अगले कॉर्ड के लिए फिर स्ट्रम करें</string>
     <string name="tuner_chord_let_ring">उसे बजने दें</string>
     <string name="tuner_chord_unclear">साफ़ कॉर्ड नहीं</string>
-    <string name="tuner_chord_unclear_detail">उसके सभी तार स्ट्रम करें</string>
+    <string name="tuner_chord_unclear_detail">कॉर्ड के सभी तार स्ट्रम करें</string>
     <string name="tuner_chord_none">अभी कोई कॉर्ड नहीं</string>
     <string name="tuner_chord_spoken_notes">सुर %1$s</string>
     <string name="tuner_chord_spoken_recent">उससे पहले %1$s</string>
