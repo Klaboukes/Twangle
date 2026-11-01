@@ -17,6 +17,43 @@
     <string name="metronome_sound_cowbell">Lehmänkello</string>
     <string name="metronome_sound_claves">Klaavit</string>
     <string name="metronome_sound_rim_click">Vannelyönti</string>
+    <string name="metronome_subdivision">Iskujen välissä</string>
+    <string name="metronome_subdivision_none">Ei mitään</string>
+    <string name="metronome_subdivision_eighths">Kahdeksasosat</string>
+    <string name="metronome_subdivision_triplets">Triolit</string>
+    <string name="metronome_subdivision_sixteenths">Kuudestoistaosat</string>
+    <string name="metronome_subdivision_eighths_on">Kahdeksasosat iskujen välissä</string>
+    <string name="metronome_subdivision_triplets_on">Triolit iskujen välissä</string>
+    <string name="metronome_subdivision_sixteenths_on">Kuudestoistaosat iskujen välissä</string>
+    <string name="metronome_options">Valinnat</string>
+    <string name="metronome_trainer">Tempovalmentaja</string>
+    <string name="metronome_trainer_back">Takaisin valintoihin</string>
+    <string name="metronome_trainer_start">Alku</string>
+    <string name="metronome_trainer_goal">Tavoite</string>
+    <string name="metronome_trainer_start_slower">Hitaampi alku</string>
+    <string name="metronome_trainer_start_faster">Nopeampi alku</string>
+    <string name="metronome_trainer_goal_slower">Hitaampi tavoite</string>
+    <string name="metronome_trainer_goal_faster">Nopeampi tavoite</string>
+    <string name="metronome_trainer_step">Askel</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Tahdit</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s tahti</item>
+        <item quantity="other">%1$s tahtia</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s: %2$s tahdin päästä</item>
+        <item quantity="other">%1$s: %2$s tahdin päästä</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s: joka tahti</item>
+        <item quantity="other">%1$s: %2$s tahdin välein</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Tavoitteessa · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Tempovalmentaja, %1$s BPM, nousee tavoitteeseen %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Tempovalmentaja, alku %1$s, tavoite %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Tempovalmentaja, tavoitteessa, %1$s BPM</string>
 
     <string name="metronome_meter_2_4_spoken">Kaksi neljäsosaa</string>
     <string name="metronome_meter_3_4_spoken">Kolme neljäsosaa</string>
@@ -28,6 +65,7 @@
     <string name="metronome_listen">Kuuntele</string>
     <string name="metronome_listen_stop_spoken">Lopeta kuuntelu</string>
     <string name="metronome_listening">Kuunnellaan…</string>
+    <string name="metronome_listen_line_stop">Lopeta</string>
     <string name="metronome_heard">Kuultu</string>
     <string name="metronome_use">Käytä</string>
     <string name="metronome_not_now">Ei nyt</string>

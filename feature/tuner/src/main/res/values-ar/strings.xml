@@ -183,9 +183,11 @@
     <string name="tour_next">التالي</string>
     <string name="tour_done">تم</string>
     <string name="tuner_more_tools">أدوات أخرى</string>
+    <string name="tuner_tool_on">%1$s قيد التشغيل</string>
     <string name="tuner_intonation_check">فحص الدستان ١٢</string>
     <string name="tuner_intonation_step_open">مفتوح</string>
     <string name="tuner_intonation_step_fret">الدستان ١٢</string>
+    <string name="tuner_intonation_choose_string">اختر وترًا</string>
     <string name="tuner_intonation_choose_detail">اضبطه أولًا ثم افحصه</string>
     <string name="tuner_intonation_play_open">اعزف الوتر %1$s مفتوحًا</string>
     <string name="tuner_intonation_let_ring">دعه يرنّ</string>

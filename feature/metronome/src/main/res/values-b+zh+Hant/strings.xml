@@ -16,6 +16,40 @@
     <string name="metronome_sound_cowbell">牛鈴</string>
     <string name="metronome_sound_claves">響棒</string>
     <string name="metronome_sound_rim_click">鼓框</string>
+    <string name="metronome_subdivision">拍間細分</string>
+    <string name="metronome_subdivision_none">無</string>
+    <string name="metronome_subdivision_eighths">八分音符</string>
+    <string name="metronome_subdivision_triplets">三連音</string>
+    <string name="metronome_subdivision_sixteenths">十六分音符</string>
+    <string name="metronome_subdivision_eighths_on">拍間加入八分音符</string>
+    <string name="metronome_subdivision_triplets_on">拍間加入三連音</string>
+    <string name="metronome_subdivision_sixteenths_on">拍間加入十六分音符</string>
+    <string name="metronome_options">選項</string>
+    <string name="metronome_trainer">速度訓練</string>
+    <string name="metronome_trainer_back">返回選項</string>
+    <string name="metronome_trainer_start">起始</string>
+    <string name="metronome_trainer_goal">目標</string>
+    <string name="metronome_trainer_start_slower">起始速度調慢</string>
+    <string name="metronome_trainer_start_faster">起始速度調快</string>
+    <string name="metronome_trainer_goal_slower">降低目標</string>
+    <string name="metronome_trainer_goal_faster">提高目標</string>
+    <string name="metronome_trainer_step">遞增</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">小節</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s 小節</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%2$s 小節後 %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">每 %2$s 小節 %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">已達目標 · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">速度訓練，%1$s BPM，正在加快到 %2$s，%3$s</string>
+    <string name="metronome_trainer_spoken_set">速度訓練，從 %1$s 到 %2$s BPM，%3$s</string>
+    <string name="metronome_trainer_spoken_goal">速度訓練，已達目標，%1$s BPM</string>
 
     <string name="metronome_meter_2_4_spoken">四分之二拍</string>
     <string name="metronome_meter_3_4_spoken">四分之三拍</string>
@@ -27,6 +61,7 @@
     <string name="metronome_listen">聆聽</string>
     <string name="metronome_listen_stop_spoken">停止聆聽</string>
     <string name="metronome_listening">正在聆聽…</string>
+    <string name="metronome_listen_line_stop">停止</string>
     <string name="metronome_heard">聽到</string>
     <string name="metronome_use">使用</string>
     <string name="metronome_not_now">以後再說</string>

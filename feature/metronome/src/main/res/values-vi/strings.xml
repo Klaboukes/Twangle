@@ -16,6 +16,40 @@
     <string name="metronome_sound_cowbell">Chuông bò</string>
     <string name="metronome_sound_claves">Phách gỗ</string>
     <string name="metronome_sound_rim_click">Gõ vành trống</string>
+    <string name="metronome_subdivision">Giữa các phách</string>
+    <string name="metronome_subdivision_none">Không</string>
+    <string name="metronome_subdivision_eighths">Móc đơn</string>
+    <string name="metronome_subdivision_triplets">Liên ba</string>
+    <string name="metronome_subdivision_sixteenths">Móc kép</string>
+    <string name="metronome_subdivision_eighths_on">Móc đơn giữa các phách</string>
+    <string name="metronome_subdivision_triplets_on">Liên ba giữa các phách</string>
+    <string name="metronome_subdivision_sixteenths_on">Móc kép giữa các phách</string>
+    <string name="metronome_options">Tùy chọn</string>
+    <string name="metronome_trainer">Luyện tốc độ</string>
+    <string name="metronome_trainer_back">Quay lại tùy chọn</string>
+    <string name="metronome_trainer_start">Bắt đầu</string>
+    <string name="metronome_trainer_goal">Mục tiêu</string>
+    <string name="metronome_trainer_start_slower">Bắt đầu chậm hơn</string>
+    <string name="metronome_trainer_start_faster">Bắt đầu nhanh hơn</string>
+    <string name="metronome_trainer_goal_slower">Mục tiêu thấp hơn</string>
+    <string name="metronome_trainer_goal_faster">Mục tiêu cao hơn</string>
+    <string name="metronome_trainer_step">Bước</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Ô nhịp</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s ô nhịp</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%1$s sau %2$s ô nhịp</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%1$s mỗi %2$s ô nhịp</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Đã tới mục tiêu · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Luyện tốc độ, %1$s BPM, đang tăng lên %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Luyện tốc độ, từ %1$s đến %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Luyện tốc độ, đã tới mục tiêu, %1$s BPM</string>
 
     <string name="metronome_meter_2_4_spoken">Nhịp hai bốn</string>
     <string name="metronome_meter_3_4_spoken">Nhịp ba bốn</string>
@@ -27,6 +61,7 @@
     <string name="metronome_listen">Nghe</string>
     <string name="metronome_listen_stop_spoken">Dừng nghe</string>
     <string name="metronome_listening">Đang nghe…</string>
+    <string name="metronome_listen_line_stop">Dừng</string>
     <string name="metronome_heard">Nghe được</string>
     <string name="metronome_use">Dùng</string>
     <string name="metronome_not_now">Để sau</string>

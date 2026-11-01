@@ -17,6 +17,43 @@
     <string name="metronome_sound_cowbell">काउबेल</string>
     <string name="metronome_sound_claves">क्लेव्स</string>
     <string name="metronome_sound_rim_click">रिम क्लिक</string>
+    <string name="metronome_subdivision">बीटों के बीच</string>
+    <string name="metronome_subdivision_none">कोई नहीं</string>
+    <string name="metronome_subdivision_eighths">आठवें नोट</string>
+    <string name="metronome_subdivision_triplets">ट्रिप्लेट</string>
+    <string name="metronome_subdivision_sixteenths">सोलहवें नोट</string>
+    <string name="metronome_subdivision_eighths_on">बीटों के बीच आठवें नोट</string>
+    <string name="metronome_subdivision_triplets_on">बीटों के बीच ट्रिप्लेट</string>
+    <string name="metronome_subdivision_sixteenths_on">बीटों के बीच सोलहवें नोट</string>
+    <string name="metronome_options">विकल्प</string>
+    <string name="metronome_trainer">स्पीड ट्रेनर</string>
+    <string name="metronome_trainer_back">विकल्पों पर वापस</string>
+    <string name="metronome_trainer_start">शुरुआत</string>
+    <string name="metronome_trainer_goal">लक्ष्य</string>
+    <string name="metronome_trainer_start_slower">धीमे शुरू करें</string>
+    <string name="metronome_trainer_start_faster">तेज़ शुरू करें</string>
+    <string name="metronome_trainer_goal_slower">लक्ष्य घटाएँ</string>
+    <string name="metronome_trainer_goal_faster">लक्ष्य बढ़ाएँ</string>
+    <string name="metronome_trainer_step">स्टेप</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">बार</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s बार</item>
+        <item quantity="other">%1$s बार</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$s बार बाद %1$s</item>
+        <item quantity="other">%2$s बार बाद %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s प्रति बार</item>
+        <item quantity="other">हर %2$s बार में %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">लक्ष्य पर · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">स्पीड ट्रेनर, %1$s BPM, %2$s की ओर बढ़ रहा है, %3$s</string>
+    <string name="metronome_trainer_spoken_set">स्पीड ट्रेनर, %1$s से %2$s BPM तक, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">स्पीड ट्रेनर, लक्ष्य पर, %1$s BPM</string>
     <!-- भिन्न की तरह पढ़ा जाता है: 3/4 = "तीन बटा चार"। -->
     <string name="metronome_meter_2_4_spoken">दो बटा चार ताल</string>
     <string name="metronome_meter_3_4_spoken">तीन बटा चार ताल</string>
@@ -28,6 +65,7 @@
     <string name="metronome_listen">सुनें</string>
     <string name="metronome_listen_stop_spoken">सुनना बंद करें</string>
     <string name="metronome_listening">सुन रहा है…</string>
+    <string name="metronome_listen_line_stop">रोकें</string>
     <string name="metronome_heard">सुना गया</string>
     <string name="metronome_use">इस्तेमाल करें</string>
     <string name="metronome_not_now">अभी नहीं</string>

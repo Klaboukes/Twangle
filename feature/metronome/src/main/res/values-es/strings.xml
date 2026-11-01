@@ -18,6 +18,46 @@
     <string name="metronome_sound_cowbell">Cencerro</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Golpe de aro</string>
+    <string name="metronome_subdivision">Entre los tiempos</string>
+    <string name="metronome_subdivision_none">Ninguna</string>
+    <string name="metronome_subdivision_eighths">Corcheas</string>
+    <string name="metronome_subdivision_triplets">Tresillos</string>
+    <string name="metronome_subdivision_sixteenths">Semicorcheas</string>
+    <string name="metronome_subdivision_eighths_on">Corcheas entre los tiempos</string>
+    <string name="metronome_subdivision_triplets_on">Tresillos entre los tiempos</string>
+    <string name="metronome_subdivision_sixteenths_on">Semicorcheas entre los tiempos</string>
+    <string name="metronome_options">Opciones</string>
+    <string name="metronome_trainer">Entrenador de tempo</string>
+    <string name="metronome_trainer_back">Volver a las opciones</string>
+    <string name="metronome_trainer_start">Inicio</string>
+    <string name="metronome_trainer_goal">Objetivo</string>
+    <string name="metronome_trainer_start_slower">Empezar más lento</string>
+    <string name="metronome_trainer_start_faster">Empezar más rápido</string>
+    <string name="metronome_trainer_goal_slower">Objetivo más bajo</string>
+    <string name="metronome_trainer_goal_faster">Objetivo más alto</string>
+    <string name="metronome_trainer_step">Paso</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Compases</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s compás</item>
+        <item quantity="many">%1$s compases</item>
+        <item quantity="other">%1$s compases</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s en %2$s compás</item>
+        <item quantity="many">%1$s en %2$s compases</item>
+        <item quantity="other">%1$s en %2$s compases</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s cada compás</item>
+        <item quantity="many">%1$s cada %2$s compases</item>
+        <item quantity="other">%1$s cada %2$s compases</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Objetivo alcanzado · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Entrenador de tempo, %1$s BPM, subiendo hasta %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Entrenador de tempo, de %1$s a %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Entrenador de tempo, objetivo alcanzado, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">Compás de dos por cuatro</string>
     <string name="metronome_meter_3_4_spoken">Compás de tres por cuatro</string>
     <string name="metronome_meter_4_4_spoken">Compás de cuatro por cuatro</string>
@@ -28,6 +68,7 @@
     <string name="metronome_listen">Escuchar</string>
     <string name="metronome_listen_stop_spoken">Dejar de escuchar</string>
     <string name="metronome_listening">Escuchando…</string>
+    <string name="metronome_listen_line_stop">Detener</string>
     <string name="metronome_heard">Detectado</string>
     <string name="metronome_use">Usar</string>
     <string name="metronome_not_now">Ahora no</string>

@@ -166,9 +166,11 @@
     <string name="tour_next">下一步</string>
     <string name="tour_done">完成</string>
     <string name="tuner_more_tools">更多工具</string>
+    <string name="tuner_tool_on">%1$s已开启</string>
     <string name="tuner_intonation_check">第12品检查</string>
     <string name="tuner_intonation_step_open">空弦</string>
     <string name="tuner_intonation_step_fret">第12品</string>
+    <string name="tuner_intonation_choose_string">选一根弦</string>
     <string name="tuner_intonation_choose_detail">先调准，再检查</string>
     <string name="tuner_intonation_play_open">弹空弦 %1$s</string>
     <string name="tuner_intonation_let_ring">让它持续发声</string>

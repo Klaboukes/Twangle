@@ -169,9 +169,11 @@
     <string name="tour_next">आगे</string>
     <string name="tour_done">हो गया</string>
     <string name="tuner_more_tools">और टूल</string>
+    <string name="tuner_tool_on">%1$s चालू</string>
     <string name="tuner_intonation_check">12वें फ़्रेट की जाँच</string>
     <string name="tuner_intonation_step_open">खुला</string>
     <string name="tuner_intonation_step_fret">12वाँ फ़्रेट</string>
+    <string name="tuner_intonation_choose_string">कोई तार चुनें</string>
     <string name="tuner_intonation_choose_detail">पहले ट्यून करें, फिर जाँचें</string>
     <string name="tuner_intonation_play_open">खुला %1$s तार बजाएँ</string>
     <string name="tuner_intonation_let_ring">उसे बजने दें</string>

@@ -19,6 +19,49 @@
     <string name="metronome_sound_cowbell">Krowi dzwonek</string>
     <string name="metronome_sound_claves">Klawesy</string>
     <string name="metronome_sound_rim_click">Rim click</string>
+    <string name="metronome_subdivision">Między uderzeniami</string>
+    <string name="metronome_subdivision_none">Brak</string>
+    <string name="metronome_subdivision_eighths">Ósemki</string>
+    <string name="metronome_subdivision_triplets">Triole</string>
+    <string name="metronome_subdivision_sixteenths">Szesnastki</string>
+    <string name="metronome_subdivision_eighths_on">Ósemki między uderzeniami</string>
+    <string name="metronome_subdivision_triplets_on">Triole między uderzeniami</string>
+    <string name="metronome_subdivision_sixteenths_on">Szesnastki między uderzeniami</string>
+    <string name="metronome_options">Opcje</string>
+    <string name="metronome_trainer">Trener tempa</string>
+    <string name="metronome_trainer_back">Wróć do opcji</string>
+    <string name="metronome_trainer_start">Start</string>
+    <string name="metronome_trainer_goal">Cel</string>
+    <string name="metronome_trainer_start_slower">Zacznij wolniej</string>
+    <string name="metronome_trainer_start_faster">Zacznij szybciej</string>
+    <string name="metronome_trainer_goal_slower">Niższy cel</string>
+    <string name="metronome_trainer_goal_faster">Wyższy cel</string>
+    <string name="metronome_trainer_step">Krok</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Takty</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s takt</item>
+        <item quantity="few">%1$s takty</item>
+        <item quantity="many">%1$s taktów</item>
+        <item quantity="other">%1$s taktu</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s za %2$s takt</item>
+        <item quantity="few">%1$s za %2$s takty</item>
+        <item quantity="many">%1$s za %2$s taktów</item>
+        <item quantity="other">%1$s za %2$s taktu</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s co takt</item>
+        <item quantity="few">%1$s co %2$s takty</item>
+        <item quantity="many">%1$s co %2$s taktów</item>
+        <item quantity="other">%1$s co %2$s taktu</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Cel osiągnięty · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Trener tempa, %1$s BPM, przyspiesza do %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Trener tempa, od %1$s do %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Trener tempa, cel osiągnięty, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">Metrum dwie czwarte</string>
     <string name="metronome_meter_3_4_spoken">Metrum trzy czwarte</string>
     <string name="metronome_meter_4_4_spoken">Metrum cztery czwarte</string>
@@ -29,6 +72,7 @@
     <string name="metronome_listen">Słuchaj</string>
     <string name="metronome_listen_stop_spoken">Przestań słuchać</string>
     <string name="metronome_listening">Słucham…</string>
+    <string name="metronome_listen_line_stop">Stop</string>
     <string name="metronome_heard">Usłyszane</string>
     <string name="metronome_use">Użyj</string>
     <string name="metronome_not_now">Nie teraz</string>

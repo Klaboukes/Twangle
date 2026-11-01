@@ -16,6 +16,40 @@
     <string name="metronome_sound_cowbell">Cowbell</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Rim click</string>
+    <string name="metronome_subdivision">Di antara ketukan</string>
+    <string name="metronome_subdivision_none">Tidak ada</string>
+    <string name="metronome_subdivision_eighths">Not seperdelapan</string>
+    <string name="metronome_subdivision_triplets">Triol</string>
+    <string name="metronome_subdivision_sixteenths">Not seperenam belas</string>
+    <string name="metronome_subdivision_eighths_on">Not seperdelapan di antara ketukan</string>
+    <string name="metronome_subdivision_triplets_on">Triol di antara ketukan</string>
+    <string name="metronome_subdivision_sixteenths_on">Not seperenam belas di antara ketukan</string>
+    <string name="metronome_options">Opsi</string>
+    <string name="metronome_trainer">Pelatih tempo</string>
+    <string name="metronome_trainer_back">Kembali ke opsi</string>
+    <string name="metronome_trainer_start">Awal</string>
+    <string name="metronome_trainer_goal">Target</string>
+    <string name="metronome_trainer_start_slower">Mulai lebih lambat</string>
+    <string name="metronome_trainer_start_faster">Mulai lebih cepat</string>
+    <string name="metronome_trainer_goal_slower">Target lebih rendah</string>
+    <string name="metronome_trainer_goal_faster">Target lebih tinggi</string>
+    <string name="metronome_trainer_step">Kenaikan</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Birama</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s birama</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%1$s dalam %2$s birama</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%1$s tiap %2$s birama</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Target tercapai · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Pelatih tempo, %1$s BPM, naik ke %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Pelatih tempo, dari %1$s ke %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Pelatih tempo, target tercapai, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">Birama dua per empat</string>
     <string name="metronome_meter_3_4_spoken">Birama tiga per empat</string>
     <string name="metronome_meter_4_4_spoken">Birama empat per empat</string>
@@ -26,6 +60,7 @@
     <string name="metronome_listen">Dengarkan</string>
     <string name="metronome_listen_stop_spoken">Berhenti mendengarkan</string>
     <string name="metronome_listening">Mendengarkan…</string>
+    <string name="metronome_listen_line_stop">Hentikan</string>
     <string name="metronome_heard">Terdengar</string>
     <string name="metronome_use">Gunakan</string>
     <string name="metronome_not_now">Nanti saja</string>

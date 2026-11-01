@@ -166,9 +166,11 @@
     <string name="tour_next">다음</string>
     <string name="tour_done">완료</string>
     <string name="tuner_more_tools">도구 더 보기</string>
+    <string name="tuner_tool_on">%1$s 켜짐</string>
     <string name="tuner_intonation_check">12프렛 체크</string>
     <string name="tuner_intonation_step_open">개방현</string>
     <string name="tuner_intonation_step_fret">12프렛</string>
+    <string name="tuner_intonation_choose_string">줄을 고르세요</string>
     <string name="tuner_intonation_choose_detail">먼저 튜닝한 뒤 확인하세요</string>
     <string name="tuner_intonation_play_open">%1$s 줄을 개방현으로 치세요</string>
     <string name="tuner_intonation_let_ring">울리게 두세요</string>

@@ -17,6 +17,43 @@
     <string name="metronome_sound_cowbell">Koklokke</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Kantslag</string>
+    <string name="metronome_subdivision">Mellem slagene</string>
+    <string name="metronome_subdivision_none">Ingen</string>
+    <string name="metronome_subdivision_eighths">Ottendedele</string>
+    <string name="metronome_subdivision_triplets">Trioler</string>
+    <string name="metronome_subdivision_sixteenths">Sekstendedele</string>
+    <string name="metronome_subdivision_eighths_on">Ottendedele mellem slagene</string>
+    <string name="metronome_subdivision_triplets_on">Trioler mellem slagene</string>
+    <string name="metronome_subdivision_sixteenths_on">Sekstendedele mellem slagene</string>
+    <string name="metronome_options">Valgmuligheder</string>
+    <string name="metronome_trainer">Tempotræner</string>
+    <string name="metronome_trainer_back">Tilbage til valgmulighederne</string>
+    <string name="metronome_trainer_start">Start</string>
+    <string name="metronome_trainer_goal">Mål</string>
+    <string name="metronome_trainer_start_slower">Start langsommere</string>
+    <string name="metronome_trainer_start_faster">Start hurtigere</string>
+    <string name="metronome_trainer_goal_slower">Lavere mål</string>
+    <string name="metronome_trainer_goal_faster">Højere mål</string>
+    <string name="metronome_trainer_step">Trin</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Takter</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s takt</item>
+        <item quantity="other">%1$s takter</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s om %2$s takt</item>
+        <item quantity="other">%1$s om %2$s takter</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s hver takt</item>
+        <item quantity="other">%1$s hver %2$s. takt</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Ved målet · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Tempotræner, %1$s BPM, på vej mod %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Tempotræner, fra %1$s til %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Tempotræner, ved målet, %1$s BPM</string>
 
     <string name="metronome_meter_2_4_spoken">Tofjerdedelstakt</string>
     <string name="metronome_meter_3_4_spoken">Trefjerdedelstakt</string>
@@ -28,6 +65,7 @@
     <string name="metronome_listen">Lyt</string>
     <string name="metronome_listen_stop_spoken">Stop med at lytte</string>
     <string name="metronome_listening">Lytter…</string>
+    <string name="metronome_listen_line_stop">Stop</string>
     <string name="metronome_heard">Hørt</string>
     <string name="metronome_use">Brug</string>
     <string name="metronome_not_now">Ikke nu</string>

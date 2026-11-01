@@ -161,9 +161,11 @@
     <string name="tour_next">পরবর্তী</string>
     <string name="tour_done">হয়ে গেছে</string>
     <string name="tuner_more_tools">আরও টুল</string>
+    <string name="tuner_tool_on">%1$s চালু</string>
     <string name="tuner_intonation_check">১২তম ফ্রেট চেক</string>
     <string name="tuner_intonation_step_open">খোলা</string>
     <string name="tuner_intonation_step_fret">১২তম ফ্রেট</string>
+    <string name="tuner_intonation_choose_string">একটি তার বেছে নিন</string>
     <string name="tuner_intonation_choose_detail">আগে টিউন করুন, তারপর চেক করুন</string>
     <string name="tuner_intonation_play_open">খোলা %1$s তারটি বাজান</string>
     <string name="tuner_intonation_let_ring">বাজতে দিন</string>

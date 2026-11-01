@@ -5,6 +5,7 @@
     <string name="settings_group_look">Вигляд</string>
     <string name="settings_group_tuner_screen">Екран тюнера</string>
     <string name="settings_group_while_tuning">Коли налаштовуєш</string>
+    <string name="settings_group_app">Додаток</string>
     <string name="settings_a4_title">Камертон (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Гц</string>
     <string name="settings_a4_summary">Здебільшого використовують 440\u00A0Гц. Оркестри часто налаштовуються на 442\u00A0Гц, барокові ансамблі — на 415\u00A0Гц.</string>

@@ -166,9 +166,11 @@
     <string name="tour_next">ถัดไป</string>
     <string name="tour_done">เสร็จ</string>
     <string name="tuner_more_tools">เครื่องมือเพิ่มเติม</string>
+    <string name="tuner_tool_on">%1$s เปิดอยู่</string>
     <string name="tuner_intonation_check">เช็กเฟรตที่ 12</string>
     <string name="tuner_intonation_step_open">สายเปล่า</string>
     <string name="tuner_intonation_step_fret">เฟรตที่ 12</string>
+    <string name="tuner_intonation_choose_string">เลือกสาย</string>
     <string name="tuner_intonation_choose_detail">จูนก่อน แล้วค่อยเช็ก</string>
     <string name="tuner_intonation_play_open">เล่นสายเปล่า %1$s</string>
     <string name="tuner_intonation_let_ring">ปล่อยให้เสียงก้อง</string>

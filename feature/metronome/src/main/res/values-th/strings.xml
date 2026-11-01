@@ -16,6 +16,40 @@
     <string name="metronome_sound_cowbell">คาวเบล</string>
     <string name="metronome_sound_claves">เคลฟส์</string>
     <string name="metronome_sound_rim_click">ริมคลิก</string>
+    <string name="metronome_subdivision">ระหว่างจังหวะ</string>
+    <string name="metronome_subdivision_none">ไม่มี</string>
+    <string name="metronome_subdivision_eighths">เขบ็ต 1 ชั้น</string>
+    <string name="metronome_subdivision_triplets">โน้ตสามพยางค์</string>
+    <string name="metronome_subdivision_sixteenths">เขบ็ต 2 ชั้น</string>
+    <string name="metronome_subdivision_eighths_on">เขบ็ต 1 ชั้นระหว่างจังหวะ</string>
+    <string name="metronome_subdivision_triplets_on">โน้ตสามพยางค์ระหว่างจังหวะ</string>
+    <string name="metronome_subdivision_sixteenths_on">เขบ็ต 2 ชั้นระหว่างจังหวะ</string>
+    <string name="metronome_options">ตัวเลือก</string>
+    <string name="metronome_trainer">ฝึกเร่งความเร็ว</string>
+    <string name="metronome_trainer_back">กลับไปที่ตัวเลือก</string>
+    <string name="metronome_trainer_start">เริ่มต้น</string>
+    <string name="metronome_trainer_goal">เป้าหมาย</string>
+    <string name="metronome_trainer_start_slower">เริ่มช้าลง</string>
+    <string name="metronome_trainer_start_faster">เริ่มเร็วขึ้น</string>
+    <string name="metronome_trainer_goal_slower">ลดเป้าหมาย</string>
+    <string name="metronome_trainer_goal_faster">เพิ่มเป้าหมาย</string>
+    <string name="metronome_trainer_step">เพิ่มทีละ</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">จำนวนห้อง</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s ห้อง</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%1$s ในอีก %2$s ห้อง</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%1$s ทุก %2$s ห้อง</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">ถึงเป้าหมาย · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">ฝึกเร่งความเร็ว %1$s BPM กำลังเร่งไปที่ %2$s %3$s</string>
+    <string name="metronome_trainer_spoken_set">ฝึกเร่งความเร็ว จาก %1$s ถึง %2$s BPM %3$s</string>
+    <string name="metronome_trainer_spoken_goal">ฝึกเร่งความเร็ว ถึงเป้าหมายแล้ว %1$s BPM</string>
 
     <string name="metronome_meter_2_4_spoken">จังหวะสองสี่</string>
     <string name="metronome_meter_3_4_spoken">จังหวะสามสี่</string>
@@ -27,6 +61,7 @@
     <string name="metronome_listen">ฟัง</string>
     <string name="metronome_listen_stop_spoken">หยุดฟัง</string>
     <string name="metronome_listening">กำลังฟัง…</string>
+    <string name="metronome_listen_line_stop">หยุด</string>
     <string name="metronome_heard">ได้ยิน</string>
     <string name="metronome_use">ใช้</string>
     <string name="metronome_not_now">ไว้ทีหลัง</string>

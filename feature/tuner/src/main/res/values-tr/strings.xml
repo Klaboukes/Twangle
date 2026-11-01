@@ -170,9 +170,11 @@
     <string name="tour_next">İleri</string>
     <string name="tour_done">Bitti</string>
     <string name="tuner_more_tools">Diğer araçlar</string>
+    <string name="tuner_tool_on">%1$s açık</string>
     <string name="tuner_intonation_check">12. perde kontrolü</string>
     <string name="tuner_intonation_step_open">Boş</string>
     <string name="tuner_intonation_step_fret">12. perde</string>
+    <string name="tuner_intonation_choose_string">Bir tel seç</string>
     <string name="tuner_intonation_choose_detail">Önce akort et, sonra kontrol et</string>
     <string name="tuner_intonation_play_open">%1$s telini boş çal</string>
     <string name="tuner_intonation_let_ring">Bırak çınlasın</string>

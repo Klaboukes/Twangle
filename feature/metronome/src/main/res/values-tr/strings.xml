@@ -17,6 +17,43 @@
     <string name="metronome_sound_cowbell">İnek çanı</string>
     <string name="metronome_sound_claves">Klaves</string>
     <string name="metronome_sound_rim_click">Rim click</string>
+    <string name="metronome_subdivision">Vuruşlar arası</string>
+    <string name="metronome_subdivision_none">Yok</string>
+    <string name="metronome_subdivision_eighths">Sekizlikler</string>
+    <string name="metronome_subdivision_triplets">Üçlemeler</string>
+    <string name="metronome_subdivision_sixteenths">On altılıklar</string>
+    <string name="metronome_subdivision_eighths_on">Vuruşlar arası sekizlikler</string>
+    <string name="metronome_subdivision_triplets_on">Vuruşlar arası üçlemeler</string>
+    <string name="metronome_subdivision_sixteenths_on">Vuruşlar arası on altılıklar</string>
+    <string name="metronome_options">Seçenekler</string>
+    <string name="metronome_trainer">Tempo antrenörü</string>
+    <string name="metronome_trainer_back">Seçeneklere dön</string>
+    <string name="metronome_trainer_start">Başlangıç</string>
+    <string name="metronome_trainer_goal">Hedef</string>
+    <string name="metronome_trainer_start_slower">Daha yavaş başla</string>
+    <string name="metronome_trainer_start_faster">Daha hızlı başla</string>
+    <string name="metronome_trainer_goal_slower">Daha düşük hedef</string>
+    <string name="metronome_trainer_goal_faster">Daha yüksek hedef</string>
+    <string name="metronome_trainer_step">Adım</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Ölçüler</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s ölçü</item>
+        <item quantity="other">%1$s ölçü</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$s ölçü sonra %1$s</item>
+        <item quantity="other">%2$s ölçü sonra %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">her ölçüde %1$s</item>
+        <item quantity="other">her %2$s ölçüde %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Hedefte · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Tempo antrenörü, %1$s BPM, %2$s hedefine çıkıyor, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Tempo antrenörü, %1$s ile %2$s BPM arası, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Tempo antrenörü, hedefte, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">İki dörtlük ölçü</string>
     <string name="metronome_meter_3_4_spoken">Üç dörtlük ölçü</string>
     <string name="metronome_meter_4_4_spoken">Dört dörtlük ölçü</string>
@@ -27,6 +64,7 @@
     <string name="metronome_listen">Dinle</string>
     <string name="metronome_listen_stop_spoken">Dinlemeyi durdur</string>
     <string name="metronome_listening">Dinliyor…</string>
+    <string name="metronome_listen_line_stop">Durdur</string>
     <string name="metronome_heard">Duyulan</string>
     <string name="metronome_use">Kullan</string>
     <string name="metronome_not_now">Şimdi değil</string>

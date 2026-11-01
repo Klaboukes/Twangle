@@ -169,9 +169,11 @@
     <string name="tour_next">Nästa</string>
     <string name="tour_done">Klar</string>
     <string name="tuner_more_tools">Fler verktyg</string>
+    <string name="tuner_tool_on">%1$s på</string>
     <string name="tuner_intonation_check">Test vid 12:e bandet</string>
     <string name="tuner_intonation_step_open">Lös</string>
     <string name="tuner_intonation_step_fret">12:e bandet</string>
+    <string name="tuner_intonation_choose_string">Välj en sträng</string>
     <string name="tuner_intonation_choose_detail">Stäm den först, testa den sedan</string>
     <string name="tuner_intonation_play_open">Spela den lösa %1$s-strängen</string>
     <string name="tuner_intonation_let_ring">Låt den klinga</string>

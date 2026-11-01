@@ -16,6 +16,40 @@
     <string name="metronome_sound_cowbell">カウベル</string>
     <string name="metronome_sound_claves">クラベス</string>
     <string name="metronome_sound_rim_click">クロススティック</string>
+    <string name="metronome_subdivision">拍の間</string>
+    <string name="metronome_subdivision_none">なし</string>
+    <string name="metronome_subdivision_eighths">8分音符</string>
+    <string name="metronome_subdivision_triplets">3連符</string>
+    <string name="metronome_subdivision_sixteenths">16分音符</string>
+    <string name="metronome_subdivision_eighths_on">拍の間に8分音符</string>
+    <string name="metronome_subdivision_triplets_on">拍の間に3連符</string>
+    <string name="metronome_subdivision_sixteenths_on">拍の間に16分音符</string>
+    <string name="metronome_options">オプション</string>
+    <string name="metronome_trainer">スピードトレーナー</string>
+    <string name="metronome_trainer_back">オプションに戻る</string>
+    <string name="metronome_trainer_start">開始</string>
+    <string name="metronome_trainer_goal">目標</string>
+    <string name="metronome_trainer_start_slower">開始を遅く</string>
+    <string name="metronome_trainer_start_faster">開始を速く</string>
+    <string name="metronome_trainer_goal_slower">目標を下げる</string>
+    <string name="metronome_trainer_goal_faster">目標を上げる</string>
+    <string name="metronome_trainer_step">上げ幅</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">小節</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s 小節</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%2$s 小節後に %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%2$s 小節ごとに %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">目標に到達 · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">スピードトレーナー、%1$s BPM、%2$s まで上昇中、%3$s</string>
+    <string name="metronome_trainer_spoken_set">スピードトレーナー、%1$s から %2$s BPM、%3$s</string>
+    <string name="metronome_trainer_spoken_goal">スピードトレーナー、目標に到達、%1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">4分の2拍子</string>
     <string name="metronome_meter_3_4_spoken">4分の3拍子</string>
     <string name="metronome_meter_4_4_spoken">4分の4拍子</string>
@@ -26,6 +60,7 @@
     <string name="metronome_listen">聞き取る</string>
     <string name="metronome_listen_stop_spoken">聞き取りを停止</string>
     <string name="metronome_listening">聞き取り中…</string>
+    <string name="metronome_listen_line_stop">ストップ</string>
     <string name="metronome_heard">聞き取ったテンポ</string>
     <string name="metronome_use">使う</string>
     <string name="metronome_not_now">今はしない</string>

@@ -170,9 +170,11 @@
     <string name="tour_next">Weiter</string>
     <string name="tour_done">Fertig</string>
     <string name="tuner_more_tools">Weitere Werkzeuge</string>
+    <string name="tuner_tool_on">%1$s an</string>
     <string name="tuner_intonation_check">Check am 12. Bund</string>
     <string name="tuner_intonation_step_open">Leer</string>
     <string name="tuner_intonation_step_fret">12. Bund</string>
+    <string name="tuner_intonation_choose_string">Wähl eine Saite</string>
     <string name="tuner_intonation_choose_detail">Erst stimmen, dann prüfen</string>
     <string name="tuner_intonation_play_open">Spiel die leere %1$s-Saite</string>
     <string name="tuner_intonation_let_ring">Lass sie klingen</string>

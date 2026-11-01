@@ -173,9 +173,11 @@
     <string name="tour_next">Avanti</string>
     <string name="tour_done">Fine</string>
     <string name="tuner_more_tools">Altre funzioni</string>
+    <string name="tuner_tool_on">%1$s in funzione</string>
     <string name="tuner_intonation_check">Controllo al 12° tasto</string>
     <string name="tuner_intonation_step_open">A vuoto</string>
     <string name="tuner_intonation_step_fret">12° tasto</string>
+    <string name="tuner_intonation_choose_string">Scegli una corda</string>
     <string name="tuner_intonation_choose_detail">Prima accordala, poi controllala</string>
     <string name="tuner_intonation_play_open">Suona la corda %1$s a vuoto</string>
     <string name="tuner_intonation_let_ring">Lasciala suonare</string>

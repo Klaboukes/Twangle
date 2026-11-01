@@ -173,9 +173,11 @@
     <string name="tour_next">Suivant</string>
     <string name="tour_done">Terminé</string>
     <string name="tuner_more_tools">Plus d\'outils</string>
+    <string name="tuner_tool_on">%1$s en marche</string>
     <string name="tuner_intonation_check">Test de la 12e case</string>
     <string name="tuner_intonation_step_open">À vide</string>
     <string name="tuner_intonation_step_fret">12e case</string>
+    <string name="tuner_intonation_choose_string">Choisissez une corde</string>
     <string name="tuner_intonation_choose_detail">Accordez-la d\'abord, puis testez-la</string>
     <string name="tuner_intonation_play_open">Jouez la corde %1$s à vide</string>
     <string name="tuner_intonation_let_ring">Laissez-la sonner</string>

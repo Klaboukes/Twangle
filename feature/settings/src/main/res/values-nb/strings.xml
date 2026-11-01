@@ -6,6 +6,7 @@
     <string name="settings_group_look">Utseende</string>
     <string name="settings_group_tuner_screen">Stemmerskjerm</string>
     <string name="settings_group_while_tuning">Mens du stemmer</string>
+    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Referansetone (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>

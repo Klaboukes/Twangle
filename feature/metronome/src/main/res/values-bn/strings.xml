@@ -16,6 +16,43 @@
     <string name="metronome_sound_cowbell">কাউবেল</string>
     <string name="metronome_sound_claves">ক্লেভস</string>
     <string name="metronome_sound_rim_click">রিম ক্লিক</string>
+    <string name="metronome_subdivision">বিটের মাঝে</string>
+    <string name="metronome_subdivision_none">কিছু না</string>
+    <string name="metronome_subdivision_eighths">এইটথ নোট</string>
+    <string name="metronome_subdivision_triplets">ট্রিপলেট</string>
+    <string name="metronome_subdivision_sixteenths">সিক্সটিন্থ নোট</string>
+    <string name="metronome_subdivision_eighths_on">বিটের মাঝে এইটথ নোট</string>
+    <string name="metronome_subdivision_triplets_on">বিটের মাঝে ট্রিপলেট</string>
+    <string name="metronome_subdivision_sixteenths_on">বিটের মাঝে সিক্সটিন্থ নোট</string>
+    <string name="metronome_options">বিকল্প</string>
+    <string name="metronome_trainer">স্পিড ট্রেনার</string>
+    <string name="metronome_trainer_back">বিকল্পে ফিরে যান</string>
+    <string name="metronome_trainer_start">শুরু</string>
+    <string name="metronome_trainer_goal">লক্ষ্য</string>
+    <string name="metronome_trainer_start_slower">আরও ধীরে শুরু করুন</string>
+    <string name="metronome_trainer_start_faster">আরও দ্রুত শুরু করুন</string>
+    <string name="metronome_trainer_goal_slower">লক্ষ্য কমান</string>
+    <string name="metronome_trainer_goal_faster">লক্ষ্য বাড়ান</string>
+    <string name="metronome_trainer_step">ধাপ</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">বার</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$sটি বার</item>
+        <item quantity="other">%1$sটি বার</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$sটি বার পরে %1$s</item>
+        <item quantity="other">%2$sটি বার পরে %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">প্রতি বারে %1$s</item>
+        <item quantity="other">প্রতি %2$sটি বারে %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">লক্ষ্যে · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">স্পিড ট্রেনার, %1$s BPM, %2$s-এর দিকে বাড়ছে, %3$s</string>
+    <string name="metronome_trainer_spoken_set">স্পিড ট্রেনার, %1$s থেকে %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">স্পিড ট্রেনার, লক্ষ্যে পৌঁছেছে, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">টু বাই ফোর তাল</string>
     <string name="metronome_meter_3_4_spoken">থ্রি বাই ফোর তাল</string>
     <string name="metronome_meter_4_4_spoken">ফোর বাই ফোর তাল</string>
@@ -25,6 +62,7 @@
     <string name="metronome_listen">শুনুন</string>
     <string name="metronome_listen_stop_spoken">শোনা বন্ধ করুন</string>
     <string name="metronome_listening">শুনছে…</string>
+    <string name="metronome_listen_line_stop">থামান</string>
     <string name="metronome_heard">শোনা গেছে</string>
     <string name="metronome_use">ব্যবহার করুন</string>
     <string name="metronome_not_now">এখন না</string>

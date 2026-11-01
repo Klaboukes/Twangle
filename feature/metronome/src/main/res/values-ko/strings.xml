@@ -16,6 +16,40 @@
     <string name="metronome_sound_cowbell">카우벨</string>
     <string name="metronome_sound_claves">클라베스</string>
     <string name="metronome_sound_rim_click">크로스 스틱</string>
+    <string name="metronome_subdivision">박 사이</string>
+    <string name="metronome_subdivision_none">없음</string>
+    <string name="metronome_subdivision_eighths">8분음표</string>
+    <string name="metronome_subdivision_triplets">셋잇단음표</string>
+    <string name="metronome_subdivision_sixteenths">16분음표</string>
+    <string name="metronome_subdivision_eighths_on">박 사이에 8분음표</string>
+    <string name="metronome_subdivision_triplets_on">박 사이에 셋잇단음표</string>
+    <string name="metronome_subdivision_sixteenths_on">박 사이에 16분음표</string>
+    <string name="metronome_options">옵션</string>
+    <string name="metronome_trainer">속도 트레이너</string>
+    <string name="metronome_trainer_back">옵션으로 돌아가기</string>
+    <string name="metronome_trainer_start">시작</string>
+    <string name="metronome_trainer_goal">목표</string>
+    <string name="metronome_trainer_start_slower">시작 속도 낮추기</string>
+    <string name="metronome_trainer_start_faster">시작 속도 높이기</string>
+    <string name="metronome_trainer_goal_slower">목표 낮추기</string>
+    <string name="metronome_trainer_goal_faster">목표 높이기</string>
+    <string name="metronome_trainer_step">증가폭</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">마디</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s마디</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%2$s마디 후 %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%2$s마디마다 %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">목표 도달 · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">속도 트레이너, %1$s BPM, %2$s까지 올리는 중, %3$s</string>
+    <string name="metronome_trainer_spoken_set">속도 트레이너, %1$s에서 %2$s BPM까지, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">속도 트레이너, 목표 도달, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">4분의 2박자</string>
     <string name="metronome_meter_3_4_spoken">4분의 3박자</string>
     <string name="metronome_meter_4_4_spoken">4분의 4박자</string>
@@ -26,6 +60,7 @@
     <string name="metronome_listen">듣기</string>
     <string name="metronome_listen_stop_spoken">듣기 중지</string>
     <string name="metronome_listening">듣는 중…</string>
+    <string name="metronome_listen_line_stop">중지</string>
     <string name="metronome_heard">들은 템포</string>
     <string name="metronome_use">사용</string>
     <string name="metronome_not_now">나중에</string>

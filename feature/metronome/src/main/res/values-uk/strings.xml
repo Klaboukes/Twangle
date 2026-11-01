@@ -18,6 +18,49 @@
     <string name="metronome_sound_cowbell">Ковбел</string>
     <string name="metronome_sound_claves">Клавес</string>
     <string name="metronome_sound_rim_click">Крос-стік</string>
+    <string name="metronome_subdivision">Між долями</string>
+    <string name="metronome_subdivision_none">Немає</string>
+    <string name="metronome_subdivision_eighths">Восьмі</string>
+    <string name="metronome_subdivision_triplets">Тріолі</string>
+    <string name="metronome_subdivision_sixteenths">Шістнадцяті</string>
+    <string name="metronome_subdivision_eighths_on">Восьмі між долями</string>
+    <string name="metronome_subdivision_triplets_on">Тріолі між долями</string>
+    <string name="metronome_subdivision_sixteenths_on">Шістнадцяті між долями</string>
+    <string name="metronome_options">Параметри</string>
+    <string name="metronome_trainer">Тренажер темпу</string>
+    <string name="metronome_trainer_back">Назад до параметрів</string>
+    <string name="metronome_trainer_start">Старт</string>
+    <string name="metronome_trainer_goal">Ціль</string>
+    <string name="metronome_trainer_start_slower">Почати повільніше</string>
+    <string name="metronome_trainer_start_faster">Почати швидше</string>
+    <string name="metronome_trainer_goal_slower">Знизити ціль</string>
+    <string name="metronome_trainer_goal_faster">Підвищити ціль</string>
+    <string name="metronome_trainer_step">Крок</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Такти</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s такт</item>
+        <item quantity="few">%1$s такти</item>
+        <item quantity="many">%1$s тактів</item>
+        <item quantity="other">%1$s такту</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s через %2$s такт</item>
+        <item quantity="few">%1$s через %2$s такти</item>
+        <item quantity="many">%1$s через %2$s тактів</item>
+        <item quantity="other">%1$s через %2$s такту</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s щотакту</item>
+        <item quantity="few">%1$s кожні %2$s такти</item>
+        <item quantity="many">%1$s кожні %2$s тактів</item>
+        <item quantity="other">%1$s кожні %2$s такту</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Ціль досягнуто · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Тренажер темпу, %1$s BPM, розгін до %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Тренажер темпу, від %1$s до %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Тренажер темпу, ціль досягнуто, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">Розмір дві чверті</string>
     <string name="metronome_meter_3_4_spoken">Розмір три чверті</string>
     <string name="metronome_meter_4_4_spoken">Розмір чотири чверті</string>
@@ -27,6 +70,7 @@
     <string name="metronome_listen">Слухати</string>
     <string name="metronome_listen_stop_spoken">Припинити слухати</string>
     <string name="metronome_listening">Слухаю…</string>
+    <string name="metronome_listen_line_stop">Стоп</string>
     <string name="metronome_heard">Почуто</string>
     <string name="metronome_use">Застосувати</string>
     <string name="metronome_not_now">Не зараз</string>

@@ -6,6 +6,7 @@
     <string name="settings_group_look">Aussehen</string>
     <string name="settings_group_tuner_screen">Stimmgerät-Bildschirm</string>
     <string name="settings_group_while_tuning">Beim Stimmen</string>
+    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Kammerton (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -84,7 +85,7 @@
     <string name="settings_about_privacy_summary">Twangle sammelt keine Daten über dich. Das Mikrofon ist nur an, solange ein Bildschirm offen ist, der zuhört: das Stimmgerät, „Zuhören“ beim Metronom oder „Nachspielen“ in der Gehörbildung. Der Ton wird live analysiert und nie aufgenommen, gespeichert oder gesendet. Twangle hat keine Internetberechtigung und kann daher nichts irgendwohin senden. Deine Einstellungen bleiben auf diesem Gerät (und in der Sicherung von Android selbst, wenn du sie eingeschaltet hast).</string>
     <string name="settings_about_rate_title">Twangle bewerten</string>
     <string name="settings_about_rate_summary">Twangle bei Google Play</string>
-    <string name="settings_about_website_title">Hilfe &amp; Website</string>
+    <string name="settings_about_website_title">Hilfe und Website</string>
     <string name="settings_about_website_summary">Wie jedes Werkzeug funktioniert, und Antworten auf häufige Fragen (auf Englisch)</string>
     <string name="settings_about_credits_title">Schriften und Open-Source-Software</string>
     <string name="settings_about_credits_summary">Twangle ist damit gemacht. Tippe auf einen Eintrag, um seine Lizenz zu lesen.</string>

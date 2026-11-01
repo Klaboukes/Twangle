@@ -6,6 +6,7 @@
     <string name="settings_group_look">Udseende</string>
     <string name="settings_group_tuner_screen">Tunerskærm</string>
     <string name="settings_group_while_tuning">Mens du stemmer</string>
+    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Kammertone (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>
@@ -84,7 +85,7 @@
     <string name="settings_about_privacy_summary">Twangle indsamler ingen data om dig. Mikrofonen er kun tændt, mens en skærm, der lytter, er åben: tuneren, metronomens Lyt eller Gehørtræningens Spil efter. Lyden analyseres live og bliver aldrig optaget, gemt eller sendt. Twangle har ingen tilladelse til internettet, så den kan ikke sende noget nogen steder hen. Dine indstillinger bliver på denne enhed (og i Androids egen sikkerhedskopi, hvis du har slået den til).</string>
     <string name="settings_about_rate_title">Bedøm Twangle</string>
     <string name="settings_about_rate_summary">Twangle på Google Play</string>
-    <string name="settings_about_website_title">Hjælp &amp; hjemmeside</string>
+    <string name="settings_about_website_title">Hjælp og hjemmeside</string>
     <string name="settings_about_website_summary">Hvordan hvert værktøj virker, og svar på ofte stillede spørgsmål</string>
     <string name="settings_about_credits_title">Skrifttyper og open source-software</string>
     <string name="settings_about_credits_summary">Twangle er lavet med disse. Tryk på en for at læse dens licens.</string>

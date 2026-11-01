@@ -6,6 +6,7 @@
     <string name="settings_group_look">Ulkoasu</string>
     <string name="settings_group_tuner_screen">Viritinnäkymä</string>
     <string name="settings_group_while_tuning">Viritettäessä</string>
+    <string name="settings_group_app">Sovellus</string>
 
     <string name="settings_a4_title">Vertailusävel (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>

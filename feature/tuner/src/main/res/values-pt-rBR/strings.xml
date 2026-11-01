@@ -173,9 +173,11 @@
     <string name="tour_next">Próximo</string>
     <string name="tour_done">Concluir</string>
     <string name="tuner_more_tools">Mais ferramentas</string>
+    <string name="tuner_tool_on">%1$s em uso</string>
     <string name="tuner_intonation_check">Teste da casa 12</string>
     <string name="tuner_intonation_step_open">Solta</string>
     <string name="tuner_intonation_step_fret">Casa 12</string>
+    <string name="tuner_intonation_choose_string">Escolha uma corda</string>
     <string name="tuner_intonation_choose_detail">Afine primeiro, depois teste</string>
     <string name="tuner_intonation_play_open">Toque a corda %1$s solta</string>
     <string name="tuner_intonation_let_ring">Deixe soar</string>
