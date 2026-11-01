@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Dó, Ré, Fá e Lá com acento, para o TalkBack pronunciar como se diz. -->
+    <string name="wear_spoken_solfege" translatable="false" tools:ignore="ExtraTranslation">Dó Ré Mi Fá Sol Lá Si</string>
+</resources>

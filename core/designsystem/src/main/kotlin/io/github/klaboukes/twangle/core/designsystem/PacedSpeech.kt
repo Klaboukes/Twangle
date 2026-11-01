@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingThrottle
 import kotlinx.coroutines.delay
 
 /**

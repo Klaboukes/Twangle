@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.core.designsystem
+package io.github.klaboukes.twangle.core.dsp.speech
 
 import kotlin.math.max
 
@@ -16,6 +16,8 @@ import kotlin.math.max
  * [announced]: hearing it after every pluck only talks over the next one (Phase 65).
  *
  * Use: ask [delayFor] whenever the text changes, wait that long, then [publish]. Not thread-safe.
+ * Shared by the phone (`PacedSpeech` in `:core:designsystem`) and the watch (`WatchPacedSpeech`), so
+ * both are paced alike; a reading's key is its note and [SpokenSide].
  */
 class SpokenReadingThrottle(
     private val settleMillis: Long = DEFAULT_SETTLE_MILLIS,

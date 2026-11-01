@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Ré avec accent, pour que TalkBack le prononce bien. -->
+    <string name="wear_spoken_solfege" translatable="false" tools:ignore="ExtraTranslation">Do Ré Mi Fa Sol La Si</string>
+</resources>

@@ -39,9 +39,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -117,10 +120,15 @@ fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
  * The tuner: a ring along the edge of the screen with the cents scale at the top (♭ and ♯ at its
  * ends) and a needle pointing in from the ring, the note large in the middle, the cents under it and
  * the ribbon under them. When the note is in tune the ring, the needle, the note and the ribbon glow
- * in the in-tune colour, easing in and out. A failure shows a message instead. Stateless.
+ * in the in-tune colour, easing in and out. A failure shows a message instead, which TalkBack says as
+ * it comes (a polite live region). Stateless but for the pacing of what TalkBack says.
+ *
+ * For TalkBack the dial is one polite live region under the rest that says the reading in words,
+ * "A sharp 2, 12 cents flat, tune up", "E 2, in tune" or "Play a note" ([spokenWatchReading]), paced as
+ * on the phone by [speech] ([WatchPacedSpeech]); the texts on screen are hidden from it.
  */
 @Composable
-fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
+fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit, speech: WatchPacedSpeech = rememberWatchPacedSpeech()) {
     if (state is WatchTunerState.Failed) {
         Message(
             text = stringResource(
@@ -132,10 +140,17 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
             ),
             action = stringResource(R.string.wear_try_again),
             onAction = onRetry,
+            live = true,
         )
         return
     }
     val detected = state as? WatchTunerState.Detected
+    val playNote = stringResource(R.string.wear_play_note)
+    val spoken = watchPacedSpeech(
+        text = if (detected != null) spokenWatchReading(detected) else playNote,
+        key = detected?.let(::watchReadingKey),
+        speech = speech,
+    )
     val glow by animateFloatAsState(
         targetValue = if (detected?.inTune == true) 1f else 0f,
         animationSpec = tween(WatchDial.GLOW_MILLIS, easing = FastOutSlowInEasing),
@@ -157,6 +172,18 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
 
     BoxWithConstraints(Modifier.fillMaxSize().testTag(WatchDial.TAG), contentAlignment = Alignment.Center) {
         val dial = min(maxWidth, maxHeight)
+        // TalkBack hears the reading from this layer only. It lies under the dial, not around it, so
+        // nothing changing inside can make TalkBack read it again early (as on the phone).
+        Box(
+            Modifier
+                .fillMaxSize()
+                .testTag(WatchDial.SPOKEN_TAG)
+                .semantics {
+                    contentDescription = spoken
+                    // Not for "Play a note" said again after a pluck dies away (WatchPacedSpeech.announced).
+                    if (speech.announced) liveRegion = LiveRegionMode.Polite
+                },
+        )
         Canvas(Modifier.fillMaxSize()) {
             drawDial(cents = markerCents, markerAlpha = markerAlpha, glow = glow, needle = needle)
         }
@@ -182,7 +209,8 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
             } else {
                 Box(Modifier.fillMaxSize().padding(horizontal = dial * 0.18f), contentAlignment = Alignment.Center) {
                     Text(
-                        stringResource(R.string.wear_play_note),
+                        playNote,
+                        modifier = Modifier.semantics { hideFromAccessibility() },
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.titleMedium,
                         color = WatchColors.muted,
@@ -200,11 +228,9 @@ private fun Reading(reading: WatchTunerState.Detected, dial: Dp, glow: () -> Flo
     // Sized to the screen, not the font setting: the note is already as large as the dial allows.
     fun Dp.fixedSp() = with(density) { toSp() }
     val noteColor = lerp(WatchColors.ink, WatchColors.inTune, glow())
-    val inTuneText = stringResource(R.string.wear_in_tune)
     Column(
-        modifier = Modifier.semantics(mergeDescendants = true) {
-            if (reading.inTune) stateDescription = inTuneText
-        },
+        // TalkBack hears the reading in words from the dial's spoken layer instead.
+        modifier = Modifier.semantics(mergeDescendants = true) { hideFromAccessibility() },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -388,6 +414,9 @@ object WatchDial {
 
     const val RIBBON_TAG = "watchRibbon"
 
+    /** The layer that speaks the reading to TalkBack (a polite live region). */
+    const val SPOKEN_TAG = "watchSpoken"
+
     /** The scale runs ±50 cents over ±60° either side of 12 o'clock, a tick every 5 cents. */
     const val MAX_CENTS = 50f
     const val MAX_SWEEP_DEGREES = 60f
@@ -441,12 +470,20 @@ object WatchDial {
     fun angleFor(cents: Float): Float = -90f + cents.coerceIn(-MAX_CENTS, MAX_CENTS) / MAX_CENTS * MAX_SWEEP_DEGREES
 }
 
-/** A short text centred on the round screen, with an optional button under it. */
+/**
+ * A short text centred on the round screen, with an optional button under it. A [live] text is a
+ * polite live region, so TalkBack says it as it comes (the microphone lost while tuning).
+ */
 @Composable
-private fun Message(text: String, action: String? = null, onAction: () -> Unit = {}) {
+private fun Message(text: String, action: String? = null, onAction: () -> Unit = {}, live: Boolean = false) {
     Box(Modifier.fillMaxSize().padding(horizontal = 24.dp), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(text, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text,
+                modifier = if (live) Modifier.semantics { liveRegion = LiveRegionMode.Polite } else Modifier,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge,
+            )
             if (action != null) {
                 Button(onClick = onAction) { Text(action) }
             }

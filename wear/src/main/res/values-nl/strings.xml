@@ -5,6 +5,19 @@
         <item quantity="other">%1$s cent</item>
     </plurals>
     <string name="wear_in_tune">zuiver</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent te laag</item>
+        <item quantity="other">%1$d cent te laag</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent te hoog</item>
+        <item quantity="other">%1$d cent te hoog</item>
+    </plurals>
+    <string name="wear_spoken_tune_up">hoger stemmen</string>
+    <string name="wear_spoken_tune_down">lager stemmen</string>
+    <string name="wear_spoken_sharp">%1$s kruis</string>
     <string name="wear_mic_needed">Twangle luistert met de microfoon van je horloge naar je instrument.</string>
     <string name="wear_allow_mic">Microfoon toestaan</string>
     <string name="wear_open_settings">Instellingen openen</string>

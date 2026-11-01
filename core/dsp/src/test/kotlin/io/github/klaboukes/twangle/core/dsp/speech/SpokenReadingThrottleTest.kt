@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.core.designsystem
+package io.github.klaboukes.twangle.core.dsp.speech
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

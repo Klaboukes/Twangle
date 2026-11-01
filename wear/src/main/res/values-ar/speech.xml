@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- أسماء النغمات بالحروف العربية، لينطقها TalkBack كما يقولها العازفون (الشاشة تعرض Do Re Mi). -->
+    <string name="wear_spoken_solfege" translatable="false" tools:ignore="ExtraTranslation">دو ري مي فا صول لا سي</string>
+</resources>

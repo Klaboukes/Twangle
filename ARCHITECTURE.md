@@ -145,6 +145,8 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
                 open string
     buffer/     FrameAssembler
     awake/      ScreenAwakeRule (+ ScreenAwakePhase): Keep screen on's quiet timer, for the phone's tuner and the watch's
+    speech/     SpokenReadingThrottle (TalkBack's pacing of a live reading), SpokenSide (its key's flat/sharp/in tune),
+                NoteNameSpeech (+ LetterNames, noteNameSpeech): note names as said, phone and watch
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
                 TestSignals (sine, saw, square, weak fundamental, pluck, noise, hum, mix, band-limit)
 
@@ -165,7 +167,7 @@ core/settings/src/testFixtures/…/core/settings/   FakeSettingsRepository
 
 core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop, StyleMood,
-    MusicSigns, NoteNameSpeech, SpokenReadingThrottle (+ PacedSpeech), FontCredits,
+    MusicSigns, NoteNameSpeech (rememberNoteNameSpeech), PacedSpeech, FontCredits,
     PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
     SegmentedSwitch, InstrumentButton, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
@@ -226,7 +228,7 @@ wear/src/main/kotlin/io/github/klaboukes/twangle/wear/
     WatchActivity, WatchTunerViewModel, WatchPitchPipeline, WatchTunerState (+ WatchTunerError),
     WatchTunerScreen (WatchTunerApp, WatchTuner, WatchDial, WatchNoteName), WatchTheme (WatchColors),
     ScreenState (ScreenOnEffect), WatchScreenAwake (rememberWatchScreenAwake), MicPermission (rememberWatchMicPermission),
-    WatchInTuneTap (WatchInTuneTapEffect, rememberWristTap)
+    WatchInTuneTap (WatchInTuneTapEffect, rememberWristTap), WatchSpokenReading (WatchPacedSpeech, spokenWatchReading)
 
 baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, MeterFramesBenchmark, TunerJourney

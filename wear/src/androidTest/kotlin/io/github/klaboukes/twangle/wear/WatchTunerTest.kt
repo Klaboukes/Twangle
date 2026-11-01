@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.wear
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,19 +11,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingThrottle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -41,18 +48,39 @@ class WatchTunerTest {
     private var dial by mutableStateOf(225.dp)
     private var retries = 0
 
-    private fun show(first: WatchTunerState) {
+    private fun show(first: WatchTunerState, language: String? = null) {
         state = first
         compose.setContent {
-            WatchTheme {
-                Box(Modifier.size(dial).background(Color.Black)) {
-                    WatchTuner(state, onRetry = { retries++ })
+            val tuner = @Composable {
+                WatchTheme {
+                    Box(Modifier.size(dial).background(Color.Black)) {
+                        WatchTuner(state, onRetry = { retries++ })
+                    }
                 }
+            }
+            if (language == null) {
+                tuner()
+            } else {
+                DeviceConfigurationOverride(DeviceConfigurationOverride.Locales(LocaleList(language))) { tuner() }
             }
         }
     }
 
-    private val inTune = SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "in tune")
+    private val hiddenFromTalkBack = SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility)
+
+    private val polite = SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
+
+    /** What the spoken layer gives TalkBack, "" if nothing. */
+    private fun spoken(): String =
+        compose.onNodeWithTag(WatchDial.SPOKEN_TAG).fetchSemanticsNode().config
+            .getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
+
+    /** TalkBack is given [text] within the throttle's longest wait, as a polite live region if [announced]. */
+    private fun assertSpoken(text: String, announced: Boolean = true) {
+        compose.waitUntil(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000) { spoken() == text }
+        val node = compose.onNodeWithTag(WatchDial.SPOKEN_TAG)
+        if (announced) node.assert(polite) else node.assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
+    }
 
     @Test
     fun listeningAsksForANote() {
@@ -66,14 +94,62 @@ class WatchTunerTest {
         compose.onNodeWithText("A♯", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText("2", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText("−12 cents", useUnmergedTree = true).assertIsDisplayed()
-        compose.onAllNodes(inTune).assertCountEquals(0)
+    }
+
+    /** TalkBack hears the reading in words from one polite live region, not "−12 cents" from the screen. */
+    @Test
+    fun talkBackHearsFlatAndWhichWayToTune() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.A_SHARP, 2), -12))
+        assertSpoken("A sharp 2, 12 cents flat, tune up")
+        compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)).assertCountEquals(1)
+        compose.onNodeWithText("A♯").assert(hiddenFromTalkBack)
+    }
+
+    @Test
+    fun talkBackHearsSharpAndTuneDown() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), 1))
+        assertSpoken("E 2, 1 cent sharp, tune down")
     }
 
     @Test
     fun inTuneIsSaidToTalkBack() {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), 1, inTune = true))
-        compose.onAllNodes(inTune).assertCountEquals(1)
+        assertSpoken("E 2, in tune")
         compose.onNodeWithText("+1 cent", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun rightOnTheNoteBeforeItCountsSaysNoDirection() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), 0))
+        assertSpoken("E 2, 0 cents")
+    }
+
+    /** Turning the peg past the note is said after 400 ms, like a new note, not 2 s later as the cents alone. */
+    @Test
+    fun turningPastTheNoteIsSaidSoon() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
+        assertSpoken("E 2, 12 cents flat, tune up")
+        state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), 6)
+        compose.waitUntil(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900) { spoken() == "E 2, 6 cents sharp, tune down" }
+    }
+
+    /** "Play a note" is said at first, but not again after every note dies away: TalkBack reads it on touch. */
+    @Test
+    fun playANoteAfterANoteIsHeldForATouch() {
+        show(WatchTunerState.Listening)
+        assertSpoken("Play a note")
+        state = WatchTunerState.Detected(Note.of(PitchClass.G, 3), 0, inTune = true)
+        assertSpoken("G 3, in tune")
+        state = WatchTunerState.Listening
+        assertSpoken("Play a note", announced = false)
+        compose.onNodeWithText("Play a note").assert(hiddenFromTalkBack)
+    }
+
+    /** In Dutch the note is said the Dutch way and the cents as on the phone. */
+    @Test
+    fun dutchTalkBackSaysAisAndTeLaag() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.A_SHARP, 2), -12), language = "nl")
+        assertSpoken("ais 2, 12 cent te laag, hoger stemmen")
     }
 
     @Test
@@ -87,13 +163,12 @@ class WatchTunerTest {
         state = WatchTunerState.Listening
         compose.waitForIdle()
         compose.onNodeWithText("Play a note").assertIsDisplayed()
-        compose.onAllNodes(inTune).assertCountEquals(0)
     }
 
     @Test
     fun aFailureOffersTryAgain() {
         show(WatchTunerState.Failed(WatchTunerError.MICROPHONE_BUSY))
-        compose.onNodeWithText("Another app is using the microphone.").assertIsDisplayed()
+        compose.onNodeWithText("Another app is using the microphone.").assertIsDisplayed().assert(polite)
         compose.onNodeWithText("Try again").performClick()
         assertTrue(retries == 1)
     }

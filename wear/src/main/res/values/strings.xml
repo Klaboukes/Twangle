@@ -7,8 +7,28 @@
         <item quantity="one">%1$s cent</item>
         <item quantity="other">%1$s cents</item>
     </plurals>
-    <!-- What TalkBack adds while the note is in tune (the ring glows). -->
+    <!-- What TalkBack says while the note is in tune (the ring glows), after the note: "E 2, in tune". Lower case. -->
     <string name="wear_in_tune">in tune</string>
+    <!-- Watch, TalkBack: the reading read aloud. %1$s is the note as said ("A sharp", in Dutch "ais"), %2$d its octave, %3$s how far off it is or "in tune", e.g. "A sharp 2, in tune". -->
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <!-- Watch, TalkBack: the same while the note is off, with which way to turn the peg. %4$s is "tune up" or "tune down", e.g. "A sharp 2, 12 cents flat, tune up". -->
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <!-- Watch, TalkBack: how far too low the note is, in the reading read aloud. %1$d is how many cents (hundredths of a semitone). -->
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent flat</item>
+        <item quantity="other">%1$d cents flat</item>
+    </plurals>
+    <!-- Watch, TalkBack: how far too high the note is, in the reading read aloud. %1$d is how many cents. -->
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent sharp</item>
+        <item quantity="other">%1$d cents sharp</item>
+    </plurals>
+    <!-- Watch, TalkBack, after the reading while the note is too low: turn the peg up. Lower case. -->
+    <string name="wear_spoken_tune_up">tune up</string>
+    <!-- Watch, TalkBack, after the reading while the note is too high: turn the peg down. Lower case. -->
+    <string name="wear_spoken_tune_down">tune down</string>
+    <!-- Watch, TalkBack: a note name with a sharp read aloud, e.g. "A sharp". %1$s is the letter or syllable ("A", "La"). In languages whose letter names are said in one word (Dutch ais, German Ais) only used for Do Re Mi. -->
+    <string name="wear_spoken_sharp">%1$s sharp</string>
     <!-- Microphone permission on the watch. -->
     <string name="wear_mic_needed">Twangle listens to your instrument with the watch\'s microphone.</string>
     <!-- Watch: button under the microphone message that asks for the microphone permission. Short (small round screen). -->

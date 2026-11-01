@@ -84,7 +84,6 @@ import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
 import io.github.klaboukes.twangle.core.designsystem.INSTRUMENT_BUTTON_SIZE
 import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
-import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
@@ -124,6 +123,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
+import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout

@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.core.designsystem
+package io.github.klaboukes.twangle.core.dsp.speech
 
 import io.github.klaboukes.twangle.core.dsp.music.Accidental
 import io.github.klaboukes.twangle.core.dsp.music.Notation

@@ -1,6 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
-import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
+import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingThrottle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test

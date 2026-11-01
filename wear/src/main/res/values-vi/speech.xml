@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Đô, Rê, Son theo cách viết tiếng Việt, để TalkBack đọc như người chơi nói (không đọc "Do" thành "zô"). -->
+    <string name="wear_spoken_solfege" translatable="false" tools:ignore="ExtraTranslation">Đô Rê Mi Fa Son La Si</string>
+</resources>

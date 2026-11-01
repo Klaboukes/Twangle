@@ -87,6 +87,7 @@ import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneTickRule
+import io.github.klaboukes.twangle.core.dsp.speech.SpokenSide
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
 import io.github.klaboukes.twangle.feature.tuner.SteadyHint
@@ -884,18 +885,11 @@ private val TunerHint.spokenLabel: Int
  * The situation a spoken reading belongs to, for its pacing ([PacedSpeech]): the note and which side
  * of it the string is, flat, sharp or in tune. A new one is said after 400 ms; only the cents moving
  * at most every 2 s. With the side in it, turning a string past the note ("12 cents flat" to "5 cents
- * sharp") is said as soon as a new note would be, not up to 2 s late (Phase 65).
+ * sharp") is said as soon as a new note would be, not up to 2 s late (Phase 65). The watch keys its
+ * reading the same way ([SpokenSide]).
  */
-internal fun spokenReadingKey(readout: NoteReadout): String {
-    val rounded = readout.cents.roundToInt()
-    val side = when {
-        readout.inTune -> "in tune"
-        rounded < 0 -> "flat"
-        rounded > 0 -> "sharp"
-        else -> "on the note"
-    }
-    return "${readout.noteName}${readout.octave}/$side"
-}
+internal fun spokenReadingKey(readout: NoteReadout): String =
+    "${readout.noteName}${readout.octave}/${SpokenSide.of(readout.cents.roundToInt(), readout.inTune)}"
 
 /**
  * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, also in the
