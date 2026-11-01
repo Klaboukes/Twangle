@@ -1,8 +1,8 @@
 Suona una corda. Guarda quando è intonata.
+Sei stili, chiaro o scuro
 Preciso al cent
 Chitarra, basso, ukulele, violino e altro
-Parla con TalkBack. Funziona con il testo grande.
 Suona un accordo. Guarda come si chiama.
-Un metronomo che tiene il tempo
 Diagrammi degli accordi e capotasto, calcolati per te
+Parla con TalkBack. Funziona con il testo grande.
 Vedi ogni bending e ogni vibrato. Il tuo suono non lascia mai il telefono.

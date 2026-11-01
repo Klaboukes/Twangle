@@ -158,8 +158,8 @@ listing isn't tied to a version.
   icon 512 × 512 and the feature graphic 1024 × 500 in Play's formats) and the screenshots against
   Play's rules (2 to 8, 320 to 3840 px a side, at most 2 : 1, at most 8 MB). The copy sent is 24-bit
   PNG: Play takes screenshots only without alpha.
-- **One icon and feature graphic** go with the default language, en-US; Play shows them in every
-  language without its own.
+- **One icon** goes with the default language, en-US, which Play shows in every language; **each language's feature graphic** (with its translated line) goes with its own. Before Phase 65 one feature graphic served every
+  language.
 - **App details:** Play sets the default language, contact email and website together, so `listing`
   sends all three: English (United States), twangle.tuner@proton.me and the website's home page,
   https://klaboukes.github.io/ (the privacy-policy page until Phase 54; decision 5; `playAppDetails` in `app/build.gradle.kts`). The contact phone stays empty.

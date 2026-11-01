@@ -2,12 +2,12 @@
 # Makes the Play Store's phone screenshots on the phone (docs/store-listing.md, *Phone screenshots*):
 # for each language, the StoreScreenshots test opens the eight planned screens in their styles, feeds
 # the tuner a fixed sound through a stand-in microphone (nothing plays out loud) and draws each on a
-# 1080 x 1920 canvas with that language's caption above.
+# 1080 x 1920 canvas (focus mode's on its side, 1920 x 1080) with that language's caption above.
 #
 # With a tablet connected instead (at least 600 dp the short way) it makes the 10-inch tablet set
-# (*Tablet screenshots*): the tablet's screens on its side, on a 1920 x 1080 canvas with the same
-# captions, the shots in TABLET_SHOTS only, to images/tenInchScreenshots/. Which one it makes follows
-# from the device; there is no switch.
+# (*Tablet screenshots*): the tablet's screens upright, on the same canvases with the same captions,
+# the shots in TABLET_SHOTS only, to images/tenInchScreenshots/. Which one it makes follows from the
+# device; there is no switch.
 #
 #   scripts/store-screenshots.sh                 every language (before a listing is sent; ~2 min a language)
 #   scripts/store-screenshots.sh en-US nl-NL     only these Play locales

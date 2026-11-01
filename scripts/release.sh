@@ -48,7 +48,7 @@
 #       (since September 2023; docs/release.md, *The watch app*).
 #   scripts/release.sh listing
 #       Sends the store listing to Google Play: every language's title, short and full description and
-#       phone and tablet screenshots, the icon and feature graphic (one pair for every language), and the
+#       phone and tablet screenshots, the icon (one for every language) and each language's feature graphic, and the
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
 #       git-ignored; it first takes the latest set the other PC shared on GitHub, scripts/share-store-screenshots.sh), and checks the texts and pictures against Play's rules first.

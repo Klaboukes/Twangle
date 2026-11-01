@@ -17,9 +17,10 @@ import java.util.Properties
  * folder also has the eight captions of the phone screenshots (`screenshot_captions.txt`, one a line,
  * in the order of the plan), which the store-screenshot test draws above each screen: short, and
  * without those words either, since Google bans them in screenshots too. Each release's notes
- * (`changelogs/<versionCode>.txt`) are there in every language, within Play's 500 characters. The icon and the feature
- * graphic, one pair for every language (`en-US/images/`, made by `scripts/store-graphics.sh`), have
- * Play's exact sizes and formats.
+ * (`changelogs/<versionCode>.txt`) are there in every language, within Play's 500 characters. The
+ * icon (one for every language, `en-US/images/`) and each language's feature graphic (`images/` in its
+ * folder, with its line from `feature_graphic.txt`, short and without those words), both made by
+ * `scripts/store-graphics.sh`, have Play's exact sizes and formats.
  */
 class StoreListingTest {
 
@@ -146,6 +147,23 @@ class StoreListingTest {
     }
 
     @Test
+    fun `every language has the feature graphic's line, short and without promotion words`() {
+        folderOf.forEach { (language, folder) ->
+            val where = "$folder/$FEATURE_LINE (language $language)"
+            val line = text(folder, FEATURE_LINE)
+            assertTrue("$where is empty or missing", !line.isNullOrBlank())
+            assertEquals("$where is one line", 1, line.orEmpty().lines().size)
+            val length = line.orEmpty().codePointCount(0, line.orEmpty().length)
+            assertTrue("$where has $length characters, more than $FEATURE_LINE_LIMIT fit beside the meters: $line", length <= FEATURE_LINE_LIMIT)
+            BANNED_IN_TITLE.forEach { banned ->
+                assertTrue("$where has \"${banned.pattern}\", which Google bans in the feature graphic: $line", !banned.containsMatchIn(line.orEmpty()))
+            }
+            val emoji = line.orEmpty().codePoints().filter { it in 0x1F000..0x1FAFF || it == 0xFE0F }.toArray()
+            assertTrue("Emoji in $where", emoji.isEmpty())
+        }
+    }
+
+    @Test
     fun `release notes are in every language and within Play's limit`() {
         val notes = listedFolders.associateWith { folder ->
             File(listings, "$folder/$CHANGELOGS").listFiles().orEmpty().filter { it.isFile }.map { it.name }.toSet()
@@ -170,9 +188,10 @@ class StoreListingTest {
     }
 
     @Test
-    fun `the icon and the feature graphic have Play's sizes and formats`() {
-        PICTURES.forEach { picture ->
-            val file = File(listings, "$PICTURE_FOLDER/${picture.name}")
+    fun `the icon and every language's feature graphic have Play's sizes and formats`() {
+        val pictures = listOf("$ICON_FOLDER/images" to ICON) + listedFolders.map { "$it/images" to FEATURE_GRAPHIC }
+        pictures.forEach { (folder, picture) ->
+            val file = File(listings, "$folder/${picture.name}")
             val where = file.relativeTo(root).invariantSeparatorsPath
             assertTrue("$where is missing: make it with scripts/store-graphics.sh", file.isFile)
             assertTrue("$where is ${file.length()} bytes, Play takes at most ${picture.maxBytes}", file.length() <= picture.maxBytes)
@@ -224,8 +243,14 @@ class StoreListingTest {
         /** Google Play's limit for release notes, per language. */
         const val RELEASE_NOTES_LIMIT = 500
 
-        /** One icon and feature graphic for every language, in the default listing's folder. */
-        const val PICTURE_FOLDER = "en-US/images"
+        /** The feature graphic's line in each language, one line (docs/store-listing.md, *Icon and feature graphic*). */
+        const val FEATURE_LINE = "feature_graphic.txt"
+
+        /** At most this many characters, so the line fits in two lines beside the meters. */
+        const val FEATURE_LINE_LIMIT = 50
+
+        /** One icon for every language, in the default listing's folder; a feature graphic in each language's. */
+        const val ICON_FOLDER = "en-US"
 
         /** A PNG's colour types: red, green and blue (24-bit), and with alpha (32-bit). */
         const val RGB = 2
@@ -234,10 +259,8 @@ class StoreListingTest {
         class Picture(val name: String, val width: Int, val height: Int, val colorType: Int, val format: String, val maxBytes: Long)
 
         /** Play's rules: the icon a 32-bit PNG up to 1 MB, the feature graphic a 24-bit PNG (no alpha) up to 15 MB. */
-        val PICTURES = listOf(
-            Picture("icon.png", 512, 512, RGBA, "a 32-bit PNG (with alpha)", 1L shl 20),
-            Picture("featureGraphic.png", 1024, 500, RGB, "a 24-bit PNG (without alpha)", 15L shl 20),
-        )
+        val ICON = Picture("icon.png", 512, 512, RGBA, "a 32-bit PNG (with alpha)", 1L shl 20)
+        val FEATURE_GRAPHIC = Picture("featureGraphic.png", 1024, 500, RGB, "a 24-bit PNG (without alpha)", 15L shl 20)
 
         /**
          * The languages whose Play folders don't follow from their code: Play has no Traditional

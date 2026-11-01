@@ -58,7 +58,7 @@ python -I website/build.py              # build and check the website into websi
 scripts/publish-website.sh              # publish website/ to https://klaboukes.github.io/ after it landed on main (pushes only a change)
 scripts/website-pictures.sh             # the website's small screenshots and icon, from the last store-screenshot run (commit them)
 scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md to the public policy page after a policy change landed on main
-scripts/store-graphics.sh               # the Play Store's icon and feature graphic, drawn on the phone (docs/store-listing.md)
+scripts/store-graphics.sh [locale…]     # the Play Store's icon and every language's feature graphic, drawn on the phone (committed; docs/store-listing.md)
 scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
 scripts/style-screens.sh                # pictures of the tuner in every style, light and dark, for the owner (~1 min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)

@@ -1,8 +1,8 @@
 Soita kieli. Näe se vireessä.
+Kuusi tyyliä, vaalea tai tumma
 Sentin tarkkuudella
 Kitara, basso, ukulele, viulu ja muita
-Puhuu TalkBackilla. Toimii suurella tekstillä.
 Soita sointu. Näe sen nimi.
-Metronomi, joka pitää tasaisen tahdin
 Sointukaaviot ja kapo valmiiksi laskettuina
+Puhuu TalkBackilla. Toimii suurella tekstillä.
 Näe jokainen venytys ja vibrato. Äänesi ei koskaan poistu puhelimesta.

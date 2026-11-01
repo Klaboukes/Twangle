@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.res.Configuration
 import android.app.LocaleManager
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.os.Build
 import android.os.LocaleList
 import android.os.SystemClock
@@ -29,7 +28,6 @@ import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
-import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
@@ -43,7 +41,6 @@ import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
-import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
@@ -66,13 +63,15 @@ import java.util.concurrent.TimeUnit
  * *Phone screenshots*): each case opens the real app in its style and theme, feeds the tuner a fixed
  * sound through a stand-in microphone ([FixedSoundRecorder], nothing plays out loud), saves the
  * screen as it is (`raw-<n>.png`, without the status bar) and the finished picture
- * (`store-<n>.png`: the screen on a 1080 × 1920 canvas with the caption above, [StoreCanvas]).
+ * (`store-<n>.png`: the screen on a 1080 × 1920 canvas with the caption above, cut in on the part
+ * that sells it, [Shot.focus], so its words can be read at Play's size; [StoreCanvas]). Focus mode's
+ * picture stands on its side, 1920 × 1080, as the phone does.
  *
  * With `storeTablet=true` (a tablet, at least 600 dp the short way) it makes the 10-inch tablet set
- * instead (docs/store-listing.md, *Tablet screenshots*): the tablet locked on its side and at the normal
+ * instead (docs/store-listing.md, *Tablet screenshots*): the tablet locked upright and at the normal
  * text size (its own rotation and text size are put back: `scripts/ui-tests.sh` and [withFontScale]),
- * the screens without the status and navigation bars but with the rail, each the whole tablet on a
- * 1920 × 1080 canvas ([TabletStoreCanvas]), and only the [Shot]s that are [Shot.onTablet].
+ * the screens without the status and navigation bars, each the whole tablet on the same canvases
+ * (Phase 65: on its side the tuner's two panes left an empty middle).
  *
  * Opt-in, as it only makes files and changes the phone's Twangle (its style, theme and settings are
  * left as the last picture had them; the app's language is put back): without the instrumentation
@@ -84,20 +83,36 @@ import java.util.concurrent.TimeUnit
 @RunWith(Parameterized::class)
 class StoreScreenshots(private val shot: Shot) {
 
-    /** The eight screenshots of the plan, in its order, each in its style and theme, and whether the tablet set has it. */
-    enum class Shot(val style: VisualStyle, val dark: Boolean, val onTablet: Boolean = true) {
-        IN_TUNE(VisualStyle.CONTEMPORARY, dark = false),
-        TUNE_UP(VisualStyle.CLASSIC, dark = true),
-        INSTRUMENTS(VisualStyle.RETRO, dark = false),
-        TALKBACK(VisualStyle.CONTEMPORARY, dark = true),
-        CHORD_NAME(VisualStyle.FUTURISTIC, dark = true),
-        METRONOME(VisualStyle.SPACE_AGE, dark = true),
+    /**
+     * The eight screenshots of the plan, in its order, each in its style and theme, with the part of the
+     * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
+     * screens fit whole). The six styles' canvas is in [style]; its screens are [STYLE_TILES].
+     */
+    enum class Shot(val style: VisualStyle, val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
+        /** The meter, the note and "In tune". */
+        IN_TUNE(VisualStyle.CONTEMPORARY, dark = false, focus = 0f..0.62f),
+        SIX_STYLES(VisualStyle.SPACE_AGE, dark = true),
+
+        /** The meter, the note, its pill and "Tune up". */
+        TUNE_UP(VisualStyle.CLASSIC, dark = true, focus = 0f..0.68f),
+
+        /** The panel's instruments and the first tunings. */
+        INSTRUMENTS(VisualStyle.RETRO, dark = false, focus = 0.24f..0.80f),
+
+        /** The chord's name, its notes and the last chords. */
+        CHORD_NAME(VisualStyle.FUTURISTIC, dark = true, focus = 0f..0.56f),
         CHORDS_AND_CAPO(VisualStyle.ANCIENT, dark = false),
+
+        /** At twice the text size: the meter, the note, its pill and "Tune up". */
+        TALKBACK(VisualStyle.CONTEMPORARY, dark = true, focus = 0.065f..0.71f),
         PITCH_TRAIL(VisualStyle.CLASSIC, dark = false),
         ;
 
         val number: Int get() = ordinal + 1
     }
+
+    /** One of the six styles' screens: the tuner in [style] with [look], holding [string] (a MIDI note) in tune. */
+    data class StyleTile(val style: VisualStyle, val dark: Boolean, val look: MeterLook, val string: Int)
 
     @get:Rule
     val rules: RuleChain = RuleChain
@@ -120,10 +135,11 @@ class StoreScreenshots(private val shot: Shot) {
     fun setUp() {
         if (tablet) {
             check(app.resources.configuration.smallestScreenWidthDp >= TABLET_DP) { "$TABLET_ARGUMENT=true, but this is no tablet" }
-            // On its side for the whole set, as Play's tablet screenshots stand; scripts/ui-tests.sh puts the lock back.
+            // Upright for the whole set, where the tuner is one column drawn larger with no empty middle
+            // (on its side its two panes left one); focus mode still turns it. scripts/ui-tests.sh puts the lock back.
             shell("settings put system accelerometer_rotation 0")
-            shell("settings put system user_rotation 1")
-            check(waitUntil { app.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }) { "the tablet didn't turn on its side" }
+            shell("settings put system user_rotation 0")
+            check(waitUntil { app.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT }) { "the tablet didn't stand upright" }
         }
         // Play's Norwegian folder is no-NO, but Android finds the texts (values-nb) only for nb.
         showLanguage(if (locale == "no-NO") "nb-NO" else locale)
@@ -171,6 +187,22 @@ class StoreScreenshots(private val shot: Shot) {
     private fun shoot() {
         when (shot) {
             Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
+            Shot.SIX_STYLES -> {
+                // Each style with a meter look of its own, each holding another string in tune.
+                val screens = STYLE_TILES.mapIndexed { i, tile ->
+                    runBlocking {
+                        settings.setStyle(tile.style)
+                        settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT)
+                        settings.setMeterLook(tile.look)
+                    }
+                    capture(name = "${shot.number}${'a' + i}") {
+                        recorder.play(StoreSounds.heldNote(StoreSounds.hz(tile.string), NOTE_SECONDS))
+                        settle(NOTE_SETTLE_MS)
+                    }
+                }
+                val focus = if (tablet) TABLET_TILE_FOCUS else TILE_FOCUS
+                compose(screens.map { Window(it.asImageBitmap(), focus) }.chunked(2))
+            }
             Shot.TUNE_UP -> tuner { recorder.play(flatLowE()); settle(NOTE_SETTLE_MS) }
             Shot.INSTRUMENTS -> tuner {
                 // The panel is a window of its own, whose parts UI Automator can't find by tag.
@@ -197,23 +229,6 @@ class StoreScreenshots(private val shot: Shot) {
                 )
                 settle((2 * STRUM_SECONDS * 1000).toLong() + LAST_STRUM_SETTLE_MS)
             }
-            Shot.METRONOME -> {
-                runBlocking {
-                    settings.setPracticeTool(PracticeTool.METRONOME)
-                    settings.setMetronomeBpm(METRONOME_BPM)
-                    settings.setMetronomeMeter(Meter.FOUR_FOUR)
-                }
-                save(
-                    capture {
-                        click(NavigationTestTags.tab(Destination.METRONOME))
-                        click(MetronomeTestTags.START)
-                        settle(PANEL_SETTLE_MS)
-                        // The first beat of the bar, as if just heard.
-                        metronome.beat(0)
-                        SystemClock.sleep(BEAT_LIT_MS)
-                    },
-                )
-            }
             Shot.CHORDS_AND_CAPO -> {
                 runBlocking {
                     settings.setPracticeTool(PracticeTool.CHORDS)
@@ -229,23 +244,21 @@ class StoreScreenshots(private val shot: Shot) {
                     click(NavigationTestTags.tab(Destination.METRONOME))
                     waitFor(PracticeTestTags.CHORDS)
                     settle(PANEL_SETTLE_MS)
-                    screens += screenshot(scenario, "7a")
-                    // One tablet shows the chart; the Capo helper is left out.
-                    if (tablet) return@use
+                    screens += screenshot(scenario, "${shot.number}a")
                     click(PracticeTestTags.TOOL_BUTTON)
                     click(PracticeTestTags.tool(PracticeTool.CAPO))
                     device.wait(Until.gone(By.res(PracticeTestTags.CHORDS)), WAIT_MS)
                     settle(PANEL_SETTLE_MS)
-                    screens += screenshot(scenario, "7b")
+                    screens += screenshot(scenario, "${shot.number}b")
                 }
-                compose(screens)
+                compose(listOf(screens.map { Window(it.asImageBitmap()) }), staggered = true)
             }
             Shot.PITCH_TRAIL -> {
                 val screen = capture(
                     after = { scenario ->
                         // Upright again before the activity goes, as focus mode off does with auto-rotate off.
                         runBlocking { settings.setFocusMode(false) }
-                        if (!tablet) waitUntil { !scenario.landscape() }
+                        waitUntil { !scenario.landscape() }
                     },
                 ) { scenario ->
                     click(TunerTestTags.MORE_TOOLS)
@@ -263,29 +276,34 @@ class StoreScreenshots(private val shot: Shot) {
                     recorder.play(StoreSounds.vibratoNote(StoreSounds.hz(StoreSounds.A4), NOTE_SECONDS, VIBRATO_STEADY_SECONDS))
                     settle(TRAIL_SETTLE_MS)
                 }
-                // On a phone shown as it lies on its side, so it is as tall as the others and the trail and the
-                // note are about twice as large as a sideways frame across the width. The tablet's set is on its side anyway.
-                save(if (tablet) screen else turned(screen))
+                // On its side, as the phone (or tablet) stands in focus mode, on a canvas on its side, so
+                // the trail, the note and "In tune" read the right way round (Phase 65; until then the
+                // picture was turned upright, its words running up the screen).
+                compose(listOf(listOf(Window(screen.asImageBitmap()))), spec = CanvasSpec.LANDSCAPE)
             }
         }
     }
 
-    /** The bar, or on the tablet on its side the rail. */
-    private val navigation get() = if (tablet) NavigationTestTags.RAIL else NavigationTestTags.BAR
+    /** The navigation bar: every picture opens upright (focus mode turns it only after the app is open). */
+    private val navigation get() = NavigationTestTags.BAR
 
-    /** Opens the tuner, waits for it, runs [steps] and saves the screen. */
+    /** Opens the tuner, waits for it, runs [steps] and saves the screen, cut in on this shot's focus. */
     private fun tuner(steps: () -> Unit) = save(capture { steps() })
 
     /**
-     * Opens the app on the tuner, runs [steps] in it, takes a picture of the screen and closes the
-     * app ([after] first, with the app still open).
+     * Opens the app on the tuner, runs [steps] in it, takes a picture of the screen (`raw-<name>.png`)
+     * and closes the app ([after] first, with the app still open).
      */
-    private fun capture(after: (ActivityScenario<MainActivity>) -> Unit = {}, steps: (ActivityScenario<MainActivity>) -> Unit): Bitmap =
+    private fun capture(
+        name: String = "${shot.number}",
+        after: (ActivityScenario<MainActivity>) -> Unit = {},
+        steps: (ActivityScenario<MainActivity>) -> Unit,
+    ): Bitmap =
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             waitFor(navigation)
             measureCrop(scenario)
             steps(scenario)
-            screenshot(scenario, "${shot.number}").also {
+            screenshot(scenario, name).also {
                 // Quiet again: while a note moves the screen, the main thread is never idle, and
                 // onActivity waits for it.
                 recorder.play(FloatArray(0))
@@ -293,8 +311,12 @@ class StoreScreenshots(private val shot: Shot) {
             }
         }
 
-    /** Places [screen] on the canvas with this shot's caption (and [bubble]) and saves it. */
-    private fun save(screen: Bitmap, bubble: SpeechBubble? = null) = compose(listOf(screen), bubble)
+    /**
+     * Places [screen] on the canvas with this shot's caption (and [bubble]) and saves it: on the phone
+     * cut in on [Shot.focus]; the tablet's upright screen whole, which fits about as large.
+     */
+    private fun save(screen: Bitmap, bubble: SpeechBubble? = null) =
+        compose(listOf(listOf(Window(screen.asImageBitmap(), if (tablet) 0f..1f else shot.focus))), bubble = bubble)
 
     /**
      * The whole screen as it is, without the status bar, saved as `raw-<name>.png`. On its side the
@@ -311,7 +333,7 @@ class StoreScreenshots(private val shot: Shot) {
 
     /**
      * The part of the screen [screenshot] cuts off: the status bar's height, on a phone on its side where
-     * the navigation rail ends, and on the tablet the navigation bar's height (its rail stays).
+     * the navigation rail ends, and on the tablet the navigation bar's height.
      */
     private var crop: Triple<Int, Int, Int>? = null
 
@@ -339,21 +361,16 @@ class StoreScreenshots(private val shot: Shot) {
         return measured
     }
 
-    /** [screen] turned a quarter to the left, as a phone turned to the left lies: its top edge to the left. */
-    private fun turned(screen: Bitmap): Bitmap =
-        Bitmap.createBitmap(screen, 0, 0, screen.width, screen.height, Matrix().apply { postRotate(-90f) }, true)
-
-    /** Places [screens] on the canvas with this shot's caption and saves it as `store-<n>.png`. */
-    private fun compose(screens: List<Bitmap>, bubble: SpeechBubble? = null) {
+    /** Places [rows] of screens on [spec]'s canvas with this shot's caption and saves it as `store-<n>.png`. */
+    private fun compose(
+        rows: List<List<Window>>,
+        spec: CanvasSpec = CanvasSpec.PORTRAIT,
+        bubble: SpeechBubble? = null,
+        staggered: Boolean = false,
+    ) {
         val caption = captions().getOrNull(shot.ordinal) ?: error("no caption ${shot.number} for $locale")
-        val canvas = if (tablet) {
-            renderCanvas(TABLET_CANVAS_WIDTH, TABLET_CANVAS_HEIGHT) {
-                TabletStoreCanvas(caption, screens.single().asImageBitmap(), shot.style, shot.dark, bubble)
-            }
-        } else {
-            renderCanvas {
-                StoreCanvas(caption, screens.map { it.asImageBitmap() }, shot.style, shot.dark, bubble)
-            }
+        val canvas = renderCanvas(spec.width, spec.height) {
+            StoreCanvas(caption, rows, shot.style, shot.dark, spec, bubble, staggered)
         }
         write(canvas, "store-${shot.number}.png")
     }
@@ -460,14 +477,27 @@ class StoreScreenshots(private val shot: Shot) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun shots(): List<Shot> {
-            val arguments = InstrumentationRegistry.getArguments()
-            return when {
-                arguments.getString(LOCALE_ARGUMENT).isNullOrBlank() -> emptyList()
-                arguments.getString(TABLET_ARGUMENT).toBoolean() -> Shot.entries.filter { it.onTablet }
-                else -> Shot.entries
-            }
-        }
+        fun shots(): List<Shot> =
+            if (InstrumentationRegistry.getArguments().getString(LOCALE_ARGUMENT).isNullOrBlank()) emptyList() else Shot.entries
+
+        /**
+         * The six styles' grid, two a row, light and dark crossed: each style with a meter look of its
+         * own (six looks in all) and another string of the guitar in tune.
+         */
+        val STYLE_TILES = listOf(
+            StyleTile(VisualStyle.CONTEMPORARY, dark = false, look = MeterLook.CLASSIC, string = 40),
+            StyleTile(VisualStyle.FUTURISTIC, dark = true, look = MeterLook.LIGHT_BARS, string = 45),
+            StyleTile(VisualStyle.CLASSIC, dark = true, look = MeterLook.LOUPE, string = 50),
+            StyleTile(VisualStyle.RETRO, dark = false, look = MeterLook.POINTERS, string = 55),
+            StyleTile(VisualStyle.ANCIENT, dark = false, look = MeterLook.LIGHT_ARC, string = 59),
+            StyleTile(VisualStyle.SPACE_AGE, dark = true, look = MeterLook.ARROWS, string = 64),
+        )
+
+        /** What each of the six styles' screens shows: the meter, the note and "In tune". */
+        private val TILE_FOCUS = 0.08f..0.66f
+
+        /** The same on the tablet upright, whose taller column is about as tall a share (unchecked on the tablet). */
+        private val TABLET_TILE_FOCUS = 0.06f..0.66f
 
         /** The app's language before the first picture, put back after the last. */
         private var languageBefore: String? = null
@@ -513,7 +543,7 @@ class StoreScreenshots(private val shot: Shot) {
         private const val TABLET_DP = 600
         const val OUTPUT_DIR_ARGUMENT = "additionalTestOutputDir"
 
-        private const val TEST_TIMEOUT_SECONDS = 60L
+        private const val TEST_TIMEOUT_SECONDS = 120L
         private const val WAIT_MS = 5_000L
         private const val POLL_MS = 100L
 
@@ -529,8 +559,6 @@ class StoreScreenshots(private val shot: Shot) {
         private const val STRUM_SECONDS = 3.0
         private const val LAST_STRUM_SETTLE_MS = 1_800L
 
-        private const val METRONOME_BPM = 120
-        private const val BEAT_LIT_MS = 120L
         private const val CAPO_FRET = 2
 
         /** The navigation rail's width (NavigationBar.kt, RAIL_WIDTH). */

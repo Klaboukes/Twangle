@@ -30,10 +30,10 @@ play-service-account*.json
 .claude/worktrees/
 
 # Play Store screenshots: made on the phone by scripts/store-screenshots.sh, sent by scripts/release.sh listing.
-# The icon and feature graphic (scripts/store-graphics.sh) have no words and are small: committed.
+# The icon and every language's feature graphic (scripts/store-graphics.sh) are small and seldom made again: committed.
 fastlane/metadata/android/*/images/*
 !fastlane/metadata/android/en-US/images/icon.png
-!fastlane/metadata/android/en-US/images/featureGraphic.png
+!fastlane/metadata/android/*/images/featureGraphic.png
 
 # Release bundles and their notes, made by scripts/release.sh bundle (docs/release.md)
 /release/

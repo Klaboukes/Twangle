@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.app.store
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
+import android.util.Base64
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
 import androidx.test.platform.app.InstrumentationRegistry
@@ -13,10 +14,11 @@ import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * The Play Store's two pictures without words (docs/store-listing.md, *Icon and feature graphic*),
+ * The Play Store's icon and feature graphics (docs/store-listing.md, *Icon and feature graphic*),
  * made on the phone from the app itself, so they always match it and can be made again:
  *
  * - `icon.png`: the launcher icon ([R.mipmap.ic_launcher], an adaptive icon) at [ICON_PX] × [ICON_PX],
@@ -24,19 +26,22 @@ import java.util.concurrent.TimeUnit
  *   corners and the shadow itself. It shows the middle [ICON_VIEW_DP] dp of the layers' 108 dp: the
  *   whole canvas left the mark small and thin in the yellow square, the launcher's own 72 dp crowded
  *   it against Play's round corners. 32-bit (with alpha), as Play asks.
- * - `featureGraphic.png`: [FeatureGraphic] at [FEATURE_WIDTH] × [FEATURE_HEIGHT], without alpha
- *   (Play takes a 24-bit PNG).
+ * - `featureGraphic-<Play locale>.png`, one for each store language: [FeatureGraphic] at
+ *   [FEATURE_WIDTH] × [FEATURE_HEIGHT] with that language's line, without alpha (Play takes a 24-bit PNG).
  *
  * Opt-in, as it only makes files: without the instrumentation argument `storeGraphics=true` it has no
- * cases. `scripts/store-graphics.sh` passes it and puts both pictures where Play and F-Droid look for
- * them. Changes nothing on the phone.
+ * cases. `storeGraphicLines` carries every language's line in Base64 (the shell would mangle other
+ * scripts), a line `<Play locale>\t<line>` each. `scripts/store-graphics.sh` passes both and puts the
+ * pictures where Play and F-Droid look for them. Changes nothing on the phone.
  */
 @RunWith(Parameterized::class)
 class StoreGraphics(private val picture: Picture) {
 
-    enum class Picture(val file: String) {
-        ICON("icon.png"),
-        FEATURE_GRAPHIC("featureGraphic.png"),
+    /** The icon ([locale] null), or one language's feature graphic. */
+    data class Picture(val locale: String?, val line: String = "") {
+        val file: String get() = if (locale == null) "icon.png" else "featureGraphic-$locale.png"
+
+        override fun toString(): String = locale?.let { "featureGraphic $it" } ?: "icon"
     }
 
     @get:Rule
@@ -48,14 +53,16 @@ class StoreGraphics(private val picture: Picture) {
 
     @Test
     fun picture() {
-        val bitmap = when (picture) {
-            Picture.ICON -> icon()
-            Picture.FEATURE_GRAPHIC -> {
-                val icon = icon().asImageBitmap()
-                renderCanvas(FEATURE_WIDTH, FEATURE_HEIGHT) { FeatureGraphic(icon) }.apply {
-                    // Opaque, so the PNG is written without an alpha channel.
-                    setHasAlpha(false)
-                }
+        val locale = picture.locale
+        val bitmap = if (locale == null) {
+            icon()
+        } else {
+            val icon = icon().asImageBitmap()
+            // Play's Norwegian folder is no-NO; the language is Norwegian Bokmål.
+            val language = Locale.forLanguageTag(if (locale == "no-NO") "nb-NO" else locale)
+            renderCanvas(FEATURE_WIDTH, FEATURE_HEIGHT) { FeatureGraphic(icon, picture.line, language) }.apply {
+                // Opaque, so the PNG is written without an alpha channel.
+                setHasAlpha(false)
             }
         }
         File(out, picture.file).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -81,11 +88,20 @@ class StoreGraphics(private val picture: Picture) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun pictures(): List<Picture> =
-            if (InstrumentationRegistry.getArguments().getString(ARGUMENT) == "true") Picture.entries else emptyList()
+        fun pictures(): List<Picture> {
+            val arguments = InstrumentationRegistry.getArguments()
+            if (arguments.getString(ARGUMENT) != "true") return emptyList()
+            val lines = arguments.getString(LINES_ARGUMENT)?.let { String(Base64.decode(it, Base64.DEFAULT), Charsets.UTF_8) }.orEmpty()
+            val graphics = lines.replace("\r\n", "\n").lines().filter { it.isNotBlank() }.map { row ->
+                val (locale, line) = row.split('\t', limit = 2)
+                Picture(locale, line.trim())
+            }
+            return listOf(Picture(null)) + graphics
+        }
 
         /** The instrumentation argument that turns the pictures on. */
         const val ARGUMENT = "storeGraphics"
+        const val LINES_ARGUMENT = "storeGraphicLines"
         const val OUTPUT_DIR_ARGUMENT = "additionalTestOutputDir"
 
         /** Play's app icon, exactly. */

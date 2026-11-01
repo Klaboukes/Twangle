@@ -8,22 +8,22 @@ import android.view.PixelCopy
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,14 +33,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -53,21 +57,67 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import androidx.test.core.app.ActivityScenario
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 /**
- * One store screenshot as Play shows it: [CANVAS_WIDTH] × [CANVAS_HEIGHT] pixels in the style's
- * (quiet) background, the caption in large type above, and below it the app's screens in a slim
- * phone frame. One screen upright fills the space under the caption; two stand side by side, each at
- * about half width. A screen on its side (screenshot 8) comes already turned upright, as the phone lies.
+ * The size and proportions of one store picture: Play's upright screenshot ([PORTRAIT]: the phone's,
+ * and the 10-inch tablet's upright set) or one on its side ([LANDSCAPE]: focus mode, on the phone and
+ * the tablet), each with its own dp, the device's own text size left out.
+ */
+enum class CanvasSpec(
+    val width: Int,
+    val height: Int,
+    /** How many dp the canvas's short side is, which sets every size below. */
+    val shortSideDp: Float,
+    val captionHeight: Dp,
+    val captionHeightOverBubble: Dp,
+    val captionGap: Dp,
+    val sideMargin: Dp,
+    val bottomMargin: Dp,
+    val frame: Dp,
+    val corner: Dp,
+    val bubbleMaxWidth: Dp,
+) {
+    /** 1080 × 1920 px (9:16), 1080 px = 400 dp. */
+    PORTRAIT(1080, 1920, 400f, 170.dp, 128.dp, 0.dp, 24.dp, 26.dp, 4.dp, 22.dp, 380.dp),
+
+    /** 1920 × 1080 px (16:9), 1080 px = 450 dp: the caption in a band above, the screen on its side under it. */
+    LANDSCAPE(1920, 1080, 450f, 92.dp, 92.dp, 8.dp, 40.dp, 22.dp, 6.dp, 18.dp, 680.dp),
+    ;
+
+    val density: Float get() = minOf(width, height) / shortSideDp
+}
+
+/**
+ * One app screen as a store picture shows it: [screen] (the screen as it was, without the status bar)
+ * and the part of its height that must show, [focus] (fractions from its top: the meter, the note and
+ * its pill, say). Drawn as large as its place allows, never larger than the screen's own pixels; where
+ * its whole height doesn't fit at the place's width, it is cut to [focus] and as much around it as
+ * fits, so the app's words can be read at the size Play shows the picture (Phase 65: a whole phone
+ * screen under the caption was 630 px wide, its words too small to read in the listing).
+ */
+class Window(val screen: ImageBitmap, val focus: ClosedFloatingPointRange<Float> = 0f..1f)
+
+/**
+ * One store screenshot as Play shows it: [spec]'s pixels in the style's (quiet) background, the
+ * caption in large type above, and below it [rows] of app screens ([Window]), each in a slim dark
+ * frame with round corners and a soft shadow. One screen takes the whole space under the caption;
+ * rows share its height and the screens of a row its width (the six styles' grid). Two screens alone
+ * in a row, [staggered], stand side by side whole, the second lower, as two phones.
  *
  * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in the style's display face
  * with its fallbacks for other scripts (`StyleTypography`: Arabic, Devanagari, CJK and Cyrillic get the
@@ -78,51 +128,57 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun StoreCanvas(
     caption: String,
-    screens: List<ImageBitmap>,
+    rows: List<List<Window>>,
     style: VisualStyle,
     dark: Boolean,
+    spec: CanvasSpec = CanvasSpec.PORTRAIT,
     bubble: SpeechBubble? = null,
+    staggered: Boolean = false,
 ) {
-    // 1080 px are 400 dp here on every phone, and the phone's own text size is left out.
-    CompositionLocalProvider(LocalDensity provides Density(CANVAS_WIDTH / CANVAS_WIDTH_DP, fontScale = 1f)) {
+    CompositionLocalProvider(LocalDensity provides Density(spec.density, fontScale = 1f)) {
         TwangleTheme(style = style, darkTheme = dark, animate = false) {
             Box(
                 Modifier.layout { measurable, _ ->
-                    val placeable = measurable.measure(Constraints.fixed(CANVAS_WIDTH, CANVAS_HEIGHT))
-                    layout(CANVAS_WIDTH, CANVAS_HEIGHT) { placeable.place(0, 0) }
+                    val placeable = measurable.measure(Constraints.fixed(spec.width, spec.height))
+                    layout(spec.width, spec.height) { placeable.place(0, 0) }
                 },
             ) {
                 StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
-                val first = screens.first()
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Caption(
                         caption,
                         Modifier
-                            .padding(horizontal = SIDE_MARGIN)
+                            .padding(start = spec.sideMargin, end = spec.sideMargin, top = spec.captionGap / 2, bottom = spec.captionGap)
                             .fillMaxWidth()
-                            .height(if (bubble == null) CAPTION_HEIGHT else CAPTION_HEIGHT_OVER_BUBBLE),
+                            .height(if (bubble == null) spec.captionHeight else spec.captionHeightOverBubble),
                     )
-                    if (bubble != null) Bubble(bubble.text)
+                    if (bubble != null) Bubble(bubble.text, maxWidth = spec.bubbleMaxWidth)
                     BoxWithConstraints(
                         Modifier
                             .weight(1f)
-                            .padding(bottom = BOTTOM_MARGIN, start = SIDE_MARGIN, end = SIDE_MARGIN)
+                            .padding(bottom = spec.bottomMargin, start = spec.sideMargin, end = spec.sideMargin)
                             .fillMaxWidth(),
                         contentAlignment = Alignment.Center,
                     ) {
                         val space = maxWidth
                         val tall = maxHeight
-                        when {
-                            screens.size > 1 -> Row(horizontalArrangement = Arrangement.spacedBy(PHONE_GAP)) {
-                                val width = (space - PHONE_GAP * (screens.size - 1)) / screens.size
-                                // Staggered, the first higher, so two phones fill the space under the caption.
-                                val height = phoneHeight(first, width)
-                                val stagger = ((tall - height) * STAGGER_SHARE).coerceAtLeast(0.dp)
-                                screens.forEachIndexed { i, screen ->
-                                    Phone(screen, width, Modifier.padding(top = if (i % 2 == 0) 0.dp else stagger, bottom = if (i % 2 == 0) stagger else 0.dp))
+                        val pair = rows.singleOrNull()?.takeIf { staggered && it.size == 2 }
+                        if (pair != null) {
+                            StaggeredPair(pair, space, tall, spec)
+                        } else {
+                            val rowHeight = (tall - WINDOW_GAP * (rows.size - 1)) / rows.size
+                            Column(verticalArrangement = Arrangement.spacedBy(WINDOW_GAP)) {
+                                rows.forEach { row ->
+                                    val cellWidth = (space - WINDOW_GAP * (row.size - 1)) / row.size
+                                    Row(horizontalArrangement = Arrangement.spacedBy(WINDOW_GAP)) {
+                                        row.forEach { window ->
+                                            Box(Modifier.size(cellWidth, rowHeight), contentAlignment = Alignment.Center) {
+                                                Device(window, cellWidth, rowHeight, spec.frame, spec.corner)
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                            else -> Phone(first, minOf(space, tall * (first.width.toFloat() / first.height)))
                         }
                     }
                 }
@@ -131,52 +187,17 @@ fun StoreCanvas(
     }
 }
 
-/**
- * One 10-inch tablet screenshot as Play shows it (docs/store-listing.md, *Tablet screenshots*):
- * [TABLET_CANVAS_WIDTH] × [TABLET_CANVAS_HEIGHT] pixels (16:9, on its side) in the style's quiet
- * background, the caption above as on the phone's canvas, and under it the tablet's screen on its side
- * in a slim tablet frame. [bubble] stands between the caption and the tablet, as on the phone.
- */
+/** Two whole screens side by side, each about half the width, the second lower: Chords and the Capo helper. */
 @Composable
-fun TabletStoreCanvas(
-    caption: String,
-    screen: ImageBitmap,
-    style: VisualStyle,
-    dark: Boolean,
-    bubble: SpeechBubble? = null,
-) {
-    // 1080 px are 450 dp here on every tablet, and its own text size is left out.
-    CompositionLocalProvider(LocalDensity provides Density(TABLET_CANVAS_HEIGHT / TABLET_CANVAS_HEIGHT_DP, fontScale = 1f)) {
-        TwangleTheme(style = style, darkTheme = dark, animate = false) {
-            Box(
-                Modifier.layout { measurable, _ ->
-                    val placeable = measurable.measure(Constraints.fixed(TABLET_CANVAS_WIDTH, TABLET_CANVAS_HEIGHT))
-                    layout(TABLET_CANVAS_WIDTH, TABLET_CANVAS_HEIGHT) { placeable.place(0, 0) }
-                },
-            ) {
-                StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
-                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Caption(
-                        caption,
-                        Modifier
-                            .padding(start = TABLET_SIDE_MARGIN, end = TABLET_SIDE_MARGIN, top = TABLET_CAPTION_GAP / 2, bottom = TABLET_CAPTION_GAP)
-                            .fillMaxWidth()
-                            .height(TABLET_CAPTION_HEIGHT),
-                    )
-                    // Wider than on the phone, so what TalkBack says stays on one line and the tablet large.
-                    if (bubble != null) Bubble(bubble.text, maxWidth = TABLET_BUBBLE_MAX_WIDTH)
-                    BoxWithConstraints(
-                        Modifier
-                            .weight(1f)
-                            .padding(bottom = TABLET_BOTTOM_MARGIN, start = TABLET_SIDE_MARGIN, end = TABLET_SIDE_MARGIN)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        val aspect = screen.width.toFloat() / screen.height
-                        val height = minOf(maxHeight, (maxWidth - TABLET_FRAME * 2) / aspect + TABLET_FRAME * 2)
-                        Device(screen, (height - TABLET_FRAME * 2) * aspect + TABLET_FRAME * 2, height, TABLET_FRAME, TABLET_CORNER)
-                    }
-                }
+private fun StaggeredPair(windows: List<Window>, space: Dp, tall: Dp, spec: CanvasSpec) {
+    val width = (space - WINDOW_GAP) / 2
+    val first = windows.first().screen
+    val height = (width - spec.frame * 2) * (first.height.toFloat() / first.width) + spec.frame * 2
+    val stagger = ((tall - height) * STAGGER_SHARE).coerceAtLeast(0.dp)
+    Row(horizontalArrangement = Arrangement.spacedBy(WINDOW_GAP)) {
+        windows.forEachIndexed { i, window ->
+            Box(Modifier.padding(top = if (i % 2 == 0) 0.dp else stagger, bottom = if (i % 2 == 0) stagger else 0.dp)) {
+                Device(window, width, tall - stagger, spec.frame, spec.corner)
             }
         }
     }
@@ -206,7 +227,7 @@ private fun Caption(caption: String, modifier: Modifier) {
                 ?: sizes.last()
         }
         // Two short sentences ("Play a string. See it in tune.") get a line each, where they fit so
-        // (also in the height: the tablet's band holds one line at the largest size, two only just).
+        // (also in the height: the landscape band holds one line at the largest size, two only just).
         val shown = remember(text, style, widthPx, heightPx) {
             sentencesOnTheirOwnLines(text)?.takeIf { split ->
                 measurer.measure(split, style, constraints = Constraints(maxWidth = widthPx))
@@ -222,7 +243,7 @@ private fun Caption(caption: String, modifier: Modifier) {
  * Korean is written with spaces between words, but Android breaks Hangul between any two syllables
  * ("맞았 / 는지", overnight run 2026-10-18). Other text is returned as it is.
  */
-private fun koreanWordsKeptWhole(text: String): String =
+internal fun koreanWordsKeptWhole(text: String): String =
     if (text.none { it in HANGUL_SYLLABLES }) text else text.replace(BETWEEN_TWO_NON_SPACES, WORD_JOINER)
 
 private val HANGUL_SYLLABLES = Char(0xAC00)..Char(0xD7A3)
@@ -231,7 +252,7 @@ private val WORD_JOINER = Char(0x2060).toString()
 private val BETWEEN_TWO_NON_SPACES = Regex("""(?<=\S)(?=\S)""")
 
 /** [text] with a line break after its first sentence, if it is two sentences; else null. */
-private fun sentencesOnTheirOwnLines(text: String): String? {
+internal fun sentencesOnTheirOwnLines(text: String): String? {
     val ends = listOf(". ", "。", "। ").mapNotNull { end -> text.indexOf(end).takeIf { it in 1 until text.length - end.length }?.let { it + end.length } }
     val cut = ends.minOrNull() ?: return null
     return text.substring(0, cut).trimEnd() + "\n" + text.substring(cut).trimStart()
@@ -241,32 +262,41 @@ private fun sentencesOnTheirOwnLines(text: String): String? {
 private fun TextStyle.captionStyle(size: Float) =
     copy(fontSize = size.sp, lineHeight = (size * 1.22f).sp, textAlign = TextAlign.Center, lineBreak = LineBreak.Heading)
 
-/** How tall [Phone] draws [screen] at [width]. */
-private fun phoneHeight(screen: ImageBitmap, width: Dp): Dp = (width - FRAME * 2) * (screen.height.toFloat() / screen.width) + FRAME * 2
-
-/** A screen picture in a slim, dark phone frame with round corners and a soft shadow, [width] wide. */
+/**
+ * [window]'s screen in a slim, dark frame [frameWidth] wide with round [corner]s and a soft shadow, as
+ * large as fits in [maxWidth] × [maxHeight] and never larger than its own pixels: its whole height
+ * where that fits, else cut to its focus and as much around it as fits, centred on the focus.
+ */
 @Composable
-private fun Phone(screen: ImageBitmap, width: Dp, modifier: Modifier = Modifier) =
-    Device(screen, width, phoneHeight(screen, width), FRAME, PHONE_CORNER, modifier)
-
-/** A screen picture in a slim, dark frame [frameWidth] wide with round [corner]s and a soft shadow, [width] × [height] in all. */
-@Composable
-private fun Device(screen: ImageBitmap, width: Dp, height: Dp, frameWidth: Dp, corner: Dp, modifier: Modifier = Modifier) {
+private fun Device(window: Window, maxWidth: Dp, maxHeight: Dp, frameWidth: Dp, corner: Dp) {
+    val screen = window.screen
+    val density = LocalDensity.current
+    val innerWidth = with(density) { (maxWidth - frameWidth * 2).toPx() }
+    val innerHeight = with(density) { (maxHeight - frameWidth * 2).toPx() }
+    val focusTop = window.focus.start * screen.height
+    val focusHeight = (window.focus.endInclusive - window.focus.start) * screen.height
+    val scale = minOf(innerWidth / screen.width, innerHeight / focusHeight, 1f)
+    val shown = minOf(screen.height.toFloat(), innerHeight / scale).toInt()
+    val top = (focusTop + focusHeight / 2 - shown / 2f).roundToInt().coerceIn(0, screen.height - shown)
     val frame = if (MaterialTheme.colorScheme.background.luminance() < 0.2f) FRAME_ON_DARK else FRAME_ON_LIGHT
+    val width = with(density) { (screen.width * scale).toDp() } + frameWidth * 2
+    val height = with(density) { (shown * scale).toDp() } + frameWidth * 2
     Box(
-        modifier
+        Modifier
             .size(width, height)
             .shadow(PHONE_SHADOW, RoundedCornerShape(corner))
             .background(frame, RoundedCornerShape(corner))
             .padding(frameWidth),
     ) {
-        Image(
-            bitmap = screen,
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            filterQuality = FilterQuality.High,
-            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(corner - frameWidth)),
-        )
+        Canvas(Modifier.fillMaxSize().clip(RoundedCornerShape(corner - frameWidth))) {
+            drawImage(
+                image = screen,
+                srcOffset = IntOffset(0, top),
+                srcSize = IntSize(screen.width, shown),
+                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+                filterQuality = FilterQuality.High,
+            )
+        }
     }
 }
 
@@ -276,7 +306,7 @@ private fun Device(screen: ImageBitmap, width: Dp, height: Dp, frameWidth: Dp, c
  * words.
  */
 @Composable
-private fun Bubble(text: String, maxWidth: Dp = BUBBLE_MAX_WIDTH) {
+private fun Bubble(text: String, maxWidth: Dp) {
     val fill = MaterialTheme.colorScheme.inverseSurface
     val ink = MaterialTheme.colorScheme.inverseOnSurface
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -343,68 +373,75 @@ private fun SpeakerMark(color: Color, mirrored: Boolean) {
 private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f * blue
 
 /**
- * Draws [content] in a fresh activity of its own and returns the [width] × [height] pixels it drew
- * (by default a screenshot's canvas), read back from the window as the screen shows them (PixelCopy).
+ * Draws [content] in a fresh activity of its own and returns the [width] × [height] pixels it drew.
+ * Where they fit in the window they are read back as the screen shows them (PixelCopy); a picture
+ * larger than the window (one on its side, drawn on a phone or tablet held upright) is recorded into
+ * a graphics layer of its full size instead, as the window can't show it whole.
  */
-fun renderCanvas(width: Int = CANVAS_WIDTH, height: Int = CANVAS_HEIGHT, content: @Composable () -> Unit): Bitmap {
+fun renderCanvas(width: Int = CanvasSpec.PORTRAIT.width, height: Int = CanvasSpec.PORTRAIT.height, content: @Composable () -> Unit): Bitmap {
     ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
         val placed = CountDownLatch(1)
         var origin = Offset.Zero
+        var layer: GraphicsLayer? = null
+        var window = IntSize.Zero
         scenario.onActivity { activity ->
+            window = IntSize(activity.window.decorView.width, activity.window.decorView.height)
             activity.setContent {
-                Box(Modifier.onGloballyPositioned { origin = it.positionInWindow(); placed.countDown() }) { content() }
+                val recorded = rememberGraphicsLayer().also { layer = it }
+                Box(
+                    Modifier
+                        .wrapContentSize(Alignment.TopStart, unbounded = true)
+                        .onGloballyPositioned { origin = it.positionInWindow(); placed.countDown() }
+                        .drawWithContent {
+                            recorded.record { this@drawWithContent.drawContent() }
+                            drawLayer(recorded)
+                        },
+                ) { content() }
             }
         }
         check(placed.await(WAIT_SECONDS, TimeUnit.SECONDS)) { "the store canvas was never laid out" }
         // Fonts, the backdrop's offscreen layer and the screen pictures settle in a few frames.
         Thread.sleep(SETTLE_MS)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        var result = -1
+        val x = origin.x.toInt()
+        val y = origin.y.toInt()
+        val fits = x + width <= window.width && y + height <= window.height
         val copied = CountDownLatch(1)
-        scenario.onActivity { activity ->
-            val x = origin.x.toInt()
-            val y = origin.y.toInt()
-            PixelCopy.request(activity.window, Rect(x, y, x + width, y + height), bitmap, { result = it; copied.countDown() }, Handler(Looper.getMainLooper()))
+        var bitmap: Bitmap? = null
+        var result = -1
+        if (fits) {
+            val target = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            scenario.onActivity { activity ->
+                PixelCopy.request(activity.window, Rect(x, y, x + width, y + height), target, { result = it; copied.countDown() }, Handler(Looper.getMainLooper()))
+            }
+            check(copied.await(WAIT_SECONDS, TimeUnit.SECONDS) && result == PixelCopy.SUCCESS) { "could not read the store canvas back ($result)" }
+            bitmap = target
+        } else {
+            val scope = MainScope()
+            scope.launch {
+                val drawn = (layer ?: error("no layer")).toImageBitmap().asAndroidBitmap()
+                // A hardware bitmap can't be written as PNG or read pixel by pixel: a software copy.
+                bitmap = Bitmap.createBitmap(drawn.copy(Bitmap.Config.ARGB_8888, false), 0, 0, width, height)
+                copied.countDown()
+            }
+            val recorded = copied.await(WAIT_SECONDS, TimeUnit.SECONDS)
+            scope.cancel()
+            check(recorded) { "could not record the store canvas" }
         }
-        check(copied.await(WAIT_SECONDS, TimeUnit.SECONDS) && result == PixelCopy.SUCCESS) { "could not read the store canvas back ($result)" }
-        return bitmap
+        return bitmap ?: error("no store canvas")
     }
 }
 
-/** Play's portrait screenshot, 9:16 (docs/store-listing.md, *Phone screenshots*). */
-const val CANVAS_WIDTH = 1080
-const val CANVAS_HEIGHT = 1920
-const val CANVAS_WIDTH_DP = 400f
-
-/** Play's 10-inch tablet screenshot on its side, 16:9 (docs/store-listing.md, *Tablet screenshots*). */
-const val TABLET_CANVAS_WIDTH = 1920
-const val TABLET_CANVAS_HEIGHT = 1080
-const val TABLET_CANVAS_HEIGHT_DP = 450f
-
-private val TABLET_CAPTION_HEIGHT = 92.dp
-private val TABLET_CAPTION_GAP = 8.dp
-private val TABLET_BUBBLE_MAX_WIDTH = 680.dp
-private val TABLET_SIDE_MARGIN = 40.dp
-private val TABLET_BOTTOM_MARGIN = 22.dp
-private val TABLET_FRAME = 6.dp
-private val TABLET_CORNER = 18.dp
-
-private val CAPTION_HEIGHT = 170.dp
-private val CAPTION_HEIGHT_OVER_BUBBLE = 128.dp
 private val SIDE_MARGIN = 24.dp
-private val BOTTOM_MARGIN = 26.dp
 
-private val PHONE_GAP = 14.dp
+/** Between the screens of a row, and between rows. */
+private val WINDOW_GAP = 14.dp
 
 /** Two phones stand this share of their free height apart. */
 private const val STAGGER_SHARE = 0.7f
-private val PHONE_CORNER = 22.dp
 private val PHONE_SHADOW = 14.dp
-private val FRAME = 4.dp
 private val FRAME_ON_LIGHT = Color(0xFF1C1C1F)
 private val FRAME_ON_DARK = Color(0xFF3A3A40)
 
-private val BUBBLE_MAX_WIDTH = 380.dp
 private val BUBBLE_GAP = 6.dp
 private val BUBBLE_CORNER = 20.dp
 private val BUBBLE_SHADOW = 10.dp
