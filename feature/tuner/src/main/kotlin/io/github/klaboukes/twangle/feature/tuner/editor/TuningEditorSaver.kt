@@ -7,6 +7,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** Where the tuning editor's save is. */
@@ -19,6 +20,9 @@ internal enum class SavePhase {
 
     /** Saved: the editor closes and calls [TuningEditorSaver.closed]. */
     SAVED,
+
+    /** The write failed (a full phone): the editor stays open with its edits, says so, and Save can try again. */
+    FAILED,
 }
 
 /**
@@ -31,13 +35,18 @@ internal class TuningEditorSaver(private val repository: SettingsRepository) : V
     private val _phase = MutableStateFlow(SavePhase.IDLE)
     val phase: StateFlow<SavePhase> = _phase.asStateFlow()
 
-    /** Saves [draft] and picks it (see [saveDraft]), unless a save is already under way. */
+    /**
+     * Saves [draft] and picks it (see [saveDraft]), unless a save is already under way or done. Ends
+     * [SavePhase.SAVED], or [SavePhase.FAILED] when the phone couldn't write it. A tuning being edited
+     * that was deleted meanwhile saves nothing, as before, and ends saved: the editor just closes.
+     */
     fun save(draft: TuningDraft, instrument: Instrument, editingId: String?) {
-        if (_phase.value != SavePhase.IDLE) return
+        if (_phase.value != SavePhase.IDLE && _phase.value != SavePhase.FAILED) return
         _phase.value = SavePhase.SAVING
         viewModelScope.launch {
-            repository.saveDraft(draft, instrument, editingId)
-            _phase.value = SavePhase.SAVED
+            val saved = repository.saveDraft(draft, instrument, editingId) != null ||
+                editingId != null && repository.settings.first().customTunings.none { it.id == editingId }
+            _phase.value = if (saved) SavePhase.SAVED else SavePhase.FAILED
         }
     }
 

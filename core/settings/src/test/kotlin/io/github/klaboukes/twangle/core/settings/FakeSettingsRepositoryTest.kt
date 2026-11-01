@@ -17,7 +17,7 @@ class FakeSettingsRepositoryTest {
     @Test
     fun `custom tunings are added, picked, edited and deleted like the real repository`() = runTest {
         val repo = FakeSettingsRepository()
-        val added = repo.addCustomTuning(" Fifths ", Instruments.BASS_4, fifths)
+        val added = repo.addCustomTuning(" Fifths ", Instruments.BASS_4, fifths)!!
         assertEquals(CustomTuning("custom_1", "Fifths", Instruments.BASS_4, fifths), added)
 
         repo.setTuning(added.tuning)
@@ -46,7 +46,7 @@ class FakeSettingsRepositoryTest {
         repo.setTuning(Tunings.OPEN_G)
         assertEquals(Tunings.OPEN_G, repo.current.tuning)
 
-        val added = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifths, pick = true)
+        val added = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifths, pick = true)!!
         repo.setLoweredBy(1)
         assertEquals(added.tuning.lowered(1), repo.current.tuning)
         assertEquals(added, repo.current.pickedCustomTuning)

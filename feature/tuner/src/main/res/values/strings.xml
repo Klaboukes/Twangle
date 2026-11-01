@@ -250,6 +250,8 @@
     <string name="tuning_editor_name_empty">Give the tuning a name</string>
     <!-- Tuning editor: error under the name field when another tuning has the same name. -->
     <string name="tuning_editor_name_taken">There is already a tuning with this name</string>
+    <!-- Tuning editor: one line above the name field when Save could not write the tuning to the phone (its storage is full, or failing); the editor stays open with the edits. -->
+    <string name="tuning_editor_not_saved">Couldn\'t save the tuning. Is the phone\'s storage full?</string>
     <!-- Asks before the editor is closed (close button, Back) with edits that are not saved. -->
     <string name="tuning_editor_discard_title">Discard changes?</string>
     <!-- Discard changes dialog: the button that closes the editor and loses the changes. Short. -->

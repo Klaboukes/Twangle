@@ -46,32 +46,43 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
             state.value = value
         }
 
-    override suspend fun setA4(hz: Float) = state.update { it.copy(a4Hz = AppSettings.normalizeA4(hz)) }
+    /**
+     * True: every write fails as on a full phone, as the real repository's do: nothing changes, the
+     * setters return normally, and adding or changing a custom tuning returns null.
+     */
+    var failWrites = false
 
-    override suspend fun setMode(mode: TunerMode) = state.update { it.copy(mode = mode) }
+    private fun write(change: (AppSettings) -> AppSettings) {
+        if (!failWrites) state.update(change)
+    }
 
-    override suspend fun setInstrument(instrument: Instrument) = state.update {
+    override suspend fun setA4(hz: Float) = write { it.copy(a4Hz = AppSettings.normalizeA4(hz)) }
+
+    override suspend fun setMode(mode: TunerMode) = write { it.copy(mode = mode) }
+
+    override suspend fun setInstrument(instrument: Instrument) = write {
         if (it.instrument == instrument) it else it.copy(instrument = instrument, tuning = instrument.defaultTuning)
     }
 
-    override suspend fun setTuning(tuning: Tuning) = state.update { settings ->
+    override suspend fun setTuning(tuning: Tuning) = write { settings ->
         val instrument = Instruments.ofTuning(tuning.id)
             ?: settings.customTunings.firstOrNull { it.id == tuning.id }?.instrument
         settings.copy(instrument = instrument ?: settings.instrument, tuning = tuning)
     }
 
-    override suspend fun setLoweredBy(semitones: Int) = state.update { settings ->
+    override suspend fun setLoweredBy(semitones: Int) = write { settings ->
         val asWritten = settings.tuningAsWritten
         settings.copy(tuning = asWritten.lowered(semitones.coerceIn(0, asWritten.lowerableBy)))
     }
 
     private var lastCustomId = 0
 
-    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning {
+    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning? {
+        if (failWrites) return null
         val added = CustomTuning(
             "${CustomTuning.ID_PREFIX}${++lastCustomId}", CustomTuning.normalizeName(name), instrument, notes,
         )
-        state.update {
+        write {
             val withIt = it.copy(customTunings = it.customTunings + added)
             if (pick) withIt.copy(instrument = instrument, tuning = added.tuning) else withIt
         }
@@ -79,9 +90,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     }
 
     override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>, pick: Boolean): CustomTuning? {
+        if (failWrites) return null
         val old = state.value.customTunings.firstOrNull { it.id == id } ?: return null
         val changed = CustomTuning(id, CustomTuning.normalizeName(name), old.instrument, notes)
-        state.update { settings ->
+        write { settings ->
             val picked = pick || settings.tuning.id == id
             settings.copy(
                 customTunings = settings.customTunings.map { if (it.id == id) changed else it },
@@ -92,8 +104,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
         return changed
     }
 
-    override suspend fun deleteCustomTuning(id: String) = state.update { settings ->
-        val deleted = settings.customTunings.firstOrNull { it.id == id } ?: return@update settings
+    override suspend fun deleteCustomTuning(id: String) = write { settings ->
+        val deleted = settings.customTunings.firstOrNull { it.id == id } ?: return@write settings
         val picked = settings.tuning.id == id
         settings.copy(
             customTunings = settings.customTunings - deleted,
@@ -102,96 +114,96 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
         )
     }
 
-    override suspend fun setNotation(notation: Notation?) = state.update { it.copy(notationChoice = notation) }
+    override suspend fun setNotation(notation: Notation?) = write { it.copy(notationChoice = notation) }
 
     override suspend fun setInTunePrecision(precision: InTunePrecision) =
-        state.update { it.copy(inTunePrecision = precision) }
+        write { it.copy(inTunePrecision = precision) }
 
-    override suspend fun setTheme(theme: ThemeMode) = state.update { it.copy(theme = theme) }
+    override suspend fun setTheme(theme: ThemeMode) = write { it.copy(theme = theme) }
 
-    override suspend fun setStyle(style: VisualStyle) = state.update { it.copy(style = style) }
+    override suspend fun setStyle(style: VisualStyle) = write { it.copy(style = style) }
 
-    override suspend fun setDynamicColor(enabled: Boolean) = state.update { it.copy(dynamicColor = enabled) }
+    override suspend fun setDynamicColor(enabled: Boolean) = write { it.copy(dynamicColor = enabled) }
 
-    override suspend fun setKeepScreenOn(enabled: Boolean) = state.update { it.copy(keepScreenOn = enabled) }
+    override suspend fun setKeepScreenOn(enabled: Boolean) = write { it.copy(keepScreenOn = enabled) }
 
-    override suspend fun setVibrateInTune(enabled: Boolean) = state.update { it.copy(vibrateInTune = enabled) }
+    override suspend fun setVibrateInTune(enabled: Boolean) = write { it.copy(vibrateInTune = enabled) }
 
-    override suspend fun setShowTuneHint(enabled: Boolean) = state.update { it.copy(showTuneHint = enabled) }
+    override suspend fun setShowTuneHint(enabled: Boolean) = write { it.copy(showTuneHint = enabled) }
 
-    override suspend fun setShowSignalBars(enabled: Boolean) = state.update { it.copy(showSignalBars = enabled) }
+    override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
 
-    override suspend fun setDisplay(display: TunerDisplay) = state.update { it.copy(display = display) }
+    override suspend fun setDisplay(display: TunerDisplay) = write { it.copy(display = display) }
 
-    override suspend fun setWaveLook(look: WaveLook) = state.update { it.copy(waveLook = look) }
+    override suspend fun setWaveLook(look: WaveLook) = write { it.copy(waveLook = look) }
 
-    override suspend fun setMeterLook(look: MeterLook) = state.update { it.copy(meterLook = look) }
+    override suspend fun setMeterLook(look: MeterLook) = write { it.copy(meterLook = look) }
 
-    override suspend fun setInTuneEffect(effect: InTuneEffect) = state.update { it.copy(inTuneEffect = effect) }
+    override suspend fun setInTuneEffect(effect: InTuneEffect) = write { it.copy(inTuneEffect = effect) }
 
     override suspend fun setFocusMode(enabled: Boolean) =
-        state.update { it.copy(focusMode = enabled) }
+        write { it.copy(focusMode = enabled) }
 
-    override suspend fun setTourSeen(seen: Boolean) = state.update { it.copy(tourSeen = seen) }
+    override suspend fun setTourSeen(seen: Boolean) = write { it.copy(tourSeen = seen) }
 
     /** Nothing to decide: the fake starts from the settings it is given. */
     override suspend fun decideTourOnce() = Unit
 
-    override suspend fun setMicRefused(refused: Boolean) = state.update { it.copy(micRefused = refused) }
+    override suspend fun setMicRefused(refused: Boolean) = write { it.copy(micRefused = refused) }
 
     override suspend fun noteFirstUseOnce(nowMillis: Long) =
-        state.update { if (it.firstUseMillis == 0L) it.copy(firstUseMillis = nowMillis) else it }
+        write { if (it.firstUseMillis == 0L) it.copy(firstUseMillis = nowMillis) else it }
 
-    override suspend fun setRatingAsked(asked: Boolean) = state.update { it.copy(ratingAsked = asked) }
+    override suspend fun setRatingAsked(asked: Boolean) = write { it.copy(ratingAsked = asked) }
 
-    override suspend fun setMetronomeBpm(bpm: Int) = state.update { it.copy(metronomeBpm = ClickTrack.clampBpm(bpm)) }
+    override suspend fun setMetronomeBpm(bpm: Int) = write { it.copy(metronomeBpm = ClickTrack.clampBpm(bpm)) }
 
-    override suspend fun setMetronomeMeter(meter: Meter) = state.update { it.copy(metronomeMeter = meter) }
+    override suspend fun setMetronomeMeter(meter: Meter) = write { it.copy(metronomeMeter = meter) }
 
-    override suspend fun setMetronomeVibrate(enabled: Boolean) = state.update { it.copy(metronomeVibrate = enabled) }
+    override suspend fun setMetronomeVibrate(enabled: Boolean) = write { it.copy(metronomeVibrate = enabled) }
 
-    override suspend fun setMetronomeClickSound(sound: ClickSound) = state.update { it.copy(metronomeClickSound = sound) }
+    override suspend fun setMetronomeClickSound(sound: ClickSound) = write { it.copy(metronomeClickSound = sound) }
 
-    override suspend fun setMetronomeSubdivision(subdivision: Subdivision) = state.update { it.copy(metronomeSubdivision = subdivision) }
+    override suspend fun setMetronomeSubdivision(subdivision: Subdivision) = write { it.copy(metronomeSubdivision = subdivision) }
 
-    override suspend fun setMetronomeTrainer(trainer: SpeedTrainer) = state.update { it.copy(metronomeTrainer = trainer) }
+    override suspend fun setMetronomeTrainer(trainer: SpeedTrainer) = write { it.copy(metronomeTrainer = trainer) }
 
-    override suspend fun setMetronomeTrainerOn(on: Boolean) = state.update { it.copy(metronomeTrainerOn = on) }
+    override suspend fun setMetronomeTrainerOn(on: Boolean) = write { it.copy(metronomeTrainerOn = on) }
 
-    override suspend fun setPracticeTool(tool: PracticeTool) = state.update { it.copy(practiceTool = tool) }
+    override suspend fun setPracticeTool(tool: PracticeTool) = write { it.copy(practiceTool = tool) }
 
-    override suspend fun setPracticeRoot(root: PitchClass) = state.update { it.copy(practiceRoot = root) }
+    override suspend fun setPracticeRoot(root: PitchClass) = write { it.copy(practiceRoot = root) }
 
-    override suspend fun setPracticeChordQuality(quality: ChordQuality) = state.update { it.copy(practiceChordQuality = quality) }
+    override suspend fun setPracticeChordQuality(quality: ChordQuality) = write { it.copy(practiceChordQuality = quality) }
 
-    override suspend fun setPracticeScaleType(type: ScaleType) = state.update { it.copy(practiceScaleType = type) }
+    override suspend fun setPracticeScaleType(type: ScaleType) = write { it.copy(practiceScaleType = type) }
 
-    override suspend fun setPracticeCapoShapes(shapes: SongKey) = state.update { it.copy(practiceCapoShapes = shapes) }
+    override suspend fun setPracticeCapoShapes(shapes: SongKey) = write { it.copy(practiceCapoShapes = shapes) }
 
-    override suspend fun setPracticeCapoFret(fret: Int) = state.update { it.copy(practiceCapoFret = fret.coerceIn(0, Capo.HIGHEST_FRET)) }
+    override suspend fun setPracticeCapoFret(fret: Int) = write { it.copy(practiceCapoFret = fret.coerceIn(0, Capo.HIGHEST_FRET)) }
 
-    override suspend fun setDroneSound(sound: DroneSound) = state.update { it.copy(droneSound = sound) }
+    override suspend fun setDroneSound(sound: DroneSound) = write { it.copy(droneSound = sound) }
 
-    override suspend fun setDroneVoicing(voicing: DroneVoicing) = state.update { it.copy(droneVoicing = voicing) }
+    override suspend fun setDroneVoicing(voicing: DroneVoicing) = write { it.copy(droneVoicing = voicing) }
 
-    override suspend fun setDroneLower(lower: Boolean) = state.update { it.copy(droneLower = lower) }
+    override suspend fun setDroneLower(lower: Boolean) = write { it.copy(droneLower = lower) }
 
-    override suspend fun setLeftHanded(enabled: Boolean) = state.update { it.copy(leftHanded = enabled) }
+    override suspend fun setLeftHanded(enabled: Boolean) = write { it.copy(leftHanded = enabled) }
 
-    override suspend fun setEarExercise(exercise: Exercise) = state.update { it.copy(earExercise = exercise) }
+    override suspend fun setEarExercise(exercise: Exercise) = write { it.copy(earExercise = exercise) }
 
-    override suspend fun setEarNoteChoice(choice: NoteChoice) = state.update { it.copy(earNoteChoice = choice) }
+    override suspend fun setEarNoteChoice(choice: NoteChoice) = write { it.copy(earNoteChoice = choice) }
 
-    override suspend fun setEarNotesInRow(count: Int) = state.update { it.copy(earNotesInRow = count.coerceIn(1, NoteQuestions.MAX_LENGTH)) }
+    override suspend fun setEarNotesInRow(count: Int) = write { it.copy(earNotesInRow = count.coerceIn(1, NoteQuestions.MAX_LENGTH)) }
 
-    override suspend fun setEarNoteMatch(match: NoteMatch) = state.update { it.copy(earNoteMatch = match) }
+    override suspend fun setEarNoteMatch(match: NoteMatch) = write { it.copy(earNoteMatch = match) }
 
     override suspend fun setEarIntervals(intervals: Set<Interval>) =
-        state.update { it.copy(earIntervals = intervals.ifEmpty { Interval.DEFAULT }) }
+        write { it.copy(earIntervals = intervals.ifEmpty { Interval.DEFAULT }) }
 
     override suspend fun setEarDirections(directions: Set<IntervalDirection>) =
-        state.update { it.copy(earDirections = directions.ifEmpty { IntervalDirection.DEFAULT }) }
+        write { it.copy(earDirections = directions.ifEmpty { IntervalDirection.DEFAULT }) }
 
     override suspend fun setEarChordTypes(types: Set<ChordQuality>) =
-        state.update { it.copy(earChordTypes = types.ifEmpty { ChordTypeQuestions.DEFAULT }) }
+        write { it.copy(earChordTypes = types.ifEmpty { ChordTypeQuestions.DEFAULT }) }
 }

@@ -135,6 +135,7 @@
     <string name="tuning_editor_name">Naam</string>
     <string name="tuning_editor_name_empty">Geef de stemming een naam</string>
     <string name="tuning_editor_name_taken">Er is al een stemming met deze naam</string>
+    <string name="tuning_editor_not_saved">Kon de stemming niet opslaan. Is het geheugen van de telefoon vol?</string>
     <string name="tuning_editor_discard_title">Wijzigingen weggooien?</string>
     <string name="tuning_editor_discard">Weggooien</string>
     <string name="tuning_editor_keep_editing">Verder bewerken</string>

@@ -150,7 +150,7 @@ class TuningDraftTest {
     @Test
     fun anEditKeepsTheIdAndPicksIt() = runTest {
         val repository = FakeSettingsRepository()
-        val first = repository.addCustomTuning("Low C", Instruments.GUITAR, listOf(36, 43, 48, 55, 59, 64).map(::Note))
+        val first = repository.addCustomTuning("Low C", Instruments.GUITAR, listOf(36, 43, 48, 55, 59, 64).map(::Note))!!
         val edited = TuningDraft.forEdit(first).copy(name = "Lower C").lowered(0)
         val saved = repository.saveDraft(edited, Instruments.GUITAR, first.id)!!
         assertEquals(first.id, saved.id)

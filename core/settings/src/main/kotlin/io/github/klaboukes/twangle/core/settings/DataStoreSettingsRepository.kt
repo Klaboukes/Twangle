@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.MutablePreferences
@@ -54,12 +55,15 @@ import java.util.UUID
  * version) falls back to its default, and an unreadable file gives all defaults instead of crashing
  * the tuner, while a failed read is tried again ([readRetryMillis]). Damaged custom tunings are
  * skipped (see [CustomTuningCodec]), and a picked one that is gone gives its instrument's standard
- * tuning. Create it once per process with [create]: DataStore allows only one instance per file.
- * [newId] makes the ids of new custom tunings.
+ * tuning. Writing never throws: a write that fails (a full phone, a storage error) is logged through
+ * [logWriteError] and changes nothing, so the app keeps running with the old value ([save]). Create it
+ * once per process with [create]: DataStore allows only one instance per file. [newId] makes the ids
+ * of new custom tunings.
  */
 class DataStoreSettingsRepository internal constructor(
     private val dataStore: DataStore<Preferences>,
     private val newId: () -> String = { CustomTuning.ID_PREFIX + UUID.randomUUID() },
+    private val logWriteError: (IOException) -> Unit = { Log.w(TAG, "Settings not saved", it) },
 ) : SettingsRepository {
 
     override val settings: Flow<AppSettings> = flow {
@@ -82,17 +86,31 @@ class DataStoreSettingsRepository internal constructor(
         .map(::toSettings)
         .distinctUntilChanged()
 
+    /**
+     * Every write goes through here: [change] in one DataStore edit. A write that fails with an
+     * [IOException] (a full phone, a storage error) is logged and returns false, the saved values
+     * unchanged, instead of reaching the caller's coroutine and closing the app; most of the ~50
+     * callers launch their write bare. True when it was saved.
+     */
+    private suspend fun save(change: (MutablePreferences) -> Unit): Boolean = try {
+        dataStore.edit { change(it) }
+        true
+    } catch (e: IOException) {
+        logWriteError(e)
+        false
+    }
+
     override suspend fun setA4(hz: Float) {
-        dataStore.edit { it[A4_HZ] = AppSettings.normalizeA4(hz) }
+        save { it[A4_HZ] = AppSettings.normalizeA4(hz) }
     }
 
     override suspend fun setMode(mode: TunerMode) {
-        dataStore.edit { it[MODE] = mode.name }
+        save { it[MODE] = mode.name }
     }
 
     override suspend fun setInstrument(instrument: Instrument) {
-        dataStore.edit {
-            if (instrumentAndTuning(it, customTunings(it)).first == instrument) return@edit
+        save {
+            if (instrumentAndTuning(it, customTunings(it)).first == instrument) return@save
             it[INSTRUMENT_ID] = instrument.id
             it[TUNING_ID] = instrument.defaultTuning.id
             it.remove(TUNING_LOWERED_BY)
@@ -100,7 +118,7 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setTuning(tuning: Tuning) {
-        dataStore.edit {
+        save {
             it[TUNING_ID] = tuning.id
             saveLoweredBy(it, tuning.loweredBy)
             val instrument = Instruments.ofTuning(tuning.id)
@@ -110,27 +128,27 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setLoweredBy(semitones: Int) {
-        dataStore.edit {
+        save {
             val picked = instrumentAndTuning(it, customTunings(it)).second
             saveLoweredBy(it, semitones.coerceIn(0, picked.loweredBy + picked.lowerableBy))
         }
     }
 
-    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning {
+    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning? {
         val added = CustomTuning(newId(), CustomTuning.normalizeName(name), instrument, notes)
-        dataStore.edit {
+        val saved = save {
             saveCustomTunings(it, customTunings(it) + added)
             if (pick) pickCustomTuning(it, added)
         }
-        return added
+        return added.takeIf { saved }
     }
 
     override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>, pick: Boolean): CustomTuning? {
         var updated: CustomTuning? = null
-        dataStore.edit {
+        val saved = save {
             val tunings = customTunings(it)
             val index = tunings.indexOfFirst { custom -> custom.id == id }
-            if (index < 0) return@edit
+            if (index < 0) return@save
             val changed = CustomTuning(id, CustomTuning.normalizeName(name), tunings[index].instrument, notes)
             saveCustomTunings(it, tunings.toMutableList().apply { set(index, changed) })
             // New notes are the ones to tune to: a picked one is no longer lowered.
@@ -138,13 +156,13 @@ class DataStoreSettingsRepository internal constructor(
             if (pick) pickCustomTuning(it, changed)
             updated = changed
         }
-        return updated
+        return updated.takeIf { saved }
     }
 
     override suspend fun deleteCustomTuning(id: String) {
-        dataStore.edit {
+        save {
             val tunings = customTunings(it)
-            val deleted = tunings.firstOrNull { custom -> custom.id == id } ?: return@edit
+            val deleted = tunings.firstOrNull { custom -> custom.id == id } ?: return@save
             saveCustomTunings(it, tunings - deleted)
             if (it[TUNING_ID] == id) {
                 it[INSTRUMENT_ID] = deleted.instrument.id
@@ -156,43 +174,43 @@ class DataStoreSettingsRepository internal constructor(
 
     override suspend fun setNotation(notation: Notation?) {
         // No saved notation means Automatic, as on an install that never picked one.
-        dataStore.edit { if (notation == null) it.remove(NOTATION) else it[NOTATION] = notation.name }
+        save { if (notation == null) it.remove(NOTATION) else it[NOTATION] = notation.name }
     }
 
     override suspend fun setInTunePrecision(precision: InTunePrecision) {
-        dataStore.edit { it[IN_TUNE_PRECISION] = precision.name }
+        save { it[IN_TUNE_PRECISION] = precision.name }
     }
 
     override suspend fun setTheme(theme: ThemeMode) {
-        dataStore.edit { it[THEME] = theme.name }
+        save { it[THEME] = theme.name }
     }
 
     override suspend fun setStyle(style: VisualStyle) {
-        dataStore.edit { it[STYLE] = style.name }
+        save { it[STYLE] = style.name }
     }
 
     override suspend fun setDynamicColor(enabled: Boolean) {
-        dataStore.edit { it[DYNAMIC_COLOR] = enabled }
+        save { it[DYNAMIC_COLOR] = enabled }
     }
 
     override suspend fun setKeepScreenOn(enabled: Boolean) {
-        dataStore.edit { it[KEEP_SCREEN_ON] = enabled }
+        save { it[KEEP_SCREEN_ON] = enabled }
     }
 
     override suspend fun setVibrateInTune(enabled: Boolean) {
-        dataStore.edit { it[VIBRATE_IN_TUNE] = enabled }
+        save { it[VIBRATE_IN_TUNE] = enabled }
     }
 
     override suspend fun setShowTuneHint(enabled: Boolean) {
-        dataStore.edit { it[SHOW_TUNE_HINT] = enabled }
+        save { it[SHOW_TUNE_HINT] = enabled }
     }
 
     override suspend fun setShowSignalBars(enabled: Boolean) {
-        dataStore.edit { it[SHOW_SIGNAL_BARS] = enabled }
+        save { it[SHOW_SIGNAL_BARS] = enabled }
     }
 
     override suspend fun setDisplay(display: TunerDisplay) {
-        dataStore.edit {
+        save {
             // An old strobe display was showing as the wave's strobe look: keep that look for the wave.
             if (it[DISPLAY] == OLD_STROBE_DISPLAY) it[WAVE_LOOK] = WaveLook.STROBE.name
             it[DISPLAY] = display.name
@@ -202,7 +220,7 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setWaveLook(look: WaveLook) {
-        dataStore.edit {
+        save {
             // An old strobe display would otherwise keep overriding the look picked here.
             if (it[DISPLAY] == OLD_STROBE_DISPLAY) it[DISPLAY] = TunerDisplay.WAVE.name
             it[WAVE_LOOK] = look.name
@@ -210,59 +228,59 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setMeterLook(look: MeterLook) {
-        dataStore.edit { it[METER_LOOK] = look.name }
+        save { it[METER_LOOK] = look.name }
     }
 
     override suspend fun setInTuneEffect(effect: InTuneEffect) {
-        dataStore.edit { it[IN_TUNE_EFFECT] = effect.name }
+        save { it[IN_TUNE_EFFECT] = effect.name }
     }
 
     override suspend fun setFocusMode(enabled: Boolean) {
-        dataStore.edit { it[FOCUS_MODE] = enabled }
+        save { it[FOCUS_MODE] = enabled }
     }
 
     override suspend fun setTourSeen(seen: Boolean) {
-        dataStore.edit { it[TOUR_SEEN] = seen }
+        save { it[TOUR_SEEN] = seen }
     }
 
     override suspend fun decideTourOnce() {
-        dataStore.edit { if (TOUR_SEEN !in it) it[TOUR_SEEN] = tourSeen(it) }
+        save { if (TOUR_SEEN !in it) it[TOUR_SEEN] = tourSeen(it) }
     }
 
     override suspend fun setMicRefused(refused: Boolean) {
-        dataStore.edit { it[MIC_REFUSED] = refused }
+        save { it[MIC_REFUSED] = refused }
     }
 
     override suspend fun noteFirstUseOnce(nowMillis: Long) {
-        dataStore.edit { if (FIRST_USE_MILLIS !in it) it[FIRST_USE_MILLIS] = nowMillis }
+        save { if (FIRST_USE_MILLIS !in it) it[FIRST_USE_MILLIS] = nowMillis }
     }
 
     override suspend fun setRatingAsked(asked: Boolean) {
-        dataStore.edit { it[RATING_ASKED] = asked }
+        save { it[RATING_ASKED] = asked }
     }
 
     override suspend fun setMetronomeBpm(bpm: Int) {
-        dataStore.edit { it[METRONOME_BPM] = ClickTrack.clampBpm(bpm) }
+        save { it[METRONOME_BPM] = ClickTrack.clampBpm(bpm) }
     }
 
     override suspend fun setMetronomeMeter(meter: Meter) {
-        dataStore.edit { it[METRONOME_METER] = meter.name }
+        save { it[METRONOME_METER] = meter.name }
     }
 
     override suspend fun setMetronomeVibrate(enabled: Boolean) {
-        dataStore.edit { it[METRONOME_VIBRATE] = enabled }
+        save { it[METRONOME_VIBRATE] = enabled }
     }
 
     override suspend fun setMetronomeClickSound(sound: ClickSound) {
-        dataStore.edit { it[METRONOME_CLICK_SOUND] = sound.name }
+        save { it[METRONOME_CLICK_SOUND] = sound.name }
     }
 
     override suspend fun setMetronomeSubdivision(subdivision: Subdivision) {
-        dataStore.edit { it[METRONOME_SUBDIVISION] = subdivision.name }
+        save { it[METRONOME_SUBDIVISION] = subdivision.name }
     }
 
     override suspend fun setMetronomeTrainer(trainer: SpeedTrainer) {
-        dataStore.edit {
+        save {
             it[TRAINER_START] = trainer.startBpm
             it[TRAINER_GOAL] = trainer.goalBpm
             it[TRAINER_STEP] = trainer.stepBpm
@@ -271,11 +289,11 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setMetronomeTrainerOn(on: Boolean) {
-        dataStore.edit { it[TRAINER_ON] = on }
+        save { it[TRAINER_ON] = on }
     }
 
     override suspend fun setPracticeTool(tool: PracticeTool) {
-        dataStore.edit {
+        save {
             it[PRACTICE_TOOL] = tool.name
             // The old Chords · Scales choice has had its say once a tool is picked (see [practiceTool]).
             it.remove(OLD_PRACTICE_CHART)
@@ -283,70 +301,70 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setPracticeRoot(root: PitchClass) {
-        dataStore.edit { it[PRACTICE_ROOT] = root.name }
+        save { it[PRACTICE_ROOT] = root.name }
     }
 
     override suspend fun setPracticeChordQuality(quality: ChordQuality) {
-        dataStore.edit { it[PRACTICE_CHORD_QUALITY] = quality.name }
+        save { it[PRACTICE_CHORD_QUALITY] = quality.name }
     }
 
     override suspend fun setPracticeScaleType(type: ScaleType) {
-        dataStore.edit { it[PRACTICE_SCALE_TYPE] = type.name }
+        save { it[PRACTICE_SCALE_TYPE] = type.name }
     }
 
     override suspend fun setPracticeCapoShapes(shapes: SongKey) {
-        dataStore.edit {
+        save {
             it[PRACTICE_CAPO_SHAPES] = shapes.tonic.name
             it[PRACTICE_CAPO_MINOR] = shapes.minor
         }
     }
 
     override suspend fun setPracticeCapoFret(fret: Int) {
-        dataStore.edit { it[PRACTICE_CAPO_FRET] = fret.coerceIn(0, Capo.HIGHEST_FRET) }
+        save { it[PRACTICE_CAPO_FRET] = fret.coerceIn(0, Capo.HIGHEST_FRET) }
     }
 
     override suspend fun setDroneSound(sound: DroneSound) {
-        dataStore.edit { it[DRONE_SOUND] = sound.name }
+        save { it[DRONE_SOUND] = sound.name }
     }
 
     override suspend fun setDroneVoicing(voicing: DroneVoicing) {
-        dataStore.edit { it[DRONE_VOICING] = voicing.name }
+        save { it[DRONE_VOICING] = voicing.name }
     }
 
     override suspend fun setDroneLower(lower: Boolean) {
-        dataStore.edit { it[DRONE_LOWER] = lower }
+        save { it[DRONE_LOWER] = lower }
     }
 
     override suspend fun setLeftHanded(enabled: Boolean) {
-        dataStore.edit { it[LEFT_HANDED] = enabled }
+        save { it[LEFT_HANDED] = enabled }
     }
 
     override suspend fun setEarExercise(exercise: Exercise) {
-        dataStore.edit { it[EAR_EXERCISE] = exercise.name }
+        save { it[EAR_EXERCISE] = exercise.name }
     }
 
     override suspend fun setEarNoteChoice(choice: NoteChoice) {
-        dataStore.edit { it[EAR_NOTE_CHOICE] = choice.name }
+        save { it[EAR_NOTE_CHOICE] = choice.name }
     }
 
     override suspend fun setEarNotesInRow(count: Int) {
-        dataStore.edit { it[EAR_NOTES_IN_ROW] = count.coerceIn(1, NoteQuestions.MAX_LENGTH) }
+        save { it[EAR_NOTES_IN_ROW] = count.coerceIn(1, NoteQuestions.MAX_LENGTH) }
     }
 
     override suspend fun setEarNoteMatch(match: NoteMatch) {
-        dataStore.edit { it[EAR_NOTE_MATCH] = match.name }
+        save { it[EAR_NOTE_MATCH] = match.name }
     }
 
     override suspend fun setEarIntervals(intervals: Set<Interval>) {
-        dataStore.edit { it[EAR_INTERVALS] = intervals.mapTo(HashSet()) { interval -> interval.name } }
+        save { it[EAR_INTERVALS] = intervals.mapTo(HashSet()) { interval -> interval.name } }
     }
 
     override suspend fun setEarDirections(directions: Set<IntervalDirection>) {
-        dataStore.edit { it[EAR_DIRECTIONS] = directions.mapTo(HashSet()) { direction -> direction.name } }
+        save { it[EAR_DIRECTIONS] = directions.mapTo(HashSet()) { direction -> direction.name } }
     }
 
     override suspend fun setEarChordTypes(types: Set<ChordQuality>) {
-        dataStore.edit { it[EAR_CHORD_TYPES] = types.mapTo(HashSet()) { type -> type.name } }
+        save { it[EAR_CHORD_TYPES] = types.mapTo(HashSet()) { type -> type.name } }
     }
 
     private fun toSettings(prefs: Preferences): AppSettings {
@@ -413,6 +431,7 @@ class DataStoreSettingsRepository internal constructor(
 
     companion object {
         private const val FILE_NAME = "settings"
+        private const val TAG = "Settings"
 
         // Saved keys. Never rename them, or users lose their settings on update.
         private val A4_HZ = floatPreferencesKey("a4_hz")

@@ -62,4 +62,42 @@ class TuningEditorSaverTest {
         other.closed()
         assertEquals(SavePhase.SAVING, other.phase.value)
     }
+
+    @Test
+    fun aSaveThePhoneCannotWriteEndsFailedAndSaveTriesAgain() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository().apply { failWrites = true }
+        val saver = TuningEditorSaver(repository)
+        saver.save(draft, Instruments.GUITAR, editingId = null)
+        advanceUntilIdle()
+        // Not closed: the editor stays open with its edits and says so.
+        assertEquals(SavePhase.FAILED, saver.phase.value)
+        assertEquals(emptyList<Any>(), repository.current.customTunings)
+        saver.closed()
+        assertEquals(SavePhase.FAILED, saver.phase.value)
+
+        repository.failWrites = false
+        saver.save(draft, Instruments.GUITAR, editingId = null)
+        advanceUntilIdle()
+        assertEquals(SavePhase.SAVED, saver.phase.value)
+        assertEquals("Drop C", repository.current.customTunings.single().name)
+    }
+
+    @Test
+    fun changesThePhoneCannotWriteEndFailedButATuningDeletedMeanwhileJustCloses() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository()
+        val mine = repository.addCustomTuning("Mine", Instruments.GUITAR, draft.notes)!!
+        repository.failWrites = true
+        val saver = TuningEditorSaver(repository)
+        saver.save(draft, Instruments.GUITAR, editingId = mine.id)
+        advanceUntilIdle()
+        assertEquals(SavePhase.FAILED, saver.phase.value)
+        assertEquals("Mine", repository.current.customTunings.single().name)
+
+        // Deleted while the editor was open: nothing to save, so the editor closes as it always did.
+        repository.failWrites = false
+        val gone = TuningEditorSaver(repository)
+        gone.save(draft, Instruments.GUITAR, editingId = "custom_gone")
+        advanceUntilIdle()
+        assertEquals(SavePhase.SAVED, gone.phase.value)
+    }
 }

@@ -142,6 +142,27 @@ class TuningEditorTest {
     }
 
     @Test
+    fun aSaveThePhoneCannotWriteKeepsTheEditorOpenAndSaysSo() {
+        show()
+        repository.failWrites = true
+        val notSaved = string(R.string.tuning_editor_not_saved)
+        compose.onNodeWithText(notSaved).assertDoesNotExist()
+        name.performTextReplacement("Mine")
+        save.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText(notSaved, useUnmergedTree = true).assertIsDisplayed()
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.LiveRegion))
+        assertTrue(repository.current.customTunings.isEmpty())
+        assertEquals(0, closed)
+        // The edits stay, and Save tries again.
+        repository.failWrites = false
+        save.performClick()
+        compose.waitForIdle()
+        assertEquals("Mine", repository.current.customTunings.single().name)
+        assertEquals(1, closed)
+    }
+
+    @Test
     fun anEmptyNameIsRefusedOnlyWhenSaving() {
         show()
         val empty = string(R.string.tuning_editor_name_empty)
@@ -298,7 +319,17 @@ class TuningEditorTest {
         // The longest case: eight strings (F♯1 the lowest), Dutch; every style in a thorough run.
         val instrument = Instruments.GUITAR_8
         show(instrument = instrument, fontScale = 2f, locale = "nl")
-        // With the empty name's message under the field.
+        // First with the line of a save the phone couldn't write under the field.
+        repository.failWrites = true
+        name.performTextReplacement("Iets")
+        save.performClick()
+        compose.waitForIdle()
+        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
+            shownStyle.value = style
+            assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.NOT_SAVED, useUnmergedTree = true), "not saved in $style")
+        }
+        // Then with the empty name's message there.
+        name.performTextReplacement("")
         save.performClick()
         for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
             shownStyle.value = style

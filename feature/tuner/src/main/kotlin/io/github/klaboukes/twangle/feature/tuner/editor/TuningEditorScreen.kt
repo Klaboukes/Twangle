@@ -88,7 +88,8 @@ import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
  * from its standard notes; with the id of one of [settings]' custom tunings it changes that one (its
  * instrument stays). Save checks the name first (not empty, not already one of the instrument's
  * tunings), then saves, picks the tuning and calls [onClose]; the save runs in [TuningEditorSaver],
- * so turning the phone can't cut it off. The close button, Back and each new [closeRequest] (a tap
+ * so turning the phone can't cut it off. A save the phone couldn't write (its storage full) keeps the
+ * editor open with its edits and a line saying so; Save tries again. The close button, Back and each new [closeRequest] (a tap
  * on the home-screen widget) leave without saving, after asking "Discard changes?" when the draft has
  * edits. [settings] are the saved settings, followed live.
  */
@@ -123,7 +124,7 @@ fun TuningEditorScreen(
     val takenNames = presetNames + settings.customTuningsFor(forInstrument).filter { it.id != editing?.id }.map { it.name }
     val requestClose = {
         // While the save runs (a moment) nothing else closes the editor: it closes when the save is done.
-        if (phase == SavePhase.IDLE) {
+        if (phase == SavePhase.IDLE || phase == SavePhase.FAILED) {
             if (draft.hasChangesFrom(opened)) askingDiscard = true else onClose()
         }
     }
@@ -146,6 +147,7 @@ fun TuningEditorScreen(
         notation = settings.notationFor(appLanguage()),
         isNew = editing == null,
         problem = problem,
+        notSaved = phase == SavePhase.FAILED,
         onNameChange = {
             draft = draft.copy(name = it.take(CustomTuning.MAX_NAME_LENGTH))
             // A message goes as soon as the name changes and only comes back on the next Save.
@@ -154,7 +156,7 @@ fun TuningEditorScreen(
         onLower = { draft = draft.lowered(it) },
         onRaise = { draft = draft.raised(it) },
         onSave = {
-            if (phase == SavePhase.IDLE) {
+            if (phase == SavePhase.IDLE || phase == SavePhase.FAILED) {
                 problem = draft.nameProblem(takenNames)
                 if (problem == null) saver.save(draft, forInstrument, editing?.id)
             }
@@ -166,8 +168,8 @@ fun TuningEditorScreen(
 
 /**
  * The editor's page, stateless: a close button and Save along the top, the title ("New tuning" when
- * [isNew], else "Edit tuning") and [instrument], the name field (with [problem]'s message under it),
- * then a row per string: its note in the standard tuning, and its note in [draft] between − and +.
+ * [isNew], else "Edit tuning") and [instrument], the name field (with [problem]'s message under it,
+ * or else a line when the last Save couldn't be written, [notSaved]), then a row per string: its note in the standard tuning, and its note in [draft] between − and +.
  * Notes are written in [notation]; a button at the end of [EDITOR_NOTE_RANGE] is turned off.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,6 +180,7 @@ internal fun TuningEditor(
     notation: Notation,
     isNew: Boolean,
     problem: NameProblem?,
+    notSaved: Boolean,
     onNameChange: (String) -> Unit,
     onLower: (Int) -> Unit,
     onRaise: (Int) -> Unit,
@@ -235,7 +238,7 @@ internal fun TuningEditor(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp, bottom = 20.dp),
                 )
-                NameField(draft.name, problem, onNameChange)
+                NameField(draft.name, problem, notSaved, onNameChange)
                 Text(
                     stringResource(R.string.tuning_editor_strings),
                     style = MaterialTheme.typography.titleLarge,
@@ -291,24 +294,34 @@ private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Uni
 
 /**
  * The name, one line. [problem]'s message shows under it only once Save has found one, and goes as
- * soon as the name changes, so nothing flashes while typing; TalkBack reads it when it appears.
+ * soon as the name changes, so nothing flashes while typing; TalkBack reads it when it appears. Else,
+ * when the phone couldn't write the last Save ([notSaved]), that line shows there until the next
+ * Save: next to the field, so the keyboard can't hide it, without marking the name as wrong.
  */
 @Composable
-private fun NameField(name: String, problem: NameProblem?, onNameChange: (String) -> Unit) {
+private fun NameField(name: String, problem: NameProblem?, notSaved: Boolean, onNameChange: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
     val message = when (problem) {
         NameProblem.EMPTY -> stringResource(R.string.tuning_editor_name_empty)
         NameProblem.TAKEN -> stringResource(R.string.tuning_editor_name_taken)
-        null -> null
+        null -> if (notSaved) stringResource(R.string.tuning_editor_not_saved) else null
     }
     OutlinedTextField(
         value = name,
         onValueChange = onNameChange,
         label = { Text(stringResource(R.string.tuning_editor_name)) },
         singleLine = true,
-        isError = message != null,
+        isError = problem != null,
         supportingText = message?.let {
-            { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+            {
+                Text(
+                    it,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .semantics { liveRegion = LiveRegionMode.Polite }
+                        .then(if (problem == null) Modifier.testTag(TuningEditorTestTags.NOT_SAVED) else Modifier),
+                )
+            }
         },
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
@@ -405,6 +418,7 @@ object TuningEditorTestTags {
     const val CLOSE = "tuning_editor_close"
     const val SAVE = "tuning_editor_save"
     const val NAME = "tuning_editor_name"
+    const val NOT_SAVED = "tuning_editor_not_saved"
     const val DISCARD_DIALOG = "tuning_editor_discard_dialog"
     const val DISCARD = "tuning_editor_discard"
     const val KEEP_EDITING = "tuning_editor_keep_editing"
@@ -431,7 +445,8 @@ private fun TuningEditorPreview() {
             instrument = Instruments.GUITAR,
             notation = Notation.SHARPS,
             isNew = true,
-            problem = NameProblem.TAKEN,
+            problem = null,
+            notSaved = true,
             onNameChange = {},
             onLower = {},
             onRaise = {},

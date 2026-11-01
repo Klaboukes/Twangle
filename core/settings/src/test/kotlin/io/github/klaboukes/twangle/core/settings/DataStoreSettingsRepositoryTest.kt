@@ -822,7 +822,7 @@ class DataStoreSettingsRepositoryTest {
         val real = dataStore()
         val counted = FlakyDataStore(real) { emitAll(real.data) }
         val repo = repository(counted)
-        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass, pick = true)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass, pick = true)!!
         assertEquals(1, counted.writes)
         assertEquals(fifths.tuning, repo.settings.first().tuning)
         assertEquals(Instruments.BASS_4, repo.settings.first().instrument)
@@ -956,8 +956,8 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `a new custom tuning is saved after the others, not picked, and survives a restart`() = runTest {
         val repo = repository()
-        val first = repo.addCustomTuning("  Drop   C ", Instruments.GUITAR, dropC)
-        val second = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        val first = repo.addCustomTuning("  Drop   C ", Instruments.GUITAR, dropC)!!
+        val second = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)!!
 
         assertEquals("the name is normalized", "Drop C", first.name)
         assertTrue(first.id.startsWith(CustomTuning.ID_PREFIX))
@@ -986,7 +986,7 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `picking a custom tuning picks its instrument too, and both survive a restart`() = runTest {
         val repo = repository()
-        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)!!
         repo.setTuning(fifths.tuning)
         close()
 
@@ -999,7 +999,7 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `picking the instrument of the picked custom tuning keeps it`() = runTest {
         val repo = repository()
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
         repo.setTuning(drop.tuning)
         repo.setInstrument(Instruments.GUITAR)
         assertEquals(drop.tuning, repo.settings.first().tuning)
@@ -1011,8 +1011,8 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `editing a custom tuning keeps its id and place, and it stays picked with the new notes`() = runTest {
         val repo = repository()
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
-        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)!!
         repo.setTuning(drop.tuning)
 
         val changed = repo.updateCustomTuning(drop.id, " Open  C", openC)
@@ -1030,8 +1030,8 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `editing or deleting the picked own tuning while lowered starts it, or the standard, not lowered`() = runTest {
         val repo = repository()
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
-        val open = repo.addCustomTuning("Open C", Instruments.GUITAR, openC)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
+        val open = repo.addCustomTuning("Open C", Instruments.GUITAR, openC)!!
         repo.setTuning(drop.tuning)
         repo.setLoweredBy(2)
         repo.updateCustomTuning(open.id, "Open C", openC)
@@ -1053,7 +1053,7 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `an edit that doesn't fit its instrument is refused and the tuning is kept`() = runTest {
         val repo = repository()
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
         assertThrows(IllegalArgumentException::class.java) {
             runBlocking { repo.updateCustomTuning(drop.id, "Bass", fifthsBass) }
         }
@@ -1066,8 +1066,8 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `deleting the picked custom tuning picks its instrument's standard tuning`() = runTest {
         val repo = repository()
-        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)!!
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
         repo.setTuning(fifths.tuning)
 
         repo.deleteCustomTuning(fifths.id)
@@ -1083,8 +1083,8 @@ class DataStoreSettingsRepositoryTest {
     fun `deleting another custom tuning keeps the picked one, and an unknown id changes nothing`() = runTest {
         val store = dataStore()
         val repo = repository(store)
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
-        val open = repo.addCustomTuning("Open C", Instruments.GUITAR, openC)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
+        val open = repo.addCustomTuning("Open C", Instruments.GUITAR, openC)!!
         repo.setTuning(open.tuning)
 
         repo.deleteCustomTuning(drop.id)
@@ -1129,7 +1129,7 @@ class DataStoreSettingsRepositoryTest {
     fun `a saved custom tuning of another instrument gives the instrument's standard tuning`() = runTest {
         val store = dataStore()
         val repo = repository(store)
-        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)!!
         store.edit {
             it[stringPreferencesKey("instrument_id")] = Instruments.CELLO.id
             it[stringPreferencesKey("tuning_id")] = drop.id
@@ -1144,7 +1144,7 @@ class DataStoreSettingsRepositoryTest {
     fun `a custom tuning saved without its instrument opens on its own instrument`() = runTest {
         val store = dataStore()
         val repo = repository(store)
-        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)!!
         store.edit { it[stringPreferencesKey("tuning_id")] = fifths.id }
 
         val settings = repo.settings.first()
@@ -1236,5 +1236,89 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the first one stays", 1_000L, reopened.firstUseMillis)
         assertEquals(true, reopened.ratingAsked)
         assertEquals("the tour is still due", false, reopened.tourSeen)
+    }
+
+    /** [real] for reading, while every write fails as on a full phone. */
+    private class FullDataStore(private val real: DataStore<Preferences>) : DataStore<Preferences> {
+        override val data: Flow<Preferences> = real.data
+        override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =
+            throw IOException("No space left on device")
+    }
+
+    @Test
+    fun `a write the phone cannot make returns normally, logged, and keeps the old values`() = runTest {
+        val real = dataStore()
+        val kept = DataStoreSettingsRepository(real)
+        kept.addCustomTuning("Mine", Instruments.GUITAR, dropC, pick = true)!!
+        kept.setStyle(VisualStyle.FUTURISTIC)
+        val before = kept.settings.first()
+        val logged = mutableListOf<IOException>()
+        val repo = DataStoreSettingsRepository(FullDataStore(real), logWriteError = { logged += it })
+        val mine = before.customTunings.single()
+
+        // Every write of the interface, by name: a new one fails this test until it is added here.
+        val writes: Map<String, suspend () -> Unit> = mapOf(
+            "setA4" to { repo.setA4(432f) },
+            "setMode" to { repo.setMode(TunerMode.entries.last()) },
+            "setInstrument" to { repo.setInstrument(Instruments.BASS_4) },
+            "setTuning" to { repo.setTuning(Tunings.DROP_D) },
+            "setLoweredBy" to { repo.setLoweredBy(2) },
+            "addCustomTuning" to { assertNull(repo.addCustomTuning("New", Instruments.GUITAR, openC, pick = true)) },
+            "updateCustomTuning" to { assertNull(repo.updateCustomTuning(mine.id, "Changed", openC, pick = true)) },
+            "deleteCustomTuning" to { repo.deleteCustomTuning(mine.id) },
+            "setNotation" to { repo.setNotation(Notation.entries.last()) },
+            "setInTunePrecision" to { repo.setInTunePrecision(InTunePrecision.entries.last()) },
+            "setTheme" to { repo.setTheme(ThemeMode.entries.last()) },
+            "setStyle" to { repo.setStyle(VisualStyle.ANCIENT) },
+            "setDynamicColor" to { repo.setDynamicColor(!before.dynamicColor) },
+            "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
+            "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
+            "setShowTuneHint" to { repo.setShowTuneHint(!before.showTuneHint) },
+            "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
+            "setDisplay" to { repo.setDisplay(TunerDisplay.entries.last()) },
+            "setWaveLook" to { repo.setWaveLook(WaveLook.entries.last()) },
+            "setMeterLook" to { repo.setMeterLook(MeterLook.entries.last()) },
+            "setInTuneEffect" to { repo.setInTuneEffect(InTuneEffect.entries.last()) },
+            "setFocusMode" to { repo.setFocusMode(!before.focusMode) },
+            "setTourSeen" to { repo.setTourSeen(!before.tourSeen) },
+            "decideTourOnce" to { repo.decideTourOnce() },
+            "setMicRefused" to { repo.setMicRefused(!before.micRefused) },
+            // The first-use notes run at every start (MainActivity.onCreate): a full phone must not stop the app.
+            "noteFirstUseOnce" to { repo.noteFirstUseOnce(1_000L) },
+            "setRatingAsked" to { repo.setRatingAsked(!before.ratingAsked) },
+            "setMetronomeBpm" to { repo.setMetronomeBpm(200) },
+            "setMetronomeMeter" to { repo.setMetronomeMeter(Meter.entries.last()) },
+            "setMetronomeVibrate" to { repo.setMetronomeVibrate(!before.metronomeVibrate) },
+            "setMetronomeClickSound" to { repo.setMetronomeClickSound(ClickSound.entries.last()) },
+            "setMetronomeSubdivision" to { repo.setMetronomeSubdivision(Subdivision.entries.last()) },
+            "setMetronomeTrainer" to { repo.setMetronomeTrainer(SpeedTrainer.of(60, 120, SpeedTrainer.DEFAULT_STEP, SpeedTrainer.DEFAULT_BARS)) },
+            "setMetronomeTrainerOn" to { repo.setMetronomeTrainerOn(!before.metronomeTrainerOn) },
+            "setPracticeTool" to { repo.setPracticeTool(PracticeTool.entries.last()) },
+            "setPracticeRoot" to { repo.setPracticeRoot(PitchClass.entries.last()) },
+            "setPracticeChordQuality" to { repo.setPracticeChordQuality(ChordQuality.entries.last()) },
+            "setPracticeScaleType" to { repo.setPracticeScaleType(ScaleType.entries.last()) },
+            "setPracticeCapoShapes" to { repo.setPracticeCapoShapes(SongKey(PitchClass.entries.last(), minor = true)) },
+            "setPracticeCapoFret" to { repo.setPracticeCapoFret(5) },
+            "setDroneSound" to { repo.setDroneSound(DroneSound.entries.last()) },
+            "setDroneVoicing" to { repo.setDroneVoicing(DroneVoicing.entries.last()) },
+            "setDroneLower" to { repo.setDroneLower(!before.droneLower) },
+            "setEarExercise" to { repo.setEarExercise(Exercise.entries.last()) },
+            "setEarNoteChoice" to { repo.setEarNoteChoice(NoteChoice.entries.last()) },
+            "setEarNotesInRow" to { repo.setEarNotesInRow(3) },
+            "setEarNoteMatch" to { repo.setEarNoteMatch(NoteMatch.entries.last()) },
+            "setEarIntervals" to { repo.setEarIntervals(setOf(Interval.entries.last())) },
+            "setEarDirections" to { repo.setEarDirections(setOf(IntervalDirection.entries.last())) },
+            "setEarChordTypes" to { repo.setEarChordTypes(setOf(ChordQuality.entries.first())) },
+            "setLeftHanded" to { repo.setLeftHanded(!before.leftHanded) },
+        )
+        val inInterface = SettingsRepository::class.java.methods.map { it.name }
+            .filter { it != "getSettings" && '$' !in it }.toSet()
+        assertEquals(inInterface, writes.keys)
+
+        for ((name, write) in writes) {
+            write()
+            assertEquals("$name keeps the old values", before, repo.settings.first())
+        }
+        assertEquals("every failed write is logged", writes.size, logged.size)
     }
 }
