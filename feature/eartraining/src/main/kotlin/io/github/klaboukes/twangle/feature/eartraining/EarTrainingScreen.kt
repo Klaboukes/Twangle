@@ -574,7 +574,12 @@ private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: No
     )
 }
 
-/** A dot for each of [count] notes in a row: the [found] ones filled in the in-tune colour, the one looked for in the muted colour, the rest open. */
+/**
+ * A dot for each of [count] notes in a row: the [found] ones filled in the in-tune colour, the one looked
+ * for a ring with a dot in it (◉, in the muted colour), the rest open rings. The one looked for differs
+ * from the found ones by its shape, not by colour alone (Phase 65: both were filled discs). TalkBack hears
+ * the same from the line under the note ("Note 2 of 3").
+ */
 @Composable
 private fun NoteDots(count: Int, found: Int) {
     val inTune = MaterialTheme.styleTokens.inTune
@@ -583,12 +588,16 @@ private fun NoteDots(count: Int, found: Int) {
         val dot = DOT_SIZE.toPx()
         val step = dot + DOT_GAP.toPx()
         val stroke = 1.dp.toPx()
+        val ring = LOOKED_FOR_RING.toPx()
         for (i in 0 until count) {
             // Left to right in every language, as the notes are played.
             val centre = Offset(dot / 2 + i * step, dot / 2)
             when {
                 i < found -> drawCircle(inTune, dot / 2, centre)
-                i == found -> drawCircle(muted, dot / 2, centre)
+                i == found -> {
+                    drawCircle(muted, dot / 2 - ring / 2, centre, style = Stroke(ring))
+                    drawCircle(muted, LOOKED_FOR_CORE.toPx(), centre)
+                }
                 else -> drawCircle(muted, dot / 2 - stroke / 2, centre, style = Stroke(stroke))
             }
         }
@@ -677,6 +686,10 @@ private const val GLOW_REACH = 0.9f
 /** Notes in a row: each dot this big, this far apart. */
 private val DOT_SIZE = 10.dp
 private val DOT_GAP = 8.dp
+
+/** The note looked for: a ring this thick around a dot this wide (its radius), a clear gap between them. */
+private val LOOKED_FOR_RING = 1.5.dp
+private val LOOKED_FOR_CORE = 2.dp
 
 /** The tally set no smaller than this to fit; in dp, so it holds at any font size. */
 private val TALLY_MIN_SIZE = 8.dp

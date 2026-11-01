@@ -55,10 +55,12 @@ import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -357,7 +359,12 @@ fun TunerScreen(
                     ScreenOffWarning(left = awake::warningLeft, onKeepOn = awake::touched, animationsOff = animationsOff)
                 }
             } else {
-                PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
+                PermissionPrompt(
+                    status = mic.status,
+                    onRequest = mic::request,
+                    onOpenSettings = mic::openSettings,
+                    practiceTab = tools.practiceTab,
+                )
                 // The navigation bar's Instrument item works without the microphone too: the panel opens
                 // over the prompt, and the tuning picked is the one the tuner listens for once allowed.
                 val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
@@ -435,6 +442,9 @@ private fun TuningPanel(
  * app's language, unlike the visible text.
  */
 object TunerTestTags {
+    /** A microphone error's message in the tuner's place (a polite live region, so TalkBack says it as it comes). */
+    const val ERROR = "tuner_error"
+
     /** The wave view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
     const val WAVE = "tuner_wave"
 
@@ -1740,6 +1750,11 @@ private fun stringName(state: TunerUiState.Listening, string: Note, speech: Note
         stringResource(R.string.tuner_spoken_string, spokenName, string.octave)
     }
 
+/**
+ * Why the tuner stopped listening and what to do, with Try again under it. A polite live region, so
+ * TalkBack says it as it comes: a call or another app taking the microphone used to stop the readings
+ * without a word (Phase 65).
+ */
 @Composable
 private fun TunerErrorMessage(error: TunerError, onRetry: () -> Unit) {
     Text(
@@ -1753,6 +1768,9 @@ private fun TunerErrorMessage(error: TunerError, onRetry: () -> Unit) {
         ),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center,
+        modifier = Modifier
+            .testTag(TunerTestTags.ERROR)
+            .semantics { liveRegion = LiveRegionMode.Polite },
     )
     TwangleButton(onClick = onRetry) { Text(stringResource(R.string.error_retry)) }
 }

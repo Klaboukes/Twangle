@@ -24,11 +24,19 @@ class PacedSpeech {
     var spoken by mutableStateOf("")
         private set
 
+    /**
+     * Whether the live region should announce [spoken] ([SpokenReadingThrottle.announced]): false for
+     * "Play a string" said again after a pluck dies away. Set the live region only while this is true.
+     */
+    var announced by mutableStateOf(true)
+        private set
+
     /** Waits as long as the throttle says, then gives TalkBack [text]; nothing if it already has it. */
     internal suspend fun offer(text: String, key: Any?) {
         val wait = throttle.delayFor(text, key, SystemClock.uptimeMillis()) ?: return
         if (wait > 0) delay(wait)
         throttle.publish(text, key, SystemClock.uptimeMillis())
+        announced = throttle.announced
         spoken = text
     }
 }

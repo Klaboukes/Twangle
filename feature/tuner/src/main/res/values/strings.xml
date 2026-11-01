@@ -11,6 +11,10 @@
     <string name="mic_permission_settings_hint">Microphone access is turned off for Twangle. Open Settings, tap Permissions, then Microphone, and choose to allow it while using the app.</string>
     <!-- The same for Android 8 to 10, where the microphone permission is a switch: how to turn it on in the phone's settings. Use your language's Android words. -->
     <string name="mic_permission_settings_hint_switch">Microphone access is turned off for Twangle. Open Settings, tap Permissions, and turn on Microphone.</string>
+    <!-- Microphone permission screen, under its button: what the player can use without the microphone. "Practice" is the name of the app's Practice tab (the metronome, chords, scales and more). -->
+    <string name="mic_permission_without_mic">The metronome and the Practice tools work without the microphone.</string>
+    <!-- The same line in a version of the app without the Practice tab: only the metronome. -->
+    <string name="mic_permission_without_mic_metronome">The metronome works without the microphone.</string>
     <!-- Microphone permission screen: the button that asks for the permission. Short. -->
     <string name="mic_permission_allow">Allow microphone</string>
     <!-- Microphone permission screen after it was refused for good: the button that opens the app's page in the phone's settings. Short. -->
@@ -18,12 +22,12 @@
 
     <!-- Errors when the microphone can't be used. -->
     <string name="error_mic_permission">Microphone access was turned off. Allow it again to keep tuning.</string>
-    <!-- Tuner: message in the tuner's place when another app holds the microphone. -->
-    <string name="error_mic_busy">Another app is using the microphone. Close it, then try again.</string>
-    <!-- Tuner: message in the tuner's place when the microphone can't be started on this phone. -->
-    <string name="error_mic_unavailable">The microphone could not be opened on this device.</string>
-    <!-- Tuner: message in the tuner's place when the microphone stops in the middle of tuning. -->
-    <string name="error_mic_stopped">The microphone stopped unexpectedly.</string>
+    <!-- Tuner: message in the tuner's place when a phone call or another app holds the microphone; TalkBack reads it as it comes. "Try again" is the button under it (error_retry): use the same words. -->
+    <string name="error_mic_busy">A call or another app is using the microphone. When it\'s free, tap Try again.</string>
+    <!-- Tuner: message in the tuner's place when the microphone can't be started on this device; TalkBack reads it as it comes. "Try again" is the button under it (error_retry): use the same words. -->
+    <string name="error_mic_unavailable">The microphone could not be opened. Close other apps that use it and tap Try again, or restart your device.</string>
+    <!-- Tuner: message in the tuner's place when the microphone stops in the middle of tuning, often for a call or another app; TalkBack reads it as it comes. "Try again" is the button under it (error_retry): use the same words. -->
+    <string name="error_mic_stopped">The microphone stopped, perhaps for a call or another app. Tap Try again to keep tuning.</string>
     <!-- Tuner: the button under a microphone error message that starts listening again. Short. -->
     <string name="error_retry">Try again</string>
 

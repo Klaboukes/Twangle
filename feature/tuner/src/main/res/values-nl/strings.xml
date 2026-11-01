@@ -4,14 +4,16 @@
     <string name="mic_permission_rationale">Zonder microfoon kan Twangle je snaren niet horen en dus niet zeggen of ze goed gestemd zijn. Het geluid verlaat je apparaat nooit.</string>
     <string name="mic_permission_settings_hint">De microfoon staat uit voor Twangle. Open Instellingen, tik op Machtigingen en dan op Microfoon, en sta hem toe terwijl je de app gebruikt.</string>
     <string name="mic_permission_settings_hint_switch">De microfoon staat uit voor Twangle. Open Instellingen, tik op Machtigingen en zet Microfoon aan.</string>
+    <string name="mic_permission_without_mic">De metronoom en de tools onder Oefenen werken zonder microfoon.</string>
+    <string name="mic_permission_without_mic_metronome">De metronoom werkt zonder microfoon.</string>
     <string name="mic_permission_allow">Microfoon toestaan</string>
     <string name="mic_permission_open_settings">Instellingen openen</string>
 
     <!-- Errors when the microphone can't be used. -->
     <string name="error_mic_permission">De microfoon is uitgezet. Sta hem weer toe om verder te stemmen.</string>
-    <string name="error_mic_busy">Een andere app gebruikt de microfoon. Sluit die app en probeer het opnieuw.</string>
-    <string name="error_mic_unavailable">De microfoon kon op dit apparaat niet worden geopend.</string>
-    <string name="error_mic_stopped">De microfoon is onverwacht gestopt.</string>
+    <string name="error_mic_busy">Een gesprek of een andere app gebruikt de microfoon. Tik op Opnieuw proberen zodra hij vrij is.</string>
+    <string name="error_mic_unavailable">De microfoon kon niet worden geopend. Sluit andere apps die hem gebruiken en tik op Opnieuw proberen, of start je apparaat opnieuw op.</string>
+    <string name="error_mic_stopped">De microfoon is gestopt, misschien voor een gesprek of een andere app. Tik op Opnieuw proberen om verder te stemmen.</string>
     <string name="error_retry">Opnieuw proberen</string>
 
     <!-- Tuner screen. -->

@@ -1191,6 +1191,87 @@ class TunerContentTest {
         assertSpokenSoon(context.getString(R.string.tuner_hint_play_string))
     }
 
+    /** What TalkBack is given as the reading: the one node with this description. */
+    private fun reading(spoken: String) = compose.onNode(hasContentDescription(spoken))
+
+    private val polite = SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
+
+    /**
+     * "Play a string" is said once; after the next pluck dies away it is only there for when the
+     * player touches it, not said again over the next pluck (Phase 65). The next reading is said as ever.
+     */
+    @Test
+    fun playAStringIsNotSaidAgainAfterEveryPluck() {
+        val hint = context.getString(R.string.tuner_hint_play_string)
+        show(listening)
+        assertSpokenSoon(hint)
+        reading(hint).assert(polite)
+        shownState.value = detected(-12.3f)
+        assertSpokenSoon("E 2, 12 cents flat")
+        reading("E 2, 12 cents flat").assert(polite)
+        shownState.value = listening
+        assertSpokenSoon(hint)
+        reading(hint).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
+        shownState.value = detected(5f)
+        assertSpokenSoon("E 2, 5 cents sharp")
+        reading("E 2, 5 cents sharp").assert(polite)
+    }
+
+    /** Another hint with no note (a string locked) is new, so it is said. */
+    @Test
+    fun aNewHintAfterAPluckIsSaid() {
+        show(listening)
+        shownState.value = detected(-12.3f)
+        assertSpokenSoon("E 2, 12 cents flat")
+        val locked = context.getString(R.string.tuner_hint_play_locked_string, "A 2")
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1)
+        assertSpokenSoon(locked)
+        reading(locked).assert(polite)
+    }
+
+    /**
+     * Turning a string past the note is said as soon as a new note would be (400 ms), not held back
+     * up to 2 s as if only the cents had moved (Phase 65): flat, sharp and in tune are each new.
+     */
+    @Test
+    fun turningPastTheNoteIsSaidSoon() {
+        show(detected(-12.3f))
+        assertSpokenSoon("E 2, 12 cents flat")
+        shownState.value = detected(9f)
+        compose.waitUntil(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 1_000) {
+            compose.onAllNodes(hasContentDescription("E 2, 9 cents sharp")).fetchSemanticsNodes().isNotEmpty()
+        }
+        reading("E 2, 9 cents sharp").assert(polite)
+    }
+
+    /**
+     * A microphone error is said as it comes (a polite live region) and says what to do: every one but
+     * the permission's (which asks to allow it) names the Try again button. In English and Dutch, the
+     * languages written by day.
+     */
+    @Test
+    fun anErrorIsSaidAsItComesAndSaysWhatToDo() = assertErrorsSayWhatToDo("en")
+
+    @Test
+    fun anErrorIsSaidAsItComesAndSaysWhatToDoInDutch() = assertErrorsSayWhatToDo("nl")
+
+    private fun assertErrorsSayWhatToDo(locale: String) {
+        val texts = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(locale)) },
+        )
+        val button = texts.getString(R.string.error_retry)
+        show(TunerUiState.Error(TunerError.entries.first()), locale = locale)
+        for (error in TunerError.entries) {
+            shownState.value = TunerUiState.Error(error)
+            compose.waitForIdle()
+            val message = compose.onNodeWithTag(TunerTestTags.ERROR).assertIsDisplayed().assert(polite)
+            if (error != TunerError.MIC_PERMISSION_MISSING) {
+                val spoken = message.fetchSemanticsNode().config[SemanticsProperties.Text].joinToString()
+                assertTrue("$locale $error: '$spoken' names '$button'", spoken.contains(button))
+            }
+        }
+    }
+
     @Test
     fun signalBarsBeforeAnyNoteSayNoNoteYet() {
         show(listening, signalBars = true)

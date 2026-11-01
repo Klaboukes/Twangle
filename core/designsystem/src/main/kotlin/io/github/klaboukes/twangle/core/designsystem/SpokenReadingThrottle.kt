@@ -11,6 +11,10 @@ import kotlin.math.max
  *   note", so a short drop-out isn't announced);
  * - within the same situation (only the cents moved) at most every [repeatMillis].
  *
+ * A text for "no note" that is the same as the last one already said ("Play a string" again after a
+ * pluck dies away) is still published, so TalkBack reads it when the player touches it, but not
+ * [announced]: hearing it after every pluck only talks over the next one (Phase 65).
+ *
  * Use: ask [delayFor] whenever the text changes, wait that long, then [publish]. Not thread-safe.
  */
 class SpokenReadingThrottle(
@@ -22,7 +26,15 @@ class SpokenReadingThrottle(
     var published: String? = null
         private set
 
+    /**
+     * Whether TalkBack should say [published] as it comes (a live region) or only hold it for when the
+     * player touches it: false for a "no note" text said already, as the reading before it ended.
+     */
+    var announced: Boolean = true
+        private set
+
     private var publishedKey: Any? = null
+    private var lastIdleText: String? = null
     private var publishedAtMillis = 0L
     private var candidateKey: Any? = NO_KEY
     private var candidateSinceMillis = 0L
@@ -44,6 +56,9 @@ class SpokenReadingThrottle(
     }
 
     fun publish(text: String, key: Any?, nowMillis: Long) {
+        // Back to "no note" from a reading, with the words already said the last time: not again.
+        announced = !(key == null && published != null && publishedKey != null && text == lastIdleText)
+        if (key == null) lastIdleText = text
         published = text
         publishedKey = key
         publishedAtMillis = nowMillis

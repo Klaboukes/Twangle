@@ -352,10 +352,10 @@ feature/settings settings_wave_look_ribbon ed5a4ba1
 feature/settings settings_wave_look_ripples 6f0d79ac
 feature/settings settings_wave_look_strobe 3a2260e6
 feature/settings settings_wave_look_title 927f543d
-feature/tuner error_mic_busy ad445526
+feature/tuner error_mic_busy 8ccd1b60
 feature/tuner error_mic_permission 2c1c3f10
-feature/tuner error_mic_stopped 48423855
-feature/tuner error_mic_unavailable a16e07d2
+feature/tuner error_mic_stopped 66053f9d
+feature/tuner error_mic_unavailable b46c308b
 feature/tuner error_retry d8b8392e
 feature/tuner instrument_banjo_5 07ef5022
 feature/tuner instrument_bass_4 ca445e86
@@ -377,6 +377,8 @@ feature/tuner mic_permission_rationale 5744b0b4
 feature/tuner mic_permission_settings_hint 10c3443f
 feature/tuner mic_permission_settings_hint_switch 097daf39
 feature/tuner mic_permission_title bfd6639c
+feature/tuner mic_permission_without_mic e068bd72
+feature/tuner mic_permission_without_mic_metronome 53629237
 feature/tuner tour_done 11a6767d
 feature/tuner tour_more_tools 9bad9141
 feature/tuner tour_next 1ff57a29

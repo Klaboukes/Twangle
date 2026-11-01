@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -18,6 +20,7 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -305,6 +308,29 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Right"))
         assertEquals("nothing moves", dots, node(EarTrainingTestTags.DOTS).getBoundsInRoot())
         assertEquals(line.top, node(EarTrainingTestTags.HEARD_LINE).getBoundsInRoot().top)
+    }
+
+    /**
+     * The note looked for is a ring with a dot in it (◉), a found one a filled disc: they differ by shape,
+     * not by colour alone (Phase 65: both were filled discs). Between the ring and its dot the background
+     * shows; a found disc is filled there.
+     */
+    @Test
+    fun theNoteLookedForIsARingNotOnlyAnotherColour() {
+        val notes = NoteQuestion(listOf(Note.of(PitchClass.E, 3), Note.of(PitchClass.G, 3), Note.of(PitchClass.A, 3)))
+        shownState.value = shownState.value.copy(notes = notes, notesInRow = 3, found = 1)
+        show()
+        val image = node(EarTrainingTestTags.DOTS).captureToImage().toPixelMap()
+        // Three 10 dp dots, 8 dp apart.
+        val perDp = image.width / (3 * 10f + 2 * 8f)
+        fun at(xDp: Float) = image[(xDp * perDp).toInt(), (5f * perDp).toInt()]
+        fun near(a: Color, b: Color) = abs(a.red - b.red) + abs(a.green - b.green) + abs(a.blue - b.blue) < 0.06f
+        val background = at(10f + 4f)
+        val lookedFor = 5f + 18f
+        assertTrue("its dot is drawn", !near(background, at(lookedFor)))
+        assertTrue("the background between its dot and its ring", near(background, at(lookedFor + 2.75f)))
+        assertTrue("its ring is drawn", !near(background, at(lookedFor + 4.25f)))
+        assertTrue("a found note is filled there", !near(background, at(5f + 2.75f)))
     }
 
     @Test

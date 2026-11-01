@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,7 +27,9 @@ import io.github.klaboukes.twangle.feature.tuner.R
 /**
  * Explains why the tuner needs the microphone and offers the one action that can fix it: ask again,
  * or open Settings once Android won't show the dialog any more. Meant for every status except
- * [MicPermissionStatus.GRANTED].
+ * [MicPermissionStatus.GRANTED]. The title is a heading for TalkBack; a line under the button says what
+ * works without the microphone: the metronome, and with [practiceTab] (the Practice tab's switch,
+ * `ToolSwitches.practiceTab`) the Practice tools, so a player who says no knows the app still has a use.
  */
 @Composable
 fun PermissionPrompt(
@@ -33,6 +37,7 @@ fun PermissionPrompt(
     onRequest: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    practiceTab: Boolean = true,
 ) {
     val permanentlyDenied = status == MicPermissionStatus.PERMANENTLY_DENIED
     Column(
@@ -53,6 +58,7 @@ fun PermissionPrompt(
             text = stringResource(R.string.mic_permission_title),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
         Text(
             text = stringResource(
@@ -73,6 +79,14 @@ fun PermissionPrompt(
                 ),
             )
         }
+        Text(
+            text = stringResource(
+                if (practiceTab) R.string.mic_permission_without_mic else R.string.mic_permission_without_mic_metronome,
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

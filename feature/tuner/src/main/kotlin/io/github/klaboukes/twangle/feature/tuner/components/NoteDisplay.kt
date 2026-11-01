@@ -150,7 +150,8 @@ data class NoteReadout(
  * so the pacing carries over from a note to "Play a string". Note names are spoken through
  * [rememberNoteNameSpeech] ("C sharp 4", in Dutch "cis 4"); without a readout it says [spokenHint].
  * The live region is a layer of its own under the block, so nothing changing inside the block can
- * make TalkBack read it again early.
+ * make TalkBack read it again early. "Play a string" coming back as a pluck dies away is not a live
+ * region the second time ([PacedSpeech.announced]): TalkBack reads it only when the player touches it.
  */
 @Composable
 fun NoteDisplay(
@@ -240,7 +241,7 @@ fun NoteDisplay(
     val pillText by animateColorAsState(pillTextTarget, tween(PILL_TEXT_MS), label = "pillText")
     val spoken = pacedSpeech(
         text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
-        key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
+        key = readout?.let(::spokenReadingKey),
         speech = speech,
     )
     val density = LocalDensity.current
@@ -289,7 +290,8 @@ fun NoteDisplay(
                 .matchParentSize()
                 .semantics {
                     contentDescription = spoken
-                    liveRegion = LiveRegionMode.Polite
+                    // Not for "Play a string" said again after a pluck dies away (PacedSpeech.announced).
+                    if (speech.announced) liveRegion = LiveRegionMode.Polite
                 },
         )
         val noteLine = @Composable { letterSize: Dp ->
@@ -645,7 +647,7 @@ fun FocusNote(
     val noteColor by animateInTuneColor(readout?.inTune == true, colors.onSurface, "focusNoteColor")
     val spoken = pacedSpeech(
         text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
-        key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
+        key = readout?.let(::spokenReadingKey),
         speech = speech,
     )
     val density = LocalDensity.current
@@ -656,7 +658,8 @@ fun FocusNote(
                 .matchParentSize()
                 .semantics {
                     contentDescription = spoken
-                    liveRegion = LiveRegionMode.Polite
+                    // Not for "Play a string" said again after a pluck dies away (PacedSpeech.announced).
+                    if (speech.announced) liveRegion = LiveRegionMode.Polite
                 },
         )
         Column(Modifier.widthIn(max = FOCUS_NOTE_MAX_WIDTH), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -876,6 +879,23 @@ private val TunerHint.spokenLabel: Int
         TunerHint.TUNE_DOWN -> R.string.tuner_spoken_tune_down
         TunerHint.IN_TUNE -> error("in tune has no direction hint")
     }
+
+/**
+ * The situation a spoken reading belongs to, for its pacing ([PacedSpeech]): the note and which side
+ * of it the string is, flat, sharp or in tune. A new one is said after 400 ms; only the cents moving
+ * at most every 2 s. With the side in it, turning a string past the note ("12 cents flat" to "5 cents
+ * sharp") is said as soon as a new note would be, not up to 2 s late (Phase 65).
+ */
+internal fun spokenReadingKey(readout: NoteReadout): String {
+    val rounded = readout.cents.roundToInt()
+    val side = when {
+        readout.inTune -> "in tune"
+        rounded < 0 -> "flat"
+        rounded > 0 -> "sharp"
+        else -> "on the note"
+    }
+    return "${readout.noteName}${readout.octave}/$side"
+}
 
 /**
  * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, also in the
