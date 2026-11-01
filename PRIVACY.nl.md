@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 28 oktober 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 1 november 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -35,7 +35,7 @@ Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan al
 - **Stemmen:** het instrument en de stemming (en hoeveel lager je die hebt gezet), stemmingen die je zelf hebt gemaakt, snaar- of chromatische modus, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
 - **Uiterlijk:** de stijl, licht of donker, kleuren van je achtergrond, het uiterlijk van de meter en het effect bij gestemd, de weergave (naald of golf), het uiterlijk van de golf, of de focusmodus aan staat, of de signaalstreepjes te zien zijn, en de taal van de app als je die hebt gekozen.
 - **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en de hint om hoger of lager te stemmen.
-- **Oefenen:** de tool die je het laatst gebruikte; het tempo, de maatsoort en het klikgeluid van de metronoom en of hij trilt op de tel; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.
+- **Oefenen:** de tool die je het laatst gebruikte; het tempo, de maatsoort en het klikgeluid van de metronoom, de tikken tussen de tellen en of hij trilt op de tel; het begintempo, het doel, de stap en het aantal maten per stap van de tempotrainer, en of die aan staat; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.
 - Of je de rondleiding al hebt gezien, zodat die niet opnieuw verschijnt, en of je ooit nee hebt gezegd tegen de microfoon, zodat Twangle weet of Android het je nog kan vragen.
 - Wanneer je Twangle voor het eerst opende, en of het beoordelingsvenster van Google Play al is gevraagd, zodat het hooguit één keer komt en nooit op de eerste dag.
 
