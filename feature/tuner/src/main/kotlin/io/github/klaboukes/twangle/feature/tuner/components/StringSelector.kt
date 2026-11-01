@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -87,6 +88,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
+import io.github.klaboukes.twangle.feature.tuner.TunedStrings
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 
 /**
@@ -113,6 +115,11 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
  * badge, and TalkBack says it after the string's name; [checking] makes a tap's TalkBack action
  * "Check A 2" instead of locking.
  *
+ * The strings in [tuned] (in tune since the tuner opened, Phase 65) carry the same badge as a string
+ * whose saddle is fine: a check mark on a disc in the "in tune" colour, growing in once, outside the
+ * button's box so nothing moves; TalkBack hears "Tuned" as the button's state ("Locked, tuned" on the
+ * locked string). [tuned] must be of this [tuning]. The [small] chips leave it out.
+ *
  * [small] draws a narrow row of small chips, for the compact landscape layout: it only shows which
  * string is the target. It takes no more width than it needs and is hidden from TalkBack, since the
  * note's reading already names the string.
@@ -131,6 +138,7 @@ fun StringSelector(
     soundingString: Int? = null,
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
+    tuned: TunedStrings? = null,
 ) {
     val checkLabel = stringResource(R.string.tuner_intonation_check_string)
     val markLabels = StringMark.entries.associateWith { spokenMark(it) }
@@ -140,6 +148,8 @@ fun StringSelector(
     val lockedState = stringResource(R.string.tuner_string_locked)
     val soundingState = stringResource(R.string.tuner_string_sounding)
     val lockedSoundingState = stringResource(R.string.tuner_string_locked_sounding)
+    val tunedState = stringResource(R.string.tuner_string_tuned)
+    val lockedTunedState = stringResource(R.string.tuner_string_locked_tuned)
     val playLabel = stringResource(R.string.tuner_string_play)
     val animationsOff = soundingString != null && rememberAnimationsOff()
     val speech = rememberNoteNameSpeech()
@@ -169,6 +179,7 @@ fun StringSelector(
                     val spokenName = spokenString.format(speech.name(name), note.octave)
                     val mark = marks?.getOrNull(index)
                     val octaveString = tuning.hasOctaveString(index)
+                    val ticked = !small && tuned != null && index in tuned
                     StringChip(
                         name = name,
                         spokenName = if (octaveString) spokenOctaveCourse.format(spokenName) else spokenName,
@@ -188,12 +199,15 @@ fun StringSelector(
                         longClickLabel = playLabel.format(spokenName),
                         state = when {
                             locked && sounding -> lockedSoundingState
+                            locked && ticked -> lockedTunedState
                             locked -> lockedState
                             sounding -> soundingState
                             mark != null -> markLabels.getValue(mark)
+                            ticked -> tunedState
                             else -> null
                         },
                         mark = mark,
+                        tuned = ticked,
                         sounding = sounding,
                         animationsOff = animationsOff,
                         index = index,
@@ -265,6 +279,7 @@ private fun StringChip(
     longClickLabel: String,
     state: String?,
     mark: StringMark?,
+    tuned: Boolean,
     sounding: Boolean,
     animationsOff: Boolean,
     index: Int,
@@ -297,6 +312,9 @@ private fun StringChip(
     val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
     // The press effect: the whole button sinks, and the light lies over its fill, under its name.
     val press = remember { MutableInteractionSource() }
+    // A string ticked off as tuned grows its check in once, calmly; one already ticked shows it at once.
+    val tick = animateFloatAsState(if (tuned) 1f else 0f, tween(TICK_GROW_MS, easing = FastOutSlowInEasing), label = "tick")
+    val badge = mark ?: StringMark.FINE.takeIf { tuned }
     Box(
         modifier = modifier
             .then(
@@ -315,11 +333,12 @@ private fun StringChip(
             .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
             // Over the button and outside its clip, so the row doesn't move.
             .stringMarkBadge(
-                mark,
+                badge,
                 ringGap,
-                fill = if (mark == StringMark.FINE) inTuneColor() else colors.primary,
-                on = if (mark == StringMark.FINE) onInTuneColor() else colors.onPrimary,
+                fill = if (badge == StringMark.FINE) inTuneColor() else colors.primary,
+                on = if (badge == StringMark.FINE) onInTuneColor() else colors.onPrimary,
                 background = colors.background,
+                scale = if (mark != null) ({ 1f }) else ({ tick.value }),
             )
             .pressSink(press)
             .clip(shape)
@@ -515,6 +534,9 @@ private val KEY_LABEL_PADDING = 6.dp
 /** Futuristic's tiles: an outline in the accent at 55 %, and a glow in it at 35 % round the picked one (the mock-up's neon). */
 private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
+
+/** How long a string's tick takes to grow in when it is ticked off as tuned. */
+private const val TICK_GROW_MS = 400
 
 /** The extra gap after a banjo's short fifth string (option A of docs/design/phase57-preview.html), and in the small row. */
 private val SHORT_STRING_GAP = 12.dp

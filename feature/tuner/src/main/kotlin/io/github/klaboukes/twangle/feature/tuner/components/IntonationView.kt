@@ -821,19 +821,30 @@ private fun toolIcon(tool: TunerTool): Int = when (tool) {
 }
 
 /**
- * A small badge on a string button for its result in the 12th-fret check ([StringMark]): a disc at the
- * button's top end corner, drawn over it and outside its box, so the row doesn't move.
+ * A small badge on a string button for its result in the 12th-fret check ([StringMark]), or its tick
+ * as tuned: a disc at the button's top end corner, drawn over it and outside its box, so the row
+ * doesn't move. [scale] (0..1, read while drawing) grows it in.
  */
-internal fun Modifier.stringMarkBadge(mark: StringMark?, inset: Dp, fill: Color, on: Color, background: Color): Modifier =
+internal fun Modifier.stringMarkBadge(
+    mark: StringMark?,
+    inset: Dp,
+    fill: Color,
+    on: Color,
+    background: Color,
+    scale: () -> Float = { 1f },
+): Modifier =
     if (mark == null) {
         this
     } else {
         drawWithContent {
             drawContent()
-            val radius = BADGE_RADIUS.toPx()
-            val centre = Offset(size.width - inset.toPx() - radius * 0.35f, inset.toPx() + radius * 0.35f)
+            val grown = scale()
+            if (grown <= 0f) return@drawWithContent
+            val full = BADGE_RADIUS.toPx()
+            val radius = full * grown
+            val centre = Offset(size.width - inset.toPx() - full * 0.35f, inset.toPx() + full * 0.35f)
             // A ring of the background round it, so it reads apart from the button under it.
-            drawCircle(background, radius + 1.5.dp.toPx(), centre)
+            drawCircle(background, radius + 1.5.dp.toPx() * grown, centre)
             drawMark(mark, centre, radius, fill, on)
         }
     }

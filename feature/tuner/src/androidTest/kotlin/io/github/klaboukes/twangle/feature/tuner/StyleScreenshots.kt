@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Pictures of the whole tuner screen in each style, light and dark, for the owner: the style's
- * background behind the A string in tune, on a 393 × 825 dp phone (the Xiaomi 12X inside its bars),
+ * background behind the A string in tune (the low E and the A ticked off as tuned), on a 393 × 825 dp phone (the Xiaomi 12X inside its bars),
  * so a change to a background or an in-tune colour can be looked at in every style at once.
  *
  * Opt-in, as it only makes files: without the instrumentation argument `styleScreenshots=true` it has
@@ -70,6 +70,7 @@ class StyleScreenshots(private val style: VisualStyle) {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize(),
                         animationsOff = true,
+                        tunedStrings = TunedStrings(Tunings.STANDARD, 0b11L),
                     )
                 }
             }

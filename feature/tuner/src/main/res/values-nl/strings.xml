@@ -89,6 +89,8 @@
     <string name="tuner_string_stop_tone">Toon stoppen</string>
     <string name="tuner_string_sounding">Klinkt</string>
     <string name="tuner_string_locked_sounding">Vastgezet, klinkt</string>
+    <string name="tuner_string_tuned">Gestemd</string>
+    <string name="tuner_string_locked_tuned">Vastgezet, gestemd</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- In Dutch the unit stays singular after a number: "12 cent". -->
     <string name="tuner_cents_zero">0 cent</string>

@@ -785,4 +785,96 @@ class TunerViewModelTest {
         assertTrue(tones.played.isEmpty())
         assertNull(vm.soundingString.value)
     }
+
+    // --- Strings ticked off as they're tuned (Phase 65) -------------------------------------------
+
+    @Test
+    fun `a string held in tune is ticked off`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        runCurrent()
+        assertNull("nothing ticked before a note", vm.tunedStrings.value)
+
+        advanceTimeBy(1_000)
+        assertEquals(TunedStrings(Tunings.STANDARD, 0b10L), vm.tunedStrings.value)
+    }
+
+    @Test
+    fun `a note sliding through the string ticks nothing`() = runTest(dispatcher) {
+        // From 100 to 120 Hz in one second: through A2's in-tune window (±5 cents) in about 30 ms, then silence.
+        val glide = FloatArray(48_000)
+        var phase = 0.0
+        for (i in glide.indices) {
+            phase += (100.0 + 20.0 * i / glide.size) / 48_000
+            glide[i] = (2.0 * (phase - kotlin.math.floor(phase)) - 1.0).toFloat() * 0.5f
+        }
+        val vm = viewModel(FakeAudioRecorder(glide + FloatArray(48_000)))
+        vm.onPermissionChanged(true)
+        val seen = mutableListOf<TunerUiState>()
+        backgroundScope.launch { vm.state.collect { seen += it } }
+
+        advanceTimeBy(2_000)
+        assertTrue("the needle passed 0", seen.any { it is TunerUiState.Detected && it.targetString == 1 && abs(it.cents) < 5f })
+        assertFalse(seen.any { it is TunerUiState.Detected && it.inTune })
+        assertNull(vm.tunedStrings.value)
+    }
+
+    @Test
+    fun `chromatic mode ticks nothing`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.setMode(TunerMode.CHROMATIC)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+
+        advanceTimeBy(1_000)
+        assertTrue(vm.detected().inTune)
+        assertNull(vm.tunedStrings.value)
+    }
+
+    @Test
+    fun `a new tuning or A4 clears the ticks`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(1_000)
+        assertEquals(TunedStrings(Tunings.STANDARD, 0b10L), vm.tunedStrings.value)
+
+        // Open G has no A string: the A2 heard is no string's note in tune.
+        vm.setTuning(Tunings.OPEN_G)
+        advanceTimeBy(1_000)
+        assertNull(vm.tunedStrings.value)
+
+        vm.setTuning(Tunings.STANDARD)
+        advanceTimeBy(1_000)
+        assertEquals(TunedStrings(Tunings.STANDARD, 0b10L), vm.tunedStrings.value)
+
+        // 110 Hz is 7.85 cents flat of A2 once A4 is 442 Hz.
+        settings.setA4(442f)
+        advanceTimeBy(1_000)
+        assertNull(vm.tunedStrings.value)
+    }
+
+    @Test
+    fun `the ticks stay while a tool is on, and go when the tuner is left`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        val ui = launch { vm.state.collect {} }
+        advanceTimeBy(1_000)
+        val ticked = TunedStrings(Tunings.STANDARD, 0b10L)
+        assertEquals(ticked, vm.tunedStrings.value)
+
+        vm.setStrumCheck(true)
+        advanceTimeBy(500)
+        vm.setStrumCheck(false)
+        advanceTimeBy(100)
+        assertEquals("kept for the tuner, which shows them again", ticked, vm.tunedStrings.value)
+
+        ui.cancel()
+        advanceTimeBy(4_900)
+        assertEquals("kept for quick returns, e.g. rotation", ticked, vm.tunedStrings.value)
+        advanceTimeBy(200)
+        runCurrent()
+        assertNull("gone once the tuner stopped listening", vm.tunedStrings.value)
+    }
 }

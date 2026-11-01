@@ -250,6 +250,7 @@ fun TunerScreen(
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val focusMode by viewModel.focusMode.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
+    val tunedStrings by viewModel.tunedStrings.collectAsStateWithLifecycle()
     val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
     val chordName by viewModel.chordName.collectAsStateWithLifecycle()
@@ -321,6 +322,7 @@ fun TunerScreen(
                     onStringClick = viewModel::toggleString,
                     onStringLongClick = viewModel::playString,
                     soundingString = soundingString,
+                    tunedStrings = tunedStrings,
                     onRetry = viewModel::retry,
                     display = display,
                     waveLook = waveLook,
@@ -603,7 +605,9 @@ private fun KeepScreenOn() {
  * asking), and [onNewTuning], when given, adds "New tuning" to the panel's list; [onLoweredByChange],
  * when given, adds its "Lower by" row, which lowers the picked tuning. A long-press on a string calls [onStringLongClick] (play its
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
- * sounds a tap on any string calls [onStringClick], which stops the tone. With [onStrumCheckChange] a
+ * sounds a tap on any string calls [onStringClick], which stops the tone. [tunedStrings] are the strings
+ * that have been in tune since the tuner opened, ticked off on their buttons in the plain tuner (not
+ * while a tool is on, nor in the compact layout's small row). With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
  * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
  * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
@@ -638,6 +642,7 @@ fun TunerContent(
     modifier: Modifier = Modifier,
     onStringLongClick: ((Int) -> Unit)? = null,
     soundingString: Int? = null,
+    tunedStrings: TunedStrings? = null,
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
     reception: () -> Float? = { (state as? TunerUiState.Detected)?.reception },
     display: TunerDisplay = TunerDisplay.NEEDLE,
@@ -713,7 +718,7 @@ fun TunerContent(
         )
     }
     val guitarSlot = @Composable {
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString)
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString, tunedStrings)
         val strum = onStrumCheckChange?.let { onStrum ->
             // Only tools whose switch the screen was given; the strum check's alone is its own switch, as in v1.0.
             val offered = tunerTools.filter {
@@ -1401,10 +1406,16 @@ private fun GuitarSlotFor(
         null
     }
     val controls = when (state) {
-        is TunerUiState.Detected -> GuitarControlsState(state.tuning, state.notation, state.targetString, state.lockedString, state.inTune)
+        // The strings ticked off only while they belong to the tuning shown (a new one starts afresh).
+        is TunerUiState.Detected -> GuitarControlsState(
+            state.tuning, state.notation, state.targetString, state.lockedString, state.inTune,
+            tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
+        )
         // A locked string is the target before anything is played, so it stays highlighted.
-        is TunerUiState.Listening ->
-            GuitarControlsState(state.tuning, state.notation, state.lockedString, state.lockedString, inTune = false)
+        is TunerUiState.Listening -> GuitarControlsState(
+            state.tuning, state.notation, state.lockedString, state.lockedString, inTune = false,
+            tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
+        )
         // Strum check reads every string at once, the chord name every note: none is the target.
         is TunerUiState.StrumCheck ->
             GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, inTune = false)
@@ -1431,6 +1442,7 @@ private fun GuitarSlotFor(
                 names = names,
                 marks = controls.marks,
                 checking = controls.checking,
+                tuned = controls.tuned,
                 // Only where it shows: hidden in chromatic mode, it isn't laid out, so its old place mustn't count.
                 inTour = mode == TunerMode.AUTO,
             )
@@ -1450,16 +1462,19 @@ private data class GuitarControlsState(
     val inTune: Boolean,
     val marks: List<StringMark?>? = null,
     val checking: Boolean = false,
+    val tuned: TunedStrings? = null,
 )
 
 /**
  * What the string buttons do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
- * ([onLongClick]: play the string's note, none without it), and which string's tone is [sounding].
+ * ([onLongClick]: play the string's note, none without it), which string's tone is [sounding], and
+ * which strings have been in tune since the tuner opened ([tuned], ticked off).
  */
 private data class StringActions(
     val onClick: (Int) -> Unit,
     val onLongClick: ((Int) -> Unit)?,
     val sounding: Int?,
+    val tuned: TunedStrings? = null,
 )
 
 /** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
@@ -1523,6 +1538,7 @@ private fun GuitarControls(
     names: TuningNames? = null,
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
+    tuned: TunedStrings? = null,
 ) {
     val strings = @Composable {
         StringSelector(
@@ -1537,6 +1553,7 @@ private fun GuitarControls(
             modifier = if (inTour) Modifier.tourTarget(TourPart.STRINGS) else Modifier,
             marks = marks,
             checking = checking,
+            tuned = tuned,
         )
     }
     val toggle = @Composable {

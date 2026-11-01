@@ -128,6 +128,9 @@ class TunerContentTest {
     /** The string whose tone [show] says is sounding; set it while the tuner is shown. */
     private val shownSounding = mutableStateOf<Int?>(null)
 
+    /** The strings [show] says have been in tune since the tuner opened; set it while the tuner is shown. */
+    private val shownTuned = mutableStateOf<TunedStrings?>(null)
+
     /** The mode [show] passes on; set it to switch modes while the tuner is shown. */
     private val shownMode = mutableStateOf(TunerMode.AUTO)
 
@@ -177,6 +180,7 @@ class TunerContentTest {
         shownMeterLook.value = MeterLook.DEFAULT
         shownSignalBars.value = signalBars
         shownSounding.value = null
+        shownTuned.value = null
         shownPickerOpen.value = false
         shownSize.value = size
         compose.setContent {
@@ -199,6 +203,7 @@ class TunerContentTest {
                         onStringClick = { stringClicks += it },
                         onStringLongClick = { stringLongClicks += it },
                         soundingString = shownSounding.value,
+                        tunedStrings = shownTuned.value,
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         display = display,
@@ -828,6 +833,61 @@ class TunerContentTest {
         assertEquals(before, labels.map { stringChip(it).getBoundsInRoot() })
         assertEquals(note, compose.onNodeWithText("E").getBoundsInRoot())
     }
+
+    /** Phase 65: a string in tune since the tuner opened carries a check, TalkBack hears "Tuned", and nothing moves. */
+    @Test
+    fun tunedStringsAreTickedOffWithoutMovingAnything() {
+        show(detected(-12.3f, targetString = 0))
+        val labels = listOf("E2", "A2", "D3", "G3", "B3", "E4")
+        val before = labels.map { stringChip(it).getBoundsInRoot() }
+        val plain = stringChip("A2").captureToImage().toPixelMap()
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b110L)
+        compose.waitForIdle()
+
+        assertEquals(before, labels.map { stringChip(it).getBoundsInRoot() })
+        val tuned = context.getString(R.string.tuner_string_tuned)
+        for (name in listOf("A 2", "D 3")) {
+            compose.onNode(hasContentDescription(name)).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, tuned))
+        }
+        compose.onNode(hasContentDescription("E 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
+        val ticked = stringChip("A2").captureToImage().toPixelMap()
+        assertTrue("the check is drawn on the button", differs(plain, ticked))
+    }
+
+    @Test
+    fun aLockedStringTunedSaysBoth() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1))
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b11L)
+        compose.waitForIdle()
+        compose.onNode(hasContentDescription("A 2"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_string_locked_tuned)))
+    }
+
+    @Test
+    fun dutchTalkBackHearsATunedStringAsGestemd() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl")
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b1L)
+        compose.waitForIdle()
+        compose.onNode(hasContentDescription("e 2"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, dutch.getString(R.string.tuner_string_tuned)))
+    }
+
+    @Test
+    fun ticksShowOnlyForTheirOwnTuningAndNotUnderATool() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        shownTuned.value = TunedStrings(Tunings.DROP_D, 0b10L)
+        compose.waitForIdle()
+        compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
+
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b10L)
+        shownState.value = TunerUiState.StrumCheck(Tunings.STANDARD)
+        compose.waitForIdle()
+        compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
+    }
+
+    private fun differs(a: PixelMap, b: PixelMap): Boolean =
+        a.width != b.width || a.height != b.height ||
+            (0 until a.width).any { x -> (0 until a.height).any { y -> a[x, y] != b[x, y] } }
 
     @Test
     fun aLockedStringIsHighlightedAndNamedInTheHint() {

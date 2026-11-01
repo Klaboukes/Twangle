@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -81,6 +82,39 @@ class RatingMomentTest {
             cents = 0f, targetString = 5, inTune = true,
         )
         assertFalse("the other tuning's five strings don't carry over", all.update(dropD))
+    }
+
+    @Test
+    fun `keeps the strings in tune so far, the ones ticked off on their buttons`() {
+        val all = AllStringsInTune()
+        assertEquals(0L, all.tuned)
+        all.update(detected(1))
+        all.update(detected(4, inTune = false))
+        all.update(detected(3, mode = TunerMode.CHROMATIC))
+        all.update(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        assertEquals("only the A string, in tune in guitar mode", 0b10L, all.tuned)
+        assertEquals(Tunings.STANDARD, all.tuning)
+        all.update(detected(1, inTune = false))
+        assertEquals("a string off again stays ticked: it has been in tune", 0b10L, all.tuned)
+        val ticks = TunedStrings(Tunings.STANDARD, all.tuned)
+        assertTrue(1 in ticks)
+        assertFalse(0 in ticks)
+        assertFalse(-1 in ticks)
+        assertFalse(64 in ticks)
+    }
+
+    @Test
+    fun `a new tuning or A4, even while nothing is heard, starts the ticks afresh`() {
+        val all = AllStringsInTune()
+        all.update(detected(1))
+        all.update(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
+        assertEquals(0L, all.tuned)
+        assertEquals(Tunings.DROP_D, all.tuning)
+
+        all.update(detected(2))
+        assertEquals(0b100L, all.tuned)
+        all.update(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, a4Hz = 442f))
+        assertEquals("tuned to the old A4, not the new", 0L, all.tuned)
     }
 
     // --- The ViewModel ----------------------------------------------------------------------------

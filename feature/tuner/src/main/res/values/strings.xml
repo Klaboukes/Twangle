@@ -169,6 +169,10 @@
     <string name="tuner_string_sounding">Playing</string>
     <!-- TalkBack: the state of the locked string button while its reference tone sounds. -->
     <string name="tuner_string_locked_sounding">Locked, playing</string>
+    <!-- TalkBack: the state of a string button whose string has been in tune since the tuner opened (it shows a small check mark), so the player knows it is done. -->
+    <string name="tuner_string_tuned">Tuned</string>
+    <!-- TalkBack: the state of the locked string button when that string has also been in tune since the tuner opened. -->
+    <string name="tuner_string_locked_tuned">Locked, tuned</string>
     <!-- Tuner: the note's frequency in small type under the note. %1$.1f is the frequency in hertz with one decimal, e.g. "110.0". -->
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Tuner: the cents pill under the note when it is exactly on pitch. -->

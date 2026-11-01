@@ -75,6 +75,9 @@ import kotlin.math.ceil
  * [RatingMoment]): every string of the tuning has been in tune in one go, the strings have fallen quiet
  * for [RatingMoment.QUIET_MILLIS], it is past the first day (by [clock]) and it was never asked before.
  * The screen then asks Google ([RatingWindow]) and calls [onRatingAsked].
+ *
+ * [tunedStrings] are the strings that have been in tune since listening started, ticked off on their
+ * buttons (Phase 65); the same [AllStringsInTune] keeps them.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -298,6 +301,17 @@ class TunerViewModel(
 
     /** Google's rating window may be asked for now (see the class comment); false again after [onRatingAsked]. */
     val ratingDue: StateFlow<Boolean> = ratingDueNow
+
+    private val tunedNow = MutableStateFlow<TunedStrings?>(null)
+
+    /**
+     * The strings that have been in tune since the tuner started listening (Phase 65), ticked off on
+     * their buttons; null while none has. Kept by [AllStringsInTune] on the DSP thread, so it follows
+     * the tuner's own in-tune rule, in guitar mode only; a new tuning or A4 starts it afresh, and it
+     * goes when listening stops (the tuner left for more than 5 s, the app in the background, the
+     * microphone lost). The screen shows it only for the [TunedStrings.tuning] it shows.
+     */
+    val tunedStrings: StateFlow<TunedStrings?> = tunedNow
 
     /** The wait for the strings to fall quiet after the last one came in tune; touched only on the DSP thread. */
     private var ratingWait: Job? = null
@@ -566,12 +580,12 @@ class TunerViewModel(
 
     /**
      * Follows every state of a listening session on the DSP thread, for Google's rating window: once
-     * [allInTune] completes the tuning while the window may be asked for ([armed] true, returned), the
+     * [AllStringsInTune] has [completed] the tuning while the window may be asked for ([armed] true, returned), the
      * first stretch of [RatingMoment.QUIET_MILLIS] without a note makes [ratingDue] true. A note heard
      * meanwhile starts the wait again, so the window never comes mid-tuning. Allocates nothing per state.
      */
-    private fun followRatingMoment(shown: TunerUiState, allInTune: AllStringsInTune, armed: Boolean): Boolean {
-        val nowArmed = armed || (allInTune.update(shown) && mayAskRating())
+    private fun followRatingMoment(shown: TunerUiState, completed: Boolean, armed: Boolean): Boolean {
+        val nowArmed = armed || (completed && mayAskRating())
         if (!nowArmed) return false
         if (shown is TunerUiState.Listening) {
             if (ratingWait?.isActive != true) {
@@ -585,6 +599,17 @@ class TunerViewModel(
             ratingWait = null
         }
         return true
+    }
+
+    /** Publishes [allInTune]'s strings in tune as [tunedStrings], only when they changed (a few times a session). */
+    private fun publishTuned(allInTune: AllStringsInTune) {
+        val mask = allInTune.tuned
+        val shown = tunedNow.value
+        val tuning = allInTune.tuning
+        when {
+            mask == 0L || tuning == null -> if (shown != null) tunedNow.value = null
+            shown == null || shown.mask != mask || shown.tuning != tuning -> tunedNow.value = TunedStrings(tuning, mask)
+        }
     }
 
     /** Opens the microphone again after an error. */
@@ -608,7 +633,7 @@ class TunerViewModel(
         val strumInterpreter = StrumCheckInterpreter()
         val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val chordInterpreter = ChordNameInterpreter()
-        // Google's rating window (Phase 50): this session's strings in tune, and whether the set is complete.
+        // This session's strings in tune: ticked off on their buttons, and Google's rating window (Phase 50) once the set is complete.
         val allInTune = AllStringsInTune()
         var ratingArmed = false
         val initial = options.filterNotNull().first()
@@ -702,13 +727,19 @@ class TunerViewModel(
                     )
                 }
                 state
-            }.onEach { ratingArmed = followRatingMoment(it, allInTune, ratingArmed) },
+            }.onEach {
+                val completed = allInTune.update(it)
+                publishTuned(allInTune)
+                ratingArmed = followRatingMoment(it, completed, ratingArmed)
+            },
         )
     }
         // Leaving the tuner ends the wait: the window comes only right after the tuning, never on coming back.
+        // The strings ticked off go too: they say what was tuned since the tuner opened.
         .onCompletion {
             ratingWait?.cancel()
             ratingWait = null
+            tunedNow.value = null
         }
         // Most frames look the same on screen as the last state sent: an equal Listening state in
         // silence, or a note whose readout and needle moved less than the screen shows. Dropping
