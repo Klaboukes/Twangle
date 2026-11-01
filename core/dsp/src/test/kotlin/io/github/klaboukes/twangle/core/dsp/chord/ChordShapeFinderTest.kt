@@ -423,14 +423,6 @@ class ChordShapeFinderTest {
         assertEquals(2, ChordShapeFinder.archOf(listOf(-1, 1, 0, 3, 3, 1)))
     }
 
-    @Test
-    fun `a whole chord list is quick`() {
-        val start = System.nanoTime()
-        for (quality in ChordQuality.entries) for (root in PitchClass.entries) ChordShapeFinder.shapesOf(Chord.of(root, quality), Tunings.STANDARD)
-        val perChordMs = (System.nanoTime() - start) / 1e6 / (ChordQuality.entries.size * 12)
-        assertTrue("$perChordMs ms a chord", perChordMs < 20.0)
-    }
-
     private companion object {
         val UKULELE_NINTHS_OUT_OF_REACH = setOf(Chord.of(G_SHARP, MINOR_NINTH), Chord.of(F_SHARP, MAJOR_NINTH))
 

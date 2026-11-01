@@ -127,8 +127,9 @@ data class NoteReadout(
  * drawn in the "in tune" colour, and the wave holds still on the note. Without a [readout] [hint]
  * ("Play a string") stands in the note's slot, in the note's face but smaller ([HintInNoteSlot]), so it
  * reads right under the meter, and the pill and the wave rest empty under it; without a hint the slot
- * shows a faint ♪. [reception] (read while drawing) makes the wave crisp or
- * faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
+ * shows a faint ♪. The wave moves by [waveCents], the exact cents read while drawing (NaN without a
+ * note; by default the readout's, which the tuner rounds to what the text shows). [reception] (read
+ * while drawing, NaN without a note) makes the wave crisp or faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
  * music ([musicText]).
  *
  * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
@@ -165,7 +166,8 @@ fun NoteDisplay(
     maxHeight: Dp = Dp.Unspecified,
     waveLook: WaveLook = WaveLook.DEFAULT,
     showTuneHint: Boolean = false,
-    reception: () -> Float? = { null },
+    waveCents: LiveFloat = LiveFloat { if (readout != null) readout.cents else Float.NaN },
+    reception: LiveFloat = NO_LIVE_FLOAT,
     tip: ReceptionTip? = null,
     speech: PacedSpeech = rememberPacedSpeech(),
 ) {
@@ -366,7 +368,8 @@ fun NoteDisplay(
             val pictureSize =Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
             when (display) {
                 TunerDisplay.WAVE -> WaveView(
-                    cents = readout?.cents,
+                    // Without a note the wave rests, whatever the exact cents still say.
+                    cents = if (readout != null) waveCents else NO_LIVE_FLOAT,
                     inTune = inTune,
                     modifier = pictureSize.testTag(TunerTestTags.WAVE),
                     look = waveLook,

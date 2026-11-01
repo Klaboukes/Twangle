@@ -74,6 +74,7 @@
     <string name="metronome_pick_double">Dubbel</string>
     <string name="metronome_no_beat">Geen duidelijk ritme gehoord</string>
     <string name="metronome_try_again">Opnieuw</string>
+    <string name="metronome_mic_busy">Microfoon is bezet</string>
     <string name="metronome_mic_off">Microfoon staat uit</string>
     <string name="metronome_open_settings">Instellingen openen</string>
 </resources>

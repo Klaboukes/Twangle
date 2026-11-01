@@ -4,7 +4,7 @@ package io.github.klaboukes.twangle.feature.tuner
  * How many of the [MAX_BARS] signal bars light up for a reception figure (`ReceptionTracker`, 0..1),
  * like a phone's signal bars. A bar lights at its threshold in [THRESHOLDS] and only goes out again
  * once the figure falls [MARGIN] below it, so a figure hovering at a threshold can't make a bar
- * flicker (the figure itself is already smoothed). Without a note ([update] with null) the last
+ * flicker (the figure itself is already smoothed). Without a note ([update] with NaN) the last
  * count stays, shown dimmed ([hasNote] false), so the bars don't empty and refill between plucks.
  * Starts at 0. Allocation-free and not thread-safe.
  */
@@ -17,10 +17,10 @@ class SignalBars {
     var hasNote: Boolean = false
         private set
 
-    /** Takes the current [reception] (null without a note) and returns [bars]. */
-    fun update(reception: Float?): Int {
-        hasNote = reception != null
-        if (reception == null) return bars
+    /** Takes the current [reception] (NaN without a note) and returns [bars]. */
+    fun update(reception: Float): Int {
+        hasNote = !reception.isNaN()
+        if (!hasNote) return bars
         while (bars < MAX_BARS && reception >= THRESHOLDS[bars]) bars++
         while (bars > 0 && reception < THRESHOLDS[bars - 1] - MARGIN) bars--
         return bars

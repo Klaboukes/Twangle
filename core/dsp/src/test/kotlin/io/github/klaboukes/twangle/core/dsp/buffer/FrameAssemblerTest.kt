@@ -161,6 +161,28 @@ class FrameAssemblerTest {
     }
 
     @Test
+    fun `a NaN or infinite sample goes in as silence, before the filter sees it, and the caller's chunk is left as it is`() {
+        val assembler = FrameAssembler(windowSize = 8, hopSize = 8)
+        val seen = mutableListOf<Float>()
+        assembler.filter = object : SampleFilter {
+            override fun process(samples: FloatArray, offset: Int, length: Int) {
+                for (i in offset until offset + length) seen += samples[i]
+            }
+
+            override fun reset() = Unit
+        }
+        val chunk = floatArrayOf(0.1f, Float.NaN, 0.3f, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, 0.6f, 0.7f, 0.8f)
+        assembler.push(chunk)
+        val out = FloatArray(8)
+        assembler.readFrame(out)
+        val expected = floatArrayOf(0.1f, 0f, 0.3f, 0f, 0f, 0.6f, 0.7f, 0.8f)
+        assertArrayEquals(expected, out, 0f)
+        assertArrayEquals(expected, seen.toFloatArray(), 0f)
+        assertTrue(chunk[1].isNaN())
+        assertEquals(Float.POSITIVE_INFINITY, chunk[3])
+    }
+
+    @Test
     fun `push and readFrame do not allocate`() {
         val assembler = FrameAssembler()
         val chunk = ramp(0, 480)

@@ -44,9 +44,9 @@ class ReceptionLookTest {
     @Test
     fun `the last reception is held while the note fades out`() {
         val held = HeldReception()
-        assertEquals(1f, held.of(null))
+        assertEquals(1f, held.of(Float.NaN))
         assertEquals(0.4f, held.of(0.4f))
-        assertEquals(0.4f, held.of(null))
+        assertEquals(0.4f, held.of(Float.NaN))
         assertEquals(0.9f, held.of(0.9f))
     }
 }

@@ -176,13 +176,31 @@ class MetronomeListenTest {
     }
 
     @Test
-    fun `a microphone that fails is no beat heard`() = runTest(dispatcher) {
-        val recorder = FakeAudioRecorder(FloatArray(4_800), failure = AudioRecorderException.MicrophoneBusy())
+    fun `a microphone that fails says it is busy, not that no beat was heard, and Try again listens again`() = runTest(dispatcher) {
+        val failures = listOf(
+            AudioRecorderException.MicrophoneBusy(),
+            AudioRecorderException.InitializationFailed("AudioRecord did not initialise"),
+        )
+        for (failure in failures) {
+            val recorder = FakeAudioRecorder(FloatArray(4_800), failure = failure)
+            val vm = viewModel(recorder)
+            vm.listen()
+            advanceTimeBy(1_000)
+            assertEquals("$failure", ListenPhase.MIC_BUSY, vm.listen.value.phase)
+            assertFalse(recorder.isRecording.value)
+            vm.tryAgain()
+            assertEquals(ListenPhase.LISTENING, vm.listen.value.phase)
+            vm.stop()
+        }
+    }
+
+    @Test
+    fun `a microphone whose permission went missing says it is off`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(FloatArray(4_800), failure = AudioRecorderException.PermissionMissing())
         val vm = viewModel(recorder)
         vm.listen()
         advanceTimeBy(1_000)
-        assertEquals(ListenPhase.NO_BEAT, vm.listen.value.phase)
-        assertFalse(recorder.isRecording.value)
+        assertEquals(ListenPhase.MIC_OFF, vm.listen.value.phase)
     }
 
     @Test

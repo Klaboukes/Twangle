@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
  *   sharp, ♯), in tune in the centre; each look draws its ♭ and ♯ inside the box, at its scale's ends;
  * - one reading for every look ([MeterReading], here [TunerMeterReading]): the marker springs to
  *   each new reading with the look's own feel ([meterFeel]), readings beyond the range are pinned at
- *   the edge, and without a note ([cents] gives null) it rests in the centre, faded;
+ *   the edge, and without a note ([cents] gives NaN) it rests in the centre, faded;
  * - while [inTune] the centre mark and the marker fade to the style's "in tune" colour
  *   ([MeterReading.tuned], eased in over 0.4 s and out over 0.6 s; the note's check mark in
  *   [NoteDisplay] says it without colour);
@@ -59,25 +59,26 @@ import kotlinx.coroutines.launch
  *   glow switch at once, without easing;
  * - the in-tune window of [precision] (5 cents each way, 2 with Precise: [meterInTuneWindow]), for
  *   the looks that show it ([MeterReading.inTuneWindow]);
- * - how well the note is heard ([reception], 0..1, null without a note) makes the marker crisp and
+ * - how well the note is heard ([reception], 0..1, NaN without a note) makes the marker crisp and
  *   solid or faint and soft ([ReceptionLook], applied with [MeterReading.applyMarkerLook]); the scale
  *   stays as it is;
  * - TalkBack skips it: [NoteDisplay] speaks the same reading in words.
  *
  * [cents] and [reception] are never read while composing: each look reads the [MeterReading] in its
  * layer and draw phases only, so readings move the meter without recomposing the screen around it.
+ * Both are [LiveFloat]s, so those reads box nothing.
  */
 @Composable
 fun MeterFrame(
     look: MeterLook,
-    cents: () -> Float?,
+    cents: LiveFloat,
     modifier: Modifier = Modifier,
     inTune: Boolean = false,
     glow: Boolean = inTune,
     effect: InTuneEffect = InTuneEffect.DEFAULT,
     animationsOff: Boolean = false,
     precision: InTunePrecision = InTunePrecision.DEFAULT,
-    reception: () -> Float? = { null },
+    reception: LiveFloat = NO_LIVE_FLOAT,
 ) {
     val currentCents by rememberUpdatedState(cents)
     // Each look has its own spring (meterFeel): Classic swings a little past a new string.
@@ -91,7 +92,7 @@ fun MeterFrame(
         }
     }
     // Recomposes only when a note appears or goes away, not on every reading.
-    val hasReading by remember { derivedStateOf { currentCents() != null } }
+    val hasReading by remember { derivedStateOf { !currentCents().isNaN() } }
     val restFade = animateFloatAsState(targetValue = if (hasReading) 1f else REST_ALPHA, label = "meterRestFade")
 
     val tuned = animateFloatAsState(
@@ -134,7 +135,7 @@ private class TunerMeterReading(
     private val tunedAmount: State<Float>,
     private val glowAmount: State<Float>,
     private val window: State<Float>,
-    private val reception: State<() -> Float?>,
+    private val reception: State<LiveFloat>,
     private val blurs: Array<RenderEffect?>,
 ) : MeterReading {
     private val heldReception = HeldReception()

@@ -426,7 +426,7 @@ class MetronomeViewModel(
     /** Not now (or Back): the suggestion goes, nothing changes; the clicks come back if they were playing. */
     fun notNow() = closeOffer(resume = true)
 
-    /** Try again after "No steady beat heard": as Listen. */
+    /** Try again after "No steady beat heard" or "Microphone is busy": as Listen. */
     fun tryAgain() = listen()
 
     /**
@@ -472,7 +472,7 @@ class MetronomeViewModel(
         _heard.value = null
     }
 
-    /** Shows [phase]'s line (no beat, microphone off) for [LINE_MILLIS], then nothing. */
+    /** Shows [phase]'s line (no beat, microphone busy or off) for [LINE_MILLIS], then nothing. */
     private fun showLine(phase: ListenPhase) {
         lineJob?.cancel()
         _listen.value = _listen.value.copy(phase = phase)
@@ -482,13 +482,19 @@ class MetronomeViewModel(
         }
     }
 
-    /** Listens until the tempo is steady or [LISTEN_MILLIS] are up, then suggests it, or says no beat was heard. */
+    /**
+     * Listens until the tempo is steady or [LISTEN_MILLIS] are up, then suggests it, or says no beat
+     * was heard. A microphone that fails says so instead: busy (a call, another app, or on Android
+     * 8–9 the tuner not quite done with it), or off when the permission went missing.
+     */
     private suspend fun listenFor(recorder: AudioRecorder) {
+        var failed: ListenPhase? = null
         val heard = try {
             withContext(dspDispatcher) { hear(recorder) }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: AudioRecorderException) {
+        } catch (e: AudioRecorderException) {
+            failed = if (e is AudioRecorderException.PermissionMissing) ListenPhase.MIC_OFF else ListenPhase.MIC_BUSY
             null
         }
         listenJob = null
@@ -496,7 +502,7 @@ class MetronomeViewModel(
         val ended = _listen.value.copy(phase = ListenPhase.IDLE, endedAtNanos = nanoTime(), estimate = 0)
         if (heard == null) {
             _listen.value = ended
-            showLine(ListenPhase.NO_BEAT)
+            showLine(failed ?: ListenPhase.NO_BEAT)
             if (ended.wasPlaying) resume()
         } else {
             _listen.value = ended.copy(phase = ListenPhase.FOUND, found = heard.bpm, half = heard.half, double = heard.double)
@@ -556,7 +562,7 @@ class MetronomeViewModel(
         /** Listening ends after this long without a steady tempo. */
         const val LISTEN_MILLIS = 15_000L
 
-        /** "No steady beat heard" and "Microphone is off" stay this long. */
+        /** "No steady beat heard", "Microphone is busy" and "Microphone is off" stay this long. */
         const val LINE_MILLIS = 8_000L
 
         /** The dial glides to a used tempo over this long; the clicks come back after it. */
@@ -581,6 +587,9 @@ enum class ListenPhase {
 
     /** Listening ended without a steady beat: "No steady beat heard  Try again", for a while. */
     NO_BEAT,
+
+    /** The microphone couldn't be opened or stopped working: "Microphone is busy  Try again", for a while. */
+    MIC_BUSY,
 
     /** The microphone was refused: "Microphone is off", for a while. */
     MIC_OFF,

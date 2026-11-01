@@ -132,6 +132,39 @@ class WaveViewTest {
         assertTrue("the stripes moved", differentShare(before, after) > 0.05f)
     }
 
+    /**
+     * The wave reads the exact cents while drawing (Phase 65; before, the whole cents the text
+     * shows): on the note it holds still, and a reading moving off it sets the stripes drifting
+     * without recomposing anything.
+     */
+    @Test
+    fun theStrobeFollowsTheLiveCentsWithoutRecomposing() {
+        compose.mainClock.autoAdvance = false
+        val cents = mutableFloatStateOf(0f)
+        compose.setContent {
+            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false, animate = false) {
+                WaveView(
+                    cents = { cents.floatValue },
+                    inTune = false,
+                    look = WaveLook.STROBE,
+                    modifier = Modifier.background(BACKGROUND).size(170.dp, 40.dp).testTag(STROBE_TAG),
+                )
+            }
+        }
+        compose.mainClock.advanceTimeBy(SETTLE_MS)
+        val still = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        val changes = changeCount()
+        repeat(FRAMES) { compose.mainClock.advanceTimeByFrame() }
+        assertTrue("on the note it held still", differentShare(still, compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()) < 0.01f)
+        cents.floatValue = -3f
+        compose.mainClock.advanceTimeBy(STROBE_SETTLE_MS)
+        val before = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        repeat(FRAMES) { compose.mainClock.advanceTimeByFrame() }
+        val after = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        assertEquals("recompositions while the reading changed", changes, changeCount())
+        assertTrue("the stripes moved", differentShare(before, after) > 0.05f)
+    }
+
     /** How often the Recomposers applied changes to a composition, all together. */
     private fun changeCount(): Long = compose.runOnIdle {
         Recomposer.runningRecomposers.value.sumOf { it.changeCount }

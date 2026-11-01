@@ -49,7 +49,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
@@ -179,7 +178,8 @@ fun IntonationPanel(
     Box(
         modifier
             .aspectRatio(PANEL_ASPECT_RATIO)
-            .drawBehind {
+            // The field's brush is made once per size and colour, not on every frame drawn.
+            .drawWithCache {
                 val u = size.width / UNITS_WIDE
                 val centre = Offset(size.width / 2f, size.height / 2f)
                 val field = Brush.radialGradient(
@@ -189,7 +189,7 @@ fun IntonationPanel(
                     center = centre,
                     radius = FIELD_RX * u,
                 )
-                scale(1f, FIELD_RY / FIELD_RX, centre) { drawCircle(field, FIELD_RX * u, centre) }
+                onDrawBehind { scale(1f, FIELD_RY / FIELD_RX, centre) { drawCircle(field, FIELD_RX * u, centre) } }
             },
     ) {
         if (summary) {

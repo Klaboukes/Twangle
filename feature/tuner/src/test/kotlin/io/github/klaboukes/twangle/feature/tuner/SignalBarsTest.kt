@@ -43,7 +43,7 @@ class SignalBarsTest {
     fun `without a note the last count stays, dimmed`() {
         bars.update(0.7f)
         assertTrue(bars.hasNote)
-        assertEquals(3, bars.update(null))
+        assertEquals(3, bars.update(Float.NaN))
         assertFalse(bars.hasNote)
         assertEquals(4, bars.update(1f))
         assertTrue(bars.hasNote)

@@ -50,7 +50,7 @@ import kotlin.math.roundToInt
 
 /**
  * Small signal bars, like a phone's, for the optional "Show signal bars" setting: how many light
- * follows how well the note is heard ([reception], 0..1, null without a note; see [SignalBars], which
+ * follows how well the note is heard ([reception], 0..1, NaN without a note; see [SignalBars], which
  * keeps them from flickering). Without a note the last count stays, dimmed. Drawn in [tint].
  *
  * A tap opens a small panel with the [figures] behind them: the volume, the room's background and the
@@ -60,16 +60,18 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun SignalBarsButton(
-    reception: () -> Float?,
+    reception: LiveFloat,
     figures: Flow<SignalFigures?>,
     tint: Color,
     modifier: Modifier = Modifier,
 ) {
     val currentReception by rememberUpdatedState(reception)
     val counter = remember { SignalBars() }
-    // Recomposes only when the count or "a note sounds" changes, not with every reading.
-    val shown by remember { derivedStateOf { counter.update(currentReception()) to counter.hasNote } }
-    val (bars, hasNote) = shown
+    // Recomposes only when the count or "a note sounds" changes, not with every reading. Both in one
+    // small Int (the bars times two, plus one with a note), which, unlike a Pair, allocates nothing.
+    val shown by remember { derivedStateOf { counter.update(currentReception()) * 2 + if (counter.hasNote) 1 else 0 } }
+    val bars = shown / 2
+    val hasNote = shown % 2 == 1
     var open by remember { mutableStateOf(false) }
     val press = remember { MutableInteractionSource() }
     val description = if (hasNote || bars > 0) {

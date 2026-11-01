@@ -80,8 +80,8 @@ fun meterInTuneWindow(precision: InTunePrecision): Float = when (precision) {
     InTunePrecision.PRECISE -> InTuneDetector.PRECISE_ENTER_CENTS
 }
 
-/** Where the marker points for [cents]: pinned to the meter's edge beyond it, centre when there is no reading. */
-fun meterCents(cents: Float?): Float = cents?.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS) ?: 0f
+/** Where the marker points for [cents]: pinned to the meter's edge beyond it, centre when there is no reading (NaN). */
+fun meterCents(cents: Float): Float = if (cents.isNaN()) 0f else cents.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS)
 
 /**
  * Angle of [cents] in radians on the half circle, measured clockwise from straight up: −π/2 (far

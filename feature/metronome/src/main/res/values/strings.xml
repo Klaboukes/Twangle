@@ -147,8 +147,10 @@
     <string name="metronome_pick_double">Double</string>
     <!-- The status line when listening heard no steady beat; Try again follows it on the same line. -->
     <string name="metronome_no_beat">No steady beat heard</string>
-    <!-- Action after "No steady beat heard" on the same status line: listens again. Short. -->
+    <!-- Action after "No steady beat heard" or "Microphone is busy" on the same status line: listens again. Short. -->
     <string name="metronome_try_again">Try again</string>
+    <!-- The status line when listening couldn't open the microphone (a call or another app has it); Try again follows it on the same line. -->
+    <string name="metronome_mic_busy">Microphone is busy</string>
     <!-- The status line when the microphone was refused; Open settings may follow it on the same line. -->
     <string name="metronome_mic_off">Microphone is off</string>
     <!-- Action after "Microphone is off" on the same status line: opens the app's system settings. Short. -->

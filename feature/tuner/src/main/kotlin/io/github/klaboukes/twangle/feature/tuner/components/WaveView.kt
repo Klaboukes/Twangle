@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -32,11 +33,12 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
  * The wave view in the [look] the user picked (`drawWave`): by default a soft ribbon of sound in the
  * current style's marks, with no frame so it stays quiet next to the dial (the strobe look draws
  * that style's rows of stripes instead, which drift the same way). Off pitch it pinches
- * into pulses that drift right (sharp) or left (flat) at the strobe's speed, from the exact [cents];
+ * into pulses that drift right (sharp) or left (flat) at the strobe's speed, from the exact [cents]
+ * (read on every frame, not the whole cents the text shows, so 0.6 and 1.4 cents drift apart);
  * close to the note they smooth out, and within half a cent they stand still as one calm shape,
  * which then holds perfectly still.
  * [inTune] only sets the colour and halo. See [WaveMotion] for how it moves. Without a reading
- * ([cents] null) it rests as a faint line. How well the note is heard ([reception], 0..1, null
+ * ([cents] NaN) it rests as a faint line. How well the note is heard ([reception], 0..1, NaN
  * without a note) draws it crisp and solid or faint and soft ([ReceptionLook]), read while drawing.
  *
  * It moves only while there is a reading. Each frame only redraws this view's own layer: nothing
@@ -44,19 +46,20 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
  */
 @Composable
 fun WaveView(
-    cents: Float?,
+    cents: LiveFloat,
     inTune: Boolean,
     modifier: Modifier = Modifier,
     look: WaveLook = WaveLook.DEFAULT,
-    reception: () -> Float? = { null },
+    reception: LiveFloat = NO_LIVE_FLOAT,
 ) {
-    val reading by rememberUpdatedState(cents)
+    val currentCents by rememberUpdatedState(cents)
     val currentReception by rememberUpdatedState(reception)
     val heldReception = remember { HeldReception() }
     val blurs = rememberReceptionBlurs()
     val motion = remember { WaveMotion() }
     val frame = remember { mutableLongStateOf(0L) }
-    val hasReading = cents != null
+    // Recomposes only when a note appears or goes away, not on every reading.
+    val hasReading by remember { derivedStateOf { !currentCents().isNaN() } }
     LaunchedEffect(hasReading) {
         if (!hasReading) return@LaunchedEffect
         // An "infinite" animation: UI tests skip these (they would never let the screen settle),
@@ -64,7 +67,8 @@ fun WaveView(
         var last = withInfiniteAnimationFrameNanos { it }
         while (true) {
             withInfiniteAnimationFrameNanos { now ->
-                motion.advance((now - last) / 1_000_000_000f, reading ?: 0f)
+                val reading = currentCents()
+                motion.advance((now - last) / 1_000_000_000f, if (reading.isNaN()) 0f else reading)
                 last = now
                 frame.longValue = now
             }
@@ -112,6 +116,19 @@ fun WaveView(
                 )
             },
     )
+}
+
+/** [WaveView] at a fixed [cents] (null for no reading), for previews and tests. */
+@Composable
+fun WaveView(
+    cents: Float?,
+    inTune: Boolean,
+    modifier: Modifier = Modifier,
+    look: WaveLook = WaveLook.DEFAULT,
+    reception: LiveFloat = NO_LIVE_FLOAT,
+) {
+    val value = cents ?: Float.NaN
+    WaveView(LiveFloat { value }, inTune, modifier, look, reception)
 }
 
 /** The ribbon grows from a line (or settles back) over this when a note starts (or stops). */

@@ -9,7 +9,9 @@ package io.github.klaboukes.twangle.core.dsp.buffer
  * lets the caller read a longer window at the same moments (`readFrame(out, length)`, once
  * [available] reaches that length), e.g. the low-note window, and switch between the two without
  * losing audio. While a [filter] is set, samples pass through it on their way into the ring (the
- * low-note window's mains hum canceller). Nothing allocates after construction.
+ * low-note window's mains hum canceller). A NaN or infinite sample goes into the ring as 0, before
+ * the filter, so one bad sample can't poison the filter's state or a frame. Nothing allocates after
+ * construction.
  *
  * Typical loop for one incoming chunk:
  * ```
@@ -80,6 +82,7 @@ class FrameAssembler(
         while (copied < count) {
             val chunk = minOf(count - copied, capacity - writePos)
             System.arraycopy(samples, offset + copied, ring, writePos, chunk)
+            replaceNonFinite(writePos, chunk)
             filter?.process(ring, writePos, chunk)
             writePos = (writePos + chunk) % capacity
             copied += chunk
@@ -92,6 +95,14 @@ class FrameAssembler(
             samplesUntilFrame = hopSize
         }
         return count
+    }
+
+    // A NaN or infinite sample (a broken driver, a bad resampler) would stick in the hum canceller's
+    // state and in every sum over the window, silencing the tuner until a reset: it goes in as silence.
+    private fun replaceNonFinite(from: Int, count: Int) {
+        for (i in from until from + count) {
+            if (!ring[i].isFinite()) ring[i] = 0f
+        }
     }
 
     /**

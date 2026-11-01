@@ -136,12 +136,15 @@ private sealed interface LineText {
 
     data object NoBeat : LineText
 
+    data object MicBusy : LineText
+
     data class MicOff(val needsSettings: Boolean) : LineText
 }
 
 private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
     ListenPhase.LISTENING -> LineText.Listening(listen.estimate)
     ListenPhase.NO_BEAT -> LineText.NoBeat
+    ListenPhase.MIC_BUSY -> LineText.MicBusy
     ListenPhase.MIC_OFF -> LineText.MicOff(needsSettings = false)
     ListenPhase.MIC_OFF_SETTINGS -> LineText.MicOff(needsSettings = true)
     ListenPhase.IDLE, ListenPhase.FOUND -> LineText.Nothing
@@ -152,7 +155,7 @@ private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
  * larger fonts), so nothing moves when it shows or hides. 14 sp in the muted colour, centred; a
  * change crossfades (160 ms out, 160 ms in). "Listening…", then "Listening… 96 BPM" with the number
  * in ink, each with Stop after it ([onStopListening]; Listen itself is in the options panel since
- * Phase 62); "No steady beat heard  Try again"; "Microphone is off" (with "Open settings" when only
+ * Phase 62); "No steady beat heard  Try again"; "Microphone is busy  Try again"; "Microphone is off" (with "Open settings" when only
  * Settings can allow it). TalkBack hears it as a polite live region; the tempo, which can change many
  * times a second while Listen settles, is passed on paced ([pacedSpeech]: at most every 2 s), and a
  * new number takes the old one's place without the crossfade.
@@ -349,6 +352,7 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
             )
         }
         LineText.NoBeat -> LineWithAction(AnnotatedString(stringResource(R.string.metronome_no_beat)), stringResource(R.string.metronome_try_again), body, onTryAgain)
+        LineText.MicBusy -> LineWithAction(AnnotatedString(stringResource(R.string.metronome_mic_busy)), stringResource(R.string.metronome_try_again), body, onTryAgain)
         is LineText.MicOff -> LineWithAction(
             AnnotatedString(stringResource(R.string.metronome_mic_off)),
             if (line.needsSettings) stringResource(R.string.metronome_open_settings) else null,

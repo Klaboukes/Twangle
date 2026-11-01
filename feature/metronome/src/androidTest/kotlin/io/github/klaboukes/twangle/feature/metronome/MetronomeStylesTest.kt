@@ -509,6 +509,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                     ListenUi(),
                     ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96),
                     ListenUi(ListenPhase.NO_BEAT),
+                    ListenUi(ListenPhase.MIC_BUSY),
                     ListenUi(ListenPhase.MIC_OFF_SETTINGS),
                 )
                 for (listen in lines) {

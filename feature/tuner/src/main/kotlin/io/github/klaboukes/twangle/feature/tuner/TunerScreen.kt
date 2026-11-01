@@ -118,6 +118,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
+import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
 import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
 import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
@@ -236,6 +237,9 @@ fun TunerScreen(
     // Composing from the state as its text shows it recomposes only when the text changes; the
     // needle follows the exact cents without recomposing (see MeterFrame).
     val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
+    // The exact cents and the reception, read while drawing (NaN without a note).
+    val exactCents = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.cents else Float.NaN } } }
+    val reception = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.reception else Float.NaN } } }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val instrument by viewModel.instrument.collectAsStateWithLifecycle()
     val customTunings by viewModel.customTunings.collectAsStateWithLifecycle()
@@ -305,8 +309,8 @@ fun TunerScreen(
             if (granted) {
                 TunerContent(
                     state = state,
-                    needleCents = { (readings.value as? TunerUiState.Detected)?.cents },
-                    reception = { (readings.value as? TunerUiState.Detected)?.reception },
+                    needleCents = exactCents,
+                    reception = reception,
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
@@ -585,9 +589,10 @@ private fun KeepScreenOn() {
 /**
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
- * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
- * exact cents there and a [state] rounded to what the text shows ([asShown]). [reception] likewise
- * gives how well the note is heard (null without one), which the needle and the wave read while drawing. [display] picks how
+ * [needleCents] gives the needle's and the wave's position, by default the cents of [state] (NaN
+ * without a note). [TunerScreen] passes the exact cents there and a [state] rounded to what the text
+ * shows ([asShown]). [reception] likewise gives how well the note is heard (NaN without one), which
+ * the needle and the wave read while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. [display] picks how
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (holding
  * perfectly still on the note); the meter above the note is drawn in
  * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
@@ -643,8 +648,8 @@ fun TunerContent(
     onStringLongClick: ((Int) -> Unit)? = null,
     soundingString: Int? = null,
     tunedStrings: TunedStrings? = null,
-    needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
-    reception: () -> Float? = { (state as? TunerUiState.Detected)?.reception },
+    needleCents: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.cents else Float.NaN },
+    reception: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.reception else Float.NaN },
     display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
     meterLook: MeterLook = MeterLook.DEFAULT,
@@ -806,6 +811,7 @@ fun TunerContent(
                 maxHeight = maxHeight,
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
+                waveCents = needleCents,
                 reception = reception,
                 tip = state.tip,
                 speech = speech,

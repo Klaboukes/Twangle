@@ -65,9 +65,9 @@ internal fun rememberReceptionBlurs(): Array<RenderEffect?> {
 internal class HeldReception {
     private var last = 1f
 
-    /** [reception] if there is one, else the last one seen. */
-    fun of(reception: Float?): Float {
-        if (reception != null) last = reception
+    /** [reception] if there is one (not NaN), else the last one seen. */
+    fun of(reception: Float): Float {
+        if (!reception.isNaN()) last = reception
         return last
     }
 }

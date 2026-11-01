@@ -33,7 +33,7 @@ class MeterReadingTest {
 
     @Test
     fun `no reading rests the marker in the centre`() {
-        assertEquals(0f, meterCents(null))
+        assertEquals(0f, meterCents(Float.NaN))
     }
 
     @Test

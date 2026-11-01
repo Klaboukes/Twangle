@@ -351,7 +351,55 @@ class EdgeCaseTest {
         }
     }
 
+    // ---- Broken and clipped input ----
+
+    @Test
+    fun `NaN and infinite samples in a ringing string are taken as silence - the note within 1 cent, never another octave`() {
+        // A broken driver or resampler can hand over a NaN now and then. Unchecked, one sank into the
+        // low range's hum canceller and every sum over the window, and the tuner went silent for good.
+        // Here one bad sample every 0.1 s (NaN, +∞ or −∞ in turn), in both ranges.
+        for (range in PitchRange.entries) {
+            val settings = AnalysisSettings.forSampleRate(RATE, range)
+            val strings = if (range == PitchRange.LOW) LOW_RANGE else GUITAR_RANGE
+            for (f in strings) {
+                val stream = TestSignals.withNoise(TestSignals.weakFundamental(f, length = 3 * RATE), 40f, seed = 11)
+                val broken = listOf(Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY)
+                for ((n, at) in (RATE / 10 until stream.size step RATE / 10).withIndex()) stream[at] = broken[n % broken.size]
+                val steady = steadyPart(TunerChain(settings).run(stream))
+                assertTrue("$range: $f Hz with bad samples: reading lost", steady.all { it.isShown })
+                assertShownWithin("$range: $f Hz with bad samples", f, steady, 1f)
+            }
+        }
+    }
+
+    @Test
+    fun `a string clipped hard at the input reads within 1 cent and never flips an octave`() {
+        // Played right into the phone, the input clips: the tops of the wave cut off flat at full
+        // scale, which adds odd harmonics but keeps the period. A pluck four and twelve times too
+        // loud for the input (clipped for the first second or more), and a steady tone eight times
+        // too loud, in both ranges.
+        for (range in PitchRange.entries) {
+            val settings = AnalysisSettings.forSampleRate(RATE, range)
+            val strings = if (range == PitchRange.LOW) LOW_RANGE else GUITAR_RANGE
+            for (f in strings) {
+                val tones = mapOf(
+                    "pluck ×4" to clipped(TestSignals.pluck(f, length = 3 * RATE, amplitude = 1f, decaySeconds = 1.0), 4f),
+                    "pluck ×12" to clipped(TestSignals.pluck(f, length = 3 * RATE, amplitude = 1f, decaySeconds = 1.0), 12f),
+                    "steady ×8" to clipped(TestSignals.weakFundamental(f, length = 3 * RATE, amplitude = 1f), 8f),
+                )
+                for ((name, tone) in tones) {
+                    val steady = steadyPart(TunerChain(settings).run(TestSignals.withNoise(tone, 50f, seed = 12)), untilSeconds = 2f)
+                    assertTrue("$range: $f Hz $name clipped: reading lost", steady.all { it.isShown })
+                    assertShownWithin("$range: $f Hz $name clipped", f, steady, 1f)
+                }
+            }
+        }
+    }
+
     // ---- Helpers ----
+
+    // [tone] made [gain] times louder and cut off at full scale, as an overdriven input does.
+    private fun clipped(tone: FloatArray, gain: Float) = FloatArray(tone.size) { (tone[it] * gain).coerceIn(-1f, 1f) }
 
     // A pluck (peak 0.5, 0.8 s decay) over white room noise at [noiseDbfs].
     private fun pluckOver(f: Float, noiseDbfs: Float, seconds: Int = 7): FloatArray {
@@ -400,6 +448,9 @@ class EdgeCaseTest {
 
         /** Drop D low string to the high E string's 12th fret and beyond. */
         val GUITAR_RANGE = listOf(73.42f, 82.41f, 110f, 196f, 246.94f, 329.63f, 493.88f, 659.26f, 1046.5f)
+
+        /** The low range's own strings (a 5-string bass's low B, the bass's E and A, the cello's C) and two higher ones. */
+        val LOW_RANGE = listOf(30.87f, 41.2f, 55f, 65.41f, 110f, 329.63f)
 
         /**
          * Inharmonicity B of the standard tuning's strings, low E to high E, as the strum tests
