@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">코드</string>
     <string name="ear_replay">다시 듣기</string>
     <string name="ear_play_prompt">악기로 연주해 보세요</string>
-    <string name="ear_listening">듣는 중…</string>
     <string name="ear_spoken_heard">들린 음: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
     <string name="ear_choices">출제 범위</string>

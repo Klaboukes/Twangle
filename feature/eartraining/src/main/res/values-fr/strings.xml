@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">Accords</string>
     <string name="ear_replay">Réécouter</string>
     <string name="ear_play_prompt">Jouez-la sur votre instrument</string>
-    <string name="ear_listening">À l\'écoute…</string>
     <string name="ear_spoken_heard">Entendu : %1$s</string>
     <string name="ear_tally">%1$d sur %2$d</string>
     <string name="ear_choices">Ce qui est demandé</string>

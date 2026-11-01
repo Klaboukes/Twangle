@@ -12,6 +12,7 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
+import io.github.klaboukes.twangle.feature.settings.rowTitleStyle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -73,7 +74,7 @@ fun LanguageSetting(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(text = stringResource(R.string.settings_language_title), style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(R.string.settings_language_title), style = rowTitleStyle())
             Text(text = label(selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         // Like the rows under it, which also open something; the title already says what.

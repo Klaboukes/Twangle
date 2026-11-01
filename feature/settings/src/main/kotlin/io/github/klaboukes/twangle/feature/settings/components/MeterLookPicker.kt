@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.meter.LocalMeterField
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
@@ -62,10 +64,14 @@ fun MeterLookPicker(
         label = label,
         demo = demo,
         modifier = modifier,
+        edgeToEdge = true,
     ) { look, _ ->
-        // The art's calm field and glow reach past its box; a card keeps them off its name.
+        // Across the whole card, without the calm field (the card is its own quiet ground; clipped to the box
+        // the field showed as a plate inside it, Phase 65). The glow reaches past the box; a card keeps it off its name.
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO).clipToBounds()) {
-            MeterLookArt(look, reading, effect)
+            CompositionLocalProvider(LocalMeterField provides false) {
+                MeterLookArt(look, reading, effect)
+            }
         }
     }
 }

@@ -12,13 +12,14 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 /**
  * Each Practice tool's icon on the tool button and in its list (Phase 47), drawn as the row's
  * other icons (the instrument button's headstock, the navigation bar's tabs): 1.8 dp round-ended
- * lines on a 24 dp grid, small dots filled. A new tool needs its icon here (the `when` says so).
+ * lines on a 24 dp grid, small dots and the capo's bar filled. A new tool needs its icon here (the `when` says so).
  */
 internal fun practiceToolIcon(tool: PracticeTool): ImageVector = ICONS.getValue(tool)
 
 private val ICONS = PracticeTool.entries.associateWith(::draw)
 
 private fun draw(tool: PracticeTool): ImageVector {
+    val fills = if (tool == PracticeTool.CAPO) listOf(CAPO_BAR) else emptyList()
     val (lines, dots) = when (tool) {
         // A metronome, as the navigation bar's Practice tab: the case, its base line, the pendulum and its weight.
         PracticeTool.METRONOME -> listOf("M9.6,3h4.8l4.4,18H5.2z", "M6.6,16.5h10.8", "M12,16.5L16.8,6") to listOf(Dot(15.6f, 8.6f, 1.4f))
@@ -29,11 +30,11 @@ private fun draw(tool: PracticeTool): ImageVector {
         ) to listOf(Dot(14.25f, 6.75f, 2f), Dot(9.75f, 12.25f, 2f))
         // A staircase, a scale climbing step by step: four treads, as the mock-up's (docs/design/tool-button-preview.html).
         PracticeTool.SCALES -> listOf("M3.5,18.5h4.25v-4.25h4.25v-4.25h4.25v-4.25h4.25") to emptyList()
-        // A capo across the neck: the neck's edges, a fret, the bar clamped across and its lever curling under.
+        // A capo across the strings, as the Chords icon's box: the nut, four strings, and the capo a solid bar across
+        // them, past the outer two ([CAPO_BAR]); no frets or fingers, so it can't be taken for a chord. Phase 65: until
+        // then the neck's two edges with an outlined bar across and a lever, which read as a chair.
         PracticeTool.CAPO -> listOf(
-            "M7,2.5V9.5", "M7,14v7.5", "M17,2.5V9.5", "M17,14v7.5", "M7,18.5h10",
-            "M5.75,9.5h12.5a2.25,2.25 0,0 1,0,4.5h-12.5a2.25,2.25 0,0 1,0,-4.5z",
-            "M20.3,12.6c1.3,1 1.4,3 0.4,4.4",
+            "M5.25,4h13.5", "M5.25,4v16", "M9.75,4v16", "M14.25,4v16", "M18.75,4v16",
         ) to emptyList()
         // An ear, as the mock-up's (docs/design/ear-training-preview.html): the outer curl down to the lobe, and the inner fold.
         PracticeTool.EAR_TRAINING -> listOf(
@@ -57,6 +58,7 @@ private fun draw(tool: PracticeTool): ImageVector {
             strokeLineJoin = StrokeJoin.Round,
         )
     }
+    for (fill in fills) builder.addPath(pathData = addPathNodes(fill), fill = SolidColor(Color.Black))
     for (dot in dots) {
         val r = dot.radius
         builder.addPath(
@@ -66,6 +68,9 @@ private fun draw(tool: PracticeTool): ImageVector {
     }
     return builder.build()
 }
+
+/** The capo's bar: a solid band 4.5 dp tall across the strings and 2.25 dp past the outer ones, its ends round. */
+private const val CAPO_BAR = "M5.25,9.5h13.5a2.25,2.25 0,0 1,0,4.5h-13.5a2.25,2.25 0,0 1,0,-4.5z"
 
 /** A filled dot at [x], [y] on the 24 dp grid. */
 private data class Dot(val x: Float, val y: Float, val radius: Float)

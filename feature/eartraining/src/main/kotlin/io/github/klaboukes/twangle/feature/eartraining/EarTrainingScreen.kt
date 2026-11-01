@@ -166,9 +166,9 @@ fun EarTrainingScreen(
 
 /**
  * The Ear training screen as it is drawn, from [state] alone (stateless, for the tests): the top row
- * ([header]), the exercise row (the three icons, this visit's tally, the "What is asked" button), the
- * ▶ that sounds the question again and the exercise's own part under it. Play it back's part is the
- * prompt and the note [heard] (in [notation]), or "Listening…"; with the microphone not allowed ([mic]),
+ * ([header]), the exercise row (the switch of the three exercises, the "What is asked" button), the
+ * ▶ that sounds the question again with this visit's tally beside it, and the exercise's own part under it. Play
+ * it back's part is the note [heard] (in [notation]), or in its place what to do; with the microphone not allowed ([mic]),
  * "Microphone is off" with a button that asks again ([onAllowMic]) or, refused for good, opens
  * Settings ([onOpenSettings]). Intervals' part is the question and its answer buttons ([onPickInterval],
  * [IntervalsPart]), Chord type's the same with a button per chord type ([onPickChordType],
@@ -178,7 +178,7 @@ fun EarTrainingScreen(
  * wide and wider than tall) the top rows fill the start half and the question stands in the middle of
  * the end half. Each scrolls only where the window is too short (large text); Chord type's answers
  * instead scroll in their own box, which takes the room under its question. Nothing moves when the tally appears or the heard note
- * changes: the tally fills room the row keeps, the note a box of steady height.
+ * changes: the tally stands beside the ▶ in room its row keeps, the note in a box of steady height.
  */
 @Composable
 fun EarTrainingContent(
@@ -209,7 +209,7 @@ fun EarTrainingContent(
         Spacer(Modifier.height(HEADER_TOP))
         header()
         Spacer(Modifier.height(8.dp))
-        ExerciseRow(state.exercise, state.tally, onPickExercise, choicesOpen = choicesOpen, onOpenChoices = { choicesOpen = true })
+        ExerciseRow(state.exercise, onPickExercise, choicesOpen = choicesOpen, onOpenChoices = { choicesOpen = true })
     }
     // Chord type's answers scroll in their own box, which takes the room left under the question, so
     // the ▶ and the question stay put; its column doesn't scroll then.
@@ -217,12 +217,12 @@ fun EarTrainingContent(
     val question: @Composable ColumnScope.() -> Unit = {
         when (state.exercise) {
             Exercise.PLAY_IT_BACK -> if (state.notes != null) {
-                ReplayButton(onReplay)
+                ReplayRow(onReplay, state.tally)
                 Spacer(Modifier.height(8.dp))
                 PlayItBackPart(state, state.notes, heard, notation, mic, onAllowMic, onOpenSettings)
             }
             Exercise.INTERVALS -> if (state.interval != null) {
-                ReplayButton(onReplay)
+                ReplayRow(onReplay, state.tally)
                 Spacer(Modifier.height(8.dp))
                 IntervalsPart(state, state.interval, onPickInterval)
             }
@@ -230,7 +230,7 @@ fun EarTrainingContent(
                 // The banjo, or a tuning with no shape for the types chosen: the Chords tool's quiet line, no ▶.
                 state.chordsUnavailable != null -> ChordsUnavailableLine(state.chordsUnavailable)
                 state.chord != null -> {
-                    ReplayButton(onReplay)
+                    ReplayRow(onReplay, state.tally)
                     Spacer(Modifier.height(8.dp))
                     ChordTypePart(state, state.chord, notation, onPickChordType)
                 }
@@ -301,10 +301,11 @@ object EarTrainingTestTags {
     /** The round ▶ that sounds the question again. */
     const val REPLAY = "ear_replay"
 
-    /** Play it back: the note the tuner hears (a dimmed dash while none, hidden from TalkBack). */
+    /** Play it back: the note the tuner hears; while none, in its place what to do ("Play it on your instrument"). */
     const val HEARD = "ear_heard"
+    const val WAITING = "ear_waiting"
 
-    /** Play it back: the small line under it ("Listening…", "Hold the note you heard", "Note 2 of 3", "Right", "Not that one", "Microphone stopped"). */
+    /** Play it back: the small line under it ("Hold the note you heard", "Note 2 of 3", "Right", "Not that one", "Microphone stopped"; empty while waiting). */
     const val HEARD_LINE = "ear_heard_line"
 
     /** Play it back with notes in a row: a dot for each, the ones found filled in the in-tune colour. */
@@ -338,38 +339,18 @@ object EarTrainingTestTags {
 }
 
 /**
- * The exercise row: the three exercises in one switch of words ([ExerciseSwitch]), this visit's [tally] once a
- * question was answered, quiet, at the end, and the "What is asked" button: the shared options button
- * ([OptionsButton], the metronome's), picked while its sheet is open ([choicesOpen]). The switch's width
- * depends only on the row's ([exerciseSwitchWidth]), so the words and the button never move: the tally takes
- * the room between them.
+ * The exercise row: the three exercises in one switch of words ([ExerciseSwitch]) across the row, and the "What is
+ * asked" button at its end: the shared options button ([OptionsButton], the metronome's), picked while its sheet is
+ * open ([choicesOpen]). The switch's width depends only on the row's ([exerciseSwitchWidth]), so the words and the
+ * button never move. This visit's tally stands beside the ▶ ([ReplayRow]).
  */
 @Composable
-private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> Unit, choicesOpen: Boolean, onOpenChoices: () -> Unit) {
+private fun ExerciseRow(exercise: Exercise, onPick: (Exercise) -> Unit, choicesOpen: Boolean, onOpenChoices: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val switchWidth = exerciseSwitchWidth(maxWidth)
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             ExerciseSwitch(exercise, onPick, Modifier.width(switchWidth))
-            Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp), contentAlignment = Alignment.CenterEnd) {
-                if (tally.asked > 0) {
-                    val spoken = pluralStringResource(R.plurals.ear_tally_spoken, tally.right, tally.right, tally.asked)
-                    val style = MaterialTheme.typography.bodyMedium
-                    Text(
-                        stringResource(R.string.ear_tally, tally.right, tally.asked),
-                        style = style,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        // Set smaller where the room between the switch and the button is short (2× text on a narrow phone);
-                        // never wrapped, so the auto-size sees it too wide (IntervalsPart's AnswerButton says why).
-                        softWrap = false,
-                        autoSize = TextAutoSize.StepBased(minFontSize = with(LocalDensity.current) { TALLY_MIN_SIZE.toSp() }, maxFontSize = style.fontSize, stepSize = 0.5.sp),
-                        modifier = Modifier.testTag(EarTrainingTestTags.TALLY).semantics {
-                            contentDescription = spoken
-                            liveRegion = LiveRegionMode.Polite
-                        },
-                    )
-                }
-            }
+            Spacer(Modifier.weight(1f))
             OptionsButton(
                 open = choicesOpen,
                 onClick = onOpenChoices,
@@ -381,11 +362,13 @@ private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> 
 }
 
 /**
- * The exercise switch's width in a row [row] wide: [EXERCISE_SWITCH_MAX], or less where the row is narrower,
- * keeping the options button's face and [TALLY_ROOM] beside it. The same whatever the language, the font size and
- * the exercise picked, so nothing moves; the words are set smaller where they don't fit.
+ * The exercise switch's width in a row [row] wide: the whole row but the options button's face and [SWITCH_GAP]
+ * before it (Phase 65: until then at most 252 dp, which left it ending a third of the way along the tool button's
+ * row, its words small; a switch only as wide as the tool button's 160 dp would set them at about 9 sp). The same
+ * whatever the language, the font size and the exercise picked, so nothing moves; the words are set smaller only
+ * where they don't fit.
  */
-internal fun exerciseSwitchWidth(row: Dp): Dp = (row - OPTIONS_FACE - TALLY_ROOM).coerceIn(0.dp, EXERCISE_SWITCH_MAX)
+internal fun exerciseSwitchWidth(row: Dp): Dp = (row - OPTIONS_FACE - SWITCH_GAP).coerceAtLeast(0.dp)
 
 /**
  * The three exercises in the app's switch of words ([SegmentedSwitch], as the tuner's Strings · Chromatic; Phase 63:
@@ -424,6 +407,41 @@ internal val Exercise.label: Int
     }
 
 /**
+ * The ▶ ([ReplayButton]) in the middle of its row, and this visit's [tally] once a question was answered, quiet, at
+ * the row's end, under the "What is asked" button (Phase 65: until then between the switch and that button, which
+ * kept the switch short). The ▶ never moves when the tally appears; a long tally is set smaller to fit its room.
+ */
+@Composable
+private fun ReplayRow(onReplay: () -> Unit, tally: Tally) {
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        ReplayButton(onReplay)
+        if (tally.asked > 0) {
+            val spoken = pluralStringResource(R.plurals.ear_tally_spoken, tally.right, tally.right, tally.asked)
+            val style = MaterialTheme.typography.bodyMedium
+            Text(
+                stringResource(R.string.ear_tally, tally.right, tally.asked),
+                style = style,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                // Set smaller where its room beside the ▶ is short (2× text on a narrow phone); never wrapped, so the
+                // auto-size sees it too wide (IntervalsPart's AnswerButton says why).
+                softWrap = false,
+                autoSize = TextAutoSize.StepBased(minFontSize = with(LocalDensity.current) { TALLY_MIN_SIZE.toSp() }, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .widthIn(max = ((maxWidth - REPLAY_SIZE) / 2 - TALLY_GAP).coerceAtLeast(0.dp))
+                    .padding(end = 4.dp)
+                    .testTag(EarTrainingTestTags.TALLY)
+                    .semantics {
+                        contentDescription = spoken
+                        liveRegion = LiveRegionMode.Polite
+                    },
+            )
+        }
+    }
+}
+
+/**
  * The ▶, [REPLAY_SIZE] across, that sounds the question again: the style's button ([StyleButton]), filled in
  * the accent as the screen's main action (`main`, as the metronome's Start; until Phase 63 a plain outline).
  */
@@ -442,12 +460,14 @@ private fun ReplayButton(onReplay: () -> Unit) {
 }
 
 /**
- * Play it back under the ▶: "Play it on your instrument" ("Play them…" for notes in a row, with a dot
- * for each, those found filled in the in-tune colour), then the note the tuner hears as the player
- * plays, large ("F♯" with its octave small), or a dimmed dash while nothing is heard, and a small
- * line under it ([HeardLine]). Once every note is found, a soft glow in the in-tune colour eases in
- * behind the note as the tuner's glow does (0.4 s in, 0.6 s out). All in a box of steady height, so
- * nothing moves; with the microphone not allowed, "Microphone is off" and its button in that box.
+ * Play it back under the ▶ (for notes in a row, a dot for each first, those found filled in the in-tune colour):
+ * in the note's place, while nothing is heard, what to do, "Play it on your instrument" ("Play them…"), in the
+ * tuner's waiting form ([WaitingHint], as its "Play a string"); then the note the tuner hears as the player plays,
+ * large ("F♯" with its octave small), and a small line under it ([HeardLine]). Phase 65: until then the prompt
+ * stood above a dimmed dash and "Listening…", three lines saying little over an empty screen. Once every note is
+ * found, a soft glow in the in-tune colour eases in behind the note as the tuner's glow does (0.4 s in, 0.6 s
+ * out). All in a box of steady height, so nothing moves; with the microphone not allowed, "Microphone is off"
+ * and its button in that box.
  */
 @Composable
 private fun PlayItBackPart(
@@ -460,17 +480,11 @@ private fun PlayItBackPart(
     onOpenSettings: () -> Unit,
 ) {
     val many = question.notes.size > 1
-    Text(
-        stringResource(if (many) R.string.ear_play_prompt_many else R.string.ear_play_prompt),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
-    )
     if (many) {
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(8.dp))
         NoteDots(question.notes.size, state.found)
     }
-    Spacer(Modifier.height(16.dp))
+    Spacer(Modifier.height(12.dp))
     Column(
         Modifier.fillMaxWidth().heightIn(min = HEARD_HEIGHT),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -489,16 +503,67 @@ private fun PlayItBackPart(
                 Text(stringResource(if (forGood) R.string.ear_open_settings else R.string.ear_mic_allow), textAlign = TextAlign.Center)
             }
         } else {
-            HeardNote(heard, notation, glowing = state.allFound)
+            Box(Modifier.fillMaxWidth().heightIn(min = WAITING_SLOT), contentAlignment = Alignment.Center) {
+                NoteSlot()
+                if (heard == null) {
+                    WaitingHint(stringResource(if (many) R.string.ear_play_prompt_many else R.string.ear_play_prompt), Modifier.matchParentSize())
+                } else {
+                    HeardNote(heard, notation, glowing = state.allFound)
+                }
+            }
             Spacer(Modifier.height(4.dp))
             HeardLine(state, question, heard)
         }
     }
 }
 
-/** The note heard, large, with a soft in-tune glow behind it while [glowing]; a dimmed dash (silent for TalkBack) while none. */
+/**
+ * Unseen, a note with its octave, so the note's place is as tall whether a note is heard or not: nothing moves,
+ * and the waiting hint has that room.
+ */
 @Composable
-private fun HeardNote(heard: Note?, notation: Notation, glowing: Boolean) {
+private fun NoteSlot() {
+    val unseen = SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript)
+    Text(
+        buildAnnotatedString {
+            append("A")
+            withStyle(unseen) { append("0") }
+        },
+        style = MaterialTheme.typography.displayMedium.copy(textDirection = TextDirection.Ltr),
+        color = Color.Transparent,
+        maxLines = 1,
+        modifier = Modifier.clearAndSetSemantics {},
+    )
+}
+
+/**
+ * What to do while nothing is heard, in the note's place, as the tuner's waiting line: the display face at the
+ * tuner's hint size, muted, on at most two lines, set smaller where it doesn't fit its place ([modifier]: the
+ * note's slot).
+ */
+@Composable
+private fun WaitingHint(text: String, modifier: Modifier = Modifier) {
+    val style = MaterialTheme.typography.displayLarge.copy(fontSize = HINT_SIZE, lineHeight = HINT_LINE_HEIGHT)
+    Box(modifier, contentAlignment = Alignment.Center) {
+        Text(
+            text,
+            style = style,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            maxLines = HINT_MAX_LINES,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = with(LocalDensity.current) { HINT_MIN_SIZE.toSp() },
+                maxFontSize = HINT_SIZE,
+                stepSize = 1.sp,
+            ),
+            modifier = Modifier.testTag(EarTrainingTestTags.WAITING),
+        )
+    }
+}
+
+/** The note heard, large, with a soft in-tune glow behind it while [glowing]. */
+@Composable
+private fun HeardNote(heard: Note, notation: Notation, glowing: Boolean) {
     val glow by animateFloatAsState(if (glowing) 1f else 0f, meterGlowSpec(glowing), label = "ear_right_glow")
     val inTune = MaterialTheme.styleTokens.inTune
     val style = MaterialTheme.typography.displayMedium.copy(textDirection = TextDirection.Ltr)
@@ -514,46 +579,31 @@ private fun HeardNote(heard: Note?, notation: Notation, glowing: Boolean) {
             )
         }
     }
-    if (heard == null) {
-        // An unseen octave digit either side, so the dash's line is as tall as a note's with its octave and stays centred: nothing moves.
-        val unseen = SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript, color = Color.Transparent)
-        Text(
-            buildAnnotatedString {
-                withStyle(unseen) { append("0") }
-                append("—")
-                withStyle(unseen) { append("0") }
-            },
-            style = style,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DASH_ALPHA),
-            maxLines = 1,
-            modifier = Modifier.testTag(EarTrainingTestTags.HEARD).then(glowModifier).clearAndSetSemantics {},
-        )
-    } else {
-        val speech = rememberNoteNameSpeech()
-        val name = notation.nameOf(heard.pitchClass)
-        val spoken = stringResource(R.string.ear_spoken_heard, speech.name(name) + " " + heard.octave)
-        Text(
-            buildAnnotatedString {
-                append(musicText(name))
-                withStyle(SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript)) { append(heard.octave.toString()) }
-            },
-            style = style,
-            color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 1,
-            // Its text stays in the tree for the tests' checks; TalkBack says the description.
-            modifier = Modifier.testTag(EarTrainingTestTags.HEARD).then(glowModifier).semantics {
-                contentDescription = spoken
-                liveRegion = LiveRegionMode.Polite
-            },
-        )
-    }
+    val speech = rememberNoteNameSpeech()
+    val name = notation.nameOf(heard.pitchClass)
+    val spoken = stringResource(R.string.ear_spoken_heard, speech.name(name) + " " + heard.octave)
+    Text(
+        buildAnnotatedString {
+            append(musicText(name))
+            withStyle(SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript)) { append(heard.octave.toString()) }
+        },
+        style = style,
+        color = MaterialTheme.colorScheme.onBackground,
+        maxLines = 1,
+        // Its text stays in the tree for the tests' checks; TalkBack says the description.
+        modifier = Modifier.testTag(EarTrainingTestTags.HEARD).then(glowModifier).semantics {
+            contentDescription = spoken
+            liveRegion = LiveRegionMode.Polite
+        },
+    )
 }
 
 /**
- * The small line under the note heard, one at a time: "Microphone stopped" while it has (the dash
+ * The small line under the note heard, one at a time: "Microphone stopped" while it has (the waiting hint
  * above it; it listens again when the screen comes back); "Right" in the in-tune colour once every note
  * is found; "Not that one" after a wrong note held, until a right one (never red); for notes in a row
- * "Note 2 of 3"; else "Hold the note you heard" while a note is heard, "Listening…" while none.
+ * "Note 2 of 3"; else "Hold the note you heard" while a note is heard, and nothing while none (the hint above
+ * says what to do; it keeps its line, so nothing moves).
  */
 @Composable
 private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: Note?) {
@@ -564,7 +614,7 @@ private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: No
         state.wrongHeld -> stringResource(R.string.ear_not_that_one)
         size > 1 -> stringResource(R.string.ear_note_of, (state.found + 1).coerceAtMost(size), size)
         heard != null -> stringResource(R.string.ear_hold)
-        else -> stringResource(R.string.ear_listening)
+        else -> ""
     }
     val right = state.allFound && !state.micStopped
     Text(
@@ -572,7 +622,8 @@ private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: No
         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = if (right) FontWeight.Medium else FontWeight.Normal),
         color = if (right) MaterialTheme.styleTokens.inTune else MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
-        modifier = Modifier.testTag(EarTrainingTestTags.HEARD_LINE).semantics { liveRegion = LiveRegionMode.Polite },
+        // Across the column, so an empty line (while waiting) keeps its place and height too.
+        modifier = Modifier.fillMaxWidth().testTag(EarTrainingTestTags.HEARD_LINE).semantics { liveRegion = LiveRegionMode.Polite },
     )
 }
 
@@ -667,9 +718,11 @@ private val COLUMN_MAX_WIDTH = 480.dp
 /** From this wide, a window wider than tall is laid out in two halves (as the Practice tools on their side). */
 private val HALVES_MIN_WIDTH = 600.dp
 
-/** The exercise switch at most this wide (each word's segment a third of it), and the room it leaves for the tally at least. */
-private val EXERCISE_SWITCH_MAX = 252.dp
-private val TALLY_ROOM = 56.dp
+/** Between the exercise switch and the options button. */
+private val SWITCH_GAP = 12.dp
+
+/** Between the tally and the ▶ at least. */
+private val TALLY_GAP = 8.dp
 
 /** The ▶: as the mock-up's, a round button this big, its triangle this big. */
 private val REPLAY_SIZE = 72.dp
@@ -678,8 +731,14 @@ private val REPLAY_ICON_SIZE = 32.dp
 /** The heard note's box: tall enough for the big note and its line, so nothing moves when they change. */
 private val HEARD_HEIGHT = 96.dp
 
-/** The dash while no note is heard, this opaque in the muted colour. */
-private const val DASH_ALPHA = 0.55f
+/** The note's place at least this tall, so the waiting hint fits two lines at its size. */
+private val WAITING_SLOT = 72.dp
+
+/** The waiting hint, as the tuner's (NoteDisplay's WaitingLine): its size, line height, smallest size and lines. */
+private val HINT_SIZE = 28.sp
+private val HINT_LINE_HEIGHT = 1.2.em
+private val HINT_MIN_SIZE = 10.dp
+private const val HINT_MAX_LINES = 2
 
 /** The right note's glow: the in-tune colour this opaque at its middle, fading out this far beyond the note's box (as the mock-up's). */
 private const val GLOW_ALPHA = 0.34f

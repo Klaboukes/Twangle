@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">कॉर्ड</string>
     <string name="ear_replay">फिर से सुनें</string>
     <string name="ear_play_prompt">इसे अपने वाद्य पर बजाएँ</string>
-    <string name="ear_listening">सुन रहा है…</string>
     <string name="ear_spoken_heard">सुना गया: %1$s</string>
     <string name="ear_tally">%2$d में से %1$d</string>
     <string name="ear_choices">क्या पूछा जाए</string>

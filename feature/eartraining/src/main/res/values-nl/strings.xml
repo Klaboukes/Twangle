@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">Akkoordsoort</string>
     <string name="ear_replay">Nog eens horen</string>
     <string name="ear_play_prompt">Speel de toon op je instrument</string>
-    <string name="ear_listening">Luisteren…</string>
     <string name="ear_spoken_heard">Gehoord: %1$s</string>
     <string name="ear_tally">%1$d van %2$d</string>
     <plurals name="ear_tally_spoken">

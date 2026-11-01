@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">Ackord</string>
     <string name="ear_replay">Lyssna igen</string>
     <string name="ear_play_prompt">Spela tonen på ditt instrument</string>
-    <string name="ear_listening">Lyssnar…</string>
     <string name="ear_spoken_heard">Hört: %1$s</string>
     <string name="ear_tally">%1$d av %2$d</string>
     <string name="ear_choices">Vad som frågas</string>

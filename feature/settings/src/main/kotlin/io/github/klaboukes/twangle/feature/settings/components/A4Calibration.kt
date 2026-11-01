@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import io.github.klaboukes.twangle.feature.settings.rowTitleStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,13 +53,13 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = a4Title,
-                style = MaterialTheme.typography.titleMedium,
+                style = rowTitleStyle(),
                 modifier = Modifier.weight(1f),
             )
             // "442 Hz" stays on one line (the strings also join number and unit with a no-break space).
             Text(
                 text = a4Value,
-                style = MaterialTheme.typography.titleMedium,
+                style = rowTitleStyle(),
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 softWrap = false,

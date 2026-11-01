@@ -395,7 +395,9 @@ internal var SemanticsPropertyReceiver.rootsBreathing by RootsBreathing
 /**
  * [sound]'s icon, drawn as the Practice tools' icons ([practiceToolIcon]): 1.8 dp round-ended lines on a 24 dp grid,
  * as the mock-up's: the tanpura's long neck and round gourd, the harmonium's keys and folded bellows, the flute organ's
- * four stopped pipes on their chest, the warm pad's two soft waves.
+ * four stopped pipes on their chest, the warm pad's two soft waves. The tanpura leans [TANPURA_TILT] degrees, as an
+ * instrument is drawn, with a flat head, three pegs and a bridge (Phase 65: upright with a round top it read as a
+ * thermometer).
  */
 internal fun droneSoundIcon(sound: DroneSound): ImageVector = SOUND_ICONS.getValue(sound)
 
@@ -404,9 +406,9 @@ private val SOUND_ICONS = DroneSound.entries.associateWith(::drawSound)
 private fun drawSound(sound: DroneSound): ImageVector {
     val (lines, faint) = when (sound) {
         DroneSound.TANPURA -> listOf(
-            "M10.6,12.6V3.2a1.4,1.4 0,0 1,2.8,0V12.6",
+            "M10.6,12.6V2.6h2.8V12.6",
             circle(12f, 17.2f, 4.8f),
-            "M10.6,5.2H8.4", "M13.4,7.6h2.2", "M12,15.2v4",
+            "M10.6,4.4H8.6", "M13.4,6.4h2", "M10.6,8.4H8.6", "M12,12.8v6", "M10,18.8h4",
         ) to emptyList()
         DroneSound.HARMONIUM -> listOf(
             roundRect(2.5f, 12f, 19f, 8.5f, 1.6f),
@@ -429,6 +431,8 @@ private fun drawSound(sound: DroneSound): ImageVector {
         viewportWidth = 24f,
         viewportHeight = 24f,
     )
+    val tilt = if (sound == DroneSound.TANPURA) TANPURA_TILT else 0f
+    if (tilt != 0f) builder.addGroup(rotate = tilt, pivotX = 12f, pivotY = 12f)
     for ((paths, alpha) in listOf(lines to 1f, faint to FAINT_ALPHA)) {
         for (path in paths) {
             builder.addPath(
@@ -441,8 +445,12 @@ private fun drawSound(sound: DroneSound): ImageVector {
             )
         }
     }
+    if (tilt != 0f) builder.clearGroup()
     return builder.build()
 }
+
+/** How far the tanpura leans, clockwise, in degrees: its head to the upper right, its gourd to the lower left. */
+private const val TANPURA_TILT = 35f
 
 private fun circle(x: Float, y: Float, r: Float): String = "M${x - r},${y}a$r,$r 0,1 1,${2 * r},0a$r,$r 0,1 1,${-2 * r},0z"
 

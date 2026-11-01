@@ -18,13 +18,11 @@
     <string name="ear_exercise_word_chord_type">Chord type</string>
     <!-- TalkBack: the round play button that sounds the question again. -->
     <string name="ear_replay">Hear it again</string>
-    <!-- Play it back: under the play button, the note just heard is to be played on the instrument. -->
+    <!-- Play it back: in the place of the note heard, while none is heard: the note just heard is to be played on the instrument. Large, on up to two lines. -->
     <string name="ear_play_prompt">Play it on your instrument</string>
-    <!-- Play it back, in the heard note's place while no note is heard. As the tuner's Listening. -->
-    <string name="ear_listening">Listening…</string>
     <!-- TalkBack: the note the microphone hears as the player plays, %1$s its name ("F sharp 3"). -->
     <string name="ear_spoken_heard">Heard: %1$s</string>
-    <!-- The quiet count of this visit only, at the end of the exercise row: %1$d right answers of %2$d questions answered. Never saved. -->
+    <!-- The quiet count of this visit only, beside the play button: %1$d right answers of %2$d questions answered. Never saved. -->
     <string name="ear_tally">%1$d of %2$d</string>
     <!-- TalkBack: the same count in words, %1$d right answers (the plural follows it) of %2$d questions answered. -->
     <plurals name="ear_tally_spoken">
@@ -47,7 +45,7 @@
     <string name="ear_mic_allow">Allow microphone</string>
     <!-- Play it back with the microphone refused for good: button under "Microphone is off" that opens the app's system settings. Short. -->
     <string name="ear_open_settings">Open settings</string>
-    <!-- Play it back with two to four notes in a row: the prompt under the play button, for the notes just heard. -->
+    <!-- Play it back with two to four notes in a row: in the place of the note heard, while none is heard, for the notes just heard. Large, on up to two lines. -->
     <string name="ear_play_prompt_many">Play them on your instrument</string>
     <!-- Play it back, under the note heard: keep the note sounding until the tuner calls it. -->
     <string name="ear_hold">Hold the note you heard</string>

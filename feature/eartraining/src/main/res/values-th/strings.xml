@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">คอร์ด</string>
     <string name="ear_replay">ฟังอีกครั้ง</string>
     <string name="ear_play_prompt">เล่นตามบนเครื่องดนตรีของคุณ</string>
-    <string name="ear_listening">กำลังฟัง…</string>
     <string name="ear_spoken_heard">ได้ยิน: %1$s</string>
     <string name="ear_tally">%1$d จาก %2$d</string>
     <string name="ear_choices">เลือกคำถาม</string>

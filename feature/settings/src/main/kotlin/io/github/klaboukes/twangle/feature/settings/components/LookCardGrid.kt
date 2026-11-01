@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import io.github.klaboukes.twangle.feature.settings.rowTitleStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +44,9 @@ import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 /**
  * A titled grid of look cards, three to a row (two from 1.3× system font on a small window,
  * [lookCardsPerRow]), shared by the style, wave look and meter look pickers so all three work the
- * same. Each card shows [preview] above its [label], on the plain background colour (no art). The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
+ * same. Each card shows [preview] above its [label], on the plain background colour (no art); with [edgeToEdge] the
+ * preview runs across the card's whole width (the meter and wave looks, Phase 65: their pictures are drawn on the
+ * card's own ground and are small enough as it is), else 6 dp in from its sides (the style cards' framed pictures). The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
  * smaller rather than breaking in the middle of a word. The cards form one selectable group for
  * TalkBack, which reads each card as a radio button with its name and whether it is selected.
  *
@@ -63,6 +66,7 @@ internal fun <T> LookCardGrid(
     label: @Composable (T) -> String,
     demo: LookDemo,
     modifier: Modifier = Modifier,
+    edgeToEdge: Boolean = false,
     preview: @Composable ColumnScope.(look: T, selected: Boolean) -> Unit,
 ) {
     var onScreen by remember { mutableStateOf(false) }
@@ -81,7 +85,7 @@ internal fun <T> LookCardGrid(
     }
     val perRow = lookCardsPerRow(LocalDensity.current.fontScale, LocalSettingsWindow.current)
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(text = title, style = rowTitleStyle())
         Column(
             modifier = Modifier
                 .selectableGroup()
@@ -96,6 +100,7 @@ internal fun <T> LookCardGrid(
                             label = label(look),
                             selected = isSelected,
                             onClick = { onSelect(look) },
+                            edgeToEdge = edgeToEdge,
                             modifier = Modifier.weight(1f).testTag(cardTag(look)),
                         ) { preview(look, isSelected) }
                     }
@@ -118,6 +123,7 @@ private fun LookCard(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    edgeToEdge: Boolean,
     modifier: Modifier = Modifier,
     preview: @Composable ColumnScope.() -> Unit,
 ) {
@@ -143,11 +149,15 @@ private fun LookCard(
                 press.pressFlash()
                 onClick()
             }
-            .padding(horizontal = 6.dp, vertical = 8.dp),
+            .padding(vertical = CARD_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        preview()
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = if (edgeToEdge) 0.dp else CARD_PADDING_SIDE),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = preview,
+        )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
@@ -162,9 +172,14 @@ private fun LookCard(
                 maxFontSize = MaterialTheme.typography.bodyMedium.fontSize,
                 stepSize = 1.sp,
             ),
+            modifier = Modifier.padding(horizontal = CARD_PADDING_SIDE),
         )
     }
 }
+
+/** A card's room above its preview and below its name, and beside a framed preview and the name. */
+private val CARD_PADDING = 8.dp
+private val CARD_PADDING_SIDE = 6.dp
 
 /** Plays [demo]'s first [STILL_SECONDS] at once, in the steps a smooth frame rate would take. */
 internal fun holdStill(demo: LookDemo) {

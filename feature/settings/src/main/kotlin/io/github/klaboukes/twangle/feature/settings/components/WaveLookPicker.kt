@@ -51,6 +51,7 @@ fun WaveLookPicker(
         label = label,
         demo = demo,
         modifier = modifier,
+        edgeToEdge = true,
     ) { look, isSelected -> WavePreview(look, demo, isSelected) }
 }
 

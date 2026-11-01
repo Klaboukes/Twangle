@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">Akorlar</string>
     <string name="ear_replay">Tekrar dinle</string>
     <string name="ear_play_prompt">Enstrümanında çal</string>
-    <string name="ear_listening">Dinliyor…</string>
     <string name="ear_spoken_heard">Duyulan: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
     <string name="ear_choices">Sorulanlar</string>

@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">和弦</string>
     <string name="ear_replay">再聽一次</string>
     <string name="ear_play_prompt">在你的樂器上彈出來</string>
-    <string name="ear_listening">正在聆聽…</string>
     <string name="ear_spoken_heard">聽到：%1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
     <string name="ear_choices">出題範圍</string>

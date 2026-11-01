@@ -7,6 +7,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import io.github.klaboukes.twangle.feature.settings.rowTitleStyle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
@@ -34,7 +35,7 @@ fun <T> RadioGroupSetting(
     val speech = rememberNoteNameSpeech()
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = title, style = rowTitleStyle())
             if (summary != null) {
                 Text(text = summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

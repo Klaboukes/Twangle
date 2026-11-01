@@ -8,7 +8,6 @@
     <string name="ear_exercise_word_chord_type">কর্ড</string>
     <string name="ear_replay">আবার শুনুন</string>
     <string name="ear_play_prompt">এটি আপনার বাদ্যযন্ত্রে বাজান</string>
-    <string name="ear_listening">শুনছে…</string>
     <string name="ear_spoken_heard">শোনা গেছে: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
     <string name="ear_choices">কী জিজ্ঞেস করা হবে</string>

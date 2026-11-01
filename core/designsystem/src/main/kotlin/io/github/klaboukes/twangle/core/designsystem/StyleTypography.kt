@@ -12,8 +12,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * The lettering of each style. The display faces are bundled (res/font, SIL Open Font License, see
- * assets/licenses) so they work offline; reading text stays in a plain face. None of them has ♯
- * and ♭; [musicText] sets those in [MusicSignsFont] in every style.
+ * assets/licenses) so they work offline; reading text is the phone's plain face, but for Ancient's
+ * Alegreya Sans (Phase 65). None of them has ♯ and ♭; [musicText] sets those in [MusicSignsFont] in every style.
  */
 internal object StyleFonts {
     /**
@@ -23,8 +23,10 @@ internal object StyleFonts {
     val Roman = FontFamily(Font(R.font.forum))
 
     /**
-     * Ancient's numbers: a calm humanist sans whose 0 reads as a 0, at its medium weight (the only cut
-     * bundled, so every weight asks for it). Alegreya Sans by Juan Pablo del Peral, Huerta Tipográfica.
+     * Ancient's numbers and, since Phase 65, its reading text: a calm humanist sans whose 0 reads as a 0
+     * and whose pen-drawn shapes sit with Forum's Roman letters (the phone's Roboto beside Forum read as
+     * two apps), at its medium weight (the only cut bundled, so every weight asks for it). Alegreya
+     * Sans by Juan Pablo del Peral, Huerta Tipográfica.
      */
     val Humanist = FontFamily(
         Font(R.font.alegreya_sans_medium, FontWeight.Normal),
@@ -86,6 +88,12 @@ internal data class StyleFaces(
     val displayWeight: FontWeight? = null,
     /** Extra letter spacing for titles, e.g. wide HUD lettering. */
     val titleSpacing: TextUnit = TextUnit.Unspecified,
+    /**
+     * The reading text's size against Material's: a face whose small letters are smaller than the
+     * phone's font is set this much larger, so it reads as large (Alegreya Sans' x-height is 0.46 em,
+     * Roboto's and MiSans' 0.53; at 1.12 it is still narrower than them). Line heights stay Material's.
+     */
+    val bodyScale: Float = 1f,
 )
 
 /**
@@ -95,7 +103,9 @@ internal data class StyleFaces(
  * Display, so outside Classic its display text and titles take the phone's font
  * ([TONE_LETTER_LANGUAGES]). Scripts the display faces don't have
  * ([OTHER_SCRIPT_LANGUAGES]) are drawn whole in the phone's own font; the extra letter spacing meant
- * for the display face is left out there, so Chinese and Japanese characters don't stand apart. `StyleFontCoverageTest` checks the lists
+ * for the display face is left out there, so Chinese and Japanese characters don't stand apart. A bundled
+ * reading face (Ancient's Alegreya Sans, which has Cyrillic) gives way to the phone's there too, outside
+ * [CYRILLIC_LANGUAGES], so the few Latin words (A4, Hz) aren't in another face and size than the rest. `StyleFontCoverageTest` checks the lists
  * against the bundled fonts and every language's texts.
  */
 internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
@@ -105,7 +115,9 @@ internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
             own.copy(display = StyleFonts.JetAge, title = StyleFonts.JetAge, displayWeight = null, titleSpacing = SPACE_AGE_SPACING)
         language in TONE_LETTER_LANGUAGES && style != VisualStyle.CLASSIC ->
             own.copy(display = own.body, title = own.body, titleSpacing = TextUnit.Unspecified)
-        language in OTHER_SCRIPT_LANGUAGES -> own.copy(titleSpacing = TextUnit.Unspecified)
+        language in OTHER_SCRIPT_LANGUAGES -> own.copy(titleSpacing = TextUnit.Unspecified).let {
+            if (language in CYRILLIC_LANGUAGES) it else it.withPhoneReadingFace()
+        }
         else -> own
     }
 }
@@ -132,18 +144,31 @@ internal val TONE_LETTER_LANGUAGES = setOf("vi")
  */
 internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "bn", "hi", "ja", "ko", "ru", "th", "uk", "zh")
 
+/** The [OTHER_SCRIPT_LANGUAGES] in Cyrillic, which Ancient's reading face (Alegreya Sans) has: it stays there. */
+internal val CYRILLIC_LANGUAGES = setOf("ru", "uk")
+
+/** The bundled reading faces, which lack the scripts of [OTHER_SCRIPT_LANGUAGES] but Cyrillic. */
+private val BUNDLED_READING_FACES = setOf(StyleFonts.Humanist)
+
+/** These faces with the phone's own font for reading text, at Material's sizes, where [body] is a bundled face. */
+private fun StyleFaces.withPhoneReadingFace(): StyleFaces =
+    if (body in BUNDLED_READING_FACES) copy(body = FontFamily.SansSerif, label = FontFamily.SansSerif, bodyScale = 1f) else this
+
 private val SPACE_AGE_SPACING = 0.02.em
 
 /**
  * The faces of each style, from the approved mock-ups: Forum with Alegreya Sans numbers (the
- * readouts kept the face they were approved in), Playfair Display with Bodoni Moda numbers and serif
- * reading text, Righteous, the phone's own font in light, Orbitron and Michroma (wide faces, numbers
- * at 82 %, see `numberScaleFor`). Reading text is the phone's sans serif unless said otherwise.
+ * readouts kept the face they were approved in) and, since Phase 65, Alegreya Sans reading text at
+ * [ANCIENT_BODY_SCALE], Playfair Display with Bodoni Moda numbers and serif reading text, Righteous,
+ * the phone's own font in light, Orbitron and Michroma (wide faces, numbers at 82 %, see
+ * `numberScaleFor`). Reading text is the phone's sans serif unless said otherwise: beside Righteous,
+ * Orbitron and Michroma a plain sans is what the mock-ups paired them with, and Classic's serif already
+ * matches Playfair Display; only Ancient's Roboto clashed (Phase 65).
  */
 private fun ownFacesFor(style: VisualStyle): StyleFaces = when (style) {
     VisualStyle.ANCIENT -> StyleFaces(
-        StyleFonts.Roman, StyleFonts.Roman, FontFamily.SansSerif,
-        numbers = StyleFonts.Humanist, titleSpacing = 0.01.em,
+        StyleFonts.Roman, StyleFonts.Roman, StyleFonts.Humanist,
+        numbers = StyleFonts.Humanist, titleSpacing = 0.01.em, bodyScale = ANCIENT_BODY_SCALE,
     )
     VisualStyle.CLASSIC -> StyleFaces(
         StyleFonts.Didone, StyleFonts.Didone, FontFamily.Serif,
@@ -157,6 +182,9 @@ private fun ownFacesFor(style: VisualStyle): StyleFaces = when (style) {
     )
     VisualStyle.SPACE_AGE -> StyleFaces(StyleFonts.JetAge, StyleFonts.JetAge, FontFamily.SansSerif, titleSpacing = SPACE_AGE_SPACING)
 }
+
+/** Ancient's reading text (Alegreya Sans) against Material's sizes: see [StyleFaces.bodyScale]. */
+internal const val ANCIENT_BODY_SCALE = 1.12f
 
 /** The face for number readouts in [style] (see [StyleFaces.numbers]). */
 fun numberFontFor(style: VisualStyle): FontFamily = facesFor(style).numbers
@@ -181,8 +209,8 @@ fun typographyFor(style: VisualStyle, language: String = ""): Typography {
         letterSpacing = if (faces.titleSpacing != TextUnit.Unspecified) faces.titleSpacing else letterSpacing,
         fontFeatureSettings = LINING_FIGURES,
     )
-    fun TextStyle.body() = copy(fontFamily = faces.body, fontFeatureSettings = LINING_FIGURES)
-    fun TextStyle.label() = copy(fontFamily = faces.label, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.body() = copy(fontFamily = faces.body, fontSize = fontSize * faces.bodyScale, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.label() = copy(fontFamily = faces.label, fontSize = fontSize * faces.bodyScale, fontFeatureSettings = LINING_FIGURES)
     return base.copy(
         displayLarge = base.displayLarge.display(),
         displayMedium = base.displayMedium.display(),

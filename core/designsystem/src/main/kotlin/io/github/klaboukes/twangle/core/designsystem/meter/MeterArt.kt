@@ -4,6 +4,7 @@ import android.graphics.BlurMaskFilter
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -101,6 +102,8 @@ internal data class MeterRoles(
     val finish: MeterFinish = MeterFinish.PLAIN,
     /** The app's language, whose digits the numbers are written in ([localDigits]). */
     val locale: Locale = Locale.ROOT,
+    /** Whether the calm field ([FieldArt]) is drawn: everywhere but the meter picker's cards ([LocalMeterField]). */
+    val calmField: Boolean = true,
 ) {
     /** [value] in the app language's digits (Arabic-Indic in Arabic). */
     fun digits(value: Int): String = localDigits(value, locale)
@@ -172,8 +175,17 @@ internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles
         effect = effect,
         finish = meterFinishFor(tokens.style),
         locale = appLocale(),
+        calmField = LocalMeterField.current,
     )
 }
+
+/**
+ * Whether the meter's looks draw their calm field ([meterField]): yes on the screen, where it quiets the
+ * style's background art round the numbers. The meter picker's cards in Settings provide false (Phase 65):
+ * a card is its own quiet ground, solid in one colour, and the field, clipped to the picture's box, showed
+ * there as a darker plate inside the card.
+ */
+val LocalMeterField = staticCompositionLocalOf { true }
 
 /** Wide number faces (Michroma, Orbitron) are set at 82 % so "50" fits like the others. */
 fun numberScaleFor(style: VisualStyle): Float = when (style) {
@@ -222,6 +234,7 @@ internal fun BoxScope.StaticArt(build: CacheDrawScope.() -> (DrawScope.() -> Uni
  * numbers are. It reaches past the meter's box and fades out there.
  */
 internal class FieldArt(private val x: Float, private val y: Float, private val rx: Float, ry: Float, roles: MeterRoles) {
+    private val shown = roles.calmField
     private val squash = if (rx > 0f) ry / rx else 1f
     private val centre = Offset(x, y)
     private val brush = Brush.radialGradient(
@@ -233,7 +246,7 @@ internal class FieldArt(private val x: Float, private val y: Float, private val 
     )
 
     fun draw(scope: DrawScope) = with(scope) {
-        scale(1f, squash, centre) { drawCircle(brush, rx, centre) }
+        if (shown) scale(1f, squash, centre) { drawCircle(brush, rx, centre) }
     }
 }
 

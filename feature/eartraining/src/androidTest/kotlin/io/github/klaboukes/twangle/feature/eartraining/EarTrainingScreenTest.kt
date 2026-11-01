@@ -176,6 +176,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private fun exists(tag: String): Boolean = compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
     private fun spoken(tag: String): String =
         node(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
+    private fun textOf(tag: String): String =
+        node(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.Text) { emptyList() }.joinToString()
 
     @Test
     fun talkBackNamesEachExerciseAndAPickIsPassedOn() {
@@ -197,8 +199,11 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected()
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsNotSelected()
         assertEquals("the words keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
-        // On the Xiaomi the switch is at its widest: three equal segments of 84 dp (less the 1 dp the outlines share).
-        for (bounds in before) assertEquals("one steady width each", 84f, bounds.width.value, 1.5f)
+        // The switch runs across the row to 12 dp before the options button, in three equal segments (Phase 65).
+        val span = before.last().right - before.first().left
+        val choices = node(EarTrainingTestTags.CHOICES).getBoundsInRoot()
+        assertEquals("across the row", (choices.left - before.first().left).value - 12f, span.value, 1.5f)
+        for (bounds in before) assertEquals("one steady width each", span.value / 3, bounds.width.value, 1.5f)
         // Until Intervals' first question is in the state, nothing shows under the row.
         assertTrue(!exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.HEARD))
     }
@@ -235,20 +240,23 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun playItBackShowsTheNoteHeardOrListeningAndNothingMoves() {
+    fun playItBackShowsTheNoteHeardOrWhatToDoAndNothingMoves() {
         show()
-        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Listening…"))
-        assertEquals("the dash says nothing", "", spoken(EarTrainingTestTags.HEARD))
-        compose.onNode(hasText("Play it on your instrument")).assertIsDisplayed()
-        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.HEARD_LINE)
+        // While nothing is heard: what to do, in the note's place (Phase 65: a dash and "Listening…" until then).
+        node(EarTrainingTestTags.WAITING).assert(hasText("Play it on your instrument")).assertIsDisplayed()
+        assertTrue("no note yet", !exists(EarTrainingTestTags.HEARD))
+        assertEquals("nothing under it", "", textOf(EarTrainingTestTags.HEARD_LINE))
+        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD_LINE)
         val before = tags.map { node(it).getBoundsInRoot() }
-        val prompt = compose.onNode(hasText("Play it on your instrument")).getBoundsInRoot()
+        val waiting = node(EarTrainingTestTags.WAITING).getBoundsInRoot()
         shownHeard.value = Note.of(PitchClass.F_SHARP, 3)
         compose.waitForIdle()
         assertEquals("Heard: F sharp 3", spoken(EarTrainingTestTags.HEARD))
         node(EarTrainingTestTags.HEARD).assert(hasText("F♯3")).assertIsDisplayed()
         node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Hold the note you heard"))
-        assertEquals(prompt, compose.onNode(hasText("Play it on your instrument")).getBoundsInRoot())
+        assertTrue("the note takes the hint's place", !exists(EarTrainingTestTags.WAITING))
+        val note = node(EarTrainingTestTags.HEARD).getBoundsInRoot()
+        assertEquals("in the middle of that place", (waiting.top + waiting.bottom).value / 2, (note.top + note.bottom).value / 2, 1f)
         assertTrue("no dots for one note", !exists(EarTrainingTestTags.DOTS))
 
         // A wrong note held: said quietly, nothing moves.
@@ -263,18 +271,23 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         node(EarTrainingTestTags.HEARD).assert(hasText("G2"))
         assertEquals("nothing moves", before.map { it.top }, tags.map { node(it).getBoundsInRoot().top })
         assertEquals(before[0], node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
+        // The note gone again: the hint is back.
+        shownHeard.value = null
+        compose.waitForIdle()
+        node(EarTrainingTestTags.WAITING).assertIsDisplayed()
+        assertEquals("nothing moves", before.map { it.top }, tags.map { node(it).getBoundsInRoot().top })
     }
 
     @Test
-    fun aMicrophoneThatStoppedIsSaidPolitelyUnderTheDashAndNothingMoves() {
+    fun aMicrophoneThatStoppedIsSaidPolitelyUnderTheHintAndNothingMoves() {
         show()
-        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.HEARD_LINE)
+        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.WAITING, EarTrainingTestTags.HEARD_LINE)
         val before = tags.map { node(it).getBoundsInRoot() }
         shownState.value = shownState.value.copy(micStopped = true)
         compose.waitForIdle()
         node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Microphone stopped")).assertIsDisplayed()
         node(EarTrainingTestTags.HEARD_LINE).assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
-        assertEquals("the dash says nothing", "", spoken(EarTrainingTestTags.HEARD))
+        node(EarTrainingTestTags.WAITING).assertIsDisplayed()
         assertTrue("no microphone button: it listens again by itself", !exists(EarTrainingTestTags.MIC_BUTTON))
         assertEquals("nothing moves", before.map { it.top }, tags.map { node(it).getBoundsInRoot().top })
         assertEquals(before[0], node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
@@ -286,7 +299,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         // Listening again: the line goes back to the usual one.
         shownState.value = shownState.value.copy(micStopped = false, found = 0, answered = false)
         compose.waitForIdle()
-        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Listening…"))
+        assertEquals("", textOf(EarTrainingTestTags.HEARD_LINE))
     }
 
     @Test
@@ -294,7 +307,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         val notes = NoteQuestion(listOf(Note.of(PitchClass.E, 3), Note.of(PitchClass.G, 3), Note.of(PitchClass.A, 3)))
         shownState.value = shownState.value.copy(notes = notes, notesInRow = 3)
         show()
-        compose.onNode(hasText("Play them on your instrument")).assertIsDisplayed()
+        node(EarTrainingTestTags.WAITING).assert(hasText("Play them on your instrument")).assertIsDisplayed()
         node(EarTrainingTestTags.DOTS).assertIsDisplayed()
         node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Note 1 of 3"))
         val dots = node(EarTrainingTestTags.DOTS).getBoundsInRoot()

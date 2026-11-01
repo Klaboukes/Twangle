@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">Hợp âm</string>
     <string name="ear_replay">Nghe lại</string>
     <string name="ear_play_prompt">Đàn nốt đó trên nhạc cụ của bạn</string>
-    <string name="ear_listening">Đang nghe…</string>
     <string name="ear_spoken_heard">Nghe được: %1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
     <string name="ear_choices">Hỏi gì</string>

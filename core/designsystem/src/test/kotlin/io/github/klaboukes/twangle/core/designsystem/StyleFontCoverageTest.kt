@@ -13,8 +13,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * No word mixes two faces: in every style and language, each run of letters of one script in the
- * app's texts is either wholly in the style's display and title face or wholly not (then the phone's
- * own font draws all of it). And where the face lacks a language's script, no extra letter spacing.
+ * app's texts is either wholly in the style's display, title and reading faces or wholly not (then the
+ * phone's own font draws all of it). And where the face lacks a language's script, no extra letter
+ * spacing and no larger reading size.
  * Reads the bundled fonts' character maps and every module's strings.xml (see [facesFor]).
  */
 class StyleFontCoverageTest {
@@ -83,7 +84,7 @@ class StyleFontCoverageTest {
             val runs = letterRuns(textsOf(qualifier, default = index == 0))
             for (style in VisualStyle.entries) {
                 val faces = facesFor(style, language)
-                for (face in listOf(faces.display, faces.title)) {
+                for (face in listOf(faces.display, faces.title, faces.body, faces.label)) {
                     val font = fontFiles[face] ?: continue // the phone's own font has every letter
                     val chars = charactersOf(font)
                     for (word in runs) {
@@ -116,10 +117,38 @@ class StyleFontCoverageTest {
     }
 
     @Test
+    fun noLargerReadingSizeWhereTheFaceLacksTheScript() {
+        qualifiers.forEachIndexed { index, qualifier ->
+            val language = languageOf(qualifier)
+            val runs = letterRuns(textsOf(qualifier, default = index == 0))
+            for (style in VisualStyle.entries) {
+                val faces = facesFor(style, language)
+                val font = fontFiles[faces.body] ?: continue
+                val chars = charactersOf(font)
+                val lacking = runs.filter { word -> word.codePoints().noneMatch { it in chars } }
+                if (lacking.isNotEmpty()) {
+                    assertEquals("$style $qualifier: \"${lacking.first()}\" is not in $font", 1f, faces.bodyScale)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun ancientReadsInAlegreyaSans() {
+        val faces = facesFor(VisualStyle.ANCIENT)
+        assertEquals(StyleFonts.Humanist, faces.body)
+        assertEquals(StyleFonts.Humanist, faces.label)
+        assertEquals(StyleFonts.Humanist, facesFor(VisualStyle.ANCIENT, "ru").body)
+        assertEquals(FontFamily.SansSerif, facesFor(VisualStyle.ANCIENT, "ja").body)
+        assertEquals(1f, facesFor(VisualStyle.ANCIENT, "ja").bodyScale)
+    }
+
+    @Test
     fun theLanguageListsMatchTheFonts() {
         // Every language in the lists is shipped, so a stale entry shows.
         val shipped = qualifiers.map(::languageOf).toSet()
         assertTrue((EXTENDED_LATIN_LANGUAGES + TONE_LETTER_LANGUAGES + OTHER_SCRIPT_LANGUAGES - shipped).isEmpty())
+        assertTrue((CYRILLIC_LANGUAGES - OTHER_SCRIPT_LANGUAGES).isEmpty())
     }
 
     private companion object {

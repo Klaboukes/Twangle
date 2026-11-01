@@ -84,7 +84,6 @@ feature/eartraining ear_interval_short_perfect_fifth 1c5e95f6
 feature/eartraining ear_interval_short_perfect_fourth e05184c1
 feature/eartraining ear_interval_short_tritone 97794695
 feature/eartraining ear_interval_tritone e3571045
-feature/eartraining ear_listening bbb4106e
 feature/eartraining ear_mic_allow 2f6aca9a
 feature/eartraining ear_mic_off 69aebf69
 feature/eartraining ear_not_that_one 9b68f7f1

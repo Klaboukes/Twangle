@@ -9,7 +9,6 @@
     <string name="ear_exercise_word_chord_type">コード</string>
     <string name="ear_replay">もう一度聞く</string>
     <string name="ear_play_prompt">楽器で弾いてください</string>
-    <string name="ear_listening">聞き取り中…</string>
     <string name="ear_spoken_heard">聞こえた音：%1$s</string>
     <string name="ear_tally">%1$d / %2$d</string>
     <string name="ear_choices">出題の内容</string>
