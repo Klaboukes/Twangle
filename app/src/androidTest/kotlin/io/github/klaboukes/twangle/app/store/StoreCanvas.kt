@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -388,9 +389,11 @@ fun renderCanvas(width: Int = CanvasSpec.PORTRAIT.width, height: Int = CanvasSpe
             window = IntSize(activity.window.decorView.width, activity.window.decorView.height)
             activity.setContent {
                 val recorded = rememberGraphicsLayer().also { layer = it }
+                // Top left in every language: TopStart in a right-to-left one pinned a canvas wider
+                // than the window to its right edge, and the picture on its side came out cut off.
                 Box(
                     Modifier
-                        .wrapContentSize(Alignment.TopStart, unbounded = true)
+                        .wrapContentSize(AbsoluteAlignment.TopLeft, unbounded = true)
                         .onGloballyPositioned { origin = it.positionInWindow(); placed.countDown() }
                         .drawWithContent {
                             recorded.record { this@drawWithContent.drawContent() }
