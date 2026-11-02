@@ -29,6 +29,7 @@ Topic files:
   - **[Translation glossary](docs/architecture/glossary.md)**: the app's words for its recurring terms, per language
 - §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Any phone · Every screen in every style · Every language · Quick and thorough UI runs
 - **[Website](docs/architecture/website.md)** (klaboukes.github.io, Phase 54): Where it lives · Pages and the frame · Nothing from another site · Languages · Pictures · Publishing
+- **[The 2.0 plan](docs/architecture/v2-plan.md)** (on the `v2` branch only, Phases 66–76): Modules: kept, changed, gone · The lens · Settings from 1.1
 - **[History](docs/architecture/history.md)**: Overview · Threading and performance · Lifecycle, permissions and settings · UI basics · Tuner screen · Meter, wave and styles · Metronome, widget and watch · Strum check and metronome · Languages · Testing
 
 ## 1. Tech stack
