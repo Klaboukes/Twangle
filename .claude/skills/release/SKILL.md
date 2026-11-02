@@ -51,7 +51,8 @@ Steps 6–8 follow later, each on the owner's word.
 - **A clean overnight run first** (owner, 2026-10-28): nothing is released that the overnight run
   (every UI test in every style, every language; a language check skipped because nothing it shows
   changed since it passed counts as passed) hasn't passed. The first line
-  of `build/overnight/summary.txt` says which commit it ran on and whether everything passed. It counts
+  of `build/overnight/summary.txt` says which commit it ran on and whether everything passed (a night on
+  `v2` writes `build/overnight/v2/` instead, which counts for nothing here). It counts
   when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (the
   morning summary says so), and `git diff --stat <that commit>..main` shows no code change since but
   that fix, docs, `.claude/`, `scripts/` or a regenerated Baseline Profile (`app/src/release/generated/`,
