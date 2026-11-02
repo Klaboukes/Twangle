@@ -6,14 +6,14 @@ Each phase ends in a state that builds and can be demoed. Phases are worked in t
 
 Every finished phase is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0 and the finished part of Phase 23; only the open phases are below. Move a phase there once all its items are ☑, and finished owner items too. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
-**Phase numbers:** a new phase takes the next free number and goes where it belongs in the order. If that leaves the open phases' numbers out of order, renumber them so they count up again (finished phases keep theirs) and add the mapping to the archive's opening note, which lists the renumberings of 2026-10-26 and 2026-10-27; commits, PRs and branches from before a renumbering use the old numbers. Since 2026-11-02 the roadmap has two tracks that run side by side, so the order rule applies within each: the *2.0* part (Phases 66 and up, built on the `v2` branch) and the launch phases 53, 56 and 58 (the owner's work on `main`).
+**Phase numbers:** a new phase takes the next free number and goes where it belongs in the order. If that leaves the open phases' numbers out of order, renumber them so they count up again (finished phases keep theirs) and add the mapping to the archive's opening note, which lists the renumberings of 2026-10-26, 2026-10-27 and 2026-11-02; commits, PRs and branches from before a renumbering use the old numbers. Since 2026-11-02 the roadmap has two tracks that run side by side, so the order rule applies within each: the *2.0* part (Phases 66 and up, built on the `v2` branch) and the launch phases 53, 56 and 58 (the owner's work on `main`).
 
 **Where things stand (2026-11-02):**
 - **On Play:** v1.1.0 (versionCode 10100, tag `v1.1.0`, built 2026-11-02 after a clean overnight run) is live on the internal track, checked by the owner on the Xiaomi, and promoted to the closed track `alpha` as a draft on 2026-11-02 for the owner to start in the Play Console; until then 1.0.2 stays live there, and the closed test's 14 days keep running (Phase 53). **The owner decides when a new version goes to Play** (owner, 2026-10-26), so phases have no release step of their own; `/release` runs only when the owner asks.
 - **1.1.0:** its notes were rewritten in all 27 store languages (#562) and the Baseline Profile regenerated on the Xiaomi (#561), with Pointers and Loupe in place of Spirit level and Eclipse; the profile's journeys never open Ear training, so it covers little of it.
 - **Now:** Phases 46, 50, 60 and 59 are done (2026-10-29: the needle quick and steady on the owner's guitar; the store listing sent in all 27 store folders with fresh screenshots; 2026-10-30: every meter look reads nearly to the cent, Pointers and Loupe in place of Spirit level and Eclipse; chord charts, scales and Ear training's Chord type for the banjo). Open before launch: the closed test and the owner's checks. The featuring nomination waits until after launch (owner, 2026-10-29; Phase 56).
 - **Until launch (owner, 2026-11-01):** `main` stays as it passed the launch review; only fixes for 1.1.x land on it, and `/release` releases it.
-- **2.0 (owner, 2026-11-02):** the app designed again, from the from-scratch design of 2026-11-01 and the decisions of 2026-11-02: the *2.0* part below, Phases 66 to 76, is what sessions work on now, on the long-lived `v2` branch (CLAUDE.md, *The v2 branch*), so 1.1.x never carries half-built 2.0 code. Phase 66, the plan, comes first and is done with the owner.
+- **2.0 (owner, 2026-11-02):** the app designed again, from the from-scratch design of 2026-11-01 and the decisions of 2026-11-02: the *2.0* part below, Phases 66 to 76, is what sessions work on now, on the long-lived `v2` branch (CLAUDE.md, *The v2 branch*), so 1.1.x never carries half-built 2.0 code. Phase 66, the plan, comes first and is done with the owner; its order (owner, 2026-11-02) is the phases' numbers, with No tour moved up to 68, right after One look.
 - **Next:** the owner starts 1.1.0's closed-track draft; `release.sh listing` sends the caught-up store description and the new store pictures after the owner's yes; Play's pre-launch report for 1.1.0 to read with the owner; then Phase 53's production launch once the closed test's 14 days are done.
 - **Done 2026-11-02:** the overnight run on the Xiaomi 12X at a618ddd8 (after the night's translations, #559): every UI test in every style and all 36 language checks passed, nothing to fix; `main` is ready for the next `/release`.
 - **Done 2026-11-01:** Phase 65, the launch review's sweep (#544–#556); its look on the real tablet and TalkBack on the real watch are in *Owner checks*. Its new and reworded texts are in every language since the night of 2026-11-01 (#559).
@@ -48,12 +48,13 @@ Decided on 2026-11-02, from the from-scratch design of 2026-11-01 ([IDEAS.md](ID
 
 **The design, settled (owner, 2026-11-02):**
 - **One look, Ink:** blue-grey dark, near-white light, a plain sans, rounded corners; light, dark or the phone's choice (the switch stays in Settings); the phone's wallpaper colours as the one personalisation (on by default, Android 12 and up; amber and green stay the app's own). The six styles, the meter looks and the wave looks go; a saved one reads as the one look.
-- **The tuner screen:** the picker chip "Guitar · Standard ▾" at the top between the gear (top left) and the focus mode button (top right); the ruler (the chromatic scale sliding under a fixed pointer: which note); the lens below it (how far: left flat, right sharp, a ±3 cent zone, green in tune, quiet when the string dies); the whole screen softly tinted amber far off and green in tune (how close); one word at the bottom, Tighten · Loosen · In tune, with the cents small under it; the pegs as a plain row, the one heard ringed, tap to lock, hold to hear. No mode switch, no big note (the ruler is the note), no cents pill, no hertz, no wave view, no strings backdrop.
-- **Three looks in the lens, the one choice a player gets (Settings):** the pitch trail (the default: the newest reading at the top, the last seconds falling under it), the Light arc (as today: 17 rays of 5 lights on the stretched scale), the strobe (three bands drifting flat or sharp, still in tune). The lens is the contract; only what is drawn inside it changes. Stop at three.
+- **The tuner screen:** the picker chip "Guitar · Standard ▾" at the top between the gear (top left) and the focus mode button (top right); the ruler (the chromatic scale sliding under a fixed pointer: which note); the lens below it (how far: left flat, right sharp, the tuner's own in-tune zone, ±5 cents or ±2 with Precise, green in tune, quiet when the string dies); the whole screen softly tinted amber far off and green in tune (how close); one word at the bottom, Tighten · Loosen · In tune, with the cents small under it; the pegs as a plain row, the one heard ringed, tap to lock, hold to hear; the signal bars, behind their switch in Settings as today, beside the ruler's heard note. No mode switch, no big note (the ruler is the note), no cents pill, no hertz, no wave view, no strings backdrop.
+- **Three looks in the lens, the one choice a player gets (Settings):** the pitch trail (the default: the newest reading at the top, the last seconds falling under it), the Light arc (as today: 17 rays of 5 lights on the stretched scale), the strobe (three bands drifting flat or sharp, still in tune). The lens is the contract; only what is drawn inside it changes. Stop at three. The pitch trail tool goes as a tool of its own: the trail is the meter, and its switch stays as the trail look's brake.
 - **The string tick-off** (a tuned string's peg gets a check, "In tune. Play." once all have one) is a beginner helper: present, behind a toggle in Settings, off by default.
 - **Focus mode:** one button, no switch in Settings; the same screen laid out wide on its side (the ruler across the full width, the lens wide, the word and the string small under it, the exit button in the same top-right corner), the pegs and tabs back with a tap; the turning of the whole app, Back and the tap stay as they are.
 - **The one picker:** the chip opens "What are you tuning?": instrument pills, that instrument's tunings with their strings, Edit tunings, Any note as a switch. Instrument, tuning and chromatic in one place.
-- **Navigation:** three tabs, Tune · Metronome · Practice; Settings and About behind the gear; Practice as four big cards (Chords, Scales, Capo, Ear training) with a row for the 12th-fret check and a "last time" row; no tour.
+- **Navigation:** three tabs, Tune · Metronome · Practice; Settings and About behind the gear; Practice as four big cards (Chords, Scales, Capo, Ear training) and a "last time" row; no tour.
+- **The 12th-fret check** is a tuner feature, not a Practice tool: it stays on the tuner, reached from the tuner screen behind a switch in Settings (its way in still to be mocked up, Phase 71).
 - **Strum check and chord name happen by themselves** (the tuner hears one string or six), no mode to switch on.
 - **Under the hood nothing changes:** `:core:dsp`, `:core:audio`, `:core:settings`' storage, the tunings, the reference tones, the drone, the metronome clock, the charts, Ear training's questions, no internet, no account, no ads. The watch and the widget follow the one look.
 
@@ -62,58 +63,60 @@ Goal: every phase below made precise against today's code, so each later session
 - ☑ What is rebuilt and what is reused as is, module by module (`:core:*` untouched; which composables of `:core:designsystem`, `:feature:tuner`, `:feature:settings`, `:feature:metronome`, `:feature:practice` and `:feature:eartraining` survive, which go): [docs/architecture/v2-plan.md](docs/architecture/v2-plan.md), *Modules: kept, changed, gone* (`:core:settings` changes its Kotlin, not its storage)
 - ☑ The lens box's contract written down (its size upright and wide, left flat and right sharp, the in-tune zone, the colours, the quiet state, how a look is drawn inside it) and where today's code gives the three looks: the pitch trail tool, `LightArc.kt`, the strobe wave look: v2-plan.md, *The lens* (the zone is the tuner's own window, 5 cents or 2 with Precise, not the mock-ups' placeholder 3)
 - ☑ The 1.1 settings that 2.0 reads and what each becomes (a saved style, meter look, wave look, tuner display, focus mode, `dynamicColor`), so an update keeps everyone's tunings, A4 and notation and reads an old choice as the one look: v2-plan.md, *Settings from 1.1* (every key; no key renamed, no migration; a 1.1 Light arc stays the Light arc, a 1.1 strobe wave becomes the strobe, everything else the trail)
-- ☐ The order of the phases below confirmed or changed, their estimates, and the test strategy: which UI tests are kept, which are rewritten, which go with the styles
+- ☑ The order of the phases below confirmed or changed, their estimates, and the test strategy: which UI tests are kept, which are rewritten, which go with the styles: v2-plan.md, *Order and size* and *Tests* (owner, 2026-11-02: the order kept but for No tour, moved up to Phase 68 and the phases after it renumbered; about 30 increments; the UI tests run in Ink alone after Phase 67)
 - ☐ The overnight run, `scripts/ui-tests.sh`'s notes and the other scripts pointed at `v2` where they assume `main`; the nightly CI stays on `main`
-- ☐ Where the 12th-fret check and the pitch trail tool go once the trail is the meter (the plan decides: a Practice row, gone, or kept)
+- ☑ Where the 12th-fret check and the pitch trail tool go once the trail is the meter: v2-plan.md, *The two tools* (owner, 2026-11-02: the 12th-fret check stays on the tuner behind a Settings switch, its way in mocked up in Phase 71; the pitch trail tool goes, its switch the trail look's brake)
 
 ### Phase 67 — One look
 Goal: Ink is the app's look on every screen, with light and dark and the phone's colours.
 - ☐ `TwangleTheme` without styles: Ink's palettes (light and dark), its fonts, shapes and backgrounds; the style setting and the style picker go, a saved style reads as Ink; `ThemeMode` (phone / light / dark) and `dynamicColor` stay as switches in Settings
-- ☐ The meter looks and the wave looks go with their settings and card grids (the three lens looks come in Phases 70 and 71); a saved look reads as the default
+- ☐ The meter looks, the wave looks and the Calm/Bold in-tune glow go with their settings and card grids (the three lens looks come in Phases 71 and 72); a saved look reads as the default
 - ☐ Every screen drawn in Ink, the watch and the widget too; the style tests, the screenshots and `scripts/style-screens.sh` reduced to one look
 
-### Phase 68 — Navigation
+### Phase 68 — No tour
+Goal: the tour and everything that keeps it working go.
+- ☐ `FirstStartTour`, the tuner's `tour` package, Settings' "Show me around" and the tour's texts go from every language, with `TourFlowTest`, `TourStylesTest` and the tour's JVM tests. Early on purpose (owner, 2026-11-02): nothing on `v2` reaches players before 2.0 ships, so no player meets the new screen without its tour, and keeping the tour working through Phases 69 to 73, which rebuild everything it points at, would be wasted work
+
+### Phase 69 — Navigation
 Goal: Tune · Metronome · Practice, Settings behind the gear, Practice as four cards.
 - ☐ The bar and the rail read Tune · Metronome · Practice; the metronome leaves the Practice tab (`PracticeTool` loses METRONOME, the `practiceTab` switch its metronome fallback)
 - ☐ Settings and About behind a gear in the top left corner of the tuner (and of the other tabs where they need one), not a tab
-- ☐ Practice as four big cards that open a tool full screen and come back, a row for the 12th-fret check if the plan keeps it there, and a "last time" row; the tool button and "opens on the tool used last" go
+- ☐ Practice as four big cards that open a tool full screen and come back, and a "last time" row; the tool button and "opens on the tool used last" go
 - ☐ The store screenshots and the website's pages follow
 
-### Phase 69 — The one picker
+### Phase 70 — The one picker
 Goal: instrument, tuning and Any note in one sheet from a chip at the top.
 - ☐ The chip "Guitar · Standard ▾" at the top centre of the tuner; the "What are you tuning?" sheet: instrument pills, the tunings with their strings, Edit tunings (the tuning editor), Any note as a switch; the mode switch goes (`TunerMode` set from the sheet)
 - ☐ In Any note the chip reads "Any note" and the pegs go; the Practice tools take their instrument and tuning from the same sheet (`InstrumentTuningPanel` becomes it)
 
-### Phase 70 — The tuner screen
+### Phase 71 — The tuner screen
 Goal: the ruler, the lens with the trail, the colour, the word and the pegs.
-- ☐ The ruler: the chromatic scale sliding under a fixed pointer, the heard note big, its neighbours small, in the notation setting's names
-- ☐ The lens with the pitch trail inside (the newest reading at the top, the last seconds falling under it, ±50 cents across, the in-tune zone, ♭ and ♯ in the corners), its border in the reading's colour
+- ☐ A rough mock-up (Contemporary/Ink only, the bare core idea) of the 12th-fret check's way in from the tuner screen, behind its Settings switch, for the owner to pick
+- ☐ The ruler: the chromatic scale sliding under a fixed pointer, the heard note big, its neighbours small, in the notation setting's names; the signal bars beside the heard note, behind their switch as today (their exact place checked on the phone)
+- ☐ The lens with the pitch trail inside (the newest reading at the top, the last seconds falling under it, ±50 cents across, the in-tune zone of ±5 cents or ±2 with Precise, ♭ and ♯ in the corners), its border in the reading's colour; the pitch trail tool goes as a tool of its own (its view becomes the look), its switch kept as the trail look's brake (v2-plan.md, *The two tools*)
 - ☐ The whole screen's soft tint, amber far off to green in tune, in light and dark; no red anywhere
 - ☐ One word at the bottom (Tighten · Loosen · In tune; Too low · Too high in Any note) with the cents small under it; "Play a string" while nothing is heard
 - ☐ The pegs: a plain row in the tuning's order, the one heard ringed, tap to lock (the lock shown on the peg), hold to hear; the string tick-off and "In tune. Play." behind their toggle, off by default
-- ☐ The big note, the cents pill, the hertz, the wave view and the strings backdrop go; what Phase 60's precision work taught (the stretched scale, thin edges, the in-tune window shown) carries into the lens
+- ☐ The 12th-fret check opened from the tuner screen the way the owner picked, behind its new Settings switch (the `intonationCheck` build switch stays as the brake that hides both); its panel redrawn with the pegs
+- ☐ The big note, the cents pill, the hertz, the wave view, the strings backdrop and the "Tune up / Tune down" switch go; what Phase 60's precision work taught (the stretched scale, thin edges, the in-tune window shown) carries into the lens
 
-### Phase 71 — The Light arc and the strobe in the lens
+### Phase 72 — The Light arc and the strobe in the lens
 Goal: the two other looks, chosen in Settings, drawn inside the same lens.
 - ☐ The Light arc inside the lens (today's 17 rays of 5 lights, the stretched scale, the marks at 5 and 10 cents, the wedge lit from the centre to the reading), fitting the lens's shape upright and wide
 - ☐ The strobe inside the lens (three bands, the finer ones faster, drifting flat or sharp, still in tune), driven by the cents reading as the wave look is today
-- ☐ "Meter" in Settings: Trail · Light arc · Strobe, with a small picture of each; the lens contract's tests run for all three (direction, the in-tune state, the quiet state, every language)
+- ☐ "Meter" in Settings: Trail · Light arc · Strobe, with a small picture of each; the lens contract's tests run for all three (direction, the in-tune state, the quiet state, every language); the trail look's brake: with `pitchTrail` off in a build, Meter offers Light arc and Strobe, the Light arc is the default and a saved trail shows as the Light arc
 
-### Phase 72 — Focus mode
+### Phase 73 — Focus mode
 Goal: one button, the same screen wide.
 - ☐ The button top right (full screen), its exit twin in the same corner on its side; the Settings switch goes (a saved value is read once, then forgotten)
 - ☐ The wide layout: the ruler across the full width with more of the scale, the lens wide, the word and the string small under it, no pegs and no tabs until a tap; each of the three looks drawn wide
-- ☐ The turning of the whole app, Back and the tap stay as they are (`FocusTurn`); the tour step goes with the tour
+- ☐ The turning of the whole app, Back and the tap stay as they are (`FocusTurn`)
 
-### Phase 73 — Strum check and chord name by themselves
+### Phase 74 — Strum check and chord name by themselves
 Goal: a strum shows which strings are off and a fretted chord shows its name, with no mode to switch on.
 - ☐ DSP first: the strum detector and the chord detector next to the pitch detector on every frame, within the CPU budget (hard rule 2; `scripts/dsp-phone-benchmark.sh` before and after), telling a strum from one string without false alarms, against the recorded plucks and the synthetic strums
 - ☐ The marks above the pegs (↑ ↓ ✓) and "4 of 6 in tune" in the word's place after a strum of open strings; a fretted chord's name in the ruler's place; the strum check and chord name tools and their switching on go (their switches stay as the brake)
 - ☐ The owner's guitar check, then the website's pages follow
-
-### Phase 74 — No tour
-Goal: the first screen explains itself.
-- ☐ `FirstStartTour`, the tuner's `tour` package, Settings' "Show me around" and the tour's texts go from every language; last, once Phases 68 to 72 have made the screen explain itself
 
 ### Phase 75 — The other screens as drawn
 Goal: the metronome, Practice's tools, Settings, About, the widget and the watch in the one look, as the first mock-up draws them.
