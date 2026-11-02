@@ -22,7 +22,7 @@ Topic files:
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
-  - **[Tuner screen and tour](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Pitch trail view · Tour · Under the note
+  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Pitch trail view · Under the note
   - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Strobe · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
@@ -194,7 +194,6 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
                 IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
-    tour/       TourHost + TourOverlay (dim, spotlight, balloon), TourTargets (+ tourTarget), TourPart, TourGeometry (pure)
 
 feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     MetronomeScreen (+ MetronomeContent, BeatClock), MetronomeViewModel
@@ -220,7 +219,7 @@ feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
                 LookCardGrid (+ LookDemo, unused until the lens's Meter cards, Phase 72), LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour,
+    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode,
     BuildToolSwitches (toolSwitchesFor), TunerPitchListener (Ear training's ears: the tuner's PitchPipeline),
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons

@@ -63,7 +63,6 @@ import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
-import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 import kotlin.math.min
 
 /**
@@ -267,8 +266,6 @@ private fun NavItem(
         selected = selected,
         modifier = modifier
             .testTag(NavigationTestTags.tab(destination))
-            // No tour step of their own: the tour's balloons keep clear of the tabs.
-            .tourControl()
             .selectable(
                 selected = selected,
                 onClick = { if (selected) onReselect() else onClick() },

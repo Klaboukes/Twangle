@@ -160,16 +160,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s，沒聽到</string>
     <string name="tuner_strum_spoken_waiting">%1$s，還沒刷弦</string>
     <string name="tuner_strum_spoken_less_sure">%1$s，不太確定</string>
-    <string name="tour_title">帶我看看</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">第 %1$d 步，共 %2$d 步。%3$s。</string>
-    <string name="tour_readout">偏了多少，是哪個音</string>
-    <string name="tour_strum">刷弦，檢查每根弦</string>
-    <string name="tour_strings">輕觸：只調這根弦。按住：試聽</string>
-    <string name="tour_picker">選擇樂器和調音</string>
-    <string name="tour_skip">略過導覽</string>
-    <string name="tour_next">下一步</string>
-    <string name="tour_done">完成</string>
     <string name="tuner_more_tools">更多工具</string>
     <string name="tuner_tool_on">%1$s已開啟</string>
     <string name="tuner_intonation_check">第12格檢查</string>
@@ -208,7 +198,6 @@
     <string name="tuner_intonation_mark_back">下弦枕往後移</string>
     <string name="tuner_intonation_mark_forward">下弦枕往前移</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s，尚未檢查</string>
-    <string name="tour_more_tools">更多工具，例如刷弦檢查</string>
     <string name="tuner_chord_name">和弦名稱</string>
     <string name="tuner_chord_major">%1$s 大三和弦</string>
     <string name="tuner_chord_minor">%1$s 小三和弦</string>

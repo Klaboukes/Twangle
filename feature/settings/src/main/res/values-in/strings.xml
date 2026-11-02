@@ -51,8 +51,6 @@
     <string name="settings_language_title">Bahasa</string>
     <string name="settings_language_phone">Bahasa ponsel</string>
     <string name="settings_language_cancel">Batal</string>
-    <string name="settings_show_tour_title">Tur aplikasi</string>
-    <string name="settings_show_tour_summary">Tur singkat tuner</string>
     <string name="about_title">Tentang Twangle</string>
     <string name="settings_about_link_summary">Versi %1$s, bantuan, privasi, dan lisensi</string>
     <string name="settings_about_version">Versi %1$s</string>

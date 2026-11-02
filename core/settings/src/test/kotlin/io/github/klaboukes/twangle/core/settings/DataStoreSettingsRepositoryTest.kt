@@ -112,7 +112,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.showTuneHint)
         assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
-        assertEquals("a fresh install is due the tour", false, settings.tourSeen)
         assertEquals(false, settings.focusMode)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
@@ -152,7 +151,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setShowTuneHint(false)
         repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
-        repo.setTourSeen(true)
         repo.setFocusMode(true)
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
@@ -192,7 +190,6 @@ class DataStoreSettingsRepositoryTest {
             showTuneHint = false,
             showSignalBars = true,
             lensLook = LensLook.STROBE,
-            tourSeen = true,
             focusMode = true,
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
@@ -699,8 +696,7 @@ class DataStoreSettingsRepositoryTest {
     fun `1_1's Calm or Bold glow is left in the file unread`() = runTest {
         val store = dataStore()
         val repo = repository(store)
-        // Any saved key counts the install as used (tourSeen); a key no longer read changes nothing else.
-        store.edit { it[booleanPreferencesKey("string_lock_tip_seen")] = true }
+        // A key no longer read changes nothing.
         val before = repo.settings.first()
         for (effect in listOf("CALM", "BOLD", "FIREWORKS")) {
             store.edit { it[stringPreferencesKey("in_tune_effect")] = effect }
@@ -714,8 +710,7 @@ class DataStoreSettingsRepositoryTest {
         // 2.0 has one look (Ink): every 1.1 style, old names and damaged values included, reads the same.
         val store = dataStore()
         val repo = repository(store)
-        // Any saved key at all counts the install as used, so the tour isn't due (decideTourOnce); nothing else changes.
-        val plain = repo.settings.first().copy(tourSeen = true)
+        val plain = repo.settings.first()
         for (saved in listOf("ANCIENT", "CLASSIC", "RETRO", "CONTEMPORARY", "FUTURISTIC", "SPACE_AGE", "MIDDLE_AGES", "", "BAROQUE")) {
             store.edit { it[stringPreferencesKey("visual_style")] = saved }
             assertEquals(saved, plain, repo.settings.first())
@@ -840,12 +835,22 @@ class DataStoreSettingsRepositoryTest {
         val store = dataStore()
         val repo = repository(store)
         for (breathes in listOf(true, false)) {
-            store.edit {
-                it[booleanPreferencesKey("wave_breathes_in_tune")] = breathes
-                it[booleanPreferencesKey("tour_seen")] = true
-            }
-            assertEquals("saved $breathes", AppSettings(tourSeen = true), repo.settings.first())
+            store.edit { it[booleanPreferencesKey("wave_breathes_in_tune")] = breathes }
+            assertEquals("saved $breathes", AppSettings(), repo.settings.first())
         }
+    }
+
+    @Test
+    fun `1_1's tour flag is left in the file unread`() = runTest {
+        // 2.0 has no tour (Phase 68): whether 1.1 saw it changes nothing, and the key stays as it lay.
+        val store = dataStore()
+        val repo = repository(store)
+        for (seen in listOf(true, false)) {
+            store.edit { it[booleanPreferencesKey("tour_seen")] = seen }
+            assertEquals("saved $seen", AppSettings(), repo.settings.first())
+        }
+        repo.setDynamicColor(false)
+        assertEquals("never removed", false, store.data.first()[booleanPreferencesKey("tour_seen")])
     }
 
     // --- Custom tunings ---
@@ -1055,80 +1060,20 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `a fresh install is due the tour until it is skipped or finished, also after a restart`() = runTest {
+    fun `a refused microphone is remembered across restarts`() = runTest {
         val repo = repository()
-        repo.decideTourOnce()
-        assertEquals("fresh: the tour shows", false, repo.settings.first().tourSeen)
-        repo.setTourSeen(true)
-        close()
-
-        assertEquals("skipped or finished: never again by itself", true, repository().settings.first().tourSeen)
-    }
-
-    @Test
-    fun `settings saved before the tour is decided make an update, which never shows the tour`() = runTest {
-        // An install from before the tour that only dismissed the string-lock tip (a key no longer
-        // read): it saved other settings, never the tour.
-        val store = dataStore()
-        store.edit { it[booleanPreferencesKey("string_lock_tip_seen")] = true }
-        val repo = repository(store)
-        assertEquals("read as seen before anything is decided", true, repo.settings.first().tourSeen)
-
-        repo.decideTourOnce()
-        close()
-        assertEquals("and saved as seen", true, repository().settings.first().tourSeen)
-    }
-
-    @Test
-    fun `any saved setting at all counts as an update`() = runTest {
-        val store = dataStore()
-        store.edit { it[stringPreferencesKey("visual_style")] = "RETRO" }
-        val repo = repository(store)
-        repo.decideTourOnce()
-        assertEquals(true, repo.settings.first().tourSeen)
-    }
-
-    @Test
-    fun `once a fresh install is decided, saving other settings doesn't cancel the tour`() = runTest {
-        val repo = repository()
-        repo.decideTourOnce()
-        // E.g. the microphone was refused at first and the theme picked in Settings first.
-        repo.setTheme(ThemeMode.DARK)
-        repo.setFocusMode(true)
-        repo.decideTourOnce()
-        close()
-
-        assertEquals("still due after a restart", false, repository().settings.first().tourSeen)
-    }
-
-    @Test
-    fun `deciding again never brings a seen tour back`() = runTest {
-        val repo = repository()
-        repo.decideTourOnce()
-        repo.setTourSeen(true)
-        repo.decideTourOnce()
-        assertEquals(true, repo.settings.first().tourSeen)
-    }
-
-    @Test
-    fun `a refused microphone is remembered across restarts, and doesn't cancel a fresh install's tour`() = runTest {
-        val repo = repository()
-        repo.decideTourOnce()
         assertEquals("not refused on a fresh install", false, repo.settings.first().micRefused)
         repo.setMicRefused(true)
         close()
 
-        val reopened = repository().settings.first()
-        assertEquals(true, reopened.micRefused)
-        assertEquals("the tour is still due", false, reopened.tourSeen)
+        assertEquals(true, repository().settings.first().micRefused)
     }
 
     @Test
-    fun `the first use is noted once, after the tour's decision, and the rating ask is remembered`() = runTest {
+    fun `the first use is noted once, and the rating ask is remembered`() = runTest {
         val repo = repository()
         assertEquals("not noted on a fresh install", 0L, repo.settings.first().firstUseMillis)
         assertEquals(false, repo.settings.first().ratingAsked)
-        repo.decideTourOnce()
         repo.noteFirstUseOnce(1_000L)
         repo.noteFirstUseOnce(9_000L)
         repo.setRatingAsked(true)
@@ -1137,7 +1082,6 @@ class DataStoreSettingsRepositoryTest {
         val reopened = repository().settings.first()
         assertEquals("the first one stays", 1_000L, reopened.firstUseMillis)
         assertEquals(true, reopened.ratingAsked)
-        assertEquals("the tour is still due", false, reopened.tourSeen)
     }
 
     /** [real] for reading, while every write fails as on a full phone. */
@@ -1178,8 +1122,6 @@ class DataStoreSettingsRepositoryTest {
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             "setFocusMode" to { repo.setFocusMode(!before.focusMode) },
-            "setTourSeen" to { repo.setTourSeen(!before.tourSeen) },
-            "decideTourOnce" to { repo.decideTourOnce() },
             "setMicRefused" to { repo.setMicRefused(!before.micRefused) },
             // The first-use notes run at every start (MainActivity.onCreate): a full phone must not stop the app.
             "noteFirstUseOnce" to { repo.noteFirstUseOnce(1_000L) },

@@ -160,16 +160,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s、聞き取れず</string>
     <string name="tuner_strum_spoken_waiting">%1$s、まだ弾いていません</string>
     <string name="tuner_strum_spoken_less_sure">%1$s、やや不確か</string>
-    <string name="tour_title">使い方を見る</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">ステップ %1$d / %2$d。%3$s。</string>
-    <string name="tour_readout">ずれ具合と音名</string>
-    <string name="tour_strum">まとめて弾いて全弦をチェック</string>
-    <string name="tour_strings">タップでこの弦だけ調整、長押しで試聴</string>
-    <string name="tour_picker">楽器とチューニングを選ぶ</string>
-    <string name="tour_skip">ツアーをスキップ</string>
-    <string name="tour_next">次へ</string>
-    <string name="tour_done">完了</string>
     <string name="tuner_more_tools">その他のツール</string>
     <string name="tuner_tool_on">%1$s オン</string>
     <string name="tuner_intonation_check">12フレットチェック</string>
@@ -208,7 +198,6 @@
     <string name="tuner_intonation_mark_back">サドルを後ろへ</string>
     <string name="tuner_intonation_mark_forward">サドルを前へ</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s、未チェック</string>
-    <string name="tour_more_tools">ストロークチェックなど、その他のツール</string>
     <string name="tuner_chord_name">コード名</string>
     <string name="tuner_chord_major">%1$s メジャー</string>
     <string name="tuner_chord_minor">%1$s マイナー</string>

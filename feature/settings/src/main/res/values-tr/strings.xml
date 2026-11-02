@@ -51,8 +51,6 @@
     <string name="settings_language_title">Dil</string>
     <string name="settings_language_phone">Telefonun dili</string>
     <string name="settings_language_cancel">İptal</string>
-    <string name="settings_show_tour_title">Tanıtım turu</string>
-    <string name="settings_show_tour_summary">Akort ekranında kısa bir tur</string>
     <string name="about_title">Twangle hakkında</string>
     <string name="settings_about_link_summary">Sürüm %1$s, yardım, gizlilik ve lisanslar</string>
     <string name="settings_about_version">Sürüm %1$s</string>

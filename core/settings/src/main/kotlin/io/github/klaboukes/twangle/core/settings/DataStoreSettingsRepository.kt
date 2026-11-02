@@ -264,14 +264,6 @@ class DataStoreSettingsRepository internal constructor(
         save { it[FOCUS_MODE] = enabled }
     }
 
-    override suspend fun setTourSeen(seen: Boolean) {
-        save { it[TOUR_SEEN] = seen }
-    }
-
-    override suspend fun decideTourOnce() {
-        save { if (TOUR_SEEN !in it) it[TOUR_SEEN] = tourSeen(it) }
-    }
-
     override suspend fun setMicRefused(refused: Boolean) {
         save(deviceStore) { it[MIC_REFUSED] = refused }
     }
@@ -414,7 +406,6 @@ class DataStoreSettingsRepository internal constructor(
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
-            tourSeen = tourSeen(prefs),
             micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
             firstUseMillis = prefs[FIRST_USE_MILLIS] ?: defaults.firstUseMillis,
             ratingAsked = prefs[RATING_ASKED] ?: defaults.ratingAsked,
@@ -487,9 +478,6 @@ class DataStoreSettingsRepository internal constructor(
 
         /** 1.1's wave look: "STROBE" (or the older "STRIPES") is the strobe. */
         private val OLD_WAVE_LOOK = stringPreferencesKey("wave_look")
-        /** Whether the first-start tour was skipped or finished; see [tourSeen] for an install without it. */
-        private val TOUR_SEEN = booleanPreferencesKey("tour_seen")
-
         /** Whether the microphone was ever refused in Android's dialog ([AppSettings.micRefused]). */
         private val MIC_REFUSED = booleanPreferencesKey("mic_refused")
 
@@ -666,16 +654,6 @@ class DataStoreSettingsRepository internal constructor(
             val loweredBy = (prefs[TUNING_LOWERED_BY] ?: 0).coerceIn(0, asWritten.lowerableBy)
             return instrument to asWritten.lowered(loweredBy)
         }
-
-        /**
-         * The saved tour flag; without one (before [decideTourOnce] has run on this install), any other
-         * saved setting means an install from before the tour, which counts as having seen it. That
-         * includes keys no longer read, such as `string_lock_tip_seen` (the string-lock tip the tour's
-         * strings step replaced), `wave_breathes_in_tune` (the temporary "when in tune" choice; the
-         * wave now always holds still on the note) and `visual_style` (1.1's six styles; 2.0 has one
-         * look): they stay in the file, so an install that only dismissed that tip still counts as used.
-         */
-        private fun tourSeen(prefs: Preferences): Boolean = prefs[TOUR_SEEN] ?: prefs.asMap().isNotEmpty()
 
         /** The tool used last, with Chords read as Scales where the old choice ([OLD_PRACTICE_CHART]) still says scales. */
         private fun practiceTool(prefs: Preferences): PracticeTool? {

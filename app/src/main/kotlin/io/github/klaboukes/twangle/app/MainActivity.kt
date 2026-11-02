@@ -71,15 +71,10 @@ import io.github.klaboukes.twangle.feature.settings.openPlayPage
 import io.github.klaboukes.twangle.feature.settings.openWebsite
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
-import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTextOf
-import io.github.klaboukes.twangle.feature.tuner.tunerToolsFor
 import kotlinx.coroutines.launch
 
 /**
@@ -100,13 +95,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
-        // A fresh install is due the first-start tour; an update from before the tour is not. Decided once.
-        // Then the first use is noted once (after the tour's decision, which looks for saved settings):
-        // Google's rating window never comes on the first day.
-        lifecycleScope.launch {
-            container.settingsRepository.decideTourOnce()
-            container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis())
-        }
+        // The first use is noted once: Google's rating window never comes on the first day.
+        lifecycleScope.launch { container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis()) }
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
             // never flashes the wrong theme. The opening screen covers that gap.
@@ -132,13 +122,7 @@ class MainActivity : AppCompatActivity() {
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
      * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
-     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner; so
-     * does "Show me around", so the tour always shows the plain tuner.
-     *
-     * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
-     * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
-     * Back or Done end it for good. Its strings step ("tap one to lock it") is how people find the
-     * string lock.
+     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner.
      */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
@@ -192,10 +176,6 @@ class MainActivity : AppCompatActivity() {
                 var editorReturn by rememberSaveable { mutableStateOf(Screen.TUNER) }
                 // Whether the instrument and tuning panel shows over the tuner (its instrument button opens it).
                 var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
-                // The first-start tour: asked for again from Settings, ended in this session, and whether the tuner itself shows.
-                var tourRequested by rememberSaveable { mutableStateOf(false) }
-                var tourEnded by rememberSaveable { mutableStateOf(false) }
-                var tunerShown by remember { mutableStateOf(false) }
                 // Focus mode's tuner without its controls: the meter takes the whole screen, so the rail
                 // and the system bars go (a swipe from the edge shows the system bars for a moment).
                 var tunerFullScreen by remember { mutableStateOf(false) }
@@ -210,11 +190,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     onDispose {}
                 }
-                // Taps on the bar's Tuner tab (also while the tuner shows) and "Show me around": each
-                // closes the tuner's tools, so the tab and the tour lead to the plain tuner.
+                // Taps on the bar's Tuner tab (also while the tuner shows) close the tuner's tools, so
+                // the tab leads to the plain tuner.
                 var closeTunerToolsRequests by rememberSaveable { mutableIntStateOf(0) }
-                val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
-                val tourOpen = tourShown(tourDue, screen == Screen.TUNER, tunerShown)
                 // Ink's plain background behind every screen.
                 StyleBackdrop(Modifier.fillMaxSize())
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
@@ -240,84 +218,63 @@ class MainActivity : AppCompatActivity() {
                 if (screen != Screen.TUNING_EDITOR) {
                     screen.back?.let { target -> BackHandler { screen = target } }
                 }
-                TourHost(
-                    open = tourOpen,
-                    steps = TourPart.stepsFor(settings.mode, toolsButton = tunerToolsFor(tools, settings.instrument).isNotEmpty()),
-                    // Where the tuner offers anything but the strum check alone, its "more tools" button stands in the switch's place.
-                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument) != listOf(TunerTool.STRUM_CHECK)) },
-                    onEnd = {
-                        tourEnded = true
-                        tourRequested = false
-                        // For good: it doesn't come back by itself.
-                        lifecycleScope.launch { container.settingsRepository.setTourSeen(true) }
+                AppNavigationFrame(
+                    selected = screen.destination,
+                    onSelect = {
+                        if (it == Destination.TUNER) closeTunerToolsRequests++
+                        screen = it.screen
                     },
-                    modifier = Modifier.fillMaxSize(),
+                    onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
+                    practice = practiceToolsFor(tools).isNotEmpty(),
+                    navigationHidden = fullScreen,
                 ) {
-                    AppNavigationFrame(
-                        selected = screen.destination,
-                        onSelect = {
-                            if (it == Destination.TUNER) closeTunerToolsRequests++
-                            screen = it.screen
-                        },
-                        onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
-                        practice = practiceToolsFor(tools).isNotEmpty(),
-                        navigationHidden = fullScreen,
-                    ) {
-                        saveableState.SaveableStateProvider(screen.name) {
-                            when (screen) {
-                                Screen.TUNER -> {
-                                    // The volume keys set the reference tone's loudness (the media volume)
-                                    // while the tuner is shown, also when no tone sounds.
-                                    MediaVolumeKeys()
-                                    TunerScreen(
-                                        audioRecorder = container.audioRecorder,
-                                        settingsRepository = container.settingsRepository,
-                                        tonePlayer = container.tonePlayer,
-                                        tools = tools,
-                                        saved = settings,
-                                        onOpenTuningEditor = { instrument, customTuningId ->
-                                            openTuningEditor(instrument, customTuningId, Screen.TUNER)
-                                        },
-                                        pickerOpen = tuningPanelOpen,
-                                        onPickerOpenChange = { tuningPanelOpen = it },
-                                        tourOpen = tourOpen,
-                                        onMicGrantedChange = { tunerShown = it },
-                                        closeToolsRequest = closeTunerToolsRequests,
-                                        onFullScreenChange = { tunerFullScreen = it },
-                                        ratingWindow = container.ratingWindow,
-                                    )
-                                }
-                                Screen.METRONOME -> PracticeTab(container, settings, tools) { instrument, customTuningId ->
-                                    openTuningEditor(instrument, customTuningId, Screen.METRONOME)
-                                }
-                                Screen.SETTINGS -> SettingsScreen(
+                    saveableState.SaveableStateProvider(screen.name) {
+                        when (screen) {
+                            Screen.TUNER -> {
+                                // The volume keys set the reference tone's loudness (the media volume)
+                                // while the tuner is shown, also when no tone sounds.
+                                MediaVolumeKeys()
+                                TunerScreen(
+                                    audioRecorder = container.audioRecorder,
                                     settingsRepository = container.settingsRepository,
-                                    appVersion = BuildConfig.VERSION_NAME,
-                                    onOpenAbout = { screen = Screen.ABOUT },
-                                    languages = BuildConfig.LANGUAGES.split(","),
-                                    // Android 13+ redraws the widget itself on the new configuration.
-                                    onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
-                                    onShowTour = {
-                                        tourRequested = true
-                                        closeTunerToolsRequests++
-                                        screen = Screen.TUNER
+                                    tonePlayer = container.tonePlayer,
+                                    tools = tools,
+                                    saved = settings,
+                                    onOpenTuningEditor = { instrument, customTuningId ->
+                                        openTuningEditor(instrument, customTuningId, Screen.TUNER)
                                     },
-                                )
-                                Screen.ABOUT -> AboutScreen(
-                                    appVersion = BuildConfig.VERSION_NAME,
-                                    onOpenWebsite = { openWebsite(this@MainActivity, it) },
-                                    onRate = { openPlayPage(this@MainActivity, BuildConfig.APPLICATION_ID) },
-                                    onBack = { screen = Screen.SETTINGS },
-                                )
-                                Screen.TUNING_EDITOR -> TuningEditorScreen(
-                                    settingsRepository = container.settingsRepository,
-                                    settings = settings,
-                                    instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
-                                    editingId = editorTuningId,
-                                    onClose = closeEditor,
-                                    closeRequest = openTunerRequest,
+                                    pickerOpen = tuningPanelOpen,
+                                    onPickerOpenChange = { tuningPanelOpen = it },
+                                    closeToolsRequest = closeTunerToolsRequests,
+                                    onFullScreenChange = { tunerFullScreen = it },
+                                    ratingWindow = container.ratingWindow,
                                 )
                             }
+                            Screen.METRONOME -> PracticeTab(container, settings, tools) { instrument, customTuningId ->
+                                openTuningEditor(instrument, customTuningId, Screen.METRONOME)
+                            }
+                            Screen.SETTINGS -> SettingsScreen(
+                                settingsRepository = container.settingsRepository,
+                                appVersion = BuildConfig.VERSION_NAME,
+                                onOpenAbout = { screen = Screen.ABOUT },
+                                languages = BuildConfig.LANGUAGES.split(","),
+                                // Android 13+ redraws the widget itself on the new configuration.
+                                onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
+                            )
+                            Screen.ABOUT -> AboutScreen(
+                                appVersion = BuildConfig.VERSION_NAME,
+                                onOpenWebsite = { openWebsite(this@MainActivity, it) },
+                                onRate = { openPlayPage(this@MainActivity, BuildConfig.APPLICATION_ID) },
+                                onBack = { screen = Screen.SETTINGS },
+                            )
+                            Screen.TUNING_EDITOR -> TuningEditorScreen(
+                                settingsRepository = container.settingsRepository,
+                                settings = settings,
+                                instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
+                                editingId = editorTuningId,
+                                onClose = closeEditor,
+                                closeRequest = openTunerRequest,
+                            )
                         }
                     }
                 }

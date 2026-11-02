@@ -160,16 +160,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, tidak terdengar</string>
     <string name="tuner_strum_spoken_waiting">%1$s, belum digenjreng</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, kurang pasti</string>
-    <string name="tour_title">Tur aplikasi</string>
-    <string name="tour_step_count">%1$d dari %2$d</string>
-    <string name="tour_step_spoken">Langkah %1$d dari %2$d. %3$s.</string>
-    <string name="tour_readout">Nada dan selisihnya</string>
-    <string name="tour_strum">Genjreng untuk cek semua senar</string>
-    <string name="tour_strings">Ketuk: stem senar ini saja. Tahan: dengarkan</string>
-    <string name="tour_picker">Pilih instrumen dan stem</string>
-    <string name="tour_skip">Lewati tur</string>
-    <string name="tour_next">Berikutnya</string>
-    <string name="tour_done">Selesai</string>
     <string name="tuner_more_tools">Alat lainnya</string>
     <string name="tuner_tool_on">%1$s aktif</string>
     <string name="tuner_intonation_check">Cek fret ke-12</string>
@@ -208,7 +198,6 @@
     <string name="tuner_intonation_mark_back">sadel ke belakang</string>
     <string name="tuner_intonation_mark_forward">sadel ke depan</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, belum dicek</string>
-    <string name="tour_more_tools">Alat lainnya, seperti cek genjreng</string>
     <string name="tuner_chord_name">Nama akor</string>
     <string name="tuner_chord_major">%1$s mayor</string>
     <string name="tuner_chord_minor">%1$s minor</string>

@@ -43,8 +43,6 @@
     <string name="settings_language_title">ভাষা</string>
     <string name="settings_language_phone">ফোনের ভাষা</string>
     <string name="settings_language_cancel">বাতিল</string>
-    <string name="settings_show_tour_title">অ্যাপ ঘুরে দেখুন</string>
-    <string name="settings_show_tour_summary">টিউনারের একটি ছোট ট্যুর</string>
     <string name="about_title">Twangle সম্পর্কে</string>
     <string name="settings_about_link_summary">ভার্সন %1$s, সাহায্য, গোপনীয়তা ও লাইসেন্স</string>
     <string name="settings_about_version">ভার্সন %1$s</string>

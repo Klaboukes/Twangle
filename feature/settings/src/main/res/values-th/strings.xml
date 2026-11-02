@@ -51,8 +51,6 @@
     <string name="settings_language_title">ภาษา</string>
     <string name="settings_language_phone">ภาษาของโทรศัพท์</string>
     <string name="settings_language_cancel">ยกเลิก</string>
-    <string name="settings_show_tour_title">แนะนำการใช้งาน</string>
-    <string name="settings_show_tour_summary">พาชมจูนเนอร์แบบสั้นๆ</string>
     <string name="about_title">เกี่ยวกับ Twangle</string>
     <string name="settings_about_link_summary">เวอร์ชัน %1$s ความช่วยเหลือ ความเป็นส่วนตัว และสัญญาอนุญาต</string>
     <string name="settings_about_version">เวอร์ชัน %1$s</string>

@@ -166,16 +166,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, no se oyó</string>
     <string name="tuner_strum_spoken_waiting">%1$s, aún sin rasguear</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, menos seguro</string>
-    <string name="tour_title">Recorrido</string>
-    <string name="tour_step_count">%1$d de %2$d</string>
-    <string name="tour_step_spoken">Paso %1$d de %2$d. %3$s.</string>
-    <string name="tour_readout">Cuánto te desvías y qué nota</string>
-    <string name="tour_strum">Rasguea para revisar todas las cuerdas</string>
-    <string name="tour_strings">Toca: afina solo esta cuerda. Mantén: escúchala</string>
-    <string name="tour_picker">Elige instrumento y afinación</string>
-    <string name="tour_skip">Saltar</string>
-    <string name="tour_next">Siguiente</string>
-    <string name="tour_done">Listo</string>
     <string name="tuner_more_tools">Más herramientas</string>
     <string name="tuner_tool_on">%1$s en uso</string>
     <string name="tuner_intonation_check">Prueba del traste 12</string>
@@ -216,7 +206,6 @@
     <string name="tuner_intonation_mark_back">selleta hacia atrás</string>
     <string name="tuner_intonation_mark_forward">selleta hacia delante</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, sin revisar</string>
-    <string name="tour_more_tools">Más herramientas, como la prueba de rasgueo</string>
     <string name="tuner_chord_name">Nombre del acorde</string>
     <string name="tuner_chord_major">%1$s mayor</string>
     <string name="tuner_chord_minor">%1$s menor</string>

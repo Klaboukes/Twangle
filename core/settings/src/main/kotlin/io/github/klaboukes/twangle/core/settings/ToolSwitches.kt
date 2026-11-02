@@ -8,7 +8,7 @@ package io.github.klaboukes.twangle.core.settings
  * hands them down to the screens and ViewModels. Every tool keeps its switch once
  * live (owner, 2026-10-28): if a tool goes wrong on players' phones, a quick release with its switch
  * off hides it while the fix is made. A tool whose switch is off leaves no trace on screen: no mode,
- * tab, setting, tour step or text; the JVM tests check that with [ALL_OFF]. What lives only inside a
+ * tab, setting or text; the JVM tests check that with [ALL_OFF]. What lives only inside a
  * tool goes with it (the Practice tools with [practiceTab], the capo helper with [chords], whose charts
  * its rows open). A new tool still being built gets a switch here, off in release builds until it
  * goes live (docs/architecture/performance.md, *Release build*).

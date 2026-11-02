@@ -51,8 +51,6 @@
     <string name="settings_language_title">Kieli</string>
     <string name="settings_language_phone">Puhelimen kieli</string>
     <string name="settings_language_cancel">Peruuta</string>
-    <string name="settings_show_tour_title">Esittele sovellus</string>
-    <string name="settings_show_tour_summary">Lyhyt esittely virittimestä</string>
     <string name="about_title">Tietoja Twanglesta</string>
     <string name="settings_about_link_summary">Versio %1$s, ohjeet, tietosuoja ja lisenssit</string>
     <string name="settings_about_version">Versio %1$s</string>

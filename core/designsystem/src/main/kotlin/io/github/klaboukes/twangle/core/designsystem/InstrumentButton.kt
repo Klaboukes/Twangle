@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
  * and at the Practice tools' tuning line; a tap ([onClick]) opens the instrument and tuning panel.
  * A long-press shows "Instrument" in a tooltip. TalkBack: "Instrument, Guitar, Standard ([current]),
  * button, double-tap to change instrument or tuning". [faceModifier] goes on the outline, not the
- * 48 dp touch target round it (the tour lights up the outline), and on the node TalkBack hears (a test tag).
+ * 48 dp touch target round it, and on the node TalkBack hears (a test tag).
  * The name beside it, which opens the panel too, passes the same [interactionSource], so a press on
  * either sinks and lights both, as one control.
  */

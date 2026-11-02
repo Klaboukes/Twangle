@@ -161,16 +161,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, не чути</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ще не звучала</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, менш певно</string>
-    <string name="tour_title">Екскурсія</string>
-    <string name="tour_step_count">%1$d з %2$d</string>
-    <string name="tour_step_spoken">Крок %1$d з %2$d. %3$s.</string>
-    <string name="tour_readout">Нота та її відхилення</string>
-    <string name="tour_strum">Проведи по струнах, щоб перевірити всі</string>
-    <string name="tour_strings">Торкнися — налаштувати лише цю струну, утримуй — послухати</string>
-    <string name="tour_picker">Вибери інструмент і стрій</string>
-    <string name="tour_skip">Пропустити</string>
-    <string name="tour_next">Далі</string>
-    <string name="tour_done">Готово</string>
     <string name="tuner_more_tools">Інші функції</string>
     <string name="tuner_tool_on">Увімкнено: %1$s</string>
     <string name="tuner_intonation_check">Перевірка на 12-му ладу</string>
@@ -212,7 +202,6 @@
     <string name="tuner_intonation_mark_back">сідло назад</string>
     <string name="tuner_intonation_mark_forward">сідло вперед</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ще не перевірена</string>
-    <string name="tour_more_tools">Інші функції, як-от перевірка струн</string>
     <string name="tuner_chord_name">Назва акорду</string>
     <string name="tuner_chord_major">%1$s мажор</string>
     <string name="tuner_chord_minor">%1$s мінор</string>

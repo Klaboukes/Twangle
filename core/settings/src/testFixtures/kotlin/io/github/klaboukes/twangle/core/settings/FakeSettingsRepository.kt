@@ -137,11 +137,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setFocusMode(enabled: Boolean) =
         write { it.copy(focusMode = enabled) }
 
-    override suspend fun setTourSeen(seen: Boolean) = write { it.copy(tourSeen = seen) }
-
-    /** Nothing to decide: the fake starts from the settings it is given. */
-    override suspend fun decideTourOnce() = Unit
-
     override suspend fun setMicRefused(refused: Boolean) = write { it.copy(micRefused = refused) }
 
     override suspend fun noteFirstUseOnce(nowMillis: Long) =

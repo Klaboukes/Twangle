@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 
 /** What [FocusModeButton] does, which decides its icon and name. */
 internal enum class FocusAction {
@@ -36,7 +35,7 @@ internal enum class FocusAction {
  * Focus mode's button: the style's button ([StyleButton], Phase 63), the same face and size as the "more tools"
  * button, so it stands out on every style's background (owner, 2026-10-19: the bare icon in the top corner was
  * hardly visible, in Space Age least of all). No word, only the icon for its [action]; TalkBack and the long-press
- * tooltip say its name. It has no tour step of its own; the tour's balloons keep clear of it.
+ * tooltip say its name.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,8 +64,7 @@ internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier:
                         FocusAction.EXIT -> TunerTestTags.EXIT_FOCUS
                         FocusAction.HIDE_CONTROLS -> TunerTestTags.HIDE_CONTROLS
                     },
-                )
-                .tourControl(),
+                ),
         ) {
             Icon(
                 painterResource(if (action == FocusAction.EXIT) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen),

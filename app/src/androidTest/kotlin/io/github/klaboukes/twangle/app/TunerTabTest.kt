@@ -49,8 +49,7 @@ class TunerTabTest {
     fun setUp() {
         runBlocking {
             instrumentBefore = container.settingsRepository.settings.first().instrument
-            // The tour would cover the tuner and the bar; the guitar offers every tool, so its "more tools" button shows.
-            container.settingsRepository.setTourSeen(true)
+            // The guitar offers every tool, so its "more tools" button shows.
             container.settingsRepository.setInstrument(Instruments.GUITAR)
             container.settingsRepository.setMode(TunerMode.AUTO)
         }

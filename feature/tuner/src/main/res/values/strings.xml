@@ -323,26 +323,6 @@
     <string name="tuner_strum_spoken_waiting">%1$s, not strummed yet</string>
     <!-- A string read from sounds that overlap another string's, so the reading is less certain. -->
     <string name="tuner_strum_spoken_less_sure">%1$s, less sure</string>
-    <!-- The first-start tour ("Show me around"): one part of the tuner lit up at a time, with a short balloon. -->
-    <string name="tour_title">Show me around</string>
-    <!-- Above the balloon's text: which step this is. %1$d is the step, %2$d how many there are. -->
-    <string name="tour_step_count">%1$d of %2$d</string>
-    <!-- TalkBack reads the balloon as this. %1$d is the step, %2$d how many there are, %3$s the balloon's text. -->
-    <string name="tour_step_spoken">Step %1$d of %2$d. %3$s.</string>
-    <!-- The tour's first step: the meter and the note under it, lit together. -->
-    <string name="tour_readout">How far off, and which note</string>
-    <!-- Tour balloon pointing at the strum check's switch: strum once to check all strings. Short. -->
-    <string name="tour_strum">Strum to check every string</string>
-    <!-- Tour balloon pointing at the string buttons: tap one and the tuner tunes only that string (it listens for it alone), hold one to hear its note. Short. -->
-    <string name="tour_strings">Tap: tune only this string. Hold: hear it</string>
-    <!-- Tour balloon pointing at the instrument button: it picks the instrument and its tuning. Short. -->
-    <string name="tour_picker">Pick instrument and tuning</string>
-    <!-- Tour balloon's button that ends the tour at once. Short. -->
-    <string name="tour_skip">Skip tour</string>
-    <!-- Tour balloon's button that goes to the next step. Short. -->
-    <string name="tour_next">Next</string>
-    <!-- Tour balloon's button on the last step: ends the tour. Short. -->
-    <string name="tour_done">Done</string>
     <!-- More tools: one small button above the strings opens a menu of the tuner's tools (strum check, the 12th-fret check). -->
     <string name="tuner_more_tools">More tools</string>
     <!-- TalkBack, after "More tools": which of the tuner's tools is on, e.g. "12th-fret check on"; %1$s is the tool's name. -->
@@ -418,8 +398,6 @@
     <string name="tuner_intonation_mark_forward">move saddle forward</string>
     <!-- TalkBack, a string in the 12th-fret check not checked yet. %1$s is the string ("A 2"). -->
     <string name="tuner_intonation_spoken_not_checked">%1$s, not checked yet</string>
-    <!-- The tour's step for the "more tools" button (instead of tour_strum, where the button replaces the strum check's switch). -->
-    <string name="tour_more_tools">More tools, like the strum check</string>
     <!-- Phase 30: the chord name, a tool in the tuner's "more tools" menu: strum a chord and its name shows. -->
     <string name="tuner_chord_name">Chord name</string>
     <!-- A chord's name in words, under its symbol ("Am") and as TalkBack says it. %1$s is the chord's root ("A", "B♭", "La"). -->

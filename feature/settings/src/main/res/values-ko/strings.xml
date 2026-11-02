@@ -51,8 +51,6 @@
     <string name="settings_language_title">언어</string>
     <string name="settings_language_phone">휴대폰 언어</string>
     <string name="settings_language_cancel">취소</string>
-    <string name="settings_show_tour_title">둘러보기</string>
-    <string name="settings_show_tour_summary">튜너를 짧게 둘러봐요</string>
     <string name="about_title">Twangle 정보</string>
     <string name="settings_about_link_summary">버전 %1$s, 도움말, 개인정보 보호 및 라이선스</string>
     <string name="settings_about_version">버전 %1$s</string>

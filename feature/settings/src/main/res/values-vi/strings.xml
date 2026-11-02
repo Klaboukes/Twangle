@@ -51,8 +51,6 @@
     <string name="settings_language_title">Ngôn ngữ</string>
     <string name="settings_language_phone">Ngôn ngữ của điện thoại</string>
     <string name="settings_language_cancel">Hủy</string>
-    <string name="settings_show_tour_title">Hướng dẫn nhanh</string>
-    <string name="settings_show_tour_summary">Giới thiệu ngắn về máy lên dây</string>
     <string name="about_title">Giới thiệu Twangle</string>
     <string name="settings_about_link_summary">Phiên bản %1$s, trợ giúp, quyền riêng tư và giấy phép</string>
     <string name="settings_about_version">Phiên bản %1$s</string>

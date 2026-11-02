@@ -114,8 +114,6 @@ import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import java.text.NumberFormat
 import kotlin.math.roundToInt
 
@@ -699,7 +697,7 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
  * colour with a 2 dp accent outline; Phase 63, never green, which means in tune); picking one turns it on (and the
  * other off), picking the one that is on turns it off. TalkBack: "More tools, 12th-fret check on, button" (just
  * "More tools" with none on), and each tool in the menu as a switch, on or off, since one can be turned off and
- * leave none; a long-press shows its name in a tooltip. With [inTour] its outline is the tour's step.
+ * leave none; a long-press shows its name in a tooltip.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -708,7 +706,6 @@ fun MoreToolsButton(
     active: TunerTool?,
     onToolChange: (TunerTool, Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    inTour: Boolean = false,
 ) {
     val scheme = MaterialTheme.colorScheme
     val label = stringResource(R.string.tuner_more_tools)
@@ -733,9 +730,7 @@ fun MoreToolsButton(
                 face = STRUM_TOGGLE_SIZE,
                 picked = active != null,
                 state = state,
-                faceModifier = Modifier
-                    .testTag(TunerTestTags.MORE_TOOLS)
-                    .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier),
+                faceModifier = Modifier.testTag(TunerTestTags.MORE_TOOLS),
             ) {
                 Icon(painterResource(R.drawable.ic_more_tools), contentDescription = null, modifier = Modifier.size(MORE_ICON_SIZE))
             }

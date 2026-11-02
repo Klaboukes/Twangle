@@ -51,8 +51,6 @@
     <string name="settings_language_title">Lingua</string>
     <string name="settings_language_phone">Lingua del telefono</string>
     <string name="settings_language_cancel">Annulla</string>
-    <string name="settings_show_tour_title">Tour guidato</string>
-    <string name="settings_show_tour_summary">Un breve giro dell\'accordatore</string>
     <string name="about_title">Info su Twangle</string>
     <string name="settings_about_link_summary">Versione %1$s, aiuto, privacy e licenze</string>
     <string name="settings_about_version">Versione %1$s</string>

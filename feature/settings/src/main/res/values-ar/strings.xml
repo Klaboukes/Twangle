@@ -51,8 +51,6 @@
     <string name="settings_language_title">اللغة</string>
     <string name="settings_language_phone">لغة الهاتف</string>
     <string name="settings_language_cancel">إلغاء</string>
-    <string name="settings_show_tour_title">جولة تعريفية</string>
-    <string name="settings_show_tour_summary">جولة قصيرة في الموالف</string>
     <string name="about_title">حول Twangle</string>
     <string name="settings_about_link_summary">الإصدار %1$s، المساعدة والخصوصية والتراخيص</string>
     <string name="settings_about_version">الإصدار %1$s</string>

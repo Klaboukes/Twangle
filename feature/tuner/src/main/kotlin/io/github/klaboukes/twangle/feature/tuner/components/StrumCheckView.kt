@@ -86,8 +86,6 @@ import io.github.klaboukes.twangle.feature.tuner.StrumPhase
 import io.github.klaboukes.twangle.feature.tuner.StrumString
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -424,12 +422,11 @@ internal fun TallestOf(texts: List<String>, shown: Int, text: @Composable (Strin
  * The strum check's switch above the strings: an icon of strings with a sweep across them on the style's button
  * ([StyleButton], Phase 63), picked (the container colour with a 2 dp accent outline) while on.
  * TalkBack: "Strum check, switch, on/off". A long-press (or a mouse resting on it) shows its name,
- * "Strum check", in a small tooltip above it, which goes by itself. With [inTour] its outline is the
- * tour's strum check step.
+ * "Strum check", in a small tooltip above it, which goes by itself.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, inTour: Boolean = false) {
+fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val label = stringResource(R.string.tuner_strum_check)
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
@@ -445,8 +442,6 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
             role = Role.Switch,
             faceModifier = Modifier
                 .testTag(TunerTestTags.STRUM_TOGGLE)
-                // The tour lights up the outline, not the touch target round it.
-                .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
                 .semantics { toggleableState = ToggleableState(checked) },
         ) {
             Icon(painterResource(R.drawable.ic_strum), contentDescription = null, modifier = Modifier.size(ICON_SIZE))

@@ -51,8 +51,6 @@
     <string name="settings_language_title">语言</string>
     <string name="settings_language_phone">手机语言</string>
     <string name="settings_language_cancel">取消</string>
-    <string name="settings_show_tour_title">带我看看</string>
-    <string name="settings_show_tour_summary">调音器简短导览</string>
     <string name="about_title">关于 Twangle</string>
     <string name="settings_about_link_summary">版本 %1$s、帮助、隐私和许可证</string>
     <string name="settings_about_version">版本 %1$s</string>

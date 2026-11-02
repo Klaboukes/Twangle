@@ -163,16 +163,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, सुनाई नहीं दिया</string>
     <string name="tuner_strum_spoken_waiting">%1$s, अभी स्ट्रम नहीं हुआ</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, कम पक्का</string>
-    <string name="tour_title">ऐप का टूर</string>
-    <string name="tour_step_count">%2$d में से %1$d</string>
-    <string name="tour_step_spoken">%2$d में से चरण %1$d। %3$s।</string>
-    <string name="tour_readout">आप कितना हटकर हैं, और कौन-सा नोट</string>
-    <string name="tour_strum">हर तार जाँचने के लिए स्ट्रम करें</string>
-    <string name="tour_strings">टैप: सिर्फ़ यह तार ट्यून करें। दबाए रखें: सुनें</string>
-    <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
-    <string name="tour_skip">टूर छोड़ें</string>
-    <string name="tour_next">आगे</string>
-    <string name="tour_done">हो गया</string>
     <string name="tuner_more_tools">और टूल</string>
     <string name="tuner_tool_on">%1$s चालू</string>
     <string name="tuner_intonation_check">12वें फ़्रेट की जाँच</string>
@@ -212,7 +202,6 @@
     <string name="tuner_intonation_mark_back">सैडल पीछे करें</string>
     <string name="tuner_intonation_mark_forward">सैडल आगे करें</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, अभी जाँचा नहीं</string>
-    <string name="tour_more_tools">स्ट्रम चेक जैसे और टूल</string>
     <string name="tuner_chord_name">कॉर्ड का नाम</string>
     <string name="tuner_chord_major">%1$s मेजर</string>
     <string name="tuner_chord_minor">%1$s माइनर</string>

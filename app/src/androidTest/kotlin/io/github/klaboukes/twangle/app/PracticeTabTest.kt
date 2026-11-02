@@ -86,8 +86,6 @@ class PracticeTabTest {
             // The guitar, which every tool draws: a banjo left picked (a phone check) has no chart or neck.
             tuningBefore = container.settingsRepository.settings.first().tuning
             container.settingsRepository.setInstrument(Instruments.GUITAR)
-            // The tour would cover the tuner and the bar.
-            container.settingsRepository.setTourSeen(true)
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)

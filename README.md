@@ -27,7 +27,7 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 - **Your own tunings:** make, edit and delete tunings of your own for any instrument, unison strings included.
 - **Chromatic mode:** tunes any note, for any instrument.
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
-- **Helpful hints:** "Tune up" or "Tune down", a tip when it's too quiet, too noisy or too loud to hear you well, and a short tour of the screen the first time you open it.
+- **Helpful hints:** "Tune up" or "Tune down", and a tip when it's too quiet, too noisy or too loud to hear you well.
 - **Clear when in tune:** a calm glow (you choose how strong), and a short vibration if you like.
 - **Accurate:** within ±1 cent on test signals, from the low B of a 5-string bass up to the highest frets.
 - **Keeps the screen on** while you tune (can be turned off).

@@ -177,16 +177,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s، لم يُسمع</string>
     <string name="tuner_strum_spoken_waiting">%1$s، لم يُضرب بعد</string>
     <string name="tuner_strum_spoken_less_sure">%1$s، قراءة أقل يقينًا</string>
-    <string name="tour_title">جولة تعريفية</string>
-    <string name="tour_step_count">%1$d من %2$d</string>
-    <string name="tour_step_spoken">الخطوة %1$d من %2$d. %3$s.</string>
-    <string name="tour_readout">كم تبعد عن النغمة، وأي نغمة هي</string>
-    <string name="tour_strum">اضرب لفحص كل الأوتار</string>
-    <string name="tour_strings">اختر: اضبط هذا الوتر وحده. اضغط مطولًا: استمع إليه</string>
-    <string name="tour_picker">اختر الآلة والدوزان</string>
-    <string name="tour_skip">تخطَّ الجولة</string>
-    <string name="tour_next">التالي</string>
-    <string name="tour_done">تم</string>
     <string name="tuner_more_tools">أدوات أخرى</string>
     <string name="tuner_tool_on">%1$s قيد التشغيل</string>
     <string name="tuner_intonation_check">فحص الدستان ١٢</string>
@@ -230,7 +220,6 @@
     <string name="tuner_intonation_mark_back">السرج للخلف</string>
     <string name="tuner_intonation_mark_forward">السرج للأمام</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s، لم يُفحص بعد</string>
-    <string name="tour_more_tools">أدوات أخرى مثل فحص بضربة</string>
     <string name="tuner_chord_name">اسم الكورد</string>
     <string name="tuner_chord_major">%1$s ماجور</string>
     <string name="tuner_chord_minor">%1$s مينور</string>

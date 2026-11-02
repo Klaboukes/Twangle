@@ -315,8 +315,6 @@ feature/settings settings_notation_solfege 86108139
 feature/settings settings_notation_title dab557ae
 feature/settings settings_show_signal_bars_summary 3c567c40
 feature/settings settings_show_signal_bars_title 76f1f602
-feature/settings settings_show_tour_summary be7053f1
-feature/settings settings_show_tour_title 80afe5d9
 feature/settings settings_show_tune_hint_summary 16c8c4a4
 feature/settings settings_show_tune_hint_title c654af35
 feature/settings settings_theme_dark 60acc53f
@@ -353,17 +351,6 @@ feature/tuner mic_permission_settings_hint_switch 097daf39
 feature/tuner mic_permission_title bfd6639c
 feature/tuner mic_permission_without_mic e068bd72
 feature/tuner mic_permission_without_mic_metronome 53629237
-feature/tuner tour_done 11a6767d
-feature/tuner tour_more_tools 80e95a38
-feature/tuner tour_next 1ff57a29
-feature/tuner tour_picker 48aee712
-feature/tuner tour_readout 70591e70
-feature/tuner tour_skip 5ac614de
-feature/tuner tour_step_count 71e2d6ca
-feature/tuner tour_step_spoken 716cee04
-feature/tuner tour_strings 29b8ae77
-feature/tuner tour_strum 5b816967
-feature/tuner tour_title 80afe5d9
 feature/tuner tuner_cents_flat 8d383020
 feature/tuner tuner_cents_sharp bad7d782
 feature/tuner tuner_cents_zero 9cd1fea5

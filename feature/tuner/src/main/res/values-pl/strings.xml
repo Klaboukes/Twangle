@@ -170,16 +170,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
     <string name="tuner_strum_spoken_waiting">%1$s, jeszcze nie zagrana</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, odczyt niepewny</string>
-    <string name="tour_title">Oprowadź mnie</string>
-    <string name="tour_step_count">%1$d z %2$d</string>
-    <string name="tour_step_spoken">Krok %1$d z %2$d. %3$s.</string>
-    <string name="tour_readout">Odchylenie i jaki to dźwięk</string>
-    <string name="tour_strum">Uderz, by sprawdzić wszystkie struny</string>
-    <string name="tour_strings">Dotknij, by stroić tylko tę strunę, przytrzymaj, by posłuchać</string>
-    <string name="tour_picker">Wybierz instrument i strój</string>
-    <string name="tour_skip">Pomiń</string>
-    <string name="tour_next">Dalej</string>
-    <string name="tour_done">Gotowe</string>
     <string name="tuner_more_tools">Więcej narzędzi</string>
     <string name="tuner_tool_on">Włączone: %1$s</string>
     <string name="tuner_intonation_check">Test 12. progu</string>
@@ -221,7 +211,6 @@
     <string name="tuner_intonation_mark_back">siodełko do tyłu</string>
     <string name="tuner_intonation_mark_forward">siodełko do przodu</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, jeszcze nie sprawdzona</string>
-    <string name="tour_more_tools">Więcej narzędzi, np. test strun</string>
     <string name="tuner_chord_name">Nazwa akordu</string>
     <string name="tuner_chord_major">%1$s-dur</string>
     <string name="tuner_chord_minor">%1$s-moll</string>

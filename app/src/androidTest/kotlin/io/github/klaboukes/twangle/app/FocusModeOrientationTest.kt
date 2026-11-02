@@ -58,8 +58,6 @@ class FocusModeOrientationTest {
     fun setUp() {
         runBlocking {
             focusModeBefore = settings.settings.first().focusMode
-            // The tour would cover the tuner and the rail.
-            settings.setTourSeen(true)
             settings.setFocusMode(false)
         }
     }

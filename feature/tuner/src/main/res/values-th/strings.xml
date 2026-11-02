@@ -160,16 +160,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ยังไม่ได้ตี</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, ไม่ค่อยแน่ใจ</string>
-    <string name="tour_title">แนะนำการใช้งาน</string>
-    <string name="tour_step_count">%1$d จาก %2$d</string>
-    <string name="tour_step_spoken">ขั้นที่ %1$d จาก %2$d %3$s</string>
-    <string name="tour_readout">เพี้ยนแค่ไหน และเป็นโน้ตอะไร</string>
-    <string name="tour_strum">ตีทีเดียว เช็กทุกสาย</string>
-    <string name="tour_strings">เลือก: จูนเฉพาะสายนี้ กดค้าง: ฟังเสียง</string>
-    <string name="tour_picker">เลือกเครื่องดนตรีและการตั้งสาย</string>
-    <string name="tour_skip">ข้าม</string>
-    <string name="tour_next">ถัดไป</string>
-    <string name="tour_done">เสร็จ</string>
     <string name="tuner_more_tools">เครื่องมือเพิ่มเติม</string>
     <string name="tuner_tool_on">%1$s เปิดอยู่</string>
     <string name="tuner_intonation_check">เช็กเฟรตที่ 12</string>
@@ -208,7 +198,6 @@
     <string name="tuner_intonation_mark_back">ขยับแซดเดิลถอยหลัง</string>
     <string name="tuner_intonation_mark_forward">ขยับแซดเดิลไปข้างหน้า</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ยังไม่ได้เช็ก</string>
-    <string name="tour_more_tools">เครื่องมือเพิ่มเติม เช่น เช็กทุกสาย</string>
     <string name="tuner_chord_name">ชื่อคอร์ด</string>
     <string name="tuner_chord_major">%1$s เมเจอร์</string>
     <string name="tuner_chord_minor">%1$s ไมเนอร์</string>

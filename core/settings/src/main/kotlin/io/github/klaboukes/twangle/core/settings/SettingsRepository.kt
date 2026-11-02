@@ -108,24 +108,10 @@ interface SettingsRepository {
     /** Focus mode: true shows the compact layout (one big meter) on its side; false (the default) the full one. */
     suspend fun setFocusMode(enabled: Boolean)
 
-    /** Remembers that the first-start tour was skipped or finished (or brings it back with false). */
-    suspend fun setTourSeen(seen: Boolean)
-
-    /**
-     * Decides once, at the app's start, whether this install is due the first-start tour, and saves
-     * that: an install that already has saved settings (an update from a version before the tour)
-     * counts as having seen it, a fresh one hasn't. Once decided, later saves of other settings don't
-     * change it; only [setTourSeen] does.
-     */
-    suspend fun decideTourOnce()
-
     /** Remembers that the player refused the microphone in Android's dialog ([AppSettings.micRefused]). */
     suspend fun setMicRefused(refused: Boolean)
 
-    /**
-     * Notes [nowMillis] as the first use ([AppSettings.firstUseMillis]) unless one is noted already.
-     * Called at the app's start after [decideTourOnce], so a fresh install still gets its tour.
-     */
+    /** Notes [nowMillis] as the first use ([AppSettings.firstUseMillis]) unless one is noted already. Called at the app's start. */
     suspend fun noteFirstUseOnce(nowMillis: Long)
 
     /** Remembers that Google's rating window was asked for ([AppSettings.ratingAsked]). */

@@ -95,7 +95,6 @@ class SettingsContentTest {
     private var aboutOpened = 0
     private var rates = 0
     private val websiteLinks = mutableListOf<String>()
-    private var toursAsked = 0
     private val languageChanges = mutableListOf<String?>()
 
     /** The window [show] shows, inside the phone's bars ([shownBars]). */
@@ -152,7 +151,6 @@ class SettingsContentTest {
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
-                        onShowTour = { toursAsked++ },
                         languages = languages,
                         appLanguage = appLanguage,
                         onAppLanguageChange = { languageChanges += it },
@@ -267,17 +265,12 @@ class SettingsContentTest {
         assertEquals(1, aboutOpened)
     }
 
-    /** "Show me around", above About, starts the first-start tour again. */
+    /** "Show me around" went with the tour (Phase 68): its row (tagged so in 1.1) is gone, About stays. */
     @Test
-    fun showMeAroundStartsTheTourAgain() {
-        show(AppSettings(tourSeen = true))
-        compose.onNodeWithTag(SHOW_TOUR_TAG)
-            .assert(hasText(context.getString(R.string.settings_show_tour_title)))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-            .performScrollTo()
-            .assertIsDisplayed()
-            .performClick()
-        assertEquals(1, toursAsked)
+    fun showMeAroundIsGone() {
+        show(AppSettings())
+        compose.onNodeWithTag("settings_show_tour").assertDoesNotExist()
+        compose.onNodeWithTag(ABOUT_LINK_TAG).performScrollTo().assertIsDisplayed()
     }
 
     @Test

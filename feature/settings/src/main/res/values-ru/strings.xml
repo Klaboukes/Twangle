@@ -51,8 +51,6 @@
     <string name="settings_language_title">Язык</string>
     <string name="settings_language_phone">Язык телефона</string>
     <string name="settings_language_cancel">Отмена</string>
-    <string name="settings_show_tour_title">Экскурсия</string>
-    <string name="settings_show_tour_summary">Короткий обзор тюнера</string>
     <string name="about_title">О Twangle</string>
     <string name="settings_about_link_summary">Версия %1$s, помощь, конфиденциальность и лицензии</string>
     <string name="settings_about_version">Версия %1$s</string>

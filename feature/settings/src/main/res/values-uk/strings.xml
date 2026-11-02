@@ -43,8 +43,6 @@
     <string name="settings_language_title">Мова</string>
     <string name="settings_language_phone">Мова телефону</string>
     <string name="settings_language_cancel">Скасувати</string>
-    <string name="settings_show_tour_title">Екскурсія</string>
-    <string name="settings_show_tour_summary">Короткий огляд тюнера</string>
     <string name="about_title">Про Twangle</string>
     <string name="settings_about_link_summary">Версія %1$s, довідка, конфіденційність і ліцензії</string>
     <string name="settings_about_version">Версія %1$s</string>

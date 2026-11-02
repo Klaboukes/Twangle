@@ -164,16 +164,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, nicht gehört</string>
     <string name="tuner_strum_spoken_waiting">%1$s, noch nicht angeschlagen</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, weniger sicher</string>
-    <string name="tour_title">Rundgang</string>
-    <string name="tour_step_count">%1$d von %2$d</string>
-    <string name="tour_step_spoken">Schritt %1$d von %2$d. %3$s.</string>
-    <string name="tour_readout">Wie weit daneben und welcher Ton</string>
-    <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
-    <string name="tour_strings">Tippen: nur diese Saite stimmen. Halten: anhören</string>
-    <string name="tour_picker">Instrument und Stimmung wählen</string>
-    <string name="tour_skip">Überspringen</string>
-    <string name="tour_next">Weiter</string>
-    <string name="tour_done">Fertig</string>
     <string name="tuner_more_tools">Weitere Werkzeuge</string>
     <string name="tuner_tool_on">%1$s an</string>
     <string name="tuner_intonation_check">Check am 12. Bund</string>
@@ -213,7 +203,6 @@
     <string name="tuner_intonation_mark_back">Saitenreiter nach hinten</string>
     <string name="tuner_intonation_mark_forward">Saitenreiter nach vorn</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, noch nicht geprüft</string>
-    <string name="tour_more_tools">Weitere Werkzeuge, etwa der Anschlag-Check</string>
     <string name="tuner_chord_name">Akkordname</string>
     <string name="tuner_chord_major">%1$s-Dur</string>
     <string name="tuner_chord_minor">%1$s-Moll</string>

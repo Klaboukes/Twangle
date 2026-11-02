@@ -51,8 +51,6 @@
     <string name="settings_language_title">भाषा</string>
     <string name="settings_language_phone">फ़ोन की भाषा</string>
     <string name="settings_language_cancel">रद्द करें</string>
-    <string name="settings_show_tour_title">ऐप का टूर</string>
-    <string name="settings_show_tour_summary">ट्यूनर का छोटा-सा टूर</string>
     <string name="about_title">Twangle के बारे में</string>
     <string name="settings_about_link_summary">वर्शन %1$s, सहायता, निजता और लाइसेंस</string>
     <string name="settings_about_version">वर्शन %1$s</string>

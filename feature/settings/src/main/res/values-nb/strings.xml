@@ -51,8 +51,6 @@
     <string name="settings_language_title">Språk</string>
     <string name="settings_language_phone">Telefonens språk</string>
     <string name="settings_language_cancel">Avbryt</string>
-    <string name="settings_show_tour_title">Vis meg rundt</string>
-    <string name="settings_show_tour_summary">En kort omvisning i stemmeren</string>
     <string name="about_title">Om Twangle</string>
     <string name="settings_about_link_summary">Versjon %1$s, hjelp, personvern og lisenser</string>
     <string name="settings_about_version">Versjon %1$s</string>

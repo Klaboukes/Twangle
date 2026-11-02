@@ -164,16 +164,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, duyulmadı</string>
     <string name="tuner_strum_spoken_waiting">%1$s, henüz çalınmadı</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, daha az kesin</string>
-    <string name="tour_title">Tanıtım turu</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">Adım %1$d / %2$d. %3$s.</string>
-    <string name="tour_readout">Ne kadar sapma var, hangi nota</string>
-    <string name="tour_strum">Tüm telleri kontrol etmek için vur</string>
-    <string name="tour_strings">Yalnızca bu teli akort etmek için dokun, dinlemek için basılı tut</string>
-    <string name="tour_picker">Enstrüman ve akort seç</string>
-    <string name="tour_skip">Turu atla</string>
-    <string name="tour_next">İleri</string>
-    <string name="tour_done">Bitti</string>
     <string name="tuner_more_tools">Diğer araçlar</string>
     <string name="tuner_tool_on">%1$s açık</string>
     <string name="tuner_intonation_check">12. perde kontrolü</string>
@@ -213,7 +203,6 @@
     <string name="tuner_intonation_mark_back">alt eşik geriye</string>
     <string name="tuner_intonation_mark_forward">alt eşik öne</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, henüz kontrol edilmedi</string>
-    <string name="tour_more_tools">Tel kontrolü gibi diğer araçlar</string>
     <string name="tuner_chord_name">Akor adı</string>
     <string name="tuner_chord_major">%1$s majör</string>
     <string name="tuner_chord_minor">%1$s minör</string>

@@ -57,9 +57,6 @@ class MeterFramesBenchmark {
         shell("input keyevent KEYCODE_WAKEUP")
         shell("pm grant $TARGET_PACKAGE android.permission.RECORD_AUDIO")
         shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-        // A fresh install shows the first-start tour over the tuner first.
-        waitFor(By.res(Pattern.compile("$MODE_CHROMATIC_TAG|$TOUR_SKIP_TAG")), "Tuner screen")
-        device.findObject(By.res(TOUR_SKIP_TAG))?.let(::click)
         waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
         looks.forEach { check(it in KNOWN_LOOKS) { "No meter look $it since Phase 67: ${KNOWN_LOOKS.joinToString(":")}" } }
 

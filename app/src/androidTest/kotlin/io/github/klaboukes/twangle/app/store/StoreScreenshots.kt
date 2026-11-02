@@ -141,7 +141,6 @@ class StoreScreenshots(private val shot: Shot) {
         // Play's Norwegian folder is no-NO, but Android finds the texts (values-nb) only for nb.
         showLanguage(if (locale == "no-NO") "nb-NO" else locale)
         runBlocking {
-            settings.setTourSeen(true)
             settings.setFocusMode(false)
             settings.setTheme(if (shot.dark) ThemeMode.DARK else ThemeMode.LIGHT)
             // Ink's own colours, not the wallpaper's.

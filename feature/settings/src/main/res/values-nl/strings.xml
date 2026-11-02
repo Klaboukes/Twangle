@@ -58,8 +58,6 @@
     <string name="settings_language_title">Taal</string>
     <string name="settings_language_phone">Taal van de telefoon</string>
     <string name="settings_language_cancel">Annuleren</string>
-    <string name="settings_show_tour_title">Rondleiding</string>
-    <string name="settings_show_tour_summary">Een korte rondleiding door de stemmer</string>
     <string name="about_title">Over Twangle</string>
     <string name="settings_about_link_summary">Versie %1$s, hulp, privacy en licenties</string>
     <string name="settings_about_version">Versie %1$s</string>

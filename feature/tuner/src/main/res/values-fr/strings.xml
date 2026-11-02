@@ -167,16 +167,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, pas entendue</string>
     <string name="tuner_strum_spoken_waiting">%1$s, pas encore grattée</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, moins fiable</string>
-    <string name="tour_title">Visite guidée</string>
-    <string name="tour_step_count">%1$d sur %2$d</string>
-    <string name="tour_step_spoken">Étape %1$d sur %2$d. %3$s.</string>
-    <string name="tour_readout">Votre écart, et quelle note</string>
-    <string name="tour_strum">Grattez pour tester toutes les cordes</string>
-    <string name="tour_strings">Touchez : cette corde seule. Maintenez : écoutez-la</string>
-    <string name="tour_picker">Choisissez l\'instrument et l\'accordage</string>
-    <string name="tour_skip">Passer</string>
-    <string name="tour_next">Suivant</string>
-    <string name="tour_done">Terminé</string>
     <string name="tuner_more_tools">Plus d\'outils</string>
     <string name="tuner_tool_on">%1$s en marche</string>
     <string name="tuner_intonation_check">Test de la 12e case</string>
@@ -217,7 +207,6 @@
     <string name="tuner_intonation_mark_back">reculer le pontet</string>
     <string name="tuner_intonation_mark_forward">avancer le pontet</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, pas encore testée</string>
-    <string name="tour_more_tools">Plus d\'outils, comme le test en grattant</string>
     <string name="tuner_chord_name">Nom d\'accord</string>
     <string name="tuner_chord_major">%1$s majeur</string>
     <string name="tuner_chord_minor">%1$s mineur</string>

@@ -107,8 +107,8 @@ fun Modifier.styleButtonFace(
  *
  * TalkBack hears [label] as a button ([role]), with [state] after it when given and [onClickLabel]
  * as the double-tap action. Not [enabled]: the face at 38 % and no taps (the first or last page, Start
- * while Listen listens). [faceModifier] goes on the face, not the touch area round it (the tour's
- * outline, a test tag on the node TalkBack hears). A control beside it that does the same (the
+ * while Listen listens). [faceModifier] goes on the face, not the touch area round it (a test tag
+ * on the node TalkBack hears). A control beside it that does the same (the
  * instrument's name) may share [interactionSource], so a press on either lights both.
  */
 @Composable

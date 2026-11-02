@@ -51,8 +51,6 @@
     <string name="settings_language_title">言語</string>
     <string name="settings_language_phone">スマートフォンの言語</string>
     <string name="settings_language_cancel">キャンセル</string>
-    <string name="settings_show_tour_title">使い方を見る</string>
-    <string name="settings_show_tour_summary">チューナーの簡単なツアー</string>
     <string name="about_title">Twangle について</string>
     <string name="settings_about_link_summary">バージョン %1$s、ヘルプ、プライバシーとライセンス</string>
     <string name="settings_about_version">バージョン %1$s</string>

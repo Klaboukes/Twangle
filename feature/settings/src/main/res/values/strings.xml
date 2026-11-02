@@ -12,7 +12,7 @@
     <string name="settings_group_tuner_screen">Tuner screen</string>
     <!-- Settings group heading over what happens while tuning: keep screen on, vibration, the tune up/down hint, signal bars. -->
     <string name="settings_group_while_tuning">While tuning</string>
-    <!-- Settings group heading over the last rows, about the app itself: its language, the tour ("Show me around") and About. One short word. -->
+    <!-- Settings group heading over the last rows, about the app itself: its language and About. One short word. -->
     <string name="settings_group_app">App</string>
 
     <!-- A4 calibration. -->
@@ -96,10 +96,6 @@
     <string name="settings_language_phone">Phone\'s language</string>
     <!-- Button of the language list's dialog: closes it without changing the language. Short. -->
     <string name="settings_language_cancel">Cancel</string>
-    <!-- Settings row that starts the tuner's guided tour again. -->
-    <string name="settings_show_tour_title">Show me around</string>
-    <!-- The line under Show me around. -->
-    <string name="settings_show_tour_summary">A short tour of the tuner</string>
     <!-- The last Settings row that opens the About page, and that page's title. -->
     <string name="about_title">About Twangle</string>
     <!-- The line under About Twangle in Settings. %1$s is the version, e.g. "1.0.2". -->

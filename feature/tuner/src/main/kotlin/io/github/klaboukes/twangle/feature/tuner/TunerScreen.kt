@@ -143,9 +143,6 @@ import io.github.klaboukes.twangle.feature.tuner.components.StringMark
 import io.github.klaboukes.twangle.feature.tuner.components.markOf
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -164,18 +161,16 @@ import kotlin.math.min
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
  * the screen (another screen, or the app in the background).
- * While the first-start tour runs ([tourOpen]) the compact layout on its side shows its controls, so
- * the tour can point at them. [onMicGrantedChange] says whether the tuner itself shows (the
- * microphone is allowed), and false when it leaves. Without the microphone the permission prompt shows
+ * Without the microphone the permission prompt shows
  * instead, and [pickerOpen] opens the panel over it all the same. The saved
  * [AppSettings.micRefused] tells a dismissed dialog from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
- * [closeToolsRequest] (a tap on the navigation bar's Tuner tab, or "Show me around") turns the tool that is on off.
+ * [closeToolsRequest] (a tap on the navigation bar's Tuner tab) turns the tool that is on off.
  * [onFullScreenChange] says when focus mode's compact layout shows without its controls, so the app
  * can hide the rail and the system bars around it.
  * [ratingWindow] is Google Play's own rating window (Phase 50), asked for at most once when
- * [TunerViewModel.ratingDue] says the moment has come, never while the tour or the panel is open.
+ * [TunerViewModel.ratingDue] says the moment has come, never while the panel is open.
  */
 @Composable
 fun TunerScreen(
@@ -188,8 +183,6 @@ fun TunerScreen(
     onOpenTuningEditor: (instrument: Instrument, customTuningId: String?) -> Unit = { _, _ -> },
     pickerOpen: Boolean = false,
     onPickerOpenChange: (Boolean) -> Unit = {},
-    tourOpen: Boolean = false,
-    onMicGrantedChange: (Boolean) -> Unit = {},
     closeToolsRequest: Int = 0,
     onFullScreenChange: (Boolean) -> Unit = {},
     ratingWindow: RatingWindow = RatingWindow.NONE,
@@ -211,8 +204,8 @@ fun TunerScreen(
     LaunchedEffect(language) { viewModel.setLanguage(language) }
     val ratingDue by viewModel.ratingDue.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
-    LaunchedEffect(ratingDue, tourOpen, pickerOpen) {
-        if (ratingDue && !tourOpen && !pickerOpen && activity != null) {
+    LaunchedEffect(ratingDue, pickerOpen) {
+        if (ratingDue && !pickerOpen && activity != null) {
             viewModel.onRatingAsked()
             ratingWindow.show(activity)
         }
@@ -244,10 +237,6 @@ fun TunerScreen(
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
-    // The tour starts once the tuner shows (after the microphone question), and not while it's away.
-    val currentOnMicGrantedChange by rememberUpdatedState(onMicGrantedChange)
-    LaunchedEffect(granted) { currentOnMicGrantedChange(granted) }
-    DisposableEffect(Unit) { onDispose { currentOnMicGrantedChange(false) } }
     // Keep screen on lets go after a quiet spell, with a warning first (ScreenAwakeRule).
     val awake = rememberScreenAwake(readings, enabled = granted && keepScreenOn)
     if (granted && keepScreenOn && awake.phase != ScreenAwakePhase.OFF) KeepScreenOn()
@@ -316,7 +305,6 @@ fun TunerScreen(
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
                     compactLandscape = focusMode,
-                    controlsAlwaysShown = tourOpen,
                     strumCheck = strumCheck,
                     onStrumCheckChange = viewModel::setStrumCheck,
                     tunerTools = tunerTools,
@@ -605,9 +593,6 @@ private fun KeepScreenOn() {
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
  * (a big meter beside the note, controls hidden until the screen is tapped), else two panes side by
  * side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
- * [controlsAlwaysShown] (while the first-start tour runs) keeps the compact layout's controls shown.
- * The parts the tour lights up mark themselves with [tourTarget]; the mode switch and focus mode's
- * button, which have no step, with [tourControl], so balloons keep clear of them.
  */
 @Composable
 fun TunerContent(
@@ -630,7 +615,6 @@ fun TunerContent(
     showSignalBars: Boolean = false,
     signalFigures: Flow<SignalFigures?> = emptyFlow(),
     compactLandscape: Boolean = true,
-    controlsAlwaysShown: Boolean = false,
     instrument: Instrument = instrumentOf(state),
     onInstrumentChange: (Instrument) -> Unit = {},
     customTunings: List<CustomTuning> = emptyList(),
@@ -667,7 +651,7 @@ fun TunerContent(
     // While focus mode's controls are up over the compact layout, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
     val header = @Composable {
-        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourControl()) }
+        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
         // Focus mode's button at the end of the mode switch's row, in both modes in the same place (owner,
         // 2026-10-25, idea A1 of the Phase 43 mock-up: chromatic mode has no strings or tools to stand it on).
         // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
@@ -725,18 +709,18 @@ fun TunerContent(
     val gauge = @Composable {
         // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
         if (state is TunerUiState.ChordName) {
-            ChordPanel(state, Modifier.zIndex(-1f).tourTarget(TourPart.READOUT))
+            ChordPanel(state, Modifier.zIndex(-1f))
         } else if (state is TunerUiState.StrumCheck) {
             StrumPanel(
                 state,
-                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.READOUT),
+                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
         } else if (state is TunerUiState.IntonationCheck) {
             IntonationPanel(
                 state,
-                Modifier.zIndex(-1f).tourTarget(TourPart.READOUT),
+                Modifier.zIndex(-1f),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
@@ -744,7 +728,7 @@ fun TunerContent(
             // The pitch trail takes the needle's place; the note under it stays the tuner's.
             PitchTrailPanel(
                 pitchHistory,
-                Modifier.zIndex(-1f).tourTarget(TourPart.READOUT),
+                Modifier.zIndex(-1f),
                 animationsOff = animationsOff,
             )
         } else {
@@ -755,7 +739,7 @@ fun TunerContent(
                 glow = meterGlow,
                 animationsOff = animationsOff,
                 // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.READOUT),
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
                 reception = reception,
             )
         }
@@ -820,8 +804,7 @@ fun TunerContent(
             else -> FocusNote(readout = null, hint = "", speech = speech)
         }
     }
-    // The note (with its pill and frequency) is lit with the meter in the tour's first step.
-    val note = @Composable { compact: Boolean, maxHeight: Dp -> Box(Modifier.tourTarget(TourPart.READOUT)) { noteFor(compact, maxHeight) } }
+    val note = @Composable { compact: Boolean, maxHeight: Dp -> noteFor(compact, maxHeight) }
     val error = (state as? TunerUiState.Error)?.reason
     // The plain tuner's meter; with a tool on, its panel takes the meter's place.
     val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
@@ -874,10 +857,9 @@ fun TunerContent(
                         containsControls = true,
                     ) ?: COMPACT_CONTROLS_SHOWN_MS
                 }
-                // While the tour runs the controls stay, so it can point at them.
-                val showing = controlsShown || controlsAlwaysShown
-                DisposableEffect(controlsAlwaysShown) {
-                    hideControls = if (controlsAlwaysShown) null else ({ controlsShown = false })
+                val showing = controlsShown
+                DisposableEffect(Unit) {
+                    hideControls = { controlsShown = false }
                     onDispose { hideControls = null }
                 }
                 LaunchedEffect(controlsShown, touches, pickerOpen) {
@@ -890,9 +872,8 @@ fun TunerContent(
                 val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
                 LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
                 DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
-                // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app
-                // (not while the tour runs: there Back ends the tour).
-                if (onFocusModeChange != null) BackHandler(enabled = !controlsAlwaysShown) { onFocusModeChange(false) }
+                // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app.
+                if (onFocusModeChange != null) BackHandler { onFocusModeChange(false) }
                 Crossfade(targetState = showing, label = "compactControls") { shown ->
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
@@ -1399,8 +1380,6 @@ private fun GuitarSlotFor(
                 marks = controls.marks,
                 checking = controls.checking,
                 tuned = controls.tuned,
-                // Only where it shows: hidden in chromatic mode, it isn't laid out, so its old place mustn't count.
-                inTour = mode == TunerMode.AUTO,
             )
         }
     } else {
@@ -1479,7 +1458,6 @@ private val STRUM_CHECK_ALONE = listOf(TunerTool.STRUM_CHECK)
  * a long language, an own tuning) takes up to two lines and ends in "…" rather than move either
  * button. A tap on the button or the name opens the instrument and tuning panel; TalkBack hears the
  * button ("Instrument, Guitar, Drop D") and skips the name, which says the same.
- * [inTour]: the instrument button, the switch and the strings are the tour's steps.
  */
 @Composable
 private fun GuitarControls(
@@ -1490,7 +1468,6 @@ private fun GuitarControls(
     lockedString: Int?,
     inTune: Boolean = false,
     strum: ToolsState? = null,
-    inTour: Boolean = true,
     names: TuningNames? = null,
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
@@ -1506,7 +1483,6 @@ private fun GuitarControls(
             onStringClick = stringActions.onClick,
             onStringLongClick = stringActions.onLongClick,
             soundingString = stringActions.sounding,
-            modifier = if (inTour) Modifier.tourTarget(TourPart.STRINGS) else Modifier,
             marks = marks,
             checking = checking,
             tuned = tuned,
@@ -1516,10 +1492,10 @@ private fun GuitarControls(
         when {
             strum == null || strum.tools.isEmpty() -> Unit
             // The strum check alone keeps its own switch, exactly as in v1.0.
-            strum.tools == STRUM_CHECK_ALONE -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
+            strum.tools == STRUM_CHECK_ALONE -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) })
             // Any other tool, or more than one (the 12-string has no strum check): one "more tools"
             // button gathers them, in the switch's place.
-            else -> MoreToolsButton(strum.tools, strum.active, strum.onChange, inTour = inTour)
+            else -> MoreToolsButton(strum.tools, strum.active, strum.onChange)
         }
     }
     // One press for the instrument button and the name beside it: a tap on either sinks and lights both.
@@ -1530,10 +1506,7 @@ private fun GuitarControls(
                 interactionSource = namePress,
                 current = names.labelFor(tuning, spoken = true),
                 onClick = names.onClick,
-                // The tour lights up the outline, not the touch target round it.
-                faceModifier = Modifier
-                    .testTag(TunerTestTags.INSTRUMENT_BUTTON)
-                    .then(if (inTour) Modifier.tourTarget(TourPart.PICKER) else Modifier),
+                faceModifier = Modifier.testTag(TunerTestTags.INSTRUMENT_BUTTON),
             )
         }
     }

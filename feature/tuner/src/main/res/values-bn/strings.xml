@@ -155,16 +155,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, শোনা যায়নি</string>
     <string name="tuner_strum_spoken_waiting">%1$s, এখনো স্ট্রাম হয়নি</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, কম নিশ্চিত</string>
-    <string name="tour_title">অ্যাপ ঘুরে দেখুন</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">ধাপ %1$d, মোট %2$d। %3$s।</string>
-    <string name="tour_readout">কতটা সরে আছে, আর কোন নোট</string>
-    <string name="tour_strum">সব তার চেক করতে স্ট্রাম করুন</string>
-    <string name="tour_strings">ট্যাপ: শুধু এই তার টিউন করুন। ধরে রাখুন: শুনুন</string>
-    <string name="tour_picker">বাদ্যযন্ত্র ও টিউনিং বেছে নিন</string>
-    <string name="tour_skip">ট্যুর বাদ দিন</string>
-    <string name="tour_next">পরবর্তী</string>
-    <string name="tour_done">হয়ে গেছে</string>
     <string name="tuner_more_tools">আরও টুল</string>
     <string name="tuner_tool_on">%1$s চালু</string>
     <string name="tuner_intonation_check">১২তম ফ্রেট চেক</string>
@@ -204,7 +194,6 @@
     <string name="tuner_intonation_mark_back">স্যাডল পেছনে সরান</string>
     <string name="tuner_intonation_mark_forward">স্যাডল সামনে সরান</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, এখনো চেক হয়নি</string>
-    <string name="tour_more_tools">আরও টুল, যেমন স্ট্রাম চেক</string>
     <string name="tuner_chord_name">কর্ডের নাম</string>
     <string name="tuner_chord_major">%1$s মেজর</string>
     <string name="tuner_chord_minor">%1$s মাইনর</string>

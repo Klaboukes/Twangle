@@ -5,7 +5,6 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
-import java.util.regex.Pattern
 
 /** The app under test (`:app`). */
 const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
@@ -51,13 +50,7 @@ private const val CAPO_LOWER_TAG = "practice_capo_lower"
 /** The settings' last row, which opens About (`ABOUT_LINK_TAG` in :feature:settings). */
 private const val ABOUT_LINK_TAG = "settings_about"
 
-/** "Skip tour" in the first-start tour's balloon (`TourTestTags` in :feature:tuner), which a fresh install shows. */
-const val TOUR_SKIP_TAG = "tour_skip"
-
 private const val TIMEOUT_MS = 10_000L
-
-/** How long the tuner waits for the first-start tour, which opens just after it on a fresh install. */
-private const val TOUR_WAIT_MS = 2_000L
 
 /** How long to let the tuner listen, so the mic, the DSP loop and the gauge drawing all run. */
 private const val LISTEN_MS = 3_000L
@@ -83,16 +76,8 @@ fun MacrobenchmarkScope.grantMicPermission() {
     device.executeShellCommand("pm grant $packageName android.permission.RECORD_AUDIO")
 }
 
-/**
- * Waits until the tuner screen is shown (its mode switch is a stable landmark on an upright phone),
- * skipping the first-start tour that a fresh install shows over it.
- */
+/** Waits until the tuner screen is shown (its mode switch is a stable landmark on an upright phone). */
 fun MacrobenchmarkScope.waitForTuner() {
-    val tunerOrTour = By.res(Pattern.compile("$MODE_CHROMATIC_TAG|$TOUR_SKIP_TAG"))
-    check(device.wait(Until.hasObject(tunerOrTour), TIMEOUT_MS)) { "Tuner screen didn't appear" }
-    // The tour opens a moment after the tuner (once the settings have loaded), so give it that moment:
-    // a tap while it is coming up lands on the tour instead of the screen.
-    device.wait(Until.findObject(By.res(TOUR_SKIP_TAG)), TOUR_WAIT_MS)?.click()
     check(device.wait(Until.hasObject(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Tuner screen didn't appear" }
 }
 

@@ -160,16 +160,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, 들리지 않음</string>
     <string name="tuner_strum_spoken_waiting">%1$s, 아직 치지 않음</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, 덜 확실함</string>
-    <string name="tour_title">둘러보기</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">%2$d단계 중 %1$d단계. %3$s.</string>
-    <string name="tour_readout">어긋난 정도와 음</string>
-    <string name="tour_strum">스트럼으로 모든 줄 확인</string>
-    <string name="tour_strings">탭하면 이 줄만 튜닝, 길게 누르면 듣기</string>
-    <string name="tour_picker">악기와 튜닝 선택</string>
-    <string name="tour_skip">둘러보기 건너뛰기</string>
-    <string name="tour_next">다음</string>
-    <string name="tour_done">완료</string>
     <string name="tuner_more_tools">도구 더 보기</string>
     <string name="tuner_tool_on">%1$s 켜짐</string>
     <string name="tuner_intonation_check">12프렛 체크</string>
@@ -208,7 +198,6 @@
     <string name="tuner_intonation_mark_back">새들 뒤로</string>
     <string name="tuner_intonation_mark_forward">새들 앞으로</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, 아직 확인 안 함</string>
-    <string name="tour_more_tools">스트럼 체크 등 도구 더 보기</string>
     <string name="tuner_chord_name">코드 이름</string>
     <string name="tuner_chord_major">%1$s 메이저</string>
     <string name="tuner_chord_minor">%1$s 마이너</string>

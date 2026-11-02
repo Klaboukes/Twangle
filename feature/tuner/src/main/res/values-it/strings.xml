@@ -167,16 +167,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, non sentita</string>
     <string name="tuner_strum_spoken_waiting">%1$s, non ancora suonata</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, meno sicura</string>
-    <string name="tour_title">Tour guidato</string>
-    <string name="tour_step_count">%1$d di %2$d</string>
-    <string name="tour_step_spoken">Passo %1$d di %2$d. %3$s.</string>
-    <string name="tour_readout">Di quanto sei fuori, e quale nota</string>
-    <string name="tour_strum">Una pennata per controllare tutte le corde</string>
-    <string name="tour_strings">Tocca: solo questa corda. Tieni premuto: ascoltala</string>
-    <string name="tour_picker">Scegli strumento e accordatura</string>
-    <string name="tour_skip">Salta</string>
-    <string name="tour_next">Avanti</string>
-    <string name="tour_done">Fine</string>
     <string name="tuner_more_tools">Altre funzioni</string>
     <string name="tuner_tool_on">%1$s in funzione</string>
     <string name="tuner_intonation_check">Controllo al 12° tasto</string>
@@ -217,7 +207,6 @@
     <string name="tuner_intonation_mark_back">selletta indietro</string>
     <string name="tuner_intonation_mark_forward">selletta in avanti</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, non ancora controllata</string>
-    <string name="tour_more_tools">Altre funzioni, come il controllo a pennata</string>
     <string name="tuner_chord_name">Nome dell\'accordo</string>
     <string name="tuner_chord_major">%1$s maggiore</string>
     <string name="tuner_chord_minor">%1$s minore</string>

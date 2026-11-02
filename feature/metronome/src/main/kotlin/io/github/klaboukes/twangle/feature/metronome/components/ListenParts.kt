@@ -457,8 +457,8 @@ private val TRAINER_GAP = 6.dp
 
 /**
  * The suggestion: a balloon on its own layer over the screen, pointing at the options button, where
- * Listen is ([anchor], in this layer's coordinates), the tour's balloon (the accent with on-accent text, no outline, a
- * soft lift). Inside: the navigation bar's mark and "Heard", the
+ * Listen is ([anchor], in this layer's coordinates), in the accent with on-accent text, no outline, a
+ * soft lift (as 1.1's first-start tour drew its balloon). Inside: the navigation bar's mark and "Heard", the
  * tempo big in the number face with "BPM" and its marking, ½× 1× 2× (only those within 30–250), then
  * Not now and Use. It fades in and out; nothing changes until Use.
  */
@@ -693,7 +693,7 @@ private fun BalloonButtons(onNotNow: () -> Unit, onUse: () -> Unit, modifier: Mo
 /** The ½× 1× 2× chips: 16 dp corners. */
 private val CHIP_SHAPE: Shape = RoundedCornerShape(16.dp)
 
-/** Use's shape, as the tour's Next: 20 dp corners. */
+/** Use's shape: 20 dp corners. */
 private val USE_SHAPE: Shape = RoundedCornerShape(20.dp)
 
 /** Where the balloon stands from the options button. */
@@ -713,7 +713,7 @@ private class BalloonShadow {
 
 /**
  * The balloon's body in [shape] with its pointer on the side [pointer] says, filled with
- * [fill] over a soft shadow at [shadowAlpha], as the tour's balloon.
+ * [fill] over a soft shadow at [shadowAlpha].
  */
 private fun DrawScope.drawBalloon(
     shape: Shape,

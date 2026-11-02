@@ -166,16 +166,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ei vielä soitettu</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, epävarmempi</string>
-    <string name="tour_title">Esittele sovellus</string>
-    <string name="tour_step_count">%1$d/%2$d</string>
-    <string name="tour_step_spoken">Vaihe %1$d, yhteensä %2$d. %3$s.</string>
-    <string name="tour_readout">Paljonko heittää ja mikä sävel</string>
-    <string name="tour_strum">Yksi lyönti tarkistaa kaikki kielet</string>
-    <string name="tour_strings">Napauta: viritä vain tämä kieli. Pidä: kuuntele</string>
-    <string name="tour_picker">Valitse soitin ja viritys</string>
-    <string name="tour_skip">Ohita</string>
-    <string name="tour_next">Seuraava</string>
-    <string name="tour_done">Valmis</string>
     <string name="tuner_more_tools">Lisää työkaluja</string>
     <string name="tuner_tool_on">%1$s päällä</string>
     <string name="tuner_intonation_check">12. nauhan testi</string>
@@ -215,7 +205,6 @@
     <string name="tuner_intonation_mark_back">siirrä tallaa taakse</string>
     <string name="tuner_intonation_mark_forward">siirrä tallaa eteen</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ei vielä tarkistettu</string>
-    <string name="tour_more_tools">Lisää työkaluja, kuten lyöntitesti</string>
     <string name="tuner_chord_name">Soinnun nimi</string>
     <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->
     <string name="tuner_chord_major">%1$s-duuri</string>

@@ -163,16 +163,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, ikke hørt</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ikke slått an ennå</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre sikker</string>
-    <string name="tour_title">Vis meg rundt</string>
-    <string name="tour_step_count">%1$d av %2$d</string>
-    <string name="tour_step_spoken">Steg %1$d av %2$d. %3$s.</string>
-    <string name="tour_readout">Hvor mye den er unna, og hvilken tone</string>
-    <string name="tour_strum">Slå an for å sjekke alle strengene</string>
-    <string name="tour_strings">Velg: stem bare denne strengen. Hold: hør den</string>
-    <string name="tour_picker">Velg instrument og stemming</string>
-    <string name="tour_skip">Hopp over</string>
-    <string name="tour_next">Neste</string>
-    <string name="tour_done">Ferdig</string>
     <string name="tuner_more_tools">Flere verktøy</string>
     <string name="tuner_tool_on">%1$s på</string>
     <string name="tuner_intonation_check">Sjekk på 12. bånd</string>
@@ -212,7 +202,6 @@
     <string name="tuner_intonation_mark_back">flytt salen bakover</string>
     <string name="tuner_intonation_mark_forward">flytt salen framover</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ikke sjekket ennå</string>
-    <string name="tour_more_tools">Flere verktøy, som strumsjekken</string>
     <string name="tuner_chord_name">Akkordnavn</string>
     <string name="tuner_chord_major">%1$s-dur</string>
     <string name="tuner_chord_minor">%1$s-moll</string>

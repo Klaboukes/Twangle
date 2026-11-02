@@ -173,16 +173,6 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, niet gehoord</string>
     <string name="tuner_strum_spoken_waiting">%1$s, nog niet gestrumd</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, minder zeker</string>
-    <string name="tour_title">Rondleiding</string>
-    <string name="tour_step_count">%1$d van %2$d</string>
-    <string name="tour_step_spoken">Stap %1$d van %2$d. %3$s.</string>
-    <string name="tour_readout">Hoe ver je ernaast zit, en welke noot</string>
-    <string name="tour_strum">Sla aan en check alle snaren</string>
-    <string name="tour_strings">Kies: stem alleen deze snaar. Houd vast: hoor hem</string>
-    <string name="tour_picker">Kies instrument en stemming</string>
-    <string name="tour_skip">Overslaan</string>
-    <string name="tour_next">Volgende</string>
-    <string name="tour_done">Klaar</string>
     <string name="tuner_more_tools">Meer functies</string>
     <string name="tuner_tool_on">%1$s aan</string>
     <string name="tuner_intonation_check">12e-fretcheck</string>
@@ -222,7 +212,6 @@
     <string name="tuner_intonation_mark_back">zadel naar achteren</string>
     <string name="tuner_intonation_mark_forward">zadel naar voren</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, nog niet gecheckt</string>
-    <string name="tour_more_tools">Meer functies, zoals de strumcheck</string>
     <string name="tuner_chord_name">Akkoordnaam</string>
     <string name="tuner_chord_major">%1$s majeur</string>
     <string name="tuner_chord_minor">%1$s mineur</string>

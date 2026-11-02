@@ -163,12 +163,6 @@ data class AppSettings(
      */
     val focusMode: Boolean = false,
     /**
-     * The first-start tour ("Show me around") was skipped or finished, so it doesn't come back by
-     * itself. An install that already had saved settings before the tour came (an update) counts as
-     * having seen it (see [SettingsRepository.decideTourOnce]).
-     */
-    val tourSeen: Boolean = false,
-    /**
      * The player has refused the microphone in Android's own dialog at least once on this install.
      * Android doesn't say whether it will show that dialog again, so the tuner uses this to tell a
      * dialog that was only dismissed (ask again) from one Android no longer shows (only Settings helps).

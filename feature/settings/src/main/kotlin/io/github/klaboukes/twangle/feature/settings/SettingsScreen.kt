@@ -75,7 +75,6 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 /**
  * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
  * lead away). Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
- * With [onShowTour], a "Show me around" row starts the first-start tour again (on the tuner).
  *
  * With [languages] (`twangle.languages`, as resource qualifiers), a Language row sets the app's
  * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
@@ -88,7 +87,6 @@ fun SettingsScreen(
     appVersion: String,
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
-    onShowTour: (() -> Unit)? = null,
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
 ) {
@@ -114,7 +112,6 @@ fun SettingsScreen(
         onFocusModeChange = viewModel::setFocusMode,
         onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
-        onShowTour = onShowTour,
         languages = languageTags,
         appLanguage = appLanguage,
         onAppLanguageChange = { tag ->
@@ -151,7 +148,6 @@ fun SettingsContent(
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-    onShowTour: (() -> Unit)? = null,
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
     onAppLanguageChange: (String?) -> Unit = {},
@@ -162,7 +158,6 @@ fun SettingsContent(
                 settings = settings,
                 appVersion = appVersion,
                 onOpenAbout = onOpenAbout,
-                onShowTour = onShowTour,
                 languages = languages,
                 appLanguage = appLanguage,
                 onAppLanguageChange = onAppLanguageChange,
@@ -299,7 +294,7 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
  * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
  * wallpaper colours, then light or dark; the style picker went with 1.1's six styles in Phase 67), Tuner
  * screen (the meter's look and in-tune effect, what shows below the note and the layout on its side), While tuning (what the tuner does while
- * it listens) and App (the app's language, the tour and one row that opens the About page: version,
+ * it listens) and App (the app's language and one row that opens the About page: version,
  * promise, privacy and licences, so those long texts don't crowd the settings). A line divides two
  * subjects; a setting that belongs to the one above stays with it. Rows, including the card grids, keep
  * 16 dp from the column's edges.
@@ -309,7 +304,6 @@ private fun SettingsGroups(
     settings: AppSettings,
     appVersion: String,
     onOpenAbout: () -> Unit,
-    onShowTour: (() -> Unit)?,
     languages: List<String>,
     appLanguage: String?,
     onAppLanguageChange: (String?) -> Unit,
@@ -422,7 +416,7 @@ private fun SettingsGroups(
                 )
             }
         }
-        // The app itself: its language, the tour and About (until Phase 63 the only rows without a heading).
+        // The app itself: its language and About (until Phase 63 the only rows without a heading; "Show me around" went with the tour in Phase 68).
         SettingsGroup(title = stringResource(R.string.settings_group_app)) {
             Rows {
                 if (languages.isNotEmpty()) {
@@ -432,14 +426,6 @@ private fun SettingsGroups(
                         selected = appLanguage,
                         nameOf = { names.getValue(it) },
                         onSelect = onAppLanguageChange,
-                    )
-                }
-                if (onShowTour != null) {
-                    LinkSetting(
-                        title = stringResource(R.string.settings_show_tour_title),
-                        summary = stringResource(R.string.settings_show_tour_summary),
-                        onClick = onShowTour,
-                        modifier = Modifier.testTag(SHOW_TOUR_TAG),
                     )
                 }
                 LinkSetting(
@@ -484,9 +470,6 @@ private fun Rows(content: @Composable ColumnScope.() -> Unit) {
 
 /** Space between two groups, so each heading clearly starts a new one. */
 private val GROUP_GAP = 32.dp
-
-/** Test tag of the "Show me around" row, which starts the first-start tour again. */
-const val SHOW_TOUR_TAG = "settings_show_tour"
 
 /** Test tag of the row that opens the About page (the Baseline Profile generator opens it). */
 const val ABOUT_LINK_TAG = "settings_about"
