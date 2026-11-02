@@ -1024,7 +1024,7 @@ class ScalesScreenTest {
             ScaleType.PHRYGIAN_DOMINANT, ScaleType.MAJOR_BLUES,
         )
 
-        private val TOOLS = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
+        private val TOOLS = listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L

@@ -120,7 +120,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome clicks only on the beats", Subdivision.NONE, settings.metronomeSubdivision)
         assertEquals("the speed trainer was never set up", null, settings.metronomeTrainer)
         assertEquals("the speed trainer is off", false, settings.metronomeTrainerOn)
-        assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
+        assertEquals("no Practice tool used yet", null, settings.practiceTool)
         assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
         assertEquals("the scales open on major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("the capo helper opens on C shapes", SongKey(PitchClass.C), settings.practiceCapoShapes)
@@ -574,7 +574,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
         assertEquals("an unknown click gives the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
         assertEquals("an unknown subdivision gives none", Subdivision.NONE, settings.metronomeSubdivision)
-        assertEquals("an unknown tool gives the metronome", PracticeTool.METRONOME, settings.practiceTool)
+        assertEquals("an unknown tool counts as none used yet", null, settings.practiceTool)
         assertEquals("an unknown scale gives major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("unknown capo shapes give C", SongKey(PitchClass.C), settings.practiceCapoShapes)
         assertEquals("a capo fret out of range gives no capo", 0, settings.practiceCapoFret)
@@ -597,6 +597,26 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("practice_chart")] = "SCALES"
         }
         assertEquals("another tool used last stays", PracticeTool.CAPO, repository(store).settings.first().practiceTool)
+    }
+
+    @Test
+    fun `a metronome saved as the Practice tool used last reads as none used yet`() = runTest {
+        // 1.1 saved it; 2.0 gives the metronome a tab of its own (Phase 69), so it is no Practice tool any more.
+        dataStore().edit { it[stringPreferencesKey("practice_tool")] = "METRONOME" }
+        close()
+        assertEquals(null, repository().settings.first().practiceTool)
+        close()
+
+        repository().setPracticeTool(PracticeTool.EAR_TRAINING)
+        close()
+        assertEquals("a tool picked after the update is kept", PracticeTool.EAR_TRAINING, repository().settings.first().practiceTool)
+        close()
+
+        repository().setPracticeTool(null)
+        close()
+        val store = dataStore()
+        assertEquals("forgotten, none is used yet", null, repository(store).settings.first().practiceTool)
+        assertEquals("and the key is gone", null, store.data.first()[stringPreferencesKey("practice_tool")])
     }
 
     @Test

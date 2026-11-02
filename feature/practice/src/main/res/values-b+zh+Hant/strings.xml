@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">節拍器</string>
     <string name="practice_tool_chords">和弦</string>
     <string name="practice_tool_scales">音階</string>
     <string name="practice_tool_ear_training">練耳</string>

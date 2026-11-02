@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">मेट्रोनोम</string>
     <string name="practice_tool_chords">कॉर्ड</string>
     <string name="practice_tool_scales">स्केल</string>
     <string name="practice_tool_ear_training">कान की ट्रेनिंग</string>

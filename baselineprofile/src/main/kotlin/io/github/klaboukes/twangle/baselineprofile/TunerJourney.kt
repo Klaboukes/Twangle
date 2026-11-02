@@ -12,7 +12,8 @@ const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
 // Test tags from :app (`NavigationTestTags`), :feature:tuner (`TunerTestTags`), :feature:metronome
 // (`MetronomeTestTags`), :feature:practice (`PracticeTestTags`) and :feature:settings. UI Automator
 // sees them as resource ids, which stay the same in every app language.
-private const val PRACTICE_TAB_TAG = "nav_metronome"
+private const val METRONOME_TAB_TAG = "nav_metronome"
+private const val PRACTICE_TAB_TAG = "nav_practice"
 private const val SETTINGS_TAB_TAG = "nav_settings"
 private const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
 private const val MODE_GUITAR_TAG = "tuner_mode_auto"
@@ -27,7 +28,6 @@ private val TUNER_TOOLS = listOf(
 )
 
 private const val PRACTICE_TOOL_BUTTON_TAG = "practice_tool_button"
-private const val PRACTICE_METRONOME_TAG = "practice_tool_metronome"
 private const val PRACTICE_CHORDS_TAG = "practice_tool_chords"
 private const val PRACTICE_SCALES_TAG = "practice_tool_scales"
 private const val PRACTICE_CAPO_TAG = "practice_tool_capo"
@@ -107,16 +107,14 @@ fun MacrobenchmarkScope.useTuner() {
 }
 
 /**
- * The Practice tab: the metronome (a few clicks, faster, slower, tap tempo, stopped again), Chords
- * (a chord and its next shape), Scales (a scale on the neck) and the Capo helper. Each tool is picked on
- * the tool button's list, so it works whichever tool the tab opens on (the one used last).
+ * The Metronome tab (a few clicks, faster, slower, tap tempo, stopped again), then the Practice tab:
+ * Chords (a chord and its next shape), Scales (a scale on the neck) and the Capo helper. Each tool is
+ * picked on the tool button's list, so it works whichever tool the tab opens on (the one used last).
  */
 fun MacrobenchmarkScope.usePractice() {
     waitForTuner()
-    clickTag(PRACTICE_TAB_TAG)
-    check(device.wait(Until.hasObject(By.res(PRACTICE_TOOL_BUTTON_TAG)), TIMEOUT_MS)) { "Practice didn't open" }
-
-    pickTool(PRACTICE_METRONOME_TAG)
+    clickTag(METRONOME_TAB_TAG)
+    check(device.wait(Until.hasObject(By.res(METRONOME_START_TAG)), TIMEOUT_MS)) { "The metronome didn't open" }
     clickTag(METRONOME_START_TAG)
     Thread.sleep(METRONOME_MS / 2)
     clickTag(METRONOME_FASTER_TAG)
@@ -125,6 +123,8 @@ fun MacrobenchmarkScope.usePractice() {
     clickTag(METRONOME_START_TAG) // Stop.
     repeat(TAPS) { clickTag(METRONOME_TAP_TAG, settleMs = TAP_TEMPO_MS) }
 
+    clickTag(PRACTICE_TAB_TAG)
+    check(device.wait(Until.hasObject(By.res(PRACTICE_TOOL_BUTTON_TAG)), TIMEOUT_MS)) { "Practice didn't open" }
     pickTool(PRACTICE_CHORDS_TAG)
     check(device.wait(Until.hasObject(By.res(CHORDS_TAG)), TIMEOUT_MS)) { "Chords didn't open" }
     pickInPanel(ROOT_A_TAG)

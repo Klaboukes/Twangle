@@ -13,6 +13,7 @@ import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
@@ -31,7 +32,7 @@ import org.junit.rules.Timeout
 /**
  * The bar's Tuner tab always leads to the plain tuner (owner's request, 2026-10-17): a tap on it closes
  * the tuner's tool (here the strum check), also while the tuner shows and when coming back from another
- * tab. Back from another tab is no tap on the tab, so the tool stays.
+ * tab (the Metronome and Practice tabs, Phase 69). Back from another tab is no tap on the tab, so the tool stays.
  */
 class TunerTabTest {
 
@@ -79,9 +80,11 @@ class TunerTabTest {
             tab(Destination.TUNER)
             assertTrue("a tap on the open Tuner tab closes it", gone(TunerTestTags.STRUM_PANEL))
 
-            // From another tab.
+            // From another tab: the metronome's, then Practice's.
             turnStrumCheckOn()
             tab(Destination.METRONOME)
+            assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
+            tab(Destination.PRACTICE)
             assertTrue("Practice shows", shown(PracticeTestTags.TOOL_BUTTON))
             tab(Destination.TUNER)
             assertTrue("the tuner shows", shown(TunerTestTags.MORE_TOOLS))

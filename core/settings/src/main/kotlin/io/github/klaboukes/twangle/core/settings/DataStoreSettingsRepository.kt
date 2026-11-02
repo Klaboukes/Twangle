@@ -309,9 +309,9 @@ class DataStoreSettingsRepository internal constructor(
         save { it[TRAINER_ON] = on }
     }
 
-    override suspend fun setPracticeTool(tool: PracticeTool) {
+    override suspend fun setPracticeTool(tool: PracticeTool?) {
         save {
-            it[PRACTICE_TOOL] = tool.name
+            if (tool == null) it.remove(PRACTICE_TOOL) else it[PRACTICE_TOOL] = tool.name
             // The old Chords · Scales choice has had its say once a tool is picked (see [practiceTool]).
             it.remove(OLD_PRACTICE_CHART)
         }
@@ -416,7 +416,7 @@ class DataStoreSettingsRepository internal constructor(
             metronomeSubdivision = enumOrNull<Subdivision>(prefs[METRONOME_SUBDIVISION]) ?: defaults.metronomeSubdivision,
             metronomeTrainer = trainer(prefs) ?: defaults.metronomeTrainer,
             metronomeTrainerOn = prefs[TRAINER_ON] ?: defaults.metronomeTrainerOn,
-            practiceTool = practiceTool(prefs) ?: defaults.practiceTool,
+            practiceTool = practiceTool(prefs),
             practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
             practiceScaleType = enumOrNull<ScaleType>(prefs[PRACTICE_SCALE_TYPE]) ?: defaults.practiceScaleType,
@@ -511,7 +511,7 @@ class DataStoreSettingsRepository internal constructor(
             return SpeedTrainer.of(start, goal, prefs[TRAINER_STEP] ?: SpeedTrainer.DEFAULT_STEP, prefs[TRAINER_BARS] ?: SpeedTrainer.DEFAULT_BARS)
         }
 
-        /** The Practice tab's [PracticeTool] used last, by its name. */
+        /** The Practice tab's [PracticeTool] used last, by its name; 1.1's `METRONOME` is no tool now and reads as none. */
         private val PRACTICE_TOOL = stringPreferencesKey("practice_tool")
 
         /** The chord charts' root ([PitchClass]) and chord type ([ChordQuality]) picked last, by their names. */

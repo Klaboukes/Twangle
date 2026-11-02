@@ -1,5 +1,4 @@
 <resources>
-    <string name="practice_tool_metronome">Метроном</string>
     <string name="practice_tool_chords">Акорди</string>
     <string name="practice_tool_scales">Гами</string>
     <string name="practice_tool_ear_training">Тренування слуху</string>

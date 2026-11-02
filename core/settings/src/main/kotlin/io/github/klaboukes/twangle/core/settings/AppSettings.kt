@@ -86,13 +86,11 @@ enum class LensLook {
 }
 
 /**
- * The tool the Practice tab shows (Phase 32, with its switch on, [ToolSwitches.practiceTab]): it
- * opens on the one used last. Saved in settings by [name], so don't rename the entries.
+ * A tool of the Practice tab (Phase 32, with its switch on, [ToolSwitches.practiceTab]). Saved in
+ * settings by [name], so don't rename the entries. The metronome was one until 2.0 gave it a tab of its
+ * own (Phase 69): a saved `METRONOME` reads as nothing used yet.
  */
 enum class PracticeTool {
-    /** The metronome, the Metronome tab's screen. */
-    METRONOME,
-
     /** Chord charts for the picked instrument and tuning. */
     CHORDS,
 
@@ -107,12 +105,6 @@ enum class PracticeTool {
 
     /** Ear training (Phase 55, with its own switch, [ToolSwitches.earTraining]): Play it back, Intervals and Chord type. */
     EAR_TRAINING,
-    ;
-
-    companion object {
-        /** A fresh install opens Practice on the metronome, the tab it used to be. */
-        val DEFAULT = METRONOME
-    }
 }
 
 /** Everything the user can change, with the defaults a fresh install starts from. */
@@ -196,8 +188,8 @@ data class AppSettings(
     val metronomeTrainer: SpeedTrainer? = null,
     /** Whether the speed trainer is on (only with its tool switch, [ToolSwitches.speedTrainer]). */
     val metronomeTrainerOn: Boolean = false,
-    /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
-    val practiceTool: PracticeTool = PracticeTool.DEFAULT,
+    /** The Practice tab's tool used last (only with the Practice tab's switch on), or null while none was (a fresh install, or 1.1's metronome). */
+    val practiceTool: PracticeTool? = null,
     /** The root picked last in the Practice tab's chord charts and scales, one for both (C on a fresh install). */
     val practiceRoot: PitchClass = PitchClass.C,
     /** The chord type picked last in the Practice tab's chord charts (major on a fresh install). */

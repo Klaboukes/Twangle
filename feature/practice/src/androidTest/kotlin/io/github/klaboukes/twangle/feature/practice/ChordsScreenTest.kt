@@ -111,7 +111,7 @@ class ChordsScreenTest {
                         savedQuality = quality,
                         onRootChange = { savedRoots += it },
                         onQualityChange = { savedQualities += it },
-                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) },
+                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                         leftHanded = shownLeftHanded.value,

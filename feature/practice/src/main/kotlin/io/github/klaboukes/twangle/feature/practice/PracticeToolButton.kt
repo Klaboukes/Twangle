@@ -182,7 +182,6 @@ private fun ToolName(text: String, color: Color, modifier: Modifier = Modifier) 
 /** Each tool's name, as the button and the list show it. A new tool needs its name here (the `when` says so). */
 internal val PracticeTool.label: Int
     get() = when (this) {
-        PracticeTool.METRONOME -> R.string.practice_tool_metronome
         PracticeTool.CHORDS -> R.string.practice_tool_chords
         PracticeTool.SCALES -> R.string.practice_tool_scales
         PracticeTool.CAPO -> R.string.practice_tool_capo

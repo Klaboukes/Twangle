@@ -72,7 +72,7 @@ class PracticeToolButtonTest {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownTool = mutableStateOf(PracticeTool.CHORDS)
-    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.EAR_TRAINING)
+    private val tools = listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.EAR_TRAINING)
 
     /**
      * Chords or Scales, or the capo helper with Capo picked; the metronome and Ear training live in their
@@ -150,7 +150,7 @@ class PracticeToolButtonTest {
                 row(picked).assertDoesNotExist()
             }
         }
-        for (tool in listOf(PracticeTool.METRONOME, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.CHORDS)) {
+        for (tool in listOf(PracticeTool.EAR_TRAINING, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.CHORDS)) {
             button().performClick()
             compose.waitForIdle()
             row(tool).performClick()
@@ -203,7 +203,7 @@ class PracticeToolButtonTest {
             assertTrue("$size under the button $bounds: $buttonBottom px, the list at $listTop px", listTop >= buttonBottom - 8 * compose.density.density)
             Espresso.pressBack()
             compose.waitForIdle()
-            row(PracticeTool.METRONOME).assertDoesNotExist()
+            row(PracticeTool.CHORDS).assertDoesNotExist()
         }
     }
 
@@ -263,7 +263,7 @@ class PracticeToolButtonTest {
 
     companion object {
         private val LABELS = mapOf(
-            PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.SCALES to "Scales", PracticeTool.CAPO to "Capo",
+            PracticeTool.CHORDS to "Chords", PracticeTool.SCALES to "Scales", PracticeTool.CAPO to "Capo",
             PracticeTool.EAR_TRAINING to "Ear training",
         )
 

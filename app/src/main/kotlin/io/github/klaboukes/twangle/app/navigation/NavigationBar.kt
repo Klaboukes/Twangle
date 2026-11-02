@@ -66,17 +66,18 @@ import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import kotlin.math.min
 
 /**
- * The app's frame: [content] with the navigation bar (Tuner · Metronome · Settings) at the
- * bottom, or, in a window wider than tall (a phone on its side, [useRail]), the rail along the start
- * edge. Both are variant B of the approved mock-up (docs/design/metronome-nav-preview.html): icons and
- * names straight on the app's background over a calm field, the open tab ([selected]) in the accent
- * with the accent's mark under its name. A tap on another tab calls [onSelect], and one on the open
+ * The app's frame: [content] with the navigation bar ([destinations]: Tune · Metronome · Practice,
+ * Phase 69, and Settings until the gear takes its place) at the bottom, or, in a window wider than tall
+ * (a phone on its side, [useRail]), the rail along the start edge. Both are variant B of the approved
+ * mock-up (docs/design/metronome-nav-preview.html), with the icons of 2.0's first mock-up
+ * (docs/design/fresh-start-preview.html): icons and names straight on the app's background over a calm
+ * field, the open tab ([selected]) in the accent with the accent's mark under its name. A tap on another tab calls [onSelect], and one on the open
  * tab [onReselect] (the Tuner tab's closes the tuner's tools). Every item is a tab: the instrument
  * and tuning are picked with the headstock button above the tuner's strings and in the Practice tools
  * (the bar's Instrument item until 2026-10-19). Without a [selected] tab (the tuning editor) the bar or
  * rail is away and [content] takes the whole window, as it does with [navigationHidden] (focus mode's full-screen tuner). The bar or rail keeps clear of the system bars; [content] is told those
- * insets are taken, so it doesn't leave room for them twice. With [practice] (the Practice tab's
- * switch on, Phase 32) the Metronome tab is called Practice.
+ * insets are taken, so it doesn't leave room for them twice. Without the Practice tab (its switch off,
+ * or no tool in it) [destinations] leaves it out and the metronome keeps its own tab ([destinationsFor]).
  */
 @Composable
 fun AppNavigationFrame(
@@ -84,7 +85,7 @@ fun AppNavigationFrame(
     onSelect: (Destination) -> Unit,
     modifier: Modifier = Modifier,
     onReselect: (Destination) -> Unit = {},
-    practice: Boolean = false,
+    destinations: List<Destination> = Destination.entries,
     navigationHidden: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -102,7 +103,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                     exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
                 ) {
-                    AppNavigationRail(tab, onSelect, practice = practice, onReselect = onReselect)
+                    AppNavigationRail(tab, onSelect, destinations = destinations, onReselect = onReselect)
                 }
             } else {
                 AnimatedVisibility(
@@ -110,7 +111,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
                     exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
                 ) {
-                    AppNavigationBar(tab, onSelect, practice = practice, onReselect = onReselect)
+                    AppNavigationBar(tab, onSelect, destinations = destinations, onReselect = onReselect)
                 }
             }
         }
@@ -151,7 +152,7 @@ fun AppNavigationFrame(
 }
 
 /**
- * The navigation bar at the bottom of an upright phone: the three tabs, three equal items over the gesture bar, on a calm field (a soft wash of the background
+ * The navigation bar at the bottom of an upright phone: the tabs ([destinations]), equal items over the gesture bar, on a calm field (a soft wash of the background
  * colour that starts [FIELD_REACH] above the bar, no edge) that keeps them readable over the style's
  * motifs and the screen's last rows.
  */
@@ -160,7 +161,7 @@ fun AppNavigationBar(
     selected: Destination,
     onSelect: (Destination) -> Unit,
     modifier: Modifier = Modifier,
-    practice: Boolean = false,
+    destinations: List<Destination> = Destination.entries,
     onReselect: (Destination) -> Unit = {},
 ) {
     val field = MaterialTheme.colorScheme.background
@@ -188,14 +189,14 @@ fun AppNavigationBar(
             .selectableGroup(),
         verticalAlignment = Alignment.Top,
     ) {
-        for (destination in Destination.entries) {
-            NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, practice, Modifier.weight(1f))
+        for (destination in destinations) {
+            NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, Modifier.weight(1f))
         }
     }
 }
 
 /**
- * The rail along the start edge of a phone on its side: the same three tabs, one above the other in
+ * The rail along the start edge of a phone on its side: the same tabs, one above the other in
  * the middle of the height, on a calm field that fades out [FIELD_REACH] past the rail's end edge.
  */
 @Composable
@@ -203,7 +204,7 @@ fun AppNavigationRail(
     selected: Destination,
     onSelect: (Destination) -> Unit,
     modifier: Modifier = Modifier,
-    practice: Boolean = false,
+    destinations: List<Destination> = Destination.entries,
     onReselect: (Destination) -> Unit = {},
 ) {
     val field = MaterialTheme.colorScheme.background
@@ -237,8 +238,8 @@ fun AppNavigationRail(
             verticalArrangement = Arrangement.spacedBy(RAIL_GAP),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            for (destination in Destination.entries) {
-                NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, practice, Modifier.fillMaxWidth())
+            for (destination in destinations) {
+                NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, Modifier.fillMaxWidth())
             }
         }
     }
@@ -248,8 +249,7 @@ fun AppNavigationRail(
  * One tab: its icon, its name under it and, while it is the open one, the accent's mark under
  * that (the room for the mark is kept either way, so nothing moves). The open tab is in the accent,
  * the others in the muted colour. TalkBack hears its name, "tab" and whether it is selected, like a
- * Material 3 navigation bar item; the icon says nothing more. With [practice] the Metronome tab is
- * called Practice (it keeps the metronome's icon: the metronome is still what it holds first).
+ * Material 3 navigation bar item; the icon says nothing more.
  */
 @Composable
 private fun NavItem(
@@ -257,12 +257,11 @@ private fun NavItem(
     selected: Boolean,
     onClick: () -> Unit,
     onReselect: () -> Unit,
-    practice: Boolean,
     modifier: Modifier = Modifier,
 ) {
     NavEntry(
         icon = navIcon(destination, selected),
-        label = stringResource(destination.label(practice)),
+        label = stringResource(destination.label),
         selected = selected,
         modifier = modifier
             .testTag(NavigationTestTags.tab(destination))
@@ -329,12 +328,14 @@ private fun NavLabel(text: String, color: Color) {
     }
 }
 
-/** The tab's name: the Metronome tab is Practice with [practice] (Phase 32). */
-internal fun Destination.label(practice: Boolean): Int = when (this) {
-    Destination.TUNER -> R.string.nav_tuner
-    Destination.METRONOME -> if (practice) R.string.nav_practice else R.string.nav_metronome
-    Destination.SETTINGS -> R.string.nav_settings
-}
+/** The tab's name. */
+internal val Destination.label: Int
+    get() = when (this) {
+        Destination.TUNER -> R.string.nav_tuner
+        Destination.METRONOME -> R.string.nav_metronome
+        Destination.PRACTICE -> R.string.nav_practice
+        Destination.SETTINGS -> R.string.nav_settings
+    }
 
 /** Test tags for UI tests and the Baseline Profile generator (as resource ids, see `MainActivity`). */
 object NavigationTestTags {

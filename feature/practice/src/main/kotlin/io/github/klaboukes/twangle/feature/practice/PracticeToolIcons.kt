@@ -21,8 +21,6 @@ private val ICONS = PracticeTool.entries.associateWith(::draw)
 private fun draw(tool: PracticeTool): ImageVector {
     val fills = if (tool == PracticeTool.CAPO) listOf(CAPO_BAR) else emptyList()
     val (lines, dots) = when (tool) {
-        // A metronome, as the navigation bar's Practice tab: the case, its base line, the pendulum and its weight.
-        PracticeTool.METRONOME -> listOf("M9.6,3h4.8l4.4,18H5.2z", "M6.6,16.5h10.8", "M12,16.5L16.8,6") to listOf(Dot(15.6f, 8.6f, 1.4f))
         // A chord box as the charts draw it: four strings under the nut, two frets, two fingers; open at the
         // bottom, so the lines don't close into a grid at this size.
         PracticeTool.CHORDS -> listOf(

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Practice tab (Phase 32): the tools' names on the tool button at its top and in its list (Phase 47). -->
-    <string name="practice_tool_metronome">Metronome</string>
     <!-- Practice tab: the Chords tool's name (chord charts) on the tool button at the top and in its list. One or two words. -->
     <string name="practice_tool_chords">Chords</string>
     <!-- Practice tab: the Scales tool's name (scales on the neck, with the drone) on the tool button at the top and in its list. One or two words. -->

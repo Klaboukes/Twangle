@@ -228,7 +228,7 @@ class StoreScreenshots(private val shot: Shot) {
                 val screens = mutableListOf<Bitmap>()
                 ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                     waitFor(navigation)
-                    click(NavigationTestTags.tab(Destination.METRONOME))
+                    click(NavigationTestTags.tab(Destination.PRACTICE))
                     waitFor(PracticeTestTags.CHORDS)
                     settle(PANEL_SETTLE_MS)
                     screens += screenshot(scenario, "${shot.number}a")

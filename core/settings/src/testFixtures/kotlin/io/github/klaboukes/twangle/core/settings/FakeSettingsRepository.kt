@@ -158,7 +158,7 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setMetronomeTrainerOn(on: Boolean) = write { it.copy(metronomeTrainerOn = on) }
 
-    override suspend fun setPracticeTool(tool: PracticeTool) = write { it.copy(practiceTool = tool) }
+    override suspend fun setPracticeTool(tool: PracticeTool?) = write { it.copy(practiceTool = tool) }
 
     override suspend fun setPracticeRoot(root: PitchClass) = write { it.copy(practiceRoot = root) }
 

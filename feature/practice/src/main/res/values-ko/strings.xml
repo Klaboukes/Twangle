@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">메트로놈</string>
     <string name="practice_tool_chords">코드</string>
     <string name="practice_tool_scales">스케일</string>
     <string name="practice_tool_ear_training">청음 훈련</string>

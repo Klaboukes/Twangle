@@ -136,8 +136,8 @@ interface SettingsRepository {
     /** Whether the speed trainer is on ([AppSettings.metronomeTrainerOn]). */
     suspend fun setMetronomeTrainerOn(on: Boolean)
 
-    /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
-    suspend fun setPracticeTool(tool: PracticeTool)
+    /** The Practice tab's tool picked last ([AppSettings.practiceTool]); null forgets it (nothing used yet). */
+    suspend fun setPracticeTool(tool: PracticeTool?)
 
     /** The root picked last in the chord charts and scales, one for both ([AppSettings.practiceRoot]). */
     suspend fun setPracticeRoot(root: PitchClass)

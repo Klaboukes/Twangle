@@ -1,19 +1,32 @@
 package io.github.klaboukes.twangle.app.navigation
 
 /**
- * The app's screens. Navigation is just this one value (no navigation library): the three tabs of
- * the navigation bar, About (opened from Settings) and the tuning editor (opened from the tuner).
+ * The app's screens. Navigation is just this one value (no navigation library): the tabs of the
+ * navigation bar, About (opened from Settings) and the tuning editor (opened from the tuner or a
+ * Practice tool).
  */
-enum class Screen { TUNER, SETTINGS, ABOUT, TUNING_EDITOR, METRONOME }
+enum class Screen { TUNER, METRONOME, PRACTICE, SETTINGS, ABOUT, TUNING_EDITOR }
 
-/** The navigation bar's tabs, in its order. */
-enum class Destination { TUNER, METRONOME, SETTINGS }
+/**
+ * The navigation bar's tabs, in its order: Tune · Metronome · Practice (2.0, Phase 69: the metronome
+ * a tab of its own, no longer a Practice tool). Settings is a tab only until the gear in the tuner's
+ * top corner takes its place (Phase 69's next step).
+ */
+enum class Destination { TUNER, METRONOME, PRACTICE, SETTINGS }
+
+/**
+ * The tabs the bar shows, in its order: every one, but Practice only with [practice] (its switch on and
+ * a tool in it, `practiceToolsFor`); without it the metronome keeps its own tab.
+ */
+fun destinationsFor(practice: Boolean): List<Destination> =
+    if (practice) Destination.entries else Destination.entries - Destination.PRACTICE
 
 /** The tab [this] screen belongs to (About is part of Settings), or null where the bar isn't shown (the tuning editor). */
 val Screen.destination: Destination?
     get() = when (this) {
         Screen.TUNER -> Destination.TUNER
         Screen.METRONOME -> Destination.METRONOME
+        Screen.PRACTICE -> Destination.PRACTICE
         Screen.SETTINGS, Screen.ABOUT -> Destination.SETTINGS
         Screen.TUNING_EDITOR -> null
     }
@@ -23,6 +36,7 @@ val Destination.screen: Screen
     get() = when (this) {
         Destination.TUNER -> Screen.TUNER
         Destination.METRONOME -> Screen.METRONOME
+        Destination.PRACTICE -> Screen.PRACTICE
         Destination.SETTINGS -> Screen.SETTINGS
     }
 
@@ -34,7 +48,7 @@ val Screen.back: Screen?
     get() = when (this) {
         Screen.TUNER -> null
         Screen.ABOUT -> Screen.SETTINGS
-        Screen.SETTINGS, Screen.METRONOME, Screen.TUNING_EDITOR -> Screen.TUNER
+        Screen.SETTINGS, Screen.METRONOME, Screen.PRACTICE, Screen.TUNING_EDITOR -> Screen.TUNER
     }
 
 /**

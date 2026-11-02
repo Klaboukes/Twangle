@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Máy đếm nhịp</string>
     <string name="practice_tool_chords">Hợp âm</string>
     <string name="practice_tool_scales">Âm giai</string>
     <string name="practice_tool_ear_training">Luyện tai</string>

@@ -11,26 +11,28 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
 /**
- * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order: the metronome,
- * then each with its switch on: chords, scales (a tool of its own since Phase 47) and the capo helper
- * (Phase 33, only with chords, whose charts its rows open), and Ear training (Phase 55). None while the Practice tab's switch is
- * off, or when the metronome would be the only tool: the tab is then the plain Metronome tab, with no
- * tool button.
+ * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order, each with its
+ * switch on: chords, scales (a tool of its own since Phase 47), the capo helper (Phase 33, only with
+ * chords, whose charts its rows open) and Ear training (Phase 55). None while the Practice tab's switch
+ * is off, or every tool's: there is then no Practice tab, and the metronome keeps its own (since 2.0,
+ * Phase 69, a tab of its own either way).
  */
 fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> {
     if (!tools.practiceTab) return emptyList()
-    val others = buildList {
+    return buildList {
         if (tools.chords) add(PracticeTool.CHORDS)
         if (tools.scales) add(PracticeTool.SCALES)
         if (tools.capoHelper && tools.chords) add(PracticeTool.CAPO)
         if (tools.earTraining) add(PracticeTool.EAR_TRAINING)
     }
-    return if (others.isEmpty()) emptyList() else listOf(PracticeTool.METRONOME) + others
 }
 
-/** The tool Practice opens on: the one used last ([saved]) while it is [offered], else the metronome. */
-fun practiceToolToOpen(saved: PracticeTool, offered: List<PracticeTool>): PracticeTool =
-    if (saved in offered) saved else PracticeTool.METRONOME
+/**
+ * The tool Practice opens on: the one used last ([saved]) while it is [offered], else the first one
+ * offered (Chords), or none when nothing is. It goes when Practice's cards come (Phase 69), which open no tool by themselves.
+ */
+fun practiceToolToOpen(saved: PracticeTool?, offered: List<PracticeTool>): PracticeTool? =
+    saved?.takeIf { it in offered } ?: offered.firstOrNull()
 
 /** Test tags for UI tests (as resource ids in the app, see `MainActivity`). */
 object PracticeTestTags {

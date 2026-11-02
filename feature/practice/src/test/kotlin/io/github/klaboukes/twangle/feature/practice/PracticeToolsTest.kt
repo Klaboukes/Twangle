@@ -4,41 +4,42 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class PracticeToolsTest {
 
     @Test
-    fun `with every switch on Practice offers the metronome, chords, scales, the capo helper, then ear training`() {
+    fun `with every switch on Practice offers chords, scales, the capo helper, then ear training`() {
         assertEquals(
-            listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.EAR_TRAINING),
+            listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.EAR_TRAINING),
             practiceToolsFor(ToolSwitches.ALL_ON),
         )
     }
 
     @Test
-    fun `ear training follows its own switch, and a saved ear training opens the metronome without it`() {
+    fun `ear training follows its own switch, and a saved ear training opens the first tool without it`() {
         val offered = practiceToolsFor(ToolSwitches.ALL_ON.copy(earTraining = false))
-        assertEquals(listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO), offered)
-        assertEquals(PracticeTool.METRONOME, practiceToolToOpen(PracticeTool.EAR_TRAINING, offered))
+        assertEquals(listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO), offered)
+        assertEquals(PracticeTool.CHORDS, practiceToolToOpen(PracticeTool.EAR_TRAINING, offered))
         assertEquals(
-            "alone with the metronome it is still a tool",
-            listOf(PracticeTool.METRONOME, PracticeTool.EAR_TRAINING),
+            "alone it is still a tool",
+            listOf(PracticeTool.EAR_TRAINING),
             practiceToolsFor(ToolSwitches.ALL_OFF.copy(practiceTab = true, earTraining = true)),
         )
         assertEquals("only in the Practice tab", emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_ON.copy(practiceTab = false)))
     }
 
     @Test
-    fun `with the capo helper's switch off Practice offers the metronome, chords and scales`() {
+    fun `with the capo helper's switch off Practice offers chords and scales`() {
         val offered = practiceToolsFor(ToolSwitches.ALL_ON.copy(capoHelper = false, earTraining = false))
-        assertEquals(listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES), offered)
+        assertEquals(listOf(PracticeTool.CHORDS, PracticeTool.SCALES), offered)
         assertEquals("a saved Scales opens on Scales", PracticeTool.SCALES, practiceToolToOpen(PracticeTool.SCALES, offered))
-        assertEquals("a saved capo helper opens the metronome", PracticeTool.METRONOME, practiceToolToOpen(PracticeTool.CAPO, offered))
+        assertEquals("a saved capo helper opens Chords", PracticeTool.CHORDS, practiceToolToOpen(PracticeTool.CAPO, offered))
     }
 
     @Test
-    fun `with its switch off there is no Practice, only the metronome tab`() {
+    fun `with its switch off there is no Practice`() {
         assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_OFF))
         assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_ON.copy(practiceTab = false)))
     }
@@ -46,10 +47,10 @@ class PracticeToolsTest {
     @Test
     fun `each Practice tool follows its own switch`() {
         val noEars = ToolSwitches.ALL_ON.copy(earTraining = false)
-        assertEquals(listOf(PracticeTool.METRONOME, PracticeTool.SCALES), practiceToolsFor(noEars.copy(chords = false)))
-        assertEquals(listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO), practiceToolsFor(noEars.copy(scales = false)))
+        assertEquals(listOf(PracticeTool.SCALES), practiceToolsFor(noEars.copy(chords = false)))
+        assertEquals(listOf(PracticeTool.CHORDS, PracticeTool.CAPO), practiceToolsFor(noEars.copy(scales = false)))
         val offered = practiceToolsFor(ToolSwitches.ALL_ON.copy(scales = false))
-        assertEquals("a saved Scales opens the metronome", PracticeTool.METRONOME, practiceToolToOpen(PracticeTool.SCALES, offered))
+        assertEquals("a saved Scales opens Chords", PracticeTool.CHORDS, practiceToolToOpen(PracticeTool.SCALES, offered))
     }
 
     @Test
@@ -58,15 +59,16 @@ class PracticeToolsTest {
     }
 
     @Test
-    fun `with the metronome as the only tool there is no Practice, only the metronome tab`() {
+    fun `with every tool's switch off there is no Practice`() {
         assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_ON.copy(chords = false, scales = false, earTraining = false)))
     }
 
     @Test
-    fun `Practice opens on the tool used last while it is offered, else on the metronome`() {
+    fun `Practice opens on the tool used last while it is offered, else on the first, Chords`() {
         val offered = practiceToolsFor(ToolSwitches.ALL_ON)
         for (tool in PracticeTool.entries) assertEquals(tool, practiceToolToOpen(tool, offered))
-        for (tool in PracticeTool.entries) assertEquals(PracticeTool.METRONOME, practiceToolToOpen(tool, emptyList()))
+        assertEquals("nothing used yet opens Chords", PracticeTool.CHORDS, practiceToolToOpen(null, offered))
+        for (tool in PracticeTool.entries + null) assertNull("nothing offered, nothing to open", practiceToolToOpen(tool, emptyList()))
     }
 
     @Test

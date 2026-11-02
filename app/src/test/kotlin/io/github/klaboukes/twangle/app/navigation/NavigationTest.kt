@@ -23,9 +23,25 @@ class NavigationTest {
     fun backLeadsToTheTunerFromAboutViaSettingsAndLeavesFromTheTuner() {
         assertNull(Screen.TUNER.back)
         assertEquals(Screen.TUNER, Screen.METRONOME.back)
+        assertEquals(Screen.TUNER, Screen.PRACTICE.back)
         assertEquals(Screen.TUNER, Screen.SETTINGS.back)
         assertEquals(Screen.TUNER, Screen.TUNING_EDITOR.back)
         assertEquals(Screen.SETTINGS, Screen.ABOUT.back)
+    }
+
+    @Test
+    fun theTabsReadTuneMetronomePracticeAndWithoutPracticeTheMetronomeKeepsItsOwn() {
+        assertEquals(
+            listOf(Destination.TUNER, Destination.METRONOME, Destination.PRACTICE, Destination.SETTINGS),
+            destinationsFor(practice = true),
+        )
+        assertEquals(listOf(Destination.TUNER, Destination.METRONOME, Destination.SETTINGS), destinationsFor(practice = false))
+    }
+
+    @Test
+    fun theMetronomeAndPracticeAreTabsOfTheirOwn() {
+        assertEquals(Destination.METRONOME, Screen.METRONOME.destination)
+        assertEquals(Destination.PRACTICE, Screen.PRACTICE.destination)
     }
 
     @Test

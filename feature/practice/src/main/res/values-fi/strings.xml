@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Metronomi</string>
     <string name="practice_tool_chords">Soinnut</string>
     <string name="practice_tool_scales">Asteikot</string>
     <string name="practice_tool_ear_training">Korvaharjoitus</string>

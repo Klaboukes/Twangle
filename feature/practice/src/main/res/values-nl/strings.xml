@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Metronoom</string>
     <string name="practice_tool_chords">Akkoorden</string>
     <string name="practice_tool_scales">Toonladders</string>
     <string name="practice_tool_ear_training">Gehoortraining</string>

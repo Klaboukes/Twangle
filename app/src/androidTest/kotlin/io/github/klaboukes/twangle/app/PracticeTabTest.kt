@@ -14,6 +14,7 @@ import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeDronePlayer
+import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
@@ -50,13 +51,15 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 
 /**
- * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): the bar's
- * Metronome tab is called Practice, the tool button at its top (Phase 47) picks the metronome, chords or scales from its list, the
- * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
+ * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): a tab of its own
+ * beside the metronome's (Phase 69), the tool button at its top (Phase 47) picks chords, scales, the capo
+ * helper or Ear training from its list, with no metronome among them, the pick is saved at once, and the
+ * tab opens on the tool used last, also after the app starts again, or on Chords while none was;
  * the Chords tool's chord picked is saved too and comes back with it, and so is the Scales tool's
  * scale, on the same root. The capo helper (Phase 33) saves its shapes and fret, and a row
  * tapped opens its shape in Chords. The drone on Scales (Phase 48, a silent stand-in here) saves its panel's picks and
- * stops when another tab takes Practice's place or the app goes to the background. Ear training (Phase 55,
+ * stops when another tab takes Practice's place or the app goes to the background. The Metronome tab
+ * (a silent stand-in) is the metronome alone, with no tool button, and stops when Practice takes its place. Ear training (Phase 55,
  * a silent speaker and microphone here) asks its first question at once and
  * holds the microphone only while it is shown.
  */
@@ -73,6 +76,7 @@ class PracticeTabTest {
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val drone = FakeDronePlayer()
+    private val metronome = FakeMetronomePlayer()
     private val tone = FakeTonePlayer()
     private val ears = FakeAudioRecorder.silence()
     private var tuningBefore: Tuning? = null
@@ -80,13 +84,14 @@ class PracticeTabTest {
     @Before
     fun setUp() {
         container.testDronePlayer = drone
+        container.testMetronomePlayer = metronome
         container.testTonePlayer = tone
         container.testEarTrainingRecorder = ears
         runBlocking {
             // The guitar, which every tool draws: a banjo left picked (a phone check) has no chart or neck.
             tuningBefore = container.settingsRepository.settings.first().tuning
             container.settingsRepository.setInstrument(Instruments.GUITAR)
-            container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
+            container.settingsRepository.setPracticeTool(null)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
@@ -116,6 +121,7 @@ class PracticeTabTest {
     @After
     fun tearDown() {
         container.testDronePlayer = null
+        container.testMetronomePlayer = null
         container.testTonePlayer = null
         container.testEarTrainingRecorder = null
         runBlocking {
@@ -123,7 +129,7 @@ class PracticeTabTest {
             container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
             container.settingsRepository.setDroneLower(false)
             resetEarTraining()
-            container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
+            container.settingsRepository.setPracticeTool(null)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
@@ -137,10 +143,10 @@ class PracticeTabTest {
     private fun gone(tag: String): Boolean = device.wait(Until.gone(By.res(tag)), WAIT_MS)
     private fun click(tag: String) = checkNotNull(device.wait(Until.findObject(By.res(tag)), WAIT_MS)) { "$tag not shown" }.click()
 
-    private fun savedTool(): PracticeTool = runBlocking { container.settingsRepository.settings.first().practiceTool }
+    private fun savedTool(): PracticeTool? = runBlocking { container.settingsRepository.settings.first().practiceTool }
 
     /** Waits up to [WAIT_MS] for the saved tool to become [tool]. */
-    private fun waitForSaved(tool: PracticeTool): PracticeTool {
+    private fun waitForSaved(tool: PracticeTool): PracticeTool? {
         val end = SystemClock.uptimeMillis() + WAIT_MS
         while (savedTool() != tool && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
         return savedTool()
@@ -199,7 +205,7 @@ class PracticeTabTest {
     }
 
     private fun openPractice() {
-        val tab = NavigationTestTags.tab(Destination.METRONOME)
+        val tab = NavigationTestTags.tab(Destination.PRACTICE)
         assertTrue("the bar shows", shown(tab))
         assertTrue(
             "the tab is called Practice",
@@ -213,17 +219,22 @@ class PracticeTabTest {
     fun theToolButtonPicksTheToolAndPracticeOpensOnTheOneUsedLast() {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
-            assertTrue("a fresh Practice opens on the metronome", shown(MetronomeTestTags.DIAL))
+            assertTrue("a fresh Practice opens on Chords, the first tool", shown(PracticeTestTags.CHORDS))
+            assertFalse("no metronome in Practice", device.hasObject(By.res(MetronomeTestTags.DIAL)))
+            assertEquals("nothing saved until a tool is picked", null, savedTool())
             click(PracticeTestTags.TOOL_BUTTON)
             assertTrue(
                 "the list has every tool",
                 PracticeTool.entries.all { shown(PracticeTestTags.tool(it)) },
             )
-            assertTrue("the metronome picked", checked(PracticeTestTags.tool(PracticeTool.METRONOME)))
-            click(PracticeTestTags.tool(PracticeTool.CHORDS))
-            assertTrue("the list closes", gone(PracticeTestTags.tool(PracticeTool.METRONOME)))
+            assertFalse("and no metronome", device.hasObject(By.res(METRONOME_TOOL_TAG)))
+            assertTrue("Chords picked", checked(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            click(PracticeTestTags.tool(PracticeTool.SCALES))
+            assertTrue("the list closes", gone(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            assertTrue("scales show", shown(PracticeTestTags.SCALES))
+            assertEquals("the pick is saved", PracticeTool.SCALES, waitForSaved(PracticeTool.SCALES))
+            pickTool(PracticeTool.CHORDS)
             assertTrue("chords show", shown(PracticeTestTags.CHORDS))
-            assertTrue("the metronome has gone", gone(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
             // A chord picked is saved too.
@@ -232,9 +243,9 @@ class PracticeTabTest {
             assertEquals("the chord is saved", PitchClass.A to ChordQuality.MINOR, waitForSavedChord(PitchClass.A, ChordQuality.MINOR))
 
             // Another tab and back: still chords.
-            click(NavigationTestTags.tab(Destination.SETTINGS))
-            assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
             click(NavigationTestTags.tab(Destination.METRONOME))
+            assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
+            click(NavigationTestTags.tab(Destination.PRACTICE))
             assertTrue("back on chords", shown(PracticeTestTags.CHORDS))
         }
         // A fresh start opens Practice on the tool used last.
@@ -264,9 +275,34 @@ class PracticeTabTest {
             // Back to Chords: on the same root.
             pickTool(PracticeTool.CHORDS)
             assertTrue("on the chord picked last", picked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR)))
-            pickTool(PracticeTool.METRONOME)
+        }
+    }
+
+    /** The metronome has a tab of its own (Phase 69): the metronome alone, no tool button; Practice taking its place stops it. */
+    @Test
+    fun theMetronomeHasATabOfItsOwnAndPracticeTakingItsPlaceStopsIt() {
+        ActivityScenario.launch(MainActivity::class.java).use {
+            val tab = NavigationTestTags.tab(Destination.METRONOME)
+            assertTrue("the bar shows", shown(tab))
+            assertTrue(
+                "the tab is called Metronome",
+                device.findObject(By.res(tab)).hasObject(By.text(context.getString(R.string.nav_metronome))),
+            )
+            click(tab)
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
-            assertEquals("the pick is saved", PracticeTool.METRONOME, waitForSaved(PracticeTool.METRONOME))
+            assertFalse("with no tool button", device.hasObject(By.res(PracticeTestTags.TOOL_BUTTON)))
+            click(MetronomeTestTags.START)
+            assertTrue("Start clicks", waitFor { metronome.isPlaying.value })
+
+            click(NavigationTestTags.tab(Destination.PRACTICE))
+            assertTrue("Practice shows", shown(PracticeTestTags.TOOL_BUTTON))
+            assertTrue("the metronome has gone", gone(MetronomeTestTags.DIAL))
+            assertTrue("and stopped", waitFor { !metronome.isPlaying.value })
+            assertEquals("the metronome is no Practice tool", null, savedTool())
+
+            device.pressBack()
+            assertTrue("Back from Practice leads to the tuner", gone(PracticeTestTags.TOOL_BUTTON))
+            assertFalse("not to the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
         }
     }
 
@@ -326,11 +362,11 @@ class PracticeTabTest {
             assertEquals("and heard", Triple(DroneSound.FLUTE_ORGAN, DroneVoicing.ROOT, true), drone.lastPlay!!.let { Triple(it.sound, it.voicing, it.lower) })
 
             // Another tab stops it; back on Scales it stays still.
-            click(NavigationTestTags.tab(Destination.SETTINGS))
+            click(NavigationTestTags.tab(Destination.METRONOME))
             assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
             assertTrue("another tab stops the drone", waitFor { !drone.isPlaying.value })
             val plays = drone.plays.size
-            click(NavigationTestTags.tab(Destination.METRONOME))
+            click(NavigationTestTags.tab(Destination.PRACTICE))
             assertTrue("back on Scales", shown(PracticeTestTags.DRONE_PLAY))
             assertEquals("still until a tap", plays, drone.plays.size)
 
@@ -408,5 +444,8 @@ class PracticeTabTest {
 
         /** Ear training keeps the microphone 5 s after its screen goes (a turning phone), as the tuner does. */
         const val MIC_RELEASE_MS = 9_000L
+
+        /** The metronome's row in the tool list until 2.0 (`PracticeTestTags.tool` of 1.1's `PracticeTool.METRONOME`). */
+        const val METRONOME_TOOL_TAG = "practice_tool_metronome"
     }
 }

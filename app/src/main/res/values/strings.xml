@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name" translatable="false">Twangle</string>
-    <!-- The navigation bar's three tabs. -->
-    <string name="nav_tuner">Tuner</string>
-    <!-- Navigation bar tab (one short word) that opens the metronome; shown instead of "Practice" when the Practice tab is switched off. -->
+    <!-- Navigation bar tab (one short word) that opens the tuner: "Tune", what you do there, as in "Tune · Metronome · Practice". -->
+    <string name="nav_tuner">Tune</string>
+    <!-- Navigation bar tab (one short word) that opens the metronome. -->
     <string name="nav_metronome">Metronome</string>
-    <!-- The Metronome tab's name with the Practice tab's switch on (Phase 32): it holds the metronome and the chord charts. -->
+    <!-- Navigation bar tab (one short word) that opens Practice: chord charts, scales, the capo helper and ear training. -->
     <string name="nav_practice">Practice</string>
     <!-- Navigation bar tab (one short word) that opens the Settings screen. -->
     <string name="nav_settings">Settings</string>
