@@ -28,8 +28,6 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -56,7 +54,7 @@ import kotlin.math.roundToInt
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class MeterLooksTest(private val style: VisualStyle) {
+class MeterLooksTest(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -87,7 +85,7 @@ class MeterLooksTest(private val style: VisualStyle) {
                 for (look in PAGES[page.intValue]) {
                     Row {
                         for (dark in listOf(false, true)) {
-                            TwangleTheme(style = style, darkTheme = dark, animate = false) {
+                            TwangleTheme(darkTheme = dark, animate = false) {
                                 inTuneColours[dark] = MaterialTheme.styleTokens.inTune
                                 // Clipped, so a case's soft field and glow can't reach its neighbour: they must fade out within the padding.
                                 Box(modifier = Modifier.testTag(caseTag(look, dark)).clipToBounds().background(BACKGROUND).padding(PADDING.dp)) {
@@ -355,7 +353,7 @@ class MeterLooksTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         /** Every look, two to a page. */
         val PAGES = MeterLook.entries.chunked(2)

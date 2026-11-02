@@ -60,7 +60,7 @@ Decided on 2026-11-02, from the from-scratch design of 2026-11-01 ([IDEAS.md](ID
 
 ### Phase 67 — One look
 Goal: Ink is the app's look on every screen, with light and dark and the phone's colours.
-- ☐ `TwangleTheme` without styles: Ink's palettes (light and dark), its fonts, shapes and backgrounds; the style setting and the style picker go, a saved style reads as Ink; `ThemeMode` (phone / light / dark) and `dynamicColor` stay as switches in Settings
+- ☑ `TwangleTheme` without styles: Ink's palettes (light and dark), its fonts, shapes and backgrounds; the style setting and the style picker go, a saved style reads as Ink; `ThemeMode` (phone / light / dark) and `dynamicColor` stay as switches in Settings (light Ink's muted, accent and green darkened to 4.5:1 for text; the widget's and the watch's colours follow already; the meter and wave looks draw 1.1's Contemporary finish until the next item)
 - ☐ The meter looks, the wave looks and the Calm/Bold in-tune glow go with their settings and card grids (the three lens looks come in Phases 71 and 72); a saved look reads as the default
 - ☐ Every screen drawn in Ink, the watch and the widget too; the style tests, the screenshots and `scripts/style-screens.sh` reduced to one look
 

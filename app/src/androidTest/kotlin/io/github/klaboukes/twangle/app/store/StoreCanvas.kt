@@ -68,7 +68,6 @@ import kotlinx.coroutines.cancel
 import androidx.test.core.app.ActivityScenario
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -130,21 +129,20 @@ class Window(val screen: ImageBitmap, val focus: ClosedFloatingPointRange<Float>
 fun StoreCanvas(
     caption: String,
     rows: List<List<Window>>,
-    style: VisualStyle,
     dark: Boolean,
     spec: CanvasSpec = CanvasSpec.PORTRAIT,
     bubble: SpeechBubble? = null,
     staggered: Boolean = false,
 ) {
     CompositionLocalProvider(LocalDensity provides Density(spec.density, fontScale = 1f)) {
-        TwangleTheme(style = style, darkTheme = dark, animate = false) {
+        TwangleTheme(darkTheme = dark, animate = false) {
             Box(
                 Modifier.layout { measurable, _ ->
                     val placeable = measurable.measure(Constraints.fixed(spec.width, spec.height))
                     layout(spec.width, spec.height) { placeable.place(0, 0) }
                 },
             ) {
-                StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
+                StyleBackdrop(Modifier.fillMaxSize())
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Caption(
                         caption,

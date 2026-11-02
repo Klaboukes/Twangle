@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Thoải mái: trong vòng 5 cent</string>
     <string name="settings_in_tune_precision_precise">Chính xác: trong vòng 2 cent</string>
 
-    <string name="settings_style_title">Phong cách</string>
     <string name="settings_theme_title">Sáng hoặc tối</string>
     <string name="settings_theme_system">Theo hệ thống</string>
     <string name="settings_theme_light">Sáng</string>

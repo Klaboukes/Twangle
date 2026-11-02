@@ -1,34 +1,16 @@
 package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.ui.graphics.StrokeCap
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MeterFinishTest {
-    private val finishes = VisualStyle.entries.associateWith { meterFinishFor(it) }
-
     @Test
-    fun `every style has its own needle and its own hub`() {
-        assertEquals(VisualStyle.entries.size, finishes.values.map { it.needle }.toSet().size)
-        assertEquals(VisualStyle.entries.size, finishes.values.map { it.hub }.toSet().size)
-    }
-
-    @Test
-    fun `the finishes are the approved mock-up's`() {
-        assertEquals(MeterFinish(NeedleKind.SPEAR, HubKind.STONE, TrackKind.DOTS, StrokeCap.Round, jitter = true), finishes[VisualStyle.ANCIENT])
-        assertEquals(MeterFinish(NeedleKind.BREGUET, HubKind.CAP, TrackKind.RAIL, StrokeCap.Butt), finishes[VisualStyle.CLASSIC])
-        assertEquals(MeterFinish(NeedleKind.VU, HubKind.DISC, TrackKind.BAND, StrokeCap.Butt), finishes[VisualStyle.RETRO])
-        assertEquals(MeterFinish(NeedleKind.BAR, HubKind.DOT, TrackKind.LINE, StrokeCap.Round), finishes[VisualStyle.CONTEMPORARY])
-        assertEquals(MeterFinish(NeedleKind.BEAM, HubKind.RING, TrackKind.DASHED, StrokeCap.Square), finishes[VisualStyle.FUTURISTIC])
-        assertEquals(MeterFinish(NeedleKind.BALL, HubKind.SATURN, TrackKind.DOTS, StrokeCap.Round), finishes[VisualStyle.SPACE_AGE])
-    }
-
-    @Test
-    fun `only Ancient's ticks are drawn by hand`() {
-        assertEquals(listOf(VisualStyle.ANCIENT), finishes.filterValues { it.jitter }.keys.toList())
+    fun `the plain finish is 1_1's Contemporary`() {
+        assertEquals(MeterFinish(NeedleKind.BAR, HubKind.DOT, TrackKind.LINE, StrokeCap.Round), MeterFinish.PLAIN)
+        assertEquals(false, MeterFinish.PLAIN.jitter)
     }
 
     @Test

@@ -33,13 +33,11 @@ import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Thorough
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -79,7 +77,7 @@ import org.junit.runners.Parameterized
  * outside it do nothing; nothing in the tuner moves when it comes.
  */
 @RunWith(Parameterized::class)
-class TourStylesTest(private val style: VisualStyle) {
+class TourStylesTest(private val style: String) {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -115,7 +113,7 @@ class TourStylesTest(private val style: VisualStyle) {
                 contentDensity = LocalDensity.current.density
                 // As on a phone: focus mode turns it on its side, so upright it is off.
                 val focus = focusMode.value && shownSize.value.width > shownSize.value.height
-                TwangleTheme(style = style, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     TourHost(
                         open = shownOpen.value,
                         steps = TourPart.stepsFor(shownMode.value),
@@ -440,7 +438,7 @@ class TourStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val TEST_TIMEOUT_SECONDS = 20L
         private const val WINDOW = "tour_test_window"

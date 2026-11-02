@@ -23,7 +23,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -59,8 +58,7 @@ import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
-import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.OPTIONS_FACE
@@ -69,7 +67,6 @@ import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.buttonLook
 import io.github.klaboukes.twangle.core.designsystem.styleButtonFace
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
@@ -115,11 +112,9 @@ internal fun meterSpoken(meter: Meter): String = stringResource(
 fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier = Modifier) {
     val look = buttonLook()
     val label = stringResource(R.string.metronome_beats_in_bar)
-    val style = MaterialTheme.styleTokens.style
-    // The wide number faces (Michroma, Orbitron) a little smaller, as on the meter, so all six fit a row.
     val numbers = TextStyle(
-        fontFamily = numberFontFor(style),
-        fontSize = 15.sp * numberScaleFor(style),
+        fontFamily = NumberFont,
+        fontSize = 15.sp,
         fontFeatureSettings = LINING_FIGURES,
         textAlign = TextAlign.Center,
     )
@@ -314,8 +309,7 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
 }
 
 /**
- * Start / Stop in the middle of the row under the dial: a play or stop icon on a [face] across in the accent, round in
- * Contemporary and Space Age, else in the style's shape (Futuristic: a neon outline on a solid tint).
+ * Start / Stop in the middle of the row under the dial: a play or stop icon on a round [face] across in the accent.
  * It keeps its size whatever it does; TalkBack hears "Start" or "Stop". While Listen listens it rests
  * at 38 % and takes no taps ([resting]).
  */

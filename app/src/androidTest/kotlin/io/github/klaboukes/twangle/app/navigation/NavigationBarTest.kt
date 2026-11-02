@@ -11,7 +11,6 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
@@ -34,12 +33,10 @@ import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.tokensFor
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -70,7 +67,7 @@ import org.junit.runners.Parameterized
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class NavigationBarTest(private val style: VisualStyle) {
+class NavigationBarTest(private val style: String) {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -99,7 +96,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     AppNavigationFrame(
                         selected = shownSelected.value,
                         onSelect = { picked += it; shownSelected.value = it },
@@ -324,7 +321,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     }
 
     /** The accent the theme gives Material's primary role. */
-    private fun accentOf(dark: Boolean): Int = tokensFor(style, dark).scheme.primary.toArgb()
+    private fun accentOf(dark: Boolean): Int = tokensFor(dark).scheme.primary.toArgb()
 
     private fun near(a: Int, b: Int): Boolean =
         abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)) <= COLOR_TOLERANCE &&
@@ -334,7 +331,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val WINDOW = "window"
         private const val CONTENT = "content"

@@ -62,7 +62,6 @@ fun waveLookCardTag(look: WaveLook): String = "wave_look_card_" + look.name.lowe
 private fun WavePreview(look: WaveLook, demo: WaveDemo, selected: Boolean) {
     val colors = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
-    val style = tokens.style
     val offColor = if (selected) colors.primary else colors.onSurfaceVariant
     val tuneColor = tokens.inTune
     val path = remember { Path() }
@@ -72,7 +71,6 @@ private fun WavePreview(look: WaveLook, demo: WaveDemo, selected: Boolean) {
         val motion = demo.motion
         drawWave(
             look = look,
-            style = style,
             color = lerp(offColor, tuneColor, demo.tuned),
             beats = motion.beats,
             phase = motion.phase,

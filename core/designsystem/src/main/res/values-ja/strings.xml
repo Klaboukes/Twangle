@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">古代</string>
-    <string name="style_classic">クラシック</string>
-    <string name="style_retro">レトロ</string>
-    <string name="style_contemporary">モダン</string>
-    <string name="style_futuristic">近未来</string>
-    <string name="style_space_age">スペースエイジ</string>
-
     <string name="spoken_sharp">%1$sシャープ</string>
     <string name="spoken_flat">%1$sフラット</string>
 

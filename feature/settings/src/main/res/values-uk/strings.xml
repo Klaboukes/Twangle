@@ -22,7 +22,6 @@
     <string name="settings_in_tune_precision_title">Точність налаштування</string>
     <string name="settings_in_tune_precision_relaxed">Помірна: до 5 центів</string>
     <string name="settings_in_tune_precision_precise">Висока: до 2 центів</string>
-    <string name="settings_style_title">Стиль</string>
     <string name="settings_theme_title">Світла чи темна тема</string>
     <string name="settings_theme_system">Як у системі</string>
     <string name="settings_theme_light">Світла</string>

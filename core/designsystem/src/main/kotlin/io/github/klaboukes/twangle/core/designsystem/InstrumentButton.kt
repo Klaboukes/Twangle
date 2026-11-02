@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 /**
- * The instrument and tuning button: a headstock ([INSTRUMENT_ICON], no word) on the style's button
+ * The instrument and tuning button: a headstock ([INSTRUMENT_ICON], no word) on the theme's button
  * ([StyleButton]), see-through, like the tuner's "more tools" button and strum check switch, so the
  * row above the strings has a button of the same kind at each end. It sits at the start of that row
  * and at the Practice tools' tuning line; a tap ([onClick]) opens the instrument and tuning panel.
@@ -63,7 +63,7 @@ fun InstrumentButton(
     }
 }
 
-/** The button's outline: 44 dp like the style's other buttons above the strings, in a 48 dp touch target. */
+/** The button's outline: 44 dp like the other buttons above the strings, in a 48 dp touch target. */
 val INSTRUMENT_BUTTON_SIZE = 44.dp
 
 /**

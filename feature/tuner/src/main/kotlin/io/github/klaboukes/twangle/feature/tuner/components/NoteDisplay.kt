@@ -77,14 +77,12 @@ import io.github.klaboukes.twangle.core.designsystem.OneLineAutoSize
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.PacedSpeech
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.pacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneTickRule
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenSide
@@ -421,7 +419,7 @@ fun NoteDisplay(
                     check(!checkCentred)
                     val pillStyle = when {
                         pictured -> MaterialTheme.typography.titleMedium
-                        readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
+                        readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = NumberFont)
                         else -> MaterialTheme.typography.titleLarge
                     }
                     // The wave's pill holds a tip or the direction on one line, set smaller where it
@@ -914,7 +912,7 @@ private fun spokenReading(readout: NoteReadout, direction: TunerHint?, tip: Stri
 @Preview(showBackground = true)
 @Composable
 private fun NoteDisplayPreview() {
-    TwangleTheme(style = VisualStyle.CLASSIC, darkTheme = false) {
+    TwangleTheme(darkTheme = false) {
         NoteDisplay(NoteReadout(noteName = "E", octave = 2, frequencyHz = 81.84f, cents = -3f, inTune = true), hint = "")
     }
 }

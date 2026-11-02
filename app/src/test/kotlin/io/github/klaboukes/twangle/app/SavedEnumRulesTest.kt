@@ -42,7 +42,7 @@ class SavedEnumRulesTest {
         val KEEP_RULE = Regex("""^-keepclassmembers enum ([\w.]+) \{ public static final \*\* \*; }$""")
         val READ = Regex("""enum(?:Set)?OrNull<(\w+)>""")
 
-        /** Read through styleOrNull, waveLookOrNull and meterLookOrNull, which map old names first. */
-        val HELPER_READ = setOf("VisualStyle", "WaveLook", "MeterLook")
+        /** Read through waveLookOrNull and meterLookOrNull, which map old names first. */
+        val HELPER_READ = setOf("WaveLook", "MeterLook")
     }
 }

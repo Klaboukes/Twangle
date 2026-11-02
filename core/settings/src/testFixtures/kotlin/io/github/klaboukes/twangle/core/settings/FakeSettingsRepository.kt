@@ -121,7 +121,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setTheme(theme: ThemeMode) = write { it.copy(theme = theme) }
 
-    override suspend fun setStyle(style: VisualStyle) = write { it.copy(style = style) }
 
     override suspend fun setDynamicColor(enabled: Boolean) = write { it.copy(dynamicColor = enabled) }
 

@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">Antik</string>
-    <string name="style_classic">Klassisk</string>
-    <string name="style_retro">Retro</string>
-    <string name="style_contemporary">Modern</string>
-    <string name="style_futuristic">Futuristisk</string>
-    <string name="style_space_age">Rymdålder</string>
-
     <string name="spoken_sharp">%1$s med kors</string>
     <string name="spoken_flat">%1$s med b</string>
 

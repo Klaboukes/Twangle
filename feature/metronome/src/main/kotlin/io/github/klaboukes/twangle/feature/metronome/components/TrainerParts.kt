@@ -40,10 +40,9 @@ import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -276,7 +275,7 @@ private fun TempoStepper(
             RowName(label, Modifier.weight(1f).padding(start = ROW_PADDING))
         }
         TrainerStepper(faster = false, name = slower, enabled = canSlower, tag = "${tag}_slower", onClick = onSlower)
-        val numbers = numberFontFor(MaterialTheme.styleTokens.style)
+        val numbers = NumberFont
         val style = TextStyle(fontFamily = numbers, fontSize = 18.sp, fontFeatureSettings = "$LINING_FIGURES, tnum")
         val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
         Text(

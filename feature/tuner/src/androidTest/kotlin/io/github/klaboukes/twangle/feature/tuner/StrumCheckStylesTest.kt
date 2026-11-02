@@ -34,10 +34,8 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
@@ -66,7 +64,7 @@ import kotlin.math.abs
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class StrumCheckStylesTest(private val style: VisualStyle) {
+class StrumCheckStylesTest(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -97,7 +95,7 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
         compose.setContent {
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
             PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     accent = MaterialTheme.colorScheme.primary
                     inTune = MaterialTheme.styleTokens.inTune
                     TunerContent(
@@ -350,7 +348,7 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         /** Standard tuning: E2 in tune, A2 12 cents flat, D3 in tune, G3 8 sharp, B3 not heard, E4 in tune but less sure. */
         fun ringing(phase: StrumPhase) = TunerUiState.StrumCheck(

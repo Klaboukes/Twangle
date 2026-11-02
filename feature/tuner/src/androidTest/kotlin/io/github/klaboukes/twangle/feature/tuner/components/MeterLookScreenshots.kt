@@ -15,11 +15,10 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.klaboukes.twangle.core.designsystem.StyleBackdropPreview
+import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
@@ -42,7 +41,7 @@ import java.util.concurrent.TimeUnit
  * builds the contact sheet in `build/owner-screens/meter-looks/`.
  */
 @RunWith(Parameterized::class)
-class MeterLookScreenshots(private val style: VisualStyle) {
+class MeterLookScreenshots(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -64,9 +63,9 @@ class MeterLookScreenshots(private val style: VisualStyle) {
             val look = MeterLook.entries[page.intValue]
             Column {
                 for (dark in listOf(false, true)) {
-                    TwangleTheme(style = style, darkTheme = dark, animate = false) {
+                    TwangleTheme(darkTheme = dark, animate = false) {
                         Box(modifier = Modifier.testTag(caseTag(dark))) {
-                            StyleBackdropPreview(Modifier.matchParentSize())
+                            StyleBackdrop(Modifier.matchParentSize())
                             MeterFrame(
                                 look = look,
                                 cents = { cents.floatValue },
@@ -107,7 +106,7 @@ class MeterLookScreenshots(private val style: VisualStyle) {
             compose.waitForIdle()
             for (dark in listOf(false, true)) {
                 val bitmap = compose.onNodeWithTag(caseTag(dark)).captureToImage().asAndroidBitmap()
-                val name = listOf(set, style.name, look.name, if (dark) "DARK" else "LIGHT")
+                val name = listOf(set, style, look.name, if (dark) "DARK" else "LIGHT")
                     .joinToString("-") { it.lowercase().replace('_', '-') }
                 File(out, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
             }
@@ -117,8 +116,8 @@ class MeterLookScreenshots(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> =
-            if (InstrumentationRegistry.getArguments().getString(ARGUMENT) == "true") VisualStyle.entries else emptyList()
+        fun styles(): List<String> =
+            if (InstrumentationRegistry.getArguments().getString(ARGUMENT) == "true") listOf("Ink") else emptyList()
 
         /** The instrumentation argument that turns these pictures on. */
         const val ARGUMENT = "meterScreenshots"

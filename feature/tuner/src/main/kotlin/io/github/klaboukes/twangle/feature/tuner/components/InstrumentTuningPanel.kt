@@ -24,7 +24,6 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -78,15 +77,11 @@ import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.stringChipShading
-import io.github.klaboukes.twangle.core.designsystem.stringChipShape
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import kotlinx.coroutines.launch
@@ -184,7 +179,7 @@ private fun PickerPanel(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = panelShape(MaterialTheme.styleTokens.style),
+        shape = PANEL_SHAPE,
         containerColor = scheme.surface,
         contentColor = scheme.onSurface,
         modifier = Modifier.testTag(TunerTestTags.PICKER_PANEL),
@@ -428,12 +423,11 @@ private fun InstrumentRow(selected: Instrument, onSelect: (Instrument) -> Unit) 
         horizontalArrangement = Arrangement.spacedBy(CHIP_GAP),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Instruments.all.forEachIndexed { index, instrument ->
+        Instruments.all.forEach { instrument ->
             val isSelected = instrument == selected
             InstrumentChip(
                 name = instrumentLabel(instrument),
                 selected = isSelected,
-                index = index,
                 onClick = { onSelect(instrument) },
                 modifier = if (isSelected) Modifier.bringIntoViewRequester(picked) else Modifier,
             )
@@ -442,27 +436,15 @@ private fun InstrumentRow(selected: Instrument, onSelect: (Instrument) -> Unit) 
 }
 
 /**
- * An instrument in the panel's row: its name in a thin outline in the style's button shape (Ancient's
- * pebbles alternate, Retro's push buttons are shaded, Futuristic's are neon outlines); the [selected]
- * one in the container colour with a 2 dp outline in the accent.
+ * An instrument in the panel's row: its name in a thin outline in the theme's small shape; the
+ * [selected] one in the container colour with a 2 dp outline in the accent.
  */
 @Composable
-private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun InstrumentChip(name: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape: Shape = if (style == VisualStyle.ANCIENT) stringChipShape(style, index % 2) else MaterialTheme.shapes.small
-    val fill = when {
-        neon -> if (selected) scheme.primary.copy(alpha = NEON_PICKED_ALPHA) else Color.Transparent
-        selected -> scheme.primaryContainer
-        style == VisualStyle.RETRO -> scheme.surface.copy(alpha = RETRO_BACKING_ALPHA)
-        else -> Color.Transparent
-    }
-    val outline = when {
-        selected -> scheme.primary
-        neon -> scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA)
-        else -> scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
-    }
+    val shape: Shape = MaterialTheme.shapes.small
+    val fill = if (selected) scheme.primaryContainer else Color.Transparent
+    val outline = if (selected) scheme.primary else scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
     // The press effect: the chip sinks, and the light lies over its fill, under its name.
     val press = remember { MutableInteractionSource() }
     Box(
@@ -472,9 +454,8 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
             .pressSink(press)
             .clip(shape)
             .background(fill, shape)
-            .then(if (style == VisualStyle.RETRO) Modifier.stringChipShading(style, shape, scheme.onSurface) else Modifier)
             .border(if (selected) PICKED_BORDER else BORDER, outline, shape)
-            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape, face = true), role = Role.RadioButton) {
+            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape), role = Role.RadioButton) {
                 press.pressFlash()
                 onClick()
             }
@@ -484,7 +465,7 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
         Text(
             name,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected && !neon) scheme.onPrimaryContainer else scheme.onSurface,
+            color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
             maxLines = 1,
         )
     }
@@ -533,26 +514,14 @@ internal fun TuningRow(
     }
 }
 
-/** The panel's top corners: the style's card corners, at least 14 dp (Futuristic's cut, Space Age's 20 dp). */
-private fun panelShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.FUTURISTIC -> CutCornerShape(topStart = 14.dp, topEnd = 14.dp)
-    VisualStyle.RETRO -> RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
-    VisualStyle.SPACE_AGE -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-    else -> RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)
-}
+/** The panel's top corners: 22 dp, Ink's large shape. */
+private val PANEL_SHAPE: Shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
 
 private val BORDER = 1.dp
 private val PICKED_BORDER = 2.dp
 
-/** The thin outline: the muted text colour at 60 %; Futuristic's neon: the accent at 55 %. */
+/** The thin outline: the muted text colour at 60 %. */
 private const val OUTLINE_ALPHA = 0.6f
-private const val NEON_OUTLINE_ALPHA = 0.55f
-
-/** Futuristic's picked instrument: the accent at 12 % behind it. */
-private const val NEON_PICKED_ALPHA = 0.12f
-
-/** Retro's push buttons stand on the surface colour at 85 %. */
-private const val RETRO_BACKING_ALPHA = 0.85f
 
 /** The panel is at most this share of the window's height, so the tuner shows above it. */
 private const val PANEL_MAX_HEIGHT = 0.74f

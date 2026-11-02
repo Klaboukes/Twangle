@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">Kuno</string>
-    <string name="style_classic">Klasik</string>
-    <string name="style_retro">Retro</string>
-    <string name="style_contemporary">Kontemporer</string>
-    <string name="style_futuristic">Futuristik</string>
-    <string name="style_space_age">Era Antariksa</string>
-
     <!-- Istilah musik Indonesia: kres (♯) dan mol (♭). -->
     <string name="spoken_sharp">%1$s kres</string>
     <string name="spoken_flat">%1$s mol</string>

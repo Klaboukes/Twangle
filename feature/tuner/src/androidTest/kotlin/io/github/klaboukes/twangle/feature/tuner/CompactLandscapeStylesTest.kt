@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
@@ -20,7 +19,6 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
@@ -34,14 +32,11 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -65,7 +60,7 @@ import kotlin.math.abs
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class CompactLandscapeStylesTest(private val style: VisualStyle) {
+class CompactLandscapeStylesTest(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -91,7 +86,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         compose.setContent {
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
             PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     TunerContent(
                         shownState.value,
                         shownMode.value,
@@ -424,7 +419,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val WINDOW = "window"
 

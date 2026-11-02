@@ -6,7 +6,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
@@ -81,7 +80,7 @@ class WidgetStateTest {
         val base = WidgetState.from(AppSettings())
         // A4, the meter's look and the metronome don't change the widget.
         assertEquals(base, WidgetState.from(AppSettings(a4Hz = 442f, metronomeBpm = 90)))
-        assertNotEquals(base, WidgetState.from(AppSettings(style = VisualStyle.RETRO)))
+        assertNotEquals(base, WidgetState.from(AppSettings(dynamicColor = false)))
         assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.DROP_D)))
         assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.STANDARD.lowered(2))))
     }

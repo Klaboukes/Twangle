@@ -28,11 +28,9 @@ import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.onPhoneScreen
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -61,7 +59,7 @@ import java.util.concurrent.TimeUnit
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class StringRowStylesTest(private val style: VisualStyle) {
+class StringRowStylesTest(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -92,7 +90,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
             val layout = shownLayout.value
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
             PhoneScreen(layout.size, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     val tuning = shownTuning.value
                     val notation = shownNotation.value
                     val first = tuning.strings.first()
@@ -458,7 +456,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 10L

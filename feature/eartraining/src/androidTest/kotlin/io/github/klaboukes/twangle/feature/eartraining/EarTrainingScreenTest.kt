@@ -53,12 +53,10 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -88,7 +86,7 @@ import org.junit.runners.Parameterized
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class EarTrainingScreenTest(private val style: VisualStyle) {
+class EarTrainingScreenTest(private val style: String) {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -121,7 +119,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     EarTrainingContent(
                         state = shownState.value,
                         heard = shownHeard.value,
@@ -897,7 +895,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val WINDOW = "window"
         private const val HEADER = "header"

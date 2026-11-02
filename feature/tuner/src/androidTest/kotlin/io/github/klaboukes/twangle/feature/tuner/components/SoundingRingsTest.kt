@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -50,7 +49,6 @@ class SoundingRingsTest {
         Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
-    private val shownStyle = mutableStateOf(VisualStyle.DEFAULT)
     private val sounding = mutableStateOf<Int?>(null)
 
     @Test
@@ -59,7 +57,7 @@ class SoundingRingsTest {
         compose.setContent {
             Column {
                 for (dark in listOf(false, true)) {
-                    TwangleTheme(style = shownStyle.value, darkTheme = dark, animate = false) {
+                    TwangleTheme(darkTheme = dark, animate = false) {
                         Box(Modifier.size(360.dp, 120.dp).testTag(tag(dark)), contentAlignment = Alignment.Center) {
                             StyleBackdrop(Modifier.matchParentSize())
                             StringSelector(
@@ -76,8 +74,7 @@ class SoundingRingsTest {
             }
         }
         val failures = mutableListOf<String>()
-        for (style in VisualStyle.entries) {
-            shownStyle.value = style
+        for (style in listOf("Ink")) {
             sounding.value = null
             settle()
             val quiet = listOf(false, true).map { capture(it) }

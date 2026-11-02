@@ -1,9 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner.editor
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.Locales
@@ -34,8 +32,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -63,12 +59,10 @@ class TuningEditorTest {
     private var closed = 0
     private lateinit var repository: FakeSettingsRepository
 
-    /** The style [show] draws in; set it to switch styles while the editor is shown. */
-    private val shownStyle = mutableStateOf(VisualStyle.DEFAULT)
 
     /**
      * Shows the editor for [instrument] (a new tuning, or the custom tuning [editingId]) over a fake
-     * repository holding [settings], in [shownStyle], at [fontScale] and in [locale] (the phone's own when null).
+     * repository holding [settings], at [fontScale] and in [locale] (the phone's own when null).
      */
     private fun show(
         instrument: Instrument = Instruments.GUITAR,
@@ -83,7 +77,7 @@ class TuningEditorTest {
         }
         compose.setContent {
             DeviceConfigurationOverride(override) {
-                TwangleTheme(style = shownStyle.value, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     val current by repository.settings.collectAsStateWithLifecycle()
                     TuningEditorScreen(repository, current, instrument, editingId, onClose = { closed++ })
                 }
@@ -324,15 +318,13 @@ class TuningEditorTest {
         name.performTextReplacement("Iets")
         save.performClick()
         compose.waitForIdle()
-        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
-            shownStyle.value = style
+        for (style in listOf("Ink")) {
             assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.NOT_SAVED, useUnmergedTree = true), "not saved in $style")
         }
         // Then with the empty name's message there.
         name.performTextReplacement("")
         save.performClick()
-        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
-            shownStyle.value = style
+        for (style in listOf("Ink")) {
             checkWhollyShown(instrument, style)
         }
     }
@@ -346,8 +338,7 @@ class TuningEditorTest {
         show()
         name.performTextReplacement("Iets")
         close.performClick()
-        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
-            shownStyle.value = style
+        for (style in listOf("Ink")) {
             assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard_title)), "question in $style", scroll = false)
             assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard)), "discard in $style", scroll = false)
             assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_keep_editing)), "keep editing in $style", scroll = false)
@@ -355,7 +346,7 @@ class TuningEditorTest {
     }
 
     /** At 2× text, the page in [style]: every control and text reachable and not cut off. */
-    private fun checkWhollyShown(instrument: Instrument, style: VisualStyle) {
+    private fun checkWhollyShown(instrument: Instrument, style: String) {
         compose.onNodeWithTag(TuningEditorTestTags.NAME).performScrollTo()
         assertWhollyShown(save, "Opslaan in $style", scroll = false)
         assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.CLOSE), "close", scroll = false)

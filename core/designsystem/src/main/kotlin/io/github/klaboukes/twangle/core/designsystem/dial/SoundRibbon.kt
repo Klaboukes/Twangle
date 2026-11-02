@@ -2,40 +2,25 @@ package io.github.klaboukes.twangle.core.designsystem.dial
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.dsp.strobe.ribbonAt
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlin.math.max
 
 /*
- * The wave view of every style: a soft ribbon of sound under the note, drawn in the style's own
- * marks and without a frame, so it stays in the background. Off pitch it swells into pulses that
+ * The wave view's ribbon: a soft ribbon of sound under the note, drawn in rounded bars (1.1's
+ * Contemporary marks) and without a frame, so it stays in the background. Off pitch it swells into pulses that
  * drift along, like the beats you hear when two notes are close but not the same, at the strobe's
  * speed; on the note it settles into one smooth, even band that stands still. WaveMotion decides
  * how the pulses move and ribbonAt their shape (both in :core:dsp, shared with the watch). The other looks the user can pick are in WaveLooks.kt.
  */
 
-/** [style]'s own sound ribbon: the [WaveLook.RIBBON] look. */
-internal fun DrawScope.drawStyleRibbon(style: VisualStyle, ribbon: Ribbon, path: Path) {
-    when (style) {
-        // Fingertip dabs of terracotta that swell and shrink.
-        VisualStyle.ANCIENT -> dots(ribbon)
-        // An engraved band with a hairline through it.
-        VisualStyle.CLASSIC -> band(ribbon, path, fill = 0.32f, outline = 1.7.dp, haloBase = 0f, centreLine = true)
-        // A phosphor trace that always glows a little.
-        VisualStyle.RETRO -> band(ribbon, path, fill = 0.4f, outline = 1.6.dp, haloBase = 0.14f, centreLine = false)
-        // Rounded bars, like a voice memo's waveform.
-        VisualStyle.CONTEMPORARY -> bars(ribbon, spacing = 6.dp, width = 3.dp, cap = StrokeCap.Round)
-        // Thin neon bars with a halo.
-        VisualStyle.FUTURISTIC -> bars(ribbon, spacing = 4.dp, width = 1.5.dp, cap = StrokeCap.Square, haloBase = 0.16f)
-        // Pairs of stars tracing the ribbon's edges.
-        VisualStyle.SPACE_AGE -> stars(ribbon)
-    }
+/** The sound ribbon, the [WaveLook.RIBBON] look: rounded bars, like a voice memo's waveform. */
+internal fun DrawScope.drawStyleRibbon(ribbon: Ribbon) {
+    bars(ribbon, spacing = 6.dp, width = 3.dp, cap = StrokeCap.Round)
 }
 
 /**
@@ -90,72 +75,4 @@ private fun DrawScope.bars(
         if (halo > 0f) drawLine(ribbon.faded(halo), top, bottom, w + gap * 0.5f, StrokeCap.Round)
         drawLine(ribbon.color, top, bottom, w, cap)
     }
-}
-
-private fun DrawScope.dots(ribbon: Ribbon) {
-    val gap = 13.dp.toPx()
-    val count = (size.width / gap).toInt()
-    val left = (size.width - (count - 1) * gap) / 2f
-    val mid = size.height / 2f
-    val smallest = 1.5.dp.toPx()
-    val largest = minOf(gap * 0.34f, mid)
-    val halo = ribbon.halo(0f)
-    for (i in 0 until count) {
-        val x = left + i * gap
-        val r = smallest + (largest - smallest) * ribbon.at(x / size.width)
-        if (halo > 0f) drawCircle(ribbon.faded(halo), r * 1.35f, Offset(x, mid))
-        // A second, smudged dab beside each one, as if pressed on by a fingertip.
-        drawCircle(ribbon.faded(0.35f), r * 1.08f, Offset(x + r * 0.18f, mid + r * 0.14f))
-        drawCircle(ribbon.color, r, Offset(x, mid))
-    }
-}
-
-private fun DrawScope.stars(ribbon: Ribbon) {
-    val gap = 9.dp.toPx()
-    val count = (size.width / gap).toInt()
-    val left = (size.width - (count - 1) * gap) / 2f
-    val mid = size.height / 2f
-    val r = 1.7.dp.toPx()
-    val reach = mid - r * 2f
-    val halo = ribbon.halo(0.14f)
-    for (i in 0 until count) {
-        val x = left + i * gap
-        val h = ribbon.at(x / size.width) * reach
-        for (side in -1..1 step 2) {
-            val y = mid + side * h
-            drawCircle(ribbon.faded(halo), r * 2.6f, Offset(x, y))
-            drawCircle(ribbon.color, r, Offset(x, y))
-        }
-    }
-}
-
-private fun DrawScope.band(
-    ribbon: Ribbon,
-    path: Path,
-    fill: Float,
-    outline: Dp,
-    haloBase: Float,
-    centreLine: Boolean,
-) {
-    val mid = size.height / 2f
-    val reach = mid - 4.dp.toPx()
-    val steps = (size.width / 3.dp.toPx()).toInt().coerceAtLeast(8)
-    path.reset()
-    for (i in 0..steps) {
-        val u = i / steps.toFloat()
-        val y = mid - ribbon.at(u) * reach
-        if (i == 0) path.moveTo(0f, y) else path.lineTo(u * size.width, y)
-    }
-    for (i in steps downTo 0) {
-        val u = i / steps.toFloat()
-        path.lineTo(u * size.width, mid + ribbon.at(u) * reach)
-    }
-    path.close()
-    val halo = ribbon.halo(haloBase)
-    if (halo > 0f) drawPath(path, ribbon.faded(halo), style = roundStroke(outline.toPx() * 4f))
-    drawPath(path, ribbon.faded(fill))
-    if (centreLine) {
-        drawLine(ribbon.faded(0.45f), Offset(0f, mid), Offset(size.width, mid), 0.8.dp.toPx())
-    }
-    drawPath(path, ribbon.color, style = roundStroke(outline.toPx()))
 }

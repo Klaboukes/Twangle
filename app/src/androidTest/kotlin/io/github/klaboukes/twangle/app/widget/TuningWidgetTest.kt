@@ -24,7 +24,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -62,14 +61,15 @@ class TuningWidgetTest {
     }
 
     @Test
-    fun namesTheInstrumentAndTuningInTheStylesColours() {
-        val view = drawn(AppSettings(tuning = Tunings.DROP_D, style = VisualStyle.RETRO, theme = ThemeMode.DARK))
+    fun namesTheInstrumentAndTuningInInksColours() {
+        // Ink's own colours: the wallpaper's (on by default) differ from phone to phone.
+        val view = drawn(AppSettings(tuning = Tunings.DROP_D, theme = ThemeMode.DARK, dynamicColor = false))
         val title = view.findViewById<TextView>(R.id.widget_title)
         val guitar = context.getString(TunerR.string.instrument_guitar)
         val dropD = context.getString(TunerR.string.tuning_drop_d)
         assertEquals(context.getString(R.string.widget_title, guitar, dropD), title.text.toString())
         assertEquals(context.getString(TunerR.string.tuner_spoken_picker, guitar, dropD), title.contentDescription)
-        val scheme = tokensFor(VisualStyle.RETRO, dark = true).scheme
+        val scheme = tokensFor(dark = true).scheme
         assertEquals(scheme.onBackground.toArgb(), title.currentTextColor)
         assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
         assertTrue("the whole tile can be tapped", view.findViewById<View>(android.R.id.background).hasOnClickListeners())

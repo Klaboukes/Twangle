@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 /**
  * The home-screen widget (Phase 20): the instrument and tuning the tuner is set to ("Guitar ·
- * Standard", or "Chromatic") in the user's style, and one tap opens the tuner. It is plain
+ * Standard", or "Chromatic") in the app's colours, and one tap opens the tuner. It is plain
  * [RemoteViews] (no Glance): one small layout, no extra library. It never touches the microphone;
  * the tuner it opens does that, as when opened from the launcher.
  *
@@ -110,12 +110,12 @@ object TuningWidget {
     }
 
     /**
-     * The style's colours: its background on the tile, ink for the tuning, the muted colour under it
+     * The app's colours (Ink, or the wallpaper's): its background on the tile, ink for the tuning, the muted colour under it
      * and the accent on the tuning fork. With the theme set to follow the phone (Android 12+), the
      * launcher picks the light or dark set itself, so a switch of the phone's dark mode needs no redraw.
      */
     private fun RemoteViews.paint(context: Context, state: WidgetState) {
-        fun colors(dark: Boolean) = colorSchemeFor(context, state.style, dark, state.dynamicColor).let {
+        fun colors(dark: Boolean) = colorSchemeFor(context, dark, state.dynamicColor).let {
             intArrayOf(it.background.toArgb(), it.onBackground.toArgb(), it.onSurfaceVariant.toArgb(), it.primary.toArgb())
         }
         val targets = listOf(

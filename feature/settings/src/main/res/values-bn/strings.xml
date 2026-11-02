@@ -22,7 +22,6 @@
     <string name="settings_in_tune_precision_title">সুরে থাকার নির্ভুলতা</string>
     <string name="settings_in_tune_precision_relaxed">সহজ: ৫ সেন্টের মধ্যে</string>
     <string name="settings_in_tune_precision_precise">নিখুঁত: ২ সেন্টের মধ্যে</string>
-    <string name="settings_style_title">স্টাইল</string>
     <string name="settings_theme_title">লাইট বা ডার্ক</string>
     <string name="settings_theme_system">সিস্টেম ডিফল্ট</string>
     <string name="settings_theme_light">লাইট</string>

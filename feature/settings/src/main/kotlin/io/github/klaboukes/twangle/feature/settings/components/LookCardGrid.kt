@@ -145,7 +145,7 @@ private fun LookCard(
                 color = if (selected) colors.primary else colors.outlineVariant,
                 shape = shape,
             )
-            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape, face = true, above = true), role = Role.RadioButton) {
+            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape, above = true), role = Role.RadioButton) {
                 press.pressFlash()
                 onClick()
             }

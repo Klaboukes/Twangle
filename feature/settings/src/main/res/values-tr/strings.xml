@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Rahat: 5 sent içinde</string>
     <string name="settings_in_tune_precision_precise">Hassas: 2 sent içinde</string>
 
-    <string name="settings_style_title">Stil</string>
     <string name="settings_theme_title">Açık veya koyu</string>
     <string name="settings_theme_system">Sistem varsayılanı</string>
     <string name="settings_theme_light">Açık</string>

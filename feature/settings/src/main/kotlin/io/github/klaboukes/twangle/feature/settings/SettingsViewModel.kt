@@ -10,7 +10,6 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,10 +34,6 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setInTunePrecision(precision: InTunePrecision) {
         viewModelScope.launch { repository.setInTunePrecision(precision) }
-    }
-
-    fun setStyle(style: VisualStyle) {
-        viewModelScope.launch { repository.setStyle(style) }
     }
 
     fun setTheme(theme: ThemeMode) {

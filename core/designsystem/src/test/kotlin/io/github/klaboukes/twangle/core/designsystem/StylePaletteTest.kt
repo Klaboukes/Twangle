@@ -5,25 +5,21 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import io.github.klaboukes.twangle.core.designsystem.meter.MINOR_TICK_INK
 import io.github.klaboukes.twangle.core.designsystem.meter.SCALE_NUMBER_INK
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.math.abs
 import kotlin.math.atan2
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
- * Every style, light and dark, must stay readable: WCAG 2.2 AA, 4.5:1 for any text against what it
- * sits on, 3:1 for marks (ticks, needle, outlines of controls). The rules are the approved mock-up's
- * (docs/design/theme-styles-preview.html, "Roles").
+ * Ink, light and dark, must stay readable: WCAG 2.2 AA, 4.5:1 for any text against what it sits on,
+ * 3:1 for marks (ticks, needle, outlines of controls). The rules are 1.1's approved mock-up's
+ * (docs/design/theme-styles-preview.html, "Roles"); the colours are 2.0's (docs/architecture/v2-plan.md,
+ * *The lens*).
  */
 class StylePaletteTest {
 
-    private val all = VisualStyle.entries.flatMap { style -> listOf(false, true).map { dark -> Triple(style, dark, paletteFor(style, dark)) } }
+    private val all = listOf(false, true).map { dark -> dark to paletteFor(dark) }
 
     @Test
     fun `text is readable on the background, the surface and its container`() = forEach { name, p, _ ->
@@ -58,74 +54,63 @@ class StylePaletteTest {
     @Test
     fun `controls' edges stand out from the background and the string buttons' names are in full ink`() = forEach { name, p, dark ->
         val scheme = p.toColorScheme(dark)
-        // Every style's own look, and Futuristic's neon one in every palette, so a palette change can't slip under.
-        for (neon in listOf(false, true)) {
-            val look = if (neon) "neon" else "muted"
-            assertContrast("$name $look control outline", controlOutline(scheme, neon), p.background, AA_MARKS)
-            val fill = stringChipFill(scheme, neon)
-            // The edge is drawn over the fill's rim, so it must stand out where the fill meets the background.
-            assertContrast("$name $look string button edge", controlOutline(scheme, neon).compositeOver(fill), p.background, AA_MARKS)
-            assertContrast("$name $look string button name", scheme.onSurface, fill, AA_TEXT)
+        assertContrast("$name control outline", controlOutline(scheme), p.background, AA_MARKS)
+        val fill = stringChipFill(scheme)
+        // The edge is drawn over the fill's rim, so it must stand out where the fill meets the background.
+        assertContrast("$name string button edge", controlOutline(scheme).compositeOver(fill), p.background, AA_MARKS)
+        assertContrast("$name string button name", scheme.onSurface, fill, AA_TEXT)
+    }
+
+    @Test
+    fun `the palettes are the mock-ups' Ink`() {
+        // The plan's table (v2-plan.md, *The lens*): dark as drawn; light's muted, accent and green darkened
+        // in their own hue to 4.5:1 for text (the mock-ups' #6B7482, #1E7FE0 and #15A35A fell short of it).
+        val dark = paletteFor(dark = true)
+        assertEquals(Color(0xFF0E1116), dark.background)
+        assertEquals(Color(0xFF171B22), dark.surface)
+        assertEquals(Color(0xFFEEF1F5), dark.ink)
+        assertEquals(Color(0xFF8D96A3), dark.muted)
+        assertEquals(Color(0xFF262C35), dark.track)
+        assertEquals(Color(0xFF5FC4FF), dark.accent)
+        assertEquals(Color(0xFFFFB648), dark.farOff)
+        assertEquals(Color(0xFF3DDC84), dark.inTune)
+        val light = paletteFor(dark = false)
+        assertEquals(Color(0xFFF6F7F9), light.background)
+        assertEquals(Color(0xFFFFFFFF), light.surface)
+        assertEquals(Color(0xFF14181D), light.ink)
+        assertEquals(Color(0xFF666F7C), light.muted)
+        assertEquals(Color(0xFFE1E5EA), light.track)
+        assertEquals(Color(0xFF1A6FC4), light.accent)
+        assertEquals(Color(0xFFD98400), light.farOff)
+        assertEquals(Color(0xFF107E46), light.inTune)
+    }
+
+    @Test
+    fun `dark is dark and light is light`() {
+        for ((dark, p) in all) {
+            assertEquals("dark=$dark", dark, p.background.luminance() < 0.2f)
         }
     }
 
     @Test
-    fun `the palettes are the approved mock-up's`() {
-        // Spot checks, one per style; the rest were copied from the same data blocks (backgrounds and
-        // surfaces from background-tones-preview.html).
-        assertEquals(Color(0xFFA8431F), paletteFor(VisualStyle.ANCIENT, dark = false).accent)
-        assertEquals(Color(0xFF261A1F), paletteFor(VisualStyle.CLASSIC, dark = true).background)
-        assertEquals(Color(0xFF5F6E0E), paletteFor(VisualStyle.RETRO, dark = false).accent)
-        assertEquals(Color(0xFFA6ADFF), paletteFor(VisualStyle.CONTEMPORARY, dark = true).accent)
-        assertEquals(Color(0xFF22E5FF), paletteFor(VisualStyle.FUTURISTIC, dark = true).accent)
-        assertEquals(Color(0xFF8A35B8), paletteFor(VisualStyle.SPACE_AGE, dark = false).accent)
-    }
-
-    @Test
-    fun `dark versions are dark and light versions are light`() {
-        for ((style, dark, p) in all) {
-            assertEquals("$style dark=$dark", dark, p.background.luminance() < 0.2f)
-        }
-    }
-
-    @Test
-    fun `each style owns its hue, at least 30 degrees from the others and never in the in-tune greens`() {
-        for (dark in listOf(false, true)) {
-            val hues = VisualStyle.entries.associateWith { hue(paletteFor(it, dark).accent) }
-            for ((style, h) in hues) {
-                assertTrue("$style dark=$dark accent hue $h is green", h !in 100f..160f)
-                for ((other, o) in hues) {
-                    if (other == style) continue
-                    val apart = min(abs(h - o), 360f - abs(h - o))
-                    assertTrue("$style and $other accents only $apart° apart (dark=$dark)", apart >= 30f)
-                }
+    fun `the accent is never green, the in-tune colour is, the far-off colour is amber and nothing is red`() {
+        for ((dark, p) in all) {
+            val accent = hue(p.accent)
+            assertTrue("accent hue $accent is green (dark=$dark)", accent !in 100f..160f)
+            assertTrue("in-tune hue ${hue(p.inTune)} (dark=$dark)", hue(p.inTune) in 100f..160f)
+            assertTrue("far-off hue ${hue(p.farOff)} (dark=$dark)", hue(p.farOff) in 25f..60f)
+            for ((role, c) in listOf("accent" to p.accent, "inTune" to p.inTune, "farOff" to p.farOff)) {
+                val h = hue(c)
+                assertTrue("$role hue $h is red (dark=$dark)", h in 20f..340f)
             }
-            val backgrounds = VisualStyle.entries.map { paletteFor(it, dark).background }
-            assertEquals("backgrounds, dark=$dark", backgrounds.size, backgrounds.toSet().size)
         }
-    }
-
-    @Test
-    fun `every style but contemporary has its own lettering`() {
-        val display = VisualStyle.entries.associateWith { facesFor(it).display }
-        VisualStyle.entries.filter { it != VisualStyle.CONTEMPORARY }.forEach {
-            assertNotEquals("$it display face", display.getValue(VisualStyle.CONTEMPORARY), display.getValue(it))
-        }
-        assertEquals("display faces", display.size, display.values.toSet().size)
-    }
-
-    @Test
-    fun `ancient and classic set their numbers in a face that reads easily`() {
-        assertEquals(StyleFonts.Humanist, numberFontFor(VisualStyle.ANCIENT))
-        assertEquals(StyleFonts.Bodoni, numberFontFor(VisualStyle.CLASSIC))
-        assertEquals(StyleFonts.Groovy, numberFontFor(VisualStyle.RETRO))
     }
 
     private val failures = mutableListOf<String>()
 
-    /** Runs [check] on every palette and reports all weak pairs together. */
+    /** Runs [check] on both palettes and reports all weak pairs together. */
     private fun forEach(check: (String, Palette, Boolean) -> Unit) {
-        for ((style, dark, palette) in all) check("$style ${if (dark) "dark" else "light"}", palette, dark)
+        for ((dark, palette) in all) check("Ink ${if (dark) "dark" else "light"}", palette, dark)
         assertTrue(failures.joinToString(separator = "\n"), failures.isEmpty())
     }
 

@@ -20,9 +20,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -50,10 +48,10 @@ class WaveViewTest {
         compose.setContent {
             // Light and dark side by side, small enough that all fit on the screen at once.
             Column {
-                for (style in VisualStyle.entries) {
+                for (style in listOf("Ink")) {
                     Row {
                         for (dark in listOf(false, true)) {
-                            TwangleTheme(style = style, darkTheme = dark, animate = false) {
+                            TwangleTheme(darkTheme = dark, animate = false) {
                                 WaveView(cents = -12f, inTune = false, modifier = Modifier.size(170.dp, 40.dp).testTag(tag(style, dark)))
                             }
                         }
@@ -61,7 +59,7 @@ class WaveViewTest {
                 }
             }
         }
-        for (style in VisualStyle.entries) {
+        for (style in listOf("Ink")) {
             for (dark in listOf(false, true)) {
                 val pixels = compose.onNodeWithTag(tag(style, dark)).captureToImage().toPixelMap()
                 val empty = pixels[0, 0]
@@ -78,10 +76,10 @@ class WaveViewTest {
         compose.setContent {
             // Light and dark side by side, small enough that all fit on the screen at once.
             Column {
-                for (style in VisualStyle.entries) {
+                for (style in listOf("Ink")) {
                     Row {
                         for (dark in listOf(false, true)) {
-                            TwangleTheme(style = style, darkTheme = dark, animate = false) {
+                            TwangleTheme(darkTheme = dark, animate = false) {
                                 WaveView(
                                     cents = -3f,
                                     inTune = false,
@@ -94,7 +92,7 @@ class WaveViewTest {
                 }
             }
         }
-        for (style in VisualStyle.entries) {
+        for (style in listOf("Ink")) {
             for (dark in listOf(false, true)) {
                 val marked = markedShare(compose.onNodeWithTag(tag(style, dark)).captureToImage().toPixelMap())
                 // Clearly drawn, and clearly not a solid block.
@@ -112,7 +110,7 @@ class WaveViewTest {
     fun theStrobeMovesWithoutRecomposing() {
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false, animate = false) {
+            TwangleTheme(darkTheme = false, animate = false) {
                 WaveView(
                     cents = -3f,
                     inTune = false,
@@ -142,7 +140,7 @@ class WaveViewTest {
         compose.mainClock.autoAdvance = false
         val cents = mutableFloatStateOf(0f)
         compose.setContent {
-            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false, animate = false) {
+            TwangleTheme(darkTheme = false, animate = false) {
                 WaveView(
                     cents = { cents.floatValue },
                     inTune = false,
@@ -192,7 +190,7 @@ class WaveViewTest {
     fun everyLookMovesOffPitchAndHoldsStillOnTheNote() {
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false, animate = false) {
+            TwangleTheme(darkTheme = false, animate = false) {
                 Column {
                     for (look in WaveLook.entries) {
                         Row {
@@ -229,14 +227,13 @@ class WaveViewTest {
     @Test
     fun everyLookStaysInItsBoxInEveryStyle() {
         compose.mainClock.autoAdvance = false
-        val shownStyle = mutableStateOf(VisualStyle.entries.first())
         compose.setContent {
-            TwangleTheme(style = shownStyle.value, darkTheme = false, animate = false) {
+            TwangleTheme(darkTheme = false, animate = false) {
                 Column {
                     for (look in WaveLook.entries) {
                         Row {
                             for (onNote in listOf(false, true)) {
-                                TwangleTheme(style = shownStyle.value, darkTheme = onNote, animate = false) {
+                                TwangleTheme(darkTheme = onNote, animate = false) {
                                     Box(Modifier.testTag(lookTag(look, onNote)).background(BACKGROUND).padding(MARGIN)) {
                                         WaveView(
                                             cents = if (onNote) 0.2f else -30f,
@@ -252,8 +249,7 @@ class WaveViewTest {
                 }
             }
         }
-        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
-            shownStyle.value = style
+        for (style in listOf("Ink")) {
             compose.mainClock.advanceTimeBy(STYLE_SETTLE_MS)
             for (look in WaveLook.entries) {
                 for (onNote in listOf(false, true)) {
@@ -295,10 +291,9 @@ class WaveViewTest {
     @Test
     fun everyLookIsFaintButClearWithPoorReception() {
         compose.mainClock.autoAdvance = false
-        val shownStyle = mutableStateOf(VisualStyle.entries.first())
         val shownDark = mutableStateOf(false)
         compose.setContent {
-            TwangleTheme(style = shownStyle.value, darkTheme = shownDark.value, animate = false) {
+            TwangleTheme(darkTheme = shownDark.value, animate = false) {
                 Column(Modifier.testTag(RECEPTION_TAG)) {
                     for (look in WaveLook.entries) {
                         Row {
@@ -312,9 +307,8 @@ class WaveViewTest {
                 }
             }
         }
-        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
+        for (style in listOf("Ink")) {
             for (dark in listOf(false, true)) {
-                shownStyle.value = style
                 shownDark.value = dark
                 compose.mainClock.advanceTimeBy(STYLE_SETTLE_MS)
                 // One capture of the whole grid; each cell is a look at full (left) and worst (right) reception.
@@ -339,7 +333,7 @@ class WaveViewTest {
         compose.mainClock.autoAdvance = false
         val heard = mutableFloatStateOf(1f)
         compose.setContent {
-            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = true, animate = false) {
+            TwangleTheme(darkTheme = true, animate = false) {
                 WaveView(
                     cents = 0f,
                     inTune = false,
@@ -399,7 +393,7 @@ class WaveViewTest {
     private fun Color.near(other: Color, tolerance: Float = 0.02f): Boolean =
         abs(red - other.red) < tolerance && abs(green - other.green) < tolerance && abs(blue - other.blue) < tolerance
 
-    private fun tag(style: VisualStyle, dark: Boolean) = "wave_${style.name}_$dark"
+    private fun tag(style: String, dark: Boolean) = "wave_${style}_$dark"
 
     private fun lookTag(look: WaveLook, onNote: Boolean) = "look_${look.name}_$onNote"
 

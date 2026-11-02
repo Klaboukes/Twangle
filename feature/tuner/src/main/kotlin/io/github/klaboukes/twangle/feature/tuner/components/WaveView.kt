@@ -25,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.strobe.WaveMotion
 import io.github.klaboukes.twangle.core.designsystem.dial.drawWave
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 
 /**
@@ -87,7 +85,6 @@ fun WaveView(
         tween(GLOW_MS),
         label = "waveColor",
     )
-    val style = MaterialTheme.styleTokens.style
     val path = remember { Path() }
     Spacer(
         modifier = modifier
@@ -102,7 +99,6 @@ fun WaveView(
                 val faded = color.value.alpha * ReceptionLook.alphaFor(heldReception.of(currentReception()), level.value)
                 drawWave(
                     look = look,
-                    style = style,
                     color = color.value.copy(alpha = faded),
                     beats = motion.beats,
                     phase = motion.phase,
@@ -144,7 +140,7 @@ private const val REST_ALPHA = 0.3f
 @Preview(showBackground = true)
 @Composable
 private fun WaveViewPreview() {
-    TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false) {
+    TwangleTheme(darkTheme = false) {
         WaveView(cents = -12f, inTune = false, modifier = Modifier.width(240.dp).height(40.dp))
     }
 }

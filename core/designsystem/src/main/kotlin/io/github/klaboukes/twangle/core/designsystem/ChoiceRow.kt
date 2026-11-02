@@ -88,7 +88,7 @@ fun ChoiceRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            val color = if (selected && !look.neon) scheme.onPrimaryContainer else scheme.onSurface
+            val color = if (selected) scheme.onPrimaryContainer else scheme.onSurface
             CompositionLocalProvider(LocalContentColor provides color) {
                 Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, content = content)
             }

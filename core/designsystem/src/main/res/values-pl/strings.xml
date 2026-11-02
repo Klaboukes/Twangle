@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">Starożytny</string>
-    <string name="style_classic">Klasyczny</string>
-    <string name="style_retro">Retro</string>
-    <string name="style_contemporary">Współczesny</string>
-    <string name="style_futuristic">Futurystyczny</string>
-    <string name="style_space_age">Era kosmiczna</string>
-
     <string name="spoken_sharp">%1$s z krzyżykiem</string>
     <string name="spoken_flat">%1$s z bemolem</string>
 

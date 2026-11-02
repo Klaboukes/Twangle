@@ -106,7 +106,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.GERMAN, settings.notationFor("de"))
         assertEquals(InTunePrecision.RELAXED, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals(VisualStyle.CONTEMPORARY, settings.style)
         assertEquals(true, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
@@ -150,7 +149,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setNotation(Notation.SOLFEGE)
         repo.setInTunePrecision(InTunePrecision.PRECISE)
         repo.setTheme(ThemeMode.DARK)
-        repo.setStyle(VisualStyle.SPACE_AGE)
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
@@ -194,7 +192,6 @@ class DataStoreSettingsRepositoryTest {
             notationChoice = Notation.SOLFEGE,
             inTunePrecision = InTunePrecision.PRECISE,
             theme = ThemeMode.DARK,
-            style = VisualStyle.SPACE_AGE,
             dynamicColor = false,
             keepScreenOn = false,
             vibrateInTune = false,
@@ -251,7 +248,6 @@ class DataStoreSettingsRepositoryTest {
             setMode(TunerMode.CHROMATIC)
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
-            setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
             setFocusMode(true)
             setMeterLook(MeterLook.POINTERS)
@@ -288,7 +284,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Tunings.DROP_D, settings.tuning)
         assertEquals(Notation.FLATS, settings.notationChoice)
         assertEquals("a picked notation wins over the language", Notation.FLATS, settings.notationFor("fr"))
-        assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the focus mode choice is kept", true, settings.focusMode)
         assertEquals("the meter look is kept", MeterLook.POINTERS, settings.meterLook)
@@ -588,7 +583,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown notation counts as never picked", null, settings.notationChoice)
         assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals(VisualStyle.DEFAULT, settings.style)
         assertEquals(WaveLook.DEFAULT, settings.waveLook)
         assertEquals("an unknown meter look gives Classic", MeterLook.CLASSIC, settings.meterLook)
         assertEquals("an unknown in-tune effect gives Calm", InTuneEffect.CALM, settings.inTuneEffect)
@@ -728,72 +722,30 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `every style saved by an older version opens as its closest new style`() = runTest {
-        // The seven styles before October 2026, and the style each one opens as now.
-        val expected = mapOf(
-            "PREHISTORIC" to VisualStyle.ANCIENT,
-            "MIDDLE_AGES" to VisualStyle.ANCIENT,
-            "CLASSIC" to VisualStyle.CLASSIC,
-            "RETRO" to VisualStyle.RETRO,
-            "CONTEMPORARY" to VisualStyle.CONTEMPORARY,
-            "FUTURISTIC" to VisualStyle.FUTURISTIC,
-            "SPACE_AGE" to VisualStyle.SPACE_AGE,
-        )
+    fun `a style saved by 1_1 is left in the file unread and changes nothing`() = runTest {
+        // 2.0 has one look (Ink): every 1.1 style, old names and damaged values included, reads the same.
         val store = dataStore()
         val repo = repository(store)
-        for ((saved, style) in expected) {
+        // Any saved key at all counts the install as used, so the tour isn't due (decideTourOnce); nothing else changes.
+        val plain = repo.settings.first().copy(tourSeen = true)
+        for (saved in listOf("ANCIENT", "CLASSIC", "RETRO", "CONTEMPORARY", "FUTURISTIC", "SPACE_AGE", "MIDDLE_AGES", "", "BAROQUE")) {
             store.edit { it[stringPreferencesKey("visual_style")] = saved }
-            assertEquals(saved, style, repo.settings.first().style)
+            assertEquals(saved, plain, repo.settings.first())
         }
+        repo.setDynamicColor(false)
+        assertEquals("the key stays as it lay", "BAROQUE", store.data.first()[stringPreferencesKey("visual_style")])
     }
 
     @Test
-    fun `an old style survives a restart and picking a style rewrites it`() = runTest {
-        dataStore().edit { it[stringPreferencesKey("visual_style")] = "MIDDLE_AGES" }
-        close()
-        assertEquals(VisualStyle.ANCIENT, repository().settings.first().style)
-        close()
-
+    fun `a 1_1 player of another style keeps the wallpaper colours they had switched on`() = runTest {
         val store = dataStore()
-        repository(store).setStyle(VisualStyle.ANCIENT)
-        assertEquals("ANCIENT", store.data.first()[stringPreferencesKey("visual_style")])
-    }
-
-    @Test
-    fun `an unknown or damaged saved style opens as the default`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        for (saved in listOf("", "prehistoric", "Middle Ages", "STONE_AGE", "ANCIENT ")) {
-            store.edit { it[stringPreferencesKey("visual_style")] = saved }
-            assertEquals(saved, VisualStyle.CONTEMPORARY, repo.settings.first().style)
+        store.edit {
+            it[stringPreferencesKey("visual_style")] = "RETRO"
+            it[booleanPreferencesKey("dynamic_color")] = true
         }
-    }
-
-    @Test
-    fun `every style is saved by its name`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        for (style in VisualStyle.entries) {
-            repo.setStyle(style)
-            assertEquals(style, repo.settings.first().style)
-            assertEquals(style.name, store.data.first()[stringPreferencesKey("visual_style")])
-        }
-    }
-
-    @Test
-    fun `the six styles come in the owner's order, Contemporary the default`() {
-        assertEquals(
-            listOf(
-                VisualStyle.ANCIENT,
-                VisualStyle.CLASSIC,
-                VisualStyle.RETRO,
-                VisualStyle.CONTEMPORARY,
-                VisualStyle.FUTURISTIC,
-                VisualStyle.SPACE_AGE,
-            ),
-            VisualStyle.entries,
-        )
-        assertEquals(VisualStyle.CONTEMPORARY, VisualStyle.DEFAULT)
+        assertEquals(true, repository(store).settings.first().dynamicColor)
+        store.edit { it[booleanPreferencesKey("dynamic_color")] = false }
+        assertEquals(false, repository(store).settings.first().dynamicColor)
     }
 
     @Test
@@ -1184,7 +1136,7 @@ class DataStoreSettingsRepositoryTest {
     @Test
     fun `any saved setting at all counts as an update`() = runTest {
         val store = dataStore()
-        store.edit { it[stringPreferencesKey("visual_style")] = VisualStyle.RETRO.name }
+        store.edit { it[stringPreferencesKey("visual_style")] = "RETRO" }
         val repo = repository(store)
         repo.decideTourOnce()
         assertEquals(true, repo.settings.first().tourSeen)
@@ -1194,8 +1146,8 @@ class DataStoreSettingsRepositoryTest {
     fun `once a fresh install is decided, saving other settings doesn't cancel the tour`() = runTest {
         val repo = repository()
         repo.decideTourOnce()
-        // E.g. the microphone was refused at first and the style picked in Settings first.
-        repo.setStyle(VisualStyle.FUTURISTIC)
+        // E.g. the microphone was refused at first and the theme picked in Settings first.
+        repo.setTheme(ThemeMode.DARK)
         repo.setFocusMode(true)
         repo.decideTourOnce()
         close()
@@ -1254,7 +1206,7 @@ class DataStoreSettingsRepositoryTest {
         val real = dataStore()
         val kept = DataStoreSettingsRepository(real)
         kept.addCustomTuning("Mine", Instruments.GUITAR, dropC, pick = true)!!
-        kept.setStyle(VisualStyle.FUTURISTIC)
+        kept.setInTunePrecision(InTunePrecision.PRECISE)
         val before = kept.settings.first()
         val logged = mutableListOf<IOException>()
         val repo = DataStoreSettingsRepository(FullDataStore(real), logWriteError = { logged += it })
@@ -1273,7 +1225,6 @@ class DataStoreSettingsRepositoryTest {
             "setNotation" to { repo.setNotation(Notation.entries.last()) },
             "setInTunePrecision" to { repo.setInTunePrecision(InTunePrecision.entries.last()) },
             "setTheme" to { repo.setTheme(ThemeMode.entries.last()) },
-            "setStyle" to { repo.setStyle(VisualStyle.ANCIENT) },
             "setDynamicColor" to { repo.setDynamicColor(!before.dynamicColor) },
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
@@ -1350,12 +1301,12 @@ class DataStoreSettingsRepositoryTest {
         val repo = appRepository()
 
         assertEquals(AppSettings(), repo.settings.first())
-        repo.setStyle(VisualStyle.FUTURISTIC)
+        repo.setTheme(ThemeMode.DARK)
         repo.setMicRefused(true)
         close()
 
         val reopened = appRepository().settings.first()
-        assertEquals("the damaged settings were replaced", VisualStyle.FUTURISTIC, reopened.style)
+        assertEquals("the damaged settings were replaced", ThemeMode.DARK, reopened.theme)
         assertEquals("and this phone's own file too", true, reopened.micRefused)
     }
 
@@ -1371,7 +1322,6 @@ class DataStoreSettingsRepositoryTest {
 
         val repo = appRepository()
         assertEquals("still refused after the update", true, repo.settings.first().micRefused)
-        assertEquals(VisualStyle.RETRO, repo.settings.first().style)
         repo.setTheme(ThemeMode.DARK)
         close()
 
@@ -1394,11 +1344,11 @@ class DataStoreSettingsRepositoryTest {
     fun `every collector shares one reading of a change`() = runBlocking {
         val repo = repository()
         repo.settings.first()
-        val readers = List(10) { async { repo.settings.first { it.style == VisualStyle.FUTURISTIC } } }
+        val readers = List(10) { async { repo.settings.first { it.theme == ThemeMode.DARK } } }
         delay(200) // every reader has the settings as they are
         val before = repo.parseCount
 
-        repo.setStyle(VisualStyle.FUTURISTIC)
+        repo.setTheme(ThemeMode.DARK)
         withTimeout(5_000) { readers.awaitAll() }
 
         assertEquals("one change, read once for all ten", 1, repo.parseCount - before)

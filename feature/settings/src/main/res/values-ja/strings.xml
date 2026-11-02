@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">ゆるめ：5 セント以内</string>
     <string name="settings_in_tune_precision_precise">精密：2 セント以内</string>
 
-    <string name="settings_style_title">スタイル</string>
     <string name="settings_theme_title">ライト / ダーク</string>
     <string name="settings_theme_system">システムに従う</string>
     <string name="settings_theme_light">ライト</string>

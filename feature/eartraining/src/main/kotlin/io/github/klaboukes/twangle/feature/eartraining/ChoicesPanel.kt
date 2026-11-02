@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
@@ -57,7 +56,6 @@ import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
@@ -65,7 +63,6 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * "What is asked" (the owner's pick A: questions start at once, and this panel opens any time): the
@@ -104,7 +101,7 @@ internal fun ChoicesPanel(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = panelShape(MaterialTheme.styleTokens.style),
+        shape = PANEL_SHAPE,
         containerColor = scheme.surface,
         contentColor = scheme.onSurface,
         modifier = Modifier.testTag(EarTrainingTestTags.CHOICES_PANEL),
@@ -311,13 +308,8 @@ private fun Chip(text: AnnotatedString, spoken: String, on: Boolean, tag: String
 /** Play it back's choice of notes in a row: one to four. */
 private val NOTES_IN_ROW = (1..NoteQuestions.MAX_LENGTH).toList()
 
-/** The panel's top corners, as the instrument and tuning panel's: the style's card corners, at least 14 dp. */
-private fun panelShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.FUTURISTIC -> CutCornerShape(topStart = 14.dp, topEnd = 14.dp)
-    VisualStyle.RETRO -> RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
-    VisualStyle.SPACE_AGE -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-    else -> RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)
-}
+/** The panel's top corners, as the instrument and tuning panel's: 22 dp, Ink's large shape. */
+private val PANEL_SHAPE: Shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
 
 /** The panel is at most this share of the window's height, so the question shows above it. */
 private const val PANEL_MAX_HEIGHT = 0.74f

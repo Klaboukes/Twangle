@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Locker: bis 5 Cent</string>
     <string name="settings_in_tune_precision_precise">Genau: bis 2 Cent</string>
 
-    <string name="settings_style_title">Stil</string>
     <string name="settings_theme_title">Hell oder dunkel</string>
     <string name="settings_theme_system">Systemstandard</string>
     <string name="settings_theme_light">Hell</string>

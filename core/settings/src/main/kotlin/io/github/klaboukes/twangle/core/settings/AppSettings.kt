@@ -64,26 +64,6 @@ enum class ThemeMode {
 }
 
 /**
- * The look of the whole app: colours, lettering, background and the tuning dial. Each style has a
- * light and a dark version ([ThemeMode] picks which). Saved in settings by [name], so don't rename
- * the entries. Listed in the order the style picker shows them. (Versions before October 2026 had
- * Prehistoric and Middle Ages; a saved one of those is read as [ANCIENT].)
- */
-enum class VisualStyle {
-    ANCIENT,
-    CLASSIC,
-    RETRO,
-    CONTEMPORARY,
-    FUTURISTIC,
-    SPACE_AGE,
-    ;
-
-    companion object {
-        val DEFAULT = CONTEMPORARY
-    }
-}
-
-/**
  * How the tuner shows how far off a note is, under the note. The needle dial is always there;
  * this picks what goes with it. Saved in settings by [name], so don't rename the entries. (A
  * third display, the strobe, became [WaveLook.STROBE]; a saved "STROBE" is read as [WAVE] with
@@ -235,8 +215,11 @@ data class AppSettings(
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,
-    val style: VisualStyle = VisualStyle.DEFAULT,
-    /** Colours from the wallpaper (Android 12+), in the contemporary [style] only. Ignored on older phones. */
+    /**
+     * Colours from the wallpaper (Android 12+) for the background, surfaces, text and accent; the in-tune green and the
+     * far-off amber stay the app's own. Ignored on older phones. (1.1's styles, saved as `visual_style`, are no longer
+     * read: every one shows as the one look, Ink.)
+     */
     val dynamicColor: Boolean = true,
     /** Stop the screen from dimming while the tuner is open and hears playing (it lets go after a quiet spell). */
     val keepScreenOn: Boolean = true,

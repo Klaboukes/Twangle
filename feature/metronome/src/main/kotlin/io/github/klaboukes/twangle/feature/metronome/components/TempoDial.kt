@@ -37,14 +37,12 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
-import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
 import io.github.klaboukes.twangle.core.designsystem.metronome.TempoDialArt
 import io.github.klaboukes.twangle.core.designsystem.metronome.bpmAtTouch
 import io.github.klaboukes.twangle.core.designsystem.metronome.isClearOfDialMiddle
 import io.github.klaboukes.twangle.core.designsystem.metronome.isInDialGap
 import io.github.klaboukes.twangle.core.designsystem.metronome.isOnDialRing
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoMarking
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -171,7 +169,6 @@ fun TempoDial(
  */
 @Composable
 private fun TempoReadout(bpm: Int, marking: String, size: Dp, figuresWidest: Dp, labelsBottom: Dp, modifier: Modifier = Modifier) {
-    val style = MaterialTheme.styleTokens.style
     val scheme = MaterialTheme.colorScheme
     val body = MaterialTheme.typography.bodyLarge
     val density = LocalDensity.current
@@ -179,8 +176,8 @@ private fun TempoReadout(bpm: Int, marking: String, size: Dp, figuresWidest: Dp,
     val u = size.value / DIAL_DP
     fun fixed(units: Float): TextUnit = with(density) { (units * u).dp.toSp() }
     fun label(units: Float, scale: Float): TextUnit = with(density) { (units * u * scale).dp.toSp() }
-    val numbers = numberFontFor(style)
-    val figures = BPM_UNITS * numberScaleFor(style)
+    val numbers = NumberFont
+    val figures = BPM_UNITS
     val topPadding = (DIAL_DP / 2f - FIGURES_UP_UNITS - figures / 2f).coerceAtLeast(0f) * u
     val bpmLabel = stringResource(R.string.metronome_bpm)
     fun bpmStyle(scale: Float) = TextStyle(

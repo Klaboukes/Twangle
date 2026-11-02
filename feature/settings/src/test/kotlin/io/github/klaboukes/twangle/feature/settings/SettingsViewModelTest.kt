@@ -8,7 +8,6 @@ import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -76,14 +75,6 @@ class SettingsViewModelTest {
         vm.setInTunePrecision(InTunePrecision.PRECISE)
         runCurrent()
         assertEquals(InTunePrecision.PRECISE, repository.current.inTunePrecision)
-    }
-
-    @Test
-    fun `saves the style`() = runTest(dispatcher) {
-        val vm = SettingsViewModel(repository)
-        vm.setStyle(VisualStyle.RETRO)
-        runCurrent()
-        assertEquals(VisualStyle.RETRO, repository.current.style)
     }
 
     @Test

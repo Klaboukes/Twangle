@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">宽松：5 音分以内</string>
     <string name="settings_in_tune_precision_precise">精确：2 音分以内</string>
 
-    <string name="settings_style_title">风格</string>
     <string name="settings_theme_title">浅色或深色</string>
     <string name="settings_theme_system">跟随系统</string>
     <string name="settings_theme_light">浅色</string>

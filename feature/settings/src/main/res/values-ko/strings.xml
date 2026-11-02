@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">여유: 5센트 이내</string>
     <string name="settings_in_tune_precision_precise">정밀: 2센트 이내</string>
 
-    <string name="settings_style_title">스타일</string>
     <string name="settings_theme_title">라이트 또는 다크</string>
     <string name="settings_theme_system">시스템 기본값</string>
     <string name="settings_theme_light">라이트</string>

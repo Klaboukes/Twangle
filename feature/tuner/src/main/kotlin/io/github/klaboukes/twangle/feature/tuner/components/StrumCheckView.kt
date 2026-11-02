@@ -77,12 +77,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
-import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.StrumPhase
 import io.github.klaboukes.twangle.feature.tuner.StrumString
@@ -130,8 +128,7 @@ fun StrumPanel(
         background = scheme.background,
     )
     val nameStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
-    val numberStyle = TextStyle(fontFamily = numberFontFor(tokens.style), fontFeatureSettings = "lnum")
-    val numberScale = if (tokens.style == VisualStyle.FUTURISTIC || tokens.style == VisualStyle.SPACE_AGE) WIDE_FACE_SCALE else 1f
+    val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
     val measurer = rememberTextMeasurer()
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
@@ -139,7 +136,7 @@ fun StrumPanel(
     val faded = state.phase == StrumPhase.HEARING
     val tuneLabel = stringResource(R.string.tuner_strum_tune_string)
     val stopLabel = stringResource(R.string.tuner_string_stop_tone)
-    val pressShape = pickerButtonShape(tokens.style, MaterialTheme.shapes.medium)
+    val pressShape = MaterialTheme.shapes.medium
     Box(
         modifier
             .aspectRatio(PANEL_ASPECT_RATIO)
@@ -183,7 +180,6 @@ fun StrumPanel(
                     colours = colours,
                     nameStyle = nameStyle,
                     numberStyle = numberStyle,
-                    numberScale = numberScale,
                     measurer = measurer,
                     onClick = click,
                     clickLabel = clickLabel,
@@ -236,7 +232,6 @@ private fun StrumCell(
     colours: PanelColours,
     nameStyle: TextStyle,
     numberStyle: TextStyle,
-    numberScale: Float,
     measurer: TextMeasurer,
     onClick: (() -> Unit)?,
     clickLabel: String,
@@ -278,7 +273,7 @@ private fun StrumCell(
             } else {
                 measurer.fitted(
                     AnnotatedString(label),
-                    numberStyle.copy(color = labelColour, fontSize = (LABEL_UNITS * u * numberScale).toSpNoScale(this)),
+                    numberStyle.copy(color = labelColour, fontSize = (LABEL_UNITS * u).toSpNoScale(this)),
                     maxTextWidth,
                 )
             }
@@ -550,9 +545,6 @@ private const val NOT_HEARD_TRACK_ALPHA = 0.45f
 private const val UNSURE_ALPHA = 0.7f
 private const val FADED_ALPHA = 0.35f
 private const val MARKER_MILLIS = 250
-
-/** Wide number faces (Michroma, Orbitron) are set smaller, as on the meter. */
-private const val WIDE_FACE_SCALE = 0.82f
 
 /** The calm field under the panel, as under the meter: a soft oval wash of the background. */
 private const val FIELD_ALPHA = 0.75f

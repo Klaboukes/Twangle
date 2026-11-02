@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Нестрого: до 5 центов</string>
     <string name="settings_in_tune_precision_precise">Строго: до 2 центов</string>
 
-    <string name="settings_style_title">Стиль</string>
     <string name="settings_theme_title">Светлая или тёмная тема</string>
     <string name="settings_theme_system">Как в системе</string>
     <string name="settings_theme_light">Светлая</string>

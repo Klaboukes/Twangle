@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.feature.tuner.tour
 
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.max
 import kotlin.math.min
 
@@ -60,7 +59,6 @@ object TourMeasures {
     const val HOLE_SOFT = 14f
 
     /** Futuristic's spotlight corners are cut, by at most this much. */
-    const val NEON_CUT = 12f
 
     /** The pointer: this wide at the balloon, this tall, its tip this far from the lit element itself. */
     const val POINTER_WIDTH = 14f
@@ -318,24 +316,13 @@ fun lerp(from: Spotlight, to: Spotlight, fraction: Float): Spotlight {
 }
 
 /**
- * The corner, in dp, that the spotlight copies from a part in [style] (before its 8 dp pad): the
- * mock-up's button, string-button and card radii (Space Age's buttons are capsules, so the hole's
- * half-height limit decides theirs).
+ * The corner, in dp, that the spotlight copies from a part (before its 8 dp pad): the mock-up's
+ * button, string-button and card radii (1.1's Contemporary).
  */
-fun tourCornerDp(style: VisualStyle, corner: TourCorner): Float {
-    val (button, string, card) = when (style) {
-        VisualStyle.ANCIENT -> Triple(20f, 20f, 14f)
-        VisualStyle.CLASSIC -> Triple(4f, 3f, 4f)
-        VisualStyle.RETRO -> Triple(22f, 14f, 18f)
-        VisualStyle.CONTEMPORARY -> Triple(20f, 23f, 12f)
-        VisualStyle.FUTURISTIC -> Triple(10f, 10f, 8f)
-        VisualStyle.SPACE_AGE -> Triple(999f, 22f, 20f)
-    }
-    return when (corner) {
-        TourCorner.BUTTON -> button
-        TourCorner.STRING -> string
-        TourCorner.CARD -> card
-    }
+fun tourCornerDp(corner: TourCorner): Float = when (corner) {
+    TourCorner.BUTTON -> 20f
+    TourCorner.STRING -> 23f
+    TourCorner.CARD -> 12f
 }
 
 /** The mock-up's easing for the spotlight's glide (ease in-out, cubic). */

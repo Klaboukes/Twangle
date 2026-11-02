@@ -1,10 +1,4 @@
 <resources>
-    <string name="style_ancient">Стародавній</string>
-    <string name="style_classic">Класичний</string>
-    <string name="style_retro">Ретро</string>
-    <string name="style_contemporary">Сучасний</string>
-    <string name="style_futuristic">Футуристичний</string>
-    <string name="style_space_age">Космічна ера</string>
     <string name="spoken_sharp">%1$s дієз</string>
     <string name="spoken_flat">%1$s бемоль</string>
     <string name="meter_cents_label">ЦЕНТИ</string>

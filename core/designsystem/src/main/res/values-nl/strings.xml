@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">Oudheid</string>
-    <string name="style_classic">Klassiek</string>
-    <string name="style_retro">Retro</string>
-    <string name="style_contemporary">Hedendaags</string>
-    <string name="style_futuristic">Futuristisch</string>
-    <string name="style_space_age">Ruimtetijdperk</string>
-
     <!-- Alleen voor Do Re Mi: letternamen zegt TalkBack als cis, des, es (zie bools.xml). -->
     <string name="spoken_sharp">%1$s kruis</string>
     <string name="spoken_flat">%1$s mol</string>

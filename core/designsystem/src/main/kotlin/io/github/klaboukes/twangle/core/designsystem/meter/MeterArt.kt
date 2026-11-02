@@ -45,10 +45,9 @@ import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.MusicSignsFont
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.cos
@@ -92,13 +91,13 @@ internal data class MeterRoles(
     /** The style's "in tune" colour. */
     val inTune: Color,
     val dark: Boolean,
-    /** The style's face for numbers ([numberFontFor]). */
+    /** The face for numbers ([NumberFont]). */
     val numbers: FontFamily,
-    /** How big the numbers are set: smaller for wide faces. */
-    val numberScale: Float,
+    /** How big the numbers are set against the looks' own size (1 for the plain sans). */
+    val numberScale: Float = 1f,
     /** How strong the in-tune moment's glow is ([tuneGlowAlpha], [tuneGlowSize]). */
     val effect: InTuneEffect = InTuneEffect.DEFAULT,
-    /** The style's own needle, hub, arc and tick caps ([meterFinishFor]). */
+    /** The needle, hub, arc and tick caps: since Phase 67 always the plain one (1.1's Contemporary). */
     val finish: MeterFinish = MeterFinish.PLAIN,
     /** The app's language, whose digits the numbers are written in ([localDigits]). */
     val locale: Locale = Locale.ROOT,
@@ -170,10 +169,9 @@ internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles
         accent = scheme.primary,
         inTune = tokens.inTune,
         dark = tokens.dark,
-        numbers = numberFontFor(tokens.style),
-        numberScale = numberScaleFor(tokens.style),
+        numbers = NumberFont,
         effect = effect,
-        finish = meterFinishFor(tokens.style),
+        finish = MeterFinish.PLAIN,
         locale = appLocale(),
         calmField = LocalMeterField.current,
     )
@@ -186,14 +184,6 @@ internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles
  * there as a darker plate inside the card.
  */
 val LocalMeterField = staticCompositionLocalOf { true }
-
-/** Wide number faces (Michroma, Orbitron) are set at 82 % so "50" fits like the others. */
-fun numberScaleFor(style: VisualStyle): Float = when (style) {
-    VisualStyle.SPACE_AGE, VisualStyle.FUTURISTIC -> WIDE_NUMBER_SCALE
-    else -> 1f
-}
-
-private const val WIDE_NUMBER_SCALE = 0.82f
 
 /** The meter's unit: 1/340 of the box's width. */
 internal fun meterUnit(width: Float): Float = width / METER_UNITS_WIDE

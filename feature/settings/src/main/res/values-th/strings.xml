@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">ยืดหยุ่น: ภายใน 5 เซนต์</string>
     <string name="settings_in_tune_precision_precise">แม่นยำ: ภายใน 2 เซนต์</string>
 
-    <string name="settings_style_title">สไตล์</string>
     <string name="settings_theme_title">สว่างหรือมืด</string>
     <string name="settings_theme_system">ตามค่าเริ่มต้นของระบบ</string>
     <string name="settings_theme_light">สว่าง</string>

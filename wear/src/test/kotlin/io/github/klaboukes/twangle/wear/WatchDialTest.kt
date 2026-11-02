@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.wear
 
 import io.github.klaboukes.twangle.core.designsystem.paletteFor
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -31,8 +30,8 @@ class WatchDialTest {
     }
 
     @Test
-    fun `the watch's colours are the phone's default style, dark`() {
-        val phone = paletteFor(VisualStyle.DEFAULT, dark = true)
+    fun `the watch's colours are the phone's Ink, dark`() {
+        val phone = paletteFor(dark = true)
         assertEquals(phone.ink, WatchColors.ink)
         assertEquals(phone.muted, WatchColors.muted)
         assertEquals(phone.track, WatchColors.track)

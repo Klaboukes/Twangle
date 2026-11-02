@@ -73,20 +73,16 @@ import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonGlow
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.stringChipFill
-import io.github.klaboukes.twangle.core.designsystem.stringChipShading
-import io.github.klaboukes.twangle.core.designsystem.stringChipShape
-import io.github.klaboukes.twangle.core.designsystem.stringChipSize
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.designsystem.StringChipShape
+import io.github.klaboukes.twangle.core.designsystem.StringChipSize
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunedStrings
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -155,12 +151,11 @@ fun StringSelector(
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
     val spokenOctaveCourse = stringResource(R.string.tuner_spoken_octave_course)
-    val style = MaterialTheme.styleTokens.style
     BoxWithConstraints(if (small) modifier else modifier.fillMaxWidth()) {
         // 4 to 8 strings: full-size buttons while they fit, else equal shares of the row, shrunk.
         val width = if (constraints.hasBoundedWidth) maxWidth else Dp.Infinity
-        val shortGap = shortStringGapFor(style, width, tuning, small)
-        val fit = stringRowFitFor(style, width, tuning.strings.size, small, shortGap)
+        val shortGap = shortStringGapFor(width, tuning, small)
+        val fit = stringRowFitFor(width, tuning.strings.size, small, shortGap)
         // Low to high, left to right, in every language: like a keyboard and the meter, not mirrored
         // in right-to-left languages (Material's rule for graphs and gauges).
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -210,7 +205,6 @@ fun StringSelector(
                         tuned = ticked,
                         sounding = sounding,
                         animationsOff = animationsOff,
-                        index = index,
                         fit = fit,
                         small = small,
                         modifier = when {
@@ -227,10 +221,10 @@ fun StringSelector(
 }
 
 /** How far in from each end of a full-size row [width] wide of [tuning]'s string buttons the faces are, in dp ([stringFaceInset]). */
-internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, tuning: Tuning): Float {
-    val gap = shortStringGapFor(style, width, tuning, small = false)
+internal fun stringFaceInsetFor(width: Dp, tuning: Tuning): Float {
+    val gap = shortStringGapFor(width, tuning, small = false)
     val count = tuning.strings.size
-    return stringFaceInset(width.value, count, stringChipSize(style).width.value, stringRowFitFor(style, width, count, small = false, gap), gap.value)
+    return stringFaceInset(width.value, count, StringChipSize.width.value, stringRowFitFor(width, count, small = false, gap), gap.value)
 }
 
 /**
@@ -238,10 +232,10 @@ internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, tuning: Tuning): 
  * [width] wide: [SHORT_STRING_GAP] (the [small] chips' [SMALL_SHORT_STRING_GAP]) while the buttons
  * still fit at full size with it, else none, as squeezed buttons take equal shares.
  */
-internal fun shortStringGapFor(style: VisualStyle, width: Dp, tuning: Tuning, small: Boolean): Dp {
+internal fun shortStringGapFor(width: Dp, tuning: Tuning, small: Boolean): Dp {
     if (!tuning.hasShortString) return 0.dp
     val gap = if (small) SMALL_SHORT_STRING_GAP else SHORT_STRING_GAP
-    return if (stringRowFitFor(style, width, tuning.strings.size, small, gap).squeezed) 0.dp else gap
+    return if (stringRowFitFor(width, tuning.strings.size, small, gap).squeezed) 0.dp else gap
 }
 
 /** Whether string [index] is the last of a run of short strings with another string after it, so the gap follows it. */
@@ -249,20 +243,20 @@ private fun endsShortStrings(tuning: Tuning, index: Int): Boolean =
     index in tuning.shortStrings && index + 1 < tuning.stringCount && index + 1 !in tuning.shortStrings
 
 /**
- * How [count] string buttons in [style] fit a row [width] wide (the [small] chips or the full-size
+ * How [count] string buttons fit a row [width] wide (the [small] chips or the full-size
  * buttons), [extraGap] of it taken by the short strings' gap ([shortStringGapFor]).
  */
-internal fun stringRowFitFor(style: VisualStyle, width: Dp, count: Int, small: Boolean, extraGap: Dp = 0.dp): StringRowFit {
+internal fun stringRowFitFor(width: Dp, count: Int, small: Boolean, extraGap: Dp = 0.dp): StringRowFit {
     val available = if (width == Dp.Infinity) Float.MAX_VALUE else width.value - extraGap.value
     return if (small) {
-        stringRowFit(available, count, smallChipSize(style).width.value, SMALL_RING_GAP.value, minSlotDp = 0f, spacingDp = SMALL_CHIP_SPACING.value)
+        stringRowFit(available, count, SMALL_CHIP.width.value, SMALL_RING_GAP.value, minSlotDp = 0f, spacingDp = SMALL_CHIP_SPACING.value)
     } else {
-        stringRowFit(available, count, stringChipSize(style).width.value, RING_GAP.value, minSlotDp = MIN_TOUCH.value)
+        stringRowFit(available, count, StringChipSize.width.value, RING_GAP.value, minSlotDp = MIN_TOUCH.value)
     }
 }
 
-/** The compact layout's chip in [style]: the style's button shrunk into the small square, lock ring included. */
-private fun smallChipSize(style: VisualStyle): DpSize = stringChipSize(style).fitInside(SMALL_CHIP_SIZE - SMALL_RING_GAP * 2)
+/** The compact layout's chip: the button shrunk into the small square, lock ring included. */
+private val SMALL_CHIP: DpSize get() = StringChipSize.fitInside(SMALL_CHIP_SIZE - SMALL_RING_GAP * 2)
 
 @Composable
 private fun StringChip(
@@ -282,7 +276,6 @@ private fun StringChip(
     tuned: Boolean,
     sounding: Boolean,
     animationsOff: Boolean,
-    index: Int,
     fit: StringRowFit,
     small: Boolean,
     modifier: Modifier = Modifier,
@@ -300,16 +293,11 @@ private fun StringChip(
         label = "chipText",
     )
     val ring by animateColorAsState(if (locked) colors.onSurface else Color.Transparent, label = "lockRing")
-    val style = MaterialTheme.styleTokens.style
-    // The style's own button (pebble, ivory key, capsule...), with room round it for the lock ring.
-    val shape = stringChipShape(style, index)
+    // A round button, with room round it for the lock ring.
+    val shape = StringChipShape
     val ringGap = fit.ringGapDp.dp
-    val natural = if (small) smallChipSize(style) else stringChipSize(style)
+    val natural = if (small) SMALL_CHIP else StringChipSize
     val button = DpSize(natural.width * fit.buttonScale, natural.height * fit.buttonScale)
-    // Futuristic's tiles are neon outlines on a solid tint, then a soft glow round the picked one.
-    val neon = style == VisualStyle.FUTURISTIC
-    val keyLabel = style == VisualStyle.CLASSIC && !small
-    val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
     // The press effect: the whole button sinks, and the light lies over its fill, under its name.
     val press = remember { MutableInteractionSource() }
     // A string ticked off as tuned grows its check in once, calmly; one already ticked shows it at once.
@@ -328,7 +316,6 @@ private fun StringChip(
                 },
             )
             .size(button.width + ringGap * 2, button.height + ringGap * 2)
-            .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
             // Outside the clip, so the rings reach past the button without taking room.
             .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
             // Over the button and outside its clip, so the row doesn't move.
@@ -367,21 +354,18 @@ private fun StringChip(
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
             .border(2.dp, ring, shape)
             .padding(ringGap)
-            .background(stringChipFill(colors, neon), shape)
+            .background(stringChipFill(colors), shape)
             .background(background, shape)
-            // Classic's keys and Retro's push buttons get their shading over the fill.
-            .stringChipShading(style, shape, colors.onSurface)
-            // An edge 3:1 against the background in every style, as the round buttons' (Phase 65).
-            .border(1.dp, if (highlighted) accent else controlOutline(colors, neon), shape)
-            .indication(press, PressIndication(shape, face = true))
+            // An edge 3:1 against the background, as the round buttons' (Phase 65).
+            .border(1.dp, if (highlighted) accent else controlOutline(colors), shape)
+            .indication(press, PressIndication(shape))
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
                 selected = highlighted
                 if (state != null) stateDescription = state
                 if (small) hideFromAccessibility()
             },
-        // Classic's ivory keys carry their name low, above the shaded front edge.
-        contentAlignment = if (keyLabel) Alignment.BottomCenter else Alignment.Center,
+        contentAlignment = Alignment.Center,
     ) {
         // The button has a fixed size, so its label grows with the system font only up to a point.
         val density = LocalDensity.current
@@ -417,12 +401,11 @@ private fun StringChip(
                 style = textStyle,
                 color = content,
                 maxLines = 1,
-                // The name keeps its size where it fits; in a squeezed button, or in a wide face
-                // (Space Age's "Mi" at 2× text), it shrinks as far as it must to fit. Never wrapped, so the
+                // The name keeps its size where it fits; in a squeezed button (or at 2× text) it shrinks
+                // as far as it must to fit. Never wrapped, so the
                 // auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
                 softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL, maxFontSize = textStyle.fontSize, stepSize = 0.5.sp),
-                modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING * fit.buttonScale) else Modifier,
             )
             // A 12-string's octave pair: a small "8" in the top left corner, as an octave is marked in
             // music (8va), across from a tick's badge; TalkBack has it in the button's name.
@@ -533,11 +516,6 @@ private val MIN_TOUCH = 48.dp
 /** A string's name shrinks to fit its button, but no further than this. */
 private val MIN_LABEL = 8.sp
 
-/** How far above a Classic key's bottom edge its name sits. */
-private val KEY_LABEL_PADDING = 6.dp
-
-/** Futuristic's tiles: an outline in the accent at 55 %, and a glow in it at 35 % round the picked one (the mock-up's neon). */
-private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
 
 /** How long a string's tick takes to grow in when it is ticked off as tuned. */

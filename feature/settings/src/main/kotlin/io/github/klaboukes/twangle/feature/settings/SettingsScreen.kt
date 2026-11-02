@@ -68,7 +68,6 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
@@ -76,7 +75,6 @@ import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
 import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
-import io.github.klaboukes.twangle.feature.settings.components.StylePicker
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
@@ -113,7 +111,6 @@ fun SettingsScreen(
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
         onInTunePrecisionChange = viewModel::setInTunePrecision,
-        onStyleChange = viewModel::setStyle,
         onThemeChange = viewModel::setTheme,
         onDynamicColorChange = viewModel::setDynamicColor,
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
@@ -143,8 +140,7 @@ fun SettingsScreen(
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
- * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
- * (Android 12+); the meter looks always show, and the wave looks only while the wave is the
+ * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+); the meter looks always show, and the wave looks only while the wave is the
  * display. The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's.
  */
@@ -156,7 +152,6 @@ fun SettingsContent(
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
-    onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
@@ -189,7 +184,6 @@ fun SettingsContent(
                 onA4Change = onA4Change,
                 onNotationChange = onNotationChange,
                 onInTunePrecisionChange = onInTunePrecisionChange,
-                onStyleChange = onStyleChange,
                 onThemeChange = onThemeChange,
                 onDynamicColorChange = onDynamicColorChange,
                 onKeepScreenOnChange = onKeepScreenOnChange,
@@ -210,7 +204,7 @@ fun SettingsContent(
 
 /**
  * A page of the settings: a top bar with [title] and, with [onBack], a back arrow, then [content] in a
- * scrolling column. The page is see-through, so the style's background shows behind it.
+ * scrolling column. The page is see-through, so the app's background shows behind it.
  */
 @Composable
 internal fun SettingsPage(
@@ -254,9 +248,9 @@ private fun SettingsScaffold(
             ) {
                 TopAppBar(
                     title = {
-                        // Set smaller where it doesn't fit the bar: Bengali's About title in Futuristic, Orbitron's
-                        // "Twangle" beside Bengali letters, made a line taller than the bar at 2× text (the
-                        // overnight run of 2026-10-30). It still wraps where it is too wide, as French "À propos
+                        // Set smaller where it doesn't fit the bar: in 1.1 Bengali's About title in Futuristic,
+                        // Orbitron's "Twangle" beside Bengali letters, made a line taller than the bar at 2× text
+                        // (the overnight run of 2026-10-30). It still wraps where it is too wide, as French "À propos
                         // de Twangle" does at 2× text, in two lines that fit; one line never wrapped ran off the bar.
                         val style = LocalTextStyle.current
                         Text(title, autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, TITLE_SMALLEST) })
@@ -322,8 +316,8 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
 /**
  * Every setting, in five headed groups: Pitch and notes (which note it is and what counts as in
  * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
- * style with its wallpaper colours, then light or dark), Tuner screen (the meter's look and in-tune effect,
- * what shows below the note and the layout on its side), While tuning (what the tuner does while
+ * wallpaper colours, then light or dark; the style picker went with 1.1's six styles in Phase 67), Tuner
+ * screen (the meter's look and in-tune effect, what shows below the note and the layout on its side), While tuning (what the tuner does while
  * it listens) and App (the app's language, the tour and one row that opens the About page: version,
  * promise, privacy and licences, so those long texts don't crowd the settings). A line divides two
  * subjects; a setting that belongs to the one above stays with it. Rows, including the card grids, keep
@@ -341,7 +335,6 @@ private fun SettingsGroups(
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
-    onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
@@ -395,22 +388,16 @@ private fun SettingsGroups(
         }
         SettingsGroup(title = stringResource(R.string.settings_group_look)) {
             Rows {
-                StylePicker(
-                    title = stringResource(R.string.settings_style_title),
-                    selected = settings.style,
-                    onSelect = onStyleChange,
-                )
-                // The wallpaper colours belong to the Contemporary style (they show only with it), so they stay
-                // with the style, as the in-tune effect with the meter's look and the wave's look with the display.
-                if (dynamicColorAvailable && settings.style == VisualStyle.CONTEMPORARY) {
+                // Android 12 and later only: older phones have no wallpaper colours to take.
+                if (dynamicColorAvailable) {
                     SwitchSetting(
                         title = stringResource(R.string.settings_dynamic_color_title),
                         summary = stringResource(R.string.settings_dynamic_color_summary),
                         checked = settings.dynamicColor,
                         onCheckedChange = onDynamicColorChange,
                     )
+                    HorizontalDivider()
                 }
-                HorizontalDivider()
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_theme_title),
                     options = ThemeMode.entries,
@@ -635,7 +622,6 @@ private fun SettingsContentPreview() {
             onA4Change = {},
             onNotationChange = {},
             onInTunePrecisionChange = {},
-            onStyleChange = {},
             onThemeChange = {},
             onDynamicColorChange = {},
             onKeepScreenOnChange = {},

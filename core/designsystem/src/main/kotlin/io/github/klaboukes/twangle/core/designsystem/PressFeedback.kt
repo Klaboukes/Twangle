@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.core.designsystem
 
-import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.IndicationNodeFactory
@@ -8,28 +7,23 @@ import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
@@ -41,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.exp
@@ -49,15 +42,15 @@ import kotlin.math.exp
 /*
  * Twangle's press effect (Phase 27, docs/design/metronome-listen-preview.html, "Press" and "Tap
  * tempo's press"), one look for every button in place of Material's ripple: the button lights up on
- * touch-down in its style's own finish, stays lit while held, sinks a little and fades after release.
+ * touch-down, stays lit while held, sinks a little and fades after release.
  */
 
 /** What the pressed button's light is drawn on, which picks its colour. */
 enum class PressTone {
-    /** A see-through button on the background: the style's own light (accent, smudge, pressed key, neon). */
+    /** A see-through button on the background: the accent at 20 %. */
     PLAIN,
 
-    /** A button filled with the accent (Start / Stop): the on-accent colour at 20 % (Futuristic, outlined: as [PLAIN]). */
+    /** A button filled with the accent (Start / Stop): the on-accent colour at 20 %. */
     ACCENT_FILL,
 
     /** A button inside an accent-filled balloon (½× 1× 2×, Not now): the on-accent colour at 20 %. */
@@ -78,14 +71,11 @@ enum class PressTone {
  * - **Level:** 1 from the frame of touch-down ([PressInteraction.Press]), held while pressed, then
  *   fading as (1 − t / 280 ms)³. A new touch during the fade lights it fully again.
  * - **Light** ([tone] [PressTone.PLAIN]), clipped to [lightShape] (default [shape]) inset [lightInset]
- *   from the top and bottom (a pill in a text button's 48 dp touch area), at "alpha × level":
- *   Contemporary and Space Age the accent at 0.20; Ancient a soft smudge (a radial gradient of the ink
- *   mixed into the accent) at 0.24; Classic the key pressed in (a shadow from the top over the accent
- *   at 12 %); Retro the push button pressed in (a shadow 3 dp down over the accent at 10 %); Futuristic
- *   the neon brightened (the accent at 14 % inside, the outline lit to the full accent) with a glow
- *   round the button (the accent at up to 70 %, 8 dp blur). The other tones are flat colours.
+ *   from the top and bottom (a pill in a text button's 48 dp touch area): the accent at 0.20 × level
+ *   (1.1's six styles each had their own light; 2.0 keeps Contemporary's). The other tones are flat
+ *   colours too.
  * - **Sink:** scaled to 1 − [sink] × s, s following the level with 35 ms of smoothing; [sink] NaN is
- *   the style's (0.03, Ancient and Retro 0.02, Classic 0.015).
+ *   [PRESS_SINK].
  * - **[crisp]** (Tap tempo, played in time): full light from touch-down for a fixed 70 ms whatever the
  *   finger does, then a 40 ms linear fade, no sink; each touch-down starts a fresh flash.
  * - **Remove animations** (Android's setting): no sink and no fade; lit while held, at least 100 ms
@@ -120,14 +110,9 @@ fun Modifier.pressSink(interactionSource: InteractionSource, sink: Float = Float
 
 /**
  * [pressFeedback]'s light as an [androidx.compose.foundation.Indication], for a `clickable`,
- * `selectable` or `toggleable`: lit on touch-down, held while pressed, faded over 280 ms, in the
- * style's own finish, inside [shape] (inset [lightInset] from the top and bottom), with no sink (add
+ * `selectable` or `toggleable`: lit on touch-down, held while pressed, faded over 280 ms, inside [shape] (inset [lightInset] from the top and bottom), with no sink (add
  * [pressSink] before the face for that). The light lies over what was drawn before the clickable (a
  * fill, a border) and under what comes after (the text), or over everything with [above].
- *
- * - **[face]** true: a button's face, as [pressFeedback] (Futuristic lights its outline and glows round
- *   it). False, the default: a row, a list or menu item, a navigation item; only the tint, so a long
- *   row never gets a neon frame or a glow over its neighbours.
  *
  * [TwangleTheme] gives every `clickable` without an indication of its own [PressIndication.Row] and
  * turns Material's ripple off.
@@ -135,16 +120,15 @@ fun Modifier.pressSink(interactionSource: InteractionSource, sink: Float = Float
 data class PressIndication(
     val shape: Shape = RectangleShape,
     val tone: PressTone = PressTone.PLAIN,
-    val face: Boolean = false,
     val above: Boolean = false,
     val lightInset: Dp = 0.dp,
 ) : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode = PressFeedbackNode(
-        PressFeedbackElement(interactionSource, shape, tone = tone, lightInset = lightInset, sink = 0f, above = above, face = face),
+        PressFeedbackElement(interactionSource, shape, tone = tone, lightInset = lightInset, sink = 0f, above = above),
     )
 
     companion object {
-        /** The theme's light for rows and list items: the whole bounds (clipped by the row's own clip), tint only. */
+        /** The theme's light for rows and list items: the whole bounds (clipped by the row's own clip). */
         val Row = PressIndication()
     }
 }
@@ -160,12 +144,8 @@ fun MutableInteractionSource.pressFlash() {
 /** The [pressFlash] signal. */
 private object PressFlash : Interaction
 
-/** The style's sink: how far a pressed button shrinks. */
-internal fun sinkFor(style: VisualStyle): Float = when (style) {
-    VisualStyle.ANCIENT, VisualStyle.RETRO -> 0.02f
-    VisualStyle.CLASSIC -> 0.015f
-    VisualStyle.CONTEMPORARY, VisualStyle.FUTURISTIC, VisualStyle.SPACE_AGE -> 0.03f
-}
+/** How far a pressed button shrinks: 3 %. */
+internal const val PRESS_SINK = 0.03f
 
 /**
  * The press light's level [nanos] after touch-down (and [sinceRelease] after the finger lifted, or
@@ -206,8 +186,6 @@ private data class PressFeedbackElement(
     val lightInset: Dp = 0.dp,
     val sink: Float = Float.NaN,
     val above: Boolean = false,
-    /** A button's face: Futuristic's lit outline and glow (see [PressIndication.face]). */
-    val face: Boolean = true,
     /** False: only the sink ([pressSink]). */
     val light: Boolean = true,
 ) : ModifierNodeElement<PressFeedbackNode>() {
@@ -248,9 +226,6 @@ private class PressFeedbackNode(private var spec: PressFeedbackElement) :
     private val shapePath = Path()
     private val outlinePath = Path()
     private val lightPath = Path()
-    private val glowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        style = android.graphics.Paint.Style.STROKE
-    }
 
     override fun onAttach() = collect()
 
@@ -336,10 +311,9 @@ private class PressFeedbackNode(private var spec: PressFeedbackElement) :
     }
 
     override fun ContentDrawScope.draw() {
-        val tokens = currentValueOf(LocalStyleTokens)
-        val style = tokens.style
+        val scheme = currentValueOf(LocalStyleTokens).scheme
         val l = level.floatValue
-        val sinkAmount = if (spec.sink.isNaN()) sinkFor(style) else spec.sink
+        val sinkAmount = if (spec.sink.isNaN()) PRESS_SINK else spec.sink
         val s = 1f - sinkAmount * sunk.floatValue
         if (!spec.light) {
             if (s == 1f) drawContent() else scale(s) { this@draw.drawContent() }
@@ -347,14 +321,10 @@ private class PressFeedbackNode(private var spec: PressFeedbackElement) :
         }
         makePaths()
         scale(s) {
-            val neon = style == VisualStyle.FUTURISTIC
-            if (l > 0f && neon && spec.face && (spec.tone == PressTone.PLAIN || spec.tone == PressTone.ACCENT_FILL)) {
-                drawNeonGlow(tokens.scheme.primary, l)
-            }
             if (spec.fill.alpha > 0f) drawPath(shapePath, spec.fill)
             spec.outline?.let { drawPath(outlinePath, it.brush, style = Stroke(it.width.toPx())) }
             if (spec.above) this@draw.drawContent()
-            if (l > 0f) clipPath(lightPath) { drawLight(tokens, l) }
+            if (l > 0f) clipPath(lightPath) { drawLight(scheme, l) }
             if (!spec.above) this@draw.drawContent()
         }
     }
@@ -377,98 +347,19 @@ private class PressFeedbackNode(private var spec: PressFeedbackElement) :
         lightPath.addOutline((spec.lightShape ?: spec.shape).createOutline(lightSize, layoutDirection, this).shifted(0f, inset))
     }
 
-    /** The light inside the light shape, at level [l]. */
-    private fun DrawScope.drawLight(tokens: StyleTokens, l: Float) {
-        val scheme = tokens.scheme
-        val accent = scheme.primary
-        val inset = spec.lightInset.toPx()
-        val top = inset
-        val height = size.height - 2f * inset
-        when (spec.tone) {
-            PressTone.IN_ACCENT -> drawRect(scheme.onPrimary, alpha = FLAT_ALPHA * l)
-            PressTone.IN_ACCENT_FILLED -> drawRect(accent, alpha = FLAT_ALPHA * l)
-            PressTone.ACCENT_FILL -> if (tokens.style == VisualStyle.FUTURISTIC) {
-                drawNeonLight(accent, l)
-            } else {
-                drawRect(scheme.onPrimary, alpha = FLAT_ALPHA * l)
-            }
-            PressTone.PLAIN -> when (tokens.style) {
-                VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> drawRect(accent, alpha = FLAT_ALPHA * l)
-                VisualStyle.ANCIENT -> {
-                    // A finger on stone: centred 56 % across and 60 % down, 75 % × 85 % of the button.
-                    val smudge = lerp(accent, scheme.onBackground, SMUDGE_INK)
-                    val rx = size.width * 0.75f
-                    val ry = height * 0.85f
-                    val centre = Offset(size.width * 0.56f, top + height * 0.60f)
-                    scale(1f, ry / rx, pivot = centre) {
-                        drawCircle(
-                            Brush.radialGradient(0f to smudge, SMUDGE_END to smudge.copy(alpha = 0f), center = centre, radius = rx),
-                            radius = rx,
-                            center = centre,
-                            alpha = SMUDGE_ALPHA * l,
-                        )
-                    }
-                }
-                VisualStyle.CLASSIC -> {
-                    // The key pressed in: a shadow from the top edge over the accent at 12 %.
-                    drawRect(accent, alpha = CLASSIC_TINT * l)
-                    drawRect(
-                        Brush.verticalGradient(0f to Color.Black.copy(alpha = CLASSIC_SHADOW), 1f to Color.Transparent, startY = top, endY = top + height / 2f),
-                        topLeft = Offset(0f, top),
-                        size = Size(size.width, height / 2f),
-                        alpha = l,
-                    )
-                }
-                VisualStyle.RETRO -> {
-                    // The push button pressed in: a shadow falling 3 dp down from its top (6 dp soft) over the accent at 10 %.
-                    drawRect(accent, alpha = RETRO_TINT * l)
-                    val depth = (RETRO_SHADOW_DOWN + RETRO_SHADOW_BLUR).toPx()
-                    drawRect(
-                        Brush.verticalGradient(0f to Color.Black.copy(alpha = RETRO_SHADOW), 1f to Color.Transparent, startY = top, endY = top + depth),
-                        topLeft = Offset(0f, top),
-                        size = Size(size.width, depth),
-                        alpha = l,
-                    )
-                }
-                VisualStyle.FUTURISTIC -> drawNeonLight(accent, l)
-            }
+    /** The light inside the light shape, at level [l]: a flat colour, by [PressFeedbackElement.tone]. */
+    private fun DrawScope.drawLight(scheme: ColorScheme, l: Float) {
+        val color = when (spec.tone) {
+            PressTone.IN_ACCENT, PressTone.ACCENT_FILL -> scheme.onPrimary
+            PressTone.IN_ACCENT_FILLED, PressTone.PLAIN -> scheme.primary
         }
-    }
-
-    /** Futuristic: the accent at 14 % inside and, on a button's face, the outline lit to the full accent (a 1 dp inner line). */
-    private fun DrawScope.drawNeonLight(accent: Color, l: Float) {
-        drawRect(accent, alpha = NEON_TINT * l)
-        if (spec.face) drawPath(lightPath, accent, alpha = l, style = Stroke(2f * 1.dp.toPx()))
-    }
-
-    /** Futuristic: a glow round the button, the accent at up to 70 % × level, 8 dp blur (Android 9+ draws it in hardware). */
-    private fun DrawScope.drawNeonGlow(accent: Color, l: Float) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
-        glowPaint.color = accent.copy(alpha = l).toArgb()
-        glowPaint.strokeWidth = 1.dp.toPx()
-        glowPaint.setShadowLayer(NEON_GLOW_BLUR.toPx() * BLUR_SPREAD, 0f, 0f, accent.copy(alpha = NEON_GLOW_ALPHA * l).toArgb())
-        drawIntoCanvas { it.nativeCanvas.drawPath(shapePath.asAndroidPath(), glowPaint) }
+        drawRect(color, alpha = FLAT_ALPHA * l)
     }
 
     private companion object {
         const val FRAME_NANOS = 16_000_000L
         const val SINK_REST = 0.003f
         const val FLAT_ALPHA = 0.20f
-        const val SMUDGE_INK = 0.45f
-        const val SMUDGE_END = 0.78f
-        const val SMUDGE_ALPHA = 0.24f
-        const val CLASSIC_TINT = 0.12f
-        const val CLASSIC_SHADOW = 0.22f
-        const val RETRO_TINT = 0.10f
-        const val RETRO_SHADOW = 0.28f
-        val RETRO_SHADOW_DOWN = 3.dp
-        val RETRO_SHADOW_BLUR = 6.dp
-        const val NEON_TINT = 0.14f
-        const val NEON_GLOW_ALPHA = 0.7f
-        val NEON_GLOW_BLUR = 8.dp
-
-        /** A CSS blur radius is two Gaussian sigmas; Android's shadow radius is about 1.7 of those. */
-        const val BLUR_SPREAD = 0.87f
     }
 }
 

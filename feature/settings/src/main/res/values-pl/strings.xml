@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Swobodna: do 5 centów</string>
     <string name="settings_in_tune_precision_precise">Dokładna: do 2 centów</string>
 
-    <string name="settings_style_title">Styl</string>
     <string name="settings_theme_title">Jasny czy ciemny</string>
     <string name="settings_theme_system">Jak w systemie</string>
     <string name="settings_theme_light">Jasny</string>

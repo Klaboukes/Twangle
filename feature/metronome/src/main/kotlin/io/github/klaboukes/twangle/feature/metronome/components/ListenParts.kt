@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.annotation.DrawableRes
@@ -88,15 +86,13 @@ import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.PressTone
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
-import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.pacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoMarking
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.metronome.ListenPhase
 import io.github.klaboukes.twangle.feature.metronome.ListenUi
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -321,14 +317,13 @@ private fun listeningText(estimate: Int): String {
 @Composable
 private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit, onOpenSettings: () -> Unit, onStopListening: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
     when (line) {
         LineText.Nothing -> Unit
         is LineText.Listening -> {
             val listening = stringResource(R.string.metronome_listening)
             val bpmLabel = stringResource(R.string.metronome_bpm)
             val digits = if (line.estimate > 0) localDigits(line.estimate, appLocale()) else ""
-            val numbers = numberFontFor(style)
+            val numbers = NumberFont
             val words = buildAnnotatedString {
                 append(listening)
                 if (line.estimate > 0) {
@@ -462,8 +457,8 @@ private val TRAINER_GAP = 6.dp
 
 /**
  * The suggestion: a balloon on its own layer over the screen, pointing at the options button, where
- * Listen is ([anchor], in this layer's coordinates), the tour's balloon (the style's accent with on-accent text, no outline, a
- * soft lift; Futuristic an accent glow and cut corners). Inside: the style's mark and "Heard", the
+ * Listen is ([anchor], in this layer's coordinates), the tour's balloon (the accent with on-accent text, no outline, a
+ * soft lift). Inside: the navigation bar's mark and "Heard", the
  * tempo big in the number face with "BPM" and its marking, ½× 1× 2× (only those within 30–250), then
  * Not now and Use. It fades in and out; nothing changes until Use.
  */
@@ -534,8 +529,6 @@ fun ListenBalloon(
 private fun Balloon(listen: ListenUi, pointer: BalloonPointer, onUse: (TempoPick) -> Unit, onNotNow: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
-    val style = tokens.style
-    val neon = style == VisualStyle.FUTURISTIC
     val fill = scheme.primary
     val onFill = scheme.onPrimary
     val shape = MaterialTheme.shapes.medium
@@ -546,18 +539,18 @@ private fun Balloon(listen: ListenUi, pointer: BalloonPointer, onUse: (TempoPick
     var pick by rememberSaveable(listen.found, listen.half, listen.double) { mutableStateOf(TempoPick.AS_HEARD) }
     val tempo = listen.tempoFor(pick).takeIf { it > 0 } ?: listen.found
     val muted = onFill.copy(alpha = MUTED_ON_ACCENT)
-    val numbers = numberFontFor(style)
+    val numbers = NumberFont
     val body = MaterialTheme.typography.bodyLarge
     Column(
         Modifier
             .testTag(MetronomeTestTags.BALLOON)
             .semantics { paneTitle = title }
-            .drawBehind { drawBalloon(shape, pointer, fill, neon, shadowAlpha, shadow, with(density) { POINTER_WIDTH.toPx() }, with(density) { POINTER_HEIGHT.toPx() }) }
+            .drawBehind { drawBalloon(shape, pointer, fill, shadowAlpha, shadow, with(density) { POINTER_WIDTH.toPx() }, with(density) { POINTER_HEIGHT.toPx() }) }
             .widthIn(max = BALLOON_MAX_WIDTH)
             .padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            NavMark(style, onFill, Modifier)
+            NavMark(onFill, Modifier)
             Text(
                 title,
                 style = body.copy(fontSize = 12.sp, lineHeight = 1.3.em, fontWeight = FontWeight.Medium, letterSpacing = 0.03.em),
@@ -566,7 +559,7 @@ private fun Balloon(listen: ListenUi, pointer: BalloonPointer, onUse: (TempoPick
         }
         val digits = localDigits(tempo, appLocale())
         val marking = markingName(TempoMarking.of(tempo))
-        val numberSize = with(density) { (BALLOON_NUMBER_UNITS * numberScaleFor(style)).dp.toSp() }
+        val numberSize = with(density) { BALLOON_NUMBER_UNITS.dp.toSp() }
         Row(
             Modifier
                 .padding(top = 2.dp)
@@ -614,9 +607,8 @@ private fun Balloon(listen: ListenUi, pointer: BalloonPointer, onUse: (TempoPick
 @Composable
 private fun PickChip(option: TempoPick, picked: Boolean, onPick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
     val source = remember { MutableInteractionSource() }
-    val shape = chipShape(style)
+    val shape = CHIP_SHAPE
     val spoken = stringResource(
         when (option) {
             TempoPick.HALF -> R.string.metronome_pick_half
@@ -649,7 +641,7 @@ private fun PickChip(option: TempoPick, picked: Boolean, onPick: () -> Unit) {
     ) {
         Text(
             label,
-            style = TextStyle(fontFamily = numberFontFor(style), fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFeatureSettings = LINING_FIGURES),
+            style = TextStyle(fontFamily = NumberFont, fontSize = 14.sp, fontWeight = FontWeight.Medium, fontFeatureSettings = LINING_FIGURES),
             color = if (picked) scheme.primary else scheme.onPrimary,
         )
     }
@@ -659,9 +651,7 @@ private fun PickChip(option: TempoPick, picked: Boolean, onPick: () -> Unit) {
 @Composable
 private fun BalloonButtons(onNotNow: () -> Unit, onUse: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape = useShape(style)
+    val shape = USE_SHAPE
     val text = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp, lineHeight = 1.2.em, fontWeight = FontWeight.Medium)
     val skipSource = remember { MutableInteractionSource() }
     val useSource = remember { MutableInteractionSource() }
@@ -687,9 +677,8 @@ private fun BalloonButtons(onNotNow: () -> Unit, onUse: () -> Unit, modifier: Mo
                 .pressFeedback(
                     useSource,
                     shape,
-                    fill = if (neon) scheme.onPrimary.copy(alpha = CHIP_FILL) else scheme.onPrimary,
-                    outline = if (neon) BorderStroke(1.5.dp, scheme.onPrimary) else null,
-                    tone = if (neon) PressTone.IN_ACCENT else PressTone.IN_ACCENT_FILLED,
+                    fill = scheme.onPrimary,
+                    tone = PressTone.IN_ACCENT_FILLED,
                 )
                 .clickable(interactionSource = useSource, indication = null, role = Role.Button) {
                     useSource.pressFlash()
@@ -697,24 +686,15 @@ private fun BalloonButtons(onNotNow: () -> Unit, onUse: () -> Unit, modifier: Mo
                 }
                 .padding(horizontal = 16.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center,
-        ) { Text(stringResource(R.string.metronome_use), style = text, color = if (neon) scheme.onPrimary else scheme.primary) }
+        ) { Text(stringResource(R.string.metronome_use), style = text, color = scheme.primary) }
     }
 }
 
-/** The ½× 1× 2× chips: the style's corners up to 16 dp (Futuristic cut). */
-private fun chipShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.CLASSIC -> RoundedCornerShape(4.dp)
-    VisualStyle.FUTURISTIC -> CutCornerShape(8.dp)
-    VisualStyle.ANCIENT, VisualStyle.RETRO, VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> RoundedCornerShape(16.dp)
-}
+/** The ½× 1× 2× chips: 16 dp corners. */
+private val CHIP_SHAPE: Shape = RoundedCornerShape(16.dp)
 
-/** Use's shape, as the tour's Next: the style's button shape with at most 20 dp corners. */
-private fun useShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.ANCIENT -> RoundedCornerShape(topStart = 22.dp, topEnd = 16.dp, bottomEnd = 24.dp, bottomStart = 14.dp)
-    VisualStyle.CLASSIC -> RoundedCornerShape(4.dp)
-    VisualStyle.FUTURISTIC -> CutCornerShape(10.dp)
-    VisualStyle.RETRO, VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> RoundedCornerShape(20.dp)
-}
+/** Use's shape, as the tour's Next: 20 dp corners. */
+private val USE_SHAPE: Shape = RoundedCornerShape(20.dp)
 
 /** Where the balloon stands from the options button. */
 private enum class BalloonSide { ABOVE, BELOW, LEFT_OF, RIGHT_OF }
@@ -725,7 +705,7 @@ private class BalloonPointer {
     var at by mutableFloatStateOf(0f)
 }
 
-/** The paints of the balloon's two-layer shadow (or Futuristic's glow); Android 9+ draws them in hardware. */
+/** The paints of the balloon's two-layer shadow; Android 9+ draws them in hardware. */
 private class BalloonShadow {
     val near = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
     val far = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
@@ -733,14 +713,12 @@ private class BalloonShadow {
 
 /**
  * The balloon's body in [shape] with its pointer on the side [pointer] says, filled with
- * [fill] over a soft shadow at [shadowAlpha] (Futuristic, [neon]: an accent glow and a small shadow),
- * as the tour's balloon.
+ * [fill] over a soft shadow at [shadowAlpha], as the tour's balloon.
  */
 private fun DrawScope.drawBalloon(
     shape: Shape,
     pointer: BalloonPointer,
     fill: Color,
-    neon: Boolean,
     shadowAlpha: Float,
     shadow: BalloonShadow,
     pointerWidth: Float,
@@ -778,13 +756,8 @@ private fun DrawScope.drawBalloon(
         val argb = fill.toArgb()
         val native = path.asAndroidPath()
         drawIntoCanvas { canvas ->
-            if (neon) {
-                shadow.far.apply { color = argb; setShadowLayer(10.dp.toPx() * SHADOW_SPREAD, 0f, 0f, fill.copy(alpha = NEON_GLOW_ALPHA).toArgb()) }
-                shadow.near.apply { color = argb; setShadowLayer(4.dp.toPx() * SHADOW_SPREAD, 0f, 2.dp.toPx(), Color.Black.copy(alpha = shadowAlpha).toArgb()) }
-            } else {
-                shadow.far.apply { color = argb; setShadowLayer(10.dp.toPx() * SHADOW_SPREAD, 0f, 6.dp.toPx(), Color.Black.copy(alpha = shadowAlpha).toArgb()) }
-                shadow.near.apply { color = argb; setShadowLayer(2.dp.toPx() * SHADOW_SPREAD, 0f, 1.dp.toPx(), Color.Black.copy(alpha = shadowAlpha * 0.8f).toArgb()) }
-            }
+            shadow.far.apply { color = argb; setShadowLayer(10.dp.toPx() * SHADOW_SPREAD, 0f, 6.dp.toPx(), Color.Black.copy(alpha = shadowAlpha).toArgb()) }
+            shadow.near.apply { color = argb; setShadowLayer(2.dp.toPx() * SHADOW_SPREAD, 0f, 1.dp.toPx(), Color.Black.copy(alpha = shadowAlpha * 0.8f).toArgb()) }
             canvas.nativeCanvas.drawPath(native, shadow.far)
             canvas.nativeCanvas.drawPath(native, shadow.near)
         }
@@ -812,5 +785,4 @@ private const val MUTED_ON_ACCENT = 0.78f
 private const val CHIP_FILL = 0.16f
 private const val LIGHT_SHADOW = 0.22f
 private const val DARK_SHADOW = 0.55f
-private const val NEON_GLOW_ALPHA = 0.4f
 private const val SHADOW_SPREAD = 0.87f

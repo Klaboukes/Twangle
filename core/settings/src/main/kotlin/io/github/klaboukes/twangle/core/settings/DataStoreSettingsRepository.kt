@@ -230,10 +230,6 @@ class DataStoreSettingsRepository internal constructor(
         save { it[THEME] = theme.name }
     }
 
-    override suspend fun setStyle(style: VisualStyle) {
-        save { it[STYLE] = style.name }
-    }
-
     override suspend fun setDynamicColor(enabled: Boolean) {
         save { it[DYNAMIC_COLOR] = enabled }
     }
@@ -428,7 +424,6 @@ class DataStoreSettingsRepository internal constructor(
             notationChoice = enumOrNull<Notation>(prefs[NOTATION]),
             inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
-            style = styleOrNull(prefs[STYLE]) ?: defaults.style,
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
@@ -496,7 +491,6 @@ class DataStoreSettingsRepository internal constructor(
         private val NOTATION = stringPreferencesKey("notation")
         private val IN_TUNE_PRECISION = stringPreferencesKey("in_tune_precision")
         private val THEME = stringPreferencesKey("theme")
-        private val STYLE = stringPreferencesKey("visual_style")
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
@@ -512,9 +506,6 @@ class DataStoreSettingsRepository internal constructor(
 
         /** Meter looks of older versions and the looks that took their places (Phase 60: Pointers for Spirit level, Loupe for Eclipse). */
         private val OLD_METER_LOOKS = mapOf("SPIRIT_LEVEL" to MeterLook.POINTERS, "ECLIPSE" to MeterLook.LOUPE)
-
-        /** The styles of versions before the six styles of October 2026, both merged into [VisualStyle.ANCIENT]. */
-        private val OLD_ANCIENT_STYLES = setOf("PREHISTORIC", "MIDDLE_AGES")
 
         /** The wave-view switch of versions before the display picker: read once, to carry it over. */
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
@@ -705,9 +696,9 @@ class DataStoreSettingsRepository internal constructor(
          * The saved tour flag; without one (before [decideTourOnce] has run on this install), any other
          * saved setting means an install from before the tour, which counts as having seen it. That
          * includes keys no longer read, such as `string_lock_tip_seen` (the string-lock tip the tour's
-         * strings step replaced) and `wave_breathes_in_tune` (the temporary "when in tune" choice; the
-         * wave now always holds still on the note): they stay in the file, so an install that only
-         * dismissed that tip still counts as used.
+         * strings step replaced), `wave_breathes_in_tune` (the temporary "when in tune" choice; the
+         * wave now always holds still on the note) and `visual_style` (1.1's six styles; 2.0 has one
+         * look): they stay in the file, so an install that only dismissed that tip still counts as used.
          */
         private fun tourSeen(prefs: Preferences): Boolean = prefs[TOUR_SEEN] ?: prefs.asMap().isNotEmpty()
 
@@ -730,10 +721,6 @@ class DataStoreSettingsRepository internal constructor(
 
         /** The saved meter look, with an old look read as the one that took its place ([OLD_METER_LOOKS]). */
         private fun meterLookOrNull(name: String?): MeterLook? = name?.let { OLD_METER_LOOKS[it] } ?: enumOrNull<MeterLook>(name)
-
-        /** The saved style, with the old Prehistoric and Middle Ages read as Ancient, which replaced both. */
-        private fun styleOrNull(name: String?): VisualStyle? =
-            if (name in OLD_ANCIENT_STYLES) VisualStyle.ANCIENT else enumOrNull<VisualStyle>(name)
 
         /** The constants [names] gives that this version knows, in their own order; null for none (missing, empty or all unknown). */
         private inline fun <reified E : Enum<E>> enumSetOrNull(names: Set<String>?): Set<E>? =

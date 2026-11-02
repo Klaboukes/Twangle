@@ -31,12 +31,10 @@ import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -69,7 +67,7 @@ import org.junit.runners.Parameterized
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class MetronomeStylesTest(private val style: VisualStyle) {
+class MetronomeStylesTest(private val style: String) {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -99,7 +97,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     MetronomeContent(
                         bpm = 168,
                         meter = Meter.SEVEN_EIGHT,
@@ -530,7 +528,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val WINDOW = "window"
         private const val HEADER = "header"

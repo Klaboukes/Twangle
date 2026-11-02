@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">आसान: 5 सेंट के अंदर</string>
     <string name="settings_in_tune_precision_precise">सटीक: 2 सेंट के अंदर</string>
 
-    <string name="settings_style_title">स्टाइल</string>
     <string name="settings_theme_title">लाइट या डार्क</string>
     <string name="settings_theme_system">सिस्टम डिफ़ॉल्ट</string>
     <string name="settings_theme_light">लाइट</string>

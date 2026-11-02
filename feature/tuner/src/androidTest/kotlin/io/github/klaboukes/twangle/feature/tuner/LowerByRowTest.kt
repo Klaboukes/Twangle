@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
@@ -60,7 +59,7 @@ class LowerByRowTest {
     private fun show(fontScale: Float = 1f, lowest: Int = Tuning.MAX_LOWERED_BY) {
         compose.setContent {
             PhoneScreen(PHONE, fontScale = fontScale, locale = shownLocale.value) {
-                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
                         LowerByRow(loweredBy.intValue, lowest, onChange = { loweredBy.intValue = it })
                     }

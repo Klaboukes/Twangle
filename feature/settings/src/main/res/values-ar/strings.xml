@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">مرنة: في حدود ٥ سنتات</string>
     <string name="settings_in_tune_precision_precise">دقيقة: في حدود سنتين</string>
 
-    <string name="settings_style_title">النمط</string>
     <string name="settings_theme_title">فاتح أو داكن</string>
     <string name="settings_theme_system">حسب النظام</string>
     <string name="settings_theme_light">فاتح</string>

@@ -63,7 +63,6 @@ import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 import kotlin.math.min
 
@@ -71,8 +70,8 @@ import kotlin.math.min
  * The app's frame: [content] with the navigation bar (Tuner · Metronome · Settings) at the
  * bottom, or, in a window wider than tall (a phone on its side, [useRail]), the rail along the start
  * edge. Both are variant B of the approved mock-up (docs/design/metronome-nav-preview.html): icons and
- * names straight on the style's background over a calm field, the open tab ([selected]) in the accent
- * with the style's wave mark under its name. A tap on another tab calls [onSelect], and one on the open
+ * names straight on the app's background over a calm field, the open tab ([selected]) in the accent
+ * with the accent's mark under its name. A tap on another tab calls [onSelect], and one on the open
  * tab [onReselect] (the Tuner tab's closes the tuner's tools). Every item is a tab: the instrument
  * and tuning are picked with the headstock button above the tuner's strings and in the Practice tools
  * (the bar's Instrument item until 2026-10-19). Without a [selected] tab (the tuning editor) the bar or
@@ -247,7 +246,7 @@ fun AppNavigationRail(
 }
 
 /**
- * One tab: its icon, its name under it and, while it is the open one, the style's wave mark under
+ * One tab: its icon, its name under it and, while it is the open one, the accent's mark under
  * that (the room for the mark is kept either way, so nothing moves). The open tab is in the accent,
  * the others in the muted colour. TalkBack hears its name, "tab" and whether it is selected, like a
  * Material 3 navigation bar item; the icon says nothing more. With [practice] the Metronome tab is
@@ -282,7 +281,7 @@ private fun NavItem(
 
 /**
  * What every tab of the bar or rail looks like: its [icon], its [label] under it and, while
- * [selected], the style's wave mark under that (the room for the mark is kept either way, so nothing
+ * [selected], the accent's mark under that (the room for the mark is kept either way, so nothing
  * moves); in the accent while selected, else in the muted colour.
  */
 @Composable
@@ -302,7 +301,7 @@ private fun NavEntry(icon: ImageVector, label: String, selected: Boolean, modifi
         NavLabel(label, color)
         Spacer(Modifier.height(LABEL_MARK_GAP))
         Box(Modifier.size(NAV_MARK_WIDTH, NAV_MARK_HEIGHT)) {
-            if (selected) NavMark(MaterialTheme.styleTokens.style, colors.primary)
+            if (selected) NavMark(colors.primary)
         }
     }
 }

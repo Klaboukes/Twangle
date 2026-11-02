@@ -28,7 +28,6 @@
     <string name="settings_in_tune_precision_relaxed">Souple : à 5 cents près</string>
     <string name="settings_in_tune_precision_precise">Précise : à 2 cents près</string>
 
-    <string name="settings_style_title">Style</string>
     <string name="settings_theme_title">Clair ou sombre</string>
     <string name="settings_theme_system">Selon le système</string>
     <string name="settings_theme_light">Clair</string>

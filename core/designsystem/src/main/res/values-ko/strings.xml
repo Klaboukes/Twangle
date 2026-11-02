@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">고대</string>
-    <string name="style_classic">클래식</string>
-    <string name="style_retro">레트로</string>
-    <string name="style_contemporary">모던</string>
-    <string name="style_futuristic">미래</string>
-    <string name="style_space_age">우주 시대</string>
-
     <string name="spoken_sharp">%1$s 샵</string>
     <string name="spoken_flat">%1$s 플랫</string>
 

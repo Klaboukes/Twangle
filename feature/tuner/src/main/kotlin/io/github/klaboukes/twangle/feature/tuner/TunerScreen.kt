@@ -115,7 +115,6 @@ import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
@@ -1627,7 +1626,6 @@ private fun GuitarControls(
             }
         }
     }
-    val style = MaterialTheme.styleTokens.style
     val facesSpan = LocalStringFacesSpan.current
     // Without the strings, the header over them takes its own width again.
     if (facesSpan != null) DisposableEffect(facesSpan) { onDispose { facesSpan.width = 0 } }
@@ -1639,7 +1637,7 @@ private fun GuitarControls(
         val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
         val stringsX = (width - stringsPlaceable.width) / 2
         // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
-        val faceInset = stringFaceInsetFor(style, stringsPlaceable.width.toDp(), tuning).dp.roundToPx().coerceAtLeast(0)
+        val faceInset = stringFaceInsetFor(stringsPlaceable.width.toDp(), tuning).dp.roundToPx().coerceAtLeast(0)
         val facesStart = stringsX + faceInset
         val facesEnd = stringsX + stringsPlaceable.width - faceInset
         // Each button's outline sits inside its 48 dp touch target: the switch's ends where the last

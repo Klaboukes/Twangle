@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.tour
 
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -35,7 +34,7 @@ class TourGeometryTest {
 
     @Test
     fun `the spotlight's corners are at most half its height`() {
-        val capsule = spotlightFor(TourBox(100f, 100f, 300f, 144f), w, h, pad = 8f, partCorner = tourCornerDp(VisualStyle.SPACE_AGE, TourCorner.BUTTON))
+        val capsule = spotlightFor(TourBox(100f, 100f, 300f, 144f), w, h, pad = 8f, partCorner = 999f)
         assertEquals(30f, capsule.corner)
     }
 
@@ -367,9 +366,9 @@ class TourGeometryTest {
     }
 
     @Test
-    fun `every style has corners for every part`() {
-        for (style in VisualStyle.entries) for (corner in TourCorner.entries) {
-            assertTrue("$style $corner", tourCornerDp(style, corner) >= 0f)
+    fun `every part has its corner`() {
+        for (corner in TourCorner.entries) {
+            assertTrue("$corner", tourCornerDp(corner) >= 0f)
         }
     }
 }

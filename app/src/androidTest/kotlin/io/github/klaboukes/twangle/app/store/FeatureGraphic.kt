@@ -45,11 +45,9 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
-import io.github.klaboukes.twangle.core.designsystem.StyleBackdropPreview
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
 import java.util.Locale
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
@@ -76,14 +74,14 @@ fun FeatureGraphic(icon: ImageBitmap, line: String, locale: Locale) {
         LocalConfiguration provides localized,
         LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
     ) {
-        TwangleTheme(style = BACKGROUND, darkTheme = true, animate = false) {
+        TwangleTheme(darkTheme = true, animate = false) {
             Box(
                 Modifier.layout { measurable, _ ->
                     val placeable = measurable.measure(Constraints.fixed(FEATURE_WIDTH, FEATURE_HEIGHT))
                     layout(FEATURE_WIDTH, FEATURE_HEIGHT) { placeable.place(0, 0) }
                 },
             ) {
-                StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
+                StyleBackdrop(Modifier.fillMaxSize())
                 Box(Modifier.align(Alignment.CenterStart).padding(start = EDGE)) { NameAndLine(icon, line, locale) }
                 // The fan is decoration: it may come nearer the edge than the words.
                 Box(Modifier.align(Alignment.CenterEnd).padding(end = FAN_EDGE)) { Fan() }
@@ -112,7 +110,7 @@ private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
         val configuration = LocalConfiguration.current
         val english = remember(configuration) { Configuration(configuration).apply { setLocales(LocaleList(Locale.ENGLISH)) } }
         CompositionLocalProvider(LocalConfiguration provides english) {
-            TwangleTheme(style = VisualStyle.RETRO, darkTheme = true, animate = false) {
+            TwangleTheme(darkTheme = true, animate = false) {
                 Text(
                     APP_NAME,
                     style = MaterialTheme.typography.displayLarge.copy(
@@ -164,7 +162,7 @@ private fun Fan() {
 /** One style's meter on a card of that style's own background, holding a note in tune. */
 @Composable
 private fun MeterCard(card: FanCard, modifier: Modifier) {
-    TwangleTheme(style = card.style, darkTheme = card.dark, animate = false) {
+    TwangleTheme(darkTheme = card.dark, animate = false) {
         val shape = RoundedCornerShape(CARD_CORNER)
         Box(
             modifier
@@ -174,7 +172,6 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
                 .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center,
         ) {
-            StyleBackdropPreview(Modifier.matchParentSize())
             WithoutMeterLabel {
                 MeterFrame(
                     look = card.look,
@@ -191,8 +188,8 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
     }
 }
 
-/** One card of the fan: a style, light or dark, and a meter look. */
-private data class FanCard(val style: VisualStyle, val dark: Boolean, val look: MeterLook)
+/** One card of the fan: light or dark, and a meter look. */
+private data class FanCard(val dark: Boolean, val look: MeterLook)
 
 /**
  * [content] with the meter's unit label ("CENTS", "CENT", "سنت" …) as an empty text, so the meters
@@ -214,14 +211,11 @@ private fun WithoutMeterLabel(content: @Composable () -> Unit) {
 const val FEATURE_WIDTH = 1024
 const val FEATURE_HEIGHT = 500
 
-/** The calm, dark ground the cards and the mustard icon stand out on. */
-private val BACKGROUND = VisualStyle.CONTEMPORARY
-
 /** Left to right: the middle one in front, light between two darks. */
 private val FAN = listOf(
-    FanCard(VisualStyle.FUTURISTIC, dark = true, look = MeterLook.LOUPE),
-    FanCard(VisualStyle.CLASSIC, dark = false, look = MeterLook.CLASSIC),
-    FanCard(VisualStyle.SPACE_AGE, dark = true, look = MeterLook.POINTERS),
+    FanCard(dark = true, look = MeterLook.LOUPE),
+    FanCard(dark = false, look = MeterLook.CLASSIC),
+    FanCard(dark = true, look = MeterLook.POINTERS),
 )
 
 /** The name is the app's own, the same in every language. */

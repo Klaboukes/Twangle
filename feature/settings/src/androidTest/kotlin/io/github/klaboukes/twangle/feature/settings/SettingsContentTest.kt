@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -50,7 +49,6 @@ import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
@@ -66,7 +64,6 @@ import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
-import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
 import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -93,7 +90,6 @@ class SettingsContentTest {
     private val a4Changes = mutableListOf<Float>()
     private val notationChanges = mutableListOf<Notation?>()
     private val precisionChanges = mutableListOf<InTunePrecision>()
-    private val styleChanges = mutableListOf<VisualStyle>()
     private val themeChanges = mutableListOf<ThemeMode>()
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
@@ -133,7 +129,7 @@ class SettingsContentTest {
         fontScale: Float? = null,
         locale: String? = null,
         about: Boolean = false,
-        style: VisualStyle? = null,
+        ink: Boolean = false,
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
     ) {
@@ -141,7 +137,7 @@ class SettingsContentTest {
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
         compose.setContent {
             val content = @Composable {
-                Themed(style) {
+                Themed(ink) {
                     if (about) {
                         AboutScreen(
                             appVersion = VERSION,
@@ -157,7 +153,6 @@ class SettingsContentTest {
                         onA4Change = { a4Changes += it },
                         onNotationChange = { notationChanges += it },
                         onInTunePrecisionChange = { precisionChanges += it },
-                        onStyleChange = { styleChanges += it },
                         onThemeChange = { themeChanges += it },
                         onDynamicColorChange = { dynamicColorChanges += it },
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
@@ -588,15 +583,15 @@ class SettingsContentTest {
     @Thorough
     fun meterLookNamesFitInDutchAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f, locale = "nl")
 
-    /** Classic sets its names in a wide serif face. */
+    /** In the app's own theme (Ink), as it shows. */
     @Test
     @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSizeInTheClassicStyle() =
-        assertMeterLookNamesFit(fontScale = 2f, style = VisualStyle.CLASSIC)
+    fun meterLookNamesFitAtTwiceTheFontSizeInInk() =
+        assertMeterLookNamesFit(fontScale = 2f, ink = true)
 
     @Test
-    fun meterLookNamesFitInDutchAtTwiceTheFontSizeInTheClassicStyle() =
-        assertMeterLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
+    fun meterLookNamesFitInDutchAtTwiceTheFontSizeInInk() =
+        assertMeterLookNamesFit(fontScale = 2f, locale = "nl", ink = true)
 
     @Test
     @Thorough
@@ -605,16 +600,16 @@ class SettingsContentTest {
 
     /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
     @Test
-    fun meterLookNamesFitInALargerFontSizeInTheClassicStyle() =
-        assertMeterLookNamesFit(fontScale = 1.29f, style = VisualStyle.CLASSIC)
+    fun meterLookNamesFitInALargerFontSizeInInk() =
+        assertMeterLookNamesFit(fontScale = 1.29f, ink = true)
 
     private fun assertMeterLookNamesFit(
         size: DpSize? = null,
         fontScale: Float? = null,
         locale: String? = null,
-        style: VisualStyle? = null,
+        ink: Boolean = false,
     ) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale, style = style)
+        show(AppSettings(), size = size, fontScale = fontScale, locale = locale, ink = ink)
         val res = resourcesIn(locale)
         for ((look, id) in meterLookNames) {
             val name = res.getString(id)
@@ -681,10 +676,10 @@ class SettingsContentTest {
     @Thorough
     fun waveLookNamesFitInDutchAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f, locale = "nl")
 
-    /** Classic sets its names in a wide serif face. */
+    /** In the app's own theme (Ink), as it shows. */
     @Test
-    fun waveLookNamesFitInDutchAtTwiceTheFontSizeInTheClassicStyle() =
-        assertWaveLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
+    fun waveLookNamesFitInDutchAtTwiceTheFontSizeInInk() =
+        assertWaveLookNamesFit(fontScale = 2f, locale = "nl", ink = true)
 
     @Test
     @Thorough
@@ -693,15 +688,15 @@ class SettingsContentTest {
 
     @Test
     fun waveLookNamesFitInDutchAtALargerFontSize() =
-        assertWaveLookNamesFit(fontScale = 1.3f, locale = "nl", style = VisualStyle.CLASSIC)
+        assertWaveLookNamesFit(fontScale = 1.3f, locale = "nl", ink = true)
 
     private fun assertWaveLookNamesFit(
         size: DpSize? = null,
         fontScale: Float? = null,
         locale: String? = null,
-        style: VisualStyle? = null,
+        ink: Boolean = false,
     ) {
-        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = fontScale, locale = locale, style = style)
+        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = fontScale, locale = locale, ink = ink)
         val res = resourcesIn(locale)
         for (id in waveLookNames.values) {
             val name = res.getString(id)
@@ -744,109 +739,6 @@ class SettingsContentTest {
     }
 
     @Test
-    fun wallpaperColoursOnlyApplyToTheContemporaryStyle() {
-        show(AppSettings(style = VisualStyle.RETRO))
-        compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title)).assertDoesNotExist()
-    }
-
-    @Test
-    fun styleCardsShowTheChoiceAndReportANewOne() {
-        show(AppSettings(style = VisualStyle.CLASSIC))
-        compose.onNodeWithTag(styleCardTag(VisualStyle.CLASSIC)).performScrollTo().assertIsSelected()
-        compose.onNodeWithTag(styleCardTag(VisualStyle.ANCIENT)).performScrollTo().assertIsNotSelected().performClick()
-        assertEquals(listOf(VisualStyle.ANCIENT), styleChanges)
-    }
-
-    /** The six styles, in the owner's order, three to a row: Ancient, Classic, Retro, then Contemporary, Futuristic, Space Age. */
-    @Test
-    fun styleCardsComeInTheOwnersOrderThreeToARow() {
-        show(AppSettings())
-        // Unclipped: the second row may sit below the bottom of the screen.
-        val bounds = VisualStyle.entries.map { compose.onNodeWithTag(styleCardTag(it)).getUnclippedBoundsInRoot() }
-        assertEquals(
-            listOf(
-                VisualStyle.ANCIENT,
-                VisualStyle.CLASSIC,
-                VisualStyle.RETRO,
-                VisualStyle.CONTEMPORARY,
-                VisualStyle.FUTURISTIC,
-                VisualStyle.SPACE_AGE,
-            ),
-            VisualStyle.entries,
-        )
-        for (row in bounds.chunked(3)) {
-            row.zipWithNext { a, b ->
-                assertEquals("same row", a.top.value, b.top.value, 0.5f)
-                assertTrue("left to right", a.right <= b.left)
-            }
-        }
-        assertTrue("second row starts at ${bounds[3].top}, the first ends at ${bounds[0].bottom}: $bounds", bounds[3].top >= bounds[0].bottom)
-    }
-
-    /**
-     * TalkBack hears every style card as a radio button with the style's name, and which one is
-     * picked; the mood picture inside (its big letter and string buttons) says nothing. In English
-     * and in Dutch.
-     */
-    @Test
-    fun talkBackReadsEveryStyleAsARadioButton() = assertStylesSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsEveryStyleAsARadioButton() = assertStylesSpoken(locale = "nl")
-
-    private fun assertStylesSpoken(locale: String?) {
-        show(AppSettings(style = VisualStyle.FUTURISTIC), locale = locale)
-        val res = resourcesIn(locale)
-        for ((style, id) in styleNames) {
-            val name = res.getString(id)
-            val card = compose.onNodeWithTag(styleCardTag(style)).performScrollTo()
-            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (style == VisualStyle.FUTURISTIC) card.assertIsSelected() else card.assertIsNotSelected()
-            assertEquals("$style", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /** At 2× font every style's name still fits its card on one line, also Dutch "Ruimtetijdperk". */
-    @Test
-    fun styleNamesFitInDutchAtTwiceTheFontSize() = assertStyleNamesFit(fontScale = 2f, locale = "nl")
-
-    @Test
-    @Thorough
-    fun styleNamesFitAtTwiceTheFontSize() = assertStyleNamesFit(fontScale = 2f)
-
-    /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
-    @Test
-    fun styleNamesFitInDutchInALargerFontSize() = assertStyleNamesFit(fontScale = 1.29f, locale = "nl")
-
-    @Test
-    @Thorough
-    fun styleNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertStyleNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
-
-    private fun assertStyleNamesFit(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
-        val res = resourcesIn(locale)
-        for ((style, id) in styleNames) {
-            val name = res.getString(id)
-            val label = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(styleCardTag(style))), useUnmergedTree = true)
-            assertWhollyShown(label, name)
-            val layouts = mutableListOf<TextLayoutResult>()
-            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
-        }
-    }
-
-    private val styleNames = mapOf(
-        VisualStyle.ANCIENT to DesignR.string.style_ancient,
-        VisualStyle.CLASSIC to DesignR.string.style_classic,
-        VisualStyle.RETRO to DesignR.string.style_retro,
-        VisualStyle.CONTEMPORARY to DesignR.string.style_contemporary,
-        VisualStyle.FUTURISTIC to DesignR.string.style_futuristic,
-        VisualStyle.SPACE_AGE to DesignR.string.style_space_age,
-    )
-
-    @Test
     fun settingsComeInFiveHeadedGroupsTheLastEndingInTheAboutLink() {
         show(AppSettings(display = TunerDisplay.WAVE))
         val headings = listOf(
@@ -867,8 +759,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_notation_title)),
             top(context.getString(R.string.settings_in_tune_precision_title)),
             top(context.getString(R.string.settings_group_look)),
-            compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
-            // The wallpaper colours belong to the style (Contemporary only), so they come right under it (Phase 63).
+            // The wallpaper colours first, then light or dark (the style cards above them went in Phase 67).
             top(context.getString(R.string.settings_dynamic_color_title)),
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_group_tuner_screen)),
@@ -957,9 +848,9 @@ class SettingsContentTest {
     }
 
     /**
-     * The style, meter and wave cards come three to a row on a tablet at its 1.3× text (Phase 52), near their
-     * phone size: two to a row they were about 280 × 385 dp each on the Lenovo Tab M11, the six styles a screen
-     * and a half upright and three screens on its side. On a phone they still go to two from 1.3×.
+     * The meter and wave cards come three to a row on a tablet at its 1.3× text (Phase 52), near their
+     * phone size: two to a row they were about 280 × 385 dp each on the Lenovo Tab M11, 1.1's six style cards a
+     * screen and a half upright and three screens on its side. On a phone they still go to two from 1.3×.
      */
     @Test
     fun onATabletUprightTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_UPRIGHT, perRow = 3)
@@ -975,7 +866,6 @@ class SettingsContentTest {
         val width = minOf(safeArea().let { it.right - it.left }, CONTENT_WIDTH) - ROW_INSET * 2
         val cardWidth = (width - CARD_GAP * (perRow - 1)) / perRow
         val grids = mapOf(
-            "style" to VisualStyle.entries.map(::styleCardTag),
             "meter" to MeterLook.entries.map(::meterLookCardTag),
             "wave" to WaveLook.entries.map(::waveLookCardTag),
         )
@@ -1074,7 +964,7 @@ class SettingsContentTest {
     @Test
     fun creditsAreButtonsThatSayWhatTheyDo() {
         show(AppSettings(), about = true)
-        compose.onNodeWithTag(creditTag("Orbitron")).performScrollTo()
+        compose.onNodeWithTag(creditTag("Noto Sans Symbols")).performScrollTo()
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             .assert(
                 SemanticsMatcher("click label") {
@@ -1086,9 +976,9 @@ class SettingsContentTest {
     @Test
     fun tappingAFontShowsItsLicenceFromTheApp() {
         show(AppSettings(), about = true)
-        compose.onNodeWithTag(creditTag("Orbitron")).performScrollTo().performClick()
+        compose.onNodeWithTag(creditTag("Noto Sans Symbols")).performScrollTo().performClick()
         // The licence is read from the app's own files, so it is there without internet.
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Orbitron Project Authors", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Google Inc. All Rights Reserved", substring = true).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("licensed under the SIL Open Font License, Version 1.1", substring = true).assertExists()
         compose.onNodeWithText(context.getString(R.string.settings_about_licence_close)).assertIsDisplayed().performClick()
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assertDoesNotExist()
@@ -1136,8 +1026,8 @@ class SettingsContentTest {
     @Test
     fun theLicenceCanBeClosedAtTwiceTheFontSize() {
         show(AppSettings(), fontScale = 2f, about = true)
-        compose.onNodeWithTag(creditTag("Michroma")).performScrollTo().performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Michroma Project Authors", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag(creditTag("Noto Sans Symbols")).performScrollTo().performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Google Inc. All Rights Reserved", substring = true).fetchSemanticsNodes().isNotEmpty() }
         // A long licence scrolls inside the dialog; the button stays on screen.
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
         compose.onNodeWithText(context.getString(R.string.settings_about_licence_close)).assertIsDisplayed().performClick()
@@ -1186,10 +1076,10 @@ class SettingsContentTest {
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
     }
 
-    /** [MaterialTheme], or with a [style] that style's lettering and colours (light). */
+    /** [MaterialTheme], or with [ink] the app's own theme (Ink, light). */
     @Composable
-    private fun Themed(style: VisualStyle?, content: @Composable () -> Unit) {
-        if (style == null) MaterialTheme { content() } else TwangleTheme(style = style, darkTheme = false, animate = false) { content() }
+    private fun Themed(ink: Boolean, content: @Composable () -> Unit) {
+        if (!ink) MaterialTheme { content() } else TwangleTheme(darkTheme = false, animate = false) { content() }
     }
 
     /** Resources in [locale], or the test's own when it is null. */

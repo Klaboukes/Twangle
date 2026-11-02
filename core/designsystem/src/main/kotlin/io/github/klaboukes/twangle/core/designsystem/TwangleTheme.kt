@@ -7,7 +7,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalRippleConfiguration
@@ -24,11 +23,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.min
@@ -41,71 +38,72 @@ fun ThemeMode.useDarkTheme(systemDark: Boolean): Boolean = when (this) {
 }
 
 /**
- * What the current style adds to Material 3: which style it is and the "in tune" pair.
- * [scheme] is the style's colour scheme as it ends up, not faded, for drawings that cross-fade
- * as a whole (the background).
+ * What Ink, the one look, adds to Material 3: whether it is [dark], the "in tune" pair and the amber of a
+ * note far off ([farOff]), which stay the app's own also with the wallpaper's colours. [scheme] is the
+ * colour scheme as it ends up, not faded, for drawings that cross-fade as a whole (the background).
  */
 @Immutable
 data class StyleTokens(
-    val style: VisualStyle,
     val dark: Boolean,
     val inTune: Color,
     val onInTune: Color,
+    val farOff: Color,
     val scheme: ColorScheme,
 )
 
-/** The tokens of the surrounding [TwangleTheme]; outside one, the contemporary light style. */
-val LocalStyleTokens = staticCompositionLocalOf { tokensFor(VisualStyle.DEFAULT, dark = false) }
+/** The tokens of the surrounding [TwangleTheme]; outside one, light Ink. */
+val LocalStyleTokens = staticCompositionLocalOf { tokensFor(dark = false) }
 
-/** The current style's tokens. */
+/** The current theme's tokens. */
 val MaterialTheme.styleTokens: StyleTokens
     @Composable get() = LocalStyleTokens.current
 
-fun tokensFor(style: VisualStyle, dark: Boolean): StyleTokens {
-    val palette = paletteFor(style, dark)
-    return StyleTokens(style, dark, palette.inTune, palette.onInTune, palette.toColorScheme(dark))
+fun tokensFor(dark: Boolean): StyleTokens {
+    val palette = paletteFor(dark)
+    return StyleTokens(dark, palette.inTune, palette.onInTune, palette.farOff, palette.toColorScheme(dark))
 }
 
 /**
- * Whether [style] takes its colours from the wallpaper (Material You): [dynamicColor] is on, the
- * style is Contemporary and the phone runs Android 12 or later. The other styles keep their own.
+ * Whether the app takes its colours from the wallpaper (Material You): [dynamicColor] is on and the
+ * phone runs Android 12 or later. (In 1.1 only the Contemporary style did; 2.0 has one look.)
  */
 @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
-fun usesWallpaperColors(style: VisualStyle, dynamicColor: Boolean): Boolean =
-    dynamicColor && style == VisualStyle.CONTEMPORARY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+fun usesWallpaperColors(dynamicColor: Boolean): Boolean =
+    dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
 /**
- * The colour scheme [TwangleTheme] settles on for [style], light or [dark], for drawings made outside
- * Compose (the home-screen widget).
+ * The colour scheme [TwangleTheme] settles on, light or [dark], for drawings made outside Compose (the
+ * home-screen widget).
  */
-fun colorSchemeFor(context: Context, style: VisualStyle, dark: Boolean, dynamicColor: Boolean): ColorScheme =
-    if (usesWallpaperColors(style, dynamicColor)) {
+fun colorSchemeFor(context: Context, dark: Boolean, dynamicColor: Boolean): ColorScheme =
+    if (usesWallpaperColors(dynamicColor)) {
         val wallpaper = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         wallpaper.keepingInTuneApart(dark)
     } else {
-        tokensFor(style, dark).scheme
+        tokensFor(dark).scheme
     }
 
 /**
  * How near, in degrees of perceptual hue ([hueOf]), the wallpaper's accent may come to the "in tune" green before it gives
- * way to Contemporary's own blue (Phase 43). The six styles keep their accents out of the greens by
- * design (`StylePaletteTest`); a green wallpaper would otherwise make every picked segment, the open
- * tab and the Start button look "in tune". It was 40° until the matched greens of October 2026 moved the
- * in-tune hue towards teal, which left a yellow-green wallpaper 43° away.
+ * way to Ink's own blue (Phase 43). Ink keeps its accent out of the greens by design (`StylePaletteTest`);
+ * a green wallpaper would otherwise make every picked segment, the open tab and the Start button look
+ * "in tune". It was 40° until the matched greens of October 2026 moved the in-tune hue towards teal,
+ * which left a yellow-green wallpaper 43° away.
  */
 internal const val IN_TUNE_HUE_GUARD = 50f
 
 /**
- * This wallpaper scheme (light or [dark]) with its accent swapped for Contemporary's own blue when it
- * lies within [IN_TUNE_HUE_GUARD] of Contemporary's in-tune hue: primary, its container and their
- * text, and the secondary container (Material's slider track), which the app's own schemes also fill
- * with the accent. Backgrounds, surfaces, text and the background art's colours stay the wallpaper's.
- * Any other accent comes back unchanged.
+ * This wallpaper scheme (light or [dark]) with its accent swapped for Ink's own blue when it lies within
+ * [IN_TUNE_HUE_GUARD] of Ink's in-tune hue: primary, its container and their text, and the secondary
+ * container (Material's slider track), which the app's own schemes also fill with the accent.
+ * Backgrounds, surfaces and text stay the wallpaper's. Any other accent comes back unchanged. The
+ * in-tune green and the far-off amber are never the wallpaper's: they come from [StyleTokens], not the
+ * scheme, so a resting meter never looks in tune.
  */
 internal fun ColorScheme.keepingInTuneApart(dark: Boolean): ColorScheme {
-    val own = paletteFor(VisualStyle.CONTEMPORARY, dark)
+    val own = paletteFor(dark)
     if (hueDistance(primary, own.inTune) >= IN_TUNE_HUE_GUARD) return this
-    val ownScheme = tokensFor(VisualStyle.CONTEMPORARY, dark).scheme
+    val ownScheme = own.toColorScheme(dark)
     // The accent container as the palettes mix it (Palette.container), but over the wallpaper's surface.
     val container = lerp(surface, own.accent, if (dark) 0.32f else 0.22f)
     return copy(
@@ -143,37 +141,34 @@ internal fun hueOf(c: Color): Float {
 private const val GREY_CHROMA = 1e-4f
 
 /**
- * The app's theme: the colours, lettering and shapes of [style] in light or [darkTheme]. With
- * [dynamicColor] (Android 12+) the contemporary style takes its colours from the wallpaper; the
- * other styles keep their own. A change of style or brightness fades the colours over
- * [COLOR_FADE_MS] rather than jumping. A press lights a button up in the style's own way
+ * The app's theme: Ink, the one look (Phase 67), its colours, the phone's plain sans and its rounded
+ * shapes, in light or [darkTheme]. With [dynamicColor] (Android 12+) the colours come from the
+ * wallpaper, but for the in-tune green and the far-off amber ([keepingInTuneApart]). A change of
+ * brightness fades the colours over [COLOR_FADE_MS] rather than jumping. A press lights a button up
  * ([PressIndication], [pressFeedback]) instead of Material's ripple.
  */
 @Composable
 fun TwangleTheme(
-    style: VisualStyle = VisualStyle.DEFAULT,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     animate: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val useDynamic = usesWallpaperColors(style, dynamicColor)
+    val useDynamic = usesWallpaperColors(dynamicColor)
     val context = LocalContext.current
-    // Built once per style and brightness: the same value keeps the background and fade still.
-    val tokens = remember(style, darkTheme, useDynamic) {
-        // The wallpaper's scheme keeps the style's own "in tune" pair.
-        tokensFor(style, darkTheme).copy(scheme = colorSchemeFor(context, style, darkTheme, dynamicColor))
+    // Built once per brightness: the same value keeps the background and fade still.
+    val tokens = remember(darkTheme, useDynamic) {
+        // The wallpaper's scheme keeps Ink's own "in tune" pair and amber.
+        tokensFor(darkTheme).copy(scheme = colorSchemeFor(context, darkTheme, dynamicColor))
     }
     val target = tokens.scheme
     val colorScheme = if (animate) animatedColorScheme(target) else target
-    // The app's language: Polish and Turkish words need other faces in some styles (facesFor).
-    val language = LocalConfiguration.current.locales[0].language
 
     CompositionLocalProvider(LocalStyleTokens provides tokens) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = remember(style, language) { typographyFor(style, language) },
-            shapes = shapesFor(style),
+            typography = remember { inkTypography() },
+            shapes = InkShapes,
         ) {
             // Twangle's press effect in place of Material's ripple everywhere (Phase 27): plain
             // clickables and rows take the press light from LocalIndication; Material's own
@@ -188,7 +183,7 @@ fun TwangleTheme(
     }
 }
 
-/** How long a change of style or brightness takes to fade in. */
+/** How long a change of brightness (or of the wallpaper's colours) takes to fade in. */
 const val COLOR_FADE_MS = 450
 
 /** [target], faded in from the previous scheme whenever it changes. */
@@ -249,51 +244,12 @@ internal fun lerp(a: ColorScheme, b: ColorScheme, t: Float): ColorScheme = a.cop
 )
 
 /**
- * Corner shapes per style, from the approved mock-up: `small` is the cents pill, `medium` the look
- * cards and tips. Ancient's are uneven like pebbles, Classic's fine and square, Retro's fat and soft,
- * Contemporary's round, Futuristic's cut on every corner like a HUD panel, Space Age's capsules.
- * The string buttons have their own shapes ([stringChipShape]).
+ * Ink's corner shapes (Phase 67): `small` is the cents pill and the segmented switch, `medium` the look
+ * cards and tips, `large` the lens and the sheets' cards, 22 dp as in the mock-ups. The string buttons
+ * have their own shapes ([stringChipShape]).
  */
-internal fun shapesFor(style: VisualStyle): Shapes = when (style) {
-    VisualStyle.ANCIENT -> Shapes(
-        extraSmall = RoundedCornerShape(6.dp),
-        small = RoundedCornerShape(topStart = 18.dp, topEnd = 14.dp, bottomEnd = 20.dp, bottomStart = 12.dp),
-        medium = RoundedCornerShape(topStart = 16.dp, topEnd = 12.dp, bottomEnd = 18.dp, bottomStart = 10.dp),
-        large = RoundedCornerShape(topStart = 26.dp, topEnd = 16.dp, bottomEnd = 28.dp, bottomStart = 14.dp),
-        extraLarge = RoundedCornerShape(32.dp),
-    )
-    VisualStyle.CLASSIC -> Shapes(
-        extraSmall = RoundedCornerShape(2.dp),
-        small = RoundedCornerShape(4.dp),
-        medium = RoundedCornerShape(4.dp),
-        large = RoundedCornerShape(6.dp),
-        extraLarge = RoundedCornerShape(8.dp),
-    )
-    VisualStyle.RETRO -> Shapes(
-        extraSmall = RoundedCornerShape(8.dp),
-        small = RoundedCornerShape(22.dp),
-        medium = RoundedCornerShape(18.dp),
-        large = RoundedCornerShape(28.dp),
-        extraLarge = RoundedCornerShape(36.dp),
-    )
-    VisualStyle.CONTEMPORARY -> Shapes(
-        small = RoundedCornerShape(18.dp),
-        medium = RoundedCornerShape(12.dp),
-    )
-    VisualStyle.FUTURISTIC -> Shapes(
-        extraSmall = CutCornerShape(2.dp),
-        small = CutCornerShape(10.dp),
-        medium = CutCornerShape(8.dp),
-        large = CutCornerShape(12.dp),
-        extraLarge = CutCornerShape(16.dp),
-    )
-    VisualStyle.SPACE_AGE -> Shapes(
-        // Not 50 %: Material draws its menus in this, and a tall menu as a capsule cut off its corner buttons and rows.
-        // Anything up to 40 dp tall is still a capsule (a corner is never more than half the side).
-        extraSmall = RoundedCornerShape(20.dp),
-        small = RoundedCornerShape(50),
-        medium = RoundedCornerShape(20.dp),
-        large = RoundedCornerShape(28.dp),
-        extraLarge = RoundedCornerShape(40.dp),
-    )
-}
+internal val InkShapes = Shapes(
+    small = RoundedCornerShape(18.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(22.dp),
+)

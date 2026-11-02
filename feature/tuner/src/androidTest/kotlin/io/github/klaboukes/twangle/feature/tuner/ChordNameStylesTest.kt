@@ -39,13 +39,11 @@ import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.onPhoneScreen
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -77,7 +75,7 @@ import kotlin.math.pow
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class ChordNameStylesTest(private val style: VisualStyle) {
+class ChordNameStylesTest(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -101,7 +99,7 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         compose.setContent {
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
             PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerContent(
                         shownState.value,
@@ -290,7 +288,7 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         compose.mainClock.autoAdvance = true
         compose.setContent {
             PhoneScreen(XIAOMI_UPRIGHT, SystemBars.tab(onItsSide = false)) {
-                TwangleTheme(style = style, darkTheme = true, animate = false) {
+                TwangleTheme(darkTheme = true, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerScreen(
                         audioRecorder = recorder,
@@ -397,7 +395,7 @@ class ChordNameStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private val AM = Chord.of(PitchClass.A, ChordQuality.MINOR)
         private val C = Chord.of(PitchClass.C, ChordQuality.MAJOR)

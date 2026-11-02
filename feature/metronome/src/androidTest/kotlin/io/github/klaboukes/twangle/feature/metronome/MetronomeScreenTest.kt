@@ -21,7 +21,6 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotSelected
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -50,7 +49,6 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -104,7 +102,7 @@ class MetronomeScreenTest {
     ) {
         compose.setContent {
             PhoneScreen(size, SystemBars.tab(onItsSide = size.width > size.height, Navigation.BUTTONS), fontScale, locale) {
-                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                     if (shown.value) {
                         MetronomeScreen(
@@ -814,7 +812,7 @@ class MetronomeScreenTest {
         var notNow = 0
         compose.setContent {
             PhoneScreen(PHONE, SystemBars.tab(onItsSide = false)) {
-                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     MetronomeContent(
                         bpm = 96, meter = Meter.FOUR_FOUR, playing = false, vibrate = false,
                         onBpmChange = {}, onBpmChangeFinished = {}, onStep = {}, onTap = {}, onMeterChange = {},
@@ -859,7 +857,7 @@ class MetronomeScreenTest {
         var stops = 0
         compose.setContent {
             PhoneScreen(PHONE, SystemBars.tab(onItsSide = false)) {
-                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     MetronomeContent(
                         bpm = 96, meter = Meter.FOUR_FOUR, playing = false, vibrate = false,
                         onBpmChange = {}, onBpmChangeFinished = {}, onStep = {}, onTap = {}, onMeterChange = {},

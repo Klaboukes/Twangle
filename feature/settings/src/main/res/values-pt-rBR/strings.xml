@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Tolerante: até 5 cents</string>
     <string name="settings_in_tune_precision_precise">Precisa: até 2 cents</string>
 
-    <string name="settings_style_title">Estilo</string>
     <string name="settings_theme_title">Claro ou escuro</string>
     <string name="settings_theme_system">Padrão do sistema</string>
     <string name="settings_theme_light">Claro</string>

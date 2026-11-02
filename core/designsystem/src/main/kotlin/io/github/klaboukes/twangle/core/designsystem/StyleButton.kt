@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -29,95 +28,57 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /*
- * Twangle's one button for an icon (Phase 63, docs/architecture/ui.md *Shared controls*): a
+ * Twangle's one button for an icon (Phase 63, docs/architecture/ui.md *Shared controls*): a round,
  * see-through face on the background (the surface at 45 % behind a thin outline in the muted colour, 3:1
- * against the background since Phase 65, [controlOutline])
- * in the style's button shape, picked ones in the container colour with a 2 dp accent outline, a
- * screen's main action filled in the accent. Futuristic's are neon outlines in the accent on a solid
- * tint ([neonFill]). Every one shows Twangle's press effect ([pressFeedback]). It began as the
- * metronome's buttons (docs/design/metronome-nav-preview.html); the instrument button, Chords' and
- * Capo's ‹ ›, Ear training's ▶, the options button ([OptionsButton]) and the steppers (Settings' A4,
- * the tuning sheet's "Lower by") use it too.
+ * against the background since Phase 65, [controlOutline]), picked ones in the container colour with a
+ * 2 dp accent outline, a screen's main action filled in the accent. Every one shows Twangle's press
+ * effect ([pressFeedback]). It began as the metronome's buttons (docs/design/metronome-nav-preview.html);
+ * the instrument button, Chords' and Capo's ‹ ›, Ear training's ▶, the options button ([OptionsButton])
+ * and the steppers (Settings' A4, the tuning sheet's "Lower by") use it too.
  */
 
-/** How [style]'s buttons look, [shape] its `shapes.small`, in the colours of [scheme]. */
-class ButtonLook(style: VisualStyle, val shape: Shape, private val scheme: ColorScheme) {
-    /** Futuristic's neon outlines in the accent on a solid tint. */
-    val neon: Boolean = style == VisualStyle.FUTURISTIC
+/** How the buttons look, [shape] the theme's `shapes.small`, in the colours of [scheme]. */
+class ButtonLook(val shape: Shape, private val scheme: ColorScheme) {
+    /** A button's face ([StyleButton]): a circle (1.1's Contemporary; 2.0 has one look). */
+    val buttonShape: Shape = CircleShape
 
-    /** A button's face ([StyleButton]): see [buttonShapeFor]. */
-    val buttonShape: Shape = buttonShapeFor(style, shape)
+    /** A see-through button's backing; [picked] ones in the container colour. */
+    fun fill(picked: Boolean = false): Color = if (picked) scheme.primaryContainer else scheme.surface.copy(alpha = BACKING_ALPHA)
 
-    /**
-     * A see-through button's backing; [picked] ones in the container colour (Futuristic: a faint accent,
-     * solid on the background colour since Phase 65, so its horizon's grid no longer runs through a picked row).
-     */
-    fun fill(picked: Boolean = false): Color = when {
-        picked && neon -> scheme.primary.copy(alpha = PICKED_NEON_ALPHA).compositeOver(scheme.background)
-        picked -> scheme.primaryContainer
-        neon -> neonFill(scheme)
-        else -> scheme.surface.copy(alpha = BACKING_ALPHA)
-    }
+    /** A see-through button's outline: muted ([controlOutline]), [picked] ones 2 dp in the accent. */
+    fun outline(picked: Boolean = false): BorderStroke =
+        if (picked) BorderStroke(2.dp, scheme.primary) else BorderStroke(1.dp, controlOutline(scheme))
 
-    /** A see-through button's outline: muted, Futuristic's in the accent ([controlOutline]), [picked] ones 2 dp in the accent. */
-    fun outline(picked: Boolean = false): BorderStroke = when {
-        picked -> BorderStroke(2.dp, scheme.primary)
-        else -> BorderStroke(1.dp, controlOutline(scheme, neon))
-    }
-
-    /**
-     * A main button's fill: the accent; Futuristic's a faint accent on the background colour, not over
-     * the picture, whose grid's lines would run through the button.
-     */
+    /** A main button's fill: the accent. */
     val mainFill: Color
-        get() = if (neon) scheme.primary.copy(alpha = MAIN_NEON_ALPHA).compositeOver(scheme.background) else scheme.primary
+        get() = scheme.primary
 
-    /** The colour of an icon on the face: the ink, or on a [main] button the on-accent colour (Futuristic: the accent). */
-    fun content(main: Boolean = false): Color = when {
-        !main -> scheme.onSurface
-        neon -> scheme.primary
-        else -> scheme.onPrimary
-    }
+    /** The colour of an icon on the face: the ink, or on a [main] button the on-accent colour. */
+    fun content(main: Boolean = false): Color = if (main) scheme.onPrimary else scheme.onSurface
 }
 
-/** The current style's [ButtonLook]. */
+/** The theme's [ButtonLook]. */
 @Composable
-fun buttonLook(): ButtonLook {
-    val style = MaterialTheme.styleTokens.style
-    return ButtonLook(style, MaterialTheme.shapes.small, MaterialTheme.colorScheme)
-}
+fun buttonLook(): ButtonLook = ButtonLook(MaterialTheme.shapes.small, MaterialTheme.colorScheme)
 
-/**
- * A button's face in [style] ([small] its `shapes.small`): a circle in Contemporary and Space Age,
- * Ancient's pebble (the instrument button's since docs/design/combined-picker-preview.html), else
- * [small] (Classic's square, Retro's soft square, Futuristic's eight sides).
- */
-internal fun buttonShapeFor(style: VisualStyle, small: Shape): Shape = when (style) {
-    VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> CircleShape
-    VisualStyle.ANCIENT -> PICKER_PEBBLE
-    VisualStyle.CLASSIC, VisualStyle.RETRO, VisualStyle.FUTURISTIC -> small
-}
-
-/** The style's button face shape ([ButtonLook.buttonShape]), for a button of the same kind drawn by hand. */
+/** The button face shape ([ButtonLook.buttonShape]), for a button of the same kind drawn by hand. */
 @Composable
 fun styleButtonShape(): Shape = buttonLook().buttonShape
 
-/** A see-through button's backing in the current style ([ButtonLook.fill]). */
+/** A see-through button's backing ([ButtonLook.fill]). */
 @Composable
 fun faceFill(picked: Boolean = false): Color = buttonLook().fill(picked)
 
-/** A see-through button's outline in the current style ([ButtonLook.outline]). */
+/** A see-through button's outline ([ButtonLook.outline]). */
 @Composable
 fun faceOutline(picked: Boolean = false): BorderStroke = buttonLook().outline(picked)
 
 /**
  * A [StyleButton]'s face in [look], for a button that takes its touches its own way (Tap tempo counts
- * on touch-down): the fill, outline and press effect of [interactionSource] in the style's button
- * shape. [main] fills it in the accent (Futuristic: a neon outline on a solid tint); [crisp] is Tap
- * tempo's flash ([pressFeedback]).
+ * on touch-down): the fill, outline and press effect of [interactionSource] in the button shape.
+ * [main] fills it in the accent; [crisp] is Tap tempo's flash ([pressFeedback]).
  */
 fun Modifier.styleButtonFace(
     interactionSource: InteractionSource,
@@ -130,7 +91,7 @@ fun Modifier.styleButtonFace(
         interactionSource,
         look.buttonShape,
         fill = look.mainFill,
-        outline = if (look.neon) BorderStroke(MAIN_NEON_OUTLINE, look.content(main = true)) else null,
+        outline = null,
         tone = PressTone.ACCENT_FILL,
         crisp = crisp,
     )
@@ -139,10 +100,8 @@ fun Modifier.styleButtonFace(
 }
 
 /**
- * The style's button: [content] (an icon, which takes its colour from [LocalContentColor]) on a
- * [face] across, in the style's button shape ([ButtonLook.buttonShape]: round in Contemporary and
- * Space Age, Ancient's pebble, Classic's square, Retro's soft square, Futuristic's eight sides),
- * see-through with a muted outline, or [picked] (the container colour, a 2 dp accent outline), or
+ * Twangle's button: [content] (an icon, which takes its colour from [LocalContentColor]) on a round
+ * [face] across ([ButtonLook.buttonShape]), see-through with a muted outline, or [picked] (the container colour, a 2 dp accent outline), or
  * [main] (filled in the accent: a screen's main action, the metronome's Start). Its touch area is at
  * least 48 dp each way round the face; the face keeps its size whatever the language or font size.
  *
@@ -244,32 +203,21 @@ private val OPTIONS_ICON = 24.dp
 val STYLE_BUTTON_FACE = 48.dp
 
 private const val BACKING_ALPHA = 0.45f
-private const val PICKED_NEON_ALPHA = 0.12f
-private const val MAIN_NEON_ALPHA = 0.14f
-private val MAIN_NEON_OUTLINE = 1.5.dp
 
 private const val DISABLED_ALPHA = 0.38f
 
 /**
- * The resting outline of a see-through control in [scheme] (Phase 65): the muted colour, or with
- * [neon] (Futuristic) the accent, strong enough to stand 3:1 against the background in every style,
- * light and dark (WCAG's rule for a control's edge, checked in StylePaletteTest). A light ground needs
- * more of it than a dark one: the muted colour at 75 % in light (60 % gave Ancient, Classic and Space
- * Age about 2.7:1) and 60 % in dark, the accent at 80 % in light and 55 % in dark. The style's
- * buttons ([ButtonLook.outline]), the string buttons and the neon segments and chips use it.
+ * The resting outline of a see-through control in [scheme] (Phase 65): the muted colour, strong enough
+ * to stand 3:1 against the background, light and dark (WCAG's rule for a control's edge, checked in
+ * StylePaletteTest). A light ground needs more of it than a dark one: 80 % in light (Ink's light muted
+ * at 1.1's 75 % gave 2.97:1), 60 % in dark. The buttons ([ButtonLook.outline]) and the string buttons use it.
  */
-fun controlOutline(scheme: ColorScheme, neon: Boolean): Color {
+fun controlOutline(scheme: ColorScheme): Color {
     val light = scheme.background.luminance() >= LIGHT_GROUND
-    return if (neon) {
-        scheme.primary.copy(alpha = if (light) NEON_OUTLINE_LIGHT else NEON_OUTLINE_DARK)
-    } else {
-        scheme.onSurfaceVariant.copy(alpha = if (light) MUTED_OUTLINE_LIGHT else MUTED_OUTLINE_DARK)
-    }
+    return scheme.onSurfaceVariant.copy(alpha = if (light) MUTED_OUTLINE_LIGHT else MUTED_OUTLINE_DARK)
 }
 
-/** A background at least this bright (relative luminance) is a light style's. */
+/** A background at least this bright (relative luminance) is a light one. */
 private const val LIGHT_GROUND = 0.2f
-private const val MUTED_OUTLINE_LIGHT = 0.75f
+private const val MUTED_OUTLINE_LIGHT = 0.8f
 private const val MUTED_OUTLINE_DARK = 0.6f
-private const val NEON_OUTLINE_LIGHT = 0.8f
-private const val NEON_OUTLINE_DARK = 0.55f

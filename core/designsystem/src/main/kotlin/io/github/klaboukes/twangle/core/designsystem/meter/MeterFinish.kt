@@ -2,14 +2,13 @@ package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.StrokeCap
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.floor
 import kotlin.math.sin
 
 /*
- * Each style's own finish for the meter, from the approved mock-up (docs/design/theme-styles-preview.html,
- * each style's "fin"): the same art in the same proportions, with one choice of each part per style,
- * so the six meter looks wear the style they sit in without leaving the shared art language.
+ * The meter's finishes from 1.1's six styles (docs/design/theme-styles-preview.html, each style's "fin").
+ * Since Phase 67 (one look, Ink) every meter draws [MeterFinish.PLAIN], 1.1's Contemporary; the other kinds
+ * go with the meter looks that draw them (Phase 67's second increment).
  */
 
 /** The needle's shape (Classic). */
@@ -86,19 +85,9 @@ internal data class MeterFinish(
     val jitter: Boolean = false,
 ) {
     companion object {
-        /** The plainest finish (Contemporary's), for previews without a style. */
+        /** The plain finish (1.1's Contemporary), the one every meter draws. */
         val PLAIN = MeterFinish(NeedleKind.BAR, HubKind.DOT, TrackKind.LINE, StrokeCap.Round)
     }
-}
-
-/** [style]'s meter finish, as the mock-up's "fin". */
-internal fun meterFinishFor(style: VisualStyle): MeterFinish = when (style) {
-    VisualStyle.ANCIENT -> MeterFinish(NeedleKind.SPEAR, HubKind.STONE, TrackKind.DOTS, StrokeCap.Round, jitter = true)
-    VisualStyle.CLASSIC -> MeterFinish(NeedleKind.BREGUET, HubKind.CAP, TrackKind.RAIL, StrokeCap.Butt)
-    VisualStyle.RETRO -> MeterFinish(NeedleKind.VU, HubKind.DISC, TrackKind.BAND, StrokeCap.Butt)
-    VisualStyle.CONTEMPORARY -> MeterFinish.PLAIN
-    VisualStyle.FUTURISTIC -> MeterFinish(NeedleKind.BEAM, HubKind.RING, TrackKind.DASHED, StrokeCap.Square)
-    VisualStyle.SPACE_AGE -> MeterFinish(NeedleKind.BALL, HubKind.SATURN, TrackKind.DOTS, StrokeCap.Round)
 }
 
 /**

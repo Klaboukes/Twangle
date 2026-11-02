@@ -9,7 +9,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -92,7 +90,6 @@ import io.github.klaboukes.twangle.core.designsystem.PressTone
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import kotlinx.coroutines.Job
@@ -162,7 +159,6 @@ private fun TourOverlay(
     val animationsOff = rememberAnimationsOff()
     fun ms(duration: Int) = if (animationsOff) 0 else duration
     val density = LocalDensity.current
-    val style = MaterialTheme.styleTokens.style
     // The step the spotlight is on (saved, so a turned phone carries on there), and the one the balloon shows.
     var step by rememberSaveable { mutableIntStateOf(0) }
     var ended by rememberSaveable { mutableStateOf(false) }
@@ -190,7 +186,7 @@ private fun TourOverlay(
 
     fun spotlightOf(part: TourPart): Spotlight? = targets.boundsOf(part)?.let { b ->
         val pad = TourMeasures.HOLE_PAD * density.density
-        spotlightFor(local(b), frame.width, frame.height, pad, tourCornerDp(style, part.corner) * density.density)
+        spotlightFor(local(b), frame.width, frame.height, pad, tourCornerDp(part.corner) * density.density)
     }
 
     fun finish() {
@@ -255,7 +251,6 @@ private fun TourOverlay(
         lerp(scheme.background, scheme.onBackground, TourMeasures.LIGHT_SCRIM_INK).copy(alpha = TourMeasures.LIGHT_SCRIM_ALPHA)
     }
     val halo = scheme.primary.copy(alpha = if (dark) TourMeasures.HALO_DARK_ALPHA else TourMeasures.HALO_LIGHT_ALPHA)
-    val neon = style == VisualStyle.FUTURISTIC
     val holePaint = remember { HolePaint() }
     val placement = remember { mutableStateOf<BalloonPlacement?>(null) }
     val insets = WindowInsets.safeDrawing
@@ -299,7 +294,7 @@ private fun TourOverlay(
                 val to = spotlightOf(order[atStep])
                 val from = glideFrom
                 val hole = if (from != null && to != null) lerp(from, to, easeInOutCubic(glide.value)) else to
-                drawScrim(scrim.copy(alpha = scrim.alpha * dim.value), halo.copy(alpha = halo.alpha * dim.value), hole, neon, holePaint)
+                drawScrim(scrim.copy(alpha = scrim.alpha * dim.value), halo.copy(alpha = halo.alpha * dim.value), hole, holePaint)
             },
     ) { measurables, constraints ->
         val width = constraints.maxWidth
@@ -425,18 +420,18 @@ private class HolePaint {
 }
 
 /**
- * The dim layer, [color] over the whole window, with [hole] cut out of it: its corners rounded, or
- * cut in Futuristic ([neon]), with a soft edge and no outline, and a soft [halo] in the accent
+ * The dim layer, [color] over the whole window, with [hole] cut out of it: its corners rounded, with
+ * a soft edge and no outline, and a soft [halo] in the accent
  * hugging the edge outside, fading out over [TourMeasures.HALO_REACH].
  */
-private fun DrawScope.drawScrim(color: Color, halo: Color, hole: Spotlight?, neon: Boolean, holePaint: HolePaint) {
+private fun DrawScope.drawScrim(color: Color, halo: Color, hole: Spotlight?, holePaint: HolePaint) {
     if (color.alpha <= 0f) return
     drawIntoCanvas { canvas ->
         val native = canvas.nativeCanvas
         val layer = native.saveLayer(0f, 0f, size.width, size.height, null)
         native.drawColor(color.toArgb())
         if (hole != null && hole.box.width > 0f && hole.box.height > 0f) {
-            val path = holePath(hole, if (neon) TourMeasures.NEON_CUT.dp.toPx() else 0f)
+            val path = holePath(hole)
             // The mock-up's 14 dp canvas shadow blur is a Gaussian of half that; Android's blur radius is about 1.7 of those.
             val radius = TourMeasures.HOLE_SOFT.dp.toPx() * 0.5f * BLUR_RADIUS_PER_SIGMA
             native.drawPath(path.asAndroidPath(), holePaint.blurred(radius))
@@ -448,29 +443,16 @@ private fun DrawScope.drawScrim(color: Color, halo: Color, hole: Spotlight?, neo
     }
 }
 
-/** The spotlight's outline: a rounded box, or (with [cut] > 0) one with its corners cut by at most [cut]. */
-private fun holePath(hole: Spotlight, cut: Float): Path = Path().apply {
+/** The spotlight's outline: a rounded box. */
+private fun holePath(hole: Spotlight): Path = Path().apply {
     val b = hole.box
-    if (cut > 0f) {
-        val c = min(hole.corner, cut)
-        moveTo(b.left + c, b.top)
-        lineTo(b.right - c, b.top)
-        lineTo(b.right, b.top + c)
-        lineTo(b.right, b.bottom - c)
-        lineTo(b.right - c, b.bottom)
-        lineTo(b.left + c, b.bottom)
-        lineTo(b.left, b.bottom - c)
-        lineTo(b.left, b.top + c)
-        close()
-    } else {
-        addRoundRect(RoundRect(b.left, b.top, b.right, b.bottom, CornerRadius(hole.corner)))
-    }
+    addRoundRect(RoundRect(b.left, b.top, b.right, b.bottom, CornerRadius(hole.corner)))
 }
 
 /**
- * The balloon for step [index] of [count] (its [text]): filled with the style's accent, no outline,
- * lifted by a soft shadow (Futuristic: an accent glow) that also falls under the pointer, which
- * points at the part from the side [placement] says. Above the text the style's mark and the step
+ * The balloon for step [index] of [count] (its [text]): filled with the accent, no outline, lifted
+ * by a soft shadow that also falls under the pointer, which points at the part from the side
+ * [placement] says. Above the text the navigation bar's mark and the step
  * count; under it Skip tour and Next (Done on the last step), side by side or on two rows. TalkBack
  * hears a pane titled "Show me around" reading "Step 3 of 4. Tap: tune only this string. Hold: hear it.", then the buttons.
  */
@@ -486,8 +468,6 @@ private fun TourBalloon(
 ) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
-    val style = tokens.style
-    val neon = style == VisualStyle.FUTURISTIC
     val fill = scheme.primary
     val onFill = scheme.onPrimary
     val shape = MaterialTheme.shapes.medium
@@ -501,7 +481,7 @@ private fun TourBalloon(
         modifier
             .testTag(TourTestTags.BALLOON)
             .semantics { paneTitle = title }
-            .drawBehind { drawBalloon(shape, placement(), fill, neon, shadowAlpha, shadow) }
+            .drawBehind { drawBalloon(shape, placement(), fill, shadowAlpha, shadow) }
             .width(IntrinsicSize.Max)
             .padding(start = BALLOON_SIDE_PADDING, end = BALLOON_SIDE_PADDING, top = BALLOON_TOP_PADDING, bottom = BALLOON_BOTTOM_PADDING),
     ) {
@@ -510,7 +490,7 @@ private fun TourBalloon(
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            NavMark(style, onFill, Modifier)
+            NavMark(onFill, Modifier)
             Text(
                 stringResource(R.string.tour_step_count, index + 1, count),
                 style = body.copy(fontSize = 12.sp, lineHeight = 1.3.em, fontWeight = FontWeight.Medium, letterSpacing = 0.03.em),
@@ -535,7 +515,7 @@ private fun TourBalloon(
                 {
                     TwangleTextButton(
                         onClick = onSkip,
-                        shape = tourButtonShape(style),
+                        shape = TOUR_BUTTON_SHAPE,
                         colors = ButtonDefaults.textButtonColors(contentColor = onFill),
                         contentPadding = PaddingValues(horizontal = SKIP_SHIFT, vertical = 6.dp),
                         // On the accent-filled balloon: the on-accent colour lights it.
@@ -547,16 +527,11 @@ private fun TourBalloon(
             next = {
                 TwangleButton(
                     onClick = onNext,
-                    shape = tourButtonShape(style),
-                    colors = if (neon) {
-                        ButtonDefaults.buttonColors(containerColor = onFill.copy(alpha = NEON_NEXT_FILL), contentColor = onFill)
-                    } else {
-                        ButtonDefaults.buttonColors(containerColor = onFill, contentColor = fill)
-                    },
-                    border = if (neon) BorderStroke(1.5.dp, onFill) else null,
+                    shape = TOUR_BUTTON_SHAPE,
+                    colors = ButtonDefaults.buttonColors(containerColor = onFill, contentColor = fill),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                    // Filled with the on-accent colour, the accent lights it (Futuristic's faint fill: as Skip).
-                    tone = if (neon) PressTone.IN_ACCENT else PressTone.IN_ACCENT_FILLED,
+                    // Filled with the on-accent colour, the accent lights it.
+                    tone = PressTone.IN_ACCENT_FILLED,
                     modifier = Modifier.testTag(TourTestTags.NEXT),
                 ) {
                     Text(stringResource(if (last) R.string.tour_done else R.string.tour_next), style = buttonText(body))
@@ -569,13 +544,8 @@ private fun TourBalloon(
 
 private fun buttonText(body: TextStyle) = body.copy(fontSize = 14.sp, lineHeight = 1.2.em, fontWeight = FontWeight.Medium)
 
-/** Next's shape: the style's button shape with at most 20 dp corners (Ancient's pebble, Futuristic's cut corners). */
-private fun tourButtonShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.ANCIENT -> RoundedCornerShape(topStart = 22.dp, topEnd = 16.dp, bottomEnd = 24.dp, bottomStart = 14.dp)
-    VisualStyle.CLASSIC -> RoundedCornerShape(4.dp)
-    VisualStyle.FUTURISTIC -> CutCornerShape(10.dp)
-    VisualStyle.RETRO, VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> RoundedCornerShape(20.dp)
-}
+/** Next's and Skip's shape: 20 dp corners. */
+private val TOUR_BUTTON_SHAPE: Shape = RoundedCornerShape(20.dp)
 
 /**
  * Skip tour at the start and Next at the end of one row; where the two don't fit side by side, Skip
@@ -649,9 +619,9 @@ private class BalloonShadow {
 
 /**
  * The balloon's body in [shape] with its pointer on the side [placement] says, filled with [fill]
- * over a soft shadow at [shadowAlpha] (Futuristic, [neon]: an accent glow and a small shadow).
+ * over a soft shadow at [shadowAlpha].
  */
-private fun DrawScope.drawBalloon(shape: Shape, placement: BalloonPlacement?, fill: Color, neon: Boolean, shadowAlpha: Float, shadow: BalloonShadow) {
+private fun DrawScope.drawBalloon(shape: Shape, placement: BalloonPlacement?, fill: Color, shadowAlpha: Float, shadow: BalloonShadow) {
     val path = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawBalloon)) }
     if (placement != null && placement.side != BalloonSide.OVER) {
         path.addPath(pointerPath(placement, size, this))
@@ -660,13 +630,8 @@ private fun DrawScope.drawBalloon(shape: Shape, placement: BalloonPlacement?, fi
         val argb = fill.toArgb()
         val native = path.asAndroidPath()
         drawIntoCanvas { canvas ->
-            if (neon) {
-                shadow.far.apply { color = argb; setShadowLayer(10.dp.toPx() * SHADOW_SPREAD, 0f, 0f, fill.copy(alpha = NEON_GLOW_ALPHA).toArgb()) }
-                shadow.near.apply { color = argb; setShadowLayer(4.dp.toPx() * SHADOW_SPREAD, 0f, 2.dp.toPx(), Color.Black.copy(alpha = shadowAlpha).toArgb()) }
-            } else {
-                shadow.far.apply { color = argb; setShadowLayer(10.dp.toPx() * SHADOW_SPREAD, 0f, 6.dp.toPx(), Color.Black.copy(alpha = shadowAlpha).toArgb()) }
-                shadow.near.apply { color = argb; setShadowLayer(2.dp.toPx() * SHADOW_SPREAD, 0f, 1.dp.toPx(), Color.Black.copy(alpha = shadowAlpha * 0.8f).toArgb()) }
-            }
+            shadow.far.apply { color = argb; setShadowLayer(10.dp.toPx() * SHADOW_SPREAD, 0f, 6.dp.toPx(), Color.Black.copy(alpha = shadowAlpha).toArgb()) }
+            shadow.near.apply { color = argb; setShadowLayer(2.dp.toPx() * SHADOW_SPREAD, 0f, 1.dp.toPx(), Color.Black.copy(alpha = shadowAlpha * 0.8f).toArgb()) }
             canvas.nativeCanvas.drawPath(native, shadow.far)
             canvas.nativeCanvas.drawPath(native, shadow.near)
         }
@@ -722,10 +687,6 @@ private const val COUNT_ALPHA = 0.78f
 /** The mock-up's shadow strength, light and dark. */
 private const val LIGHT_SHADOW = 0.22f
 private const val DARK_SHADOW = 0.55f
-
-/** Futuristic: the accent glow at 40 %, and Next filled with on-accent at 16 % inside its neon outline. */
-private const val NEON_GLOW_ALPHA = 0.4f
-private const val NEON_NEXT_FILL = 0.16f
 
 /** A CSS blur radius is two Gaussian sigmas; Android's shadow and mask radius is about 1.7 sigmas. */
 private const val BLUR_RADIUS_PER_SIGMA = 1.73f

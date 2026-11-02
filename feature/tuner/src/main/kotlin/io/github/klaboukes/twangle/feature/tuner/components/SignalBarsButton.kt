@@ -104,7 +104,7 @@ fun SignalBarsButton(
                 .touchArea(MIN_TOUCH)
                 .testTag(TunerTestTags.SIGNAL_BARS)
                 // Lit round the bars like an icon button.
-                .clickable(press, PressIndication(CircleShape, face = true), onClickLabel = showFigures, role = Role.Button) {
+                .clickable(press, PressIndication(CircleShape), onClickLabel = showFigures, role = Role.Button) {
                     press.pressFlash()
                     open = true
                 }

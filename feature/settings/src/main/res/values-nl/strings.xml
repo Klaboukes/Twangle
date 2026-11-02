@@ -32,7 +32,6 @@
     <string name="settings_in_tune_precision_precise">Precies: binnen 2 cent</string>
 
     <!-- Look. -->
-    <string name="settings_style_title">Stijl</string>
     <string name="settings_theme_title">Licht of donker</string>
     <string name="settings_theme_system">Systeemstandaard</string>
     <string name="settings_theme_light">Licht</string>

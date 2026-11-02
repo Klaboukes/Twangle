@@ -13,7 +13,6 @@ import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -39,7 +38,7 @@ import java.util.concurrent.TimeUnit
  * and builds the contact sheet in `build/owner-screens/styles/`.
  */
 @RunWith(Parameterized::class)
-class StyleScreenshots(private val style: VisualStyle) {
+class StyleScreenshots(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -59,7 +58,7 @@ class StyleScreenshots(private val style: VisualStyle) {
         val out = File(dir!!).apply { mkdirs() }
         compose.setContent {
             PhoneScreen(PHONE, SystemBars.NONE) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerContent(
                         state = IN_TUNE,
@@ -82,7 +81,7 @@ class StyleScreenshots(private val style: VisualStyle) {
             // The background's cross-fade, the in-tune colour and the glow all settle before the picture.
             compose.waitForIdle()
             val bitmap = compose.onPhoneScreen().captureToImage().asAndroidBitmap()
-            val name = "style-${style.name}-${if (dark) "dark" else "light"}".lowercase().replace('_', '-')
+            val name = "style-$style-${if (dark) "dark" else "light"}".lowercase().replace('_', '-')
             File(out, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
@@ -90,8 +89,8 @@ class StyleScreenshots(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> =
-            if (InstrumentationRegistry.getArguments().getString(ARGUMENT) == "true") VisualStyle.entries else emptyList()
+        fun styles(): List<String> =
+            if (InstrumentationRegistry.getArguments().getString(ARGUMENT) == "true") listOf("Ink") else emptyList()
 
         /** The instrumentation argument that turns these pictures on. */
         const val ARGUMENT = "styleScreenshots"

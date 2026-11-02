@@ -1,20 +1,4 @@
 <resources>
-    <!-- Visual styles, under their cards in Settings → Style. -->
-    <string name="style_ancient">Ancient</string>
-    <!-- Visual style name under its card in Settings → Style: a classic, finely made look (watch hands, engraved lines). One or two words. -->
-    <string name="style_classic">Classic</string>
-    <!-- Visual style name under its card in Settings → Style: a 1970s electronics look (VU meters, glowing screens). One or two words. -->
-    <string name="style_retro">Retro</string>
-    <!-- Visual style name under its card in Settings → Style: today's clean, modern look. One or two words. -->
-    <string name="style_contemporary">Contemporary</string>
-    <!-- Visual style name under its card in Settings → Style: a neon, science-fiction look. One or two words. -->
-    <string name="style_futuristic">Futuristic</string>
-    <!-- Visual style name under its card in Settings → Style: the 1960s space-age look (planets, stars). One or two words. -->
-    <string name="style_space_age">Space Age</string>
-    <!-- The big letter and the two string buttons on a style card; note names, the same in every language. -->
-    <string name="style_card_note" translatable="false">A</string>
-    <string name="style_card_low_string" translatable="false">E</string>
-
     <!-- A note name with a sharp or flat, read aloud by TalkBack. %1$s is the letter or syllable,
          e.g. "C", "Sol". Languages that say letter names in one word (see bools.xml) use these
          only for Do Re Mi. -->

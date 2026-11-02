@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.dsp.strobe.WaveMotion
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlin.math.PI
 import kotlin.math.abs
@@ -31,22 +30,21 @@ import kotlin.math.sqrt
  * still. How unsettled a look is (unrest) shows how far off from a distance and fades to nothing on
  * the note, so every look settles into one calm shape there:
  *
- * - strobe: the style's own rows of stripes (Strobe.kt), drifting like a strobe tuner's disc.
- * - ribbon: the style's own sound ribbon (SoundRibbon.kt); its pulses drift and smooth out.
+ * - strobe: rows of stripes (Strobe.kt), drifting like a strobe tuner's disc.
+ * - ribbon: the sound ribbon (SoundRibbon.kt); its pulses drift and smooth out.
  * - dots: a dot-matrix strip that scrolls, lit as far as the ribbon reaches.
  * - fireflies: specks that swarm and drift with the pulses and glide into an even line on the note.
  * - loop: a hoop spinning like a coin at the beat rate, its near side sweeping right (sharp) or
  *   left (flat), that settles face-on into a still ring.
  * - ripples: rings that spread out (sharp) or draw in (flat), uneven off pitch, smooth on the note.
  *
- * The strobe and the ribbon are drawn in each style's own marks; the others are the same in every
- * style, in the style's colours. Drawing allocates nothing per frame: one Ribbon and the caller's Path are
+ * Every look is drawn in the theme's colours (1.1's styles drew the strobe and the ribbon in marks of
+ * their own; Phase 67 kept Contemporary's rounded bars). Drawing allocates nothing per frame: one Ribbon and the caller's Path are
  * reused, and strokes come from roundStroke.
  */
 
 /**
- * The wave view in [look], filling the draw area in [color]. [WaveLook.STROBE] and
- * [WaveLook.RIBBON] are drawn in [style]'s own marks.
+ * The wave view in [look], filling the draw area in [color].
  *
  * - [beats], [phase] and [depth] (0..1) shape the pulses (see [ribbonAt]); [phase] also moves the
  *   other looks, one step per strobe period.
@@ -61,7 +59,6 @@ import kotlin.math.sqrt
  */
 fun DrawScope.drawWave(
     look: WaveLook,
-    style: VisualStyle,
     color: Color,
     beats: Float,
     phase: Float,
@@ -84,8 +81,8 @@ fun DrawScope.drawWave(
     ribbon.breath = breath
     ribbon.stir = stir
     when (look) {
-        WaveLook.STROBE -> strobe(style, ribbon)
-        WaveLook.RIBBON -> drawStyleRibbon(style, ribbon, path)
+        WaveLook.STROBE -> strobe(ribbon)
+        WaveLook.RIBBON -> drawStyleRibbon(ribbon)
         WaveLook.DOTS -> lights(ribbon)
         WaveLook.FIREFLIES -> fireflies(ribbon)
         WaveLook.LOOP -> loop(ribbon, path)
@@ -139,17 +136,17 @@ private val ROUND_STROKES = arrayOfNulls<Stroke>(STROKE_STEPS_PER_PX.toInt() * M
 private val BUTT_STROKES = arrayOfNulls<Stroke>(STROKE_STEPS_PER_PX.toInt() * MAX_STROKE_PX + 1)
 
 /**
- * The strobe: [style]'s own rows of stripes ([drawStrobe]), the lower row twice as fast, as on the
+ * The strobe: rows of stripes ([drawStrobe]), the lower row twice as fast, as on the
  * disc of a strobe tuner. They drift one stripe per strobe period, so right when sharp and left when
  * flat, and stand perfectly still on the note. Without a note ([Ribbon.level] 0) the rows shrink to
  * [STROBE_REST] of their height in the faint resting colour, and they grow back when a note starts;
  * breathing in tune swells them gently, without any drift.
  */
-private fun DrawScope.strobe(style: VisualStyle, ribbon: Ribbon) {
+private fun DrawScope.strobe(ribbon: Ribbon) {
     val high = STROBE_REST + (1f - STROBE_REST) * ribbon.level.coerceIn(0f, 1f)
     val trim = size.height * (1f - high) / 2f
     inset(left = 0f, top = trim, right = 0f, bottom = trim) {
-        drawStrobe(style, ribbon.phase, ribbon.color, ribbon.glow)
+        drawStrobe(ribbon.phase, ribbon.color, ribbon.glow)
     }
 }
 

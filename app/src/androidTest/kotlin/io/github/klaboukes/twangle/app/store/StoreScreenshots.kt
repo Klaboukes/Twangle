@@ -39,7 +39,6 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -88,31 +87,31 @@ class StoreScreenshots(private val shot: Shot) {
      * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
      * screens fit whole). The six styles' canvas is in [style]; its screens are [STYLE_TILES].
      */
-    enum class Shot(val style: VisualStyle, val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
+    enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
         /** The meter, the note and "In tune". */
-        IN_TUNE(VisualStyle.CONTEMPORARY, dark = false, focus = 0f..0.62f),
-        SIX_STYLES(VisualStyle.SPACE_AGE, dark = true),
+        IN_TUNE(dark = false, focus = 0f..0.62f),
+        SIX_STYLES(dark = true),
 
         /** The meter, the note, its pill and "Tune up". */
-        TUNE_UP(VisualStyle.CLASSIC, dark = true, focus = 0f..0.68f),
+        TUNE_UP(dark = true, focus = 0f..0.68f),
 
         /** The panel's instruments and the first tunings. */
-        INSTRUMENTS(VisualStyle.RETRO, dark = false, focus = 0.24f..0.80f),
+        INSTRUMENTS(dark = false, focus = 0.24f..0.80f),
 
         /** The chord's name, its notes and the last chords. */
-        CHORD_NAME(VisualStyle.FUTURISTIC, dark = true, focus = 0f..0.56f),
-        CHORDS_AND_CAPO(VisualStyle.ANCIENT, dark = false),
+        CHORD_NAME(dark = true, focus = 0f..0.56f),
+        CHORDS_AND_CAPO(dark = false),
 
         /** At twice the text size: the meter, the note, its pill and "Tune up". */
-        TALKBACK(VisualStyle.CONTEMPORARY, dark = true, focus = 0.065f..0.71f),
-        PITCH_TRAIL(VisualStyle.CLASSIC, dark = false),
+        TALKBACK(dark = true, focus = 0.065f..0.71f),
+        PITCH_TRAIL(dark = false),
         ;
 
         val number: Int get() = ordinal + 1
     }
 
     /** One of the six styles' screens: the tuner in [style] with [look], holding [string] (a MIDI note) in tune. */
-    data class StyleTile(val style: VisualStyle, val dark: Boolean, val look: MeterLook, val string: Int)
+    data class StyleTile(val dark: Boolean, val look: MeterLook, val string: Int)
 
     @get:Rule
     val rules: RuleChain = RuleChain
@@ -146,9 +145,8 @@ class StoreScreenshots(private val shot: Shot) {
         runBlocking {
             settings.setTourSeen(true)
             settings.setFocusMode(false)
-            settings.setStyle(shot.style)
             settings.setTheme(if (shot.dark) ThemeMode.DARK else ThemeMode.LIGHT)
-            // The style's own colours, not the wallpaper's.
+            // Ink's own colours, not the wallpaper's.
             settings.setDynamicColor(false)
             settings.setA4(NoteMapper.DEFAULT_A4_HZ)
             settings.setInstrument(Instruments.GUITAR)
@@ -191,7 +189,6 @@ class StoreScreenshots(private val shot: Shot) {
                 // Each style with a meter look of its own, each holding another string in tune.
                 val screens = STYLE_TILES.mapIndexed { i, tile ->
                     runBlocking {
-                        settings.setStyle(tile.style)
                         settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT)
                         settings.setMeterLook(tile.look)
                     }
@@ -370,7 +367,7 @@ class StoreScreenshots(private val shot: Shot) {
     ) {
         val caption = captions().getOrNull(shot.ordinal) ?: error("no caption ${shot.number} for $locale")
         val canvas = renderCanvas(spec.width, spec.height) {
-            StoreCanvas(caption, rows, shot.style, shot.dark, spec, bubble, staggered)
+            StoreCanvas(caption, rows, shot.dark, spec, bubble, staggered)
         }
         write(canvas, "store-${shot.number}.png")
     }
@@ -485,12 +482,12 @@ class StoreScreenshots(private val shot: Shot) {
          * own (six looks in all) and another string of the guitar in tune.
          */
         val STYLE_TILES = listOf(
-            StyleTile(VisualStyle.CONTEMPORARY, dark = false, look = MeterLook.CLASSIC, string = 40),
-            StyleTile(VisualStyle.FUTURISTIC, dark = true, look = MeterLook.LIGHT_BARS, string = 45),
-            StyleTile(VisualStyle.CLASSIC, dark = true, look = MeterLook.LOUPE, string = 50),
-            StyleTile(VisualStyle.RETRO, dark = false, look = MeterLook.POINTERS, string = 55),
-            StyleTile(VisualStyle.ANCIENT, dark = false, look = MeterLook.LIGHT_ARC, string = 59),
-            StyleTile(VisualStyle.SPACE_AGE, dark = true, look = MeterLook.ARROWS, string = 64),
+            StyleTile(dark = false, look = MeterLook.CLASSIC, string = 40),
+            StyleTile(dark = true, look = MeterLook.LIGHT_BARS, string = 45),
+            StyleTile(dark = true, look = MeterLook.LOUPE, string = 50),
+            StyleTile(dark = false, look = MeterLook.POINTERS, string = 55),
+            StyleTile(dark = false, look = MeterLook.LIGHT_ARC, string = 59),
+            StyleTile(dark = true, look = MeterLook.ARROWS, string = 64),
         )
 
         /** What each of the six styles' screens shows: the meter, the note and "In tune". */

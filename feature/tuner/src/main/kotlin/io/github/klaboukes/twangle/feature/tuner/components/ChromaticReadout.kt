@@ -15,9 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.feature.tuner.R
 
 /**
@@ -40,7 +38,7 @@ fun ChromaticReadout(readout: NoteReadout?, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = if (readout != null) centsText(readout.cents) else "",
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style)),
+            style = MaterialTheme.typography.titleLarge.copy(fontFamily = NumberFont),
             color = centsColor,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { hideFromAccessibility() },
@@ -58,7 +56,7 @@ fun ChromaticReadout(readout: NoteReadout?, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun ChromaticReadoutPreview() {
-    TwangleTheme(style = VisualStyle.CLASSIC, darkTheme = false) {
+    TwangleTheme(darkTheme = false) {
         ChromaticReadout(NoteReadout(noteName = "A", octave = 4, frequencyHz = 437.0f, cents = -11.9f))
     }
 }

@@ -5,7 +5,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentNameRes
 import io.github.klaboukes.twangle.feature.tuner.components.tuningName
 import io.github.klaboukes.twangle.app.R as AppR
@@ -14,7 +13,7 @@ import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 /**
  * The part of the saved settings the home-screen widget shows: the tuner's mode, instrument and
  * tuning (a custom tuning by its own name, a lowered one by what it turns into, as the tuner names
- * it), and the style and theme it is drawn in. Settings
+ * it), and the theme and wallpaper colours it is drawn in (Ink, 2.0's one look). Settings
  * changes that leave this the same (A4, the meter's look, the metronome…) don't redraw the widget.
  */
 internal data class WidgetState(
@@ -22,7 +21,6 @@ internal data class WidgetState(
     val instrumentId: String,
     val tuning: Tuning,
     val customTuningName: String?,
-    val style: VisualStyle,
     val theme: ThemeMode,
     val dynamicColor: Boolean,
 ) {
@@ -56,7 +54,6 @@ internal data class WidgetState(
             instrumentId = settings.instrument.id,
             tuning = settings.tuning,
             customTuningName = settings.pickedCustomTuning?.name,
-            style = settings.style,
             theme = settings.theme,
             dynamicColor = settings.dynamicColor,
         )

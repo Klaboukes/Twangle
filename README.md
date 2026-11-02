@@ -49,7 +49,7 @@ From the tools button above the strings, one at a time:
 - **Ear training:** play back a note Twangle plays while the tuner listens, or name intervals and chord types by ear with buttons. You choose what is asked; no scores are kept, and the microphone is used only by *Play it back*, only while it is on the screen.
 
 ### Make it yours
-- **Six visual styles:** Ancient, Classic, Retro, Contemporary, Futuristic and Space Age, each with its own colours, lettering and background.
+- **One calm look:** light or dark (or as the phone is), with your wallpaper's colours on Android 12 and later.
 - **Six meter looks** (Classic, Light arc, Pointers, Loupe, Arrows, Light bars) and **six wave looks** (a strobe among them).
 - Light, dark or follow the phone, with colours from your wallpaper on Android 12+.
 - **Note names:** C, C♯, D (or with flats), German style with H for B, or Do Re Mi. By default they follow what is usual in your language.
@@ -79,7 +79,7 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:feature:practice` | The Practice tab: chord charts, scales and the capo helper |
 | `:core:audio` | Microphone capture, reference tones and metronome clicks |
 | `:core:settings` | Saved settings |
-| `:core:designsystem` | The six visual styles: colours, fonts, backgrounds, style cards, meter and wave looks |
+| `:core:designsystem` | The look (Ink, light and dark): colours, shapes, buttons, meter and wave looks |
 | `:core:dsp` | Pitch detection, strum check, note math, tunings, plucked-string tones, metronome timing (pure Kotlin, no Android) |
 
 The full design is in [ARCHITECTURE.md](ARCHITECTURE.md) and the topic files it lists.
@@ -104,4 +104,4 @@ Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
 ## Fonts
 
-The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Forum (Denis Masharov), Alegreya Sans (Juan Pablo del Peral, Huerta Tipográfica), Playfair Display (Claus Eggers Sørensen), Bodoni Moda (Owen Earl, indestructible type*), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google), renamed Twangle Music Signs as the licence asks of a changed font. The app icons are Google's Material Symbols (Apache License 2.0).
+Text is set in the phone's own font. The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google), bundled under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses) and renamed Twangle Music Signs as the licence asks of a changed font. The app icons are Google's Material Symbols (Apache License 2.0).

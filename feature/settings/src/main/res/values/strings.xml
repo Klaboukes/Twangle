@@ -51,7 +51,6 @@
     <string name="settings_in_tune_precision_precise">Precise: within 2 cents</string>
 
     <!-- Look. -->
-    <string name="settings_style_title">Style</string>
     <!-- Setting title over the light, dark and system default choices. -->
     <string name="settings_theme_title">Light or dark</string>
     <!-- Light or dark choice (radio button): follow the phone's own light or dark setting. -->
@@ -60,7 +59,7 @@
     <string name="settings_theme_light">Light</string>
     <!-- Light or dark choice (radio button): always the dark look. -->
     <string name="settings_theme_dark">Dark</string>
-    <!-- Switch title (Contemporary style only): take the app's colours from the phone's wallpaper (Android's Material You). -->
+    <!-- Switch title (Android 12 and later): take the app's colours from the phone's wallpaper (Android's Material You); the in-tune green stays the app's own. -->
     <string name="settings_dynamic_color_title">Wallpaper colours</string>
     <!-- The line under the Wallpaper colours switch. -->
     <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>

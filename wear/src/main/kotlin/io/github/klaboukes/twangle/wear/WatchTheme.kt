@@ -6,19 +6,19 @@ import androidx.wear.compose.material3.ColorScheme
 import androidx.wear.compose.material3.MaterialTheme
 
 /**
- * The watch's colours: the phone's default style (Contemporary, dark; `StylePalettes.kt` in
- * `:core:designsystem`) on the black stage watches use, so the watch looks made by the same hand.
+ * The watch's colours: the phone's one look, Ink, dark (`StylePalettes.kt` in `:core:designsystem`;
+ * Contemporary's until Phase 67) on the black stage watches use, so the watch looks made by the same hand.
  * Copied rather than shared, because the design system brings the phone's settings, fonts and
  * Material 3 along; `WatchDialTest` keeps the copies equal to the phone's.
  */
 object WatchColors {
     val background = Color.Black
-    val ink = Color(0xFFE6E9F4)
-    val muted = Color(0xFFA6AECB)
-    val track = Color(0xFF2B3350)
-    val accent = Color(0xFFA6ADFF)
-    val onAccent = Color(0xFF121A5A)
-    val inTune = Color(0xFF6FD6A8)
+    val ink = Color(0xFFEEF1F5)
+    val muted = Color(0xFF8D96A3)
+    val track = Color(0xFF262C35)
+    val accent = Color(0xFF5FC4FF)
+    val onAccent = Color(0xFF0E1116)
+    val inTune = Color(0xFF3DDC84)
 }
 
 /** Wear Material 3 in [WatchColors]: buttons in the accent, text in ink and muted, on black. */

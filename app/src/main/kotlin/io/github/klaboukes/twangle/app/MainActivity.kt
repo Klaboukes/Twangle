@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * The app in the user's style and theme, showing the tuner, the metronome, settings, About or the
-     * tuning editor over the style's background, with the navigation bar (Tuner · Metronome · Settings)
+     * tuning editor over the app's background, with the navigation bar (Tuner · Metronome · Settings)
      * at the bottom, or the rail at the start edge on its side. The instrument and tuning panel opens
      * over the tuner, or over the Practice tools, from their instrument button. Back leads from About to Settings, from
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
 
         // Status and navigation bar icons follow the app's theme, not just the phone's. Both bars are
-        // see-through, so the style's background runs to every edge, under the gesture handle and under
+        // see-through, so the app's background runs to every edge, under the gesture handle and under
         // the three navigation buttons too, upright and on its side (Phase 65; until then the buttons
         // stood on the system's white or dark strip). Their icons stay readable: dark on a light style,
         // light on a dark one, and the navigation bar's calm field lies under them upright.
@@ -181,7 +181,7 @@ class MainActivity : AppCompatActivity() {
 
         // Which music tools show (Phase 28): every one since they went live (Phase 34).
         val tools = container.toolSwitches
-        TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
+        TwangleTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
             Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
                 var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
@@ -215,8 +215,8 @@ class MainActivity : AppCompatActivity() {
                 var closeTunerToolsRequests by rememberSaveable { mutableIntStateOf(0) }
                 val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
                 val tourOpen = tourShown(tourDue, screen == Screen.TUNER, tunerShown)
-                // Every screen but the tuner gets the quiet version of the style's background.
-                StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
+                // Ink's plain background behind every screen.
+                StyleBackdrop(Modifier.fillMaxSize())
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
                 val saveableState = rememberSaveableStateHolder()
                 val closeEditor = {

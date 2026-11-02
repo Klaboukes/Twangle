@@ -99,8 +99,7 @@ import androidx.compose.ui.unit.em
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
-import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -109,7 +108,6 @@ import io.github.klaboukes.twangle.core.dsp.intonation.IntonationVerdict
 import io.github.klaboukes.twangle.core.dsp.intonation.SaddleMove
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.IntonationSnag
 import io.github.klaboukes.twangle.feature.tuner.IntonationStep
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -212,7 +210,7 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
     val saddle = stringResource(R.string.tuner_intonation_saddle)
     val labelStyle = MaterialTheme.typography.labelLarge.copy(lineHeight = TextUnit.Unspecified)
     val displayStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
-    val numberStyle = TextStyle(fontFamily = numberFontFor(tokens.style), fontFeatureSettings = "lnum")
+    val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
     val result = state.result
     val figure = result?.let { centsPhrase(it.offsetCents) }.orEmpty()
     val stringNote = state.string?.let { state.tuning.strings[it] }
@@ -375,12 +373,11 @@ private fun IntonationSummary(
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
     val nameStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
-    val numberStyle = TextStyle(fontFamily = numberFontFor(tokens.style), fontFeatureSettings = "lnum")
-    val numberScale = if (tokens.style == VisualStyle.FUTURISTIC || tokens.style == VisualStyle.SPACE_AGE) WIDE_FACE_SCALE else 1f
+    val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
     val checkLabel = stringResource(R.string.tuner_intonation_check_string)
     val stopLabel = stringResource(R.string.tuner_string_stop_tone)
     val notChecked = stringResource(R.string.tuner_intonation_spoken_not_checked)
-    val pressShape = pickerButtonShape(tokens.style, MaterialTheme.shapes.medium)
+    val pressShape = MaterialTheme.shapes.medium
     Row(Modifier.fillMaxSize().testTag(TunerTestTags.INTONATION_PANEL), horizontalArrangement = Arrangement.SpaceEvenly) {
         state.tuning.strings.forEachIndexed { index, note ->
             val name = state.notation.nameIn(state.tuning, note.pitchClass)
@@ -429,7 +426,7 @@ private fun IntonationSummary(
                         }
                         val labelLayout = measurer.fitted(
                             AnnotatedString(label),
-                            numberStyle.copy(color = labelColour, fontSize = (COLUMN_LABEL_UNITS * u * numberScale).toSpNoScale(this)),
+                            numberStyle.copy(color = labelColour, fontSize = (COLUMN_LABEL_UNITS * u).toSpNoScale(this)),
                             maxText,
                         )
                         val x = size.width / 2f
@@ -905,7 +902,6 @@ private const val COLUMN_MARK_RADIUS = 16f
 private const val COLUMN_LABEL_Y = 140f
 private const val COLUMN_LABEL_UNITS = 19f
 private const val NOT_CHECKED_MARK = "–"
-private const val WIDE_FACE_SCALE = 0.82f
 
 private val BUTTON_WIDTH = 148.dp
 private val BUTTON_GAP = 12.dp

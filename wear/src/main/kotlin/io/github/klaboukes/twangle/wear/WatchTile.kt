@@ -104,7 +104,7 @@ internal fun MaterialScope.tuneTileLayout(): LayoutElement = primaryLayout(
 )
 
 /**
- * The tile in the watch's colours ([WatchColors], the phone's Contemporary dark), not the watch's
+ * The tile in the watch's colours ([WatchColors], the phone's Ink, dark), not the watch's
  * own dynamic theme: the accent for the mark and the button, ink for the name, on black.
  */
 internal fun watchTileColors(): ColorScheme = ColorScheme(

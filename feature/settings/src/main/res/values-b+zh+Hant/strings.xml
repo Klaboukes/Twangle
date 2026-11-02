@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">寬鬆：5 音分以內</string>
     <string name="settings_in_tune_precision_precise">精確：2 音分以內</string>
 
-    <string name="settings_style_title">風格</string>
     <string name="settings_theme_title">淺色或深色</string>
     <string name="settings_theme_system">系統預設</string>
     <string name="settings_theme_light">淺色</string>

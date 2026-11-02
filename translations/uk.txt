@@ -14,12 +14,6 @@ core/designsystem instrument_button_action f416e2a5
 core/designsystem meter_cents_label 7add8439
 core/designsystem spoken_flat f1c390f9
 core/designsystem spoken_sharp 0dc644eb
-core/designsystem style_ancient 64c0aff7
-core/designsystem style_classic ae25d648
-core/designsystem style_contemporary 0204a6c5
-core/designsystem style_futuristic e19664c3
-core/designsystem style_retro f41c7e0a
-core/designsystem style_space_age 9f6fae51
 feature/eartraining ear_answer_was 3f397516
 feature/eartraining ear_any_octave a808384f
 feature/eartraining ear_choices 20d595a5
@@ -339,7 +333,6 @@ feature/settings settings_show_tour_summary be7053f1
 feature/settings settings_show_tour_title 80afe5d9
 feature/settings settings_show_tune_hint_summary 16c8c4a4
 feature/settings settings_show_tune_hint_title c654af35
-feature/settings settings_style_title 7e744141
 feature/settings settings_theme_dark 60acc53f
 feature/settings settings_theme_light dbcd5e7b
 feature/settings settings_theme_system b0459211

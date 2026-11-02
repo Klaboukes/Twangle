@@ -28,8 +28,6 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,7 +50,7 @@ import java.util.concurrent.TimeUnit
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class PressEffectTest(private val style: VisualStyle) {
+class PressEffectTest(private val style: String) {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -66,7 +64,7 @@ class PressEffectTest(private val style: VisualStyle) {
 
     private fun show() {
         compose.setContent {
-            TwangleTheme(style = style, darkTheme = dark.value, animate = false) {
+            TwangleTheme(darkTheme = dark.value, animate = false) {
                 Column(Modifier.padding(16.dp)) {
                     // Each button in a slot of its own: the room it takes, its touch area round it. (The
                     // button's own node is its face, as with Material's buttons.)
@@ -151,10 +149,9 @@ class PressEffectTest(private val style: VisualStyle) {
         assertEquals("$style icon button's height", 48f, icon.height.value, 0.5f)
     }
 
-    /** The light lies on the 40 dp pill, not across the 48 dp touch area round it (Futuristic's glow reaches past it). */
+    /** The light lies on the 40 dp pill, not across the 48 dp touch area round it. */
     @Test
     fun aTextButtonsLightStaysOnItsPill() {
-        if (style == VisualStyle.FUTURISTIC) return
         show()
         compose.mainClock.autoAdvance = false
         try {
@@ -177,7 +174,7 @@ class PressEffectTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val TEXT = "text"
         private const val FILLED = "filled"

@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Generös: inom 5 cent</string>
     <string name="settings_in_tune_precision_precise">Exakt: inom 2 cent</string>
 
-    <string name="settings_style_title">Stil</string>
     <string name="settings_theme_title">Ljust eller mörkt</string>
     <string name="settings_theme_system">Systemstandard</string>
     <string name="settings_theme_light">Ljust</string>

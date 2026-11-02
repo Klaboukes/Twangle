@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Väljä: 5 sentin sisällä</string>
     <string name="settings_in_tune_precision_precise">Tarkka: 2 sentin sisällä</string>
 
-    <string name="settings_style_title">Tyyli</string>
     <string name="settings_theme_title">Vaalea vai tumma</string>
     <string name="settings_theme_system">Järjestelmän oletus</string>
     <string name="settings_theme_light">Vaalea</string>

@@ -27,7 +27,6 @@
     <string name="settings_in_tune_precision_relaxed">Afslappet: inden for 5 cent</string>
     <string name="settings_in_tune_precision_precise">Præcis: inden for 2 cent</string>
 
-    <string name="settings_style_title">Stil</string>
     <string name="settings_theme_title">Lys eller mørk</string>
     <string name="settings_theme_system">Systemstandard</string>
     <string name="settings_theme_light">Lys</string>

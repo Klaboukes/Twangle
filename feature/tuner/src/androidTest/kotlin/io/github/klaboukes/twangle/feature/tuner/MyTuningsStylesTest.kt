@@ -24,10 +24,8 @@ import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.tuner.components.MyTunings
@@ -49,7 +47,7 @@ import java.util.concurrent.TimeUnit
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
-class MyTuningsStylesTest(private val style: VisualStyle) {
+class MyTuningsStylesTest(private val style: String) {
 
     val compose = createSharedActivityComposeRule()
 
@@ -81,7 +79,7 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
     private fun show(lowered: Int = 0) {
         compose.setContent {
             PhoneScreen(DpSize(360.dp, 730.dp), SystemBars.NONE, fontScale = 2f, locale = "nl") {
-                TwangleTheme(style = style, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     Column(
                         Modifier
                             .fillMaxSize()
@@ -126,7 +124,7 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+        fun styles(): List<String> = listOf("Ink")
 
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp

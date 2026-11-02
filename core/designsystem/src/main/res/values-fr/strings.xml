@@ -1,11 +1,4 @@
 <resources>
-    <string name="style_ancient">Antique</string>
-    <string name="style_classic">Classique</string>
-    <string name="style_retro">Rétro</string>
-    <string name="style_contemporary">Contemporain</string>
-    <string name="style_futuristic">Futuriste</string>
-    <string name="style_space_age">Ère spatiale</string>
-
     <string name="spoken_sharp">%1$s dièse</string>
     <string name="spoken_flat">%1$s bémol</string>
 
