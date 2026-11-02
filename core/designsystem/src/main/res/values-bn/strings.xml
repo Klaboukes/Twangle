@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">সেন্ট</string>
 
-    <string name="instrument_button">বাদ্যযন্ত্র</string>
     <string name="instrument_button_action">বাদ্যযন্ত্র বা টিউনিং বদলান</string>
 </resources>

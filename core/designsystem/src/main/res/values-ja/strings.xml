@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">セント</string>
 
-    <string name="instrument_button">楽器</string>
     <string name="instrument_button_action">楽器またはチューニングを変更</string>
 </resources>

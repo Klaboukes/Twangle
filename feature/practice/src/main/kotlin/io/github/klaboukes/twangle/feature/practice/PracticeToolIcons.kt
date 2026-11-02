@@ -11,7 +11,7 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
  * Each Practice tool's small icon (Phase 47, on 1.1's tool button; since 2.0, Phase 69, in the "last time"
- * row under the cards), drawn as the app's other icons (the instrument button's headstock, the navigation
+ * row under the cards), drawn as the app's other icons (the navigation
  * bar's tabs): 1.8 dp round-ended lines on a 24 dp grid, small dots and the capo's bar filled. A new tool
  * needs its icon here (the `when` says so), and its card's picture ([practiceToolPicture]).
  */

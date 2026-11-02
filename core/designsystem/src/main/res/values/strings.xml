@@ -9,9 +9,7 @@
     <!-- The unit printed on the Classic meter's dial, above the needle's pivot (in capitals, as on a real meter). -->
     <string name="meter_cents_label">CENTS</string>
 
-    <!-- The instrument and tuning button (a headstock, no word) above the tuner's strings and in the
-         Practice tools: its name (tooltip, TalkBack) and what a double-tap does. -->
-    <string name="instrument_button">Instrument</string>
-    <!-- TalkBack: what double-tapping the instrument and tuning button does ("Double-tap to …" is added by Android). -->
+    <!-- TalkBack: what double-tapping the picker chip does (the pill naming the instrument and tuning, e.g.
+         "Guitar · Standard", at the top of the tuner and the Practice tools; "Double-tap to …" is added by Android). -->
     <string name="instrument_button_action">Change instrument or tuning</string>
 </resources>

@@ -91,7 +91,7 @@ import kotlinx.coroutines.withContext
  * share their saved UI state: the root picked in one is the other's root too.
  *
  * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start, the instrument and tuning
- * beside it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
+ * beside it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the picker chip, which opens the instrument and tuning sheet),
  * the chord's or the scale's full name on the one picker face as wide as the row ("C minor seventh ⌄",
  * "D Dorian ⌄", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left

@@ -77,8 +77,8 @@ import kotlin.math.min
  * (docs/design/fresh-start-preview.html): icons and names straight on the app's background over a calm
  * field, the open tab ([selected]) in the accent with the accent's mark under its name. A tap on another tab calls [onSelect], and one on the open
  * tab [onReselect] (the Tuner tab's closes the tuner's tools). Every item is a tab: the instrument
- * and tuning are picked with the headstock button above the tuner's strings and in the Practice tools
- * (the bar's Instrument item until 2026-10-19). Without a [selected] tab (the tuning editor) the bar or
+ * and tuning are picked with the picker chip at the top of the tuner and of the Practice tools (Phase 70;
+ * the bar's Instrument item until 2026-10-19). Without a [selected] tab (the tuning editor) the bar or
  * rail is away and [content] takes the whole window, as it does with [navigationHidden] (focus mode's full-screen tuner). The bar or rail keeps clear of the system bars; [content] is told those
  * insets are taken, so it doesn't leave room for them twice. Without the Practice tab (its switch off,
  * or no tool in it) [destinations] leaves it out and the metronome keeps its own tab ([destinationsFor]).

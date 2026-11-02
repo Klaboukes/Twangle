@@ -91,8 +91,8 @@ import kotlinx.coroutines.launch
 
 /**
  * The one picker, "What are you tuning?" (2.0, Phase 70; docs/design/v2-one-look-preview.html, *Where
- * the picker went*), opened from the picker chip at the top of the tuner (`PickerChip`) and from the
- * Practice tools' headstock button: a sheet from the bottom with the instruments as pills along the top
+ * the picker went*), opened from the picker chip (`PickerChip`) at the top of the tuner and of the
+ * Practice tools (there without the Any note switch, as the charts need an instrument): a sheet from the bottom with the instruments as pills along the top
  * and [instrument]'s tunings below, [tuning] ticked. Picking an instrument calls [onInstrumentChange]
  * (the tuner switches to its standard tuning) and keeps the sheet open; picking a tuning calls
  * [onTuningChange] and closes it. [onDismiss] is called once it has closed (a pick, a tap outside, a

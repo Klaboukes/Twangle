@@ -171,7 +171,7 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop,
     MusicSigns, NoteNameSpeech (rememberNoteNameSpeech), PacedSpeech, FontCredits,
     PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
-    SegmentedSwitch, InstrumentButton, PickerChip, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
+    SegmentedSwitch, PickerChip, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
     dial/       DialGeometry, Strobe (kept for the lens, Phase 72)
     meter/      MeterReading, MeterLooks (Classic), MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat

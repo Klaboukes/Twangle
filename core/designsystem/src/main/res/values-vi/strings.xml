@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">CENT</string>
 
-    <string name="instrument_button">Nhạc cụ</string>
     <string name="instrument_button_action">Đổi nhạc cụ hoặc kiểu lên dây</string>
 </resources>

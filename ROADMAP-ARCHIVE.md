@@ -73,6 +73,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 67 — One look](#phase-67--one-look)
 - [Phase 68 — No tour](#phase-68--no-tour)
 - [Phase 69 — Navigation](#phase-69--navigation)
+- [Phase 70 — The one picker](#phase-70--the-one-picker)
 
 ---
 
@@ -774,3 +775,8 @@ Goal: Tune · Metronome · Practice, Settings behind the gear, Practice as four 
 - ☑ Settings and About behind a gear in the top left corner of the tuner (and of the other tabs where they need one), not a tab: the gear in the top start corner of every tab (on its side at the rail's top), Settings and About without the bar, Back and Settings' new back arrow returning to the tab that opened it; focus mode's button keeps its place top right
 - ☑ Practice as four big cards that open a tool full screen and come back, and a "last time" row; the tool button and "opens on the tool used last" go: the cards (two to a row upright, four on its side) with the gear before the title, each tool full screen without the bar and with a back arrow top left (no gear there), Back to the cards (Chords opened from the capo helper back to it); the row names the tool and what was picked in it
 - ☑ The store screenshots and the website's pages follow: the second store screenshot is the Practice cards above the three tabs, in place of the six styles (caption "Tune, keep time and practise in one app", English and Dutch), and its case saves the metronome's screen for the website; the full description's two lines on the styles and the meter and wave looks went from every language; the website's pages (English and Dutch) walk through the tabs, the cards with their back arrow and the gear, the wave view and "your style" gone, and its pictures renamed to the store's numbering (Phase 65 had changed it), so `scripts/website-pictures.sh` works again. Checked with `StoreScreenshots` in English on the Xiaomi 12X; nothing published (the site and the listing stay 1.1's until 2.0 lands on `main`)
+
+## Phase 70 — The one picker
+Goal: instrument, tuning and Any note in one sheet from a chip at the top.
+- ☑ The chip "Guitar · Standard ▾" at the top centre of the tuner; the "What are you tuning?" sheet: instrument pills, the tunings with their strings, Edit tunings (the tuning editor), Any note as a switch; the mode switch goes (`TunerMode` set from the sheet)
+- ☑ In Any note the chip reads "Any note" and the pegs go; the Practice tools take their instrument and tuning from the same sheet (`InstrumentTuningPanel` becomes it) — done 2026-11-02: the tuner already read "Any note" with the strings gone (a test says so now); Chords, Scales, Capo and Ear training show the same chip beside their back arrow, opening the same sheet without its Any note switch (the charts need an instrument); the headstock button (`InstrumentButton.kt`) went, with its text "Instrument" from every language and the record

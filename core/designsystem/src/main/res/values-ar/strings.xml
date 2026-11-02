@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">سنت</string>
 
-    <string name="instrument_button">الآلة</string>
     <string name="instrument_button_action">غيّر الآلة أو الدوزان</string>
 </resources>

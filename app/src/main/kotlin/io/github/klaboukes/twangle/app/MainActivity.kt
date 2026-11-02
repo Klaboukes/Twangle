@@ -381,8 +381,8 @@ class MainActivity : AppCompatActivity() {
      * Its back arrow in the top start corner ([onBack]) and Back lead back to the cards (Chords opened from
      * the capo helper back to it). Each tool keeps its own saved UI state while another shows, but for Chords
      * and Scales, one screen that shares it (one root for both). A chord tapped in the capo helper opens in
-     * Chords ([onOpenChord]), which then opens on [openedChord]. The instrument button in each tool opens the
-     * instrument and tuning panel over it ([PracticeTuningPanel]); its New tuning and Edit open the tuning
+     * Chords ([onOpenChord]), which then opens on [openedChord]. The picker chip in each tool opens the
+     * "What are you tuning?" sheet over it ([PracticeTuningPanel]); its New tuning and Edit open the tuning
      * editor ([onOpenTuningEditor]). Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its
      * saved choices; it stops the drone itself when it goes. Ear training (Phase 55) gets the reference tones
      * and its own microphone through the tuner's pipeline ([AppContainer.earTrainingListener]), and the same
@@ -476,9 +476,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The instrument and tuning panel over a Practice tool: the same panel as the tuner's, saving what is
-     * picked as the tuner does. A pick also switches the tuner to guitar mode, where the strings show,
-     * as a pick in the tuner's panel does.
+     * The "What are you tuning?" sheet over a Practice tool (Phase 70): the same sheet as the tuner's, saving
+     * what is picked as the tuner does, but without its Any note switch, as the charts need an instrument.
+     * A pick also switches the tuner to guitar mode, where the strings show, as a pick in the tuner's sheet does.
      */
     @Composable
     private fun PracticeTuningPanel(
@@ -524,7 +524,7 @@ class MainActivity : AppCompatActivity() {
     private fun practiceTuningName(settings: AppSettings): String =
         stringResource(TunerR.string.tuner_tuning_name, instrumentLabel(settings.instrument), tuningName(settings))
 
-    /** The picked instrument and tuning as TalkBack says them on the instrument button, e.g. "Guitar, Standard" or a custom tuning's name. */
+    /** The picked instrument and tuning as TalkBack says them on the picker chip, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable
     private fun spokenTuning(settings: AppSettings): String =
         stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), rememberNoteNameSpeech().text(tuningName(settings)))

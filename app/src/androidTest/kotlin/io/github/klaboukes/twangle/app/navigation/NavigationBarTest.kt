@@ -161,7 +161,7 @@ class NavigationBarTest {
 
     /**
      * Bar and rail hold the three tabs and, on its side, the gear, nothing else: the instrument and tuning
-     * are picked with the headstock button above the tuner's strings, so no item stands among the tabs
+     * are picked with the picker chip at the top of the tuner (Phase 70), so no item stands among the tabs
      * without being one (the bar's Instrument item until 2026-10-19), and Settings is no tab (Phase 69).
      */
     @Test

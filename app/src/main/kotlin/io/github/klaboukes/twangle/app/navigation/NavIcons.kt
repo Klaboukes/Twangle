@@ -12,8 +12,7 @@ import androidx.compose.ui.unit.dp
  * The tabs' line icons, drawn for Twangle as on 2.0's first mock-up (docs/design/fresh-start-preview.html;
  * the metronome from the approved docs/design/metronome-nav-preview.html): a tuner's dial, a metronome and
  * a fretboard, in 1.8 dp lines on a 24 dp grid, small dots filled; the open tab's in 2.2 dp.
- * The instrument button's headstock (`INSTRUMENT_ICON` in `:core:designsystem`) is drawn the same way,
- * and so is the gear that opens Settings ([GEAR_ICON]).
+ * The gear that opens Settings ([GEAR_ICON]) is drawn the same way.
  */
 internal fun navIcon(destination: Destination, selected: Boolean): ImageVector =
     (if (selected) BOLD else REGULAR).getValue(destination)

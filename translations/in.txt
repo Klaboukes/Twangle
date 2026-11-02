@@ -9,7 +9,6 @@ app widget_name fc1d2038
 app widget_open_tuner 27616cdc
 app widget_preview_title d998eb86
 app widget_title fed2d9b8
-core/designsystem instrument_button 6fdf3c9b
 core/designsystem instrument_button_action f416e2a5
 core/designsystem meter_cents_label 7add8439
 core/designsystem spoken_flat f1c390f9

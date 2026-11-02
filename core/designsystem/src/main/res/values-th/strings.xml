@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">เซนต์</string>
 
-    <string name="instrument_button">เครื่องดนตรี</string>
     <string name="instrument_button_action">เปลี่ยนเครื่องดนตรีหรือการตั้งสาย</string>
 </resources>

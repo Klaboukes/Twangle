@@ -413,6 +413,8 @@ class TunerContentTest {
     fun chromaticModeTheChipSaysAnyNote() {
         show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
         pickerChip.assertIsDisplayed().assert(hasContentDescription(text(R.string.tuner_any_note)))
+        stringChip("E2").assertDoesNotExist()
+        stringChip("A2").assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
     }
 

@@ -54,11 +54,11 @@ object PracticeTestTags {
     /** The Scales tool's screen. */
     const val SCALES = "practice_scales"
 
-    /** The Chords, Scales and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */
+    /**
+     * The Practice tools' instrument and tuning ("Guitar · Standard"): the picker chip that opens the sheet
+     * (Phase 70; until then a line after a headstock button), or the plain line where nothing opens it.
+     */
     const val TUNING = "practice_tuning"
-
-    /** The instrument and tuning button (a headstock) before that line, which opens the panel. */
-    const val INSTRUMENT_BUTTON = "practice_instrument_button"
 
     /** A root button, e.g. "practice_root_a_sharp". */
     fun root(root: PitchClass): String = "practice_root_" + root.name.lowercase()

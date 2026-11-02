@@ -81,11 +81,11 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  * Dm Em Am), move the capo with ‹ › (no capo to fret 11), and a table shows what each of the key's
  * six usual chords sounds with the capo on (C shapes at 3: C → E♭, Dm → Fm … Am → Cm), with "Sounds
  * in E♭" under it. A tap on a row opens its shape in the Chords tool ([onOpenChord]), on the
- * instrument and tuning picked with the instrument button ([tuningName], heard as [spokenTuningName];
- * with [onPickInstrument] the button stands before that line and opens the instrument and tuning panel).
+ * instrument and tuning picked with the picker chip ([tuningName], heard as [spokenTuningName];
+ * with [onPickInstrument] the chip opens the "What are you tuning?" sheet, else a plain line names them).
  *
  * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start with the tuning
- * line beside it ([BackAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
+ * chip beside it ([BackAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
  * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
  * half, the table the end half. All but the top row stand in the middle of the height they have (on a
  * tablet on its side, [practiceLayoutFor], the two halves together under the top row), as Chords centres
@@ -102,7 +102,7 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  * With [shortString] (a tuning with a short string, the 5-string banjo's, [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings])
  * the table's place shows a quiet line instead ([ShortStringLine]): on a banjo the short string needs a capo of its
  * own, so the table's sums don't hold for it (Phase 59 left that for when players ask); nothing else moves. Since
- * Phase 65 the line says why, a button under it opens the instrument panel ([onPickInstrument]), and the capo
+ * Phase 65 the line says why, a button under it opens the instrument and tuning sheet ([onPickInstrument]), and the capo
  * stepper and "Sounds in" are dimmed, as they mean nothing without the table.
  */
 @Composable

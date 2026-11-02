@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">CENTS</string>
 
-    <string name="instrument_button">Instrument</string>
     <string name="instrument_button_action">Changer d\'instrument ou d\'accordage</string>
 </resources>

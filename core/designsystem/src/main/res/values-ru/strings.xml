@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">ЦЕНТЫ</string>
 
-    <string name="instrument_button">Инструмент</string>
     <string name="instrument_button_action">Сменить инструмент или строй</string>
 </resources>

@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">सेंट</string>
 
-    <string name="instrument_button">वाद्य</string>
     <string name="instrument_button_action">वाद्य या ट्यूनिंग बदलें</string>
 </resources>

@@ -4,6 +4,5 @@
 
     <string name="meter_cents_label">SENTTIÄ</string>
 
-    <string name="instrument_button">Soitin</string>
     <string name="instrument_button_action">Vaihda soitin tai viritys</string>
 </resources>

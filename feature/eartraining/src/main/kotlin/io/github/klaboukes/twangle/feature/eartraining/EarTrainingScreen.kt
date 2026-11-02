@@ -113,8 +113,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
  * microphone is held only while this screen is shown. The question stops sounding when the screen is
  * hidden, and no next question comes until it shows again, when a microphone that stopped meanwhile
  * listens again too; leaving the tool ends the visit (its tally and questions are dropped, never saved), while a
- * turned phone keeps it. [header] is the top row (the tool button, the instrument button and the
- * tuning line), which `:app` builds; note names follow [notation].
+ * turned phone keeps it. [header] is the top row (the back arrow and the picker chip), which `:app` builds; note names follow [notation].
  */
 @Composable
 fun EarTrainingScreen(

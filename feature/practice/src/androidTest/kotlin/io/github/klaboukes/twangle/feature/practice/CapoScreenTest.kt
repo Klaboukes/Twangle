@@ -220,10 +220,11 @@ class CapoScreenTest {
         assertEquals(NAME_PICKER_HEIGHT.value, node(PracticeTestTags.CAPO_SHAPES).getBoundsInRoot().height.value, 0.5f)
         node(PracticeTestTags.CAPO_LOWER).assert(hasContentDescription("Capo one fret down"))
         node(PracticeTestTags.CAPO_HIGHER).assert(hasContentDescription("Capo one fret up"))
-        node(PracticeTestTags.INSTRUMENT_BUTTON)
+        // The picker chip (Phase 70), heard as the tuner's: the instrument and tuning, a button that changes them.
+        node(PracticeTestTags.TUNING)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Guitar, Standard"))
-        assertTrue("the name beside it is skipped", node(PracticeTestTags.TUNING).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
+            .assert(hasContentDescription("Guitar, Standard"))
+            .assert(SemanticsMatcher("double-tap changes the instrument or tuning") { it.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == "Change instrument or tuning" })
         assertTrue("the capo is a polite live region", node(PracticeTestTags.CAPO_FRET).fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
     }
 
@@ -262,14 +263,14 @@ class CapoScreenTest {
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
-            for (tag in listOf(PracticeTestTags.BACK, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
+            for (tag in listOf(PracticeTestTags.BACK, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // One row: the back arrow at the start, the instrument and tuning beside it (Phase 47, Phase 69).
+            // One row: the back arrow at the start, the picker chip beside it (Phase 47, 69, 70).
             val backArrow = node(PracticeTestTags.BACK).getBoundsInRoot()
-            val instrument = node(PracticeTestTags.INSTRUMENT_BUTTON).getBoundsInRoot()
+            val instrument = node(PracticeTestTags.TUNING).getBoundsInRoot()
             assertTrue(
                 "$case the tuning beside the back arrow $backArrow $instrument",
                 instrument.left >= backArrow.right && instrument.top < backArrow.bottom && instrument.bottom > backArrow.top,
@@ -390,13 +391,12 @@ class CapoScreenTest {
         }
     }
 
-    /** The instrument button before the tuning line, and the line itself, open the instrument and tuning panel. */
+    /** The picker chip (Phase 70) opens the "What are you tuning?" sheet; the headstock button went. */
     @Test
-    fun theInstrumentButtonAndTheTuningLineOpenThePanel() {
+    fun thePickerChipOpensTheSheet() {
         show()
-        node(PracticeTestTags.INSTRUMENT_BUTTON).assertIsDisplayed().performClick()
-        node(PracticeTestTags.TUNING).performClick()
-        assertEquals(2, instrumentTaps)
+        node(PracticeTestTags.TUNING).assertIsDisplayed().assert(hasContentDescription("Guitar, Standard")).performClick()
+        assertEquals(1, instrumentTaps)
     }
     companion object {
         private const val WINDOW = "window"
