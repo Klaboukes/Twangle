@@ -84,7 +84,7 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  * instrument and tuning picked with the instrument button ([tuningName], heard as [spokenTuningName];
  * with [onPickInstrument] the button stands before that line and opens the instrument and tuning panel).
  *
- * Upright, one column: the tool button ([header]) 8 dp from the top at the start with the tuning
+ * Upright, one column: the tool button ([header], after the app's gear, [settingsButton], where given) 8 dp from the top at the start with the tuning
  * line beside it ([ToolAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
  * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
  * half, the table the end half. All but the top row stand in the middle of the height they have (on a
@@ -119,6 +119,7 @@ fun CapoScreen(
     modifier: Modifier = Modifier,
     onPickInstrument: (() -> Unit)? = null,
     shortString: Boolean = false,
+    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     var shapesIndex by rememberSaveable { mutableIntStateOf(CAPO_SHAPES.indexOf(capoShapesToOpen(savedShapes))) }
     var fret by rememberSaveable { mutableIntStateOf(capoFretToOpen(savedFret)) }
@@ -135,7 +136,7 @@ fun CapoScreen(
         }
     }
 
-    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument, settingsButton = settingsButton) }
     val picker = @Composable {
         ShapesPicker(shapes, notation, speech, onPick = { picked ->
             val index = CAPO_SHAPES.indexOf(picked)

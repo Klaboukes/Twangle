@@ -171,6 +171,9 @@ import kotlin.math.min
  * can hide the rail and the system bars around it.
  * [ratingWindow] is Google Play's own rating window (Phase 50), asked for at most once when
  * [TunerViewModel.ratingDue] says the moment has come, never while the panel is open.
+ * [settingsButton] is the app's gear that opens Settings (2.0, Phase 69), given where the screen holds it
+ * (upright; on its side it is at the rail's top): at the start of the header row, across from focus
+ * mode's button, and in the same top start corner over the permission prompt.
  */
 @Composable
 fun TunerScreen(
@@ -186,6 +189,7 @@ fun TunerScreen(
     closeToolsRequest: Int = 0,
     onFullScreenChange: (Boolean) -> Unit = {},
     ratingWindow: RatingWindow = RatingWindow.NONE,
+    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -319,6 +323,7 @@ fun TunerScreen(
                     pitchHistory = viewModel.pitchHistory,
                     onFullScreenChange = onFullScreenChange,
                     onFocusModeChange = viewModel::setFocusMode,
+                    settingsButton = settingsButton,
                 )
                 val fade = if (animationsOff) 0 else WARNING_FADE_MILLIS
                 AnimatedVisibility(
@@ -338,6 +343,10 @@ fun TunerScreen(
                     onOpenSettings = mic::openSettings,
                     practiceTab = tools.practiceTab,
                 )
+                // Settings stays one tap away while the microphone is asked for: the gear in the header's corner.
+                if (settingsButton != null) {
+                    Box(Modifier.align(Alignment.TopStart).padding(start = COLUMN_PADDING - GEAR_OUTLINE_INSET, top = EDGE_INSET)) { settingsButton() }
+                }
                 // The navigation bar's Instrument item works without the microphone too: the panel opens
                 // over the prompt, and the tuning picked is the one the tuner listens for once allowed.
                 val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
@@ -560,7 +569,8 @@ private fun KeepScreenOn() {
  * switch without easing), the cents and the frequency are under the note, and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars at the start of the mode switch's row ([ModeSwitchRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
- * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. While
+ * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. The app's
+ * [settingsButton] (the gear, Phase 69) stands at the very start of that row, before the bars. While
  * [pickerOpen] the instrument and tuning panel shows over the tuner ([InstrumentTuningPanel], opened
  * from the navigation bar), and [onPickerOpenChange] hears false once it has closed. [instrument] is
  * the one picked there (by default the one [state]'s tuning belongs to); picking another calls
@@ -638,6 +648,7 @@ fun TunerContent(
     pitchHistory: PitchHistory? = null,
     onFullScreenChange: (Boolean) -> Unit = {},
     onFocusModeChange: ((Boolean) -> Unit)? = null,
+    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     // Movable, so the bars keep their count (and an open figures panel stays open) when the layout
     // changes and the header is built afresh around them.
@@ -671,6 +682,7 @@ fun TunerContent(
             switch = switch,
             bars = if (showSignalBars) ({ movableSignalBars() }) else null,
             button = focusButton,
+            gear = settingsButton,
         )
     }
     val guitarSlot = @Composable {
@@ -1148,25 +1160,47 @@ private fun CompactLayout(
  * it stays centred and never reaches either: a long label at a large font shrinks to fit instead
  * (Dutch "Chromatisch" at 2× text on a 360 dp phone). None of them moves with anything the tuner
  * hears, nor when the mode changes or the bars are turned on.
+ *
+ * The app's [gear] (Settings, Phase 69) stands at the very start, its outline in line with the text
+ * margin as the button's is at the end, and the bars right after it; with both, the two end slots
+ * grow to [GEAR_AND_BARS_SLOT], so the switch stays centred (until Phase 71 puts the bars beside the
+ * ruler's heard note).
  */
 @Composable
-private fun ModeSwitchRow(switch: @Composable () -> Unit, bars: (@Composable () -> Unit)?, button: (@Composable () -> Unit)?) {
+private fun ModeSwitchRow(
+    switch: @Composable () -> Unit,
+    bars: (@Composable () -> Unit)?,
+    button: (@Composable () -> Unit)?,
+    gear: (@Composable () -> Unit)? = null,
+) {
     val barsSlot = @Composable { if (bars != null) Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
     val buttonSlot = @Composable { if (button != null) button() }
-    Layout(contents = listOf(switch, barsSlot, buttonSlot)) { (switchMeasurables, barsMeasurables, buttonMeasurables), constraints ->
+    val gearSlot = @Composable { if (gear != null) gear() }
+    Layout(contents = listOf(switch, barsSlot, buttonSlot, gearSlot)) { (switchMeasurables, barsMeasurables, buttonMeasurables, gearMeasurables), constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val buttonPlaceable = buttonMeasurables.singleOrNull()?.measure(loose)
         val barsPlaceable = barsMeasurables.singleOrNull()?.measure(loose)
-        val slot = if (buttonPlaceable != null || barsPlaceable != null) FOCUS_BUTTON_SLOT.roundToPx() else 0
+        val gearPlaceable = gearMeasurables.singleOrNull()?.measure(loose)
+        val slot = when {
+            gearPlaceable != null && barsPlaceable != null -> GEAR_AND_BARS_SLOT.roundToPx()
+            buttonPlaceable != null || barsPlaceable != null || gearPlaceable != null -> FOCUS_BUTTON_SLOT.roundToPx()
+            else -> 0
+        }
         val bounded = constraints.hasBoundedWidth
         val switchRoom = if (bounded) (loose.maxWidth - 2 * slot).coerceAtLeast(0) else Constraints.Infinity
         val switchPlaceable = switchMeasurables.single().measure(loose.copy(maxWidth = switchRoom))
         val width = if (bounded) constraints.maxWidth else switchPlaceable.width + 2 * slot
-        val height = maxOf(switchPlaceable.height, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0)
+        val height = maxOf(switchPlaceable.height, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0, gearPlaceable?.height ?: 0)
         layout(width, height) {
             switchPlaceable.placeRelative((width - switchPlaceable.width) / 2, (height - switchPlaceable.height) / 2)
-            // The bars in the middle of their 48 dp touch area, which starts at the row's start.
-            barsPlaceable?.placeRelative((SIGNAL_BARS_SLOT.roundToPx() - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
+            // The gear's touch area is wider than its outline; the outline starts at the row's start.
+            val gearEnd = gearPlaceable?.let {
+                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+                it.placeRelative(-outlineInset, (height - it.height) / 2)
+                it.width - outlineInset
+            } ?: 0
+            // The bars in the middle of their 48 dp touch area, which starts at the row's start, or after the gear's.
+            barsPlaceable?.placeRelative(gearEnd + (SIGNAL_BARS_SLOT.roundToPx() - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
             // The touch area is wider than the outline; the outline ends at the row's end.
             buttonPlaceable?.let {
                 val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
@@ -1687,6 +1721,12 @@ private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
 
 /** The room at each end of the mode switch's row: focus mode's 44 dp button outline and 8 dp clear of the switch; the signal bars' 48 dp touch area fits it too. */
 private val FOCUS_BUTTON_SLOT = 52.dp
+
+/** The room at each end of that row with the app's gear and the signal bars both at its start: the gear's 46 dp past the margin, the bars' 48 dp touch area less what clears it. */
+private val GEAR_AND_BARS_SLOT = 92.dp
+
+/** The gear's 48 dp touch area reaches this far past its 44 dp outline at each side. */
+private val GEAR_OUTLINE_INSET = 2.dp
 
 /** What sits in the compact layout's top corners (the note, focus mode's exit button) keeps this far from the screen's edges. */
 private val FOCUS_EDGE_SIDE = 16.dp

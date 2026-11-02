@@ -73,8 +73,8 @@ import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 
 /**
- * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
- * lead away). Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
+ * Settings entry point, opened from the gear in the top corner of every tab (2.0, Phase 69; a tab of
+ * its own until then): with [onBack] a back arrow at the top leads back to that tab, as Back does. Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
  *
  * With [languages] (`twangle.languages`, as resource qualifiers), a Language row sets the app's
  * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
@@ -89,6 +89,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -112,6 +113,7 @@ fun SettingsScreen(
         onFocusModeChange = viewModel::setFocusMode,
         onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
+        onBack = onBack,
         languages = languageTags,
         appLanguage = appLanguage,
         onAppLanguageChange = { tag ->
@@ -128,7 +130,8 @@ fun SettingsScreen(
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
- * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's.
+ * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
+ * [onBack] the top bar has a back arrow, as About's.
  */
 @Composable
 fun SettingsContent(
@@ -151,8 +154,9 @@ fun SettingsContent(
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
     onAppLanguageChange: (String?) -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
-    SettingsPage(title = stringResource(R.string.settings_title), onBack = null, modifier = modifier) {
+    SettingsPage(title = stringResource(R.string.settings_title), onBack = onBack, modifier = modifier) {
         if (settings != null) {
             SettingsGroups(
                 settings = settings,

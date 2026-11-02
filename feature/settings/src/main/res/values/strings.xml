@@ -1,7 +1,7 @@
 <resources>
     <!-- Title at the top of the Settings screen. -->
     <string name="settings_title">Settings</string>
-    <!-- TalkBack name of the back arrow at the top of Settings' sub-pages (About): goes back to Settings. -->
+    <!-- TalkBack name of the back arrow at the top of Settings (back to the screen whose gear opened it) and of its About page (back to Settings). -->
     <string name="settings_back">Back</string>
 
     <!-- Group headings. -->

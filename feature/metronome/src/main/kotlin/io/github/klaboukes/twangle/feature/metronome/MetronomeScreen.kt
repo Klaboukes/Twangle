@@ -120,8 +120,8 @@ import kotlin.math.roundToInt
  * whether it is on, saved last ([savedTrainer], [savedTrainerOn]).
  *
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
- * [ToolSwitches.ALL_OFF] this is the metronome alone. In the Practice tab (Phase 32) [header] is
- * its tool button, at the top start ([MetronomeContent]).
+ * [ToolSwitches.ALL_OFF] this is the metronome alone. [header] is the app's gear that opens Settings
+ * (2.0, Phase 69; the Practice tab's tool button until then), at the top start ([MetronomeContent]).
  */
 @Composable
 fun MetronomeScreen(
@@ -344,7 +344,7 @@ class BeatClock {
  * stands (its status line has Stop while it listens, [onListen] again); a found tempo shows in a
  * balloon over the screen, pointing at the options button ([onUse], [onNotNow]; Back is Not now).
  *
- * A [header] (the Practice tab's tool button, Phase 47) stands at the very top at the start, 8 dp
+ * A [header] (the app's gear, Phase 69; the Practice tab's tool button from Phase 47 until then) stands at the very top at the start, 8 dp
  * down as the tuner's mode switch, with the meter picker under it; on its side it stands at the top
  * of the dial's half, which the dial shrinks to leave room for, so the controls' column keeps its height.
  *

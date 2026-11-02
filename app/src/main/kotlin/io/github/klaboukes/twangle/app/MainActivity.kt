@@ -117,10 +117,13 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * The app in the user's theme, showing the tuner, the metronome, Practice, settings, About or the
-     * tuning editor over the app's background, with the navigation bar (Tune · Metronome · Practice, and
-     * Settings until the gear takes its place) at the bottom, or the rail at the start edge on its side. The instrument and tuning panel opens
-     * over the tuner, or over the Practice tools, from their instrument button. Back leads from About to Settings, from
-     * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
+     * tuning editor over the app's background, with the navigation bar (Tune · Metronome · Practice) at
+     * the bottom, or the rail at the start edge on its side. The gear in the top start corner of every
+     * tab (upright in the tab's own top row, on its side at the rail's top) opens Settings over the whole
+     * window, without the bar; Settings' back arrow and Back return to the tab that opened it, About's to
+     * Settings. The instrument and tuning panel opens
+     * over the tuner, or over the Practice tools, from their instrument button. Back leads from the
+     * metronome, Practice and the tuning editor to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
      * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
      * tuner's tools (strum check and the others), so the tab always leads to the plain tuner.
@@ -179,6 +182,12 @@ class MainActivity : AppCompatActivity() {
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
                 // Where the tuning editor goes back to: the tuner, or Practice when its panel opened it.
                 var editorReturn by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                // The tab whose gear opened Settings, where Settings goes back to.
+                var settingsOpener by rememberSaveable { mutableStateOf(Destination.TUNER) }
+                val openSettings = {
+                    settingsOpener = screen.destination ?: Destination.TUNER
+                    picked = Screen.SETTINGS
+                }
                 // Whether the instrument and tuning panel shows over the tuner (its instrument button opens it).
                 var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
                 // Focus mode's tuner without its controls: the meter takes the whole screen, so the rail
@@ -221,7 +230,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 // From the tuner, Back is Android's own: it leaves the app.
                 if (screen != Screen.TUNING_EDITOR) {
-                    screen.back?.let { target -> BackHandler { picked = target } }
+                    screen.back(settingsOpener)?.let { target -> BackHandler { picked = target } }
                 }
                 AppNavigationFrame(
                     selected = screen.destination,
@@ -232,7 +241,8 @@ class MainActivity : AppCompatActivity() {
                     onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
                     destinations = destinationsFor(practice = practiceTools.isNotEmpty()),
                     navigationHidden = fullScreen,
-                ) {
+                    onOpenSettings = openSettings,
+                ) { gear ->
                     saveableState.SaveableStateProvider(screen.name) {
                         when (screen) {
                             Screen.TUNER -> {
@@ -253,10 +263,11 @@ class MainActivity : AppCompatActivity() {
                                     closeToolsRequest = closeTunerToolsRequests,
                                     onFullScreenChange = { tunerFullScreen = it },
                                     ratingWindow = container.ratingWindow,
+                                    settingsButton = gear,
                                 )
                             }
-                            Screen.METRONOME -> MetronomeTab(container, settings, tools)
-                            Screen.PRACTICE -> PracticeTab(container, settings, practiceTools) { instrument, customTuningId ->
+                            Screen.METRONOME -> MetronomeTab(container, settings, tools, gear)
+                            Screen.PRACTICE -> PracticeTab(container, settings, practiceTools, gear) { instrument, customTuningId ->
                                 openTuningEditor(instrument, customTuningId, Screen.PRACTICE)
                             }
                             Screen.SETTINGS -> SettingsScreen(
@@ -266,6 +277,7 @@ class MainActivity : AppCompatActivity() {
                                 languages = BuildConfig.LANGUAGES.split(","),
                                 // Android 13+ redraws the widget itself on the new configuration.
                                 onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
+                                onBack = { picked = settingsOpener.screen },
                             )
                             Screen.ABOUT -> AboutScreen(
                                 appVersion = BuildConfig.VERSION_NAME,
@@ -290,10 +302,11 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * The bar's Metronome tab (2.0, Phase 69: a tab of its own, no longer a Practice tool): the metronome
-     * alone, with no tool button over it. Leaving the tab stops it.
+     * alone, with no tool button over it; upright the [gear] that opens Settings at its top start.
+     * Leaving the tab stops it.
      */
     @Composable
-    private fun MetronomeTab(container: AppContainer, settings: AppSettings, tools: ToolSwitches) {
+    private fun MetronomeTab(container: AppContainer, settings: AppSettings, tools: ToolSwitches, gear: (@Composable () -> Unit)?) {
         // The volume keys set the clicks' loudness (the media volume).
         MediaVolumeKeys()
         MetronomeScreen(
@@ -309,6 +322,7 @@ class MainActivity : AppCompatActivity() {
             savedMicRefused = settings.micRefused,
             savedTrainer = settings.metronomeTrainer,
             savedTrainerOn = settings.metronomeTrainerOn,
+            header = gear,
         )
     }
 
@@ -325,13 +339,15 @@ class MainActivity : AppCompatActivity() {
      * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
      * Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its saved choices; it stops the
      * drone itself when it goes. Ear training (Phase 55) gets the reference tones and its own microphone through the tuner's pipeline
-     * ([AppContainer.earTrainingListener]), and the same top row as Chords and Capo.
+     * ([AppContainer.earTrainingListener]), and the same top row as Chords and Capo. Upright the [gear]
+     * that opens Settings stands before the tool button in that row.
      */
     @Composable
     private fun PracticeTab(
         container: AppContainer,
         settings: AppSettings,
         offered: List<PracticeTool>,
+        gear: (@Composable () -> Unit)?,
         onOpenTuningEditor: (Instrument, String?) -> Unit,
     ) {
         var panelOpen by rememberSaveable { mutableStateOf(false) }
@@ -387,6 +403,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         },
                         leftHanded = settings.leftHanded,
+                        settingsButton = gear,
                     )
                 }
                 PracticeTool.CAPO -> CapoScreen(
@@ -410,6 +427,7 @@ class MainActivity : AppCompatActivity() {
                     onPickInstrument = openPanel,
                     // The banjo's short fifth string needs a capo of its own, so the capo table's sums don't hold for it.
                     shortString = settings.tuning.hasShortString,
+                    settingsButton = gear,
                 )
                 PracticeTool.EAR_TRAINING -> {
                     // The volume keys set the questions' loudness (the media volume).
@@ -425,6 +443,7 @@ class MainActivity : AppCompatActivity() {
                                 tuningName = practiceTuningName(settings),
                                 spokenTuningName = spokenTuning(settings),
                                 onPickInstrument = openPanel,
+                                settingsButton = gear,
                             )
                         },
                         savedSettings = settings,

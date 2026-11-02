@@ -108,7 +108,7 @@ class SettingsContentTest {
      * Shows [settings] (or, with [about], the About page), as if the window inside the phone's bars were
      * [size] ([PHONE] unless given, whatever the phone's own screen; [PhoneScreen] draws a larger one
      * smaller to fit), the phone's font were [fontScale] times its normal size, or the app were in
-     * another language ([locale], e.g. "nl").
+     * another language ([locale], e.g. "nl"). With [settingsBack] Settings has its back arrow, as from the gear.
      */
     private fun show(
         settings: AppSettings,
@@ -120,6 +120,7 @@ class SettingsContentTest {
         ink: Boolean = false,
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
+        settingsBack: Boolean = false,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
@@ -154,6 +155,7 @@ class SettingsContentTest {
                         languages = languages,
                         appLanguage = appLanguage,
                         onAppLanguageChange = { languageChanges += it },
+                        onBack = if (settingsBack) ({ backs++ }) else null,
                     )
                 }
             }
@@ -244,12 +246,16 @@ class SettingsContentTest {
         compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_lower)).assertIsEnabled()
     }
 
-    /** Settings is one of the app's tabs: the navigation bar and Back lead away, not an arrow. */
+    /**
+     * Settings is behind the gear (Phase 69), no tab: its back arrow stands at the top and leads back (to
+     * the tab that opened it).
+     */
     @Test
-    fun settingsHasNoBackArrow() {
-        show(AppSettings())
+    fun settingsBackArrowGoesBack() {
+        show(AppSettings(), settingsBack = true)
         compose.onNodeWithText(context.getString(R.string.settings_title)).assertIsDisplayed()
-        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
+        assertEquals(1, backs)
     }
 
     @Test

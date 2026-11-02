@@ -19,7 +19,7 @@ minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JV
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools (Ear training too) under the Practice tab, draws the app's background), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
+| `:app` | Android app | `MainActivity` (switches Tune ↔ Metronome ↔ Practice through the navigation bar or rail, puts the Practice tools (Ear training too) under the Practice tab, opens Settings from the gear in every tab's top start corner (on its side at the rail's top) and About from Settings, both going back to where they were opened from, opens the tuning editor, draws the app's background), `navigation/` (the bar, the rail, the gear), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
 | `:wear` | Android app (Wear OS) | The standalone watch tuner, same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI, `SettingsViewModel` (`LookCardGrid` is kept, unused, for Phase 72's lens looks) |

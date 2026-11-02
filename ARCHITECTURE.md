@@ -222,7 +222,8 @@ app/src/main/kotlin/io/github/klaboukes/twangle/app/
     TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode,
     BuildToolSwitches (toolSwitchesFor), TunerPitchListener (Ear training's ears: the tuner's PitchPipeline),
     SyntheticAudioRecorder (benchmark build only)
-    navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
+    navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons,
+                SettingsGear (the gear that opens Settings)
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState
 
 wear/src/main/kotlin/io/github/klaboukes/twangle/wear/

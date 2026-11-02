@@ -14,7 +14,8 @@ const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
 // sees them as resource ids, which stay the same in every app language.
 private const val METRONOME_TAB_TAG = "nav_metronome"
 private const val PRACTICE_TAB_TAG = "nav_practice"
-private const val SETTINGS_TAB_TAG = "nav_settings"
+// The gear that opens Settings (Phase 69; the Settings tab until then, with the same id).
+private const val SETTINGS_GEAR_TAG = "nav_settings"
 private const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
 private const val MODE_GUITAR_TAG = "tuner_mode_auto"
 private const val MORE_TOOLS_TAG = "tuner_more_tools"
@@ -167,7 +168,7 @@ private fun MacrobenchmarkScope.pickTool(tag: String) {
  */
 fun MacrobenchmarkScope.useSettings() {
     waitForTuner()
-    clickTag(SETTINGS_TAB_TAG)
+    clickTag(SETTINGS_GEAR_TAG)
     check(device.wait(Until.gone(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
     scrollToEnd()
     clickTag(ABOUT_LINK_TAG)

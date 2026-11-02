@@ -61,7 +61,7 @@ Decided on 2026-11-02, from the from-scratch design of 2026-11-01 ([IDEAS.md](ID
 ### Phase 69 — Navigation
 Goal: Tune · Metronome · Practice, Settings behind the gear, Practice as four cards.
 - ☑ The bar and the rail read Tune · Metronome · Practice; the metronome leaves the Practice tab (`PracticeTool` loses METRONOME, the `practiceTab` switch its metronome fallback). Settings stays a fourth tab until the gear (next item); Practice opens on the tool used last, or Chords
-- ☐ Settings and About behind a gear in the top left corner of the tuner (and of the other tabs where they need one), not a tab
+- ☑ Settings and About behind a gear in the top left corner of the tuner (and of the other tabs where they need one), not a tab: the gear in the top start corner of every tab (on its side at the rail's top), Settings and About without the bar, Back and Settings' new back arrow returning to the tab that opened it; focus mode's button keeps its place top right
 - ☐ Practice as four big cards that open a tool full screen and come back, and a "last time" row; the tool button and "opens on the tool used last" go
 - ☐ The store screenshots and the website's pages follow
 

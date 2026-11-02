@@ -90,7 +90,7 @@ import kotlinx.coroutines.withContext
  * to 12, every note named and the root in the accent ([ScaleNeck]). The two are one screen, so they
  * share their saved UI state: the root picked in one is the other's root too.
  *
- * Upright, one column: the tool button ([header]) 8 dp from the top at the start, the instrument and tuning
+ * Upright, one column: the tool button ([header], after the app's gear, [settingsButton], where given) 8 dp from the top at the start, the instrument and tuning
  * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
  * the chord's or the scale's full name on the one picker face as wide as the row ("C minor seventh ⌄",
  * "D Dorian ⌄", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
@@ -149,6 +149,7 @@ fun ChordsScreen(
     savedDrone: DroneChoice = DroneChoice(),
     onDroneChange: (DroneChoice) -> Unit = {},
     leftHanded: Boolean = false,
+    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
@@ -192,7 +193,7 @@ fun ChordsScreen(
         )
     }
 
-    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument, settingsButton = settingsButton) }
     var panelOpen by remember { mutableStateOf(false) }
     val panel = @Composable { width: Dp ->
         ChordPanel(

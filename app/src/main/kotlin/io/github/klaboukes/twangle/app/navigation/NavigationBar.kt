@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -67,8 +68,11 @@ import kotlin.math.min
 
 /**
  * The app's frame: [content] with the navigation bar ([destinations]: Tune · Metronome · Practice,
- * Phase 69, and Settings until the gear takes its place) at the bottom, or, in a window wider than tall
- * (a phone on its side, [useRail]), the rail along the start edge. Both are variant B of the approved
+ * Phase 69) at the bottom, or, in a window wider than tall
+ * (a phone on its side, [useRail]), the rail along the start edge. With [onOpenSettings] the gear that
+ * opens Settings ([SettingsGear]) is in the top start corner: on its side at the top of the rail, upright
+ * in the screen's own top row, so [content] gets the gear to place there (`gear`, null where the rail
+ * holds it or no bar shows). Both are variant B of the approved
  * mock-up (docs/design/metronome-nav-preview.html), with the icons of 2.0's first mock-up
  * (docs/design/fresh-start-preview.html): icons and names straight on the app's background over a calm
  * field, the open tab ([selected]) in the accent with the accent's mark under its name. A tap on another tab calls [onSelect], and one on the open
@@ -87,15 +91,20 @@ fun AppNavigationFrame(
     onReselect: (Destination) -> Unit = {},
     destinations: List<Destination> = Destination.entries,
     navigationHidden: Boolean = false,
-    content: @Composable () -> Unit,
+    onOpenSettings: (() -> Unit)? = null,
+    content: @Composable (gear: (@Composable () -> Unit)?) -> Unit,
 ) {
     val shown = selected != null && !navigationHidden
     // The tab shown while the bar fades out after its screen has gone.
     val lastSelected = remember { arrayOf(Destination.TUNER) }
     if (selected != null) lastSelected[0] = selected
     val tab = selected ?: lastSelected[0]
+    // One gear for the whole frame, so a screen holding it doesn't recompose for a new lambda.
+    val currentOpenSettings by rememberUpdatedState(onOpenSettings)
+    val gear = remember { @Composable { SettingsGear(onClick = { currentOpenSettings?.invoke() }) } }
     BoxWithConstraints(modifier.fillMaxSize()) {
         val rail = useRail(maxWidth.value, maxHeight.value)
+        val withGear = onOpenSettings != null
         val navigation = @Composable {
             if (rail) {
                 AnimatedVisibility(
@@ -103,7 +112,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                     exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
                 ) {
-                    AppNavigationRail(tab, onSelect, destinations = destinations, onReselect = onReselect)
+                    AppNavigationRail(tab, onSelect, destinations = destinations, onReselect = onReselect, gear = if (withGear) gear else null)
                 }
             } else {
                 AnimatedVisibility(
@@ -124,7 +133,7 @@ fun AppNavigationFrame(
         // keys follow that place, so a different place (a Row for the rail, a Column for the bar) lost
         // every screen's saved state on turning the phone, and brought back the state from the last time
         // in the other orientation on turning back.
-        val body = @Composable { Box(taken) { content() } }
+        val body = @Composable { Box(taken) { content(if (withGear && shown && !rail) gear else null) } }
         Layout(contents = listOf(navigation, body), modifier = Modifier.fillMaxSize()) { (navs, bodies), constraints ->
             val width = constraints.maxWidth
             val height = constraints.maxHeight
@@ -198,6 +207,8 @@ fun AppNavigationBar(
 /**
  * The rail along the start edge of a phone on its side: the same tabs, one above the other in
  * the middle of the height, on a calm field that fades out [FIELD_REACH] past the rail's end edge.
+ * With a [gear] (the one that opens Settings) it stands at the rail's top, [RAIL_GEAR_TOP] down, the
+ * window's top start corner as upright, and the tabs are in the middle of the height under it.
  */
 @Composable
 fun AppNavigationRail(
@@ -206,6 +217,7 @@ fun AppNavigationRail(
     modifier: Modifier = Modifier,
     destinations: List<Destination> = Destination.entries,
     onReselect: (Destination) -> Unit = {},
+    gear: (@Composable () -> Unit)? = null,
 ) {
     val field = MaterialTheme.colorScheme.background
     Box(
@@ -232,14 +244,22 @@ fun AppNavigationRail(
             .width(RAIL_WIDTH),
         contentAlignment = Alignment.Center,
     ) {
-        Column(
-            // Only with a very large font on a short window would the tabs not fit; then they scroll.
-            Modifier.verticalScroll(rememberScrollState()).padding(vertical = RAIL_GAP).selectableGroup(),
-            verticalArrangement = Arrangement.spacedBy(RAIL_GAP),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            for (destination in destinations) {
-                NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, Modifier.fillMaxWidth())
+        Column(Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (gear != null) {
+                Spacer(Modifier.height(RAIL_GEAR_TOP))
+                gear()
+            }
+            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                Column(
+                    // Only with a very large font on a short window would the tabs not fit; then they scroll.
+                    Modifier.verticalScroll(rememberScrollState()).padding(vertical = RAIL_GAP).selectableGroup(),
+                    verticalArrangement = Arrangement.spacedBy(RAIL_GAP),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    for (destination in destinations) {
+                        NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, Modifier.fillMaxWidth())
+                    }
+                }
             }
         }
     }
@@ -304,7 +324,7 @@ private fun NavEntry(icon: ImageVector, label: String, selected: Boolean, modifi
 
 /**
  * A tab's name on one line: it grows with the font up to [MAX_LABEL_FONT_SCALE] and, where it would not
- * fit its tab (Dutch "Instellingen" in a wide face, German "Einstellungen"), is set smaller just enough.
+ * fit its tab (in 1.1 Dutch "Instellingen" in a wide face, German "Einstellungen"), is set smaller just enough.
  */
 @Composable
 private fun NavLabel(text: String, color: Color) {
@@ -334,7 +354,6 @@ internal val Destination.label: Int
         Destination.TUNER -> R.string.nav_tuner
         Destination.METRONOME -> R.string.nav_metronome
         Destination.PRACTICE -> R.string.nav_practice
-        Destination.SETTINGS -> R.string.nav_settings
     }
 
 /** Test tags for UI tests and the Baseline Profile generator (as resource ids, see `MainActivity`). */
@@ -342,7 +361,10 @@ object NavigationTestTags {
     const val BAR = "nav_bar"
     const val RAIL = "nav_rail"
 
-    /** A tab, e.g. "nav_settings". */
+    /** The gear that opens Settings ([SettingsGear]): the Settings tab's id until Phase 69, kept for the Baseline Profile's journey. */
+    const val SETTINGS = "nav_settings"
+
+    /** A tab, e.g. "nav_metronome". */
     fun tab(destination: Destination): String = "nav_" + destination.name.lowercase()
 }
 
@@ -357,6 +379,9 @@ private val BAR_TOP_PADDING = 10.dp
 private val BAR_BOTTOM_PADDING = 4.dp
 private val RAIL_WIDTH = 80.dp
 private val RAIL_GAP = 14.dp
+
+/** The gear at the rail's top is this far down from the status bar, as the tuner's header row is upright. */
+private val RAIL_GEAR_TOP = 8.dp
 private val ICON_BOX = 28.dp
 private val ICON_SIZE = 24.dp
 private val ICON_LABEL_GAP = 2.dp
@@ -364,5 +389,5 @@ private val LABEL_MARK_GAP = 3.dp
 private val ITEM_SIDE_PADDING = 4.dp
 private val MIN_TOUCH = 48.dp
 private const val MAX_LABEL_FONT_SCALE = 1.3f
-/** German "Einstellungen" in the 80 dp rail at 2× text needs this. */
+/** German "Einstellungen" in the 80 dp rail at 2× text needed this (the Settings tab until Phase 69). */
 private val MIN_LABEL_SIZE = 7.sp

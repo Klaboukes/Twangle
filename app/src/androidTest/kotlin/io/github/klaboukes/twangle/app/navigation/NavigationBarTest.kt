@@ -47,6 +47,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
@@ -57,13 +58,14 @@ import org.junit.runner.RunWith
 
 /**
  * The navigation bar (upright) and rail (on its side) in Ink, light and dark: the tabs, Tune · Metronome ·
- * Practice (Phase 69) and Settings until the gear takes its place, that TalkBack hears as tabs by name
+ * Practice (Phase 69), that TalkBack hears as tabs by name
  * with the open one selected, and nothing else; without Practice (its switch off) the metronome keeps its own tab; a tap on another tab opens it, and one on the open tab only says so
  * (the app's Tuner tab closes the tuner's tools then); the open tab
  * wears its mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
- * wholly shown. The frame hides the bar for the tuning editor, and the content
- * never reaches under it.
+ * wholly shown. The gear that opens Settings (Phase 69) is in the top start corner: on its side at the
+ * rail's top, upright handed to the content for its own top row. The frame hides the bar (and the gear)
+ * for Settings and the tuning editor, and the content never reaches under it.
  */
 @RunWith(AndroidJUnit4::class)
 class NavigationBarTest {
@@ -91,6 +93,10 @@ class NavigationBarTest {
     private val picked = mutableListOf<Destination>()
     private val reselected = mutableListOf<Destination>()
     private var contentStarts = 0
+    private var settingsOpened = 0
+
+    /** Whether the content was last handed the gear to place itself. */
+    private var contentHasGear = false
 
     private fun show() {
         compose.setContent {
@@ -102,10 +108,13 @@ class NavigationBarTest {
                         onReselect = { reselected += it },
                         destinations = destinationsFor(shownPractice.value),
                         modifier = Modifier.testTag(WINDOW),
-                    ) {
+                        onOpenSettings = { settingsOpened++ },
+                    ) { gear ->
                         // Counts how often the content starts afresh.
                         remember { contentStarts++ }
-                        Box(Modifier.fillMaxSize().testTag(CONTENT))
+                        contentHasGear = gear != null
+                        // The gear in the content's top start corner, as the app's tabs place it in their top row.
+                        Box(Modifier.fillMaxSize().testTag(CONTENT)) { gear?.invoke() }
                     }
                 }
             }
@@ -151,20 +160,65 @@ class NavigationBarTest {
     }
 
     /**
-     * Bar and rail hold the three tabs and nothing else: the instrument and tuning are picked with the
-     * headstock button above the tuner's strings, so no item stands among the tabs without being one
-     * (the bar's Instrument item until 2026-10-19).
+     * Bar and rail hold the three tabs and, on its side, the gear, nothing else: the instrument and tuning
+     * are picked with the headstock button above the tuner's strings, so no item stands among the tabs
+     * without being one (the bar's Instrument item until 2026-10-19), and Settings is no tab (Phase 69).
      */
     @Test
-    fun theBarAndTheRailHoldOnlyTheTabs() {
+    fun theBarAndTheRailHoldOnlyTheTabsAndOnItsSideTheGear() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             compose.waitForIdle()
             compose.onNodeWithTag("nav_instrument").assertDoesNotExist()
+            compose.onNodeWithTag(NavigationTestTags.SETTINGS).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab)).assertCountEquals(Destination.entries.size)
-            compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)).assertCountEquals(0)
+            // The gear, one button: in the rail on its side, in the content upright.
+            compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)).assertCountEquals(1)
         }
+    }
+
+    /**
+     * The gear (Phase 69) is in the top start corner and TalkBack hears it as the button "Settings": on
+     * its side at the rail's top, above every tab, with the content handed none; upright handed to the
+     * content, which places it in its own top row (the tabs' screens do), none in the bar. A tap opens
+     * Settings. Without a tab (Settings itself, the tuning editor) there is no gear.
+     */
+    @Test
+    fun theGearIsInTheTopStartCornerAndOpensSettings() {
+        show()
+        for (size in listOf(PHONE_LANDSCAPE, PHONE_UPRIGHT)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val gear = compose.onNodeWithTag(NavigationTestTags.SETTINGS)
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(english(R.string.nav_settings))))
+            val bounds = gear.getBoundsInRoot()
+            val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+            if (size == PHONE_LANDSCAPE) {
+                assertFalse("$size: the rail holds the gear, not the content", contentHasGear)
+                val rail = compose.onNodeWithTag(NavigationTestTags.RAIL).getBoundsInRoot()
+                assertTrue("$size: in the rail $bounds $rail", bounds.left >= rail.left - SLACK.dp && bounds.right <= rail.right + SLACK.dp)
+                for (destination in Destination.entries) {
+                    assertTrue("$size: above $destination", bounds.bottom <= tab(destination).getBoundsInRoot().top + SLACK.dp)
+                }
+                assertTrue("$size: near the top $bounds", bounds.top - window.top <= bars().top + GEAR_TOP_MAX)
+            } else {
+                assertTrue("$size: upright the content holds the gear", contentHasGear)
+                val bar = compose.onNodeWithTag(NavigationTestTags.BAR).getBoundsInRoot()
+                assertTrue("$size: not in the bar", bounds.bottom <= bar.top + SLACK.dp)
+            }
+            gear.performClick()
+        }
+        assertEquals(2, settingsOpened)
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            shownSelected.value = null
+            compose.waitForIdle()
+            compose.onNodeWithTag(NavigationTestTags.SETTINGS).assertDoesNotExist()
+            assertFalse("$size: no gear without a tab", contentHasGear)
+        }
+        shownSelected.value = Destination.TUNER
     }
 
     /**
@@ -206,11 +260,10 @@ class NavigationBarTest {
         tab(Destination.TUNER).performClick()
         tab(Destination.METRONOME).performClick()
         tab(Destination.PRACTICE).performClick()
-        tab(Destination.SETTINGS).performClick()
-        tab(Destination.SETTINGS).performClick()
-        assertEquals(listOf(Destination.METRONOME, Destination.PRACTICE, Destination.SETTINGS), picked)
-        assertEquals(listOf(Destination.TUNER, Destination.SETTINGS), reselected)
-        tab(Destination.SETTINGS).assertIsSelected()
+        tab(Destination.PRACTICE).performClick()
+        assertEquals(listOf(Destination.METRONOME, Destination.PRACTICE), picked)
+        assertEquals(listOf(Destination.TUNER, Destination.PRACTICE), reselected)
+        tab(Destination.PRACTICE).assertIsSelected()
     }
 
     /** Upright the bar is at the bottom and at most 80 dp tall, on its side the rail is at the start; the content is beside them, never under. */
@@ -361,6 +414,9 @@ class NavigationBarTest {
         /** The most the bar may take; `TunerStylesTest`, `StrumCheckStylesTest` and `MetronomeStylesTest` leave this much. */
         private val MAX_BAR_HEIGHT = 80.dp
         private const val SLACK = 0.5f
+
+        /** On its side the gear's touch area starts at most this far under the status bar. */
+        private val GEAR_TOP_MAX = 12.dp
         private const val COLOR_TOLERANCE = 6
         private const val MIN_MARK_PIXELS = 20
     }

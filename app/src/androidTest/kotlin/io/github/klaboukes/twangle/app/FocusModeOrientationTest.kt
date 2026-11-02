@@ -35,7 +35,8 @@ import org.junit.rules.Timeout
 /**
  * Focus mode (Phase 36) asks Android to keep the whole app on its side, either way round, also with
  * auto-rotate off, and the request holds on every tab. The tuner takes the whole screen (Phase 40): no
- * rail and no status bar until a tap brings back its controls and the rail; other tabs show both. Switched off, it is turned back upright (with auto-rotate off) and the request is let
+ * rail and no status bar until a tap brings back its controls and the rail; other tabs show both, and
+ * Settings, opened from the gear at the rail's top, the status bar. Switched off, it is turned back upright (with auto-rotate off) and the request is let
  * go, so the screen follows the phone again; a large screen is let go at once. On the
  * phone or tablet this really turns the screen. Afterwards nothing lies over the status bar: the app
  * stays edge to edge.
@@ -137,13 +138,20 @@ class FocusModeOrientationTest {
             assertTrue("and the status bar", waitFor { scenario.statusBarShown() })
 
             // Another tab keeps the request: the screen doesn't turn on a tab switch.
-            (device.wait(Until.findObject(By.res(NavigationTestTags.tab(Destination.SETTINGS))), WAIT_MS) ?: error("no Settings tab")).click()
-            assertTrue("Settings shows", device.wait(Until.gone(By.res(TunerTestTags.GAUGE)), WAIT_MS))
+            (device.wait(Until.findObject(By.res(NavigationTestTags.tab(Destination.METRONOME))), WAIT_MS) ?: error("no Metronome tab")).click()
+            assertTrue("the metronome shows", device.wait(Until.gone(By.res(TunerTestTags.GAUGE)), WAIT_MS))
             assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, scenario.requested())
             assertTrue("still on its side", scenario.onItsSide())
             // With its rail and the status bar, after the controls' time is up too.
             SystemClock.sleep(CONTROLS_GONE_MS)
-            assertTrue("Settings has the rail", shown(NavigationTestTags.RAIL))
+            assertTrue("the metronome has the rail", shown(NavigationTestTags.RAIL))
+            assertTrue("and the status bar", scenario.statusBarShown())
+
+            // The gear at the rail's top opens Settings (Phase 69), still on its side, without the rail.
+            (device.wait(Until.findObject(By.res(NavigationTestTags.SETTINGS)), WAIT_MS) ?: error("no gear")).click()
+            assertTrue("Settings shows, without the rail", device.wait(Until.gone(By.res(NavigationTestTags.RAIL)), WAIT_MS))
+            assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, scenario.requested())
+            assertTrue("Settings still on its side", scenario.onItsSide())
             assertTrue("and the status bar", scenario.statusBarShown())
 
             runBlocking { settings.setFocusMode(false) }

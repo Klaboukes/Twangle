@@ -114,6 +114,10 @@ internal fun TuningLine(
  * is too narrow for a few letters ([MIN_NAME_EMS] wide, a 320 dp phone at a very large text size) does
  * the tuning line go on a line of its own under the button, at the start too. Public for the tools of
  * other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
+ *
+ * A [settingsButton] (the app's gear that opens Settings, Phase 69, in its 48 dp touch area) stands
+ * before the tool button, in the top start corner as on every tab, and the name's room is reckoned
+ * without it.
  */
 @Composable
 fun ToolAndTuningRow(
@@ -122,26 +126,43 @@ fun ToolAndTuningRow(
     spokenTuningName: String,
     onPickInstrument: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     val style = MaterialTheme.typography.bodyMedium
+    val buttons = @Composable {
+        if (settingsButton != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                settingsButton()
+                Spacer(Modifier.width(GEAR_GAP))
+                toolButton()
+            }
+        } else {
+            toolButton()
+        }
+    }
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val beforeName = TOOL_BUTTON_WIDTH + ROW_GAP + if (onPickInstrument != null) INSTRUMENT_TOUCH + NAME_GAP + NAME_PADDING * 2 else 0.dp
+        val gear = if (settingsButton != null) GEAR_TOUCH + GEAR_GAP else 0.dp
+        val beforeName = gear + TOOL_BUTTON_WIDTH + ROW_GAP + if (onPickInstrument != null) INSTRUMENT_TOUCH + NAME_GAP + NAME_PADDING * 2 else 0.dp
         // A few letters of the name at its size, however large the text is set.
         val minRoom = with(LocalDensity.current) { style.fontSize.toDp() } * MIN_NAME_EMS
         if (maxWidth - beforeName >= minRoom) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                toolButton()
+                buttons()
                 Spacer(Modifier.width(ROW_GAP))
                 TuningLine(tuningName, spokenTuningName, onPickInstrument, Modifier.weight(1f), start = true)
             }
         } else {
             Column {
-                toolButton()
+                buttons()
                 TuningLine(tuningName, spokenTuningName, onPickInstrument, start = true)
             }
         }
     }
 }
+
+/** The app's gear before the tool button: its touch area, and the gap after it. */
+private val GEAR_TOUCH = 48.dp
+private val GEAR_GAP = 4.dp
 
 /** The name stays beside the tool button where its room holds about this many letters' widths (in ems) or more. */
 private const val MIN_NAME_EMS = 4f

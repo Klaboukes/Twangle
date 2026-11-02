@@ -6,7 +6,7 @@
     <string name="nav_metronome">Metronome</string>
     <!-- Navigation bar tab (one short word) that opens Practice: chord charts, scales, the capo helper and ear training. -->
     <string name="nav_practice">Practice</string>
-    <!-- Navigation bar tab (one short word) that opens the Settings screen. -->
+    <!-- TalkBack name of the gear button in the top corner of every screen (Tune, Metronome, Practice), which opens the Settings screen. One short word. -->
     <string name="nav_settings">Settings</string>
     <!-- The home-screen widget: its name and description in the widget picker, its line (instrument ·
          tuning), the line under it, and the picker's preview text. -->

@@ -121,11 +121,12 @@ class TuningWidgetTest {
     @Test
     fun aTapOpensTheTunerFromAnotherScreen() {
         ActivityScenario.launch(MainActivity::class.java).use {
-            val settings = NavigationTestTags.tab(Destination.SETTINGS)
+            // The gear opens Settings (Phase 69), which has no bar.
+            val gear = NavigationTestTags.SETTINGS
             val tuner = NavigationTestTags.tab(Destination.TUNER)
-            assertTrue("the app opens", waitFor(5_000) { tab(settings) != null })
-            tab(settings)!!.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            assertTrue("Settings opens", waitFor(3_000) { tab(settings)?.isSelected == true })
+            assertTrue("the app opens", waitFor(5_000) { tab(gear) != null })
+            tab(gear)!!.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            assertTrue("Settings opens", waitFor(3_000) { tab(tuner) == null })
 
             TuningWidget.openTuner(context).send()
             assertTrue("the widget's tap shows the tuner", waitFor(5_000) { tab(tuner)?.isSelected == true })

@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
+import io.github.klaboukes.twangle.feature.settings.R as SettingsR
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import java.util.concurrent.TimeUnit
@@ -32,7 +33,8 @@ import org.junit.rules.Timeout
 /**
  * The bar's Tuner tab always leads to the plain tuner (owner's request, 2026-10-17): a tap on it closes
  * the tuner's tool (here the strum check), also while the tuner shows and when coming back from another
- * tab (the Metronome and Practice tabs, Phase 69). Back from another tab is no tap on the tab, so the tool stays.
+ * tab (the Metronome and Practice tabs, Phase 69). Back from Settings is no tap on the tab, so the tool
+ * stays. The gear on each tab opens Settings, and Back returns to that tab (Phase 69).
  */
 class TunerTabTest {
 
@@ -94,12 +96,44 @@ class TunerTabTest {
 
             // Back is no tap on the tab: the tool stays.
             turnStrumCheckOn()
-            tab(Destination.SETTINGS)
+            click(NavigationTestTags.SETTINGS)
             assertTrue("Settings shows", gone(TunerTestTags.MORE_TOOLS))
             device.pressBack()
             assertTrue("back on the tuner, still in strum check", shown(TunerTestTags.STRUM_PANEL))
         }
     }
+
+    /**
+     * Settings is behind the gear on every tab (Phase 69), not a tab: it opens without the bar, and Back,
+     * or its back arrow, returns to the tab whose gear opened it.
+     */
+    @Test
+    fun theGearOnEveryTabOpensSettingsAndBackReturnsToThatTab() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            var backArrow = ""
+            scenario.onActivity { backArrow = it.getString(SettingsR.string.settings_back) }
+            assertTrue("the tuner shows", shown(TunerTestTags.MORE_TOOLS))
+            for ((destination, landmark) in listOf(
+                Destination.TUNER to TunerTestTags.MORE_TOOLS,
+                Destination.METRONOME to MetronomeTestTags.DIAL,
+                Destination.PRACTICE to PracticeTestTags.TOOL_BUTTON,
+            )) {
+                for (arrow in listOf(false, true)) {
+                    tab(destination)
+                    assertTrue("$destination shows", shown(landmark))
+                    click(NavigationTestTags.SETTINGS)
+                    assertTrue("Settings from $destination: no bar", gone(NavigationTestTags.BAR))
+                    assertTrue("Settings from $destination: $destination gone", gone(landmark))
+                    if (arrow) click(By.desc(backArrow)) else device.pressBack()
+                    assertTrue("back ${if (arrow) "arrow" else ""} from Settings on $destination", shown(landmark))
+                    assertTrue("with the bar", shown(NavigationTestTags.BAR))
+                }
+            }
+        }
+    }
+
+    private fun click(selector: androidx.test.uiautomator.BySelector) =
+        (device.wait(Until.findObject(selector), WAIT_MS) ?: error("no $selector")).click()
 
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
