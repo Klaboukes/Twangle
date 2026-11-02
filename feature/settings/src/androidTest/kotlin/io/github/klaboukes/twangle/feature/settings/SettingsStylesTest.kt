@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -38,20 +39,17 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
- * Settings and About in each of the six styles, with that style picked: each style brings its own
- * fonts (Michroma and Orbitron are wide, Forum narrow), so rows differ in size. At 2× text,
+ * Settings and About in Ink (1.1 checked them in each of its six styles, whose fonts made rows
+ * differ in size). At 2× text,
  * upright (light) and on its side (dark), every title, choice and card name can be scrolled to and
  * is then wholly shown; About's titles, version and credits too. TalkBack, light and dark, hears every
  * light-or-dark choice as a radio button with its name and which one is picked, and the back arrow by
- * name. (1.1's meter and wave cards went in Phase 67; the lens's Meter cards come in Phase 72.) [SettingsContentTest] covers each behaviour in one style.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
+ * name. (1.1's meter and wave cards went in Phase 67; the lens's Meter cards come in Phase 72.) [SettingsContentTest] covers each behaviour.
  */
-@RunWith(Parameterized::class)
-class SettingsStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class SettingsStylesTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -114,7 +112,7 @@ class SettingsStylesTest(private val style: String) {
         shownSize.value = size
         shownDark.value = dark
         show(about)
-        check("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${fontScale}x:")
+        check("${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${fontScale}x:")
     }
 
     /**
@@ -137,7 +135,7 @@ class SettingsStylesTest(private val style: String) {
     fun onATabletOnItsSideAboutIsWhollyShownAtItsTextSize() =
         atTextSize(TABLET_FONT_SCALE, TABLET_ON_ITS_SIDE, dark = true, about = true, check = ::assertAboutWhollyShown)
 
-    /** Upright in the light theme; on its side in the dark one (a style's fonts are the same in both). */
+    /** Upright in the light theme; on its side in the dark one (the fonts are the same in both). */
     @Test
     fun uprightEverySettingIsWhollyShownAtTwiceTheTextSize() = atTwiceTheTextSize(PHONE_UPRIGHT, dark = false, check = ::assertEverySettingWhollyShown)
 
@@ -207,7 +205,7 @@ class SettingsStylesTest(private val style: String) {
         for (dark in listOf(false, true)) {
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"}:"
+            val case = "${if (dark) "dark" else "light"}:"
             for ((id, selected) in listOf(R.string.settings_theme_system to true, R.string.settings_theme_light to false, R.string.settings_theme_dark to false)) {
                 val row = compose.onNodeWithText(context.getString(id)).performScrollTo()
                 row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
@@ -226,7 +224,7 @@ class SettingsStylesTest(private val style: String) {
 
     /**
      * Every language at 2× text, upright and on its side: every text of Settings, and of About, wholly
-     * shown (every style in a thorough run). Only with `--languages`.
+     * shown. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -244,16 +242,12 @@ class SettingsStylesTest(private val style: String) {
             for (size in listOf(PHONE_UPRIGHT, PHONE_ON_ITS_SIDE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x:")
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} at 2x:")
             }
         }
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val VERSION = "1.2.3-test"
 

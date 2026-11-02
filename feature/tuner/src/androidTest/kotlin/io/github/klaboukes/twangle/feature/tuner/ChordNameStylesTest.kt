@@ -22,6 +22,7 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.klaboukes.twangle.core.audio.AudioConfig
@@ -59,23 +60,20 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.pow
 
 /**
- * The chord name (Phase 30) in each of the six styles, light and dark: its panel in the meter's place,
+ * The chord name (Phase 30) in Ink, light and dark: its panel in the meter's place,
  * the line under it, the "more tools" button above the strings. Upright every phase fits without
  * scrolling and nothing moves between phases; at 2× text in Dutch every part is wholly shown (every
  * language overnight). The menu lists the three tools and turns the chord name on. TalkBack hears the
  * chord in words. Synthetic strums through a fake microphone name A minor and C/E on the real screen.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class ChordNameStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class ChordNameStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -147,13 +145,13 @@ class ChordNameStylesTest(private val style: String) {
                 for ((name, state) in phases()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    val case = "$style ${if (dark) "dark" else "light"} $name ${size.width} x ${size.height} at ${scale}x:"
+                    val case = "${if (dark) "dark" else "light"} $name ${size.width} x ${size.height} at ${scale}x:"
                     val bounds = assertAllInView(case, parts())
                     tops += bounds[1].top.value
                     tops += bounds[2].top.value
                     if (size == XIAOMI_UPRIGHT) picture("${if (dark) "dark" else "light"}-$name")
                 }
-                if (tops.size != 2) fail("$style ${size.width} x ${size.height}: the line or the strings moved between phases: $tops")
+                if (tops.size != 2) fail("${size.width} x ${size.height}: the line or the strings moved between phases: $tops")
             }
         }
     }
@@ -169,7 +167,7 @@ class ChordNameStylesTest(private val style: String) {
             for ((name, state) in phases()) {
                 shownState.value = state
                 compose.waitForIdle()
-                for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "$style nl $name $size at 2x: $part")
+                for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "nl $name $size at 2x: $part")
             }
         }
     }
@@ -187,7 +185,7 @@ class ChordNameStylesTest(private val style: String) {
                 for ((name, state) in phases()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $name ${size.width} x ${size.height} at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $name ${size.width} x ${size.height} at 2x:")
                 }
             }
         }
@@ -354,7 +352,7 @@ class ChordNameStylesTest(private val style: String) {
         val dir = arguments.getString(OUTPUT_DIR_ARGUMENT) ?: return
         compose.waitForIdle()
         val bitmap = compose.onPhoneScreen().captureToImage().asAndroidBitmap()
-        File(File(dir).apply { mkdirs() }, "chord-$style-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        File(File(dir).apply { mkdirs() }, "chord-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
     /** The phases to look at: waiting, listening, named (a triad, a slash chord, a long seventh, a power chord, the longest name, faded with the last chords), not a clear chord. */
@@ -393,10 +391,6 @@ class ChordNameStylesTest(private val style: String) {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private val AM = Chord.of(PitchClass.A, ChordQuality.MINOR)
         private val C = Chord.of(PitchClass.C, ChordQuality.MAJOR)
         private val G = Chord.of(PitchClass.G, ChordQuality.MAJOR)

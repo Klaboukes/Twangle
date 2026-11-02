@@ -28,6 +28,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -45,26 +46,23 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The strum check in each of the six styles: its panel in the meter's place, the line under it, and
+ * The strum check in Ink: its panel in the meter's place, the line under it, and
  * its switch beside the instrument-and-tuning button. Upright (a narrow phone, and the owner's
  * Xiaomi 12X at 1.25× text) and on its side (full and compact layout), every part fits without
  * scrolling, in the window, clear of the settings button and of each other, and nothing moves from
  * one phase to the next. At 2× text in Dutch every part can be scrolled to and is wholly shown.
  * TalkBack hears each string with its reading, the line as a live region and the switch with its
- * state. Each string's marker is drawn in the style's own colours, light and dark. Once the strum is
+ * state. Each string's marker is drawn in the app's colours, light and dark. Once the strum is
  * read, each string's column is a button that tunes that string, as on the string row (also for
  * TalkBack), big enough to touch.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class StrumCheckStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class StrumCheckStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -87,7 +85,7 @@ class StrumCheckStylesTest(private val style: String) {
     private val switched = mutableListOf<Boolean>()
     private val stringClicks = mutableListOf<Int>()
 
-    // The style's colours, read while composing.
+    // The app's colours, read while composing.
     private var accent = Color.Unspecified
     private var inTune = Color.Unspecified
 
@@ -144,7 +142,7 @@ class StrumCheckStylesTest(private val style: String) {
                 for (phase in StrumPhase.entries) {
                     shownState.value = ringing(phase)
                     compose.waitForIdle()
-                    val case = "$style ${if (dark) "dark" else "light"} $phase ${size.width} x ${size.height} at ${scale}x:"
+                    val case = "${if (dark) "dark" else "light"} $phase ${size.width} x ${size.height} at ${scale}x:"
                     val bounds = assertAllInView(case, parts(controls = true)).map { it.top.value to it.bottom.value }
                     if (where == null) where = bounds
                     if (bounds != where) fail("$case moved: $bounds, was $where")
@@ -161,7 +159,7 @@ class StrumCheckStylesTest(private val style: String) {
         for (compact in listOf(false, true)) {
             shownCompact.value = compact
             compose.waitForIdle()
-            val case = "$style on its side ${if (compact) "compact" else "full"}:"
+            val case = "on its side ${if (compact) "compact" else "full"}:"
             assertAllInView(case, parts(controls = !compact))
             if (compact) toggle.assertDoesNotExist()
             val panelBounds = panel.getBoundsInRoot()
@@ -182,12 +180,12 @@ class StrumCheckStylesTest(private val style: String) {
             for (phase in listOf(StrumPhase.WAITING, StrumPhase.DONE)) {
                 shownState.value = ringing(phase)
                 compose.waitForIdle()
-                for ((name, node) in parts(controls = true)) assertWhollyShown(node, "$style nl $phase $size at 2x: $name")
+                for ((name, node) in parts(controls = true)) assertWhollyShown(node, "nl $phase $size at 2x: $name")
                 val texts = listOf(
                     nl(R.string.tuner_strum_waiting).takeIf { phase == StrumPhase.WAITING },
                     nl(R.string.tuner_strum_again).takeIf { phase == StrumPhase.DONE },
                 )
-                for (text in texts.filterNotNull()) assertWhollyShown(compose.onNode(hasText(text), useUnmergedTree = true), "$style $size: $text")
+                for (text in texts.filterNotNull()) assertWhollyShown(compose.onNode(hasText(text), useUnmergedTree = true), "$size: $text")
             }
         }
     }
@@ -236,7 +234,7 @@ class StrumCheckStylesTest(private val style: String) {
             stringClicks.clear()
             for (index in strings.indices) compose.onNodeWithTag(TunerTestTags.strumString(index)).performClick()
             val expected = if (phase == StrumPhase.WAITING) emptyList() else strings.indices.toList()
-            assertEquals("$style $phase", expected, stringClicks)
+            assertEquals("$phase", expected, stringClicks)
         }
     }
 
@@ -250,7 +248,7 @@ class StrumCheckStylesTest(private val style: String) {
             compose.waitForIdle()
             for (index in strings.indices) {
                 val cell = compose.onNodeWithTag(TunerTestTags.strumString(index)).getBoundsInRoot()
-                val case = "$style $size${if (compact) " compact" else ""}: ${strings[index]} $cell"
+                val case = "$size${if (compact) " compact" else ""}: ${strings[index]} $cell"
                 if (cell.right - cell.left < MIN_TOUCH - SLACK || cell.bottom - cell.top < MIN_TOUCH - SLACK) fail("$case is under $MIN_TOUCH")
             }
         }
@@ -264,8 +262,8 @@ class StrumCheckStylesTest(private val style: String) {
         spoken.forEachIndexed { index, name ->
             val node = compose.onNodeWithTag(TunerTestTags.strumString(index))
             val config = node.fetchSemanticsNode().config
-            assertEquals("$style $name", Role.Button, config.getOrNull(SemanticsProperties.Role))
-            assertEquals("$style $name", context.getString(R.string.tuner_strum_tune_string, name), config.getOrNull(SemanticsActions.OnClick)?.label)
+            assertEquals("$name", Role.Button, config.getOrNull(SemanticsProperties.Role))
+            assertEquals("$name", context.getString(R.string.tuner_strum_tune_string, name), config.getOrNull(SemanticsActions.OnClick)?.label)
         }
         compose.onNodeWithTag(TunerTestTags.strumString(1)).performSemanticsAction(SemanticsActions.OnClick)
         assertEquals(listOf(1), stringClicks)
@@ -283,7 +281,7 @@ class StrumCheckStylesTest(private val style: String) {
     }
 
     /**
-     * Light and dark: the in-tune strings' markers are drawn in the style's "in tune" colour at the
+     * Light and dark: the in-tune strings' markers are drawn in the "in tune" colour at the
      * centre, the flat one's in its accent below the centre and the sharp one's above it, and a
      * string not heard has no marker.
      */
@@ -293,7 +291,7 @@ class StrumCheckStylesTest(private val style: String) {
         for (dark in listOf(false, true)) {
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"}"
+            val case = "${if (dark) "dark" else "light"}"
             val image = panel.captureToImage().toPixelMap()
             val panelBounds = panel.getBoundsInRoot()
             fun count(index: Int, colour: Color, fromShare: Float, toShare: Float): Int {
@@ -346,10 +344,6 @@ class StrumCheckStylesTest(private val style: String) {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         /** Standard tuning: E2 in tune, A2 12 cents flat, D3 in tune, G3 8 sharp, B3 not heard, E4 in tune but less sure. */
         fun ringing(phase: StrumPhase) = TunerUiState.StrumCheck(
             tuning = Tunings.STANDARD,

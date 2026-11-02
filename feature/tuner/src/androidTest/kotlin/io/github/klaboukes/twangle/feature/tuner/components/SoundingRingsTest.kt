@@ -34,9 +34,9 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /**
- * The rings round a sounding string show in every style, light and dark, on the style's own
- * background: the same row pictured with and without a sounding string differs, clearly, in a band
- * round that string's button, and nowhere else. Cheap enough to run every style in a normal run.
+ * The rings round a sounding string show light and dark, on the app's background: the same row
+ * pictured with and without a sounding string differs, clearly, in a band round that string's
+ * button, and nowhere else.
  */
 @RunWith(JUnit4::class)
 class SoundingRingsTest {
@@ -52,7 +52,7 @@ class SoundingRingsTest {
     private val sounding = mutableStateOf<Int?>(null)
 
     @Test
-    fun theRingsShowInEveryStyleLightAndDark() {
+    fun theRingsShowLightAndDark() {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             Column {
@@ -74,31 +74,29 @@ class SoundingRingsTest {
             }
         }
         val failures = mutableListOf<String>()
-        for (style in listOf("Ink")) {
-            sounding.value = null
-            settle()
-            val quiet = listOf(false, true).map { capture(it) }
-            sounding.value = SOUNDING
-            compose.mainClock.advanceTimeByFrame()
-            // A quarter of the way through a wave: one ring just out of the button, one further out.
-            compose.mainClock.advanceTimeBy(RING_PHASE_MS)
-            for (dark in listOf(false, true)) {
-                val case = "$style ${if (dark) "dark" else "light"}"
-                val ringing = capture(dark)
-                val button = buttonBounds(dark)
-                val reach = with(compose.density) { BAND.toPx() }
-                val band = Rect(button.left - reach, button.top - reach, button.right + reach, button.bottom + reach)
-                val (inBand, outside, strongest) = compare(quiet[if (dark) 1 else 0], ringing, band)
-                // The ring is 2 dp wide round a ~50 dp button: hundreds of pixels change.
-                if (inBand < MIN_CHANGED_PIXELS) failures += "$case: only $inBand pixels changed round the string"
-                if (strongest < MIN_CONTRAST) failures += "$case: the rings differ from the background by only $strongest"
-                if (outside > 0) failures += "$case: $outside pixels changed away from the sounding string"
-            }
+        sounding.value = null
+        settle()
+        val quiet = listOf(false, true).map { capture(it) }
+        sounding.value = SOUNDING
+        compose.mainClock.advanceTimeByFrame()
+        // A quarter of the way through a wave: one ring just out of the button, one further out.
+        compose.mainClock.advanceTimeBy(RING_PHASE_MS)
+        for (dark in listOf(false, true)) {
+            val case = if (dark) "dark" else "light"
+            val ringing = capture(dark)
+            val button = buttonBounds(dark)
+            val reach = with(compose.density) { BAND.toPx() }
+            val band = Rect(button.left - reach, button.top - reach, button.right + reach, button.bottom + reach)
+            val (inBand, outside, strongest) = compare(quiet[if (dark) 1 else 0], ringing, band)
+            // The ring is 2 dp wide round a ~50 dp button: hundreds of pixels change.
+            if (inBand < MIN_CHANGED_PIXELS) failures += "$case: only $inBand pixels changed round the string"
+            if (strongest < MIN_CONTRAST) failures += "$case: the rings differ from the background by only $strongest"
+            if (outside > 0) failures += "$case: $outside pixels changed away from the sounding string"
         }
         assertTrue(failures.joinToString("\n"), failures.isEmpty())
     }
 
-    /** Lets the background's cross-fade to a new style finish. */
+    /** Lets the background's cross-fade finish. */
     private fun settle() = compose.mainClock.advanceTimeBy(SETTLE_MS)
 
     private fun capture(dark: Boolean): PixelMap = compose.onNodeWithTag(tag(dark)).captureToImage().toPixelMap()

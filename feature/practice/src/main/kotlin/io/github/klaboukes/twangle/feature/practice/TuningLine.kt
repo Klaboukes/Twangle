@@ -87,7 +87,7 @@ internal fun TuningLine(
                                 press.pressFlash()
                                 onPickInstrument()
                             }
-                            // Clear of the shape's corners, which cut into the letters in the styles with cut corners (Futuristic).
+                            // Clear of the shape's corners (in 1.1 Futuristic's cut corners cut into the letters).
                             .padding(horizontal = NAME_PADDING)
                             .testTag(PracticeTestTags.TUNING)
                             // The instrument button before it says the same to TalkBack.

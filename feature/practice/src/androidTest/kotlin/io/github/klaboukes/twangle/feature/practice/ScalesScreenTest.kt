@@ -71,10 +71,10 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Scales tool (Phase 32, a tool of its own since Phase 47) in each style, light and dark: it
+ * The Scales tool (Phase 32, a tool of its own since Phase 47) in Ink, light and dark: it
  * shares its screen and root with Chords, it opens on the saved scale, the name button's panel picks
  * another (and reports it to be saved) and closes so the neck shows it, the neck follows the picked tuning and notation, TalkBack
  * hears the panel's grids as radio groups, the name as a heading and a list and the
@@ -83,11 +83,9 @@ import org.junit.runners.Parameterized
  * The drone (Phase 48): its split button at the end of the name's row plays the root and follows it, stops when Scales
  * goes and starts again only on a tap, and its panel's picks are heard and passed on to be saved. The banjo (Phase 59):
  * its neck with the short string faded below its start, in both hands, TalkBack naming the short string.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class ScalesScreenTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class ScalesScreenTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -374,7 +372,7 @@ class ScalesScreenTest(private val style: String) {
         shownTuning.value = banjo
         show(PitchClass.G, ScaleType.MAJOR)
         for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
-            val case = "$style $size at ${scale}x"
+            val case = "$size at ${scale}x"
             shownFontScale.value = scale
             shownSize.value = size
             compose.waitForIdle()
@@ -433,7 +431,7 @@ class ScalesScreenTest(private val style: String) {
             val spoken = spokenNeck()
             val bounds = drawing.getBoundsInRoot()
             val normal = drawing.captureToImage()
-            val case = "$style $size $lie"
+            val case = "$size $lie"
             assertShortStringFaded(normal, NeckGeometry.of(banjo), lie, "$case right-handed")
             shownLeftHanded.value = true
             compose.waitForIdle()
@@ -509,7 +507,7 @@ class ScalesScreenTest(private val style: String) {
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                val case = "$style $language $size at 2x, banjo:"
+                val case = "$language $size at 2x, banjo:"
                 for (tag in listOf(PracticeTestTags.neckLie(lie()), PracticeTestTags.NAME_PICKER, PracticeTestTags.DRONE_PLAY, PracticeTestTags.DRONE_SOUND)) {
                     assertWhollyShown(node(tag), "$case $tag", scroll = true)
                 }
@@ -554,7 +552,7 @@ class ScalesScreenTest(private val style: String) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"} $size:"
+            val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
             val tags = listOf(
                 PracticeTestTags.TOOL_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER,
@@ -853,7 +851,7 @@ class ScalesScreenTest(private val style: String) {
             val normal = drawing.captureToImage()
             shownLeftHanded.value = true
             compose.waitForIdle()
-            val case = "$style $size $lie"
+            val case = "$size $lie"
             assertEquals("$case: lies the same way", lie, lie())
             assertEquals("$case: TalkBack hears the same", spoken, spokenNeck())
             assertEquals("$case: in the same place and size", bounds, drawing.getBoundsInRoot())
@@ -870,7 +868,7 @@ class ScalesScreenTest(private val style: String) {
         show()
         compose.waitForIdle()
         assertTrue("upright on a tall tablet", exists(PracticeTestTags.neckLie(NeckLie.UPRIGHT)))
-        assertWhollyShown(node(PracticeTestTags.neckLie(NeckLie.UPRIGHT)), "$style the upright neck", scroll = false)
+        assertWhollyShown(node(PracticeTestTags.neckLie(NeckLie.UPRIGHT)), "the upright neck", scroll = false)
         shownSize.value = PHONE_LANDSCAPE
         compose.waitForIdle()
         assertTrue("sideways on a phone on its side", exists(PracticeTestTags.neckLie(NeckLie.SIDEWAYS)))
@@ -900,7 +898,7 @@ class ScalesScreenTest(private val style: String) {
                 val widest = (0 until layout.lineCount).maxOf { layout.getLineRight(it) - layout.getLineLeft(it) }
                 val room = (button.size.width - widest) / 2 / button.layoutInfo.density.density
                 // From the touch area's edge: 3 dp to the face, 3 dp inside it, and at least 5 dp more.
-                assertTrue("$style $size at 1.3x: $type keeps room at its sides, $room dp", room >= 11f)
+                assertTrue("$size at 1.3x: $type keeps room at its sides, $room dp", room >= 11f)
             }
             closePanel()
         }
@@ -916,14 +914,14 @@ class ScalesScreenTest(private val style: String) {
             shownSize.value = size
             compose.waitForIdle()
             for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NECK)) {
-                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+                assertWhollyShown(node(tag), "nl $size $tag at 2x")
             }
-            compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
-            compose.assertNoWordBroken("$style nl $size at 2x:")
-            assertThePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
-            assertWhollyShown(node(PracticeTestTags.DRONE_PLAY), "$style nl $size the drone button at 2x")
-            assertWhollyShown(node(PracticeTestTags.DRONE_SOUND), "$style nl $size the drone's sound at 2x")
-            assertTheDronePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+            compose.assertEveryTextWhollyShown("nl $size at 2x:")
+            compose.assertNoWordBroken("nl $size at 2x:")
+            assertThePanel("nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+            assertWhollyShown(node(PracticeTestTags.DRONE_PLAY), "nl $size the drone button at 2x")
+            assertWhollyShown(node(PracticeTestTags.DRONE_SOUND), "nl $size the drone's sound at 2x")
+            assertTheDronePanel("nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
         }
     }
 
@@ -942,7 +940,7 @@ class ScalesScreenTest(private val style: String) {
             shownSize.value = case.size
             shownLocale.value = case.language
             shownNotation.value = if (case.fontScale > 1f) Notation.SOLFEGE else Notation.SHARPS
-            val name = "$style ${case.language} ${case.size} at ${case.fontScale}x:"
+            val name = "${case.language} ${case.size} at ${case.fontScale}x:"
             pick(PracticeTestTags.root(PitchClass.C), PracticeTestTags.scale(ScaleType.MAJOR))
             val short = picker().getBoundsInRoot()
             val neckTop = neck().getBoundsInRoot().top
@@ -991,13 +989,13 @@ class ScalesScreenTest(private val style: String) {
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                assertThePanel("$style $language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
-                assertTheDronePanel("$style $language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+                assertThePanel("$language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+                assertTheDronePanel("$language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
                 val height = picker().getBoundsInRoot().height
                 // The one shown first, so none is picked twice.
                 for (type in LONG_NAMES.sortedBy { it != shown }) {
                     if (type != shown) pick(PracticeTestTags.scale(type)).also { shown = type }
-                    val what = "$style $language $size G♯ $type at 2x:"
+                    val what = "$language $size G♯ $type at 2x:"
                     assertEquals("$what one steady height", height.value, picker().getBoundsInRoot().height.value, 0.5f)
                     assertTrue("$what on one to three lines", nameLayout().lineCount in 1..3)
                     assertWhollyShown(picker(), "$what the name")
@@ -1009,10 +1007,6 @@ class ScalesScreenTest(private val style: String) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         /** The panel's rows, two scales each, the most used first. */
         private val ROWS = listOf(
             ScaleType.MAJOR to ScaleType.NATURAL_MINOR,

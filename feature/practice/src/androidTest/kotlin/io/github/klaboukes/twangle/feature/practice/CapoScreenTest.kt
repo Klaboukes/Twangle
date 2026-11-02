@@ -22,6 +22,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -52,19 +53,16 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
- * The Capo helper (Phase 33) in each style, light and dark: it opens on the saved shapes and fret,
+ * The Capo helper (Phase 33) in Ink, light and dark: it opens on the saved shapes and fret,
  * ‹ › move the capo and the list picks the shapes (both reported to be saved), the table shows what
  * each shape sounds in the player's notation, a row opens its shape, TalkBack hears every part by
  * what it says or does, and the whole tool fits: without scrolling upright and on its side at
  * normal text, wholly shown at 2× text.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class CapoScreenTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class CapoScreenTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -167,7 +165,7 @@ class CapoScreenTest(private val style: String) {
             // Back to the nut from the case before.
             repeat(Capo.HIGHEST_FRET) { node(PracticeTestTags.CAPO_LOWER).performClick() }
             compose.waitForIdle()
-            val case = "$style $language ${scale}x $size:"
+            val case = "$language ${scale}x $size:"
             node(PracticeTestTags.CAPO_NONE).assert(hasText(none))
             assertWhollyShown(node(PracticeTestTags.CAPO_NONE), "$case \"$none\"")
             val tags = listOf(PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER)
@@ -264,7 +262,7 @@ class CapoScreenTest(private val style: String) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"} $size:"
+            val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
             for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
@@ -308,9 +306,9 @@ class CapoScreenTest(private val style: String) {
             shownSize.value = size
             compose.waitForIdle()
             for (tag in listOf(PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, PracticeTestTags.CAPO_SOUNDS_IN)) {
-                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+                assertWhollyShown(node(tag), "nl $size $tag at 2x")
             }
-            compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
+            compose.assertEveryTextWhollyShown("nl $size at 2x:")
         }
     }
 
@@ -328,8 +326,8 @@ class CapoScreenTest(private val style: String) {
                 for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                     shownSize.value = size
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $size fret $fret at 2x:")
-                    compose.assertNoWordBroken("$style $language $size fret $fret at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $size fret $fret at 2x:")
+                    compose.assertNoWordBroken("$language $size fret $fret at 2x:")
                 }
             }
         }
@@ -348,7 +346,7 @@ class CapoScreenTest(private val style: String) {
         show(SongKey(PitchClass.C), 3)
         val firstRow = PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR))
         for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
-            val case = "$style $size at ${scale}x"
+            val case = "$size at ${scale}x"
             shownFontScale.value = scale
             shownSize.value = size
             compose.waitForIdle()
@@ -387,9 +385,9 @@ class CapoScreenTest(private val style: String) {
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                assertWhollyShown(node(PracticeTestTags.SHORT_STRING), "$style $language $size at 2x: the banjo's line", scroll = true)
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
-                compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
+                assertWhollyShown(node(PracticeTestTags.SHORT_STRING), "$language $size at 2x: the banjo's line", scroll = true)
+                compose.assertEveryTextWhollyShown("$language $size at 2x, banjo:")
+                compose.assertNoWordBroken("$language $size at 2x, banjo:")
             }
         }
     }
@@ -403,10 +401,6 @@ class CapoScreenTest(private val style: String) {
         assertEquals(2, instrumentTaps)
     }
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
 

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -41,23 +42,19 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The compact landscape layout (focus mode) in each of the six styles: each style brings its own fonts
- * and dial. On a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the
+ * The compact landscape layout (focus mode) in Ink. On a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the
  * meter fills the screen with the small note in its top start corner; with 2× font the note and a tip
  * are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. The meter (Classic, the one meter
  * since Phase 67), at its biggest here, is clearly drawn inside its box, light and dark, and skipped by
  * TalkBack, also at 2× font.
- * [TunerContentTest] covers the layout itself in one style.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
+ * [TunerContentTest] covers the layout itself.
  */
-@RunWith(Parameterized::class)
-class CompactLandscapeStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class CompactLandscapeStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -141,8 +138,8 @@ class CompactLandscapeStylesTest(private val style: String) {
 
     /**
      * Runs [check] on a phone and a tablet on their side, in the light theme or also in the dark one
-     * ([bothThemes]). Layout checks need only one: a style's fonts and dial shape are the same in both
-     * (`typographyFor(style)`), only the colours change, and each run here costs a quarter of a second.
+     * ([bothThemes]). Layout checks need only one: the fonts and the dial's shape are the same in both,
+     * only the colours change, and each run here costs a quarter of a second.
      */
     private fun forEachLook(bothThemes: Boolean = false, check: (case: String) -> Unit) {
         val themes = if (bothThemes) listOf(false, true) else listOf(false)
@@ -318,7 +315,7 @@ class CompactLandscapeStylesTest(private val style: String) {
     )
 
     /**
-     * The signal bars stand out from what is behind them in the style's colours, light and dark, in the
+     * The signal bars stand out from what is behind them in the app's colours, light and dark, in the
      * full layout on its side (focus mode leaves them out).
      */
     @Test
@@ -351,10 +348,6 @@ class CompactLandscapeStylesTest(private val style: String) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
 
         /**
@@ -381,7 +374,7 @@ class CompactLandscapeStylesTest(private val style: String) {
         /** Long enough for the compact layout's cross-fade to finish. */
         private const val FADE_MS = 1_000L
 
-        /** Behind the tuner, a colour none of the styles uses. */
+        /** Behind the tuner, a colour Ink doesn't use. */
         private val BACKGROUND = Color(0xFF7F00FF)
     }
 }

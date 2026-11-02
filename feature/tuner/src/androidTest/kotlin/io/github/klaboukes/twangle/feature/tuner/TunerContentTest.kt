@@ -311,7 +311,7 @@ class TunerContentTest {
     /**
      * While nothing is heard the hint stands in the big note's slot, right under the meter, where the
      * note then comes (Phase 43: it sat under a faint ♪, far below, nearer the strings than the meter),
-     * in both modes. [TunerStylesTest] checks it in every style, on its side and in Dutch at 2× text.
+     * in both modes. [TunerStylesTest] checks it light and dark, on its side and in Dutch at 2× text.
      */
     @Test
     fun theIdleHintSitsInTheNotesSlotRightUnderTheMeter() {

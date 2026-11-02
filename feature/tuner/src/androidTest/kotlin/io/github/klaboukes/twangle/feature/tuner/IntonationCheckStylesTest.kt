@@ -23,6 +23,7 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.klaboukes.twangle.core.audio.AudioConfig
@@ -57,23 +58,20 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
 /**
- * The 12th-fret check (Phase 29) and the "more tools" button in each of the six styles: its panel in
+ * The 12th-fret check (Phase 29) and the "more tools" button in Ink: its panel in
  * the meter's place, the line (and the verdict's buttons) under it, the button above the strings.
  * Upright every step fits without scrolling and nothing moves between steps; at 2× text in Dutch every
  * part is wholly shown (every language overnight). The menu lists both tools and turns one on; with the
  * strum check alone its own switch shows. TalkBack hears the steps, the verdict, each string's result
  * and the button's state. Synthetic plucks through a fake microphone give a verdict on the real screen.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class IntonationCheckStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class IntonationCheckStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -151,12 +149,12 @@ class IntonationCheckStylesTest(private val style: String) {
             for ((name, state) in steps()) {
                 shownState.value = state
                 compose.waitForIdle()
-                val case = "$style $name ${size.width} x ${size.height} at ${scale}x:"
+                val case = "$name ${size.width} x ${size.height} at ${scale}x:"
                 val bounds = assertAllInView(case, parts())
                 tops += bounds[1].top.value
                 tops += bounds[2].top.value
             }
-            if (tops.size != 2) fail("$style ${size.width} x ${size.height}: the line or the strings moved between steps: $tops")
+            if (tops.size != 2) fail("${size.width} x ${size.height}: the line or the strings moved between steps: $tops")
         }
     }
 
@@ -171,11 +169,11 @@ class IntonationCheckStylesTest(private val style: String) {
             for ((name, state) in steps()) {
                 shownState.value = state
                 compose.waitForIdle()
-                for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "$style nl $name $size at 2x: $part")
+                for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "nl $name $size at 2x: $part")
                 if (state.step == IntonationStep.VERDICT) {
                     picture("2x-$name-${size.width.value.toInt()}")
-                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_AGAIN), "$style $size: Check again")
-                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_NEXT), "$style $size: Next string")
+                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_AGAIN), "$size: Check again")
+                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_NEXT), "$size: Next string")
                 }
             }
         }
@@ -194,7 +192,7 @@ class IntonationCheckStylesTest(private val style: String) {
                 for ((name, state) in steps()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $name ${size.width} x ${size.height} at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $name ${size.width} x ${size.height} at 2x:")
                 }
             }
         }
@@ -279,7 +277,7 @@ class IntonationCheckStylesTest(private val style: String) {
             // The button's own dp (bigger in the tablet's scaled column): Material ends the menu at the end of the
             // button's 48 dp touch area, 2 dp past its 44 dp outline.
             val dp = button.layoutInfo.density.density
-            val case = "$style ${size.width} x ${size.height}: menu ends at $menuEnd px, the button at $buttonEnd px"
+            val case = "${size.width} x ${size.height}: menu ends at $menuEnd px, the button at $buttonEnd px"
             if (menuEnd < buttonEnd - dp || menuEnd > buttonEnd + 3 * dp) fail("$case, not in line")
             val margin = (screenEnd - menuEnd) / screen.layoutInfo.density.density
             if (margin < 8f) fail("$case, $margin dp from the screen's edge")
@@ -455,10 +453,6 @@ class IntonationCheckStylesTest(private val style: String) {
         onAllNodes(androidx.compose.ui.test.hasText(text))
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         /** Results so far: E2 fine, A2 back 8, D3 forward 6, the rest not checked. */
         private val RESULTS = listOf(
             IntonationResult(1f, IntonationVerdict.FINE),

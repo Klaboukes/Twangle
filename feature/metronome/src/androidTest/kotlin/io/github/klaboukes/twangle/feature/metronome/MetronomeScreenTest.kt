@@ -65,14 +65,14 @@ import org.junit.rules.Timeout
 import java.util.concurrent.TimeUnit
 
 /**
- * The metronome screen with a fake player and settings, in the default style: it opens stopped at
+ * The metronome screen with a fake player and settings: it opens stopped at
  * the saved tempo and meter, Start / Stop, − and +, the meter picker, the dial (a touch on its ring,
  * none on its middle or deep in its gap, and TalkBack's slider), the row under the dial (Tap tempo ·
  * − · Start · + · options, Phase 62) and the options panel (the four sounds, a pick playing one bar
  * while stopped, the clicks between the beats and their mark, the vibration switch and its mark on the
  * status line, Listen, the speed trainer with its settings, status line and switch) work and are saved,
  * and the clicks stop when the screen leaves the composition. TalkBack hears every control by name.
- * [MetronomeStylesTest] covers the layout in every style.
+ * [MetronomeStylesTest] covers the layout light and dark.
  */
 class MetronomeScreenTest {
 

@@ -49,7 +49,7 @@ Steps 6–8 follow later, each on the owner's word.
 - `git switch main && git pull`, then `git describe --tags --abbrev=0 --match 'v*'` (the `listing/*` and `store-screenshots` tags are no versions). If nothing a player would
   notice changed since that tag, say so and stop.
 - **A clean overnight run first** (owner, 2026-10-28): nothing is released that the overnight run
-  (every UI test in every style, every language; a language check skipped because nothing it shows
+  (every UI test, every language; a language check skipped because nothing it shows
   changed since it passed counts as passed) hasn't passed. The first line
   of `build/overnight/summary.txt` says which commit it ran on and whether everything passed (a night on
   `v2` writes `build/overnight/v2/` instead, which counts for nothing here). It counts

@@ -29,7 +29,7 @@ Settings (`:feature:settings`) is one of the three tabs of the navigation bar ([
 
 Five groups under headings (in the style's title face and `primary`, marked as headings for TalkBack), the last, *App*, holding Language, Show me around and About, each with an arrow (they open something); until Phase 63 those three had no heading of their own. Inside a group a line divides two subjects, and a setting that belongs to the one above stays with it, no line between (the in-tune effect with the meter's look, the wave's look with *Below the note*, the wallpaper colours with the style; *While tuning*'s four switches are one list). Groups are 32 dp apart; rows, including the card grids, keep 16 dp from the edges. No group holds more than two card grids.
 - **Pitch and notes:** A4 calibration, note names, in-tune precision, left-handed. (The instrument and tuning are picked on the tuner itself, and in the Practice tools, with the instrument button.)
-- **Look:** style with the wallpaper colours under it (they belong to Contemporary; under light or dark until Phase 63, where a line fell between style and light or dark but not before them), then light or dark.
+- **Look:** the wallpaper colours, then light or dark (1.1 had the style first, the wallpaper colours under it as Contemporary's).
 - **Tuner screen:** focus mode. (1.1's meter look, in-tune effect, "Below the note" and wave look went in Phase 67: one meter and one glow until the lens, whose Meter cards come in Phase 72.)
 - **While tuning:** keep screen on, vibrate when in tune, tuning help, signal bars.
 - **App** ("App" in English and Dutch): Language, Show me around, About.

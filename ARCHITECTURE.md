@@ -27,7 +27,7 @@ Topic files:
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
   - **[Translation glossary](docs/architecture/glossary.md)**: the app's words for its recurring terms, per language
-- §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Any phone · Every screen in every style · Every language · Quick and thorough UI runs
+- §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Any phone · Every screen light and dark · Every language · Quick and thorough UI runs
 - **[Website](docs/architecture/website.md)** (klaboukes.github.io, Phase 54): Where it lives · Pages and the frame · Nothing from another site · Languages · Pictures · Publishing
 - **[The 2.0 plan](docs/architecture/v2-plan.md)** (on the `v2` branch only, Phases 66–76): Modules: kept, changed, gone · The lens · Settings from 1.1 · The two tools · Order and size · Tests
 - **[History](docs/architecture/history.md)**: Overview · Threading and performance · Lifecycle, permissions and settings · UI basics · Tuner screen · Meter, wave and styles · Metronome, widget and watch · Strum check and metronome · Languages · Testing
@@ -98,7 +98,7 @@ Dependencies ("→" = depends on):
 :feature:practice  → :core:audio (only DronePlayer, playback: no microphone), :core:settings, :core:designsystem, :core:dsp
 :feature:eartraining → :core:audio (TonePlayer, MicPermissionRules; the microphone through PitchListener, which :app
                      backs with the tuner's PitchPipeline), :core:settings, :core:designsystem, :core:dsp
-:core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
+:core:designsystem → :core:settings (ThemeMode), :core:dsp (StrobeMotion, for the strobe kept for Phase 72)
 :core:settings     → :core:dsp
 :core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's,
                      DroneSynth the drone's;
@@ -112,7 +112,7 @@ Dependencies ("→" = depends on):
 Rules:
 - `:core:dsp` is a plain `kotlin("jvm")` module and never imports `android.*`, so the most important code stays fast to test and portable.
 - `:core:audio` knows Android audio, nothing about notes or UI (a tone is asked for in Hz). `:core:settings` knows how settings are saved, nothing about audio or UI.
-- `:core:designsystem` holds everything both screens draw with (including the meter and wave art, so the settings previews draw exactly what the tuner draws), and nothing about audio.
+- `:core:designsystem` holds everything both screens draw with (including the meter art, so the lens's Meter cards in Settings (Phase 72) can draw exactly what the tuner draws), and nothing about audio.
 - `:feature:*` modules never depend on each other, and `:wear` uses none of them. Only `:app` wires implementations together (`AppContainer`) and switches screens (`MainActivity`).
 - `:baselineprofile` runs only on demand with a phone connected ([Threading and performance](docs/architecture/performance.md)). CI never runs it.
 
@@ -179,7 +179,7 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
-    SharedActivityComposeRule, SharedActivityTestRunner, Thorough (+ allIfThorough), EveryLanguage, WhollyShown,
+    SharedActivityComposeRule, SharedActivityTestRunner, Thorough, EveryLanguage, WhollyShown,
     PhoneScreen, MenuPosition
 
 feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/

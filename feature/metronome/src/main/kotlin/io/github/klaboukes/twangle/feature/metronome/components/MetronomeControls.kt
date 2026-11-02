@@ -274,7 +274,7 @@ internal val ROW_ICON = 24.dp
  * Tap tempo, a fingertip with two ripples. A tap counts the moment the finger touches (not when it
  * lifts), so the tempo follows the player's taps as closely as it can; the same touch gives the crisp
  * flash (full for 70 ms, gone 110 ms after the touch, never smeared into the next tap). TalkBack's
- * double tap counts too. Round in Contemporary and Space Age, else in the style's shape.
+ * double tap counts too. Round, as every button's face.
  */
 @Composable
 private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier = Modifier) {

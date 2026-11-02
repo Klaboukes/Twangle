@@ -11,8 +11,8 @@
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #   scripts/ui-tests.sh :feature:tuner -c StyleScreenshots -a styleScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
-#   scripts/ui-tests.sh --thorough ...           also the double checks: every style, and the @Thorough
-#                                                tests (other font sizes, languages, orientations)
+#   scripts/ui-tests.sh --thorough ...           also the double checks: the @Thorough tests (other
+#                                                font sizes, languages, orientations)
 #   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
 #                                                warmer than COOL_BELOW (default 37 °C): long runs
 #   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests, in the testers'
@@ -22,8 +22,8 @@
 #   scripts/ui-tests.sh --dry-run ...            only say which modules would run, and why (no build,
 #                                                no phone)
 #
-# A normal run is quick and leaves out the double checks: the style tests run in the default style
-# only, and tests marked @Thorough (:core:testing) are skipped. The overnight run
+# A normal run is quick and leaves out the double checks: tests marked @Thorough (:core:testing) are
+# skipped. The overnight run
 # (scripts/overnight-ui-tests.sh) passes --thorough and checks everything. --quick is accepted and
 # changes nothing.
 #
@@ -240,7 +240,7 @@ if time:
     t = re.sub(r'[.,]', '', t[:dec]) + '.' + t[dec + 1:] if dec >= 0 else t
     secs = f", {float(t):.0f}s on the phone"
 if tests == 0 and running is None:
-    # A class whose tests all wait for an argument (StyleScreenshots) runs none.
+    # A class whose tests all wait for an argument runs none.
     if re.search(r'^OK \(0 tests\)', text, re.M):
         print('0 tests')
         sys.exit(0)
@@ -352,7 +352,7 @@ trap 'exit 130' INT TERM
 # setting it during the whole run. Needs "USB debugging (Security settings)" on (see CLAUDE.md).
 # The loop runs only while the lock is there, and at most LOCK_MAX_AGE seconds: one left running
 # after its run costs the phone about a third of a core, and they used to pile up, one a run, until
-# the tests ran out of time (the first test of a --thorough run, an Ancient one, first).
+# the tests ran out of time (the first test of a --thorough run first).
 if [ -n "$(adb shell getprop ro.miui.ui.version.name 2>/dev/null | tr -d '\r')" ]; then
     guard='echo $$ > LOCK/guard.pid; end=$(($(date +%s) + MAX)); while [ -d LOCK ] && [ $(date +%s) -lt $end ]; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done'
     guard="${guard//LOCK/$LOCK}"
@@ -362,8 +362,8 @@ fi
 # Tests can only draw while the phone's screen is on and unlocked. With the screen off (its power
 # button) or the lock screen up, the test window is stopped: the first test of the run, the only one
 # that opens it, waits for it until its time is up ("test timed out" in waitForComposeRoots) and the
-# rest find "No compose hierarchies". In a --thorough run that first test is always an Ancient one
-# (the first style), so it looks as if Ancient were slow. So wake the screen before each module, stop
+# rest find "No compose hierarchies". In 1.1's --thorough runs that first test was always one in the
+# first style, so it looked as if Ancient were slow. So wake the screen before each module, stop
 # if the phone is locked, and say so if the screen went off during a run.
 wake_phone() {
     adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1

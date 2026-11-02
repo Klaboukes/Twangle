@@ -14,6 +14,3 @@ annotation class Thorough
 /** True when the run checks everything: `scripts/ui-tests.sh --thorough` passes `-e thorough true`. */
 val isThoroughRun: Boolean
     get() = InstrumentationRegistry.getArguments().getString("thorough") == "true"
-
-/** All of [all] in a thorough run, otherwise just [quick]: every style, or only the default one. */
-fun <T> allIfThorough(all: List<T>, quick: T): List<T> = if (isThoroughRun) all else listOf(quick)

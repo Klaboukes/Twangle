@@ -26,6 +26,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.espresso.Espresso
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
 import io.github.klaboukes.twangle.app.navigation.Destination
@@ -65,19 +66,18 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
  * The first-start tour over the tuner and its navigation bar (or rail), as the app puts them
- * together: in every style (only the default one unless the run is thorough), each step's balloon
+ * together: in Ink, each step's balloon
  * and both its buttons wholly shown inside the window, in Dutch at 2× text on a 360 dp phone, on a
  * phone on its side (the compact tuner shows its controls and rail) and in the two-pane layout; Next
  * steps through every part in the layout's reading order, each balloon's pointer at its own part;
  * Skip tour and Back end it at once; TalkBack hears only the balloon; taps
  * outside it do nothing; nothing in the tuner moves when it comes.
  */
-@RunWith(Parameterized::class)
-class TourStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class TourStylesTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -241,12 +241,12 @@ class TourStylesTest(private val style: String) {
         shownFontScale.value = 2f
         shownLocale.value = "nl"
         show()
-        stepThroughWhollyShown("$style nl 2x 360 dp", UPRIGHT)
+        stepThroughWhollyShown("nl 2x 360 dp", UPRIGHT)
     }
 
     /**
      * Every language at 2× text on a 360 dp phone: each balloon, its text and buttons wholly shown,
-     * pointing at its part (every style in a thorough run). Only with `--languages`.
+     * pointing at its part. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -257,7 +257,7 @@ class TourStylesTest(private val style: String) {
         for (language in checkedLanguages) {
             shownLocale.value = language
             restart()
-            stepThroughWhollyShown("$style $language 2x 360 dp", UPRIGHT)
+            stepThroughWhollyShown("$language 2x 360 dp", UPRIGHT)
         }
     }
 
@@ -270,7 +270,7 @@ class TourStylesTest(private val style: String) {
         show()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
         assertNotNull("the tools button shows", targets.boundsOf(TourPart.STRUM))
-        stepThroughWhollyShown("$style nl 2x on its side", SIDEWAYS)
+        stepThroughWhollyShown("nl 2x on its side", SIDEWAYS)
     }
 
     /** The full two-pane layout on its side (focus mode off), in English at 1.25×. */
@@ -280,7 +280,7 @@ class TourStylesTest(private val style: String) {
         shownFontScale.value = OWNER_FONT_SCALE
         focusMode.value = false
         show()
-        stepThroughWhollyShown("$style two-pane", TWO_PANE)
+        stepThroughWhollyShown("two-pane", TWO_PANE)
     }
 
     @Thorough
@@ -288,7 +288,7 @@ class TourStylesTest(private val style: String) {
     fun theOwnersPhoneShowsEveryBalloonWhole() {
         shownFontScale.value = OWNER_FONT_SCALE
         show()
-        stepThroughWhollyShown("$style Xiaomi 1.25x", UPRIGHT)
+        stepThroughWhollyShown("Xiaomi 1.25x", UPRIGHT)
     }
 
     @Thorough
@@ -298,7 +298,7 @@ class TourStylesTest(private val style: String) {
         shownLocale.value = "nl"
         shownFontScale.value = 2f
         show()
-        stepThroughWhollyShown("$style tablet nl 2x", SIDEWAYS)
+        stepThroughWhollyShown("tablet nl 2x", SIDEWAYS)
     }
 
     /**
@@ -310,7 +310,7 @@ class TourStylesTest(private val style: String) {
         shownMode.value = TunerMode.CHROMATIC
         show()
         assertEquals(listOf(TourPart.READOUT), TourPart.stepsFor(TunerMode.CHROMATIC))
-        stepThroughWhollyShown("$style chromatic", UPRIGHT.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
+        stepThroughWhollyShown("chromatic", UPRIGHT.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
     }
 
     /** Chromatic mode on its side, Dutch at 2× text: the readout pane's step alone. */
@@ -321,7 +321,7 @@ class TourStylesTest(private val style: String) {
         shownFontScale.value = 2f
         shownLocale.value = "nl"
         show()
-        stepThroughWhollyShown("$style chromatic on its side", SIDEWAYS.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
+        stepThroughWhollyShown("chromatic on its side", SIDEWAYS.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
     }
 
     @Test
@@ -429,17 +429,13 @@ class TourStylesTest(private val style: String) {
             compose.waitForIdle()
             compose.onNodeWithTag(TourTestTags.BALLOON).assertExists()
             for (part in TourPart.entries) {
-                assertNotNull("$style $size: $part laid out", before[part])
-                assertEquals("$style $size: $part moved", before[part], targets.boundsOf(part))
+                assertNotNull("$size: $part laid out", before[part])
+                assertEquals("$size: $part moved", before[part], targets.boundsOf(part))
             }
         }
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val TEST_TIMEOUT_SECONDS = 20L
         private const val WINDOW = "tour_test_window"
         private const val SLACK = 1f

@@ -71,10 +71,10 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Ear training screen (Phase 55) in each style, from its state alone: the three exercises as words
+ * The Ear training screen (Phase 55) in Ink, from its state alone: the three exercises as words
  * TalkBack names in full, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
@@ -82,11 +82,9 @@ import org.junit.runners.Parameterized
  * Intervals' choices; Chord type's question and its buttons (three in a column, all twenty scrolling
  * in their own box), right and wrong, its chips, and the no-shape line; and the whole screen fitting, upright and on its side, at 2× text in Dutch
  * (every language with `--languages`).
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class EarTrainingScreenTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class EarTrainingScreenTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -579,7 +577,7 @@ class EarTrainingScreenTest(private val style: String) {
         val box = node(EarTrainingTestTags.CHORD_ANSWERS).getBoundsInRoot()
         assertTrue("the box ends inside the window ${box.bottom}", box.bottom <= node(WINDOW).getBoundsInRoot().bottom)
         val sizes = ChordQuality.inPanel.map { type ->
-            assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $type")
+            assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$type")
             node(EarTrainingTestTags.chordAnswer(type)).getBoundsInRoot().let { it.width to it.height }
         }
         assertTrue("one steady size $sizes", sizes.all { abs(it.first.value - sizes[0].first.value) < 0.5f && abs(it.second.value - sizes[0].second.value) < 0.5f })
@@ -601,7 +599,7 @@ class EarTrainingScreenTest(private val style: String) {
         compose.waitForIdle()
         node(EarTrainingTestTags.CHORD_LINE).assert(hasText("Not that one"))
         assertEquals("Not that one. The answer: augmented", spoken(EarTrainingTestTags.CHORD_LINE))
-        assertWhollyShown(node(EarTrainingTestTags.chordAnswer(ChordQuality.AUGMENTED)), "$style the answer in view", scroll = false)
+        assertWhollyShown(node(EarTrainingTestTags.chordAnswer(ChordQuality.AUGMENTED)), "the answer in view", scroll = false)
         node(EarTrainingTestTags.chordAnswer(ChordQuality.MINOR)).assertIsNotEnabled().performClick()
         compose.waitForIdle()
         assertEquals("answered once", emptyList<ChordQuality>(), typePicks)
@@ -659,7 +657,7 @@ class EarTrainingScreenTest(private val style: String) {
         for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE, NARROW_UPRIGHT)) {
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style $size, all chord types:"
+            val case = "$size, all chord types:"
             for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE) + ChordQuality.inPanel.map(EarTrainingTestTags::chordAnswer)) {
                 assertWhollyShown(node(tag), "$case $tag")
             }
@@ -669,11 +667,11 @@ class EarTrainingScreenTest(private val style: String) {
         compose.waitForIdle()
         // The play button and the question stand where they are; the answers' box fills the room under them, inside the window.
         for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE)) {
-            assertWhollyShown(node(tag), "$style Xiaomi all chord types $tag", scroll = false)
+            assertWhollyShown(node(tag), "Xiaomi all chord types $tag", scroll = false)
         }
         val box = node(EarTrainingTestTags.CHORD_ANSWERS).getBoundsInRoot()
-        assertTrue("$style the answers' box inside the window $box", box.bottom <= node(WINDOW).getBoundsInRoot().bottom + 0.5.dp)
-        assertTrue("$style and most of the room under the question $box", box.height > 400.dp)
+        assertTrue("the answers' box inside the window $box", box.bottom <= node(WINDOW).getBoundsInRoot().bottom + 0.5.dp)
+        assertTrue("and most of the room under the question $box", box.height > 400.dp)
     }
 
     @Test
@@ -686,7 +684,7 @@ class EarTrainingScreenTest(private val style: String) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style $size dark $dark:"
+            val case = "$size dark $dark:"
             val window = bars().safeArea(size)
             for (tag in listOf(HEADER, EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.DOTS, EarTrainingTestTags.HEARD_LINE) +
                 Exercise.entries.map(EarTrainingTestTags::exercise)) {
@@ -704,7 +702,7 @@ class EarTrainingScreenTest(private val style: String) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style $size dark $dark, all intervals:"
+            val case = "$size dark $dark, all intervals:"
             for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.DIRECTION, EarTrainingTestTags.INTERVAL_LINE) + Interval.entries.map(EarTrainingTestTags::answer)) {
                 assertWhollyShown(node(tag), "$case $tag")
             }
@@ -716,7 +714,7 @@ class EarTrainingScreenTest(private val style: String) {
         // On the Xiaomi six answers fit without scrolling.
         shownState.value = INTERVALS_ASKED
         compose.waitForIdle()
-        for (tag in Interval.DEFAULT.map(EarTrainingTestTags::answer)) assertWhollyShown(node(tag), "$style Xiaomi six answers $tag", scroll = false)
+        for (tag in Interval.DEFAULT.map(EarTrainingTestTags::answer)) assertWhollyShown(node(tag), "Xiaomi six answers $tag", scroll = false)
     }
 
     @Test
@@ -731,27 +729,27 @@ class EarTrainingScreenTest(private val style: String) {
                 shownMic.value = mic
                 compose.waitForIdle()
                 for (tag in listOf(EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY)) {
-                    assertWhollyShown(node(tag), "$style nl $size $mic $tag at 2x")
+                    assertWhollyShown(node(tag), "nl $size $mic $tag at 2x")
                 }
-                compose.assertEveryTextWhollyShown("$style nl $size $mic at 2x:")
+                compose.assertEveryTextWhollyShown("nl $size $mic at 2x:")
             }
             shownMic.value = MicPermissionStatus.GRANTED
             for ((name, state) in playItBackStates()) {
                 shownState.value = state
                 compose.waitForIdle()
-                assertWhollyShown(node(EarTrainingTestTags.HEARD_LINE), "$style nl $size $name at 2x")
-                compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
+                assertWhollyShown(node(EarTrainingTestTags.HEARD_LINE), "nl $size $name at 2x")
+                compose.assertEveryTextWhollyShown("nl $size $name at 2x:")
             }
             for ((name, state) in intervalsStates()) {
                 shownState.value = state
                 compose.waitForIdle()
-                for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$style nl $size $name $interval at 2x")
-                compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
+                for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "nl $size $name $interval at 2x")
+                compose.assertEveryTextWhollyShown("nl $size $name at 2x:")
             }
             node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
             compose.waitForIdle()
             for (tag in Interval.entries.map(EarTrainingTestTags::askInterval) + IntervalDirection.entries.map(EarTrainingTestTags::direction)) {
-                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+                assertWhollyShown(node(tag), "nl $size $tag at 2x")
             }
             Espresso.pressBack()
             compose.waitForIdle()
@@ -768,7 +766,7 @@ class EarTrainingScreenTest(private val style: String) {
             // The panel, with its new rows.
             node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
             compose.waitForIdle()
-            for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+            for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "nl $size $tag at 2x")
             Espresso.pressBack()
             compose.waitForIdle()
         }
@@ -805,18 +803,18 @@ class EarTrainingScreenTest(private val style: String) {
             shownState.value = state.copy(tally = tally)
             compose.waitForIdle()
             // The buttons' boxes once; their texts in every state.
-            if (!state.answered) for (type in state.chordTypes) assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $language $size $name $type at 2x")
-            compose.assertEveryTextWhollyShown("$style $language $size chord type $name at 2x:")
+            if (!state.answered) for (type in state.chordTypes) assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$language $size $name $type at 2x")
+            compose.assertEveryTextWhollyShown("$language $size chord type $name at 2x:")
         }
         shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.NO_SHAPE, tally = tally)
         compose.waitForIdle()
-        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$style $language $size no shape at 2x")
-        compose.assertEveryTextWhollyShown("$style $language $size no shape at 2x:")
+        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$language $size no shape at 2x")
+        compose.assertEveryTextWhollyShown("$language $size no shape at 2x:")
         shownState.value = ALL_CHORDS_ASKED.copy(tally = tally)
         compose.waitForIdle()
         node(EarTrainingTestTags.CHOICES).performClick()
         compose.waitForIdle()
-        for (type in ChordQuality.inPanel) assertWhollyShown(node(EarTrainingTestTags.askChordType(type)), "$style $language $size chip $type at 2x")
+        for (type in ChordQuality.inPanel) assertWhollyShown(node(EarTrainingTestTags.askChordType(type)), "$language $size chip $type at 2x")
         Espresso.pressBack()
         compose.waitForIdle()
     }
@@ -857,25 +855,25 @@ class EarTrainingScreenTest(private val style: String) {
                 for (mic in listOf(MicPermissionStatus.GRANTED, MicPermissionStatus.DENIED, MicPermissionStatus.PERMANENTLY_DENIED)) {
                     shownMic.value = mic
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $size $mic at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $size $mic at 2x:")
                 }
                 shownMic.value = MicPermissionStatus.GRANTED
                 val single = shownState.value
                 for ((name, state) in playItBackStates()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $size $name at 2x:")
                 }
                 for ((name, state) in intervalsStates()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$style $language $size $name $interval at 2x")
-                    compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
+                    for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$language $size $name $interval at 2x")
+                    compose.assertEveryTextWhollyShown("$language $size $name at 2x:")
                 }
                 node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
                 compose.waitForIdle()
                 for (tag in Interval.entries.map(EarTrainingTestTags::askInterval) + IntervalDirection.entries.map(EarTrainingTestTags::direction)) {
-                    assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
+                    assertWhollyShown(node(tag), "$language $size $tag at 2x")
                 }
                 Espresso.pressBack()
                 compose.waitForIdle()
@@ -884,8 +882,8 @@ class EarTrainingScreenTest(private val style: String) {
                 compose.waitForIdle()
                 node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
                 compose.waitForIdle()
-                for (choice in NoteChoice.entries) assertWhollyShown(node(EarTrainingTestTags.noteChoice(choice)), "$style $language $size $choice at 2x")
-                for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
+                for (choice in NoteChoice.entries) assertWhollyShown(node(EarTrainingTestTags.noteChoice(choice)), "$language $size $choice at 2x")
+                for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$language $size $tag at 2x")
                 Espresso.pressBack()
                 compose.waitForIdle()
             }
@@ -893,10 +891,6 @@ class EarTrainingScreenTest(private val style: String) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val HEADER = "header"
         private const val TEST_TIMEOUT_SECONDS = 30L

@@ -162,8 +162,8 @@ fun TempoDial(
  * The tempo in the dial's middle, sized with the dial (46, 13 and 15 units at 288), the figures'
  * middle [FIGURES_UP_UNITS] above the dial's: the figures stay that size at any
  * font size, like the tuner's note; "BPM" and the marking grow with the font up to
- * [MAX_LABEL_SCALE]. Measured, so every style's faces keep clear: the figures shrink to
- * [figuresWidest] (Space Age's and Futuristic's wide faces would reach the ring), and "BPM" and the
+ * [MAX_LABEL_SCALE]. Measured, so the faces keep clear: the figures shrink to
+ * [figuresWidest] (1.1's wide faces, Space Age's and Futuristic's, reached the ring), and "BPM" and the
  * marking shrink so the marking ends above [labelsBottom] (where the arc's ends are; some faces' "BPM"
  * is set in a tall line). TalkBack hears it through the dial.
  */
@@ -262,7 +262,7 @@ private const val FIGURES_UP_UNITS = 14f
 
 /**
  * The figures are at most this many units wide: inside the ring that turns the dial (from 74 units out,
- * isOnDialRing) where they stand. Only the wide number faces (Space Age, Futuristic) reach it.
+ * isOnDialRing) where they stand. Only a wide number face reaches it (in 1.1 Space Age's and Futuristic's).
  */
 private const val FIGURES_WIDEST_UNITS = 100f
 

@@ -310,7 +310,7 @@ class TuningEditorTest {
 
     @Test
     fun everythingShowsWhollyAtTwiceTheTextSize() {
-        // The longest case: eight strings (F♯1 the lowest), Dutch; every style in a thorough run.
+        // The longest case: eight strings (F♯1 the lowest), Dutch.
         val instrument = Instruments.GUITAR_8
         show(instrument = instrument, fontScale = 2f, locale = "nl")
         // First with the line of a save the phone couldn't write under the field.
@@ -318,15 +318,11 @@ class TuningEditorTest {
         name.performTextReplacement("Iets")
         save.performClick()
         compose.waitForIdle()
-        for (style in listOf("Ink")) {
-            assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.NOT_SAVED, useUnmergedTree = true), "not saved in $style")
-        }
+        assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.NOT_SAVED, useUnmergedTree = true), "not saved")
         // Then with the empty name's message there.
         name.performTextReplacement("")
         save.performClick()
-        for (style in listOf("Ink")) {
-            checkWhollyShown(instrument, style)
-        }
+        checkWhollyShown(instrument)
     }
 
     /**
@@ -334,33 +330,31 @@ class TuningEditorTest {
      * the test's (as the delete question's): Dutch at 2× is checked on the phone.
      */
     @Test
-    fun theDiscardQuestionShowsWhollyInEveryStyle() {
+    fun theDiscardQuestionShowsWholly() {
         show()
         name.performTextReplacement("Iets")
         close.performClick()
-        for (style in listOf("Ink")) {
-            assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard_title)), "question in $style", scroll = false)
-            assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard)), "discard in $style", scroll = false)
-            assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_keep_editing)), "keep editing in $style", scroll = false)
-        }
+        assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard_title)), "question", scroll = false)
+        assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard)), "discard", scroll = false)
+        assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_keep_editing)), "keep editing", scroll = false)
     }
 
-    /** At 2× text, the page in [style]: every control and text reachable and not cut off. */
-    private fun checkWhollyShown(instrument: Instrument, style: String) {
+    /** At 2× text, the page: every control and text reachable and not cut off. */
+    private fun checkWhollyShown(instrument: Instrument) {
         compose.onNodeWithTag(TuningEditorTestTags.NAME).performScrollTo()
-        assertWhollyShown(save, "Opslaan in $style", scroll = false)
+        assertWhollyShown(save, "Opslaan", scroll = false)
         assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.CLOSE), "close", scroll = false)
         assertWhollyShown(compose.onNodeWithText("Nieuwe stemming"), "title")
         assertWhollyShown(name, "name")
         for ((index, note) in instrument.defaultTuning.strings.withIndex()) {
             val spoken = "${dutch(note)}-snaar"
-            assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.string(index)), "string $index in $style")
-            assertWhollyShown(compose.onNodeWithText("${Notation.SHARPS.nameOf(note.pitchClass)}${note.octave}-snaar"), "caption $index in $style")
-            assertWhollyShown(compose.onNodeWithContentDescription("$spoken, halve toon lager"), "− $index in $style")
-            assertWhollyShown(compose.onNodeWithContentDescription("$spoken, halve toon hoger"), "+ $index in $style")
-            assertWhollyShown(compose.onNodeWithContentDescription("$spoken, ${dutch(note)}"), "note $index in $style")
+            assertWhollyShown(compose.onNodeWithTag(TuningEditorTestTags.string(index)), "string $index")
+            assertWhollyShown(compose.onNodeWithText("${Notation.SHARPS.nameOf(note.pitchClass)}${note.octave}-snaar"), "caption $index")
+            assertWhollyShown(compose.onNodeWithContentDescription("$spoken, halve toon lager"), "− $index")
+            assertWhollyShown(compose.onNodeWithContentDescription("$spoken, halve toon hoger"), "+ $index")
+            assertWhollyShown(compose.onNodeWithContentDescription("$spoken, ${dutch(note)}"), "note $index")
         }
-        assertWhollyShown(compose.onNodeWithText("Geef de stemming een naam"), "message in $style")
+        assertWhollyShown(compose.onNodeWithText("Geef de stemming een naam"), "message")
     }
 
     /** A note as Dutch TalkBack says it: "fis 1", "b 1", "e 2". */
@@ -370,7 +364,7 @@ class TuningEditorTest {
     }
 
     private companion object {
-        /** More than the usual 10 s: a thorough run checks eight strings in six styles in one test. */
+        /** More than the usual 10 s: one test checks eight strings at 2× text. */
         const val TEST_TIMEOUT_SECONDS = 30L
     }
 }

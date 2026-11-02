@@ -1,6 +1,6 @@
 ---
 name: overnight-run
-description: Run Twangle's overnight on-device check while the owner sleeps — first the night's translations (/translate), then every UI test in every style, then every language at 2× text where a screen changed since it last passed — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
+description: Run Twangle's overnight on-device check while the owner sleeps — first the night's translations (/translate), then every UI test (light and dark), then every language at 2× text where a screen changed since it last passed — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
 argument-hint: "[optional: main or v2 to name the branch, --sweep or --languages to run only one part, --full to skip no language check, --store for the store screenshots]"
 ---
 
@@ -72,21 +72,21 @@ gh run list --branch main --limit 3          # main only: a failed nightly run i
 scripts/overnight-ui-tests.sh --dry-run                        # which language checks tonight runs (no phone)
 scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~1–3 h
 ```
-It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, every style, one class at a
-time, waiting while the phone is 37 °C or warmer; about 55 minutes), then the `@EveryLanguage`
-checks one module and style at a time with cooling pauses, and writes `build/overnight/summary.txt`
+It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
+time, waiting while the phone is 37 °C or warmer; 1.1's six styles took about 55 minutes, 2.0's one
+look about a third of that), then the `@EveryLanguage`
+checks one module at a time with cooling pauses, and writes `build/overnight/summary.txt`
 (`build/overnight/v2/summary.txt` on `v2`; the dry run's first line says which). A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
 
 **Only the language checks that need it run** (owner, 2026-10-30: with 25 languages all 36 module
-and style checks took 6 of the night's 8 hours). A module's checks in a style that passed whole are
+and style checks of 1.1 took 6 of the night's 8 hours; 2.0 has one look, so six module checks). A module's checks that passed whole are
 noted (`build/ui-tests-passed/languages/`), and a later night skips them while nothing the module
 shows changed since (the rule `--since-pass` uses) and the pass is under a week old; the log says
 "passed …, nothing it shows changed since", and the summary's second line how many ran. A night after
 a change every screen shows (the design system, a new language, the night's translations of texts in
-every module) runs nearly all of them, about 2 hours since the checks got faster the same day (about 20
-minutes a style); a quiet one, very few. `--full` runs all
+every module) runs nearly all of them, about 20 minutes a module; a quiet one, very few. `--full` runs all
 (after a change to the test helpers' scoping, or when in doubt). Skipped checks count as passed for the
 release, as `--since-pass` modules do.
 
@@ -124,11 +124,11 @@ summary.
 
 For each failure decide first: **app bug or outdated test?**
 - Read the test and the code. Reproduce with the smallest run (`scripts/ui-tests.sh <module> -c
-  Class#method`, `-f` for parameterized names like `test[ANCIENT]`, `--thorough` for style
-  variants, `DAY_LANGUAGES=<tag> … --languages` for the failing language's checks, `--all-languages`
+  Class#method`, `-f` for parameterized names like `screenshot[TUNE_UP]`, `--thorough` for the double
+  checks, `DAY_LANGUAGES=<tag> … --languages` for the failing language's checks, `--all-languages`
   for all of them).
 - **Re-check a language fix in every language** (`scripts/ui-tests.sh <module> --thorough
-  --all-languages -f 'everyLanguage.*\[<STYLE>\]'`, a few minutes a style now), not the failing language
+  --all-languages -f 'everyLanguage'`, a few minutes a module), not the failing language
   alone: some fail only after the languages before them. Bengali's About title in Futuristic
   (2026-10-30) never failed on its own, and its first fix ran French off the bar, which only the run
   in every language showed. Then the fixed language alone is no proof either way.

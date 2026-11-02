@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
@@ -53,21 +54,18 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
- * The navigation bar (upright) and rail (on its side) in each style, light and dark: three tabs that
+ * The navigation bar (upright) and rail (on its side) in Ink, light and dark: three tabs that
  * TalkBack hears as tabs by name with the open one selected, and nothing else; a tap on another tab opens it, and one on the open tab only says so
  * (the app's Tuner tab closes the tuner's tools then); the open tab
- * wears the style's mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
+ * wears its mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
  * wholly shown. The frame hides the bar for the tuning editor, and the content
  * never reaches under it. With the Practice tab's switch on (Phase 32) the Metronome tab is called Practice.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class NavigationBarTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class NavigationBarTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -208,7 +206,7 @@ class NavigationBarTest(private val style: String) {
                 shownDark.value = dark
                 shownNavigation.value = navigation
                 compose.waitForIdle()
-                val case = "$style ${if (dark) "dark" else "light"} $size at ${scale}x $navigation:"
+                val case = "${if (dark) "dark" else "light"} $size at ${scale}x $navigation:"
                 val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
                 val content = compose.onNodeWithTag(CONTENT).getBoundsInRoot()
                 if (size == PHONE_LANDSCAPE) {
@@ -242,7 +240,7 @@ class NavigationBarTest(private val style: String) {
             for (destination in Destination.entries) {
                 val name = label(destination, dutch = true, practice = practice)
                 tab(destination).assert(hasText(name))
-                assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
+                assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$size: $name", scroll = false)
             }
         }
     }
@@ -259,12 +257,12 @@ class NavigationBarTest(private val style: String) {
                 shownSize.value = size
                 shownPractice.value = practice
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x${if (practice) " with Practice" else ""}:")
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} at 2x${if (practice) " with Practice" else ""}:")
             }
         }
     }
 
-    /** The open tab has the style's mark under its name, in the accent; the others have none. */
+    /** The open tab has its mark under its name, in the accent; the others have none. */
     @Test
     fun theOpenTabWearsTheStylesMarkInTheAccent() {
         show()
@@ -280,7 +278,7 @@ class NavigationBarTest(private val style: String) {
                 for (y in pixels.height - markRows until pixels.height) {
                     for (x in 0 until pixels.width) if (near(pixels[x, y].toArgb(), accent)) lit++
                 }
-                val case = "$style ${if (dark) "dark" else "light"} $destination"
+                val case = "${if (dark) "dark" else "light"} $destination"
                 if (destination == Destination.TUNER && lit < MIN_MARK_PIXELS) fail("$case: only $lit accent pixels in the mark")
                 if (destination != Destination.TUNER && lit > 0) fail("$case: $lit accent pixels under a tab that isn't open")
             }
@@ -329,10 +327,6 @@ class NavigationBarTest(private val style: String) {
             abs((a and 0xFF) - (b and 0xFF)) <= COLOR_TOLERANCE
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val CONTENT = "content"
         private const val TEST_TIMEOUT_SECONDS = 20L

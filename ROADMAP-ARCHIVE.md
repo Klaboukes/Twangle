@@ -70,6 +70,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 64 — Must-fix before the next release](#phase-64--must-fix-before-the-next-release-the-launch-review-2026-11-01)
 - [Phase 65 — The launch review's sweep](#phase-65--the-launch-reviews-sweep-2026-11-01)
 - [Phase 66 — The 2.0 plan](#phase-66--the-20-plan-with-the-owner-before-any-code)
+- [Phase 67 — One look](#phase-67--one-look)
 
 ---
 
@@ -754,3 +755,9 @@ Goal: every phase below made precise against today's code, so each later session
 - ☑ The order of the phases below confirmed or changed, their estimates, and the test strategy: which UI tests are kept, which are rewritten, which go with the styles: v2-plan.md, *Order and size* and *Tests* (owner, 2026-11-02: the order kept but for No tour, moved up to Phase 68 and the phases after it renumbered; about 30 increments; the UI tests run in Ink alone after Phase 67)
 - ☑ The overnight run, `scripts/ui-tests.sh`'s notes and the other scripts pointed at `v2` where they assume `main`; the nightly CI stays on `main` (2026-11-02: a 2.0 branch is scoped from where it left `v2`, and v2's passes and overnight records are kept apart, `build/ui-tests-passed/v2/` and `build/overnight/v2/`; the overnight run checks one branch a night, `main` when its code changed since its last clean run, otherwise `v2`, `scripts/overnight-ui-tests.sh --which`; releases, the website and the privacy page stay on `main`; #567, landed on `main` since the overnight run starts there, and carried to `v2`)
 - ☑ Where the 12th-fret check and the pitch trail tool go once the trail is the meter: v2-plan.md, *The two tools* (owner, 2026-11-02: the 12th-fret check stays on the tuner behind a Settings switch, its way in mocked up in Phase 71; the pitch trail tool goes, its switch the trail look's brake)
+
+## Phase 67 — One look
+Goal: Ink is the app's look on every screen, with light and dark and the phone's colours.
+- ☑ `TwangleTheme` without styles: Ink's palettes (light and dark), its fonts, shapes and backgrounds; the style setting and the style picker go, a saved style reads as Ink; `ThemeMode` (phone / light / dark) and `dynamicColor` stay as switches in Settings (light Ink's muted, accent and green darkened to 4.5:1 for text; the widget's and the watch's colours follow already; the meter and wave looks draw 1.1's Contemporary finish until the next item)
+- ☑ The meter looks, the wave looks and the Calm/Bold in-tune glow go with their settings and card grids (the three lens looks come in Phases 71 and 72); a saved look reads as the default (the tuner shows Classic with the cents and frequency under the note until the lens; the wave view went too; `meter_look` is read as `LensLook` by the lens look's rule, JVM-tested, and Calm's glow is the one glow)
+- ☑ Every screen drawn in Ink, the watch and the widget too; the style tests, the screenshots and `scripts/style-screens.sh` reduced to one look (2026-11-02: the style-parameterised UI tests are plain classes that check light and dark themselves; `StyleScreenshots` and `scripts/style-screens.sh` take Ink light and dark; the overnight run's language checks run once a module, six instead of 36; the widget picker's preview in Ink; the store's second screenshot shows the six strings in tune, light and dark, under 1.1's caption until Phase 69; `scripts/meter-look-screens.sh` and the unused `allIfThorough` went)

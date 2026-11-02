@@ -50,11 +50,11 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The metronome in each of the six styles, light and dark (docs/architecture/testing.md, Every screen in
- * every style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
+ * The metronome in Ink, light and dark (docs/architecture/testing.md, *Every screen
+ * light and dark*). Upright (a narrow phone at 1×, the
  * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
  * then wholly shown. Playing, in 7/8, so every mark size and Stop show, with the cowbell picked and
@@ -63,11 +63,9 @@ import org.junit.runners.Parameterized
  * and beside it on its side, wholly shown at 1x, 2x and in Dutch at 2x. With the Practice
  * tab's tool button over it at the top start (Phase 47, a stand-in as large with an English name),
  * as the app shows it, and without, as the plain Metronome tab.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class MetronomeStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class MetronomeStylesTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -152,7 +150,7 @@ class MetronomeStylesTest(private val style: String) {
                     shownNavigation.value = navigation
                     compose.waitForIdle()
                     val practice = if (header) " with the tool button" else ""
-                    assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x $navigation$practice:")
+                    assertAllInView("${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x $navigation$practice:")
                 }
             }
         }
@@ -168,7 +166,7 @@ class MetronomeStylesTest(private val style: String) {
             shownSize.value = size
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "$style ${size.width} x ${size.height} at 2x"
+            val case = "${size.width} x ${size.height} at 2x"
             // On its side the dial has a pane of its own that doesn't scroll (it is sized to fit).
             for ((name, node) in parts()) assertWhollyShown(node, "$case $name", scroll = name != "dial" || size == PHONE_UPRIGHT)
             // The marking in the dial's middle (Presto at 168 BPM), not cut off.
@@ -215,7 +213,7 @@ class MetronomeStylesTest(private val style: String) {
             for (listening in listOf(false, true)) {
                 shownListen.value = if (listening) ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96) else ListenUi()
                 compose.waitForIdle()
-                val case = "$style ${size.width} x ${size.height} at ${scale}x${if (listening) " listening" else ""}:"
+                val case = "${size.width} x ${size.height} at ${scale}x${if (listening) " listening" else ""}:"
                 val row = ROW_SIZES.map { (tag, side) ->
                     val bounds = compose.onNodeWithTag(tag).performScrollTo().getBoundsInRoot()
                     // Icons, no words: the same size whatever the language or font size.
@@ -244,7 +242,7 @@ class MetronomeStylesTest(private val style: String) {
             shownSize.value = size
             shownFontScale.value = scale
             compose.waitForIdle()
-            val case = "$style ${size.width} x ${size.height} at ${scale}x:"
+            val case = "${size.width} x ${size.height} at ${scale}x:"
             val lights = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
             val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
             val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
@@ -259,7 +257,7 @@ class MetronomeStylesTest(private val style: String) {
         shownFontScale.value = 1f
         compose.waitForIdle()
         val xiaomi = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
-        assertTrue("$style lights grow on the Xiaomi at 1x: $xiaomi", xiaomi.height > 56.dp)
+        assertTrue("lights grow on the Xiaomi at 1x: $xiaomi", xiaomi.height > 56.dp)
         shownSize.value = PHONE_UPRIGHT
     }
 
@@ -276,7 +274,7 @@ class MetronomeStylesTest(private val style: String) {
                 clock.frameNanos = 0L
                 compose.waitForIdle()
                 val after = parts().map { (name, node) -> name to node.getBoundsInRoot() }
-                assertEquals("$style ${size.width} x ${size.height} beat ${beat + 1}", before, after)
+                assertEquals("${size.width} x ${size.height} beat ${beat + 1}", before, after)
             }
         }
         clock.beat = null
@@ -291,7 +289,7 @@ class MetronomeStylesTest(private val style: String) {
             shownSize.value = size
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
+            val case = "${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
             val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertIsDisplayed().getBoundsInRoot()
             val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
             val window = bars().safeArea(size)
@@ -332,7 +330,7 @@ class MetronomeStylesTest(private val style: String) {
             shownLocale.value = locale
             shownDark.value = dark
             compose.waitForIdle()
-            val name = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
+            val name = "${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
             compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performScrollTo().performClick()
             compose.waitForIdle()
             val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
@@ -378,7 +376,7 @@ class MetronomeStylesTest(private val style: String) {
             val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
             for (tag in listOf(MetronomeTestTags.SUBDIVISION_MARK, MetronomeTestTags.VIBRATE_MARK)) {
                 val mark = compose.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed().getBoundsInRoot()
-                assertTrue("$style ${size.width} x ${size.height} $tag $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
+                assertTrue("${size.width} x ${size.height} $tag $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
             }
         }
         shownSize.value = PHONE_UPRIGHT
@@ -415,20 +413,20 @@ class MetronomeStylesTest(private val style: String) {
             // Text set at another pixel size is not quite in proportion (hinting): 1 % more room for it.
             val across = 2f + big.width.value / 100f
             val down = 2f + big.height.value / 100f
-            assertEquals("$style $part's left", (small.left * grow).value, big.left.value, across)
-            assertEquals("$style $part's right", (small.right * grow).value, big.right.value, across)
-            assertEquals("$style $part's top", (small.top * grow).value, big.top.value, down)
-            assertEquals("$style $part's bottom", (small.bottom * grow).value, big.bottom.value, down)
+            assertEquals("$part's left", (small.left * grow).value, big.left.value, across)
+            assertEquals("$part's right", (small.right * grow).value, big.right.value, across)
+            assertEquals("$part's top", (small.top * grow).value, big.top.value, down)
+            assertEquals("$part's bottom", (small.bottom * grow).value, big.bottom.value, down)
         }
         val dial = tablet.getValue("dial")
-        assertTrue("$style the dial fills the tablet: $dial", dial.width > 560.dp)
-        assertTrue("$style the dial centred: $dial", abs((dial.left - (TABLET_UPRIGHT.width - dial.right)).value) < 2f)
-        compose.assertEveryTextWhollyShown("$style tablet upright at ${TABLET_FONT_SCALE}x:")
+        assertTrue("the dial fills the tablet: $dial", dial.width > 560.dp)
+        assertTrue("the dial centred: $dial", abs((dial.left - (TABLET_UPRIGHT.width - dial.right)).value) < 2f)
+        compose.assertEveryTextWhollyShown("tablet upright at ${TABLET_FONT_SCALE}x:")
 
         // With the tool button.
         shownHeader.value = true
         compose.waitForIdle()
-        val case = "$style tablet upright with the tool button:"
+        val case = "tablet upright with the tool button:"
         val button = compose.onNodeWithTag(HEADER).windowBounds()
         assertEquals("$case tool button's width", 160f, button.width.value, 1f)
         assertEquals("$case tool button's left", ((TABLET_UPRIGHT.width - 448.dp) / 2).value, button.left.value, 1f)
@@ -492,7 +490,7 @@ class MetronomeStylesTest(private val style: String) {
 
     /**
      * Every language at 2× text, upright and on its side, with each of Listen's status lines and with
-     * the options panel open: every text wholly shown (every style in a thorough run). Only with `--languages`.
+     * the options panel open: every text wholly shown. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -513,12 +511,12 @@ class MetronomeStylesTest(private val style: String) {
                 for (listen in lines) {
                     shownListen.value = listen
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} ${listen.phase} at 2x:")
+                    compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} ${listen.phase} at 2x:")
                 }
                 shownListen.value = ListenUi()
                 compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performScrollTo().performClick()
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} options panel at 2x:")
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} options panel at 2x:")
                 compose.runOnUiThread { backDispatcher!!.onBackPressed() }
                 compose.waitForIdle()
             }
@@ -526,10 +524,6 @@ class MetronomeStylesTest(private val style: String) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val HEADER = "header"
         private const val TEST_TIMEOUT_SECONDS = 20L

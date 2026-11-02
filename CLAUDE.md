@@ -19,18 +19,18 @@ minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JV
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools (Ear training too) under the Practice tab, draws the style's background), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
+| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools (Ear training too) under the Practice tab, draws the app's background), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
 | `:wear` | Android app (Wear OS) | The standalone watch tuner, same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
-| `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
+| `:feature:settings` | Android library | Settings and About screen UI, `SettingsViewModel` (`LookCardGrid` is kept, unused, for Phase 72's lens looks) |
 | `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
 | `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the tool button (`PracticeToolButton`), Chords and Scales (`ChordsScreen`, `ScaleNeck`), the drone button (`DroneButton`) and the Capo helper (`CapoScreen`); `:app` puts the metronome and these tools under it |
 | `:feature:eartraining` | Android library | Ear training (Phase 55, a Practice tool behind its switch): `EarTrainingScreen`, `EarTrainingViewModel` (the visit, the question's sound through `TonePlayer`, the microphone through `PitchListener`, which `:app` backs with the tuner's `PitchPipeline`), the "What is asked" panel |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones), `MetronomePlayer` (clicks) and `DronePlayer` (the drone under Scales) through `AudioTrack` |
-| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
-| `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |
+| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, theme and wallpaper colours, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
+| `:core:designsystem` | Android library | `TwangleTheme` and the one look, Ink (`StyleTokens` light and dark, the phone's own font with a bundled face for ♯ and ♭, the background), the tuner's meter (`ClassicMeterArt`), the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, strum check and chord naming, chord, scale and capo charts, Ear training's questions, string synthesis (the reference tones), the drone's synthesis, metronome click track and tap tempo |
-| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone); in its own on-device tests `PluckRecorder`, which records plucked strings for `:core:dsp`'s test fixtures (`scripts/record-plucks.sh`, never part of the app) |
+| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone); in its own on-device tests `PluckRecorder`, which records plucked strings for `:core:dsp`'s test fixtures (`scripts/record-plucks.sh`, never part of the app) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
 ## Commands
@@ -45,9 +45,9 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
-scripts/overnight-ui-tests.sh           # the overnight run: every UI test in every style, then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
+scripts/overnight-ui-tests.sh           # the overnight run: every UI test (Ink light and dark), then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
 scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2 min a language, ~50 for all; before a listing is sent, release.sh listing refuses older ones; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
-scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
+scripts/meter-frames.sh                 # frame times of the meter and the pitch trail on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~15 min; class filter and uninstall first: performance.md, *Baseline Profile*); commit app/src/release/generated/
@@ -59,8 +59,7 @@ scripts/publish-website.sh              # publish website/ to https://klaboukes.
 scripts/website-pictures.sh             # the website's small screenshots and icon, from the last store-screenshot run (commit them)
 scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md to the public policy page after a policy change landed on main
 scripts/store-graphics.sh [locale…]     # the Play Store's icon and every language's feature graphic, drawn on the phone (committed; docs/store-listing.md)
-scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
-scripts/style-screens.sh                # pictures of the tuner in every style, light and dark, for the owner (~1 min)
+scripts/style-screens.sh                # pictures of the tuner in Ink, light and dark, for the owner (~1 min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
 ```
@@ -107,7 +106,7 @@ scripts/record-plucks.sh                # records plucked strings on the phone i
 - Work through ROADMAP phases in the order ROADMAP.md lists them, not by number; the owner may move a phase ahead. Don't start the next phase while `main`'s build or tests are broken (`v2`'s, for a 2.0 phase).
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in), and on the Lenovo tablet when the change is about a tablet layout.
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
-- **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
+- **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test, light and dark, and every language, fixed and landed without asking them anything (questions go in the morning summary).
 - **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md). A release waits for a clean overnight run over the code it releases: nothing (not even the version number) changes before that.
 - **Use the `/translate` skill** (`.claude/skills/translate/SKILL.md`) to bring the night languages up to date: whatever daily work left in English and Dutch only, translated in parallel batches, recorded, strict-checked and landed through its own PR. The overnight run starts with it; it can also run by hand any time (no phone).
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.

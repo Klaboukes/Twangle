@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.app.widget
 import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
+import android.content.res.Configuration
 import android.media.AudioManager
 import android.os.SystemClock
 import android.view.View
@@ -32,9 +33,9 @@ import org.junit.runner.RunWith
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 
 /**
- * The home-screen widget: drawn as the launcher draws it, it names the instrument and tuning in the
- * style's colours and opens nothing by itself (the microphone stays off); its tap brings the open
- * app back to the tuner.
+ * The home-screen widget: drawn as the launcher draws it, it names the instrument and tuning in
+ * Ink's colours, light or dark (the picker's preview too), and opens nothing by itself (the
+ * microphone stays off); its tap brings the open app back to the tuner.
  *
  * The app runs as itself here (`ActivityScenario`, no Compose test rule): its opening screen waits
  * for the first real frame, which a Compose rule's test clock would hold back.
@@ -73,6 +74,32 @@ class TuningWidgetTest {
         assertEquals(scheme.onBackground.toArgb(), title.currentTextColor)
         assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
         assertTrue("the whole tile can be tapped", view.findViewById<View>(android.R.id.background).hasOnClickListeners())
+    }
+
+    @Test
+    fun inTheLightThemeItIsInkLight() {
+        val view = drawn(AppSettings(theme = ThemeMode.LIGHT, dynamicColor = false))
+        val scheme = tokensFor(dark = false).scheme
+        assertEquals(scheme.onBackground.toArgb(), view.findViewById<TextView>(R.id.widget_title).currentTextColor)
+        assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
+    }
+
+    /** The widget picker shows the layout's own colours before the app draws it: Ink's too, light and dark. */
+    @Test
+    fun thePickersPreviewIsInInk() {
+        for (dark in listOf(false, true)) {
+            val configuration = Configuration(context.resources.configuration).apply {
+                uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
+                    if (dark) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+            }
+            val preview = context.createConfigurationContext(configuration)
+            val scheme = tokensFor(dark).scheme
+            val case = if (dark) "dark" else "light"
+            assertEquals("$case background", scheme.background.toArgb(), preview.getColor(R.color.widget_background))
+            assertEquals("$case ink", scheme.onBackground.toArgb(), preview.getColor(R.color.widget_ink))
+            assertEquals("$case muted", scheme.onSurfaceVariant.toArgb(), preview.getColor(R.color.widget_muted))
+            assertEquals("$case accent", scheme.primary.toArgb(), preview.getColor(R.color.widget_accent))
+        }
     }
 
     @Test

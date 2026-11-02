@@ -53,12 +53,12 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 /**
  * The Play Store's feature graphic (docs/store-listing.md, *Icon and feature graphic*), one for each
  * store language: [FEATURE_WIDTH] × [FEATURE_HEIGHT] pixels on [BACKGROUND]'s quiet background. On
- * the start side the store [icon] beside the name "Twangle" in Retro's display face (the icon's
- * mustard and Retro's round letters belong together), and under them [line], what sets Twangle apart
+ * the start side the store [icon] beside the name "Twangle" in the app's display face (1.1 set it in
+ * Retro's), and under them [line], what sets Twangle apart
  * in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set as the app sets
- * that language (its fonts, right to left for Arabic). On the end side three of the six styles'
- * meters fanned out ([FAN]), each its own style's card, look and colours, holding a note in tune with
- * its calm glow. The meters' small unit label ("CENTS") is left out, as are note names, so the line is
+ * that language (its fonts, right to left for Arabic). On the end side three of Ink's meters fanned
+ * out ([FAN]), dark, light and dark (1.1 showed three of its six styles), holding a note in tune with
+ * its glow. The meters' small unit label ("CENTS") is left out, as are note names, so the line is
  * the one text to translate. Everything important keeps clear of the edges, which Play may crop.
  */
 @Composable
@@ -103,8 +103,8 @@ private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
         )
         Spacer(Modifier.height(NAME_GAP))
         val ink = MaterialTheme.colorScheme.onBackground
-        // The name in Retro's face, the same in every language (always Latin letters): the theme is
-        // told English, or it would give a language Retro's face lacks (Vietnamese) the phone's font.
+        // The name the same in every language (always Latin letters): the theme is told English, so
+        // it never takes another script's face.
         val configuration = LocalConfiguration.current
         val english = remember(configuration) { Configuration(configuration).apply { setLocales(LocaleList(Locale.ENGLISH)) } }
         CompositionLocalProvider(LocalConfiguration provides english) {
@@ -139,7 +139,7 @@ private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
     }
 }
 
-/** Three styles' meters fanned out, the middle one in front. */
+/** Three meters fanned out, the middle one in front. */
 @Composable
 private fun Fan() {
     Box(Modifier.size(FAN_WIDTH, FAN_HEIGHT), contentAlignment = Alignment.Center) {
@@ -157,7 +157,7 @@ private fun Fan() {
     }
 }
 
-/** One style's meter on a card of that style's own background, holding a note in tune. */
+/** The meter on a card of the app's background, light or dark, holding a note in tune. */
 @Composable
 private fun MeterCard(card: FanCard, modifier: Modifier) {
     TwangleTheme(darkTheme = card.dark, animate = false) {
@@ -184,7 +184,7 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
     }
 }
 
-/** One card of the fan: light or dark (since Phase 67 every card draws the one meter, Classic, until the lens). */
+/** One card of the fan: light or dark. */
 private data class FanCard(val dark: Boolean)
 
 /**

@@ -43,20 +43,18 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Practice tab's tool button (Phase 47) over the Chords and Capo tools, in each style, light
+ * The Practice tab's tool button (Phase 47) over the Chords and Capo tools, in Ink, light
  * and dark: TalkBack hears "Tool, Chords" as a drop-down list; a tap opens the list of tools, heard
  * as a group of radio buttons by name, the picked one selected; a pick changes the tool and closes
  * it. It stands at the top start, upright and on its side, one steady width whatever the tool and
  * the language, with the instrument and tuning beside it; at 2× text in Dutch, on a 320 dp phone and
  * on its side, the button, the tuning line and the list are wholly shown.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class PracticeToolButtonTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class PracticeToolButtonTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -171,7 +169,7 @@ class PracticeToolButtonTest(private val style: String) {
             compose.waitForIdle()
             val window = bars().safeArea(size)
             val bounds = button().getBoundsInRoot()
-            val case = "$style $size $tool:"
+            val case = "$size $tool:"
             assertTrue("$case at the top $bounds", bounds.top - window.top in 4.dp..16.dp)
             // The column's margin (16 dp), or on its side the start half's (24 dp), before it.
             assertTrue("$case at the start $bounds", bounds.left - window.left in 12.dp..28.dp)
@@ -219,17 +217,17 @@ class PracticeToolButtonTest(private val style: String) {
             for (picked in listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) {
                 shownTool.value = picked
                 compose.waitForIdle()
-                assertEquals("$style $size its width at 2x", 160f, button().getBoundsInRoot().width.value, 0.5f)
-                assertWhollyShown(button(), "$style $size $picked tool button")
-                assertWhollyShown(compose.onNodeWithTag(PracticeTestTags.TUNING), "$style $size $picked tuning")
-                compose.assertEveryTextWhollyShown("$style nl $size $picked picked at 2x:")
+                assertEquals("$size its width at 2x", 160f, button().getBoundsInRoot().width.value, 0.5f)
+                assertWhollyShown(button(), "$size $picked tool button")
+                assertWhollyShown(compose.onNodeWithTag(PracticeTestTags.TUNING), "$size $picked tuning")
+                compose.assertEveryTextWhollyShown("nl $size $picked picked at 2x:")
             }
             shownTool.value = PracticeTool.CHORDS
             compose.waitForIdle()
-            assertWhollyShown(button(), "$style $size tool button")
+            assertWhollyShown(button(), "$size tool button")
             button().performClick()
             compose.waitForIdle()
-            for (tool in tools) assertWhollyShown(row(tool), "$style $size $tool in the list", scroll = false)
+            for (tool in tools) assertWhollyShown(row(tool), "$size $tool in the list", scroll = false)
             row(PracticeTool.CHORDS).performClick()
             compose.waitForIdle()
         }
@@ -251,12 +249,12 @@ class PracticeToolButtonTest(private val style: String) {
                 for (tool in listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) {
                     shownTool.value = tool
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $size $tool at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $size $tool at 2x:")
                 }
-                assertWhollyShown(button(), "$style $language $size tool button")
+                assertWhollyShown(button(), "$language $size tool button")
                 button().performClick()
                 compose.waitForIdle()
-                for (tool in tools) assertWhollyShown(row(tool), "$style $language $size $tool in the list", scroll = false)
+                for (tool in tools) assertWhollyShown(row(tool), "$language $size $tool in the list", scroll = false)
                 row(PracticeTool.CAPO).performClick()
                 compose.waitForIdle()
             }
@@ -264,10 +262,6 @@ class PracticeToolButtonTest(private val style: String) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private val LABELS = mapOf(
             PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.SCALES to "Scales", PracticeTool.CAPO to "Capo",
             PracticeTool.EAR_TRAINING to "Ear training",

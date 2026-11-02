@@ -26,10 +26,10 @@ import kotlin.math.min
 /*
  * The metronome's beat lights, from the approved mock-up (docs/design/metronome-nav-preview.html,
  * `drawLights`): one mark per beat of the bar in a row, beat 1 the largest and the first beat of each
- * later group (5/4, 6/8, 7/8) middle sized. Since 2026-10-31 (owner's pick, Phase 62) every style draws
- * the same marks: a rounded upright bar for each beat and a small round dot for each click between the
- * beats (it reads faster at a glance, and the dots look the same everywhere); a style changes only
- * their colours (its meter roles' ink and accent) and the number face. Phase 19's wave mark per style
+ * later group (5/4, 6/8, 7/8) middle sized. Since 2026-10-31 (owner's pick, Phase 62) the marks are a
+ * rounded upright bar for each beat and a small round dot for each click between the beats (it reads
+ * faster at a glance), in the meter roles' ink and accent (1.1's six styles changed only those and the
+ * number face). Phase 19's wave mark per style
  * (a dab, a band, a bar or stars) is history (docs/architecture/history.md). The beat
  * that sounds lights up in the accent with a soft glow, never in the "in tune" green, and stays faintly
  * lit until the next one. The beat's number is under each mark in the style's number face. The clicks

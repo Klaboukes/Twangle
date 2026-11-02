@@ -113,16 +113,14 @@ enum class CanvasSpec(
 class Window(val screen: ImageBitmap, val focus: ClosedFloatingPointRange<Float> = 0f..1f)
 
 /**
- * One store screenshot as Play shows it: [spec]'s pixels in the style's (quiet) background, the
+ * One store screenshot as Play shows it: [spec]'s pixels in the app's (quiet) background, the
  * caption in large type above, and below it [rows] of app screens ([Window]), each in a slim dark
  * frame with round corners and a soft shadow. One screen takes the whole space under the caption;
- * rows share its height and the screens of a row its width (the six styles' grid). Two screens alone
+ * rows share its height and the screens of a row its width (the six tiles' grid). Two screens alone
  * in a row, [staggered], stand side by side whole, the second lower, as two phones.
  *
- * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in the style's display face
- * with its fallbacks for other scripts (`StyleTypography`: Arabic, Devanagari, CJK and Cyrillic get the
- * phone's own font, Polish and Turkish in Futuristic get Space Age's), right to left where the
- * language is. [bubble] (the TalkBack screenshot) is what TalkBack says, in a speech bubble between
+ * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in its display face, the
+ * phone's own sans in every script (`StyleTypography`), right to left where the language is. [bubble] (the TalkBack screenshot) is what TalkBack says, in a speech bubble between
  * the caption and the phone, pointing at the phone: drawn here, since a picture can't show speech.
  */
 @Composable

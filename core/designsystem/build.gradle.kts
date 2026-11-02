@@ -21,7 +21,7 @@ kotlin {
 }
 
 dependencies {
-    // The styles are chosen by VisualStyle and ThemeMode, which are saved settings.
+    // Light or dark and the wallpaper's colours are saved settings (ThemeMode, dynamicColor).
     api(project(":core:settings"))
     // WaveMotion drifts by the strobe's speed rule (StrobeMotion).
     implementation(project(":core:dsp"))

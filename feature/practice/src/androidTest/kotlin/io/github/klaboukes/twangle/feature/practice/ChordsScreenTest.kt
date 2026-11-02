@@ -63,20 +63,18 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Chords tool (Phase 32) in each style, light and dark: it opens on the saved chord, the name
+ * The Chords tool (Phase 32) in Ink, light and dark: it opens on the saved chord, the name
  * button opens one panel of roots and chord types that picks the chord (and reports it to be saved),
  * closing on each pick so the chart shows it, the chart follows the picked tuning and notation, ‹ › and a swipe
  * step through the shapes, TalkBack hears the name as a heading and a list, the panel's grids as
  * radio groups and the chart in words, and the whole tool fits: without scrolling upright and on its
  * side at normal text, wholly shown at 2× text, the panel too; the banjo charted with its short string, in both hands (Phase 59).
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class ChordsScreenTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class ChordsScreenTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -315,7 +313,7 @@ class ChordsScreenTest(private val style: String) {
         shownTuning.value = Instruments.BANJO_5.defaultTuning
         show(PitchClass.G, ChordQuality.MAJOR)
         for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
-            val case = "$style $size at ${scale}x"
+            val case = "$size at ${scale}x"
             shownFontScale.value = scale
             shownSize.value = size
             compose.waitForIdle()
@@ -380,7 +378,7 @@ class ChordsScreenTest(private val style: String) {
                 pick(PracticeTestTags.root(root), PracticeTestTags.type(quality))
                 val spoken = awaitChart("$words, shape 1 of")
                 compose.waitForIdle()
-                val case = "$style $size $words"
+                val case = "$size $words"
                 val fromNut = quality != ChordQuality.MAJOR || root != PitchClass.D
                 val normal = chart().captureToImage()
                 assertShortString(normal, ChartGeometry.of(banjo), fromNut, "$case right-handed")
@@ -449,10 +447,10 @@ class ChordsScreenTest(private val style: String) {
                 compose.waitForIdle()
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
                 for (tag in listOf(PracticeTestTags.CHART, PracticeTestTags.NAME_PICKER, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
-                    assertWhollyShown(node(tag), "$style $language $size at 2x, banjo: $tag", scroll = true)
+                    assertWhollyShown(node(tag), "$language $size at 2x, banjo: $tag", scroll = true)
                 }
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
-                compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
+                compose.assertEveryTextWhollyShown("$language $size at 2x, banjo:")
+                compose.assertNoWordBroken("$language $size at 2x, banjo:")
             }
         }
     }
@@ -476,7 +474,7 @@ class ChordsScreenTest(private val style: String) {
                 val chartBounds = chart().getBoundsInRoot()
                 shownLeftHanded.value = true
                 compose.waitForIdle()
-                val case = "$style $size $chord"
+                val case = "$size $chord"
                 assertEquals("$case: TalkBack hears the same", spoken, spokenChart())
                 assertEquals("$case: the name stays", name, picker().getBoundsInRoot())
                 assertEquals("$case: the chart's room stays", chartBounds, chart().getBoundsInRoot())
@@ -508,7 +506,7 @@ class ChordsScreenTest(private val style: String) {
             shownSize.value = size
             compose.waitForIdle()
             awaitChart("C major")
-            val case = "$style ${if (dark) "dark" else "light"} $size:"
+            val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
             for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
@@ -568,10 +566,10 @@ class ChordsScreenTest(private val style: String) {
             compose.waitForIdle()
             awaitChart("La")
             for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
-                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+                assertWhollyShown(node(tag), "nl $size $tag at 2x")
             }
-            compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
-            assertThePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+            compose.assertEveryTextWhollyShown("nl $size at 2x:")
+            assertThePanel("nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
         }
     }
 
@@ -619,13 +617,13 @@ class ChordsScreenTest(private val style: String) {
                 shownSize.value = size
                 compose.waitForIdle()
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
-                compose.assertNoWordBroken("$style $language $size at 2x:")
+                compose.assertEveryTextWhollyShown("$language $size at 2x:")
+                compose.assertNoWordBroken("$language $size at 2x:")
                 // The panel is a window of its own: Back with it shut would close the activity, and a tap while the last
                 // one is still going away only shuts that one (the Retro run, 2026-10-19). So wait for it both ways.
                 openPanel()
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x, panel:")
-                compose.assertNoWordBroken("$style $language $size at 2x, panel:")
+                compose.assertEveryTextWhollyShown("$language $size at 2x, panel:")
+                compose.assertNoWordBroken("$language $size at 2x, panel:")
                 closePanel()
             }
         }
@@ -646,7 +644,7 @@ class ChordsScreenTest(private val style: String) {
             shownSize.value = case.size
             shownLocale.value = case.language
             shownNotation.value = if (case.fontScale > 1f) Notation.SOLFEGE else Notation.SHARPS
-            val name = "$style ${case.language} ${case.size} at ${case.fontScale}x:"
+            val name = "${case.language} ${case.size} at ${case.fontScale}x:"
             pick(PracticeTestTags.root(PitchClass.C), PracticeTestTags.type(ChordQuality.MAJOR))
             val short = picker().getBoundsInRoot()
             val chartTop = chart().getBoundsInRoot().top
@@ -675,10 +673,6 @@ class ChordsScreenTest(private val style: String) {
         assertEquals(2, instrumentTaps)
     }
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L

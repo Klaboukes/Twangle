@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The Play Store's phone screenshots, made on the phone in one language (docs/store-listing.md,
- * *Phone screenshots*): each case opens the real app in its style and theme, feeds the tuner a fixed
+ * *Phone screenshots*): each case opens the real app in its theme (Ink light or dark), feeds the tuner a fixed
  * sound through a stand-in microphone ([FixedSoundRecorder], nothing plays out loud), saves the
  * screen as it is (`raw-<n>.png`, without the status bar) and the finished picture
  * (`store-<n>.png`: the screen on a 1080 × 1920 canvas with the caption above, cut in on the part
@@ -68,7 +68,7 @@ import java.util.concurrent.TimeUnit
  * the screens without the status and navigation bars, each the whole tablet on the same canvases
  * (Phase 65: on its side the tuner's two panes left an empty middle).
  *
- * Opt-in, as it only makes files and changes the phone's Twangle (its style, theme and settings are
+ * Opt-in, as it only makes files and changes the phone's Twangle (its theme and settings are
  * left as the last picture had them; the app's language is put back): without the instrumentation
  * argument `storeScreenshots=<Play locale>` it has no cases at all. `storeCaptions` carries that
  * locale's `screenshot_captions.txt` in Base64 (the shell would mangle other scripts).
@@ -79,14 +79,16 @@ import java.util.concurrent.TimeUnit
 class StoreScreenshots(private val shot: Shot) {
 
     /**
-     * The eight screenshots of the plan, in its order, each in its style and theme, with the part of the
+     * The eight screenshots of the plan, in its order, each in its theme, with the part of the
      * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
-     * screens fit whole). The six styles' canvas is in [style]; its screens are [STYLE_TILES].
+     * screens fit whole). [LIGHT_AND_DARK]'s screens are [TILES].
      */
     enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
         /** The meter, the note and "In tune". */
         IN_TUNE(dark = false, focus = 0f..0.62f),
-        SIX_STYLES(dark = true),
+
+        /** 1.1's six styles; in 2.0's one look the six strings in tune, light and dark crossed (Phase 69 redoes the set). */
+        LIGHT_AND_DARK(dark = true),
 
         /** The meter, the note, its pill and "Tune up". */
         TUNE_UP(dark = true, focus = 0f..0.68f),
@@ -106,8 +108,8 @@ class StoreScreenshots(private val shot: Shot) {
         val number: Int get() = ordinal + 1
     }
 
-    /** One of the six tiles: the tuner light or [dark] (one meter since Phase 67), holding [string] (a MIDI note) in tune. */
-    data class StyleTile(val dark: Boolean, val string: Int)
+    /** One of the six tiles: the tuner light or [dark], holding [string] (a MIDI note) in tune. */
+    data class Tile(val dark: Boolean, val string: Int)
 
     @get:Rule
     val rules: RuleChain = RuleChain
@@ -177,9 +179,9 @@ class StoreScreenshots(private val shot: Shot) {
     private fun shoot() {
         when (shot) {
             Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
-            Shot.SIX_STYLES -> {
-                // Light and dark, each holding another string in tune (increment 4 of Phase 67 takes this shot down to one look).
-                val screens = STYLE_TILES.mapIndexed { i, tile ->
+            Shot.LIGHT_AND_DARK -> {
+                // Light and dark, each holding another string in tune.
+                val screens = TILES.mapIndexed { i, tile ->
                     runBlocking { settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT) }
                     capture(name = "${shot.number}${'a' + i}") {
                         recorder.play(StoreSounds.heldNote(StoreSounds.hz(tile.string), NOTE_SECONDS))
@@ -466,20 +468,17 @@ class StoreScreenshots(private val shot: Shot) {
         fun shots(): List<Shot> =
             if (InstrumentationRegistry.getArguments().getString(LOCALE_ARGUMENT).isNullOrBlank()) emptyList() else Shot.entries
 
-        /**
-         * The six styles' grid, two a row, light and dark crossed: each style with a meter look of its
-         * own (six looks in all) and another string of the guitar in tune.
-         */
-        val STYLE_TILES = listOf(
-            StyleTile(dark = false, string = 40),
-            StyleTile(dark = true, string = 45),
-            StyleTile(dark = true, string = 50),
-            StyleTile(dark = false, string = 55),
-            StyleTile(dark = false, string = 59),
-            StyleTile(dark = true, string = 64),
+        /** [Shot.LIGHT_AND_DARK]'s grid, two a row, light and dark crossed: each with another string of the guitar in tune. */
+        val TILES = listOf(
+            Tile(dark = false, string = 40),
+            Tile(dark = true, string = 45),
+            Tile(dark = true, string = 50),
+            Tile(dark = false, string = 55),
+            Tile(dark = false, string = 59),
+            Tile(dark = true, string = 64),
         )
 
-        /** What each of the six styles' screens shows: the meter, the note and "In tune". */
+        /** What each of the six tiles shows: the meter, the note and "In tune". */
         private val TILE_FOCUS = 0.08f..0.66f
 
         /** The same on the tablet upright, whose taller column is about as tall a share (unchecked on the tablet). */

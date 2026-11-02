@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Makes the Play Store's phone screenshots on the phone (docs/store-listing.md, *Phone screenshots*):
-# for each language, the StoreScreenshots test opens the eight planned screens in their styles, feeds
+# for each language, the StoreScreenshots test opens the eight planned screens in their themes, feeds
 # the tuner a fixed sound through a stand-in microphone (nothing plays out loud) and draws each on a
 # 1080 x 1920 canvas (focus mode's on its side, 1920 x 1080) with that language's caption above.
 #
@@ -20,7 +20,7 @@
 # status bar) to build/store-screenshots/<locale>/ (the tablet's to build/store-screenshots-tablet/<locale>/). Captions: fastlane/metadata/android/<locale>/
 # screenshot_captions.txt, one a line. Needs the phone connected, like scripts/ui-tests.sh, whose
 # exit codes it passes on (3 no phone, 4 locked, 5 busy). Leaves Twangle in the last screenshot's
-# style; puts the app's language and the phone's text size back.
+# theme; puts the app's language and the phone's text size back.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

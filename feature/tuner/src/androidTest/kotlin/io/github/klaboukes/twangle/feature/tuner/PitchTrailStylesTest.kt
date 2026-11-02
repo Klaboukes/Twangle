@@ -26,6 +26,7 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.klaboukes.twangle.core.audio.AudioConfig
@@ -57,7 +58,6 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.PI
@@ -65,18 +65,17 @@ import kotlin.math.abs
 import kotlin.math.sin
 
 /**
- * The pitch trail (Phase 31) in each of the six styles, light and dark: its panel in the meter's place
+ * The pitch trail (Phase 31) in Ink, light and dark: its panel in the meter's place
  * (the needle gone), the note, its cents and the strings as the tuner's, the "more tools" button above
  * the strings. Upright everything fits without scrolling, clear of each other; on its side the panel
  * fits the compact layout; at 2× text in Dutch every part, and the menu's pitch trail, is wholly shown
  * (every language overnight). The menu lists the four tools and the trail ticked. TalkBack hears the
  * line in words. A synthetic A2 through a fake microphone draws the line on the real screen.
  *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`). With
- * `-a trailScreens=true` it saves pictures (the phone check).
+ * With `-a trailScreens=true` it saves pictures (the phone check).
  */
-@RunWith(Parameterized::class)
-class PitchTrailStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class PitchTrailStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -154,7 +153,7 @@ class PitchTrailStylesTest(private val style: String) {
                 shownSize.value = size
                 shownFontScale.value = scale
                 compose.waitForIdle()
-                val case = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x:"
+                val case = "${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x:"
                 val bounds = assertAllInView(case, parts())
                 if (countOf(TunerTestTags.GAUGE) != 0) fail("$case the needle still shows")
                 // At the meter's 2:1 shape, as wide as the meter.
@@ -171,7 +170,7 @@ class PitchTrailStylesTest(private val style: String) {
         shownSize.value = PHONE_LANDSCAPE
         show()
         compose.waitForIdle()
-        assertAllInView("$style on its side:", parts(controls = false))
+        assertAllInView("on its side:", parts(controls = false))
         picture("light-landscape")
     }
 
@@ -184,7 +183,7 @@ class PitchTrailStylesTest(private val style: String) {
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             compose.waitForIdle()
-            for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "$style nl $size at 2x: $part")
+            for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "nl $size at 2x: $part")
         }
         shownSize.value = PHONE_UPRIGHT
         compose.waitForIdle()
@@ -195,7 +194,7 @@ class PitchTrailStylesTest(private val style: String) {
             hasAnyAncestor(hasTestTag(TunerTestTags.tool(TunerTool.PITCH_TRAIL))) and SemanticsMatcher.keyIsDefined(SemanticsProperties.Text),
             useUnmergedTree = true,
         )
-        assertWhollyShown(name, "$style nl at 2x: the menu's pitch trail")
+        assertWhollyShown(name, "nl at 2x: the menu's pitch trail")
     }
 
     /** Every language at 2× text, upright and on its side, and with the menu open: every text wholly shown (overnight). */
@@ -209,7 +208,7 @@ class PitchTrailStylesTest(private val style: String) {
             for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x:")
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} at 2x:")
             }
             shownSize.value = PHONE_UPRIGHT
             compose.waitForIdle()
@@ -217,7 +216,7 @@ class PitchTrailStylesTest(private val style: String) {
             // cents line takes three lines at 2× text), and a tap off the screen opens nothing.
             moreTools.performScrollTo().performClick()
             compose.waitForIdle()
-            compose.assertEveryTextWhollyShown("$style $language menu at 2x:")
+            compose.assertEveryTextWhollyShown("$language menu at 2x:")
             compose.onNodeWithText(context.getString(R.string.tuner_pitch_trail)).performClick()
             toolChanges.clear()
         }
@@ -357,7 +356,7 @@ class PitchTrailStylesTest(private val style: String) {
         val dir = arguments.getString(OUTPUT_DIR_ARGUMENT) ?: return
         compose.waitForIdle()
         val bitmap = compose.onPhoneScreen().captureToImage().asAndroidBitmap()
-        File(File(dir).apply { mkdirs() }, "trail-$style-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        File(File(dir).apply { mkdirs() }, "trail-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
     private fun assertAllInView(case: String, parts: List<Pair<String, SemanticsNodeInteraction>>): List<DpRect> {
@@ -382,10 +381,6 @@ class PitchTrailStylesTest(private val style: String) {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val HOP = 1024f / 48_000f
 
         fun detected(cents: Float) = TunerUiState.Detected(

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The overnight run: every on-device UI test in every style, then every language at 2× text, kept
+# The overnight run: every on-device UI test (in Ink, light and dark), then every language at 2× text, kept
 # cool, with one summary at the end. Run it while nobody needs the phone. See
 # .claude/skills/overnight-run/SKILL.md.
 #
@@ -7,17 +7,18 @@
 #   scripts/overnight-ui-tests.sh --sweep     only the thorough sweep of every module
 #   scripts/overnight-ui-tests.sh --languages only the every-language checks
 #   scripts/overnight-ui-tests.sh --store     only the Play Store screenshots (scripts/store-screenshots.sh)
-#   scripts/overnight-ui-tests.sh --full ...  the languages of every module in every style, none skipped
+#   scripts/overnight-ui-tests.sh --full ...  the languages of every module, none skipped
 #   scripts/overnight-ui-tests.sh --dry-run   only say which every-language checks would run (no phone)
 #   scripts/overnight-ui-tests.sh --which     only say which branch tonight's run checks, and why
 # (--sweep, --languages and --store may be combined.)
 #
-# The every-language checks of a module in a style that passed whole are noted at that commit, like a
-# module's pass (scripts/ui-tests.sh): build/ui-tests-passed/languages/feature-tuner-ANCIENT holds
+# The every-language checks of a module that passed whole are noted at that commit, like a
+# module's pass (scripts/ui-tests.sh): build/ui-tests-passed/languages/feature-tuner holds
 # "<commit> <seconds since 1970> <date>". A later night skips them while nothing the module shows has
 # changed since (scripts/ui-test-scope.py, the rule --since-pass uses) and the pass is under
 # LANGUAGES_MAX_AGE_DAYS old (7): so a check runs again within a week whatever happens, in case the
-# scope missed a change. With 25 languages the checks of every module in every style took about 6 h (2 h since the same day's faster checks);
+# scope missed a change. With 25 languages the checks of every module in 1.1's six styles took about 6 h (2 h since the same day's faster checks;
+# 2.0 has one look, so one check a module);
 # owner, 2026-10-30: skip what hasn't changed, and make the store screenshots only before a listing is
 # sent (scripts/release.sh listing refuses screenshots older than the app's screens), not every night.
 #
@@ -41,10 +42,9 @@ line=main
 v2_base="$(git merge-base HEAD origin/v2 2>/dev/null)" && ! git merge-base --is-ancestor "$v2_base" origin/main 2>/dev/null && line=v2
 OUT="$ROOT/build/overnight"
 [ $line = v2 ] && OUT="$OUT/v2"
-# The modules with @EveryLanguage tests, and the styles (VisualStyle) they are parameterized by.
-# Either list can be narrowed for a short try (LANGUAGE_MODULES=":app" LANGUAGE_STYLES="CLASSIC").
+# The modules with @EveryLanguage tests (each checks light and dark itself; 1.1 ran them once per
+# style). The list can be narrowed for a short try (LANGUAGE_MODULES=":app").
 read -ra LANGUAGE_MODULES <<<"${LANGUAGE_MODULES:-:feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :app}"
-read -ra STYLES <<<"${LANGUAGE_STYLES:-ANCIENT CLASSIC RETRO CONTEMPORARY FUTURISTIC SPACE_AGE}"
 
 LANGUAGES_MAX_AGE_DAYS="${LANGUAGES_MAX_AGE_DAYS:-7}"
 
@@ -90,7 +90,7 @@ mkdir -p "$OUT"
 LANGUAGES_PASSED="$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed"
 [ $line = v2 ] && LANGUAGES_PASSED="$LANGUAGES_PASSED/v2"
 LANGUAGES_PASSED="$LANGUAGES_PASSED/languages"
-languages_note() { local m="${1#:}"; echo "$LANGUAGES_PASSED/${m//:/-}-$2"; }
+languages_note() { local m="${1#:}"; echo "$LANGUAGES_PASSED/${m//:/-}"; }
 
 # The modules a change since [commit] can reach (scripts/ui-test-scope.py), worked out once per commit.
 reached_since() {
@@ -100,11 +100,11 @@ reached_since() {
     cat "$cache"
 }
 
-# Says when [module]'s every-language checks in [style] last passed, if they need no run: passed whole
+# Says when [module]'s every-language checks last passed, if they need no run: passed whole
 # at a commit this clone has, under LANGUAGES_MAX_AGE_DAYS ago, and nothing the module shows changed since.
 languages_still_good() {
     local file commit epoch when reached
-    file="$(languages_note "$1" "$2")"
+    file="$(languages_note "$1")"
     [ $full = 0 ] && [ -f "$file" ] || return 1
     read -r commit epoch when < "$file" || return 1
     git cat-file -e "$commit^{commit}" 2>/dev/null || return 1
@@ -119,16 +119,14 @@ if [ $dry_run = 1 ]; then
     echo "This checkout is on $line (records in ${OUT#"$ROOT"/}/). Tonight's default, $(which_branch)"
     would=0
     for module in "${LANGUAGE_MODULES[@]}"; do
-        for style in "${STYLES[@]}"; do
-            if since="$(languages_still_good "$module" "$style")"; then
-                echo "skip $module $style: passed $since, nothing it shows changed since"
-            else
-                echo "run  $module $style"
-                would=$((would + 1))
-            fi
-        done
+        if since="$(languages_still_good "$module")"; then
+            echo "skip $module: passed $since, nothing it shows changed since"
+        else
+            echo "run  $module"
+            would=$((would + 1))
+        fi
     done
-    echo "$would of $(( ${#LANGUAGE_MODULES[@]} * ${#STYLES[@]} )) every-language checks would run."
+    echo "$would of ${#LANGUAGE_MODULES[@]} every-language checks would run."
     exit 0
 fi
 
@@ -189,25 +187,23 @@ if [ $languages = 1 ]; then
     rm -f "$OUT"/reached-*.txt   # worked out against tonight's tree
     echo "== Every language at 2× text ($(date +%H:%M))" | tee "$OUT/languages.txt"
     for module in "${LANGUAGE_MODULES[@]}"; do
-        for style in "${STYLES[@]}"; do
-            if since="$(languages_still_good "$module" "$style")"; then
-                echo "-- $module $style: passed $since, nothing it shows changed since" | tee -a "$OUT/languages.txt"
-                skipped=$((skipped + 1))
-                continue
-            fi
-            checked=$((checked + 1))
-            wait_cool | tee -a "$OUT/languages.txt"
-            echo "-- $module $style" | tee -a "$OUT/languages.txt"
-            run="$OUT/language-run.txt"
-            : > "$run"
-            MODULE_TIMEOUT=3000 scripts/ui-tests.sh "$module" --thorough --all-languages -f "everyLanguage.*\[$style\]" 2>&1 | tee -a "$OUT/languages.txt" "$run"
-            if [ "${PIPESTATUS[0]}" != 0 ]; then
-                status=1
-            elif [ $clean = 1 ] && grep -qE " [1-9][0-9]* tests, 0 failed" "$run"; then
-                mkdir -p "$LANGUAGES_PASSED"
-                echo "$tested_commit $(date +%s) $(date '+%Y-%m-%d %H:%M')" > "$(languages_note "$module" "$style")"
-            fi
-        done
+        if since="$(languages_still_good "$module")"; then
+            echo "-- $module: passed $since, nothing it shows changed since" | tee -a "$OUT/languages.txt"
+            skipped=$((skipped + 1))
+            continue
+        fi
+        checked=$((checked + 1))
+        wait_cool | tee -a "$OUT/languages.txt"
+        echo "-- $module" | tee -a "$OUT/languages.txt"
+        run="$OUT/language-run.txt"
+        : > "$run"
+        MODULE_TIMEOUT=3000 scripts/ui-tests.sh "$module" --thorough --all-languages -f "everyLanguage" 2>&1 | tee -a "$OUT/languages.txt" "$run"
+        if [ "${PIPESTATUS[0]}" != 0 ]; then
+            status=1
+        elif [ $clean = 1 ] && grep -qE " [1-9][0-9]* tests, 0 failed" "$run"; then
+            mkdir -p "$LANGUAGES_PASSED"
+            echo "$tested_commit $(date +%s) $(date '+%Y-%m-%d %H:%M')" > "$(languages_note "$module")"
+        fi
     done
 fi
 if [ $store = 1 ]; then
@@ -222,7 +218,7 @@ tested="at $(git rev-parse --short HEAD)"
 [ $clean = 1 ] || tested="$tested with uncommitted changes"
 {
     echo "Overnight run on $line: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
-    [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module-and-style checks ran; $skipped passed earlier with nothing they show changed since"
+    [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module checks ran; $skipped passed earlier with nothing they show changed since"
     cat "${logs[@]}" 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off" || true
 } > "$OUT/summary.txt"
 cat "$OUT/summary.txt"

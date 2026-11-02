@@ -22,6 +22,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -44,22 +45,19 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * The string row from a 4-string bass to an 8-string guitar and the 12-string's six courses, in each
- * of the six styles: upright, in
+ * The string row from a 4-string bass to an 8-string guitar and the 12-string's six courses, in
+ * Ink: upright, in
  * the full layout on its side, at normal and 2× text (focus mode's full-screen tuner shows no string row). Every button is in the
  * window, wholly shown with its whole name, clear of its neighbours; every one can be tapped (also
  * just beside it) and TalkBack names it.
  * [TunerStylesTest] covers the six-string guitar.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class StringRowStylesTest(private val style: String) {
+@RunWith(AndroidJUnit4::class)
+class StringRowStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -142,7 +140,7 @@ class StringRowStylesTest(private val style: String) {
             for (tuning in TUNINGS) {
                 shownTuning.value = tuning
                 compose.waitForIdle()
-                assertRowFits("$style $layout ${tuning.id} at 1x", tuning, Notation.SHARPS, scroll = false)
+                assertRowFits("$layout ${tuning.id} at 1x", tuning, Notation.SHARPS, scroll = false)
             }
         }
     }
@@ -158,7 +156,7 @@ class StringRowStylesTest(private val style: String) {
             for (tuning in listOf(Instruments.GUITAR_8.defaultTuning, Instruments.BASS_5.defaultTuning)) {
                 shownTuning.value = tuning
                 compose.waitForIdle()
-                assertRowFits("$style $layout ${tuning.id} solfège at 2x", tuning, Notation.SOLFEGE, scroll = true)
+                assertRowFits("$layout ${tuning.id} solfège at 2x", tuning, Notation.SOLFEGE, scroll = true)
             }
         }
     }
@@ -179,10 +177,10 @@ class StringRowStylesTest(private val style: String) {
             labels.forEachIndexed { index, label ->
                 val chip = compose.onNodeWithText(label).assertHasClickAction()
                 val description = chip.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription)
-                assertEquals("$style $layout: TalkBack's name for $label", listOf(spoken[index]), description)
+                assertEquals("$layout: TalkBack's name for $label", listOf(spoken[index]), description)
                 clicked.clear()
                 chip.performClick()
-                assertEquals("$style $layout: tapping $label", listOf(index), clicked)
+                assertEquals("$layout: tapping $label", listOf(index), clicked)
             }
             for (index in 0 until labels.size - 1) {
                 // In the root's pixels (PhoneScreen's window, at its top left): a forced size larger than the phone gets a smaller density.
@@ -193,7 +191,7 @@ class StringRowStylesTest(private val style: String) {
                 compose.onPhoneScreen().performTouchInput { click(between) }
                 compose.waitForIdle()
                 if (clicked.size != 1 || clicked.single() !in index..index + 1) {
-                    fail("$style $layout: a tap between ${labels[index]} and ${labels[index + 1]} reached $clicked")
+                    fail("$layout: a tap between ${labels[index]} and ${labels[index + 1]} reached $clicked")
                 }
             }
         }
@@ -216,7 +214,7 @@ class StringRowStylesTest(private val style: String) {
             for (layout in Layout.entries) {
                 shownLayout.value = layout
                 compose.waitForIdle()
-                val case = "$style $layout at ${scale}x"
+                val case = "$layout at ${scale}x"
                 val marks = compose.onAllNodesWithTag(TunerTestTags.OCTAVE_MARK, useUnmergedTree = true).assertCountEquals(4)
                 labels.forEachIndexed { index, label ->
                     val chip = compose.onNodeWithText(label)
@@ -259,7 +257,7 @@ class StringRowStylesTest(private val style: String) {
                 val before = labels.map { compose.onNodeWithText(it).getBoundsInRoot() }
                 shownTuned.value = TunedStrings(tuning, (1L shl tuning.strings.size) - 1)
                 compose.waitForIdle()
-                val case = "$style $layout at ${scale}x"
+                val case = "$layout at ${scale}x"
                 val marks = compose.onAllNodesWithTag(TunerTestTags.OCTAVE_MARK, useUnmergedTree = true).assertCountEquals(4)
                 labels.forEachIndexed { index, label ->
                     val chip = compose.onNodeWithText(label)
@@ -305,7 +303,7 @@ class StringRowStylesTest(private val style: String) {
             for (layout in Layout.entries) {
                 shownLayout.value = layout
                 compose.waitForIdle()
-                val case = "$style $language $layout at 2x"
+                val case = "$language $layout at 2x"
                 for (label in labels(tuning, Notation.SHARPS)) {
                     assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$case: $label", scroll = true)
                 }
@@ -332,7 +330,7 @@ class StringRowStylesTest(private val style: String) {
                 for (tuning in Instruments.BANJO_5.tunings) {
                     shownTuning.value = tuning
                     compose.waitForIdle()
-                    val case = "$style $layout ${tuning.id} at ${scale}x"
+                    val case = "$layout ${tuning.id} at ${scale}x"
                     assertRowFits(case, tuning, Notation.SHARPS, scroll = true)
                     assertShortStringGap(case, tuning)
                 }
@@ -358,7 +356,7 @@ class StringRowStylesTest(private val style: String) {
             for (layout in Layout.entries) {
                 shownLayout.value = layout
                 compose.waitForIdle()
-                val case = "$style $language $layout at 2x"
+                val case = "$language $layout at 2x"
                 for (label in labels(tuning, Notation.SHARPS)) {
                     assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$case: $label", scroll = true)
                 }
@@ -403,7 +401,7 @@ class StringRowStylesTest(private val style: String) {
                 for (tuning in Instruments.all.map { it.defaultTuning }) {
                     shownTuning.value = tuning
                     compose.waitForIdle()
-                    val case = "$style $layout ${tuning.id} at ${scale}x"
+                    val case = "$layout ${tuning.id} at ${scale}x"
                     val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
                     val toggle = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE)
                     assertWhollyShown(toggle, "$case: strum check switch", scroll = true)
@@ -454,10 +452,6 @@ class StringRowStylesTest(private val style: String) {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<String> = listOf("Ink")
-
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp
