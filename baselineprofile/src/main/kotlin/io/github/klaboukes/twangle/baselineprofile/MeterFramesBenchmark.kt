@@ -57,7 +57,7 @@ class MeterFramesBenchmark {
         shell("input keyevent KEYCODE_WAKEUP")
         shell("pm grant $TARGET_PACKAGE android.permission.RECORD_AUDIO")
         shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-        waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
+        waitFor(By.res(PICKER_CHIP_TAG), "Tuner screen")
         looks.forEach { check(it in KNOWN_LOOKS) { "No meter look $it since Phase 67: ${KNOWN_LOOKS.joinToString(":")}" } }
 
         var pid = pidOfApp()
@@ -70,24 +70,18 @@ class MeterFramesBenchmark {
                 shell("am force-stop $TARGET_PACKAGE")
                 shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
                 // The menu sits above the strings, so it is picked in guitar mode; the trail stays on in chromatic.
-                waitFor(By.res(MODE_GUITAR_TAG), "Guitar button")
-                // A tap while the opening screen still covers the tuner is lost: tap until the button shows.
-                var moreTools: UiObject2? = null
-                repeat(TAP_TRIES) {
-                    if (moreTools == null) {
-                        click(waitFor(By.res(MODE_GUITAR_TAG), "Guitar button"))
-                        moreTools = device.wait(Until.findObject(By.res(MORE_TOOLS_TAG)), SETTLE_MS)
-                    }
-                }
+                waitFor(By.res(PICKER_CHIP_TAG), "Picker chip")
+                setAnyNote(false)
+                val moreTools = device.wait(Until.findObject(By.res(MORE_TOOLS_TAG)), SETTLE_MS)
                 click(moreTools ?: error("More tools button didn't appear"))
                 click(waitFor(By.res(PITCH_TRAIL_TOOL_TAG), "Pitch trail in the more-tools menu"))
-                click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
+                setAnyNote(true)
                 waitFor(By.res(TRAIL_PANEL_TAG), "Pitch trail")
                 pid = pidOfApp()
                 renderTid = renderThreadOf(pid)
                 log("pitch trail: pid=$pid renderThread=$renderTid")
             }
-            if (look != PITCH_TRAIL) click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
+            if (look != PITCH_TRAIL) setAnyNote(true)
             SystemClock.sleep(SETTLE_MS)
             repeat(runs) { run -> rows += measure(look, run + 1, pid, renderTid).also { log(it.row()) } }
         }
@@ -177,6 +171,26 @@ class MeterFramesBenchmark {
         SystemClock.sleep(TAP_SETTLE_MS)
     }
 
+    /**
+     * Turns the picker sheet's Any note switch (chromatic mode) [on] or off: the chip opens the sheet,
+     * a tap on the switch closes it, and Back closes it when the switch is already right. The sheet is a
+     * window of its own, whose parts UI Automator can't find by tag, so the switch is found as the one
+     * switch there. A tap while the opening screen still covers the tuner is lost: it taps again.
+     */
+    private fun setAnyNote(on: Boolean) {
+        var switch: UiObject2? = null
+        repeat(TAP_TRIES) {
+            if (switch == null) {
+                click(waitFor(By.res(PICKER_CHIP_TAG), "Picker chip"))
+                switch = device.wait(Until.findObject(By.clazz(SWITCH_CLASS)), SETTLE_MS)
+            }
+        }
+        val found = switch ?: error("The picker sheet's Any note switch didn't appear")
+        if (found.isChecked != on) click(found) else device.pressBack()
+        check(device.wait(Until.gone(By.clazz(SWITCH_CLASS)), TIMEOUT_MS)) { "The picker sheet didn't close" }
+        SystemClock.sleep(TAP_SETTLE_MS)
+    }
+
     private fun shell(command: String): String = device.executeShellCommand(command)
 
     private fun String.number(regex: String): Int =
@@ -216,8 +230,8 @@ class MeterFramesBenchmark {
     private companion object {
         const val TAG = "MeterFrames"
         const val ACTIVITY = "io.github.klaboukes.twangle.app.MainActivity"
-        const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
-        const val MODE_GUITAR_TAG = "tuner_mode_auto"
+        const val PICKER_CHIP_TAG = "tuner_picker_chip"
+        const val SWITCH_CLASS = "android.widget.Switch"
         const val CURRENT = "CURRENT"
         const val PITCH_TRAIL = "PITCH_TRAIL"
         const val ALL_LOOKS = "CLASSIC:$PITCH_TRAIL"

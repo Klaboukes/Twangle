@@ -431,8 +431,6 @@ feature/tuner tuner_lowered_3 056c02d3
 feature/tuner tuner_lowered_4 21064e10
 feature/tuner tuner_lowered_5 9cba84e4
 feature/tuner tuner_lowered_none dc937b59
-feature/tuner tuner_mode_chromatic 89f2330d
-feature/tuner tuner_mode_strings 31058086
 feature/tuner tuner_more_tools 5918cb53
 feature/tuner tuner_my_tunings efc0abb0
 feature/tuner tuner_new_tuning 0b4b11df

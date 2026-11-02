@@ -26,16 +26,16 @@ internal data class WidgetState(
 ) {
     /**
      * The widget's line, e.g. "Guitar · Standard", "Bass (4) · Drop D loose" (a custom tuning) or, in
-     * chromatic mode, "Chromatic". [string] looks up a string resource with its format arguments.
+     * chromatic mode, "Any note". [string] looks up a string resource with its format arguments.
      */
     fun title(string: (Int, Array<out Any>) -> String): String =
         names(string)?.let { (instrument, tuning) -> string(AppR.string.widget_title, arrayOf(instrument, tuning)) }
-            ?: string(TunerR.string.tuner_mode_chromatic, emptyArray())
+            ?: string(TunerR.string.tuner_any_note, emptyArray())
 
-    /** What TalkBack says for [title]: "Guitar, Standard" (as the tuner's own button), or "Chromatic". */
+    /** What TalkBack says for [title]: "Guitar, Standard" (as the tuner's picker chip), or "Any note". */
     fun spoken(string: (Int, Array<out Any>) -> String): String =
         names(string)?.let { (instrument, tuning) -> string(TunerR.string.tuner_spoken_picker, arrayOf(instrument, spokenSigns(tuning, string))) }
-            ?: string(TunerR.string.tuner_mode_chromatic, emptyArray())
+            ?: string(TunerR.string.tuner_any_note, emptyArray())
 
     /** The instrument's and the tuning's names, or null in chromatic mode. Unknown ids show as they are. */
     private fun names(string: (Int, Array<out Any>) -> String): Pair<String, String>? {

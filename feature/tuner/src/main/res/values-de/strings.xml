@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Das Mikrofon wurde gestoppt, vielleicht für einen Anruf oder eine andere App. Tippe auf „Erneut versuchen“, um weiter zu stimmen.</string>
     <string name="error_retry">Erneut versuchen</string>
 
-    <string name="tuner_mode_strings">Saiten</string>
-    <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_show_controls">Bedienelemente zeigen</string>
     <string name="tuner_focus_mode">Fokusmodus</string>
     <string name="tuner_exit_focus_mode">Fokusmodus beenden</string>

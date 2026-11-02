@@ -13,8 +13,6 @@
     <string name="error_mic_unavailable">Не вдалося відкрити мікрофон. Закрий інші додатки, що його використовують, і торкнися «Спробувати ще раз» або перезапусти пристрій.</string>
     <string name="error_mic_stopped">Мікрофон вимкнувся, можливо, через дзвінок або інший додаток. Торкнися «Спробувати ще раз», щоб далі налаштовувати.</string>
     <string name="error_retry">Спробувати ще раз</string>
-    <string name="tuner_mode_strings">Струни</string>
-    <string name="tuner_mode_chromatic">Хроматичний</string>
     <string name="tuner_show_controls">Показати керування</string>
     <string name="tuner_focus_mode">Режим фокусу</string>
     <string name="tuner_exit_focus_mode">Вийти з режиму фокусу</string>

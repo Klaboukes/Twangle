@@ -32,10 +32,10 @@
     <string name="error_retry">Try again</string>
 
     <!-- Tuner screen. -->
-    <!-- Mode switch: the picked instrument's strings, or any note (Chromatic). -->
-    <string name="tuner_mode_strings">Strings</string>
-    <!-- Mode switch above the tuner, its second half: any note is shown, not only the instrument's strings. One short word; also the home-screen widget's line in this mode. -->
-    <string name="tuner_mode_chromatic">Chromatic</string>
+    <!-- The picker chip at the top of the tuner, and the switch at the bottom of "What are you tuning?": the tuner names whichever note it hears instead of an instrument's strings (chromatic mode). Short; also the home-screen widget's line in this mode. -->
+    <string name="tuner_any_note">Any note</string>
+    <!-- Under "Any note" on its switch at the bottom of "What are you tuning?": what it does. -->
+    <string name="tuner_any_note_summary">The nearest note, no strings</string>
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
     <string name="tuner_show_controls">Show controls</string>
     <!-- TalkBack name of the full-screen button at the end of the mode switch's row: turns focus mode on (the tuner sideways, one big meter). -->
@@ -238,8 +238,8 @@
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <!-- The name beside the instrument button (and in the Practice tools): %1$s the instrument ("Guitar"), %2$s its tuning ("Standard"). Keep the dot unless your language separates them otherwise. -->
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <!-- Title of the panel that opens from the bottom, with the instruments and their tunings. -->
-    <string name="tuner_picker_title">Instrument and tuning</string>
+    <!-- Title of the sheet that opens from the bottom when the picker chip at the top of the tuner is tapped: the instruments, their tunings and Any note. -->
+    <string name="tuner_picker_title">What are you tuning?</string>
 
     <!-- The last row of the instrument and tuning panel's tunings, and the title of the screen it opens. -->
     <string name="tuner_new_tuning">New tuning</string>

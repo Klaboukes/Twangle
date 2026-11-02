@@ -103,9 +103,9 @@ class TuningWidgetTest {
     }
 
     @Test
-    fun chromaticModeSaysChromatic() {
+    fun chromaticModeSaysAnyNote() {
         val title = drawn(AppSettings(mode = TunerMode.CHROMATIC)).findViewById<TextView>(R.id.widget_title)
-        assertEquals(context.getString(TunerR.string.tuner_mode_chromatic), title.text.toString())
+        assertEquals(context.getString(TunerR.string.tuner_any_note), title.text.toString())
     }
 
     @Test

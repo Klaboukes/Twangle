@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Mikrofonen stoppades, kanske av ett samtal eller en annan app. Tryck på Försök igen för att fortsätta stämma.</string>
     <string name="error_retry">Försök igen</string>
 
-    <string name="tuner_mode_strings">Strängar</string>
-    <string name="tuner_mode_chromatic">Kromatisk</string>
     <string name="tuner_show_controls">Visa reglage</string>
     <string name="tuner_focus_mode">Fokusläge</string>
     <string name="tuner_exit_focus_mode">Avsluta fokusläge</string>

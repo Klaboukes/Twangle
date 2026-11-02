@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Il microfono si è interrotto, forse per una chiamata o un\'altra app. Tocca Riprova per continuare ad accordare.</string>
     <string name="error_retry">Riprova</string>
 
-    <string name="tuner_mode_strings">Corde</string>
-    <string name="tuner_mode_chromatic">Cromatico</string>
     <string name="tuner_show_controls">Mostra comandi</string>
     <string name="tuner_focus_mode">Modalità concentrazione</string>
     <string name="tuner_exit_focus_mode">Esci dalla modalità concentrazione</string>

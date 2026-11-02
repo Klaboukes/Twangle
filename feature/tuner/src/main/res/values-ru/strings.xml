@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Микрофон отключился, возможно, из-за звонка или другого приложения. Нажми «Попробовать снова», чтобы продолжить настройку.</string>
     <string name="error_retry">Попробовать снова</string>
 
-    <string name="tuner_mode_strings">Струны</string>
-    <string name="tuner_mode_chromatic">Хроматический</string>
     <string name="tuner_show_controls">Показать управление</string>
     <string name="tuner_focus_mode">Режим фокуса</string>
     <string name="tuner_exit_focus_mode">Выйти из режима фокуса</string>

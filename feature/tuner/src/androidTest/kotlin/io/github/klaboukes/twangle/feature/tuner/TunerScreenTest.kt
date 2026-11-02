@@ -63,35 +63,35 @@ class TunerScreenTest {
         }
     }
 
-    private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
+    private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
 
     @Test
     fun onItsSideTheScreenKeepsTheTwoPaneLayoutByDefault() {
         show(FakeSettingsRepository())
         compose.onNodeWithTag(TunerTestTags.GAUGE).assertExists()
-        modeSwitch.assertExists()
+        pickerChip.assertExists()
     }
 
     @Test
     fun onItsSideFocusModeShowsTheCompactLayout() {
         show(FakeSettingsRepository(AppSettings(focusMode = true)))
         compose.onNodeWithTag(TunerTestTags.GAUGE).assertExists()
-        modeSwitch.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
     }
 
     @Test
     fun onItsSideTheLayoutFollowsTheSettingWhenItChanges() {
         val settings = FakeSettingsRepository()
         show(settings)
-        modeSwitch.assertExists()
+        pickerChip.assertExists()
 
         settings.current = settings.current.copy(focusMode = true)
         compose.waitForIdle()
-        modeSwitch.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
 
         settings.current = settings.current.copy(focusMode = false)
         compose.waitForIdle()
-        modeSwitch.assertExists()
+        pickerChip.assertExists()
     }
 
     /** In focus mode a tap brings the tuner's own controls for 5 s; the full-screen tuner has the exit button. */
@@ -102,14 +102,14 @@ class TunerScreenTest {
         compose.mainClock.advanceTimeByFrame()
         compose.waitForIdle()
         compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS).assertExists()
-        modeSwitch.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
 
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(1_000)
-        modeSwitch.assertExists()
+        pickerChip.assertExists()
 
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + 1_000)
-        modeSwitch.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
     }
 
     private companion object {

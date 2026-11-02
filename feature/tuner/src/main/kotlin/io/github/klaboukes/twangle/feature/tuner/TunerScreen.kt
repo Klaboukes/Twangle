@@ -7,11 +7,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -49,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -62,13 +59,11 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -85,16 +80,11 @@ import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
-import io.github.klaboukes.twangle.core.designsystem.INSTRUMENT_BUTTON_SIZE
-import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
-import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.PickerChip
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
-import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase
@@ -119,7 +109,6 @@ import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
 import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
-import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
@@ -155,14 +144,15 @@ import kotlin.math.min
  * reached from the app's navigation bar or rail, which stays in every layout, the compact one too.
  * [saved] are the settings the app already read at its start, so the first frame shows the
  * player's mode, looks, layout and instrument instead of switching from the defaults a moment later
- * ([TunerViewModel]). The panel shows while [pickerOpen] (the navigation bar's
- * Instrument item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used only in focus mode
- * (the "Focus mode" setting). The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
+ * ([TunerViewModel]). The picker sheet, "What are you tuning?", shows while [pickerOpen] (the picker
+ * chip at the top opens it, calling [onPickerOpenChange] with true) and calls [onPickerOpenChange] with
+ * false once it has closed. The compact layout on its side is used only in focus mode
+ * (the "Focus mode" setting). The sheet's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
  * the screen (another screen, or the app in the background).
  * Without the microphone the permission prompt shows
- * instead, and [pickerOpen] opens the panel over it all the same. The saved
+ * instead, with the picker chip over it, and the sheet opens over it all the same. The saved
  * [AppSettings.micRefused] tells a dismissed dialog from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
@@ -347,10 +337,20 @@ fun TunerScreen(
                 if (settingsButton != null) {
                     Box(Modifier.align(Alignment.TopStart).padding(start = COLUMN_PADDING - GEAR_OUTLINE_INSET, top = EDGE_INSET)) { settingsButton() }
                 }
-                // The navigation bar's Instrument item works without the microphone too: the panel opens
-                // over the prompt, and the tuning picked is the one the tuner listens for once allowed.
+                // The picker chip works without the microphone too: the sheet opens over the prompt, and
+                // the tuning picked is the one the tuner listens for once allowed.
                 val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
                 val shown = panelTuning
+                if (shown != null) {
+                    Box(
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = EDGE_INSET)
+                            .padding(horizontal = FOCUS_BUTTON_SLOT + COLUMN_PADDING),
+                    ) {
+                        TunerPickerChip(mode, shown, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) })
+                    }
+                }
                 if (pickerOpen && shown != null) {
                     TuningPanel(
                         instrument = instrument,
@@ -373,8 +373,9 @@ fun TunerScreen(
 }
 
 /**
- * The instrument and tuning panel ([InstrumentTuningPanel]) for [tuning]. The strings show in guitar
- * mode only, so a pick made in chromatic [mode] switches to it.
+ * The picker sheet, "What are you tuning?" ([InstrumentTuningPanel]), for [tuning]. Its Any note
+ * switch sets the [mode] (on: [TunerMode.CHROMATIC]); the strings show in guitar mode only, so an
+ * instrument, a tuning or a "Lower by" picked in chromatic mode switches to it.
  */
 @Composable
 private fun TuningPanel(
@@ -415,6 +416,25 @@ private fun TuningPanel(
                 lower(semitones)
             }
         },
+        anyNote = mode == TunerMode.CHROMATIC,
+        onAnyNoteChange = { on -> onModeChange(if (on) TunerMode.CHROMATIC else TunerMode.AUTO) },
+    )
+}
+
+/**
+ * The picker chip at the top of the tuner ([PickerChip]): in guitar mode the instrument and [tuning]
+ * ("Guitar · Drop D", or the player's own tuning's name after the instrument's, [names]), in chromatic
+ * [mode] "Any note"; a tap ([onClick]) opens the picker sheet.
+ */
+@Composable
+private fun TunerPickerChip(mode: TunerMode, tuning: PanelTuning, names: TuningNames, onClick: () -> Unit) {
+    val anyNote = stringResource(R.string.tuner_any_note)
+    val chromatic = mode == TunerMode.CHROMATIC
+    PickerChip(
+        label = if (chromatic) anyNote else names.labelFor(tuning.tuning, spoken = false),
+        spoken = if (chromatic) anyNote else names.labelFor(tuning.tuning, spoken = true),
+        onClick = onClick,
+        modifier = Modifier.testTag(TunerTestTags.PICKER_CHIP),
     )
 }
 
@@ -437,8 +457,14 @@ object TunerTestTags {
     /** The signal bars as drawn, in their small slot; [SIGNAL_BARS] is the 48 dp button around them. */
     const val SIGNAL_BARS_ICON = "tuner_signal_bars_icon"
 
-    /** The instrument and tuning panel, opened from the navigation bar's Instrument item. */
+    /** The picker sheet, "What are you tuning?", opened from the picker chip. */
     const val PICKER_PANEL = "tuner_picker_panel"
+
+    /** The picker chip at the top of the tuner ("Guitar · Standard ▾", "Any note ▾"), which opens the sheet. */
+    const val PICKER_CHIP = "tuner_picker_chip"
+
+    /** The sheet's Any note switch at its bottom (the whole row toggles it). */
+    const val ANY_NOTE = "tuner_any_note"
 
     /** A 12-string's small "8" on a string button with an octave string (TalkBack has it in the button's name). */
     const val OCTAVE_MARK = "tuner_octave_mark"
@@ -462,19 +488,13 @@ object TunerTestTags {
     fun customTuning(id: String): String = "tuner_custom_tuning_$id"
     fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
 
-    /** The instrument and tuning button (a headstock) at the start of the row above the strings, which opens the panel. */
-    const val INSTRUMENT_BUTTON = "tuner_instrument_button"
-
-    /** The instrument and tuning's name beside it ("Guitar · Drop D"), which opens the panel too. */
-    const val TUNING_NAME = "tuner_tuning_name"
-
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
     /** Focus mode's exit button, in the top end corner of the full-screen tuner. */
     const val EXIT_FOCUS = "tuner_exit_focus"
 
-    /** The button that turns focus mode on, at the end of the mode switch's row. */
+    /** The button that turns focus mode on, at the end of the picker chip's row. */
     const val ENTER_FOCUS = "tuner_enter_focus"
 
     /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */
@@ -517,9 +537,6 @@ object TunerTestTags {
 
     /** Keep screen on's warning before the screen is let go ("Screen turns off soon"). */
     const val SCREEN_OFF_WARNING = "tuner_screen_off_warning"
-
-    /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
-    fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }
 
 /**
@@ -559,7 +576,7 @@ private fun KeepScreenOn() {
 
 /**
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
- * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
+ * [mode] comes straight from the ViewModel, so the chip reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state] (NaN
  * without a note). [TunerScreen] passes the exact cents there and a [state] rounded to what the text
  * shows ([asShown]). [reception] likewise gives how well the note is heard (NaN without one), which
@@ -568,14 +585,16 @@ private fun KeepScreenOn() {
  * from [rememberInTuneGlow]; by default while the note is in tune; with [animationsOff] its in-tune colour and glow
  * switch without easing), the cents and the frequency are under the note, and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
- * adds small signal bars at the start of the mode switch's row ([ModeSwitchRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
+ * adds small signal bars at the start of the top row ([ChipRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
  * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. The app's
- * [settingsButton] (the gear, Phase 69) stands at the very start of that row, before the bars. While
- * [pickerOpen] the instrument and tuning panel shows over the tuner ([InstrumentTuningPanel], opened
- * from the navigation bar), and [onPickerOpenChange] hears false once it has closed. [instrument] is
- * the one picked there (by default the one [state]'s tuning belongs to); picking another calls
- * [onInstrumentChange]. Picking an instrument or a tuning in chromatic mode switches to guitar mode,
- * where the strings show. [customTunings] are the player's own tunings (the panel lists the
+ * [settingsButton] (the gear, Phase 69) stands at the very start of that row, before the bars. In the
+ * row's middle the picker chip (2.0, Phase 70: "Guitar · Drop D ▾", the player's own tuning by its
+ * name, "Any note ▾" in chromatic mode) calls [onPickerOpenChange] with true. While [pickerOpen] the
+ * picker sheet, "What are you tuning?", shows over the tuner ([InstrumentTuningPanel]), and
+ * [onPickerOpenChange] hears false once it has closed. [instrument] is the one picked there (by
+ * default the one [state]'s tuning belongs to); picking another calls [onInstrumentChange]. Its Any
+ * note switch calls [onModeChange] (the mode switch went in Phase 70); picking an instrument or a
+ * tuning in chromatic mode switches to guitar mode, where the strings show. [customTunings] are the player's own tunings (the panel lists the
  * instrument's under its presets, each with Edit, [onEditTuning], and Delete, [onDeleteTuning], after
  * asking), and [onNewTuning], when given, adds "New tuning" to the panel's list; [onLoweredByChange],
  * when given, adds its "Lower by" row, which lowers the picked tuning. A long-press on a string calls [onStringLongClick] (play its
@@ -585,8 +604,7 @@ private fun KeepScreenOn() {
  * while a tool is on, nor in the compact layout's small row), and only with [showTuneHint] on: the
  * "Show tuning help" setting covers both. With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
- * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
- * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
+ * is whether it is on). A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
  * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
  * Where [tunerTools] holds anything but the strum check alone, one "more tools" button takes the switch's place
  * and opens a menu of them ([MoreToolsButton]); the 12th-fret check is turned on and off with
@@ -661,9 +679,22 @@ fun TunerContent(
     }
     // While focus mode's controls are up over the compact layout, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val shownTuning = when (state) {
+        is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.StrumCheck -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.ChordName -> PanelTuning(state.tuning, state.notation)
+        else -> null
+    }
     val header = @Composable {
-        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
-        // Focus mode's button at the end of the mode switch's row, in both modes in the same place (owner,
+        // The picker chip, top centre (2.0, Phase 70); none over an error, where the sheet can't open.
+        val chip = @Composable {
+            if (shownTuning != null) {
+                TunerPickerChip(mode, shownTuning, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) })
+            }
+        }
+        // Focus mode's button at the end of the chip's row, in both modes in the same place (owner,
         // 2026-10-25, idea A1 of the Phase 43 mock-up: chromatic mode has no strings or tools to stand it on).
         // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
         // the exit button there looked as if a tap had already left focus mode); its exit is in the
@@ -678,8 +709,8 @@ fun TunerContent(
                 }
             }
         }
-        ModeSwitchRow(
-            switch = switch,
+        ChipRow(
+            chip = chip,
             bars = if (showSignalBars) ({ movableSignalBars() }) else null,
             button = focusButton,
             gear = settingsButton,
@@ -716,7 +747,7 @@ fun TunerContent(
                 },
             )
         }
-        GuitarSlotFor(state, mode, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
+        GuitarSlotFor(state, mode, strings, strum)
     }
     val gauge = @Composable {
         // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
@@ -912,14 +943,6 @@ fun TunerContent(
             }
         }
     }
-    val shownTuning = when (state) {
-        is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.StrumCheck -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.ChordName -> PanelTuning(state.tuning, state.notation)
-        else -> null
-    }
     // Only over the tuner itself, not over an error (it closes then) or the moment before the microphone is heard.
     if (pickerOpen && state is TunerUiState.Error) LaunchedEffect(Unit) { onPickerOpenChange(false) }
     if (pickerOpen && shownTuning != null) {
@@ -1056,10 +1079,10 @@ private fun TwoPaneLayout(
 }
 
 /**
- * The controls pane's [header] (the mode switch, focus mode's button and the signal bars) over the
+ * The controls pane's [header] (the picker chip, focus mode's button and the signal bars) over the
  * [guitarSlot], [SECTION_SPACING] apart, the header as wide as the string buttons' faces
  * ([StringFacesSpan]), so on its side focus mode's button ends where the last string's button and the
- * tools button do, and the signal bars start where the instrument button does (Phase 65: they stood a
+ * tools button do, and the signal bars start where the first string's button does (Phase 65: they stood a
  * few dp further out, the header taking the pane's whole width). Without strings it takes the width.
  */
 @Composable
@@ -1103,7 +1126,7 @@ private val LocalStringFacesSpan = staticCompositionLocalOf<StringFacesSpan?> { 
  * The compact landscape layout (focus mode). With a [focusNote] (the plain tuner) the [gauge] fills
  * the screen, the small note in its top start corner ([FocusMeter]). Otherwise (a tool on) the gauge
  * is as big as the space allows beside the [note] with [below] under it (the small string row or the
- * chromatic numbers). No mode switch, strum check switch or string buttons. A tap anywhere, or
+ * chromatic numbers). No picker chip, strum check switch or string buttons. A tap anywhere, or
  * TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls]. Focus
  * mode's exit button ([onExitFocus]) sits in the top end corner, where every meter look leaves room
  * (owner, 2026-10-19: in place of a "Tap to show the controls" line, as the way out). An [error]
@@ -1153,22 +1176,22 @@ private fun CompactLayout(
 }
 
 /**
- * The mode [switch] centred, with focus mode's [button] at the row's end, its outline in line with
- * the column's text margin (owner, 2026-10-25: the same place in both modes, never moving), and the
- * signal [bars] at its start, across from the button. The row takes the whole width. The switch keeps
- * clear of two equal slots ([FOCUS_BUTTON_SLOT]) at the row's ends, whether the bars show or not, so
- * it stays centred and never reaches either: a long label at a large font shrinks to fit instead
- * (Dutch "Chromatisch" at 2× text on a 360 dp phone). None of them moves with anything the tuner
- * hears, nor when the mode changes or the bars are turned on.
+ * The picker [chip] centred (2.0, Phase 70, in the mode switch's place), with focus mode's [button] at
+ * the row's end, its outline in line with the column's text margin (owner, 2026-10-25: the same place
+ * in both modes, never moving), and the signal [bars] at its start, across from the button. The row
+ * takes the whole width. The chip keeps clear of two equal slots ([FOCUS_BUTTON_SLOT]) at the row's
+ * ends, whether the bars show or not, so it stays centred and never reaches either: a long name at a
+ * large font ends in "…" instead. None of them moves with anything the tuner hears, nor when the bars
+ * are turned on; the chip alone grows and shrinks with its name, about its centre.
  *
  * The app's [gear] (Settings, Phase 69) stands at the very start, its outline in line with the text
  * margin as the button's is at the end, and the bars right after it; with both, the two end slots
- * grow to [GEAR_AND_BARS_SLOT], so the switch stays centred (until Phase 71 puts the bars beside the
+ * grow to [GEAR_AND_BARS_SLOT], so the chip stays centred (until Phase 71 puts the bars beside the
  * ruler's heard note).
  */
 @Composable
-private fun ModeSwitchRow(
-    switch: @Composable () -> Unit,
+private fun ChipRow(
+    chip: @Composable () -> Unit,
     bars: (@Composable () -> Unit)?,
     button: (@Composable () -> Unit)?,
     gear: (@Composable () -> Unit)? = null,
@@ -1176,7 +1199,7 @@ private fun ModeSwitchRow(
     val barsSlot = @Composable { if (bars != null) Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
     val buttonSlot = @Composable { if (button != null) button() }
     val gearSlot = @Composable { if (gear != null) gear() }
-    Layout(contents = listOf(switch, barsSlot, buttonSlot, gearSlot)) { (switchMeasurables, barsMeasurables, buttonMeasurables, gearMeasurables), constraints ->
+    Layout(contents = listOf(chip, barsSlot, buttonSlot, gearSlot)) { (chipMeasurables, barsMeasurables, buttonMeasurables, gearMeasurables), constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val buttonPlaceable = buttonMeasurables.singleOrNull()?.measure(loose)
         val barsPlaceable = barsMeasurables.singleOrNull()?.measure(loose)
@@ -1187,12 +1210,12 @@ private fun ModeSwitchRow(
             else -> 0
         }
         val bounded = constraints.hasBoundedWidth
-        val switchRoom = if (bounded) (loose.maxWidth - 2 * slot).coerceAtLeast(0) else Constraints.Infinity
-        val switchPlaceable = switchMeasurables.single().measure(loose.copy(maxWidth = switchRoom))
-        val width = if (bounded) constraints.maxWidth else switchPlaceable.width + 2 * slot
-        val height = maxOf(switchPlaceable.height, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0, gearPlaceable?.height ?: 0)
+        val chipRoom = if (bounded) (loose.maxWidth - 2 * slot).coerceAtLeast(0) else Constraints.Infinity
+        val chipPlaceable = chipMeasurables.singleOrNull()?.measure(loose.copy(maxWidth = chipRoom))
+        val width = if (bounded) constraints.maxWidth else (chipPlaceable?.width ?: 0) + 2 * slot
+        val height = maxOf(chipPlaceable?.height ?: 0, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0, gearPlaceable?.height ?: 0)
         layout(width, height) {
-            switchPlaceable.placeRelative((width - switchPlaceable.width) / 2, (height - switchPlaceable.height) / 2)
+            chipPlaceable?.placeRelative((width - chipPlaceable.width) / 2, (height - chipPlaceable.height) / 2)
             // The gear's touch area is wider than its outline; the outline starts at the row's start.
             val gearEnd = gearPlaceable?.let {
                 val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
@@ -1374,7 +1397,6 @@ private fun GuitarSlotFor(
     mode: TunerMode,
     strings: StringActions,
     strum: ToolsState? = null,
-    names: TuningNames? = null,
 ) {
     val controls = when (state) {
         // The strings ticked off only while they belong to the tuning shown (a new one starts afresh).
@@ -1410,7 +1432,6 @@ private fun GuitarSlotFor(
                 controls.tuning, controls.notation, strings,
                 controls.targetString, controls.lockedString, controls.inTune,
                 strum,
-                names = names,
                 marks = controls.marks,
                 checking = controls.checking,
                 tuned = controls.tuned,
@@ -1457,11 +1478,10 @@ private fun instrumentOf(state: TunerUiState): Instrument {
 }
 
 /**
- * What the instrument button and the name over the string row are made of: the [instrument] picked
- * and the player's own [customTunings], whose names are their own (the presets' come from the string
- * resources). A tap on either calls [onClick] (opens the instrument and tuning panel).
+ * What the picker chip's name is made of: the [instrument] picked and the player's own
+ * [customTunings], whose names are their own (the presets' come from the string resources).
  */
-private data class TuningNames(val instrument: Instrument, val customTunings: List<CustomTuning>, val onClick: () -> Unit)
+private data class TuningNames(val instrument: Instrument, val customTunings: List<CustomTuning>)
 
 /** "Guitar · Drop D" for [tuning], or the player's own tuning's name after the instrument's. */
 @Composable
@@ -1485,13 +1505,9 @@ private val STRUM_CHECK_ALONE = listOf(TunerTool.STRUM_CHECK)
 /**
  * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch (or
  * the "more tools" button) sits in a row of its own above the strings, at its end, its outline ending
- * in line with the last string's button ([stringFaceInsetFor]). With [names] that row starts with the
- * instrument button ([InstrumentButton], a headstock in the same outline), its outline starting in
- * line with the first string's button, so a button of one kind stands at each end; between them the
- * instrument and tuning ("Guitar · Drop D"), quiet in the muted text colour. A long name (a large font,
- * a long language, an own tuning) takes up to two lines and ends in "…" rather than move either
- * button. A tap on the button or the name opens the instrument and tuning panel; TalkBack hears the
- * button ("Instrument, Guitar, Drop D") and skips the name, which says the same.
+ * in line with the last string's button ([stringFaceInsetFor]). The instrument button and the
+ * tuning's name that started this row until Phase 70 went: the picker chip at the top says and opens
+ * the same.
  */
 @Composable
 private fun GuitarControls(
@@ -1502,7 +1518,6 @@ private fun GuitarControls(
     lockedString: Int?,
     inTune: Boolean = false,
     strum: ToolsState? = null,
-    names: TuningNames? = null,
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
     tuned: TunedStrings? = null,
@@ -1532,98 +1547,31 @@ private fun GuitarControls(
             else -> MoreToolsButton(strum.tools, strum.active, strum.onChange)
         }
     }
-    // One press for the instrument button and the name beside it: a tap on either sinks and lights both.
-    val namePress = remember { MutableInteractionSource() }
-    val instrument = @Composable {
-        if (names != null) {
-            InstrumentButton(
-                interactionSource = namePress,
-                current = names.labelFor(tuning, spoken = true),
-                onClick = names.onClick,
-                faceModifier = Modifier.testTag(TunerTestTags.INSTRUMENT_BUTTON),
-            )
-        }
-    }
-    val label = @Composable {
-        if (names != null) {
-            // Pressed (or its button pressed), the name sinks and lights up; a quiet label, so only the
-            // tint, never Futuristic's neon frame tight round its text.
-            val press = namePress
-            val nameShape = MaterialTheme.shapes.small
-            Box(
-                Modifier
-                    .heightIn(min = LABEL_MIN_HEIGHT)
-                    .pressSink(press)
-                    .clip(nameShape)
-                    .clickable(press, PressIndication(nameShape)) {
-                        press.pressFlash()
-                        names.onClick()
-                    }
-                    .testTag(TunerTestTags.TUNING_NAME)
-                    // The instrument button beside it says the same to TalkBack.
-                    .clearAndSetSemantics {
-                        hideFromAccessibility()
-                        onClick {
-                            names.onClick()
-                            true
-                        }
-                    },
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Text(
-                    musicText(names.labelFor(tuning, spoken = false)),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
     val facesSpan = LocalStringFacesSpan.current
     // Without the strings, the header over them takes its own width again.
     if (facesSpan != null) DisposableEffect(facesSpan) { onDispose { facesSpan.width = 0 } }
-    Layout(contents = listOf(strings, toggle, instrument, label)) { (stringMeasurables, toggleMeasurables, instrumentMeasurables, labelMeasurables), constraints ->
+    Layout(contents = listOf(strings, toggle)) { (stringMeasurables, toggleMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
         val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(partConstraints)
-        val instrumentPlaceable = instrumentMeasurables.firstOrNull()?.measure(partConstraints)
         val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
         val stringsX = (width - stringsPlaceable.width) / 2
         // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
         val faceInset = stringFaceInsetFor(stringsPlaceable.width.toDp(), tuning).dp.roundToPx().coerceAtLeast(0)
         val facesStart = stringsX + faceInset
         val facesEnd = stringsX + stringsPlaceable.width - faceInset
-        // Each button's outline sits inside its 48 dp touch target: the switch's ends where the last
-        // string's face does, the instrument button's starts where the first one's does.
+        // The switch's outline sits inside its 48 dp touch target and ends where the last string's face does.
         val toggleX = togglePlaceable?.let {
             val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
             (facesEnd - it.width + outlineInset).coerceIn(0, (width - it.width).coerceAtLeast(0))
         }
-        val instrumentInset = instrumentPlaceable?.let { (it.width - INSTRUMENT_BUTTON_SIZE.roundToPx()).coerceAtLeast(0) / 2 } ?: 0
-        val instrumentX = instrumentPlaceable?.let { (facesStart - instrumentInset).coerceIn(0, (width - it.width).coerceAtLeast(0)) }
-        // The name between the two buttons' outlines, a gap from each.
-        val labelStart = if (instrumentPlaceable != null && instrumentX != null) {
-            instrumentX + instrumentPlaceable.width - instrumentInset + LABEL_BUTTON_GAP.roundToPx()
-        } else {
-            facesStart
-        }
-        val labelEnd = if (togglePlaceable != null && toggleX != null) {
-            toggleX + (togglePlaceable.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2 - LABEL_TOGGLE_GAP.roundToPx()
-        } else {
-            facesEnd
-        }
-        val labelPlaceable = labelMeasurables.firstOrNull()
-            ?.measure(partConstraints.copy(maxWidth = (labelEnd - labelStart).coerceAtLeast(0)))
-        val rowHeight = maxOf(togglePlaceable?.height ?: 0, instrumentPlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
+        val rowHeight = togglePlaceable?.height ?: 0
         val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
         val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
         // For the header over the strings on its side: as wide as the faces (they are centred, as it is).
         facesSpan?.width = (facesEnd - facesStart).coerceAtLeast(0)
         layout(width, height) {
-            if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
-            if (instrumentPlaceable != null && instrumentX != null) instrumentPlaceable.placeRelative(instrumentX, (rowHeight - instrumentPlaceable.height) / 2)
-            labelPlaceable?.placeRelative(labelStart, (rowHeight - labelPlaceable.height) / 2)
+            if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, 0)
             stringsPlaceable.placeRelative(stringsX, stringsY)
         }
     }
@@ -1673,19 +1621,10 @@ private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
 
 private val SECTION_SPACING = 24.dp
 
-/** The tuning's name is a touch target this high at least, like the switch beside it. */
-private val LABEL_MIN_HEIGHT = 48.dp
-
-/** At least this much room between the tuning's name and the strum check's switch. */
-private val LABEL_TOGGLE_GAP = 12.dp
-
-/** Between the instrument button's outline and the tuning's name. */
-private val LABEL_BUTTON_GAP = 12.dp
-
 /** Between the strum check's switch and the string row under it. */
 private val TOGGLE_STRINGS_GAP = 8.dp
 
-/** The signal bars as drawn, and their touch area's width at the mode switch row's start. */
+/** The signal bars as drawn, and their touch area's width at the picker chip row's start. */
 private val SIGNAL_BARS_SIZE = 24.dp
 private val SIGNAL_BARS_SLOT = 48.dp
 
@@ -1719,7 +1658,7 @@ private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 private val FOCUS_METER_MARGIN = 8.dp
 private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
 
-/** The room at each end of the mode switch's row: focus mode's 44 dp button outline and 8 dp clear of the switch; the signal bars' 48 dp touch area fits it too. */
+/** The room at each end of the picker chip's row: focus mode's 44 dp button outline and 8 dp clear of the chip; the signal bars' 48 dp touch area fits it too. */
 private val FOCUS_BUTTON_SLOT = 52.dp
 
 /** The room at each end of that row with the app's gear and the signal bars both at its start: the gear's 46 dp past the margin, the bars' 48 dp touch area less what clears it. */
@@ -1747,7 +1686,7 @@ private val EDGE_INSET = 8.dp
 /** Above and below the controls pane's column, so it keeps a margin when it scrolls (a large font on a phone on its side). */
 private val CONTROLS_PANE_CLEARANCE = 56.dp
 
-/** Instrument-and-tuning button (a 48 dp touch target) + 8 dp + string row (48 dp). */
+/** The tools button (a 48 dp touch target) + 8 dp + string row (48 dp). */
 private val GUITAR_SLOT_HEIGHT = 104.dp
 
 /** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */

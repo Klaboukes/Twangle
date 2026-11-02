@@ -286,7 +286,7 @@ class StringRowStylesTest {
 
     /**
      * The 12-string in every language at 2× text, upright and on its side: every string's name and
-     * every "8" wholly shown, and the instrument button says the 12-string's name in that language.
+     * every "8" wholly shown, and the picker chip says the 12-string's name in that language.
      * The name beside it may end in "…" there, as every long name does at that size (the buttons
      * keep their place; TalkBack hears it whole).
      */
@@ -309,8 +309,8 @@ class StringRowStylesTest {
                 }
                 val marks = compose.onAllNodesWithTag(TunerTestTags.OCTAVE_MARK, useUnmergedTree = true).assertCountEquals(4)
                 for (index in 0 until 4) assertWhollyShown(marks[index], "$case: the 8 on course $index", scroll = true)
-                val spoken = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription)
-                assertTrue("$case: the instrument button says $spoken", spoken != null && name in spoken)
+                val spoken = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString()
+                assertTrue("$case: the picker chip says $spoken", spoken != null && name in spoken)
             }
         }
     }
@@ -340,7 +340,7 @@ class StringRowStylesTest {
 
     /**
      * The banjo in every language at 2× text, upright and on its side: every string's name wholly
-     * shown, the short string still set apart, and the instrument button says the banjo's name in that
+     * shown, the short string still set apart, and the picker chip says the banjo's name in that
      * language.
      */
     @EveryLanguage
@@ -361,8 +361,8 @@ class StringRowStylesTest {
                     assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$case: $label", scroll = true)
                 }
                 assertShortStringGap(case, tuning)
-                val spoken = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription)
-                assertTrue("$case: the instrument button says $spoken", spoken != null && name in spoken)
+                val spoken = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString()
+                assertTrue("$case: the picker chip says $spoken", spoken != null && name in spoken)
             }
         }
     }

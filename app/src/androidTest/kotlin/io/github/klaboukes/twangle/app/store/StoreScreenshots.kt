@@ -211,7 +211,7 @@ class StoreScreenshots(private val shot: Shot) {
             Shot.TUNE_UP -> tuner { recorder.play(flatLowE()); settle(NOTE_SETTLE_MS) }
             Shot.INSTRUMENTS -> tuner {
                 // The panel is a window of its own, whose parts UI Automator can't find by tag.
-                click(TunerTestTags.INSTRUMENT_BUTTON)
+                click(TunerTestTags.PICKER_CHIP)
                 settle(SHEET_SETTLE_MS)
             }
             Shot.TALKBACK -> withFontScale(TALKBACK_FONT_SCALE) {
@@ -270,10 +270,10 @@ class StoreScreenshots(private val shot: Shot) {
                 ) { scenario ->
                     click(TunerTestTags.MORE_TOOLS)
                     click(TunerTestTags.tool(TunerTool.PITCH_TRAIL))
-                    // A held A4, as sung or played high up the neck: any note, so chromatic. The last
-                    // step through UI Automator: once the trail moves, it waits for a still screen
+                    // A held A4, as sung or played high up the neck: any note, so chromatic (Any note, set as the
+                    // sheet's switch would set it). Not through UI Automator: once the trail moves, it waits for a still screen
                     // before each step, up to its time-out.
-                    click(TunerTestTags.mode(TunerMode.CHROMATIC))
+                    runBlocking { settings.setMode(TunerMode.CHROMATIC) }
                     // Focus mode turns the phone on its side, the trail in the big meter's place.
                     runBlocking { settings.setFocusMode(true) }
                     check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }

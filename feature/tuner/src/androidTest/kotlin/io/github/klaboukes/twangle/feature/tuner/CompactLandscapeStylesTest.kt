@@ -115,7 +115,7 @@ class CompactLandscapeStylesTest {
     private val frequency get() = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f))
     private val targetString get() = compose.onNodeWithText("A2")
     private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON)
-    private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
+    private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
 
     /**
      * Guitar mode, then chromatic mode: the meter fills the screen, the
@@ -205,10 +205,10 @@ class CompactLandscapeStylesTest {
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
-        modeSwitch.assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
-        modeSwitch.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
         shownDark.value = true
         compose.mainClock.advanceTimeBy(FADE_MS)
         // TalkBack hears the reading as one sentence, and the screen is a "Show controls" button.
@@ -217,7 +217,7 @@ class CompactLandscapeStylesTest {
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
             .performSemanticsAction(SemanticsActions.OnClick)
         compose.mainClock.advanceTimeBy(FADE_MS)
-        modeSwitch.assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
     }
 
     /** Focus mode's exit button in the top end corner, wholly shown, clear of the note, also at 2× font. */

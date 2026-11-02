@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Mikrofoni pysähtyi, ehkä puhelun tai toisen sovelluksen takia. Jatka virittämistä napauttamalla ”Yritä uudelleen”.</string>
     <string name="error_retry">Yritä uudelleen</string>
 
-    <string name="tuner_mode_strings">Kielet</string>
-    <string name="tuner_mode_chromatic">Kromaattinen</string>
     <string name="tuner_show_controls">Näytä säätimet</string>
     <string name="tuner_focus_mode">Keskittymistila</string>
     <string name="tuner_exit_focus_mode">Poistu keskittymistilasta</string>

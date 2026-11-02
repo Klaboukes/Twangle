@@ -13,8 +13,6 @@
     <string name="error_mic_unavailable">মাইক্রোফোন চালু করা গেল না। যেসব অ্যাপ এটি ব্যবহার করছে সেগুলো বন্ধ করে আবার চেষ্টা করুন-এ ট্যাপ করুন, অথবা ডিভাইস রিস্টার্ট করুন।</string>
     <string name="error_mic_stopped">মাইক্রোফোন থেমে গেছে, হয়তো কোনো কল বা অন্য অ্যাপের জন্য। টিউন চালিয়ে যেতে আবার চেষ্টা করুন-এ ট্যাপ করুন।</string>
     <string name="error_retry">আবার চেষ্টা করুন</string>
-    <string name="tuner_mode_strings">তার</string>
-    <string name="tuner_mode_chromatic">ক্রোমাটিক</string>
     <string name="tuner_show_controls">কন্ট্রোল দেখান</string>
     <string name="tuner_focus_mode">ফোকাস মোড</string>
     <string name="tuner_exit_focus_mode">ফোকাস মোড থেকে বের হন</string>

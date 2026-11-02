@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">माइक्रोफ़ोन रुक गया, शायद किसी कॉल या दूसरे ऐप के लिए। ट्यूनिंग जारी रखने के लिए फिर से कोशिश करें पर टैप करें।</string>
     <string name="error_retry">फिर से कोशिश करें</string>
 
-    <string name="tuner_mode_strings">तार</string>
-    <string name="tuner_mode_chromatic">क्रोमैटिक</string>
     <string name="tuner_show_controls">कंट्रोल दिखाएँ</string>
     <string name="tuner_focus_mode">फ़ोकस मोड</string>
     <string name="tuner_exit_focus_mode">फ़ोकस मोड से बाहर निकलें</string>

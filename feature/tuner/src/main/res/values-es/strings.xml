@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">El micrófono se detuvo, quizá por una llamada u otra app. Toca Reintentar para seguir afinando.</string>
     <string name="error_retry">Reintentar</string>
 
-    <string name="tuner_mode_strings">Cuerdas</string>
-    <string name="tuner_mode_chromatic">Cromático</string>
     <string name="tuner_show_controls">Mostrar controles</string>
     <string name="tuner_focus_mode">Modo concentración</string>
     <string name="tuner_exit_focus_mode">Salir del modo concentración</string>

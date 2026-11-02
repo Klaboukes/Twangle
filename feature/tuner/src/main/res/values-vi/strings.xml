@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Micrô đã dừng, có thể vì một cuộc gọi hoặc ứng dụng khác. Hãy chạm vào Thử lại để tiếp tục lên dây.</string>
     <string name="error_retry">Thử lại</string>
 
-    <string name="tuner_mode_strings">Dây đàn</string>
-    <string name="tuner_mode_chromatic">Chromatic</string>
     <string name="tuner_show_controls">Hiện nút điều khiển</string>
     <string name="tuner_focus_mode">Chế độ tập trung</string>
     <string name="tuner_exit_focus_mode">Thoát chế độ tập trung</string>

@@ -19,7 +19,7 @@ class WidgetStateTest {
     private val strings = mapOf(
         AppR.string.widget_title to "%1\$s · %2\$s",
         TunerR.string.tuner_spoken_picker to "%1\$s, %2\$s",
-        TunerR.string.tuner_mode_chromatic to "Chromatic",
+        TunerR.string.tuner_any_note to "Any note",
         TunerR.string.instrument_guitar to "Guitar",
         TunerR.string.instrument_bass_4 to "Bass (4)",
         TunerR.string.tuning_standard to "Standard",
@@ -69,10 +69,10 @@ class WidgetStateTest {
     }
 
     @Test
-    fun chromaticModeSaysChromatic() {
+    fun chromaticModeSaysAnyNote() {
         val state = WidgetState.from(AppSettings(mode = TunerMode.CHROMATIC))
-        assertEquals("Chromatic", state.title(string))
-        assertEquals("Chromatic", state.spoken(string))
+        assertEquals("Any note", state.title(string))
+        assertEquals("Any note", state.spoken(string))
     }
 
     @Test

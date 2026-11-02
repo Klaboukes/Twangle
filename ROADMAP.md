@@ -60,7 +60,7 @@ Decided on 2026-11-02, from the from-scratch design of 2026-11-01 ([IDEAS.md](ID
 
 ### Phase 70 — The one picker
 Goal: instrument, tuning and Any note in one sheet from a chip at the top.
-- ☐ The chip "Guitar · Standard ▾" at the top centre of the tuner; the "What are you tuning?" sheet: instrument pills, the tunings with their strings, Edit tunings (the tuning editor), Any note as a switch; the mode switch goes (`TunerMode` set from the sheet)
+- ☑ The chip "Guitar · Standard ▾" at the top centre of the tuner; the "What are you tuning?" sheet: instrument pills, the tunings with their strings, Edit tunings (the tuning editor), Any note as a switch; the mode switch goes (`TunerMode` set from the sheet)
 - ☐ In Any note the chip reads "Any note" and the pegs go; the Practice tools take their instrument and tuning from the same sheet (`InstrumentTuningPanel` becomes it)
 
 ### Phase 71 — The tuner screen

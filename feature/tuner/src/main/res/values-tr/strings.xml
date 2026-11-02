@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">Mikrofon durdu, belki bir arama veya başka bir uygulama yüzünden. Akorda devam etmek için Tekrar dene\'ye dokun.</string>
     <string name="error_retry">Tekrar dene</string>
 
-    <string name="tuner_mode_strings">Teller</string>
-    <string name="tuner_mode_chromatic">Kromatik</string>
     <string name="tuner_show_controls">Kontrolleri göster</string>
     <string name="tuner_focus_mode">Odak modu</string>
     <string name="tuner_exit_focus_mode">Odak modundan çık</string>

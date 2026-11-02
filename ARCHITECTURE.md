@@ -171,7 +171,7 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop,
     MusicSigns, NoteNameSpeech (rememberNoteNameSpeech), PacedSpeech, FontCredits,
     PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
-    SegmentedSwitch, InstrumentButton, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
+    SegmentedSwitch, InstrumentButton, PickerChip, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
     dial/       DialGeometry, Strobe (kept for the lens, Phase 72)
     meter/      MeterReading, MeterLooks (Classic), MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat
@@ -190,7 +190,7 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
     IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake
     components/ MeterFrame, NoteDisplay, StringSelector (+ StringRowFit),
-                InstrumentTuningPanel (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
+                InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
                 IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver

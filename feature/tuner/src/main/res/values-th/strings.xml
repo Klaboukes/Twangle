@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">ไมโครโฟนหยุดทำงาน อาจเป็นเพราะการโทรหรือแอปอื่น แตะลองอีกครั้งเพื่อจูนต่อ</string>
     <string name="error_retry">ลองอีกครั้ง</string>
 
-    <string name="tuner_mode_strings">สาย</string>
-    <string name="tuner_mode_chromatic">โครมาติก</string>
     <string name="tuner_show_controls">แสดงปุ่มควบคุม</string>
     <string name="tuner_focus_mode">โหมดโฟกัส</string>
     <string name="tuner_exit_focus_mode">ออกจากโหมดโฟกัส</string>

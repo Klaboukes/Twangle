@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">توقف الميكروفون، ربما بسبب مكالمة أو تطبيق آخر. انقر على «حاول مرة أخرى» لمتابعة الضبط.</string>
     <string name="error_retry">حاول مرة أخرى</string>
 
-    <string name="tuner_mode_strings">الأوتار</string>
-    <string name="tuner_mode_chromatic">كروماتي</string>
     <string name="tuner_show_controls">إظهار عناصر التحكم</string>
     <string name="tuner_focus_mode">وضع التركيز</string>
     <string name="tuner_exit_focus_mode">الخروج من وضع التركيز</string>

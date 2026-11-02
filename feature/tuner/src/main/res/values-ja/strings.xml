@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">通話や別のアプリのためか、マイクが停止しました。「再試行」をタップしてチューニングを続けてください。</string>
     <string name="error_retry">再試行</string>
 
-    <string name="tuner_mode_strings">弦</string>
-    <string name="tuner_mode_chromatic">クロマチック</string>
     <string name="tuner_show_controls">操作を表示</string>
     <string name="tuner_focus_mode">フォーカスモード</string>
     <string name="tuner_exit_focus_mode">フォーカスモードを終了</string>

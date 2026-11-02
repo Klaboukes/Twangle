@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 /**
  * The home-screen widget (Phase 20): the instrument and tuning the tuner is set to ("Guitar ·
- * Standard", or "Chromatic") in the app's colours, and one tap opens the tuner. It is plain
+ * Standard", or "Any note") in the app's colours, and one tap opens the tuner. It is plain
  * [RemoteViews] (no Glance): one small layout, no extra library. It never touches the microphone;
  * the tuner it opens does that, as when opened from the launcher.
  *

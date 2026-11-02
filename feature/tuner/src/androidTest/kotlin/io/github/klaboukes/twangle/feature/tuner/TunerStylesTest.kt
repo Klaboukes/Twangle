@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
@@ -113,14 +114,12 @@ class TunerStylesTest {
 
     private val twelveCentsFlat get() = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
     private val gauge get() = compose.onNodeWithTag(TunerTestTags.GAUGE)
-    private val guitar get() = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO))
-    private val chromatic get() = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC))
+    private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
     private val strings = listOf("E2", "A2", "D3", "G3", "B3", "E4")
 
     /** Every part of the screen, by name. (1.1's wave view, which took the cents' and frequency's place, went in Phase 67.) */
     private fun parts(): List<Pair<String, SemanticsNodeInteraction>> = buildList {
-        add("mode switch, guitar" to guitar)
-        add("mode switch, chromatic" to chromatic)
+        add("picker chip" to pickerChip)
         add("meter" to gauge)
         add("note" to compose.onNodeWithText("A"))
         add("cents" to compose.onNodeWithText(twelveCentsFlat))
@@ -230,8 +229,7 @@ class TunerStylesTest {
             assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
             assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
             assertTrue("$case: something inside the meter for TalkBack", node.children.isEmpty())
-            guitar.assertHasClickAction().assertIsSelected()
-            chromatic.assertHasClickAction().assertIsNotSelected()
+            pickerChip.assertHasClickAction().assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, context.getString(R.string.instrument_guitar), context.getString(R.string.tuning_standard))))
             listOf("E 2", "A 2", "D 3", "G 3", "B 3", "E 4").forEachIndexed { index, name ->
                 val chip = compose.onNode(hasContentDescription(name)).assertHasClickAction()
                 if (index == 1) chip.assertIsSelected() else chip.assertIsNotSelected()

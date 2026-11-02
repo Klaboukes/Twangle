@@ -16,8 +16,6 @@
     <string name="error_mic_stopped">Le micro s\'est arrêté, peut-être pour un appel ou une autre app. Touchez Réessayer pour continuer à accorder.</string>
     <string name="error_retry">Réessayer</string>
 
-    <string name="tuner_mode_strings">Cordes</string>
-    <string name="tuner_mode_chromatic">Chromatique</string>
     <string name="tuner_show_controls">Afficher les commandes</string>
     <string name="tuner_focus_mode">Mode concentration</string>
     <string name="tuner_exit_focus_mode">Quitter le mode concentration</string>

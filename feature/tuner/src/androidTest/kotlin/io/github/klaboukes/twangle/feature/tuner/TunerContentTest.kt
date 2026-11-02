@@ -27,6 +27,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
@@ -135,7 +137,7 @@ class TunerContentTest {
 
     private val shownSignalBars = mutableStateOf(false)
 
-    /** Whether the instrument and tuning panel shows ([openPanel]; the navigation bar's Instrument item in the app). */
+    /** Whether the picker sheet shows ([openPanel]; the picker chip opens it). */
     private val shownPickerOpen = mutableStateOf(false)
 
     /** The state [show] shows; set it to send a new reading while the tuner is shown. */
@@ -222,7 +224,10 @@ class TunerContentTest {
     /** String chips read e.g. "A2": note name plus subscript octave. */
     private fun stringChip(label: String) = compose.onNodeWithText(label)
 
-    /** Opens the instrument and tuning panel, as the navigation bar's Instrument item does in the app. */
+    /** The picker chip at the top of the tuner, which opens the sheet. */
+    private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
+
+    /** Opens the picker sheet, as a tap on the picker chip does. */
     private fun openPanel() {
         compose.runOnIdle { shownPickerOpen.value = true }
         compose.waitForIdle()
@@ -377,44 +382,61 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_note)).assertIsDisplayed()
     }
 
+    /**
+     * The picker chip at the top (Phase 70) names the instrument and tuning, and TalkBack hears it as a
+     * button that changes them; a tap opens the sheet. The instrument button and the name that stood
+     * above the strings went with it.
+     */
     @Test
-    fun theInstrumentButtonShowsAboveTheStringsAndOpensThePanel() {
+    fun thePickerChipNamesTheTuningAndOpensTheSheet() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
         val spoken = context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), text(R.string.tuning_drop_d))
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
+        pickerChip
             .assertIsDisplayed()
-            .assert(hasContentDescription(text(DesignR.string.instrument_button)))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, spoken))
+            .assert(hasContentDescription(spoken))
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-            .performClick()
+            .assert(SemanticsMatcher("double-tap says it changes the instrument or tuning") { it.config.getOrNull(SemanticsActions.OnClick)?.label == text(DesignR.string.instrument_button_action) })
+        pickerChip.performClick()
         assertTrue(shownPickerOpen.value)
         compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
-    }
-
-    /** The name beside the button opens the panel too; TalkBack skips it, as the button says the same. */
-    @Test
-    fun theTuningsNameOpensThePanelToo() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
-        compose.onNodeWithTag(TunerTestTags.TUNING_NAME)
-            .assertIsDisplayed()
-            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
-            .performClick()
-        assertTrue(shownPickerOpen.value)
     }
 
     @Test
     fun anOwnTuningIsNamedByItsOwnName() {
         shownCustomTunings = listOf(lowC)
         show(TunerUiState.Listening(TunerMode.AUTO, lowC.tuning))
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), "Low C")))
+        pickerChip.assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), "Low C")))
     }
 
+    /** In chromatic mode the chip says "Any note"; the strings, and the tools above them, are gone. */
     @Test
-    fun chromaticModeHasNoTuningsNameNorInstrumentButton() {
+    fun chromaticModeTheChipSaysAnyNote() {
         show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
-        compose.onNodeWithTag(TunerTestTags.TUNING_NAME).assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).assertDoesNotExist()
+        pickerChip.assertIsDisplayed().assert(hasContentDescription(text(R.string.tuner_any_note)))
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
+    }
+
+    /** The mode switch went (Phase 70): the sheet's Any note switch sets the mode, and closes the sheet. */
+    @Test
+    fun theSheetsAnyNoteSwitchSetsTheMode() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        openPanel()
+        compose.onNodeWithTag(TunerTestTags.ANY_NOTE)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+            .assertIsOff()
+            .performClick()
+        assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertDoesNotExist()
+        compose.runOnIdle { assertFalse(shownPickerOpen.value) }
+        // In chromatic mode it is on, and a tap turns it off: back to the strings.
+        compose.runOnIdle {
+            shownMode.value = TunerMode.CHROMATIC
+            shownState.value = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD)
+        }
+        openPanel()
+        compose.onNodeWithTag(TunerTestTags.ANY_NOTE).assertIsOn().performClick()
+        assertEquals(listOf(TunerMode.CHROMATIC, TunerMode.AUTO), modeChanges)
     }
 
     @Test
@@ -427,14 +449,6 @@ class TunerContentTest {
         compose.onNodeWithTag(TunerTestTags.customTuning(many.last().id)).assertIsDisplayed()
         // The part of the row that picks it (the ⋮ button beside it is not).
         compose.onNodeWithText("Mine 16").assertIsDisplayed().assertIsSelected()
-    }
-
-    @Test
-    fun modeSwitchReportsTheChoice() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performClick()
-        assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
     }
 
     @Test
@@ -668,8 +682,7 @@ class TunerContentTest {
     fun aLoweredTuningShowsItsCommonNameEverywhereAndATapOnItKeepsIt() {
         val dropC = Tunings.DROP_D.lowered(2)
         show(TunerUiState.Listening(TunerMode.AUTO, dropC))
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), text(R.string.tuning_drop_c))))
+        pickerChip.assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), text(R.string.tuning_drop_c))))
         stringChip("C2").assertIsDisplayed()
         openPanel()
         compose.onNodeWithTag(TunerTestTags.LOWERED_AMOUNT).assert(hasText(text(R.string.tuner_lowered_2)))
@@ -713,8 +726,7 @@ class TunerContentTest {
         shownCustomTunings = listOf(lowC)
         show(TunerUiState.Listening(TunerMode.AUTO, lowC.tuning.lowered(1)))
         val name = context.getString(R.string.tuning_lowered_1, "Low C")
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), name)))
+        pickerChip.assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), name)))
         openPanel()
         compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(lowC.id)))).performScrollTo().assertIsSelected()
     }
@@ -1051,7 +1063,7 @@ class TunerContentTest {
     @Test
     fun withTheLargestFontEverythingCanStillBeReached() {
         show(detected(-12.3f), fontScale = 2f)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
+        pickerChip.performScrollTo().assertIsDisplayed()
         stringChip("E4").performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).performScrollTo().assertIsDisplayed()
@@ -1062,7 +1074,7 @@ class TunerContentTest {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
         compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
         // The whole readout fits: the gauge shrinks so the frequency under the note isn't cut off.
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val frequency = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).getBoundsInRoot()
@@ -1079,7 +1091,7 @@ class TunerContentTest {
         show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE)
         compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
+        pickerChip.performScrollTo().assertIsDisplayed()
         stringChip("E4").performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
     }
@@ -1351,24 +1363,24 @@ class TunerContentTest {
         show(detected(-12.3f), showTuneHint = true)
         val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
         val hint = compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).getBoundsInRoot()
-        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
+        val switch = pickerChip.getBoundsInRoot()
         shownSignalBars.value = true
         compose.waitForIdle()
         compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assertIsDisplayed()
         assertEquals(noteTop, compose.onNodeWithText("E").getBoundsInRoot().top)
         assertEquals(hint, compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).getBoundsInRoot())
-        assertEquals("the mode switch stays centred", switch, compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot())
+        assertEquals("the picker chip stays centred", switch, pickerChip.getBoundsInRoot())
     }
 
     // Across from focus mode's button, which took the row's end on 2026-10-25.
     @Test
-    fun theSignalBarsSitAtTheStartOfTheModeSwitchRow() {
+    fun theSignalBarsSitAtTheStartOfTheChipRow() {
         show(detected(-12.3f), size = PHONE_UPRIGHT, signalBars = true)
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
-        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO)).getBoundsInRoot()
+        val switch = pickerChip.getBoundsInRoot()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        assertTrue("bars $bars not before the switch $switch", bars.right <= switch.left)
-        assertTrue("bars $bars not level with the switch $switch", bars.top < switch.bottom && bars.bottom > switch.top)
+        assertTrue("bars $bars not before the chip $switch", bars.right <= switch.left)
+        assertTrue("bars $bars not level with the chip $switch", bars.top < switch.bottom && bars.bottom > switch.top)
         assertTrue("bars $bars not near the window's start $window", bars.left - window.left <= 40.dp)
     }
 
@@ -1384,13 +1396,13 @@ class TunerContentTest {
         }
     }
 
-    // A long label at the largest font shrinks rather than run under the bars' touch area.
+    // A long name at the largest font ends in "…" rather than run under the bars' touch area.
     @Test
-    fun withTheLargestFontTheModeSwitchKeepsClearOfTheSignalBars() {
+    fun withTheLargestFontThePickerChipKeepsClearOfTheSignalBars() {
         show(detected(-12.3f), fontScale = 2f, size = PHONE, signalBars = true)
         val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
-        val strings = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO)).getBoundsInRoot()
-        assertTrue("switch $strings runs under the bars $button", strings.left >= button.right - 0.5.dp)
+        val strings = pickerChip.getBoundsInRoot()
+        assertTrue("chip $strings runs under the bars $button", strings.left >= button.right - 0.5.dp)
     }
 
     @Test
@@ -1447,23 +1459,23 @@ class TunerContentTest {
     }
 
     /**
-     * Upright, the meter spans the screen less 8 dp at each side, between the mode switch at the top
+     * Upright, the meter spans the screen less 8 dp at each side, between the picker chip at the top
      * and the strings at the bottom, sitting a little high (the gap above it is the smaller one), and
      * there is no "A4 = 440 Hz" line.
      */
     @Test
-    fun uprightTheMeterSpansTheScreenBetweenModeSwitchAndStrings() {
+    fun uprightTheMeterSpansTheScreenBetweenPickerChipAndStrings() {
         show(detected(-12.3f), size = PHONE_UPRIGHT)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val scale = window.width / PHONE_UPRIGHT.width
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         assertEquals("meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, gauge.width.value, 1f)
-        val modeSwitch = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).getBoundsInRoot()
+        val modeSwitch = pickerChip.getBoundsInRoot()
         val note = compose.onNodeWithText("E").getBoundsInRoot()
         val strings = stringChip("E2").getBoundsInRoot()
-        assertTrue("mode switch near the top at ${modeSwitch.top}", modeSwitch.top - window.top < 40.dp * scale)
+        assertTrue("picker chip near the top at ${modeSwitch.top}", modeSwitch.top - window.top < 40.dp * scale)
         assertTrue("strings near the bottom at ${strings.bottom}", window.bottom - strings.bottom < 40.dp * scale)
-        assertTrue("meter under the mode switch", gauge.top > modeSwitch.bottom)
+        assertTrue("meter under the picker chip", gauge.top > modeSwitch.bottom)
         assertTrue("note under the meter", note.top > gauge.bottom)
         assertTrue(
             "gap above the meter ${gauge.top - modeSwitch.bottom}, above the strings ${strings.top - note.bottom}",
@@ -1484,7 +1496,6 @@ class TunerContentTest {
         val grow = columnScaleFor(TABLET_PORTRAIT.width.value, TABLET_PORTRAIT.height.value)
         assertTrue("the column grows on the tablet: $grow", grow > 1.4f)
         val asOnAPhone = DpSize(TABLET_PORTRAIT.width / grow, TABLET_PORTRAIT.height / grow)
-        val modeSwitch = context.getString(R.string.tuner_mode_strings)
         val hint = context.getString(R.string.tuner_hint_play_string)
         show(listening, fontScale = 1.3f, size = asOnAPhone)
         for (state in listOf(listening, detected(-12.3f))) {
@@ -1494,8 +1505,7 @@ class TunerContentTest {
                 compose.waitForIdle()
                 val shown = mutableMapOf(
                     "meter" to compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds(),
-                    "mode switch" to compose.onNodeWithText(modeSwitch).windowBounds(),
-                    "instrument button" to compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).windowBounds(),
+                    "picker chip" to pickerChip.windowBounds(),
                     "E2" to stringChip("E2").windowBounds(),
                     "E4" to stringChip("E4").windowBounds(),
                 )
@@ -1585,18 +1595,24 @@ class TunerContentTest {
     fun switchingModesMovesNothingWithTheTuneHint() =
         assertSwitchingModesMovesNothing(fontScale = 2f, showTuneHint = true)
 
-    /** The mode switch and the note stay where they are when going from guitar to chromatic mode. */
+    /**
+     * The note stays where it is when going from guitar to chromatic mode, and the picker chip, whose
+     * width follows its name ("Any note"), keeps its height and its centre.
+     */
     private fun assertSwitchingModesMovesNothing(
         fontScale: Float,
         showTuneHint: Boolean = false,
     ) {
         show(detected(-12.3f), fontScale = fontScale, showTuneHint = showTuneHint)
-        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC))
+        val chip = pickerChip
         val note = compose.onNodeWithText("E")
-        val switchBefore = switch.getBoundsInRoot()
+        val chipBefore = chip.getBoundsInRoot()
         val noteBefore = note.getBoundsInRoot()
         shownMode.value = TunerMode.CHROMATIC
-        assertEquals(switchBefore, switch.getBoundsInRoot())
+        val chipAfter = chip.getBoundsInRoot()
+        assertEquals(chipBefore.top, chipAfter.top)
+        assertEquals(chipBefore.bottom, chipAfter.bottom)
+        assertEquals((chipBefore.left + chipBefore.right).value / 2, (chipAfter.left + chipAfter.right).value / 2, 1f)
         assertEquals(noteBefore, note.getBoundsInRoot())
     }
 
@@ -1675,7 +1691,7 @@ class TunerContentTest {
         fontScale: Float? = null,
     ) {
         show(before, mode, fontScale = fontScale, showTuneHint = true)
-        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC))
+        val switch = pickerChip
         val switchBefore = switch.getBoundsInRoot()
         // The note's live region: the note, the pill, the hint and the frequency.
         val readout = compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.LiveRegion))
@@ -1709,7 +1725,7 @@ class TunerContentTest {
         for (text in listOf(tuneUp, twelveCentsFlat, frequency)) {
             assertWholeTextShown(compose.onNodeWithText(text).performScrollTo().assertIsDisplayed())
         }
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).performScrollTo().assertIsDisplayed()
+        pickerChip.performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -1780,8 +1796,8 @@ class TunerContentTest {
         // Nothing else: the meter shows how far off it is.
         compose.onNodeWithText(centsFlat(12)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
     }
 
@@ -1823,7 +1839,7 @@ class TunerContentTest {
         assertTrue("gauge is ${gauge.width} wide in ${window.width}", gauge.width >= window.width * 0.85f)
         val note = compose.onNodeWithTag(TunerTestTags.FOCUS_NOTE).assertIsDisplayed().getBoundsInRoot()
         assertTrue("note at ${note.left}, ${note.top}", note.right <= window.left + window.width * 0.2f && note.bottom <= window.top + window.height * 0.25f)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
     }
 
     @Test
@@ -1876,13 +1892,13 @@ class TunerContentTest {
     fun focusTheControlsButtonGoesBackToFullScreen() {
         show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
-        // With the controls up the button at the mode switch's row doesn't leave focus mode (it looked as if a tap
+        // With the controls up the button at the chip's row doesn't leave focus mode (it looked as if a tap
         // had already left it): it takes the controls away again, at once.
         exitButton.assertDoesNotExist()
         hideButton.assertHasClickAction()
-        assertAtTheEndOfTheModeSwitchRow(hideButton)
+        assertAtTheEndOfTheChipRow(hideButton)
         hideButton.performClick()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
         assertEquals("full screen again", true, fullScreenReports.last())
         exitButton.assertIsDisplayed()
         assertEquals(emptyList<Boolean>(), focusChanges)
@@ -1893,7 +1909,7 @@ class TunerContentTest {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         exitButton.assertDoesNotExist()
         enterButton.assertIsDisplayed().assertHasClickAction()
-        assertAtTheEndOfTheModeSwitchRow(enterButton)
+        assertAtTheEndOfTheChipRow(enterButton)
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
         // Back is the app's again: it doesn't touch focus mode.
@@ -1901,51 +1917,49 @@ class TunerContentTest {
         assertEquals(listOf(true), focusChanges)
     }
 
-    // Owner, 2026-10-25 (idea A1): the button in the top end corner in both modes, never moving on a mode switch.
+    // Owner, 2026-10-25 (idea A1): the button in the top end corner in both modes, never moving when the mode changes.
     @Test
     fun uprightTheButtonStaysInTheTopEndCornerInBothModes() {
         show(detected(-12.3f), size = PHONE_UPRIGHT)
-        val guitar = assertAtTheEndOfTheModeSwitchRow(enterButton)
+        val guitar = assertAtTheEndOfTheChipRow(enterButton)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         // Its outline (44 dp in a 48 dp touch area) ends at the column's 16 dp text margin.
         assertEquals("button's end at ${guitar.right}", (window.right - 16.dp).value, guitar.right.value, 1f)
-        // Chromatic mode has no strings or tools button, and still no instrument or tools button; the button keeps its place.
+        // Chromatic mode has no strings or tools button; the button keeps its place.
         shownMode.value = TunerMode.CHROMATIC
         shownState.value = chromatic(-12.3f)
         compose.waitForIdle()
         assertEquals(guitar, enterButton.assertIsDisplayed().getBoundsInRoot())
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
     }
 
-    // Dutch "Chromatisch" and Russian "Хроматический" at 2× text on a 360 dp phone: the switch stays centred
-    // and wholly shown, clear of the button.
+    // Dutch and Russian at 2× text on a 360 dp phone, with a long name of the player's own: the chip stays
+    // centred and one line high, clear of the button, its name ending in "…" where it needs more room.
     @Test
-    fun withTheLargestFontTheModeSwitchStaysCentredBesideTheButtonInDutch() = assertSwitchCentredBesideTheButton("nl")
+    fun withTheLargestFontThePickerChipStaysCentredBesideTheButtonInDutch() = assertChipCentredBesideTheButton("nl")
 
     @Test
-    fun withTheLargestFontTheModeSwitchStaysCentredBesideTheButtonInRussian() = assertSwitchCentredBesideTheButton("ru")
+    fun withTheLargestFontThePickerChipStaysCentredBesideTheButtonInRussian() = assertChipCentredBesideTheButton("ru")
 
-    private fun assertSwitchCentredBesideTheButton(locale: String) {
-        show(detected(-12.3f), fontScale = 2f, size = PHONE, locale = locale)
+    private fun assertChipCentredBesideTheButton(locale: String) {
+        val long = CustomTuning("custom_long", "My very long open tuning name", Instruments.GUITAR, Tunings.STANDARD.strings)
+        shownCustomTunings = listOf(long)
+        show(TunerUiState.Listening(TunerMode.AUTO, long.tuning), fontScale = 2f, size = PHONE, locale = locale)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val inLocale = context.createConfigurationContext(Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(locale)) })
-        val button = assertAtTheEndOfTheModeSwitchRow(compose.onNodeWithContentDescription(inLocale.getString(R.string.tuner_focus_mode)))
-        val strings = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO)).getBoundsInRoot()
-        val chromatic = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
-        assertEquals("switch centred", ((window.left + window.right) / 2).value, ((strings.left + chromatic.right) / 2).value, 1f)
-        assertTrue("switch $chromatic runs into the button $button", chromatic.right <= button.left)
-        for (label in listOf(R.string.tuner_mode_strings, R.string.tuner_mode_chromatic).map(inLocale::getString)) {
-            assertWhollyShown(compose.onNodeWithText(label, useUnmergedTree = true), "$locale $label")
-        }
+        val button = assertAtTheEndOfTheChipRow(compose.onNodeWithContentDescription(inLocale.getString(R.string.tuner_focus_mode)))
+        val chip = pickerChip.getBoundsInRoot()
+        assertEquals("chip centred", ((window.left + window.right) / 2).value, ((chip.left + chip.right) / 2).value, 1f)
+        assertTrue("chip $chip runs into the button $button", chip.right <= button.left)
+        assertWhollyShown(pickerChip, "$locale chip")
     }
 
-    /** [button] stands at the end of the mode switch's row, level with the switch and after it; returns its bounds. */
-    private fun assertAtTheEndOfTheModeSwitchRow(button: SemanticsNodeInteraction): DpRect {
+    /** [button] stands at the end of the picker chip's row, level with the chip and after it; returns its bounds. */
+    private fun assertAtTheEndOfTheChipRow(button: SemanticsNodeInteraction): DpRect {
         val place = button.assertIsDisplayed().getBoundsInRoot()
-        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).assertIsDisplayed().getBoundsInRoot()
+        val switch = pickerChip.assertIsDisplayed().getBoundsInRoot()
         assertTrue("button at $place, switch at $switch: not level with it", abs(((place.top + place.bottom) - (switch.top + switch.bottom)).value) < 2f)
         assertTrue("button at $place, switch at $switch: not after it", place.left >= switch.right)
         return place
@@ -1966,7 +1980,7 @@ class TunerContentTest {
     @Test
     fun uprightPhoneIgnoresCompactLandscape() {
         show(detected(-12.3f), compactLandscape = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
     }
 
@@ -1976,13 +1990,13 @@ class TunerContentTest {
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
         stringChip("E4").assertIsDisplayed().performClick()
         assertEquals(listOf(5), stringClicks)
         // Without touching them again they hide after a few seconds.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertIsDisplayed()
     }
 
@@ -1992,13 +2006,13 @@ class TunerContentTest {
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS - 1_000)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performClick()
-        assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
+        stringChip("E4").performClick()
+        assertEquals(listOf(5), stringClicks)
         // Past the first deadline, the touch started the time again.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS - 1_000)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
         compose.mainClock.advanceTimeBy(1_000 + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
     }
 
     @Test
@@ -2011,7 +2025,7 @@ class TunerContentTest {
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS * 2)
         // The panel's own window never goes idle on a stopped clock.
         compose.mainClock.autoAdvance = true
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertExists()
+        pickerChip.assertExists()
         // Picking an instrument keeps the panel open, and the controls with it.
         compose.onNodeWithText(context.getString(R.string.instrument_violin)).performScrollTo().performClick()
         assertEquals(listOf(Instruments.VIOLIN), instrumentChanges)
@@ -2020,7 +2034,7 @@ class TunerContentTest {
         assertEquals(listOf(Tunings.DROP_D), tuningChanges)
         // Once the panel is closed, the controls hide after the usual time.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
     }
 
     @Test
@@ -2031,7 +2045,7 @@ class TunerContentTest {
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             .performSemanticsAction(SemanticsActions.OnClick)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
+        pickerChip.assertIsDisplayed()
     }
 
     @Test

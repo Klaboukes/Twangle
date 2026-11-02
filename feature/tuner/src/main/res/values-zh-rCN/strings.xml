@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">麦克风停止了，可能是因为通话或其他应用。点按“重试”继续调音。</string>
     <string name="error_retry">重试</string>
 
-    <string name="tuner_mode_strings">琴弦</string>
-    <string name="tuner_mode_chromatic">半音阶</string>
     <string name="tuner_show_controls">显示控件</string>
     <string name="tuner_focus_mode">专注模式</string>
     <string name="tuner_exit_focus_mode">退出专注模式</string>

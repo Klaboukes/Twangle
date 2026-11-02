@@ -15,8 +15,6 @@
     <string name="error_mic_stopped">마이크가 멈췄어요. 통화나 다른 앱 때문일 수 있어요. 튜닝을 계속하려면 다시 시도를 탭하세요.</string>
     <string name="error_retry">다시 시도</string>
 
-    <string name="tuner_mode_strings">줄</string>
-    <string name="tuner_mode_chromatic">크로매틱</string>
     <string name="tuner_show_controls">컨트롤 보기</string>
     <string name="tuner_focus_mode">집중 모드</string>
     <string name="tuner_exit_focus_mode">집중 모드 종료</string>

@@ -16,8 +16,7 @@ private const val METRONOME_TAB_TAG = "nav_metronome"
 private const val PRACTICE_TAB_TAG = "nav_practice"
 // The gear that opens Settings (Phase 69; the Settings tab until then, with the same id).
 private const val SETTINGS_GEAR_TAG = "nav_settings"
-private const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
-private const val MODE_GUITAR_TAG = "tuner_mode_auto"
+private const val PICKER_CHIP_TAG = "tuner_picker_chip"
 private const val MORE_TOOLS_TAG = "tuner_more_tools"
 
 /** The tuner's tools in the "more tools" menu (`TunerTool`), each with the panel it shows. */
@@ -78,13 +77,14 @@ fun MacrobenchmarkScope.grantMicPermission() {
     device.executeShellCommand("pm grant $packageName android.permission.RECORD_AUDIO")
 }
 
-/** Waits until the tuner screen is shown (its mode switch is a stable landmark on an upright phone). */
+/** Waits until the tuner screen is shown (its picker chip is a stable landmark on an upright phone). */
 fun MacrobenchmarkScope.waitForTuner() {
-    check(device.wait(Until.hasObject(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Tuner screen didn't appear" }
+    check(device.wait(Until.hasObject(By.res(PICKER_CHIP_TAG)), TIMEOUT_MS)) { "Tuner screen didn't appear" }
 }
 
 /**
- * What a user does after the tuner opens: listens, switches to chromatic and back, then tries each
+ * What a user does after the tuner opens: listens, opens the picker sheet and turns Any note (chromatic
+ * mode) on, then off again the same way, then tries each
  * tool of the "more tools" menu (strum check, 12th-fret check, chord name, pitch trail) and turns
  * the last one off again. A short tone burst near the phone during the run also covers the "note
  * detected" readout; the profile is still useful without one.
@@ -93,9 +93,9 @@ fun MacrobenchmarkScope.useTuner() {
     waitForTuner()
     Thread.sleep(LISTEN_MS)
 
-    clickTag(MODE_CHROMATIC_TAG)
+    toggleAnyNote()
     Thread.sleep(LISTEN_MS)
-    clickTag(MODE_GUITAR_TAG)
+    toggleAnyNote()
     Thread.sleep(LISTEN_MS)
 
     // Picking a tool turns the one that is on off; picking the ticked one turns it off.
@@ -152,6 +152,20 @@ fun MacrobenchmarkScope.usePractice() {
     waitForTuner()
 }
 
+/**
+ * Opens the picker sheet from its chip and taps its Any note switch, which closes the sheet. The sheet
+ * is a window of its own, whose parts UI Automator can't find by tag: the switch is the one there.
+ */
+private fun MacrobenchmarkScope.toggleAnyNote() {
+    clickTag(PICKER_CHIP_TAG)
+    val switch = device.wait(Until.findObject(By.clazz(SWITCH_CLASS)), TIMEOUT_MS) ?: error("No Any note switch in the picker sheet")
+    switch.click()
+    check(device.wait(Until.gone(By.clazz(SWITCH_CLASS)), TIMEOUT_MS)) { "The picker sheet didn't close" }
+    Thread.sleep(TAP_SETTLE_MS)
+}
+
+private const val SWITCH_CLASS = "android.widget.Switch"
+
 /** Opens the Chords or Scales name button's panel and picks the root, chord type or scale [tag] names, which closes the panel. */
 private fun MacrobenchmarkScope.pickInPanel(tag: String) {
     clickTag(NAME_PICKER_TAG)
@@ -172,7 +186,7 @@ private fun MacrobenchmarkScope.pickTool(tag: String) {
 fun MacrobenchmarkScope.useSettings() {
     waitForTuner()
     clickTag(SETTINGS_GEAR_TAG)
-    check(device.wait(Until.gone(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
+    check(device.wait(Until.gone(By.res(PICKER_CHIP_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
     scrollToEnd()
     clickTag(ABOUT_LINK_TAG)
     check(device.wait(Until.gone(By.res(ABOUT_LINK_TAG)), TIMEOUT_MS)) { "About didn't open" }
