@@ -158,23 +158,25 @@ class CompactLandscapeStylesTest {
     }
 
     /**
-     * The meter is as big as the window allows (as tall as it less its margins, or [METER_SHARE] of its
-     * width), the note in its top start corner, within the window, and nothing else of the tuner shows.
+     * The meter is as big as the window allows (as tall as the window under the note's row less its margins, or
+     * [METER_SHARE] of its width), the note in its top start corner, clear of the lens (whose box fills its
+     * corners, Phase 71), within the window, and nothing else of the tuner shows.
      */
     private fun assertMeterFillsTheScreen(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val meter = gauge.assertIsDisplayed().getBoundsInRoot()
+        val corner = note.assertIsDisplayed().getBoundsInRoot()
         assertTrue(
-            "$case: meter ${meter.width} x ${meter.height} in ${window.width} x ${window.height}",
-            meter.height >= window.height - FULL_HEIGHT_MARGINS || meter.width >= window.width * METER_SHARE,
+            "$case: meter ${meter.width} x ${meter.height} in ${window.width} x ${window.height}, under the note's row ending at ${corner.bottom}",
+            meter.height >= window.bottom - corner.bottom - FULL_HEIGHT_MARGINS - 1.dp || meter.width >= window.width * METER_SHARE,
         )
         assertInside(window, "meter", meter, case)
-        val corner = note.assertIsDisplayed().getBoundsInRoot()
         assertInside(window, "note", corner, case)
         assertTrue(
             "$case: note $corner not in the top start corner",
             corner.right <= window.left + window.width * CORNER_SHARE && corner.bottom <= window.top + window.height * CORNER_SHARE,
         )
+        assertTrue("$case: note $corner over the lens $meter", corner.bottom <= meter.top + 0.5.dp)
         // Nothing else: the meter shows how far off the note is.
         cents.assertDoesNotExist()
         frequency.assertDoesNotExist()

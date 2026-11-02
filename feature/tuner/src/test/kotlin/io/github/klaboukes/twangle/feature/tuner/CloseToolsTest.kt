@@ -62,11 +62,6 @@ class CloseToolsTest {
         vm.setIntonationCheck(true)
         vm.closeToolsOnRequest(3)
         assertFalse(vm.intonationCheck.value)
-        // The pitch trail too, also in chromatic mode, where it stays on.
-        vm.setMode(TunerMode.CHROMATIC)
-        vm.setPitchTrail(true)
-        vm.closeToolsOnRequest(4)
-        assertFalse(vm.pitchTrail.value)
     }
 
     @Test

@@ -223,11 +223,6 @@
     <string name="tuner_chord_none">Акорду ще немає</string>
     <string name="tuner_chord_spoken_notes">ноти %1$s</string>
     <string name="tuner_chord_spoken_recent">перед цим %1$s</string>
-    <string name="tuner_pitch_trail">Графік висоти</string>
-    <string name="tuner_trail_spoken">Графік висоти, %1$s</string>
-    <string name="tuner_trail_no_note">немає ноти</string>
-    <string name="tuner_trail_steady">рівно, %1$s</string>
-    <string name="tuner_trail_wavering">коливається, %1$s</string>
     <string name="tuner_trail_bending_up">іде вгору</string>
     <string name="tuner_trail_bending_down">іде вниз</string>
     <string name="tuner_screen_off_soon">Екран скоро згасне</string>

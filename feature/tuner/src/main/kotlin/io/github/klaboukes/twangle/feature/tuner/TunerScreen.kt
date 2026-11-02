@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -70,6 +71,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -99,6 +101,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -110,14 +113,15 @@ import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
 import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
-import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
+import io.github.klaboukes.twangle.feature.tuner.components.Lens
+import io.github.klaboukes.twangle.feature.tuner.components.LENS_SHORT
+import io.github.klaboukes.twangle.feature.tuner.components.trailMotionWords
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
-import io.github.klaboukes.twangle.feature.tuner.components.PitchTrailPanel
 import io.github.klaboukes.twangle.feature.tuner.components.RULER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.Ruler
 import io.github.klaboukes.twangle.feature.tuner.components.rulerHeardMidi
@@ -214,7 +218,7 @@ fun TunerScreen(
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the
-    // needle follows the exact cents without recomposing (see MeterFrame).
+    // lens follows the exact cents without recomposing (see Lens).
     val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
     // The exact cents and the reception, read while drawing (NaN without a note).
     val exactCents = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.cents else Float.NaN } } }
@@ -237,7 +241,7 @@ fun TunerScreen(
     val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
     val chordName by viewModel.chordName.collectAsStateWithLifecycle()
-    val pitchTrail by viewModel.pitchTrail.collectAsStateWithLifecycle()
+    val lensLook by viewModel.lensLook.collectAsStateWithLifecycle()
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
@@ -320,8 +324,7 @@ fun TunerScreen(
                     onNextString = viewModel::checkNextString,
                     chordName = chordName,
                     onChordNameChange = viewModel::setChordName,
-                    pitchTrail = pitchTrail,
-                    onPitchTrailChange = viewModel::setPitchTrail,
+                    lensLook = lensLook,
                     pitchHistory = viewModel.pitchHistory,
                     onFullScreenChange = onFullScreenChange,
                     onFocusModeChange = viewModel::setFocusMode,
@@ -459,7 +462,10 @@ object TunerTestTags {
     /** A microphone error's message in the tuner's place (a polite live region, so TalkBack says it as it comes). */
     const val ERROR = "tuner_error"
 
-    /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
+    /**
+     * The lens (2.0, Phase 71): its box, inside the room for its glow. TalkBack skips it; the tag lets UI tests
+     * find where it sits, and whether it is quiet (`LensQuiet`).
+     */
     const val GAUGE = "tuner_gauge"
 
     /**
@@ -547,9 +553,6 @@ object TunerTestTags {
     const val CHORD_PANEL = "tuner_chord_panel"
     const val CHORD_STATUS = "tuner_chord_status"
 
-    /** The pitch trail's panel in the meter's place. */
-    const val TRAIL_PANEL = "tuner_trail_panel"
-
     /** String [index]'s column in the 12th-fret check's summary. */
     fun intonationString(index: Int): String = "tuner_intonation_string_$index"
 
@@ -630,10 +633,11 @@ private fun KeepScreenOn() {
  * shows its panel and line in the same places ([IntonationPanel], [IntonationStatus]), the verdict's
  * buttons calling [onCheckAgain] and [onNextString], and each string's result on its button. The chord
  * name is turned on and off with [onChordNameChange] ([chordName] is whether it is on); a
- * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). The pitch
- * trail is turned on and off with [onPitchTrailChange] ([pitchTrail] is whether it is on): while it is
- * on, [pitchHistory] is drawn as a line in the meter's place ([PitchTrailPanel]); the note and the
- * strings stay the tuner's.
+ * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). In the plain
+ * tuner the lens ([Lens], 2.0 Phase 71) stands under the ruler in the meter's place, drawing [lensLook] (the
+ * trail for every look until Phase 72) from [pitchHistory], the last seconds of readings (an empty one when
+ * none is given); while it is given, the trail's motion ("wavering", "bending up") joins the note's spoken
+ * reading ([trailMotionWords]).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -680,8 +684,7 @@ fun TunerContent(
     onNextString: () -> Unit = {},
     chordName: Boolean = false,
     onChordNameChange: ((Boolean) -> Unit)? = null,
-    pitchTrail: Boolean = false,
-    onPitchTrailChange: ((Boolean) -> Unit)? = null,
+    lensLook: LensLook = LensLook.DEFAULT,
     pitchHistory: PitchHistory? = null,
     onFullScreenChange: (Boolean) -> Unit = {},
     onFocusModeChange: ((Boolean) -> Unit)? = null,
@@ -746,7 +749,6 @@ fun TunerContent(
                     TunerTool.STRUM_CHECK -> true
                     TunerTool.INTONATION_CHECK -> onIntonationCheckChange != null
                     TunerTool.CHORD_NAME -> onChordNameChange != null
-                    TunerTool.PITCH_TRAIL -> onPitchTrailChange != null && pitchHistory != null
                 }
             }
             ToolsState(
@@ -755,7 +757,6 @@ fun TunerContent(
                     strumCheck -> TunerTool.STRUM_CHECK
                     intonationCheck -> TunerTool.INTONATION_CHECK
                     chordName -> TunerTool.CHORD_NAME
-                    pitchTrail -> TunerTool.PITCH_TRAIL
                     else -> null
                 },
                 onChange = { tool, on ->
@@ -763,15 +764,17 @@ fun TunerContent(
                         TunerTool.STRUM_CHECK -> onStrum(on)
                         TunerTool.INTONATION_CHECK -> onIntonationCheckChange?.invoke(on)
                         TunerTool.CHORD_NAME -> onChordNameChange?.invoke(on)
-                        TunerTool.PITCH_TRAIL -> onPitchTrailChange?.invoke(on)
                     }
                 },
             )
         }
         GuitarSlotFor(state, mode, strings, strum)
     }
+    // The lens's last seconds: the tuner's, or an empty one where none is given (its look then draws no line).
+    val emptyHistory = remember { PitchHistory() }
+    val history = pitchHistory ?: emptyHistory
     val gauge = @Composable {
-        // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
+        // Strum check, the 12th-fret check and the chord name take the lens's place, at the old meter's shape.
         if (state is TunerUiState.ChordName) {
             ChordPanel(state, Modifier.zIndex(-1f))
         } else if (state is TunerUiState.StrumCheck) {
@@ -788,22 +791,17 @@ fun TunerContent(
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
-        } else if (pitchTrail && pitchHistory != null) {
-            // The pitch trail takes the needle's place; the note under it stays the tuner's.
-            PitchTrailPanel(
-                pitchHistory,
-                Modifier.zIndex(-1f),
-                animationsOff = animationsOff,
-            )
         } else {
-            MeterFrame(
-                precision = inTunePrecision,
+            Lens(
+                look = lensLook,
                 cents = needleCents,
+                history = history,
+                precision = inTunePrecision,
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 glow = meterGlow,
                 animationsOff = animationsOff,
-                // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
+                // Drawn under its neighbours, with room at its sides for its glow, which reaches past its box.
+                modifier = Modifier.zIndex(-1f).padding(horizontal = LENS_INSET).testTag(TunerTestTags.GAUGE),
                 reception = reception,
             )
         }
@@ -811,6 +809,8 @@ fun TunerContent(
     // Kept here, as the bars are: TalkBack's pacing carries over when the note's display is built
     // afresh, so a note fading to "Play a string" (or a short drop-out) isn't said at once.
     val speech = rememberPacedSpeech()
+    // The trail's motion, said after the reading while the lens shows the trail (the lens itself is silent).
+    val motion = if (pitchHistory != null) trailMotionWords(pitchHistory) else null
     val noteFor = @Composable { compact: Boolean, maxHeight: Dp ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state, compact = compact)
@@ -826,6 +826,7 @@ fun TunerContent(
                 speech = speech,
                 // The ruler above names the note: on a short screen the big one makes room for it (Phase 71).
                 noteMayGo = true,
+                motion = motion,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->
@@ -860,6 +861,7 @@ fun TunerContent(
                 showTuneHint = showTuneHint,
                 tip = state.tip,
                 speech = speech,
+                motion = motion,
             )
             is TunerUiState.Listening -> FocusNote(
                 readout = null,
@@ -903,9 +905,8 @@ fun TunerContent(
         }
     }
     val error = (state as? TunerUiState.Error)?.reason
-    // The plain tuner's meter; with a tool on, its panel takes the meter's place.
-    val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
-        !(pitchTrail && pitchHistory != null)
+    // The plain tuner's lens; with a tool on, its panel takes the lens's place.
+    val plainMeter = state is TunerUiState.Detected || state is TunerUiState.Listening
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
         // On its side the readout pane holds the ruler only where it is tall enough for the ruler, the meter
@@ -936,6 +937,7 @@ fun TunerContent(
                     note = { maxHeight -> note(false, maxHeight) },
                     noteShrinks = plainMeter,
                     guitarSlot = guitarSlot,
+                    overLens = if (ruler != null) RULER_HEIGHT + RULER_METER_GAP else 0.dp,
                 )
             }
         }
@@ -1076,6 +1078,10 @@ private fun rulerFor(state: TunerUiState, lastHeard: LastHeardNote): RulerShown?
  * under it keeps its size. Only with a very large system font is it still taller than the screen,
  * and then it scrolls. The scroll area fills the screen, so
  * the meter's glow fades out on the screen rather than at the column's edge.
+ *
+ * The plain tuner's [gauge] is the ruler over the lens (2.0, Phase 71; [overLens] is the ruler's height and the gap
+ * under it): the lens and the note share what the rest leave ([LensOverNote]), the lens's height giving way first,
+ * down to half its width, and only then the note.
  */
 @Composable
 private fun SingleColumnLayout(
@@ -1087,6 +1093,7 @@ private fun SingleColumnLayout(
     note: @Composable (maxHeight: Dp) -> Unit,
     noteShrinks: Boolean,
     guitarSlot: @Composable () -> Unit,
+    overLens: Dp = 0.dp,
 ) {
     val textMargin = Modifier.padding(horizontal = COLUMN_PADDING - METER_MARGIN)
     FitColumn(
@@ -1107,9 +1114,7 @@ private fun SingleColumnLayout(
         } else {
             // On a short screen (a phone with navigation buttons) the note, or a tool's panel, shrinks, so the strings stay in view.
             if (noteShrinks) {
-                FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH)
-                Spacer(Modifier.height(SECTION_SPACING))
-                Shrinking { room -> Box(textMargin) { note(room) } }
+                Shrinking { room -> LensOverNote(room, gauge, overLens) { noteRoom -> Box(textMargin) { note(noteRoom) } } }
             } else {
                 Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
                 Spacer(Modifier.height(SECTION_SPACING))
@@ -1120,6 +1125,34 @@ private fun SingleColumnLayout(
             Box(textMargin) { guitarSlot() }
         }
         Spacer(Modifier.height(EDGE_INSET))
+    }
+}
+
+/**
+ * The ruler and the lens ([gauge], [overLens] of it above the lens) over the [note], [SECTION_SPACING] apart, in a
+ * [room] that high (2.0, Phase 71; docs/architecture/v2-plan.md, *The lens*, Size). The lens takes the height the
+ * note leaves it, from 0.85 down to half its width ([Lens]); only where even half doesn't leave the note its full
+ * size is the note told to fit in what remains (it shrinks, and may go: the ruler names the note). The lens's
+ * width never gives way (owner: shrink the note, never the meter).
+ */
+@Composable
+private fun LensOverNote(room: Dp, gauge: @Composable () -> Unit, overLens: Dp, note: @Composable (maxHeight: Dp) -> Unit) {
+    BoxWithConstraints {
+        val lensWidth = (min(maxWidth, COLUMN_MAX_WIDTH) - LENS_INSET * 2).coerceAtLeast(0.dp)
+        val noteRoom = (room - overLens - lensWidth * LENS_SHORT - SECTION_SPACING).coerceAtLeast(0.dp)
+        Layout(contents = listOf(gauge, { note(noteRoom) })) { (gaugeMeasurables, noteMeasurables), constraints ->
+            val across = Constraints(maxWidth = min(constraints.maxWidth, COLUMN_MAX_WIDTH.roundToPx()))
+            val notePlaceable = noteMeasurables.single().measure(across)
+            val spacing = SECTION_SPACING.roundToPx()
+            val leastGauge = (overLens + lensWidth * LENS_SHORT).roundToPx()
+            val gaugeHeight = (room.roundToPx() - notePlaceable.height - spacing).coerceAtLeast(leastGauge)
+            val gaugePlaceable = gaugeMeasurables.single().measure(across.copy(maxHeight = gaugeHeight))
+            val width = maxOf(gaugePlaceable.width, notePlaceable.width)
+            layout(width, gaugePlaceable.height + spacing + notePlaceable.height) {
+                gaugePlaceable.placeRelative((width - gaugePlaceable.width) / 2, 0)
+                notePlaceable.placeRelative((width - notePlaceable.width) / 2, gaugePlaceable.height + spacing)
+            }
+        }
     }
 }
 
@@ -1162,7 +1195,8 @@ private fun TwoPaneLayout(
                     // The ruler across the whole pane, not only as wide as the meter that shrinks under it.
                     if (ruler != null) Box(Modifier.zIndex(1f)) { ruler() }
                     val rulerRoom = if (ruler != null) RULER_HEIGHT + SECTION_SPACING else 0.dp
-                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight - rulerRoom)
+                    // Room above and below for the lens's glow, which the scrolling pane would cut off flat.
+                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight - rulerRoom - LENS_GLOW_ROOM * 2)
                 }
             }
         }
@@ -1337,17 +1371,22 @@ private fun ChipRow(
 }
 
 /**
- * Focus mode's plain tuner: the [gauge] as big as the whole screen allows (keeping its 2:1 shape, so
- * on a phone on its side its height decides), with [note] small in the top start corner, where every
- * meter look leaves room above its scale.
+ * Focus mode's plain tuner: the [gauge] as big as the screen under its top row allows (keeping its 2:1
+ * shape, so on a phone on its side its height decides), with [note] small in the top start corner of
+ * that row, which is as high as focus mode's exit button in the other corner at least. The lens's box
+ * fills its corners, so nothing stands over it (until Phase 73 lays focus mode out wide).
  */
 @Composable
 private fun FocusMeter(gauge: @Composable () -> Unit, note: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxSize().padding(FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
+    Column(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .heightIn(min = FOCUS_EDGE_TOP + FOCUS_BUTTON_SLOT)
+                .padding(start = FOCUS_EDGE_SIDE, top = FOCUS_EDGE_TOP),
+        ) { note() }
+        Box(Modifier.fillMaxWidth().weight(1f).padding(FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
             FitGauge(gauge, maxWidth = FOCUS_GAUGE_MAX_WIDTH)
         }
-        Box(Modifier.align(Alignment.TopStart).padding(start = FOCUS_EDGE_SIDE, top = FOCUS_EDGE_TOP)) { note() }
     }
 }
 
@@ -1742,6 +1781,12 @@ private val COLUMN_PADDING = 16.dp
 
 /** The upright meter's margin at each side of the screen (the approved mock-up's 8 dp). */
 private val METER_MARGIN = 8.dp
+
+/** The lens's sides, this far in from the meter's margin: 20 dp from the screen's edges (*The lens*, Size). */
+private val LENS_INSET = 12.dp
+
+/** On its side the readout pane leaves this much above and below the lens and the note, for the lens's glow. */
+private val LENS_GLOW_ROOM = 24.dp
 
 /** The free height above the meter, against 1 above the strings (the mock-up's `.grow.top`). */
 private const val TOP_GAP_WEIGHT = 0.5f

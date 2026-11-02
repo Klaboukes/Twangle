@@ -434,7 +434,6 @@ feature/tuner tuner_more_tools 5918cb53
 feature/tuner tuner_my_tunings efc0abb0
 feature/tuner tuner_new_tuning 0b4b11df
 feature/tuner tuner_picker_title 8157ae8e
-feature/tuner tuner_pitch_trail e81c43ad
 feature/tuner tuner_screen_off_keep_on f5aa7013
 feature/tuner tuner_screen_off_soon 8f7398a9
 feature/tuner tuner_show_controls e3e3f1ac
@@ -483,10 +482,6 @@ feature/tuner tuner_tip_too_soft c4245991
 feature/tuner tuner_tool_on 18f4ce5b
 feature/tuner tuner_trail_bending_down ee077523
 feature/tuner tuner_trail_bending_up 24f95a46
-feature/tuner tuner_trail_no_note 9c38cf32
-feature/tuner tuner_trail_spoken d0b32d51
-feature/tuner tuner_trail_steady dd690930
-feature/tuner tuner_trail_wavering ade810b3
 feature/tuner tuner_tune_down 0a43bc24
 feature/tuner tuner_tune_up e97d072e
 feature/tuner tuner_tuning_name fed2d9b8

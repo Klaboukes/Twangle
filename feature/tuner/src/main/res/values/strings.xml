@@ -444,20 +444,12 @@
     <string name="tuner_chord_spoken_notes">notes %1$s</string>
     <!-- TalkBack, after the chord: the chords before it, %1$s e.g. "G major, C major". -->
     <string name="tuner_chord_spoken_recent">before that %1$s</string>
-    <!-- Phase 31: the pitch trail, a tool in the tuner's "more tools" menu: a line of the last seconds of the note in the meter's place. -->
-    <string name="tuner_pitch_trail">Pitch trail</string>
-    <!-- TalkBack: the pitch trail in words. %1$s is one of the next lines, e.g. "steady, in tune" or "bending up". -->
-    <string name="tuner_trail_spoken">Pitch trail, %1$s</string>
-    <!-- TalkBack, the pitch trail: no note is heard. -->
-    <string name="tuner_trail_no_note">no note</string>
-    <!-- TalkBack, the pitch trail: the note holds steady. %1$s is where it sits ("in tune", "10 cents sharp"). -->
-    <string name="tuner_trail_steady">steady, %1$s</string>
-    <!-- TalkBack, the pitch trail: the note wobbles up and down. %1$s is where it sits ("in tune", "10 cents sharp"). -->
-    <string name="tuner_trail_wavering">wavering, %1$s</string>
-    <!-- TalkBack, the pitch trail: the note slides upwards (as when a string is bent or tuned up). -->
+    <!-- TalkBack: added after the spoken reading while the lens shows the trail ("A 2, 10 cents flat, bending up"): the note slides upwards (as when a string is bent or tuned up). -->
     <string name="tuner_trail_bending_up">bending up</string>
-    <!-- TalkBack, the pitch trail: the note slides downwards. -->
+    <!-- TalkBack: added after the spoken reading while the lens shows the trail: the note slides downwards. -->
     <string name="tuner_trail_bending_down">bending down</string>
+    <!-- TalkBack: added after the spoken reading while the lens shows the trail ("A 2, 10 cents sharp, wavering"): the note wobbles up and down (vibrato, an unsteady hand) without going anywhere. -->
+    <string name="tuner_spoken_wavering">wavering</string>
     <!-- Keep screen on's warning, 10 s before the screen is left to the phone's own timeout after 3 minutes without playing. -->
     <string name="tuner_screen_off_soon">Screen turns off soon</string>
     <!-- Keep screen on's warning, the line under "Screen turns off soon": a tap keeps the screen on. -->

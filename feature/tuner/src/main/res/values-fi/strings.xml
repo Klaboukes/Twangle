@@ -227,11 +227,6 @@
     <string name="tuner_chord_none">Ei vielä sointua</string>
     <string name="tuner_chord_spoken_notes">sävelet %1$s</string>
     <string name="tuner_chord_spoken_recent">ennen sitä %1$s</string>
-    <string name="tuner_pitch_trail">Sävelkäyrä</string>
-    <string name="tuner_trail_spoken">Sävelkäyrä, %1$s</string>
-    <string name="tuner_trail_no_note">ei säveltä</string>
-    <string name="tuner_trail_steady">vakaa, %1$s</string>
-    <string name="tuner_trail_wavering">huojuva, %1$s</string>
     <string name="tuner_trail_bending_up">nousee</string>
     <string name="tuner_trail_bending_down">laskee</string>
     <string name="tuner_screen_off_soon">Näyttö sammuu pian</string>

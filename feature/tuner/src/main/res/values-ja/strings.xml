@@ -219,11 +219,6 @@
     <string name="tuner_chord_none">まだコードはありません</string>
     <string name="tuner_chord_spoken_notes">構成音 %1$s</string>
     <string name="tuner_chord_spoken_recent">その前は %1$s</string>
-    <string name="tuner_pitch_trail">ピッチの軌跡</string>
-    <string name="tuner_trail_spoken">ピッチの軌跡、%1$s</string>
-    <string name="tuner_trail_no_note">音なし</string>
-    <string name="tuner_trail_steady">安定、%1$s</string>
-    <string name="tuner_trail_wavering">揺れている、%1$s</string>
     <string name="tuner_trail_bending_up">上がっている</string>
     <string name="tuner_trail_bending_down">下がっている</string>
     <string name="tuner_screen_off_soon">まもなく画面が消えます</string>

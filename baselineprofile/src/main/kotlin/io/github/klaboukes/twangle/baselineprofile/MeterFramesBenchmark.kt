@@ -17,26 +17,20 @@ import java.util.Locale
 import java.util.regex.Pattern
 
 /**
- * Frame times and main-thread work of the tuner's meter in chromatic mode, with the meter moving
+ * Frame times and main-thread work of the tuner's lens in chromatic mode, with the reading moving
  * all the time. The `benchmarkRelease` app hears a synthetic tone that sweeps across about ±30
- * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 67
- * (2.0, one look) the meter is Classic alone, with the cents under the note, until the lens's looks
- * come; Phase 76 measures one per lens look.
+ * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 71
+ * (2.0) the lens draws the trail, the one look until Phase 72; Phase 76 measures one per lens look.
  *
  * It switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
  * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in docs/architecture/performance.md.
  * No tracing runs meanwhile, so the numbers compare with the S26 table there.
  *
- * The pitch trail (Phase 31) is measured the same way, as one more "look", [PITCH_TRAIL], always
- * last: the app is started afresh, the trail is picked from the
- * "more tools" menu above the strings, and the tuner switched to chromatic mode (the trail stays on),
- * so the line follows the sweep in the meter's place.
- *
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.
  * Instrumentation arguments: `meterLooks` (names separated by colons, as Gradle cuts arguments at
- * commas: `CLASSIC`, or `CURRENT`, the meter the app shows; `PITCH_TRAIL` the pitch trail), `runs`, `seconds`.
+ * commas: `TRAIL`, or `CURRENT`, the look the app shows), `runs`, `seconds`.
  */
 @RunWith(AndroidJUnit4::class)
 class MeterFramesBenchmark {
@@ -47,7 +41,6 @@ class MeterFramesBenchmark {
     private val runs = args.getString("runs")?.toInt() ?: RUNS
     private val windowSeconds = args.getString("seconds")?.toInt() ?: WINDOW_SECONDS
     private val looks = (args.getString("meterLooks") ?: ALL_LOOKS).split(':').map { it.trim().uppercase(Locale.ROOT) }
-        .sortedBy { it == PITCH_TRAIL }
 
     @Test
     fun meterLooksInChromaticMode() {
@@ -58,30 +51,14 @@ class MeterFramesBenchmark {
         shell("pm grant $TARGET_PACKAGE android.permission.RECORD_AUDIO")
         shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
         waitFor(By.res(PICKER_CHIP_TAG), "Tuner screen")
-        looks.forEach { check(it in KNOWN_LOOKS) { "No meter look $it since Phase 67: ${KNOWN_LOOKS.joinToString(":")}" } }
+        looks.forEach { check(it in KNOWN_LOOKS) { "No lens look $it until Phase 72: ${KNOWN_LOOKS.joinToString(":")}" } }
 
-        var pid = pidOfApp()
-        var renderTid = renderThreadOf(pid)
+        val pid = pidOfApp()
+        val renderTid = renderThreadOf(pid)
         val rows = mutableListOf<Window>()
         log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()} pid=$pid renderThread=$renderTid")
         for (look in looks) {
-            if (look == PITCH_TRAIL) {
-                // Afresh; the trail in chromatic mode.
-                shell("am force-stop $TARGET_PACKAGE")
-                shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-                // The menu sits above the strings, so it is picked in guitar mode; the trail stays on in chromatic.
-                waitFor(By.res(PICKER_CHIP_TAG), "Picker chip")
-                setAnyNote(false)
-                val moreTools = device.wait(Until.findObject(By.res(MORE_TOOLS_TAG)), SETTLE_MS)
-                click(moreTools ?: error("More tools button didn't appear"))
-                click(waitFor(By.res(PITCH_TRAIL_TOOL_TAG), "Pitch trail in the more-tools menu"))
-                setAnyNote(true)
-                waitFor(By.res(TRAIL_PANEL_TAG), "Pitch trail")
-                pid = pidOfApp()
-                renderTid = renderThreadOf(pid)
-                log("pitch trail: pid=$pid renderThread=$renderTid")
-            }
-            if (look != PITCH_TRAIL) setAnyNote(true)
+            setAnyNote(true)
             SystemClock.sleep(SETTLE_MS)
             repeat(runs) { run -> rows += measure(look, run + 1, pid, renderTid).also { log(it.row()) } }
         }
@@ -233,15 +210,12 @@ class MeterFramesBenchmark {
         const val PICKER_CHIP_TAG = "tuner_picker_chip"
         const val SWITCH_CLASS = "android.widget.Switch"
         const val CURRENT = "CURRENT"
-        const val PITCH_TRAIL = "PITCH_TRAIL"
-        const val ALL_LOOKS = "CLASSIC:$PITCH_TRAIL"
+        const val TRAIL = "TRAIL"
+        const val ALL_LOOKS = TRAIL
 
-        /** The one meter (Classic, which [CURRENT] also measures) and the pitch trail. */
-        val KNOWN_LOOKS = setOf("CLASSIC", CURRENT, PITCH_TRAIL)
+        /** The lens's one look until Phase 72 (the trail, which [CURRENT] also measures). */
+        val KNOWN_LOOKS = setOf(TRAIL, CURRENT)
 
-        const val MORE_TOOLS_TAG = "tuner_more_tools"
-        const val PITCH_TRAIL_TOOL_TAG = "tuner_tool_pitch_trail"
-        const val TRAIL_PANEL_TAG = "tuner_trail_panel"
         const val SUMMARY_HEADER = "look\tfps\tjanky\tdeadlineMissed\tworst p50/p90/p95/p99 ms\tmain%\tmainMs/frame\trender%\tapp%"
 
         /** The gfxinfo lines that say why frames were late ("Number Slow UI thread: 2", GPU percentiles). */

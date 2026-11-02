@@ -223,11 +223,6 @@
     <string name="tuner_chord_none">Ingen akkord ennå</string>
     <string name="tuner_chord_spoken_notes">toner %1$s</string>
     <string name="tuner_chord_spoken_recent">før det %1$s</string>
-    <string name="tuner_pitch_trail">Tonespor</string>
-    <string name="tuner_trail_spoken">Tonespor, %1$s</string>
-    <string name="tuner_trail_no_note">ingen tone</string>
-    <string name="tuner_trail_steady">stødig, %1$s</string>
-    <string name="tuner_trail_wavering">ustødig, %1$s</string>
     <string name="tuner_trail_bending_up">bøyes opp</string>
     <string name="tuner_trail_bending_down">bøyes ned</string>
     <string name="tuner_screen_off_soon">Skjermen slås snart av</string>

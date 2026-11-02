@@ -219,11 +219,6 @@
     <string name="tuner_chord_none">아직 코드가 없어요</string>
     <string name="tuner_chord_spoken_notes">음 %1$s</string>
     <string name="tuner_chord_spoken_recent">이전 %1$s</string>
-    <string name="tuner_pitch_trail">음높이 궤적</string>
-    <string name="tuner_trail_spoken">음높이 궤적, %1$s</string>
-    <string name="tuner_trail_no_note">음 없음</string>
-    <string name="tuner_trail_steady">안정적, %1$s</string>
-    <string name="tuner_trail_wavering">흔들림, %1$s</string>
     <string name="tuner_trail_bending_up">올라가는 중</string>
     <string name="tuner_trail_bending_down">내려가는 중</string>
     <string name="tuner_screen_off_soon">곧 화면이 꺼져요</string>

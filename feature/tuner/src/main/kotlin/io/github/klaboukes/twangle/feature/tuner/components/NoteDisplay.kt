@@ -143,6 +143,8 @@ data class NoteReadout(
  * The live region is a layer of its own under the block, so nothing changing inside the block can
  * make TalkBack read it again early. "Play a string" coming back as a pluck dies away is not a live
  * region the second time ([PacedSpeech.announced]): TalkBack reads it only when the player touches it.
+ * While the lens shows the trail its [motion] ("wavering", "bending up", null while steady) joins the reading:
+ * "A 2, 10 cents sharp, wavering" (Phase 71; the lens itself is silent).
  */
 @Composable
 fun NoteDisplay(
@@ -156,6 +158,7 @@ fun NoteDisplay(
     tip: ReceptionTip? = null,
     speech: PacedSpeech = rememberPacedSpeech(),
     noteMayGo: Boolean = false,
+    motion: String? = null,
 ) {
     val inTune = readout?.inTune == true
     val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
@@ -227,7 +230,7 @@ fun NoteDisplay(
     }
     val pillText by animateColorAsState(pillTextTarget, tween(PILL_TEXT_MS), label = "pillText")
     val spoken = pacedSpeech(
-        text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
+        text = if (readout != null) spokenReading(readout, direction, tipText, motion) else tipText ?: spokenHint,
         key = readout?.let(::spokenReadingKey),
         speech = speech,
     )
@@ -600,7 +603,7 @@ private val HINT_MAX_WIDTH = 300.dp
  * (under half the big note's size) and nothing else while a note sounds, since the meter shows how far
  * off it is. In tune it turns the "in tune" colour. Without a note, [hint] ("Play a string") stands in
  * its place; a [tip] about the sound ("Play a bit louder") goes in a line under it. TalkBack hears it
- * as [NoteDisplay] (one polite live region, paced by [speech]).
+ * as [NoteDisplay] (one polite live region, paced by [speech], the trail's [motion] joining the reading).
  */
 @Composable
 fun FocusNote(
@@ -611,13 +614,14 @@ fun FocusNote(
     showTuneHint: Boolean = false,
     tip: ReceptionTip? = null,
     speech: PacedSpeech = rememberPacedSpeech(),
+    motion: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
     val tipText = tip?.let { stringResource(it.label) }
     val noteColor by animateInTuneColor(readout?.inTune == true, colors.onSurface, "focusNoteColor")
     val spoken = pacedSpeech(
-        text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
+        text = if (readout != null) spokenReading(readout, direction, tipText, motion) else tipText ?: spokenHint,
         key = readout?.let(::spokenReadingKey),
         speech = speech,
     )
@@ -859,13 +863,14 @@ internal fun spokenReadingKey(readout: NoteReadout): String =
 /**
  * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, since TalkBack
  * can't see the dial. A [direction] is added in words:
- * "E 2, 12 cents flat, tune up". A [tip] is said in its place: "E 2, 12 cents flat, Play a bit louder".
+ * "E 2, 12 cents flat, tune up". A [tip] is said in its place: "E 2, 12 cents flat, Play a bit louder". Without
+ * either, the trail's [motion]: "E 2, 12 cents flat, wavering".
  */
 @Composable
-private fun spokenReading(readout: NoteReadout, direction: TunerHint?, tip: String?): String {
+private fun spokenReading(readout: NoteReadout, direction: TunerHint?, tip: String?, motion: String?): String {
     val note = rememberNoteNameSpeech().name(readout.noteName)
     val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
-    val extra = tip ?: direction?.let { stringResource(it.spokenLabel) }
+    val extra = tip ?: direction?.let { stringResource(it.spokenLabel) } ?: motion
     return if (extra == null) {
         stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
     } else {

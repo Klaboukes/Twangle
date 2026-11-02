@@ -17,6 +17,7 @@ import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -142,11 +143,17 @@ class TunerViewModel(
     private val trailFeed = PitchTrailFeed(PitchHistory())
 
     /**
-     * The last few seconds of the tuner's readings, for the pitch trail (Phase 31): written on the
-     * DSP thread with every reading while [tools] has the pitch trail, read in the draw phase
-     * without recomposing (see [PitchHistory]). Stays empty while the switch is off.
+     * The last few seconds of the tuner's readings, for the lens's trail (2.0, Phase 71; 1.1's pitch trail tool):
+     * written on the DSP thread with every reading while [tools] has the pitch trail, read in the draw phase
+     * without recomposing (see [PitchHistory]). Stays empty while the switch is off (the trail look's brake,
+     * which Phase 72 wires to the Light arc).
      */
     val pitchHistory: PitchHistory get() = trailFeed.history
+
+    /** What the tuner's lens draws inside it (a saved setting; Phase 71 draws the trail for every look, 72 the other two). */
+    val lensLook: StateFlow<LensLook> = settingsRepository.settings
+        .map { it.lensLook }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.lensLook)
 
     /**
      * What the tuner hears now, for the signal bars' figures: updated about [SIGNAL_UPDATES_PER_SECOND]
@@ -197,16 +204,6 @@ class TunerViewModel(
      * memory only.
      */
     val chordName: StateFlow<Boolean> = chordNameOn
-
-    private val pitchTrailOn = MutableStateFlow(false)
-
-    /**
-     * Whether the pitch trail is on (Phase 31): a line of the last seconds of readings in the meter's
-     * place ([pitchHistory]). Only where [tunerTools] offers it; one tool at a time like the others and
-     * kept in memory only. It is a way of showing the tuner's own readings, so it keeps the tuner
-     * listening as it is and stays on in chromatic mode.
-     */
-    val pitchTrail: StateFlow<Boolean> = pitchTrailOn
 
     /** The string the 12th-fret check checks (null: none chosen), and a count that starts it afresh. */
     private val intonationChoice = MutableStateFlow(IntonationChoice(string = null, attempt = 0))
@@ -324,7 +321,6 @@ class TunerViewModel(
                 if (TunerTool.STRUM_CHECK !in it) strumCheckOn.value = false
                 if (TunerTool.INTONATION_CHECK !in it) intonationOn.value = false
                 if (TunerTool.CHORD_NAME !in it) chordNameOn.value = false
-                if (TunerTool.PITCH_TRAIL !in it) pitchTrailOn.value = false
             }
         }
     }
@@ -402,7 +398,6 @@ class TunerViewModel(
         if (on) {
             intonationOn.value = false
             chordNameOn.value = false
-            pitchTrailOn.value = false
         }
         strumCheckOn.value = on
     }
@@ -418,7 +413,6 @@ class TunerViewModel(
             if (mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
             strumCheckOn.value = false
             chordNameOn.value = false
-            pitchTrailOn.value = false
             intonationChoice.value = IntonationChoice(string = null, attempt = intonationChoice.value.attempt + 1)
         }
         intonationOn.value = on
@@ -435,23 +429,8 @@ class TunerViewModel(
             if (mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
             strumCheckOn.value = false
             intonationOn.value = false
-            pitchTrailOn.value = false
         }
         chordNameOn.value = on
-    }
-
-    /**
-     * Switches the pitch trail [on] or off (only where [tunerTools] offers it). It turns the other
-     * tools off, but leaves the mode as it is: the trail draws chromatic mode's notes too.
-     */
-    fun setPitchTrail(on: Boolean) {
-        if (on && TunerTool.PITCH_TRAIL !in tunerTools.value) return
-        if (on) {
-            strumCheckOn.value = false
-            intonationOn.value = false
-            chordNameOn.value = false
-        }
-        pitchTrailOn.value = on
     }
 
     /** The last [closeToolsOnRequest] count acted on. */
@@ -469,7 +448,6 @@ class TunerViewModel(
         strumCheckOn.value = false
         intonationOn.value = false
         chordNameOn.value = false
-        pitchTrailOn.value = false
     }
 
     /** The 12th-fret check starts on string [index] (lowest = 0), from its open note. */
@@ -673,7 +651,7 @@ class TunerViewModel(
                     interpreter = TunerInterpreter(pipeline.frameSeconds)
                 }
                 if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
-                // The pitch trail follows the tuner's own readings; a tone or a tool leaves a gap in its line.
+                // The lens's trail follows the tuner's own readings; a tone or a tool leaves a gap in its line.
                 if (tools.pitchTrail && (ignoredFrames > 0 || current.strumChecking || current.chordNaming || current.intonationChecking)) {
                     trailFeed.gap(frameSeconds)
                 }

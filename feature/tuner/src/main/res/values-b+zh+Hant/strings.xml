@@ -219,11 +219,6 @@
     <string name="tuner_chord_none">還沒有和弦</string>
     <string name="tuner_chord_spoken_notes">音 %1$s</string>
     <string name="tuner_chord_spoken_recent">之前是 %1$s</string>
-    <string name="tuner_pitch_trail">音高軌跡</string>
-    <string name="tuner_trail_spoken">音高軌跡，%1$s</string>
-    <string name="tuner_trail_no_note">沒有音</string>
-    <string name="tuner_trail_steady">平穩，%1$s</string>
-    <string name="tuner_trail_wavering">搖擺，%1$s</string>
     <string name="tuner_trail_bending_up">音高上升</string>
     <string name="tuner_trail_bending_down">音高下降</string>
     <string name="tuner_screen_off_soon">螢幕即將關閉</string>

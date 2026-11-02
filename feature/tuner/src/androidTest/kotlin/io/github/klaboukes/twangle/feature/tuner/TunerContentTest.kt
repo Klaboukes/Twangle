@@ -1461,7 +1461,7 @@ class TunerContentTest {
     }
 
     /**
-     * Upright, the meter spans the screen less 8 dp at each side, between the picker chip at the top
+     * Upright, the lens spans the screen less 20 dp at each side (2.0, Phase 71), between the picker chip at the top
      * and the strings at the bottom, sitting a little high (the gap above it is the smaller one), and
      * there is no "A4 = 440 Hz" line.
      */
@@ -1471,7 +1471,7 @@ class TunerContentTest {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val scale = window.width / PHONE_UPRIGHT.width
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
-        assertEquals("meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, gauge.width.value, 1f)
+        assertEquals("meter width", (PHONE_UPRIGHT.width - 40.dp).value * scale, gauge.width.value, 1f)
         val modeSwitch = pickerChip.getBoundsInRoot()
         val note = compose.onNodeWithText("E").getBoundsInRoot()
         val strings = stringChip("E2").getBoundsInRoot()
@@ -1534,14 +1534,14 @@ class TunerContentTest {
                 assertEquals("$state: $part's bottom", (small.bottom * grow).value, big.bottom.value, down)
             }
             val meter = tablet.getValue("meter")
-            assertEquals("meter width", (480.dp - 16.dp).value * grow, meter.width.value, 2f)
+            assertEquals("meter width", (480.dp - 40.dp).value * grow, meter.width.value, 2f)
             assertTrue("meter centred", abs((meter.left - (TABLET_PORTRAIT.width - meter.right)).value) < 2f)
         }
         // A phone keeps its own column.
         shownState.value = listening
         shownSize.value = PHONE
         compose.waitForIdle()
-        assertEquals("phone meter width", (PHONE.width - 16.dp).value, compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds().width.value, 1f)
+        assertEquals("phone meter width", (PHONE.width - 40.dp).value, compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds().width.value, 1f)
     }
 
     /**
@@ -1788,13 +1788,15 @@ class TunerContentTest {
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         val note = compose.onNodeWithTag(TunerTestTags.FOCUS_NOTE).assertIsDisplayed().getBoundsInRoot()
         compose.onNodeWithText("E").assertIsDisplayed()
-        // On a phone on its side the meter is as tall as the screen less its margins, so it takes almost all the width.
-        assertTrue("gauge is ${gauge.height} high in ${window.height}", gauge.height >= window.height - 17.dp)
-        assertTrue("gauge is ${gauge.width} wide in ${window.width}", gauge.width >= window.width * 0.85f)
+        // On a phone on its side the lens is as tall as the screen under the note's row allows (the lens's box
+        // fills its corners, so the note and the exit button stand above it, until Phase 73), so it takes most of the width.
+        assertTrue("gauge is ${gauge.height} high in ${window.height}", gauge.height >= window.height - 90.dp)
+        assertTrue("gauge is ${gauge.width} wide in ${window.width}", gauge.width >= window.width * 0.65f)
         assertTrue("gauge ends at ${gauge.bottom}, window at ${window.bottom}", gauge.bottom <= window.bottom)
-        // The note small in the top start corner.
+        // The note small in the top start corner, clear of the lens.
         assertTrue("note is ${note.height} high", note.height <= 64.dp)
         assertTrue("note at ${note.left}, ${note.top}", note.right <= window.left + window.width * 0.2f && note.bottom <= window.top + window.height * 0.25f)
+        assertTrue("note $note over the lens $gauge", note.bottom <= gauge.top + 0.5.dp)
         // Nothing else: the meter shows how far off it is.
         compose.onNodeWithText(centsFlat(12)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertDoesNotExist()

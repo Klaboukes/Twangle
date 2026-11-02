@@ -24,7 +24,6 @@ private val TUNER_TOOLS = listOf(
     "tuner_tool_strum_check" to "tuner_strum_panel",
     "tuner_tool_intonation_check" to "tuner_intonation_panel",
     "tuner_tool_chord_name" to "tuner_chord_panel",
-    "tuner_tool_pitch_trail" to "tuner_trail_panel",
 )
 
 private const val PRACTICE_CARDS_TAG = "practice_cards"
@@ -85,8 +84,8 @@ fun MacrobenchmarkScope.waitForTuner() {
 /**
  * What a user does after the tuner opens: listens, opens the picker sheet and turns Any note (chromatic
  * mode) on, then off again the same way, then tries each
- * tool of the "more tools" menu (strum check, 12th-fret check, chord name, pitch trail) and turns
- * the last one off again. A short tone burst near the phone during the run also covers the "note
+ * tool of the "more tools" menu (strum check, 12th-fret check, chord name) and turns
+ * the last one off again, back to the lens (whose trail draws while the tuner listens). A short tone burst near the phone during the run also covers the "note
  * detected" readout; the profile is still useful without one.
  */
 fun MacrobenchmarkScope.useTuner() {
@@ -105,7 +104,7 @@ fun MacrobenchmarkScope.useTuner() {
         Thread.sleep(SHOW_MS)
     }
     pickTunerTool(TUNER_TOOLS.last().first)
-    check(device.wait(Until.gone(By.res(TUNER_TOOLS.last().second)), TIMEOUT_MS)) { "The pitch trail didn't close" }
+    check(device.wait(Until.gone(By.res(TUNER_TOOLS.last().second)), TIMEOUT_MS)) { "The chord name didn't close" }
 }
 
 /**

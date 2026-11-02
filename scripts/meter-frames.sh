@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # Measures frame times and main-thread work of the tuner's meter on the connected phone
 # (MeterFramesBenchmark in :baselineprofile) and prints the table. See
-# docs/architecture/performance.md, "Meter looks". Since Phase 67 (2.0, one look) the meter is
-# Classic alone until the lens's looks come (Phase 76 measures one per lens look).
+# docs/architecture/performance.md, "Meter looks". Since Phase 71 (2.0) the tuner shows the lens,
+# with the trail inside, the one look until Phase 72 (Phase 76 measures one per lens look).
 #
-#   scripts/meter-frames.sh                      the meter and the pitch trail, 3 windows of 7 s each
-#   scripts/meter-frames.sh CLASSIC              only the meter (CURRENT says the same: what the app shows)
-#   scripts/meter-frames.sh PITCH_TRAIL          only the pitch trail (Phase 31; always measured last)
+#   scripts/meter-frames.sh                      the lens's trail, 3 windows of 7 s each
+#   scripts/meter-frames.sh CURRENT              the same: the look the app shows
 #
 # Needs the phone connected, unlocked and upright, about 4 minutes. It installs the minified
 # benchmarkRelease build, which hears a synthetic sweeping tone instead of the mic (no test tones

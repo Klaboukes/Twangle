@@ -219,11 +219,6 @@
     <string name="tuner_chord_none">ยังไม่มีคอร์ด</string>
     <string name="tuner_chord_spoken_notes">โน้ต %1$s</string>
     <string name="tuner_chord_spoken_recent">ก่อนหน้านั้น %1$s</string>
-    <string name="tuner_pitch_trail">เส้นระดับเสียง</string>
-    <string name="tuner_trail_spoken">เส้นระดับเสียง, %1$s</string>
-    <string name="tuner_trail_no_note">ไม่มีโน้ต</string>
-    <string name="tuner_trail_steady">นิ่ง, %1$s</string>
-    <string name="tuner_trail_wavering">แกว่ง, %1$s</string>
     <string name="tuner_trail_bending_up">เบนด์ขึ้น</string>
     <string name="tuner_trail_bending_down">เบนด์ลง</string>
     <string name="tuner_screen_off_soon">หน้าจอจะดับในไม่ช้า</string>

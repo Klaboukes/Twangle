@@ -219,11 +219,6 @@
     <string name="tuner_chord_none">Chưa có hợp âm</string>
     <string name="tuner_chord_spoken_notes">các nốt %1$s</string>
     <string name="tuner_chord_spoken_recent">trước đó %1$s</string>
-    <string name="tuner_pitch_trail">Đường cao độ</string>
-    <string name="tuner_trail_spoken">Đường cao độ, %1$s</string>
-    <string name="tuner_trail_no_note">không có nốt</string>
-    <string name="tuner_trail_steady">ổn định, %1$s</string>
-    <string name="tuner_trail_wavering">dao động, %1$s</string>
     <string name="tuner_trail_bending_up">đang lên cao dần</string>
     <string name="tuner_trail_bending_down">đang xuống thấp dần</string>
     <string name="tuner_screen_off_soon">Màn hình sắp tắt</string>

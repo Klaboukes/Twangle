@@ -215,11 +215,6 @@
     <string name="tuner_chord_none">এখনো কোনো কর্ড নেই</string>
     <string name="tuner_chord_spoken_notes">নোট %1$s</string>
     <string name="tuner_chord_spoken_recent">এর আগে %1$s</string>
-    <string name="tuner_pitch_trail">সুরের রেখা</string>
-    <string name="tuner_trail_spoken">সুরের রেখা, %1$s</string>
-    <string name="tuner_trail_no_note">কোনো নোট নেই</string>
-    <string name="tuner_trail_steady">স্থির, %1$s</string>
-    <string name="tuner_trail_wavering">কাঁপছে, %1$s</string>
     <string name="tuner_trail_bending_up">উপরে উঠছে</string>
     <string name="tuner_trail_bending_down">নিচে নামছে</string>
     <string name="tuner_screen_off_soon">স্ক্রিন শিগগির বন্ধ হবে</string>

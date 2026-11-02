@@ -228,11 +228,6 @@
     <string name="tuner_chord_none">Nenhum acorde ainda</string>
     <string name="tuner_chord_spoken_notes">notas %1$s</string>
     <string name="tuner_chord_spoken_recent">antes %1$s</string>
-    <string name="tuner_pitch_trail">Linha de afinação</string>
-    <string name="tuner_trail_spoken">Linha de afinação, %1$s</string>
-    <string name="tuner_trail_no_note">sem nota</string>
-    <string name="tuner_trail_steady">estável, %1$s</string>
-    <string name="tuner_trail_wavering">oscilando, %1$s</string>
     <string name="tuner_trail_bending_up">subindo</string>
     <string name="tuner_trail_bending_down">descendo</string>
     <string name="tuner_screen_off_soon">A tela vai apagar em breve</string>

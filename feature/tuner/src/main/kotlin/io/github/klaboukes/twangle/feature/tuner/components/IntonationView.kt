@@ -689,7 +689,7 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 }
 
 /**
- * The tuner's tools (strum check, the 12th-fret check, the chord name, the pitch trail; later ones join) behind one small "more tools"
+ * The tuner's tools (strum check, the 12th-fret check, the chord name; later ones join) behind one small "more tools"
  * button above the strings (three tiles and a plus, Material Symbols `dashboard_customize`, no word), where the strum
  * check's switch sits when it is the only tool: the style's button ([StyleButton]), picked (the container colour with
  * a 2 dp accent outline) while a tool is on. A tap opens a small menu that lifts softly off the screen (no outline):
@@ -794,14 +794,13 @@ private fun ToolRow(tool: TunerTool, picked: Boolean, onToggle: () -> Unit) {
     }
 }
 
-/** A tool's name: "Strum check", "12th-fret check", "Chord name", "Pitch trail". */
+/** A tool's name: "Strum check", "12th-fret check", "Chord name". */
 @Composable
 fun toolName(tool: TunerTool): String = stringResource(
     when (tool) {
         TunerTool.STRUM_CHECK -> R.string.tuner_strum_check
         TunerTool.INTONATION_CHECK -> R.string.tuner_intonation_check
         TunerTool.CHORD_NAME -> R.string.tuner_chord_name
-        TunerTool.PITCH_TRAIL -> R.string.tuner_pitch_trail
     },
 )
 
@@ -809,7 +808,6 @@ private fun toolIcon(tool: TunerTool): Int = when (tool) {
     TunerTool.STRUM_CHECK -> R.drawable.ic_strum
     TunerTool.INTONATION_CHECK -> R.drawable.ic_twelfth_fret
     TunerTool.CHORD_NAME -> R.drawable.ic_chord_name
-    TunerTool.PITCH_TRAIL -> R.drawable.ic_pitch_trail
 }
 
 /**

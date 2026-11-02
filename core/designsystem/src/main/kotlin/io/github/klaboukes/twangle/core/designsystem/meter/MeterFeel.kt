@@ -6,6 +6,7 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Immutable
+import io.github.klaboukes.twangle.core.settings.LensLook
 import kotlin.math.PI
 
 /**
@@ -23,9 +24,8 @@ data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
 }
 
 /**
- * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`). Since Phase
- * 67 the tuner's meter is Classic alone until the lens comes (Phase 71: `meterFeel(LensLook)`), and Light arc's is kept
- * for the lens's Light arc (Phase 72).
+ * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`). Classic's is
+ * kept for the store's feature graphic until Phase 76; the lens's looks take theirs from [meterFeel].
  */
 object MeterFeels {
     /** Classic swings a little past a new string, like a mechanical needle. */
@@ -33,6 +33,14 @@ object MeterFeels {
 
     /** Light arc follows almost without swinging. */
     val LIGHT_ARC = MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
+}
+
+/**
+ * The spring the lens's marker ([MeterReading.cents]) follows each reading with in [look]: the Light arc's,
+ * almost without swinging, for every look (the trail and the strobe draw the readings themselves, not the marker).
+ */
+fun meterFeel(look: LensLook): MeterFeel = when (look) {
+    LensLook.TRAIL, LensLook.LIGHT_ARC, LensLook.STROBE -> MeterFeels.LIGHT_ARC
 }
 
 /** Smoothstep: starts and ends gently. */

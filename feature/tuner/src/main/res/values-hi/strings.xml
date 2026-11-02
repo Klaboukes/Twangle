@@ -223,11 +223,6 @@
     <string name="tuner_chord_none">अभी कोई कॉर्ड नहीं</string>
     <string name="tuner_chord_spoken_notes">सुर %1$s</string>
     <string name="tuner_chord_spoken_recent">उससे पहले %1$s</string>
-    <string name="tuner_pitch_trail">सुर की रेखा</string>
-    <string name="tuner_trail_spoken">सुर की रेखा, %1$s</string>
-    <string name="tuner_trail_no_note">कोई सुर नहीं</string>
-    <string name="tuner_trail_steady">स्थिर, %1$s</string>
-    <string name="tuner_trail_wavering">डगमगाता, %1$s</string>
     <string name="tuner_trail_bending_up">ऊपर खिंच रहा</string>
     <string name="tuner_trail_bending_down">नीचे जा रहा</string>
     <string name="tuner_screen_off_soon">स्क्रीन जल्द ही बंद हो जाएगी</string>

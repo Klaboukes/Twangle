@@ -198,7 +198,7 @@ class ChordNameFlowTest {
         assertTrue(vm.strumCheck.value)
         vm.setInstrument(Instruments.GUITAR_12)
         advanceTimeBy(100)
-        assertEquals(listOf(TunerTool.INTONATION_CHECK, TunerTool.PITCH_TRAIL), vm.tunerTools.value)
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), vm.tunerTools.value)
         assertFalse(vm.strumCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)
         vm.setStrumCheck(true)

@@ -268,13 +268,11 @@ class StoreScreenshots(private val shot: Shot) {
                         waitUntil { !scenario.landscape() }
                     },
                 ) { scenario ->
-                    click(TunerTestTags.MORE_TOOLS)
-                    click(TunerTestTags.tool(TunerTool.PITCH_TRAIL))
-                    // A held A4, as sung or played high up the neck: any note, so chromatic (Any note, set as the
+                    // The trail is the lens's look since 2.0's Phase 71: nothing to pick. A held A4, as sung or played high up the neck: any note, so chromatic (Any note, set as the
                     // sheet's switch would set it). Not through UI Automator: once the trail moves, it waits for a still screen
                     // before each step, up to its time-out.
                     runBlocking { settings.setMode(TunerMode.CHROMATIC) }
-                    // Focus mode turns the phone on its side, the trail in the big meter's place.
+                    // Focus mode turns the phone on its side, the lens in the big meter's place.
                     runBlocking { settings.setFocusMode(true) }
                     check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }
                     // Without its controls the tuner takes the whole screen: no rail and no status bar to cut off.

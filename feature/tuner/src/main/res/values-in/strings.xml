@@ -219,11 +219,6 @@
     <string name="tuner_chord_none">Belum ada akor</string>
     <string name="tuner_chord_spoken_notes">nada %1$s</string>
     <string name="tuner_chord_spoken_recent">sebelumnya %1$s</string>
-    <string name="tuner_pitch_trail">Jejak nada</string>
-    <string name="tuner_trail_spoken">Jejak nada, %1$s</string>
-    <string name="tuner_trail_no_note">tidak ada nada</string>
-    <string name="tuner_trail_steady">stabil, %1$s</string>
-    <string name="tuner_trail_wavering">goyah, %1$s</string>
     <string name="tuner_trail_bending_up">naik</string>
     <string name="tuner_trail_bending_down">turun</string>
     <string name="tuner_screen_off_soon">Layar akan segera mati</string>

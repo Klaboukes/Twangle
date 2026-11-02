@@ -46,7 +46,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
+import io.github.klaboukes.twangle.core.designsystem.meter.ClassicMeterArt
+import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
+import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.graphics.GraphicsLayerScope
 import java.util.Locale
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 
@@ -171,17 +175,22 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             WithoutMeterLabel {
-                MeterFrame(
-                    cents = { 0f },
-                    inTune = true,
-                    glow = true,
-                    animationsOff = true,
-                    reception = { 1f },
-                    modifier = Modifier.width(CARD_WIDTH - CARD_PADDING * 2),
-                )
+                // 1.1's Classic needle, as the tuner's MeterFrame drew it until the lens took its place (Phase 71);
+                // Phase 76 draws the graphic afresh.
+                Box(Modifier.width(CARD_WIDTH - CARD_PADDING * 2).aspectRatio(METER_ASPECT_RATIO)) { ClassicMeterArt(HeldInTune) }
             }
         }
     }
+}
+
+/** A note held in tune, the glow lit: the fan's meters stand still. */
+private object HeldInTune : MeterReading {
+    override val cents: Float = 0f
+    override val presence: Float = 1f
+    override val tuned: Float = 1f
+    override val glow: Float = 1f
+
+    override fun applyMarkerLook(layer: GraphicsLayerScope) = Unit
 }
 
 /** One card of the fan: light or dark. */

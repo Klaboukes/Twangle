@@ -223,11 +223,6 @@
     <string name="tuner_chord_none">Inget ackord än</string>
     <string name="tuner_chord_spoken_notes">toner %1$s</string>
     <string name="tuner_chord_spoken_recent">innan dess %1$s</string>
-    <string name="tuner_pitch_trail">Tonkurva</string>
-    <string name="tuner_trail_spoken">Tonkurva, %1$s</string>
-    <string name="tuner_trail_no_note">ingen ton</string>
-    <string name="tuner_trail_steady">stadig, %1$s</string>
-    <string name="tuner_trail_wavering">svajande, %1$s</string>
     <string name="tuner_trail_bending_up">stiger</string>
     <string name="tuner_trail_bending_down">sjunker</string>
     <string name="tuner_screen_off_soon">Skärmen släcks snart</string>

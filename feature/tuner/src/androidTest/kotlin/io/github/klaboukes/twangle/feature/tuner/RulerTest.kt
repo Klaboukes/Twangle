@@ -36,6 +36,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 /**
  * The ruler at the top of the tuner (2.0, Phase 71): the heard note under its pointer in the notation
@@ -197,11 +198,11 @@ class RulerTest {
             val meter = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
             val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
             assertTrue("$size: ruler $box not over the meter $meter", box.bottom <= meter.top)
-            // Upright as wide as the meter; on its side across the readout pane, over the meter that shrinks to fit.
+            // Upright across the column, 12 dp past the lens at each side (the lens keeps 20 dp from the screen's
+            // edges, Phase 71); on its side across the readout pane, over the lens that shrinks to fit.
+            assertTrue("$size: ruler $box narrower than the meter $meter", box.left <= meter.left && box.right >= meter.right)
             if (size.width < size.height) {
-                assertTrue("$size: ruler $box not as wide as the meter $meter", (box.width - meter.width).value in -1f..1f)
-            } else {
-                assertTrue("$size: ruler $box narrower than the meter $meter", box.left <= meter.left && box.right >= meter.right)
+                assertTrue("$size: ruler $box not centred over the meter $meter", abs((meter.left - box.left - (box.right - meter.right)).value) < 1f)
             }
             assertTrue("$size: ruler $box outside $window", box.left >= window.left && box.right <= window.right && box.top >= window.top)
             if (size.width < size.height) {
