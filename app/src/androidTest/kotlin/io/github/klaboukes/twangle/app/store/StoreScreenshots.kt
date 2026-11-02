@@ -154,7 +154,8 @@ class StoreScreenshots(private val shot: Shot) {
             settings.setMode(TunerMode.AUTO)
             settings.setNotation(null)
             settings.setInTunePrecision(InTunePrecision.DEFAULT)
-            settings.setShowTuneHint(true)
+            // As a new player sees it: the string tick-off is off by default (2.0).
+            settings.setStringTickOff(false)
             settings.setShowSignalBars(false)
             settings.setKeepScreenOn(true)
             // The phone lies still on the desk overnight.

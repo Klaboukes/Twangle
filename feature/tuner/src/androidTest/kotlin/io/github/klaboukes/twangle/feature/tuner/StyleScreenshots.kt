@@ -72,8 +72,8 @@ class StyleScreenshots {
                         modifier = Modifier.fillMaxSize(),
                         animationsOff = true,
                         tunedStrings = TunedStrings(Tunings.STANDARD, 0b11L),
-                        // As in the app by default: "Show tuning help" on, so the ticks show.
-                        showTuneHint = true,
+                        // The string tick-off on (off by default), so the pictures show the ticks.
+                        stringTickOff = true,
                     )
                 }
             }

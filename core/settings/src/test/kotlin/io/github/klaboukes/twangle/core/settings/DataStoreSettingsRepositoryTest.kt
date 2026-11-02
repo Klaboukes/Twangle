@@ -109,7 +109,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
-        assertEquals(true, settings.showTuneHint)
+        assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
         assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
         assertEquals(false, settings.focusMode)
@@ -148,7 +148,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
-        repo.setShowTuneHint(false)
+        repo.setStringTickOff(true)
         repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
         repo.setFocusMode(true)
@@ -187,7 +187,7 @@ class DataStoreSettingsRepositoryTest {
             dynamicColor = false,
             keepScreenOn = false,
             vibrateInTune = false,
-            showTuneHint = false,
+            stringTickOff = true,
             showSignalBars = true,
             lensLook = LensLook.STROBE,
             focusMode = true,
@@ -861,6 +861,29 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun `the string tick-off is saved under string_tick_off and survives a restart`() = runTest {
+        val store = dataStore()
+        repository(store).setStringTickOff(true)
+        assertEquals(true, store.data.first()[booleanPreferencesKey("string_tick_off")])
+        assertEquals(true, repository(store).settings.first().stringTickOff)
+        repository(store).setStringTickOff(false)
+        assertEquals(false, repository(store).settings.first().stringTickOff)
+    }
+
+    @Test
+    fun `1_1's Show tuning help is left in the file unread, so a 1_1 player starts without the tick-off`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (shown in listOf(true, false)) {
+            store.edit { it[booleanPreferencesKey("show_tune_hint")] = shown }
+            assertEquals("show_tune_hint = $shown", false, repo.settings.first().stringTickOff)
+        }
+        repo.setStringTickOff(true)
+        assertEquals("the old key stays as it lay", false, store.data.first()[booleanPreferencesKey("show_tune_hint")])
+        assertEquals(true, repo.settings.first().stringTickOff)
+    }
+
+    @Test
     fun `1_1's tour flag is left in the file unread`() = runTest {
         // 2.0 has no tour (Phase 68): whether 1.1 saw it changes nothing, and the key stays as it lay.
         val store = dataStore()
@@ -1138,7 +1161,7 @@ class DataStoreSettingsRepositoryTest {
             "setDynamicColor" to { repo.setDynamicColor(!before.dynamicColor) },
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
-            "setShowTuneHint" to { repo.setShowTuneHint(!before.showTuneHint) },
+            "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             "setFocusMode" to { repo.setFocusMode(!before.focusMode) },

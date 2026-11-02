@@ -140,8 +140,12 @@ data class AppSettings(
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,
-    /** "Tune up ↑" / "Tune down ↓" under the note while it is off pitch, also said by TalkBack. */
-    val showTuneHint: Boolean = true,
+    /**
+     * The string tick-off (2.0, Phase 71), a beginner's help: each peg gets a check once its string is in tune, and
+     * "In tune. Play." shows once all have one. Off by default and when missing, so a 1.1 player (who had the ticks
+     * under "Show tuning help", `show_tune_hint`, which 2.0 no longer reads) starts without them.
+     */
+    val stringTickOff: Boolean = false,
     /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
     val showSignalBars: Boolean = false,
     /**

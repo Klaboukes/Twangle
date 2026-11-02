@@ -118,6 +118,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.LENS_SHORT
 import io.github.klaboukes.twangle.feature.tuner.components.trailMotionWords
 import io.github.klaboukes.twangle.feature.tuner.components.ScreenTintFrom
 import io.github.klaboukes.twangle.feature.tuner.components.TuneWordLine
+import io.github.klaboukes.twangle.feature.tuner.components.LiveTone
 import io.github.klaboukes.twangle.feature.tuner.components.rememberLiveTone
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
@@ -236,7 +237,7 @@ fun TunerScreen(
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val inTunePrecision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
-    val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
+    val stringTickOff by viewModel.stringTickOff.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val focusMode by viewModel.focusMode.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
@@ -314,7 +315,7 @@ fun TunerScreen(
                     inTunePrecision = inTunePrecision,
                     meterGlow = glowing,
                     animationsOff = animationsOff,
-                    showTuneHint = showTuneHint,
+                    stringTickOff = stringTickOff,
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
                     compactLandscape = focusMode,
@@ -634,10 +635,12 @@ private fun KeepScreenOn() {
  * asking), and [onNewTuning], when given, adds "New tuning" to the panel's list; [onLoweredByChange],
  * when given, adds its "Lower by" row, which lowers the picked tuning. A long-press on a string calls [onStringLongClick] (play its
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
- * sounds a tap on any string calls [onStringClick], which stops the tone. [tunedStrings] are the strings
- * tuned since the tuner opened and not played clearly off since, ticked off on their buttons in the plain tuner (not
- * while a tool is on, nor in the compact layout's small row), and only with [showTuneHint] on (the "Show tuning
- * help" setting, which since the word came covers the ticks alone, until the pegs' tick-off toggle takes them). With [onStrumCheckChange] a
+ * sounds a tap on any string calls [onStringClick], which stops the tone. The strings are the pegs ([StringSelector]:
+ * the one heard ringed in the reading's tone, the locked one with a padlock). [tunedStrings] are the strings
+ * tuned since the tuner opened and not played clearly off since, ticked off on their pegs in the plain tuner (not
+ * while a tool is on, nor in the compact layout's small row), and only with [stringTickOff] on (the string tick-off,
+ * 2.0's beginner's help, off by default); once every string of the tuning shown is ticked, the word says "In tune.
+ * Play." while nothing is heard, in the in-tune colour. With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
  * is whether it is on). A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
  * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
@@ -676,7 +679,7 @@ fun TunerContent(
     inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
-    showTuneHint: Boolean = false,
+    stringTickOff: Boolean = false,
     showSignalBars: Boolean = false,
     signalFigures: Flow<SignalFigures?> = emptyFlow(),
     compactLandscape: Boolean = true,
@@ -754,8 +757,13 @@ fun TunerContent(
             gear = settingsButton,
         )
     }
+    // The reading's tone, one for the lens's border, the word, the heard peg's ring and the whole screen's tint
+    // (Phase 71), so they agree.
+    val tone = rememberLiveTone(needleCents, (state as? TunerUiState.Detected)?.inTune == true, inTunePrecision, animationsOff)
+    ScreenTintFrom(tone)
+    val ticks = tunedStrings.takeIf { stringTickOff }
     val guitarSlot = @Composable {
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString, tunedStrings.takeIf { showTuneHint })
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone)
         val strum = onStrumCheckChange?.let { onStrum ->
             // Only tools whose switch the screen was given; the strum check's alone is its own switch, as in v1.0.
             val offered = tunerTools.filter {
@@ -787,9 +795,6 @@ fun TunerContent(
     // The lens's last seconds: the tuner's, or an empty one where none is given (its look then draws no line).
     val emptyHistory = remember { PitchHistory() }
     val history = pitchHistory ?: emptyHistory
-    // The reading's tone, one for the lens's border, the word and the whole screen's tint (Phase 71), so they agree.
-    val tone = rememberLiveTone(needleCents, (state as? TunerUiState.Detected)?.inTune == true, inTunePrecision, animationsOff)
-    ScreenTintFrom(tone)
     val gauge = @Composable {
         // Strum check, the 12th-fret check and the chord name take the lens's place, at the old meter's shape.
         if (state is TunerUiState.ChordName) {
@@ -834,12 +839,15 @@ fun TunerContent(
     // The word under the lens (Phase 71), the tuner's one speaking item: what to do, the cents under it, or what to play.
     val word = @Composable { compact: Boolean ->
         val listening = state as? TunerUiState.Listening
+        // Every string ticked off (the string tick-off on): "In tune. Play." while nothing is heard.
+        val allTuned = mode != TunerMode.CHROMATIC && listening != null && ticks.coversAll(listening.tuning)
         TuneWordLine(
             readout = readout,
             hint = detected?.hint,
             chromatic = mode == TunerMode.CHROMATIC,
-            quiet = listening?.let { listeningHint(mode, it, soundingString) }.orEmpty(),
-            spokenQuiet = listening?.let { listeningHint(mode, it, soundingString, rememberNoteNameSpeech()) }.orEmpty(),
+            quiet = listening?.let { listeningHint(mode, it, soundingString, allTuned = allTuned) }.orEmpty(),
+            spokenQuiet = listening?.let { listeningHint(mode, it, soundingString, rememberNoteNameSpeech(), allTuned) }.orEmpty(),
+            quietInTune = allTuned && soundingString == null,
             // While a reference tone sounds its line says which, not a tip about the mic.
             tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null },
             motion = motion,
@@ -985,7 +993,7 @@ fun TunerContent(
                             onRetry = onRetry,
                             gauge = gauge,
                             note = { note(false, Dp.Unspecified) },
-                            below = { CompactExtraFor(state, mode) },
+                            below = { CompactExtraFor(state, mode, tone) },
                             // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
                             focusNote = if (plainMeter) focusNote else null,
                             focusWord = focusWord,
@@ -1444,11 +1452,12 @@ private fun CompactRow(
 }
 
 /**
- * Under the note in the compact layout: in guitar mode a small string row with the target (or
- * locked) string highlighted; nothing in chromatic mode, where the cents and frequency are under the note.
+ * Under the note in the compact layout: in guitar mode a small row of pegs with the target (or
+ * locked) string ringed in the reading's [tone] and the locked one's padlock; nothing in chromatic mode, where the
+ * cents and frequency are under the note.
  */
 @Composable
-private fun CompactExtraFor(state: TunerUiState, mode: TunerMode) {
+private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, tone: LiveTone) {
     when {
         mode == TunerMode.CHROMATIC -> Unit
         state is TunerUiState.Detected -> StringSelector(
@@ -1458,14 +1467,16 @@ private fun CompactExtraFor(state: TunerUiState, mode: TunerMode) {
             inTune = state.inTune,
             lockedString = state.lockedString,
             small = true,
+            tone = tone,
         )
-        // A locked string is the target before anything is played, so it stays highlighted.
+        // A locked string is the target before anything is played, so it stays ringed.
         state is TunerUiState.Listening -> StringSelector(
             state.tuning,
             state.lockedString,
             notation = state.notation,
             lockedString = state.lockedString,
             small = true,
+            tone = tone,
         )
         state is TunerUiState.IntonationCheck -> StringSelector(state.tuning, state.string, notation = state.notation, small = true)
     }
@@ -1551,11 +1562,13 @@ private fun GuitarSlotFor(
         is TunerUiState.Detected -> GuitarControlsState(
             state.tuning, state.notation, state.targetString, state.lockedString, state.inTune,
             tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
+            tone = strings.tone,
         )
-        // A locked string is the target before anything is played, so it stays highlighted.
+        // A locked string is the target before anything is played, so it stays ringed (in the resting tone).
         is TunerUiState.Listening -> GuitarControlsState(
             state.tuning, state.notation, state.lockedString, state.lockedString, inTune = false,
             tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
+            tone = strings.tone,
         )
         // Strum check reads every string at once, the chord name every note: none is the target.
         is TunerUiState.StrumCheck ->
@@ -1583,6 +1596,7 @@ private fun GuitarSlotFor(
                 marks = controls.marks,
                 checking = controls.checking,
                 tuned = controls.tuned,
+                tone = controls.tone,
             )
         }
     } else {
@@ -1601,19 +1615,26 @@ private data class GuitarControlsState(
     val marks: List<StringMark?>? = null,
     val checking: Boolean = false,
     val tuned: TunedStrings? = null,
+    val tone: LiveTone? = null,
 )
 
 /**
- * What the string buttons do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
- * ([onLongClick]: play the string's note, none without it), which string's tone is [sounding], and
- * which strings are ticked off as tuned ([tuned]).
+ * What the pegs do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
+ * ([onLongClick]: play the string's note, none without it), which string's tone is [sounding],
+ * which strings are ticked off as tuned ([tuned], only with the string tick-off on), and the reading's [tone] the
+ * heard peg is ringed in.
  */
 private data class StringActions(
     val onClick: (Int) -> Unit,
     val onLongClick: ((Int) -> Unit)?,
     val sounding: Int?,
     val tuned: TunedStrings? = null,
+    val tone: LiveTone? = null,
 )
+
+/** Whether these ticks are of [tuning] and tick off every one of its strings. */
+private fun TunedStrings?.coversAll(tuning: Tuning): Boolean =
+    this != null && this.tuning == tuning && tuning.strings.indices.all { it in this }
 
 /** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
 private fun instrumentOf(state: TunerUiState): Instrument {
@@ -1669,6 +1690,7 @@ private fun GuitarControls(
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
     tuned: TunedStrings? = null,
+    tone: LiveTone? = null,
 ) {
     val strings = @Composable {
         StringSelector(
@@ -1683,6 +1705,7 @@ private fun GuitarControls(
             marks = marks,
             checking = checking,
             tuned = tuned,
+            tone = tone,
         )
     }
     val toggle = @Composable {
@@ -1851,13 +1874,21 @@ private val GUITAR_SLOT_HEIGHT = 104.dp
 
 /** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */
 @Composable
-private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening, sounding: Int? = null, speech: NoteNameSpeech? = null): String {
+private fun listeningHint(
+    mode: TunerMode,
+    state: TunerUiState.Listening,
+    sounding: Int? = null,
+    speech: NoteNameSpeech? = null,
+    allTuned: Boolean = false,
+): String {
     val locked = state.lockedString
     // The string whose reference tone sounds now: "Playing D3", in the player's note names.
     val playing = sounding?.let { state.tuning.strings.getOrNull(it) }
     return when {
         playing != null -> stringResource(R.string.tuner_hint_playing, stringName(state, playing, speech))
         mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
+        // Every string ticked off (the string tick-off): the guitar is tuned, a locked string too.
+        allTuned -> stringResource(R.string.tuner_hint_all_in_tune)
         locked != null -> stringResource(R.string.tuner_hint_play_locked_string, stringName(state, state.tuning.strings[locked], speech))
         else -> stringResource(R.string.tuner_hint_play_string)
     }

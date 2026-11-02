@@ -48,8 +48,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setVibrateInTune(enabled) }
     }
 
-    fun setShowTuneHint(enabled: Boolean) {
-        viewModelScope.launch { repository.setShowTuneHint(enabled) }
+    fun setStringTickOff(enabled: Boolean) {
+        viewModelScope.launch { repository.setStringTickOff(enabled) }
     }
 
     fun setShowSignalBars(enabled: Boolean) {

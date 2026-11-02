@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">Skärmen hålls tänd medan du stämmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrera vid stämd ton</string>
     <string name="settings_vibrate_in_tune_summary">En kort vibration när tonen når rätt tonhöjd</string>
-    <string name="settings_show_tune_hint_title">Visa stämhjälp</string>
-    <string name="settings_show_tune_hint_summary">Säger om du ska stämma upp eller ner och bockar av varje sträng när den är stämd</string>
     <string name="settings_show_signal_bars_title">Visa signalstaplar</string>
     <string name="settings_show_signal_bars_summary">För nyfikna: små staplar vid tonen visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
 

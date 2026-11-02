@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة أثناء الدوزنة</string>
     <string name="settings_vibrate_in_tune_title">اهتزاز عند الضبط</string>
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
-    <string name="settings_show_tune_hint_title">إظهار مساعدة الضبط</string>
-    <string name="settings_show_tune_hint_summary">يبيّن هل تشدّ أم ترخي، ويضع علامة على كل وتر حين يصبح مضبوطًا</string>
     <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
     <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة بجانب النغمة تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
 

@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">チューニング中は画面が消えません</string>
     <string name="settings_vibrate_in_tune_title">合ったら振動</string>
     <string name="settings_vibrate_in_tune_summary">音が合うと短く振動します</string>
-    <string name="settings_show_tune_hint_title">チューニングガイドを表示</string>
-    <string name="settings_show_tune_hint_summary">上げるか下げるかを示し、合った弦にチェックを付けます</string>
     <string name="settings_show_signal_bars_title">信号バーを表示</string>
     <string name="settings_show_signal_bars_summary">気になる方へ：音名の横の小さなバーで、チューナーがどれだけよく聞き取れているかがわかります。タップすると数値を表示します</string>
 

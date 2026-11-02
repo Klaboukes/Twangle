@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">調音時螢幕保持開啟</string>
     <string name="settings_vibrate_in_tune_title">調準時震動</string>
     <string name="settings_vibrate_in_tune_summary">音準到位時短暫震動一下</string>
-    <string name="settings_show_tune_hint_title">顯示調音提示</string>
-    <string name="settings_show_tune_hint_summary">提示該調高還是調低，弦調準後打勾</string>
     <string name="settings_show_signal_bars_title">顯示訊號格</string>
     <string name="settings_show_signal_bars_summary">給好奇的你：音名旁的小訊號格顯示調音器聽得有多清楚。輕觸即可查看數值</string>
 

@@ -68,7 +68,9 @@ import kotlin.math.roundToInt
  * Its colour is the reading's [tone] (the [LiveTone] the lens and the screen's tint share: muted at rest, amber far
  * off easing toward green, green in tune), read while drawing, so a reading recolours it without recomposing; on a
  * light background it is taken a little toward the ink, as much as the amber needs to read ([wordInkShare]). A
- * [tip] about the sound ("Play a bit louder") takes the small line's place, in the accent colour.
+ * [tip] about the sound ("Play a bit louder") takes the small line's place, in the accent colour. With [quietInTune]
+ * (every string ticked off, the string tick-off's "In tune. Play.") the [quiet] text is in the in-tune colour,
+ * taken toward the ink as the word is.
  *
  * For TalkBack it is the tuner's one speaking item (the lens and the ruler are silent): a polite live region that
  * says "E 2, 12 cents flat, Tighten", "E 2, in tune", "A 3, 8 cents sharp, Too high" (the [tip] in the word's place,
@@ -87,6 +89,7 @@ fun TuneWordLine(
     tip: ReceptionTip? = null,
     motion: String? = null,
     tone: LiveTone? = null,
+    quietInTune: Boolean = false,
     compact: Boolean = false,
     speech: PacedSpeech = rememberPacedSpeech(),
 ) {
@@ -94,9 +97,13 @@ fun TuneWordLine(
     val word = tuneWordFor(heard = readout != null, hint = hint, chromatic = chromatic, previous = held.word)
     // While a heard note's word hasn't settled, "Play a string" stays as it was said, not an empty line.
     val quietShown = if (readout == null) quiet else held.quiet
+    val quietInTuneShown = if (readout == null) quietInTune else held.quietInTune
     SideEffect {
         held.word = word
-        if (readout == null) held.quiet = quiet
+        if (readout == null) {
+            held.quiet = quiet
+            held.quietInTune = quietInTune
+        }
     }
     val wordText = when (word) {
         TuneWord.PLAY -> quietShown
@@ -125,8 +132,10 @@ fun TuneWordLine(
     val quietInk = remember(muted, ink, background, tokens.farOff, tokens.inTune) {
         mixColour(muted, ink, mutedInkShare(muted, ink, background, tokens.farOff, tokens.inTune))
     }
-    val wordColour = remember(tone, ink, inkShare, muted) {
-        ColorProducer { mixColour(tone?.colour ?: muted, ink, inkShare) }
+    val green = tokens.inTune
+    val allInTune = word == TuneWord.PLAY && quietInTuneShown
+    val wordColour = remember(tone, ink, inkShare, muted, green, allInTune) {
+        if (allInTune) ColorProducer { mixColour(green, ink, inkShare) } else ColorProducer { mixColour(tone?.colour ?: muted, ink, inkShare) }
     }
     val big = if (compact) COMPACT_WORD_SIZE else WORD_SIZE
     val wordStyle = MaterialTheme.typography.headlineSmall.copy(fontSize = big, lineHeight = WORD_LINE_HEIGHT, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
@@ -187,6 +196,7 @@ fun TuneWordLine(
 private class HeldWord {
     var word: TuneWord? = null
     var quiet: String = ""
+    var quietInTune: Boolean = false
 }
 
 /**

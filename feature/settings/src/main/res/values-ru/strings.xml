@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>
     <string name="settings_vibrate_in_tune_title">Вибрация, когда настроено</string>
     <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
-    <string name="settings_show_tune_hint_title">Подсказки тюнера</string>
-    <string name="settings_show_tune_hint_summary">Подсказывает, подтянуть или ослабить, и отмечает каждую струну, когда она настроена</string>
     <string name="settings_show_signal_bars_title">Индикатор сигнала</string>
     <string name="settings_show_signal_bars_summary">Для любопытных: полоски у ноты показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
 

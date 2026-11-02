@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>
     <string name="settings_vibrate_in_tune_title">Bergetar saat pas</string>
     <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah pas</string>
-    <string name="settings_show_tune_hint_title">Tampilkan bantuan menyetem</string>
-    <string name="settings_show_tune_hint_summary">Memberi tahu perlu dinaikkan atau diturunkan, dan mencentang tiap senar begitu pas</string>
     <string name="settings_show_signal_bars_title">Tampilkan bar sinyal</string>
     <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di samping nada menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
 

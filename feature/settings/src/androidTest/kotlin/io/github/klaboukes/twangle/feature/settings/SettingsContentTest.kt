@@ -87,7 +87,7 @@ class SettingsContentTest {
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
-    private val tuneHintChanges = mutableListOf<Boolean>()
+    private val tickOffChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val focusModeChanges = mutableListOf<Boolean>()
     private val leftHandedChanges = mutableListOf<Boolean>()
@@ -146,7 +146,7 @@ class SettingsContentTest {
                         onDynamicColorChange = { dynamicColorChanges += it },
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
-                        onShowTuneHintChange = { tuneHintChanges += it },
+                        onStringTickOffChange = { tickOffChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
                         onFocusModeChange = { focusModeChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
@@ -353,7 +353,7 @@ class SettingsContentTest {
 
     @Test
     fun switchesShowTheirStateAndToggle() {
-        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showTuneHint = true))
+        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, stringTickOff = true))
         val dynamic = compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title))
         dynamic.performScrollTo().assertIsOn().performClick()
         val keepOn = compose.onNodeWithText(context.getString(R.string.settings_keep_screen_on_title))
@@ -363,27 +363,36 @@ class SettingsContentTest {
         assertEquals(listOf(false), dynamicColorChanges)
         assertEquals(listOf(true), keepScreenOnChanges)
         assertEquals(listOf(false), vibrateChanges)
-        val tuneHint = compose.onNodeWithText(context.getString(R.string.settings_show_tune_hint_title))
-        tuneHint.performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), tuneHintChanges)
+        val tickOff = compose.onNodeWithText(context.getString(R.string.settings_string_tick_off_title))
+        tickOff.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), tickOffChanges)
     }
 
-    /** One switch covers the up/down hint and the strings' ticks (owner, 2026-11-01): its words say both, in Dutch too. */
+    /**
+     * The string tick-off's switch (2.0, Phase 71), off by default, in While tuning: its words name the ticks and
+     * "In tune. Play.", in Dutch too. 1.1's "Show tuning help" is gone (the word under the lens always shows).
+     */
     @Test
-    fun theTuningHelpSwitchNamesTheHintAndTheTicks() = assertTuningHelpSwitch("en", "Show tuning help")
+    fun theStringTickOffSwitchIsOffByDefaultAndNamesTheTicks() =
+        assertStringTickOffSwitch("en", "Tick off tuned strings", "In tune. Play.")
 
     @Test
-    fun dutchTuningHelpSwitchNamesTheHintAndTheTicks() = assertTuningHelpSwitch("nl", "Stemhulp tonen")
+    fun dutchStringTickOffSwitchIsOffByDefaultAndNamesTheTicks() =
+        assertStringTickOffSwitch("nl", "Gestemde snaren afvinken", "Zuiver. Speel maar.")
 
-    private fun assertTuningHelpSwitch(locale: String, title: String) {
-        show(AppSettings(showTuneHint = false), locale = locale)
+    private fun assertStringTickOffSwitch(locale: String, title: String, allInTune: String) {
+        show(AppSettings(), locale = locale)
         val res = resourcesIn(locale)
-        assertEquals(title, res.getString(R.string.settings_show_tune_hint_title))
+        assertEquals(title, res.getString(R.string.settings_string_tick_off_title))
+        val summary = res.getString(R.string.settings_string_tick_off_summary)
+        assertTrue("the line names the tuner's own words: $summary", allInTune in summary)
         val switch = compose.onNodeWithText(title)
         switch.performScrollTo().assertIsOff()
-        compose.onNodeWithText(res.getString(R.string.settings_show_tune_hint_summary)).assertIsDisplayed()
+        compose.onNodeWithText(summary).assertIsDisplayed()
+        compose.onAllNodesWithText("Show tuning help").assertCountEquals(0)
+        compose.onAllNodesWithText("Stemhulp tonen").assertCountEquals(0)
         switch.performClick()
-        assertEquals(listOf(true), tuneHintChanges)
+        assertEquals(listOf(true), tickOffChanges)
     }
 
     @Test
@@ -490,7 +499,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
-            top(context.getString(R.string.settings_show_tune_hint_title)),
+            top(context.getString(R.string.settings_string_tick_off_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.settings_group_app)),
             top(context.getString(R.string.about_title)),

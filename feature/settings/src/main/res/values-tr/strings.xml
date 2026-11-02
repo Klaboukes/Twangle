@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">Akort ederken ekran kapanmaz</string>
     <string name="settings_vibrate_in_tune_title">Akortlu olunca titreş</string>
     <string name="settings_vibrate_in_tune_summary">Nota akortlu olunca kısa bir titreşim</string>
-    <string name="settings_show_tune_hint_title">Akort yardımını göster</string>
-    <string name="settings_show_tune_hint_summary">Yükseltmen mi düşürmen mi gerektiğini söyler ve akortlanan her teli işaretler</string>
     <string name="settings_show_signal_bars_title">Sinyal çubuklarını göster</string>
     <string name="settings_show_signal_bars_summary">Meraklısı için: notanın yanındaki küçük çubuklar, akort cihazının seni ne kadar iyi duyduğunu gösterir. Değerler için onlara dokun</string>
 

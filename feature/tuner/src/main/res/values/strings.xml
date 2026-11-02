@@ -155,6 +155,8 @@
     <string name="tuner_hint_play_locked_string">Play the %1$s string</string>
     <!-- While a string's reference tone sounds (a long-press on the string). %1$s is its note and octave, e.g. "D3". -->
     <string name="tuner_hint_playing">Playing %1$s</string>
+    <!-- Tuner, under the meter while nothing is heard, once every string has been in tune (only with the Tick off tuned strings setting on): the guitar is tuned, go and play music. Short; settings_string_tick_off_summary quotes it. -->
+    <string name="tuner_hint_all_in_tune">In tune. Play.</string>
     <!-- TalkBack: what tapping a string button does: the tuner listens for that string only ("Double-tap to …" is added by Android). -->
     <string name="tuner_string_lock">Lock to this string</string>
     <!-- TalkBack: what tapping the locked string button does: the tuner goes back to finding the string by itself. -->
@@ -169,7 +171,7 @@
     <string name="tuner_string_sounding">Playing</string>
     <!-- TalkBack: the state of the locked string button while its reference tone sounds. -->
     <string name="tuner_string_locked_sounding">Locked, playing</string>
-    <!-- TalkBack: the state of a string button whose string has been in tune since the tuner opened (it shows a small check mark), so the player knows it is done. Only with the Show tuning help setting on. -->
+    <!-- TalkBack: the state of a string button whose string has been in tune since the tuner opened (it shows a small check mark), so the player knows it is done. Only with the Tick off tuned strings setting on. -->
     <string name="tuner_string_tuned">Tuned</string>
     <!-- TalkBack: the state of the locked string button when that string has also been in tune since the tuner opened. -->
     <string name="tuner_string_locked_tuned">Locked, tuned</string>

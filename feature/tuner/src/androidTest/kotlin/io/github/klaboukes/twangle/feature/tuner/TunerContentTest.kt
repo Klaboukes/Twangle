@@ -174,7 +174,7 @@ class TunerContentTest {
         mode: TunerMode = TunerMode.AUTO,
         fontScale: Float? = null,
         size: DpSize? = null,
-        showTuneHint: Boolean = false,
+        stringTickOff: Boolean = false,
         locale: String? = null,
         compactLandscape: Boolean = false,
         signalBars: Boolean = false,
@@ -214,7 +214,7 @@ class TunerContentTest {
                         tunedStrings = shownTuned.value,
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        showTuneHint = showTuneHint,
+                        stringTickOff = stringTickOff,
                         compactLandscape = shownCompact.value,
                         showSignalBars = shownSignalBars.value,
                         signalFigures = signalFigures,
@@ -306,7 +306,7 @@ class TunerContentTest {
     @Test
     fun theOctaveStaysSmallBesideAShrunkenNote() {
         // A little taller than the Xiaomi's 713 dp since the ruler came (Phase 71): there the big note makes room for it.
-        show(detected(-12.3f), fontScale = 2f, size = DpSize(393.dp, 820.dp), locale = "pl", showTuneHint = true)
+        show(detected(-12.3f), fontScale = 2f, size = DpSize(393.dp, 820.dp), locale = "pl")
         val letter = compose.onNodeWithText("E").getBoundsInRoot()
         val octave = compose.onNodeWithText("2").getBoundsInRoot()
         assertTrue(
@@ -846,7 +846,7 @@ class TunerContentTest {
     /** Phase 65: a string in tune since the tuner opened carries a check, TalkBack hears "Tuned", and nothing moves. */
     @Test
     fun tunedStringsAreTickedOffWithoutMovingAnything() {
-        show(detected(-12.3f, targetString = 0), showTuneHint = true)
+        show(detected(-12.3f, targetString = 0), stringTickOff = true)
         val labels = listOf("E2", "A2", "D3", "G3", "B3", "E4")
         val before = labels.map { stringChip(it).getBoundsInRoot() }
         val plain = stringChip("A2").captureToImage().toPixelMap()
@@ -865,7 +865,7 @@ class TunerContentTest {
 
     @Test
     fun aLockedStringTunedSaysBoth() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), showTuneHint = true)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), stringTickOff = true)
         shownTuned.value = TunedStrings(Tunings.STANDARD, 0b11L)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("A 2"))
@@ -874,7 +874,7 @@ class TunerContentTest {
 
     @Test
     fun dutchTalkBackHearsATunedStringAsGestemd() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl", showTuneHint = true)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl", stringTickOff = true)
         shownTuned.value = TunedStrings(Tunings.STANDARD, 0b1L)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("e 2"))
@@ -883,7 +883,7 @@ class TunerContentTest {
 
     @Test
     fun ticksShowOnlyForTheirOwnTuningAndNotUnderATool() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), showTuneHint = true)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), stringTickOff = true)
         shownTuned.value = TunedStrings(Tunings.DROP_D, 0b10L)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
@@ -894,10 +894,10 @@ class TunerContentTest {
         compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
     }
 
-    /** The "Show tuning help" setting off (owner, 2026-11-01): no check on any button, and TalkBack hears no "Tuned". */
+    /** The string tick-off off (its default, 2.0): no check on any peg, TalkBack hears no "Tuned", and no "In tune. Play.". */
     @Test
-    fun ticksFollowTheTuningHelpSwitch() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), showTuneHint = false)
+    fun ticksFollowTheStringTickOffSwitch() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1))
         val plain = stringChip("A2").captureToImage().toPixelMap()
         shownTuned.value = TunedStrings(Tunings.STANDARD, 0b11L)
         compose.waitForIdle()
@@ -905,11 +905,103 @@ class TunerContentTest {
         compose.onNode(hasContentDescription("A 2"))
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_string_locked)))
         assertFalse("no check drawn", differs(plain, stringChip("A2").captureToImage().toPixelMap()))
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b111111L)
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_all_in_tune)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertIsDisplayed()
+    }
+
+    /**
+     * The string tick-off on and every string ticked: while nothing is heard the word says "In tune. Play." (a locked
+     * string too), TalkBack says it, and a note heard again reads as usual; one string short of all, it asks as before.
+     */
+    @Test
+    fun everyStringTickedSaysInTunePlay() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), stringTickOff = true)
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b011111L)
+        compose.waitForIdle()
+        val allInTune = context.getString(R.string.tuner_hint_all_in_tune)
+        compose.onNodeWithText(allInTune).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertIsDisplayed()
+
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b111111L)
+        compose.waitForIdle()
+        compose.onNodeWithText(allInTune).assertIsDisplayed()
+        assertSpokenSoon(allInTune)
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertDoesNotExist()
+
+        // Only for the tuning shown, and a heard note reads as ever.
+        shownTuned.value = TunedStrings(Tunings.DROP_D, 0b111111L)
+        compose.waitForIdle()
+        compose.onNodeWithText(allInTune).assertDoesNotExist()
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b111111L)
+        shownState.value = detected(-12.3f, targetString = 1)
+        compose.waitForIdle()
+        compose.onNodeWithText(allInTune).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_word_tighten)).assertIsDisplayed()
+    }
+
+    @Test
+    fun dutchEveryStringTickedSaysZuiverSpeelMaar() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl", stringTickOff = true)
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b111111L)
+        compose.waitForIdle()
+        assertEquals("Zuiver. Speel maar.", dutch.getString(R.string.tuner_hint_all_in_tune))
+        compose.onNodeWithText("Zuiver. Speel maar.").assertIsDisplayed()
+    }
+
+    /** A reference tone sounding still says which ("Playing D3"), and Any note has no strings to tick. */
+    @Test
+    fun inTunePlayGivesWayToASoundingToneAndAnyNote() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), stringTickOff = true)
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b111111L)
+        shownSounding.value = 2
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "D3")).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_all_in_tune)).assertDoesNotExist()
+        shownSounding.value = null
+        shownMode.value = TunerMode.CHROMATIC
+        shownState.value = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD)
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_note)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_all_in_tune)).assertDoesNotExist()
     }
 
     private fun differs(a: PixelMap, b: PixelMap): Boolean =
         a.width != b.width || a.height != b.height ||
             (0 until a.width).any { x -> (0 until a.height).any { y -> a[x, y] != b[x, y] } }
+
+    /**
+     * Nothing on the screen says tap = lock, hold = hear (no hint: owner), so TalkBack's actions name both on every peg:
+     * "Lock to this string" (the locked one "Pick strings automatically") and "Play A 2".
+     */
+    @Test
+    fun talkBackNamesTapToLockAndHoldToHearOnEveryPeg() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1))
+        val lock = context.getString(R.string.tuner_string_lock)
+        val unlock = context.getString(R.string.tuner_string_unlock)
+        for ((spoken, tap) in listOf("E 2" to lock, "A 2" to unlock, "D 3" to lock)) {
+            val play = context.getString(R.string.tuner_string_play, spoken)
+            compose.onNode(hasContentDescription(spoken))
+                .assert(SemanticsMatcher("$spoken: tap \"$tap\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == tap })
+                .assert(SemanticsMatcher("$spoken: hold \"$play\"") { it.config.getOrNull(SemanticsActions.OnLongClick)?.label == play })
+        }
+        compose.onNode(hasContentDescription("A 2"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_string_locked)))
+    }
+
+    /** The lock shows on the peg (2.0: a padlock at its bottom end corner), drawn on it without moving any peg. */
+    @Test
+    fun theLockShowsOnThePegWithoutMovingAnything() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        val labels = listOf("E2", "A2", "D3", "G3", "B3", "E4")
+        val before = labels.map { stringChip(it).getBoundsInRoot() }
+        val free = stringChip("A2").captureToImage().toPixelMap()
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1)
+        compose.waitForIdle()
+        assertEquals(before, labels.map { stringChip(it).getBoundsInRoot() })
+        assertTrue("the lock is drawn on the locked peg", differs(free, stringChip("A2").captureToImage().toPixelMap()))
+    }
 
     @Test
     fun aLockedStringIsHighlightedAndNamedInTheHint() {
@@ -1505,7 +1597,7 @@ class TunerContentTest {
 
     @Test
     fun signalBarsCanBeReachedOnAPhoneOnItsSideWithTheLargestFont() {
-        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, showTuneHint = true, signalBars = true)
+        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, signalBars = true)
         compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performScrollTo().assertIsDisplayed()
     }
 
@@ -1519,7 +1611,7 @@ class TunerContentTest {
         assertReceptionTipMovesNothing(fontScale = 1.25f, shrunk = true)
 
     private fun assertReceptionTipMovesNothing(fontScale: Float? = null, shrunk: Boolean = false) {
-        show(detected(-12.3f), fontScale = fontScale, showTuneHint = true)
+        show(detected(-12.3f), fontScale = fontScale)
         val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
         shownState.value = detected(-12.3f).copy(tip = ReceptionTip.TOO_LOUD)
         compose.waitForIdle()
@@ -1689,19 +1781,12 @@ class TunerContentTest {
     @Test
     fun switchingModesMovesNothingWithTheLargestFont() = assertSwitchingModesMovesNothing(fontScale = 2f)
 
-    @Test
-    fun switchingModesMovesNothingWithTheTuneHint() =
-        assertSwitchingModesMovesNothing(fontScale = 2f, showTuneHint = true)
-
     /**
      * The note stays where it is when going from guitar to chromatic mode, and the picker chip, whose
      * width follows its name ("Any note"), keeps its height and its centre.
      */
-    private fun assertSwitchingModesMovesNothing(
-        fontScale: Float,
-        showTuneHint: Boolean = false,
-    ) {
-        show(detected(-12.3f), fontScale = fontScale, showTuneHint = showTuneHint)
+    private fun assertSwitchingModesMovesNothing(fontScale: Float) {
+        show(detected(-12.3f), fontScale = fontScale)
         val chip = pickerChip
         val note = compose.onNodeWithText("E")
         val chipBefore = chip.getBoundsInRoot()
@@ -1733,7 +1818,7 @@ class TunerContentTest {
 
     @Test
     fun talkBackHearsTuneDownForASharpNote() {
-        show(detected(8f), showTuneHint = true)
+        show(detected(8f))
         val spoken = context.getString(R.string.tuner_word_loosen)
         compose.onNode(hasContentDescription("E 2, ${centsSharp(8)}, $spoken")).assertExists()
     }
@@ -1741,7 +1826,7 @@ class TunerContentTest {
     @Test
     fun talkBackHearsTheHintOnceNotTwice() {
         // The note's live region says it; the visible "Tune up ↑" isn't read a second time.
-        show(detected(-12.3f), showTuneHint = true)
+        show(detected(-12.3f))
         compose.onNodeWithText(tuneUp).assert(hiddenFromTalkBack)
     }
 
@@ -1794,7 +1879,7 @@ class TunerContentTest {
         mode: TunerMode = TunerMode.AUTO,
         fontScale: Float? = null,
     ) {
-        show(before, mode, fontScale = fontScale, showTuneHint = true)
+        show(before, mode, fontScale = fontScale)
         val switch = pickerChip
         val switchBefore = switch.getBoundsInRoot()
         // The note's live region: the note, the pill, the hint and the frequency.
@@ -1834,7 +1919,7 @@ class TunerContentTest {
 
     @Test
     fun phoneOnItsSideWithTheLargestFontHintAndStringsCanStillBeReached() {
-        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, showTuneHint = true)
+        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE)
         assertWholeTextShown(compose.onNodeWithText(tuneUp).performScrollTo().assertIsDisplayed())
         stringChip("E4").performScrollTo().assertIsDisplayed()
     }
@@ -1956,7 +2041,7 @@ class TunerContentTest {
 
     @Test
     fun focusWithTheLargestFontShowsTheNoteAndTipWhole() {
-        show(detected(-12.3f, targetString = 1).copy(tip = ReceptionTip.TOO_LOUD), fontScale = 2f, size = PHONE_FULL_SCREEN, showTuneHint = true, compactLandscape = true)
+        show(detected(-12.3f, targetString = 1).copy(tip = ReceptionTip.TOO_LOUD), fontScale = 2f, size = PHONE_FULL_SCREEN, compactLandscape = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         assertWhollyShown(compose.onNodeWithText("E"), "note", scroll = false)
         val tipNode = compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud))

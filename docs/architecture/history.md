@@ -51,6 +51,8 @@ Designs and measurements that have been superseded, kept for the record and take
 - **Metronome and rotation:** until Phase 26 every rotation stopped the clicks.
 - **Settings groups:** until Phase 26 one Look group held every card grid, and "Pitch and notes" was called "Tuning", which clashed with the navigation bar's item of that name. "Below the note" was called "Display: Needle / Wave" until Phase 26. The tuner's palette button and its "A4 = … Hz" line went in Phase 14, leaving Settings the only place for style and A4.
 - **Saved settings:** until Phase 26 a failed read ended the settings flow, so the defaults stayed for the rest of the session. The meter looks `ROLLING_SCALE`, `COMET` and `STUDIO_METER` went in Phase 25.
+- **Show tuning help** (1.1, default on, `show_tune_hint`): turned the "Tune up / Tune down" hint under the note on and off, and from Phase 65 the strings' ticks too. 2.0's word under the lens always shows, so from Phase 71's third step it covered the ticks alone; in its fourth step the string tick-off's own toggle, off by default (`string_tick_off`), took the ticks and the switch went with its texts in every language; 2.0 no longer reads the key.
+- **The locked string's outer ring and the filled target** (until Phase 71): the locked string had a 2 dp ring in the ink round its button and the target string was filled in the accent with its name in `onPrimary`; 2.0's pegs ring the string heard in the reading's tone and show the lock as a padlock on the peg.
 - **Custom tunings:** Phase 16. Until Phase 26 Save picked the tuning in a second DataStore write, and the editor had no "Discard changes?" question.
 
 ## UI basics

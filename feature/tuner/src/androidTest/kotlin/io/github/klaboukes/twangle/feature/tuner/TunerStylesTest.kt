@@ -94,7 +94,6 @@ class TunerStylesTest {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        showTuneHint = true,
                         showSignalBars = true,
                         compactLandscape = false,
                         onStrumCheckChange = {},

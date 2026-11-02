@@ -95,7 +95,7 @@ interface SettingsRepository {
 
     suspend fun setVibrateInTune(enabled: Boolean)
 
-    suspend fun setShowTuneHint(enabled: Boolean)
+    suspend fun setStringTickOff(enabled: Boolean)
 
     suspend fun setShowSignalBars(enabled: Boolean)
 

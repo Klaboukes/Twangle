@@ -311,8 +311,6 @@ feature/settings settings_notation_solfege 86108139
 feature/settings settings_notation_title dab557ae
 feature/settings settings_show_signal_bars_summary 3c567c40
 feature/settings settings_show_signal_bars_title 76f1f602
-feature/settings settings_show_tune_hint_summary 16c8c4a4
-feature/settings settings_show_tune_hint_title c654af35
 feature/settings settings_theme_dark 60acc53f
 feature/settings settings_theme_light dbcd5e7b
 feature/settings settings_theme_system b0459211

@@ -74,7 +74,7 @@ class StringRowStylesTest {
     private val shownFontScale = mutableStateOf(1f)
     private val shownLocale = mutableStateOf("en")
     private val shownTuned = mutableStateOf<TunedStrings?>(null)
-    private val shownTuneHint = mutableStateOf(false)
+    private val shownTickOff = mutableStateOf(false)
     private val clicked = mutableListOf<Int>()
 
     private enum class Layout(val size: DpSize) {
@@ -119,8 +119,8 @@ class StringRowStylesTest {
                         // As in the app: the strum check's switch above the strings.
                         onStrumCheckChange = {},
                         tunedStrings = shownTuned.value,
-                        // The ticks show only with "Show tuning help" on (its default in the app).
-                        showTuneHint = shownTuneHint.value,
+                        // The ticks show only with the string tick-off on (off by default in the app).
+                        stringTickOff = shownTickOff.value,
                         onFocusModeChange = if (focusButton) ({}) else null,
                     )
                 }
@@ -244,7 +244,7 @@ class StringRowStylesTest {
     fun theTwelveStringsEightShowsBesideItsTick() {
         val tuning = Instruments.GUITAR_12.defaultTuning
         shownTuning.value = tuning
-        shownTuneHint.value = true
+        shownTickOff.value = true
         show(listening = true)
         val labels = labels(tuning, Notation.SHARPS)
         val tuned = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.tuner_string_tuned)

@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">Skjermen holdes på mens du stemmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrer når tonen er stemt</string>
     <string name="settings_vibrate_in_tune_summary">En kort summing når tonen treffer riktig</string>
-    <string name="settings_show_tune_hint_title">Vis stemmehjelp</string>
-    <string name="settings_show_tune_hint_summary">Sier om du skal stemme opp eller ned, og huker av hver streng når den er stemt</string>
     <string name="settings_show_signal_bars_title">Vis signalstolper</string>
     <string name="settings_show_signal_bars_summary">For de nysgjerrige: små stolper ved tonen viser hvor godt stemmeren hører deg. Trykk på dem for tallene</string>
 

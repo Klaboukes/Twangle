@@ -57,7 +57,7 @@ import kotlin.math.ceil
  * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation, in-tune precision) are
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [saved] are the settings the
- * app already read at its start: every saved option here ([mode], [instrument], [showTuneHint] and the rest)
+ * app already read at its start: every saved option here ([mode], [instrument], [stringTickOff] and the rest)
  * starts from them until this ViewModel's own reading arrives, so the first frames show the player's layout
  * instead of the defaults for a moment. [language] is the app's language (e.g. "de"): note names follow its habit
  * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
@@ -75,7 +75,7 @@ import kotlin.math.ceil
  * The screen then asks Google ([RatingWindow]) and calls [onRatingAsked].
  *
  * [tunedStrings] are the strings ticked off on their buttons (Phase 65): in tune since listening
- * started and not played clearly out of tune since, shown only with the "Show tuning help" setting
+ * started and not played clearly out of tune since, shown only with the string tick-off setting
  * on; the same [AllStringsInTune] keeps them.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -128,10 +128,13 @@ class TunerViewModel(
         .map { it.vibrateInTune }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune)
 
-    /** Whether "Tune up ↑" / "Tune down ↓" shows under an off-pitch note and TalkBack says it (a saved setting). */
-    val showTuneHint: StateFlow<Boolean> = settingsRepository.settings
-        .map { it.showTuneHint }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.showTuneHint)
+    /**
+     * Whether the pegs tick off the strings tuned and "In tune. Play." shows once all are (the string tick-off, a saved
+     * setting, off by default; 2.0, Phase 71).
+     */
+    val stringTickOff: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.stringTickOff }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.stringTickOff)
 
     /** Whether small signal bars by the note show how well the tuner hears (a saved setting, off by default). */
     val showSignalBars: StateFlow<Boolean> = settingsRepository.settings
@@ -277,15 +280,15 @@ class TunerViewModel(
 
     /**
      * The strings ticked off on their buttons (Phase 65): in tune since the tuner started listening,
-     * and not played clearly out of tune since; null while none is, and always null while the "Show
-     * tuning help" setting ([AppSettings.showTuneHint]) is off (owner, 2026-11-01). Kept by
+     * and not played clearly out of tune since; null while none is, and always null while the string
+     * tick-off setting ([AppSettings.stringTickOff], off by default; 2.0, Phase 71) is off. Kept by
      * [AllStringsInTune] on the DSP thread, so it follows the tuner's own in-tune and out-of-tune
      * rules, in guitar mode only; a new tuning or A4 starts it afresh, and it goes when listening
      * stops (the tuner left for more than 5 s, the app in the background, the microphone lost). The
      * screen shows it only for the [TunedStrings.tuning] it shows.
      */
     val tunedStrings: StateFlow<TunedStrings?> =
-        combine(tunedNow, settingsRepository.settings.map { it.showTuneHint }.distinctUntilChanged()) { tuned, shown ->
+        combine(tunedNow, settingsRepository.settings.map { it.stringTickOff }.distinctUntilChanged()) { tuned, shown ->
             tuned.takeIf { shown }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

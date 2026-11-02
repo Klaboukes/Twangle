@@ -81,6 +81,7 @@
     <string name="tuner_hint_play_note">Speel een noot</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
     <string name="tuner_hint_play_locked_string">Speel de %1$s-snaar</string>
+    <string name="tuner_hint_all_in_tune">Zuiver. Speel maar.</string>
     <string name="tuner_hint_playing">%1$s klinkt</string>
     <string name="tuner_string_lock">Vastzetten op deze snaar</string>
     <string name="tuner_string_unlock">Snaren automatisch kiezen</string>

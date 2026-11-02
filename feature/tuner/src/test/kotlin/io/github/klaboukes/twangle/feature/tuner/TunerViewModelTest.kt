@@ -355,7 +355,7 @@ class TunerViewModelTest {
     fun `the options start as the settings read at start, never the defaults for a frame`() = runTest(dispatcher) {
         val saved = AppSettings(
             inTunePrecision = InTunePrecision.entries.first { it != InTunePrecision.DEFAULT },
-            showTuneHint = !AppSettings().showTuneHint,
+            stringTickOff = !AppSettings().stringTickOff,
             showSignalBars = !AppSettings().showSignalBars,
             keepScreenOn = !AppSettings().keepScreenOn,
             vibrateInTune = !AppSettings().vibrateInTune,
@@ -364,7 +364,7 @@ class TunerViewModelTest {
 
         // Before anything has been read or collected: what the screen shows on its first frame.
         assertEquals(saved.inTunePrecision, vm.inTunePrecision.value)
-        assertEquals(saved.showTuneHint, vm.showTuneHint.value)
+        assertEquals(saved.stringTickOff, vm.stringTickOff.value)
         assertEquals(saved.showSignalBars, vm.showSignalBars.value)
         assertEquals(saved.keepScreenOn, vm.keepScreenOn.value)
         assertEquals(saved.vibrateInTune, vm.vibrateInTune.value)
@@ -547,15 +547,15 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `showTuneHint follows the setting`() = runTest(dispatcher) {
+    fun `the string tick-off follows the setting, off by default`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.showTuneHint.collect {} }
+        backgroundScope.launch { vm.stringTickOff.collect {} }
         runCurrent()
-        assertTrue("on by default", vm.showTuneHint.value)
+        assertFalse("off by default", vm.stringTickOff.value)
 
-        settings.setShowTuneHint(false)
+        settings.setStringTickOff(true)
         runCurrent()
-        assertFalse(vm.showTuneHint.value)
+        assertTrue(vm.stringTickOff.value)
     }
 
     @Test
@@ -758,6 +758,7 @@ class TunerViewModelTest {
 
     @Test
     fun `a string held in tune is ticked off`() = runTest(dispatcher) {
+        settings.setStringTickOff(true)
         val vm = viewModel(a2Recorder())
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
@@ -770,6 +771,7 @@ class TunerViewModelTest {
 
     @Test
     fun `a note sliding through the string ticks nothing`() = runTest(dispatcher) {
+        settings.setStringTickOff(true)
         // From 100 to 120 Hz in one second: through A2's in-tune window (±5 cents) in about 30 ms, then silence.
         val glide = FloatArray(48_000)
         var phase = 0.0
@@ -790,6 +792,7 @@ class TunerViewModelTest {
 
     @Test
     fun `chromatic mode ticks nothing`() = runTest(dispatcher) {
+        settings.setStringTickOff(true)
         val vm = viewModel(a2Recorder())
         vm.setMode(TunerMode.CHROMATIC)
         vm.onPermissionChanged(true)
@@ -802,6 +805,7 @@ class TunerViewModelTest {
 
     @Test
     fun `a new tuning or A4 clears the ticks`() = runTest(dispatcher) {
+        settings.setStringTickOff(true)
         val vm = viewModel(a2Recorder())
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
@@ -825,6 +829,7 @@ class TunerViewModelTest {
 
     @Test
     fun `the ticks stay while a tool is on, and go when the tuner is left`() = runTest(dispatcher) {
+        settings.setStringTickOff(true)
         val vm = viewModel(a2Recorder())
         vm.onPermissionChanged(true)
         val ui = launch { vm.state.collect {} }
@@ -848,6 +853,7 @@ class TunerViewModelTest {
 
     @Test
     fun `a ticked string played clearly out of tune loses its tick, but not for a moment's wobble`() = runTest(dispatcher) {
+        settings.setStringTickOff(true)
         fun tone(hz: Float, seconds: Float) = TestSignals.sawtooth(hz, length = (48_000 * seconds).toInt())
         // 20 cents sharp of A2: well past the in-tune window's 7-cent exit margin.
         val sharp = 110f * 2f.pow(20f / 1200f)
@@ -872,8 +878,7 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `with Show tuning help off no string is ticked`() = runTest(dispatcher) {
-        settings.setShowTuneHint(false)
+    fun `with the string tick-off off, the default, no string is ticked`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
@@ -882,7 +887,7 @@ class TunerViewModelTest {
         assertTrue(vm.detected().inTune)
         assertNull(vm.tunedStrings.value)
 
-        settings.setShowTuneHint(true)
+        settings.setStringTickOff(true)
         advanceTimeBy(100)
         assertEquals("kept meanwhile, so turning it on shows them", TunedStrings(Tunings.STANDARD, 0b10L), vm.tunedStrings.value)
     }

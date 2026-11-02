@@ -43,8 +43,6 @@
     <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
     <string name="settings_vibrate_in_tune_title">Vibrar al estar afinado</string>
     <string name="settings_vibrate_in_tune_summary">Una vibración breve cuando la nota queda afinada</string>
-    <string name="settings_show_tune_hint_title">Mostrar ayuda de afinación</string>
-    <string name="settings_show_tune_hint_summary">Indica si subir o bajar, y marca cada cuerda en cuanto está afinada</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
 

@@ -65,7 +65,7 @@ Goal: the ruler, the lens with the trail, the colour, the word and the pegs.
 - ☑ The lens with the pitch trail inside (the newest reading at the top, the last seconds falling under it, ±50 cents across, the in-tune zone of ±5 cents or ±2 with Precise, ♭ and ♯ in the corners), its border in the reading's colour; the pitch trail tool goes as a tool of its own (its view becomes the look), its switch kept as the trail look's brake (v2-plan.md, *The two tools*)
 - ☑ The whole screen's soft tint, amber far off to green in tune, in light and dark; no red anywhere
 - ☑ One word at the bottom (Tighten · Loosen · In tune; Too low · Too high in Any note) with the cents small under it; "Play a string" while nothing is heard
-- ☐ The pegs: a plain row in the tuning's order, the one heard ringed, tap to lock (the lock shown on the peg), hold to hear; the string tick-off and "In tune. Play." behind their toggle, off by default
+- ☑ The pegs: a plain row in the tuning's order, the one heard ringed, tap to lock (the lock shown on the peg), hold to hear; the string tick-off and "In tune. Play." behind their toggle, off by default
 - ☐ The 12th-fret check opened from the tuner screen the way the owner picked, behind its new Settings switch (the `intonationCheck` build switch stays as the brake that hides both); its panel redrawn with the pegs
 - ☐ The big note, the cents pill, the hertz, the wave view, the strings backdrop and the "Tune up / Tune down" switch go; what Phase 60's precision work taught (the stretched scale, thin edges, the in-tune window shown) carries into the lens
 

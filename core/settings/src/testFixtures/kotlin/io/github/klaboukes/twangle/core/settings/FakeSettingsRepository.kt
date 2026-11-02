@@ -128,7 +128,7 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setVibrateInTune(enabled: Boolean) = write { it.copy(vibrateInTune = enabled) }
 
-    override suspend fun setShowTuneHint(enabled: Boolean) = write { it.copy(showTuneHint = enabled) }
+    override suspend fun setStringTickOff(enabled: Boolean) = write { it.copy(stringTickOff = enabled) }
 
     override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
 

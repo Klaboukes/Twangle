@@ -87,7 +87,6 @@ class CompactLandscapeStylesTest {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().background(BACKGROUND).testTag(WINDOW),
-                        showTuneHint = true,
                         showSignalBars = true,
                         compactLandscape = shownCompact.value,
                         onStrumCheckChange = {},

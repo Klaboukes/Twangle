@@ -242,8 +242,8 @@ class DataStoreSettingsRepository internal constructor(
         save { it[VIBRATE_IN_TUNE] = enabled }
     }
 
-    override suspend fun setShowTuneHint(enabled: Boolean) {
-        save { it[SHOW_TUNE_HINT] = enabled }
+    override suspend fun setStringTickOff(enabled: Boolean) {
+        save { it[STRING_TICK_OFF] = enabled }
     }
 
     override suspend fun setShowSignalBars(enabled: Boolean) {
@@ -402,7 +402,7 @@ class DataStoreSettingsRepository internal constructor(
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
-            showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
+            stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
@@ -461,7 +461,8 @@ class DataStoreSettingsRepository internal constructor(
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
-        private val SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
+        /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") is no longer read. */
+        private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
         private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
         /** The lens's look ([LensLook]), under 1.1's meter look's key, where 1.1's Light arc keeps its name. */
         private val METER_LOOK = stringPreferencesKey("meter_look")
