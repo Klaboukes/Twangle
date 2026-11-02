@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Цвета обоев</string>
     <string name="settings_dynamic_color_summary">Брать цвета из обоев</string>
 
-    <string name="settings_meter_look_title">Индикатор</string>
-    <string name="settings_meter_look_classic">Классический</string>
-    <string name="settings_meter_look_light_arc">Световая дуга</string>
-    <string name="settings_meter_look_pointers">Указатели</string>
-    <string name="settings_meter_look_loupe">Лупа</string>
-    <string name="settings_meter_look_arrows">Стрелки</string>
-    <string name="settings_meter_look_light_bars">Световые полосы</string>
-    <string name="settings_in_tune_effect_title">Эффект «настроено»</string>
-    <string name="settings_in_tune_effect_summary">Насколько ярко светится индикатор, когда нота настроена</string>
-    <string name="settings_in_tune_effect_calm">Спокойный</string>
-    <string name="settings_in_tune_effect_bold">Яркий</string>
-
-    <string name="settings_display_title">Под нотой</string>
-    <string name="settings_display_numbers">Числа: отклонение в центах</string>
-    <string name="settings_display_wave">Волна: движущаяся картинка в выбранном виде</string>
-    <string name="settings_wave_look_title">Вид волны</string>
-    <string name="settings_wave_look_strobe">Строб</string>
-    <string name="settings_wave_look_ribbon">Лента</string>
-    <string name="settings_wave_look_dots">Точки</string>
-    <string name="settings_wave_look_fireflies">Светлячки</string>
-    <string name="settings_wave_look_loop">Петля</string>
-    <string name="settings_wave_look_ripples">Рябь</string>
     <string name="settings_focus_mode_title">Режим фокуса</string>
     <string name="settings_focus_mode_summary">Поворачивает Twangle горизонтально с одним большим индикатором, который легко читать издалека</string>
     <string name="settings_left_handed_title">Для левши</string>

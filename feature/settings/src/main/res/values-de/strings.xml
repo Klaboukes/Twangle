@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Hintergrundfarben</string>
     <string name="settings_dynamic_color_summary">Farben deines Hintergrundbilds verwenden</string>
 
-    <string name="settings_meter_look_title">Anzeige</string>
-    <string name="settings_meter_look_classic">Klassisch</string>
-    <string name="settings_meter_look_light_arc">Lichterbogen</string>
-    <string name="settings_meter_look_pointers">Zeiger</string>
-    <string name="settings_meter_look_loupe">Lupe</string>
-    <string name="settings_meter_look_arrows">Pfeile</string>
-    <string name="settings_meter_look_light_bars">Lichtbalken</string>
-    <string name="settings_in_tune_effect_title">Effekt, wenn gestimmt</string>
-    <string name="settings_in_tune_effect_summary">Wie stark die Anzeige leuchtet, wenn ein Ton stimmt</string>
-    <string name="settings_in_tune_effect_calm">Ruhig</string>
-    <string name="settings_in_tune_effect_bold">Kräftig</string>
-
-    <string name="settings_display_title">Unter der Note</string>
-    <string name="settings_display_numbers">Zahlen: wie viele Cent daneben</string>
-    <string name="settings_display_wave">Welle: ein bewegtes Bild im Stil deiner Wahl</string>
-    <string name="settings_wave_look_title">Wellenstil</string>
-    <string name="settings_wave_look_strobe">Stroboskop</string>
-    <string name="settings_wave_look_ribbon">Band</string>
-    <string name="settings_wave_look_dots">Punkte</string>
-    <string name="settings_wave_look_fireflies">Glühwürmchen</string>
-    <string name="settings_wave_look_loop">Schleife</string>
-    <string name="settings_wave_look_ripples">Kreise</string>
     <string name="settings_focus_mode_title">Fokusmodus</string>
     <string name="settings_focus_mode_summary">Dreht Twangle ins Querformat mit einer großen Anzeige, gut aus der Ferne lesbar</string>
     <string name="settings_left_handed_title">Linkshänder</string>

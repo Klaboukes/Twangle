@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Warna wallpaper</string>
     <string name="settings_dynamic_color_summary">Gunakan warna dari wallpaper Anda</string>
 
-    <string name="settings_meter_look_title">Meter</string>
-    <string name="settings_meter_look_classic">Klasik</string>
-    <string name="settings_meter_look_light_arc">Busur cahaya</string>
-    <string name="settings_meter_look_pointers">Penunjuk</string>
-    <string name="settings_meter_look_loupe">Kaca pembesar</string>
-    <string name="settings_meter_look_arrows">Panah</string>
-    <string name="settings_meter_look_light_bars">Batang cahaya</string>
-    <string name="settings_in_tune_effect_title">Efek saat pas</string>
-    <string name="settings_in_tune_effect_summary">Seberapa terang meter menyala saat nada pas</string>
-    <string name="settings_in_tune_effect_calm">Tenang</string>
-    <string name="settings_in_tune_effect_bold">Mencolok</string>
-
-    <string name="settings_display_title">Di bawah nada</string>
-    <string name="settings_display_numbers">Angka: selisih berapa sen</string>
-    <string name="settings_display_wave">Gelombang: gambar bergerak, dengan gaya pilihan Anda</string>
-    <string name="settings_wave_look_title">Gaya gelombang</string>
-    <string name="settings_wave_look_strobe">Strobo</string>
-    <string name="settings_wave_look_ribbon">Pita</string>
-    <string name="settings_wave_look_dots">Titik</string>
-    <string name="settings_wave_look_fireflies">Kunang-kunang</string>
-    <string name="settings_wave_look_loop">Lingkaran</string>
-    <string name="settings_wave_look_ripples">Riak</string>
     <string name="settings_focus_mode_title">Mode fokus</string>
     <string name="settings_focus_mode_summary">Memutar Twangle ke samping dengan satu meter besar, mudah dibaca dari jauh</string>
     <string name="settings_left_handed_title">Kidal</string>

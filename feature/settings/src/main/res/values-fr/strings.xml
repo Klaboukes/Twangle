@@ -35,28 +35,6 @@
     <string name="settings_dynamic_color_title">Couleurs du fond d\'écran</string>
     <string name="settings_dynamic_color_summary">Utiliser les couleurs de votre fond d\'écran</string>
 
-    <string name="settings_meter_look_title">Cadran</string>
-    <string name="settings_meter_look_classic">Classique</string>
-    <string name="settings_meter_look_light_arc">Arc lumineux</string>
-    <string name="settings_meter_look_pointers">Pointeurs</string>
-    <string name="settings_meter_look_loupe">Loupe</string>
-    <string name="settings_meter_look_arrows">Flèches</string>
-    <string name="settings_meter_look_light_bars">Barres lumineuses</string>
-    <string name="settings_in_tune_effect_title">Effet de justesse</string>
-    <string name="settings_in_tune_effect_summary">L\'éclat du cadran quand une note est juste</string>
-    <string name="settings_in_tune_effect_calm">Discret</string>
-    <string name="settings_in_tune_effect_bold">Marqué</string>
-
-    <string name="settings_display_title">Sous la note</string>
-    <string name="settings_display_numbers">Chiffres : l\'écart en cents</string>
-    <string name="settings_display_wave">Onde : une image animée, dans le style choisi</string>
-    <string name="settings_wave_look_title">Style d\'onde</string>
-    <string name="settings_wave_look_strobe">Stroboscope</string>
-    <string name="settings_wave_look_ribbon">Ruban</string>
-    <string name="settings_wave_look_dots">Points</string>
-    <string name="settings_wave_look_fireflies">Lucioles</string>
-    <string name="settings_wave_look_loop">Boucle</string>
-    <string name="settings_wave_look_ripples">Ondulations</string>
     <string name="settings_focus_mode_title">Mode concentration</string>
     <string name="settings_focus_mode_summary">Met Twangle à l\'horizontale avec un grand cadran, facile à lire de loin</string>
     <string name="settings_left_handed_title">Gaucher</string>

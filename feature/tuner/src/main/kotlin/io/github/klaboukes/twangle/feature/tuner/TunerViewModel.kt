@@ -16,14 +16,10 @@ import io.github.klaboukes.twangle.core.dsp.strum.StrumInstruments
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,9 +56,9 @@ import kotlin.math.ceil
  * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation, in-tune precision) are
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [saved] are the settings the
- * app already read at its start: every saved option here ([mode], [instrument], [display], [meterLook],
- * [waveLook] and the rest) starts from them until this ViewModel's own reading arrives, so the first
- * frames show the player's looks and layout instead of the defaults for a moment. [language] is the app's language (e.g. "de"): note names follow its habit
+ * app already read at its start: every saved option here ([mode], [instrument], [showTuneHint] and the rest)
+ * starts from them until this ViewModel's own reading arrives, so the first frames show the player's layout
+ * instead of the defaults for a moment. [language] is the app's language (e.g. "de"): note names follow its habit
  * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
  *
  * A long-press on a string plays its note through [tonePlayer] ([playString]). While that tone
@@ -131,11 +127,6 @@ class TunerViewModel(
         .map { it.vibrateInTune }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune)
 
-    /** What shows how far off a note is under it: cents or the wave (a saved setting). */
-    val display: StateFlow<TunerDisplay> = settingsRepository.settings
-        .map { it.display }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.display)
-
     /** Whether "Tune up ↑" / "Tune down ↓" shows under an off-pitch note and TalkBack says it (a saved setting). */
     val showTuneHint: StateFlow<Boolean> = settingsRepository.settings
         .map { it.showTuneHint }
@@ -162,21 +153,6 @@ class TunerViewModel(
      * times a second while listening and [showSignalBars] is on, else left as it is (null until then).
      */
     val signalFigures: StateFlow<SignalFigures?> = signal
-
-    /** What the wave view looks like (a saved setting). */
-    val waveLook: StateFlow<WaveLook> = settingsRepository.settings
-        .map { it.waveLook }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.waveLook)
-
-    /** What the meter above the note looks like (a saved setting). */
-    val meterLook: StateFlow<MeterLook> = settingsRepository.settings
-        .map { it.meterLook }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.meterLook)
-
-    /** How strong the meter's in-tune glow is: Calm or Bold (a saved setting). */
-    val inTuneEffect: StateFlow<InTuneEffect> = settingsRepository.settings
-        .map { it.inTuneEffect }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.inTuneEffect)
 
     /** How close to the note counts as in tune: Relaxed or Precise (a saved setting), for the meter's in-tune window. */
     val inTunePrecision: StateFlow<InTunePrecision> = settingsRepository.settings

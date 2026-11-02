@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Colori dello sfondo</string>
     <string name="settings_dynamic_color_summary">Usa i colori del tuo sfondo</string>
 
-    <string name="settings_meter_look_title">Indicatore</string>
-    <string name="settings_meter_look_classic">Classico</string>
-    <string name="settings_meter_look_light_arc">Arco di luce</string>
-    <string name="settings_meter_look_pointers">Indici</string>
-    <string name="settings_meter_look_loupe">Lente</string>
-    <string name="settings_meter_look_arrows">Frecce</string>
-    <string name="settings_meter_look_light_bars">Barre di luce</string>
-    <string name="settings_in_tune_effect_title">Effetto d\'intonazione</string>
-    <string name="settings_in_tune_effect_summary">Quanto si illumina l\'indicatore quando la nota è intonata</string>
-    <string name="settings_in_tune_effect_calm">Calmo</string>
-    <string name="settings_in_tune_effect_bold">Deciso</string>
-
-    <string name="settings_display_title">Sotto la nota</string>
-    <string name="settings_display_numbers">Numeri: quanti cent di scarto</string>
-    <string name="settings_display_wave">Onda: un\'immagine in movimento, nello stile che scegli</string>
-    <string name="settings_wave_look_title">Stile dell\'onda</string>
-    <string name="settings_wave_look_strobe">Stroboscopio</string>
-    <string name="settings_wave_look_ribbon">Nastro</string>
-    <string name="settings_wave_look_dots">Punti</string>
-    <string name="settings_wave_look_fireflies">Lucciole</string>
-    <string name="settings_wave_look_loop">Anello</string>
-    <string name="settings_wave_look_ripples">Increspature</string>
     <string name="settings_focus_mode_title">Modalità concentrazione</string>
     <string name="settings_focus_mode_summary">Mette Twangle in orizzontale con un grande indicatore, facile da leggere a distanza</string>
     <string name="settings_left_handed_title">Mancino</string>

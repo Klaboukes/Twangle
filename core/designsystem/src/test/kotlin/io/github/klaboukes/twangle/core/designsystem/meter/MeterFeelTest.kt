@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.animation.core.FloatSpringSpec
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -38,8 +37,7 @@ class MeterFeelTest {
 
     @Test
     fun `every look settles naturally, never jittery`() {
-        for (look in MeterLook.entries) {
-            val feel = meterFeel(look)
+        for ((look, feel) in listOf("Classic" to MeterFeels.CLASSIC, "Light arc" to MeterFeels.LIGHT_ARC)) {
             assertTrue("$look damping ${feel.dampingRatio}", feel.dampingRatio >= 0.5f)
             assertTrue("$look settles in ${feel.settleSeconds(-38f, 0f, 0.5f)} s", feel.settleSeconds(-38f, 0f, 0.5f) < 2.5f)
         }
@@ -47,7 +45,7 @@ class MeterFeelTest {
 
     @Test
     fun `classic swings a little past a new string, like a mechanical needle, then settles`() {
-        val classic = meterFeel(MeterLook.CLASSIC)
+        val classic = MeterFeels.CLASSIC
         // From 38 cents flat to the note: a few cents past it (about 9 % of the swing), not a wobble.
         val past = classic.overshoot(-38f, 0f)
         assertTrue("overshoot $past cents", past in 2f..5f)
@@ -57,27 +55,9 @@ class MeterFeelTest {
 
     @Test
     fun `the light arc follows almost without swinging`() {
-        val arc = meterFeel(MeterLook.LIGHT_ARC)
+        val arc = MeterFeels.LIGHT_ARC
         assertTrue(arc.overshoot(-38f, 0f) < 0.2f)
         assertTrue(arc.overshoot(10f, 40f) < 0.2f)
-    }
-
-    @Test
-    fun `the note's pointer follows closely, hardly swinging past the note`() {
-        val pointers = meterFeel(MeterLook.POINTERS)
-        assertEquals(1.9f, pointers.frequencyHz)
-        assertEquals(0.8f, pointers.dampingRatio)
-        // From 38 cents flat: under a cent past the note, which the stretched middle shows 7.5u per cent.
-        assertTrue(pointers.overshoot(-38f, 0f) < 1f)
-    }
-
-    @Test
-    fun `the loupe's marker follows as closely, its swing past the note under a cent`() {
-        val loupe = meterFeel(MeterLook.LOUPE)
-        assertEquals(1.8f, loupe.frequencyHz)
-        assertEquals(0.8f, loupe.dampingRatio)
-        // From 38 cents flat: under a cent past the note, which the glass shows about 9u per cent.
-        assertTrue(loupe.overshoot(-38f, 0f) < 1f)
     }
 
     @Test

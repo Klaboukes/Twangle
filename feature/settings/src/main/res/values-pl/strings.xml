@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Kolory tapety</string>
     <string name="settings_dynamic_color_summary">Używaj kolorów z tapety</string>
 
-    <string name="settings_meter_look_title">Wskaźnik</string>
-    <string name="settings_meter_look_classic">Klasyczny</string>
-    <string name="settings_meter_look_light_arc">Świetlny łuk</string>
-    <string name="settings_meter_look_pointers">Wskaźniki</string>
-    <string name="settings_meter_look_loupe">Lupa</string>
-    <string name="settings_meter_look_arrows">Strzałki</string>
-    <string name="settings_meter_look_light_bars">Paski świetlne</string>
-    <string name="settings_in_tune_effect_title">Efekt nastrojenia</string>
-    <string name="settings_in_tune_effect_summary">Jak mocno świeci wskaźnik, gdy dźwięk jest nastrojony</string>
-    <string name="settings_in_tune_effect_calm">Spokojny</string>
-    <string name="settings_in_tune_effect_bold">Wyrazisty</string>
-
-    <string name="settings_display_title">Pod nutą</string>
-    <string name="settings_display_numbers">Liczby: odchylenie w centach</string>
-    <string name="settings_display_wave">Fala: ruchomy obraz w wybranym wyglądzie</string>
-    <string name="settings_wave_look_title">Wygląd fali</string>
-    <string name="settings_wave_look_strobe">Stroboskop</string>
-    <string name="settings_wave_look_ribbon">Wstęga</string>
-    <string name="settings_wave_look_dots">Kropki</string>
-    <string name="settings_wave_look_fireflies">Świetliki</string>
-    <string name="settings_wave_look_loop">Pętla</string>
-    <string name="settings_wave_look_ripples">Kręgi</string>
     <string name="settings_focus_mode_title">Tryb skupienia</string>
     <string name="settings_focus_mode_summary">Obraca Twangle poziomo z jednym dużym wskaźnikiem, łatwym do odczytania z daleka</string>
     <string name="settings_left_handed_title">Dla leworęcznych</string>

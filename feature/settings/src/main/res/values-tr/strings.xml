@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Duvar kâğıdı renkleri</string>
     <string name="settings_dynamic_color_summary">Duvar kâğıdındaki renkleri kullan</string>
 
-    <string name="settings_meter_look_title">Gösterge</string>
-    <string name="settings_meter_look_classic">Klasik</string>
-    <string name="settings_meter_look_light_arc">Işık yayı</string>
-    <string name="settings_meter_look_pointers">İbreler</string>
-    <string name="settings_meter_look_loupe">Büyüteç</string>
-    <string name="settings_meter_look_arrows">Oklar</string>
-    <string name="settings_meter_look_light_bars">Işık çubukları</string>
-    <string name="settings_in_tune_effect_title">Akort efekti</string>
-    <string name="settings_in_tune_effect_summary">Nota akortlu olduğunda göstergenin ne kadar parlayacağı</string>
-    <string name="settings_in_tune_effect_calm">Sakin</string>
-    <string name="settings_in_tune_effect_bold">Belirgin</string>
-
-    <string name="settings_display_title">Notanın altında</string>
-    <string name="settings_display_numbers">Sayılar: kaç sent sapma var</string>
-    <string name="settings_display_wave">Dalga: seçtiğin görünümde hareketli bir resim</string>
-    <string name="settings_wave_look_title">Dalga görünümü</string>
-    <string name="settings_wave_look_strobe">Stroboskop</string>
-    <string name="settings_wave_look_ribbon">Şerit</string>
-    <string name="settings_wave_look_dots">Noktalar</string>
-    <string name="settings_wave_look_fireflies">Ateş böcekleri</string>
-    <string name="settings_wave_look_loop">Döngü</string>
-    <string name="settings_wave_look_ripples">Halkalar</string>
     <string name="settings_focus_mode_title">Odak modu</string>
     <string name="settings_focus_mode_summary">Twangle\'ı tek büyük göstergeyle yana çevirir, uzaktan kolayca okunur</string>
     <string name="settings_left_handed_title">Solak</string>

@@ -111,10 +111,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.vibrateInTune)
         assertEquals(true, settings.showTuneHint)
         assertEquals(false, settings.showSignalBars)
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.RIBBON, settings.waveLook)
-        assertEquals(MeterLook.CLASSIC, settings.meterLook)
-        assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
+        assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
         assertEquals("a fresh install is due the tour", false, settings.tourSeen)
         assertEquals(false, settings.focusMode)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
@@ -154,10 +151,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setVibrateInTune(false)
         repo.setShowTuneHint(false)
         repo.setShowSignalBars(true)
-        repo.setDisplay(TunerDisplay.NEEDLE)
-        repo.setWaveLook(WaveLook.FIREFLIES)
-        repo.setMeterLook(MeterLook.LIGHT_ARC)
-        repo.setInTuneEffect(InTuneEffect.BOLD)
+        repo.setLensLook(LensLook.STROBE)
         repo.setTourSeen(true)
         repo.setFocusMode(true)
         repo.setMetronomeBpm(96)
@@ -197,10 +191,7 @@ class DataStoreSettingsRepositoryTest {
             vibrateInTune = false,
             showTuneHint = false,
             showSignalBars = true,
-            display = TunerDisplay.NEEDLE,
-            waveLook = WaveLook.FIREFLIES,
-            meterLook = MeterLook.LIGHT_ARC,
-            inTuneEffect = InTuneEffect.BOLD,
+            lensLook = LensLook.STROBE,
             tourSeen = true,
             focusMode = true,
             metronomeBpm = 96,
@@ -250,8 +241,7 @@ class DataStoreSettingsRepositoryTest {
             setNotation(Notation.FLATS)
             setInTunePrecision(InTunePrecision.PRECISE)
             setFocusMode(true)
-            setMeterLook(MeterLook.POINTERS)
-            setInTuneEffect(InTuneEffect.BOLD)
+            setLensLook(LensLook.LIGHT_ARC)
             setMetronomeBpm(72)
             setMetronomeMeter(Meter.SIX_EIGHT)
             setMetronomeVibrate(true)
@@ -286,8 +276,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("a picked notation wins over the language", Notation.FLATS, settings.notationFor("fr"))
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the focus mode choice is kept", true, settings.focusMode)
-        assertEquals("the meter look is kept", MeterLook.POINTERS, settings.meterLook)
-        assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
+        assertEquals("the lens look is kept", LensLook.LIGHT_ARC, settings.lensLook)
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
         assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
@@ -583,10 +572,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown notation counts as never picked", null, settings.notationChoice)
         assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals(WaveLook.DEFAULT, settings.waveLook)
-        assertEquals("an unknown meter look gives Classic", MeterLook.CLASSIC, settings.meterLook)
-        assertEquals("an unknown in-tune effect gives Calm", InTuneEffect.CALM, settings.inTuneEffect)
-        assertEquals(TunerDisplay.DEFAULT, settings.display)
+        assertEquals("an unknown meter look over an unknown wave gives the trail", LensLook.DEFAULT, settings.lensLook)
         assertEquals(466f, settings.a4Hz)
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
         assertEquals("an unknown click gives the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
@@ -595,28 +581,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown scale gives major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("unknown capo shapes give C", SongKey(PitchClass.C), settings.practiceCapoShapes)
         assertEquals("a capo fret out of range gives no capo", 0, settings.practiceCapoFret)
-    }
-
-    @Test
-    fun `the old wave view switch carries over to the display`() = runTest {
-        val store = dataStore()
-        store.edit { it[booleanPreferencesKey("show_waves")] = false }
-        assertEquals("wave view off: the needle with cents", TunerDisplay.NEEDLE, repository(store).settings.first().display)
-
-        store.edit { it[booleanPreferencesKey("show_waves")] = true }
-        assertEquals("wave view on: the wave", TunerDisplay.WAVE, repository(store).settings.first().display)
-    }
-
-    @Test
-    fun `a picked display wins over the old wave view switch and survives a restart`() = runTest {
-        dataStore().edit { it[booleanPreferencesKey("show_waves")] = false }
-        close()
-        repository().setDisplay(TunerDisplay.WAVE)
-        close()
-
-        val store = dataStore()
-        assertEquals(TunerDisplay.WAVE, repository(store).settings.first().display)
-        assertEquals("the old switch is cleared", null, store.data.first()[booleanPreferencesKey("show_waves")])
     }
 
     @Test
@@ -653,72 +617,96 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the old choice is cleared", null, store.data.first()[stringPreferencesKey("practice_chart")])
     }
 
-    @Test
-    fun `an old strobe display opens as the wave with the strobe look`() = runTest {
+    /** The lens look read from 1.1's keys for the meter and what showed under it (null leaves a key out). */
+    private suspend fun lensLookFrom(
+        meterLook: String? = null,
+        display: String? = null,
+        showWaves: Boolean? = null,
+        waveLook: String? = null,
+    ): LensLook {
         val store = dataStore()
         store.edit {
-            it[stringPreferencesKey("tuner_display")] = "STROBE"
-            it[stringPreferencesKey("wave_look")] = "FIREFLIES"
+            it.clear()
+            meterLook?.let { look -> it[stringPreferencesKey("meter_look")] = look }
+            display?.let { shown -> it[stringPreferencesKey("tuner_display")] = shown }
+            showWaves?.let { on -> it[booleanPreferencesKey("show_waves")] = on }
+            waveLook?.let { look -> it[stringPreferencesKey("wave_look")] = look }
         }
-
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals("the strobe it showed, not the look picked for the wave back then", WaveLook.STROBE, settings.waveLook)
+        val look = repository(store).settings.first().lensLook
+        close()
+        return look
     }
 
     @Test
-    fun `the old stripes look opens as the strobe look`() = runTest {
-        val store = dataStore()
-        store.edit {
+    fun `rule 1, a saved look 2_0 has is that look`() = runTest {
+        for (look in LensLook.entries) {
+            assertEquals(look.name, look, lensLookFrom(meterLook = look.name))
+            assertEquals("${look.name}, whatever showed under the meter", look, lensLookFrom(meterLook = look.name, display = "WAVE", waveLook = "STROBE"))
+        }
+        assertEquals("1.1's Light arc stays the Light arc", LensLook.LIGHT_ARC, lensLookFrom(meterLook = "LIGHT_ARC", display = "STROBE"))
+    }
+
+    @Test
+    fun `rule 2, a 1_1 meter look 2_0 lacks over the strobe is the strobe`() = runTest {
+        for (gone in listOf("CLASSIC", "POINTERS", "LOUPE", "ARROWS", "LIGHT_BARS", "SPIRIT_LEVEL", "ECLIPSE", "ROLLING_SCALE", "SUNDIAL")) {
+            assertEquals("$gone over the strobe wave", LensLook.STROBE, lensLookFrom(meterLook = gone, display = "WAVE", waveLook = "STROBE"))
+        }
+        assertEquals("no meter look saved, the strobe wave", LensLook.STROBE, lensLookFrom(display = "WAVE", waveLook = "STROBE"))
+    }
+
+    @Test
+    fun `rule 2 reads the strobe as 1_1 did, old names included`() = runTest {
+        assertEquals("the old strobe display", LensLook.STROBE, lensLookFrom(display = "STROBE"))
+        assertEquals("the old strobe display over another wave look", LensLook.STROBE, lensLookFrom(display = "STROBE", waveLook = "FIREFLIES"))
+        assertEquals("the old stripes look", LensLook.STROBE, lensLookFrom(display = "WAVE", waveLook = "STRIPES"))
+        assertEquals("no display saved: 1.1's default was the wave", LensLook.STROBE, lensLookFrom(waveLook = "STROBE"))
+        assertEquals("the old wave-view switch on", LensLook.STROBE, lensLookFrom(showWaves = true, waveLook = "STRIPES"))
+        assertEquals("a damaged display read as 1.1's default, the wave", LensLook.STROBE, lensLookFrom(display = "HOLOGRAM", waveLook = "STROBE"))
+    }
+
+    @Test
+    fun `rule 3, anything else is the trail`() = runTest {
+        assertEquals("a fresh install", LensLook.TRAIL, lensLookFrom())
+        assertEquals("1.1's defaults, Classic over the ribbon", LensLook.TRAIL, lensLookFrom(meterLook = "CLASSIC", display = "WAVE", waveLook = "RIBBON"))
+        assertEquals("the cents under the meter, the strobe picked for the wave", LensLook.TRAIL, lensLookFrom(display = "NEEDLE", waveLook = "STROBE"))
+        assertEquals("the old wave-view switch off", LensLook.TRAIL, lensLookFrom(showWaves = false, waveLook = "STROBE"))
+        assertEquals("the strobe wave's look never saved: the ribbon", LensLook.TRAIL, lensLookFrom(display = "WAVE"))
+        assertEquals("another wave look", LensLook.TRAIL, lensLookFrom(meterLook = "LOUPE", display = "WAVE", waveLook = "FIREFLIES"))
+        assertEquals("a damaged meter look and wave look", LensLook.TRAIL, lensLookFrom(meterLook = "SUNDIAL", waveLook = "LAVA_LAMP"))
+    }
+
+    @Test
+    fun `picking a look ends the rule, saved under meter_look, and survives a restart`() = runTest {
+        dataStore().edit {
             it[stringPreferencesKey("tuner_display")] = "WAVE"
-            it[stringPreferencesKey("wave_look")] = "STRIPES"
-        }
-
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.STROBE, settings.waveLook)
-    }
-
-    @Test
-    fun `a look picked after an old strobe display shows and survives a restart`() = runTest {
-        dataStore().edit { it[stringPreferencesKey("tuner_display")] = "STROBE" }
-        close()
-        repository().setWaveLook(WaveLook.LOOP)
-        close()
-
-        val store = dataStore()
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.LOOP, settings.waveLook)
-        assertEquals("the old display is rewritten", "WAVE", store.data.first()[stringPreferencesKey("tuner_display")])
-    }
-
-    @Test
-    fun `switching away from an old strobe display and back keeps the strobe look`() = runTest {
-        val store = dataStore()
-        store.edit {
-            it[stringPreferencesKey("tuner_display")] = "STROBE"
-            it[stringPreferencesKey("wave_look")] = "RIBBON"
-        }
-        val repo = repository(store)
-
-        repo.setDisplay(TunerDisplay.NEEDLE)
-        assertEquals(TunerDisplay.NEEDLE, repo.settings.first().display)
-        repo.setDisplay(TunerDisplay.WAVE)
-        assertEquals(WaveLook.STROBE, repo.settings.first().waveLook)
-    }
-
-    @Test
-    fun `the old wave view switch still carries over next to an old stripes look`() = runTest {
-        val store = dataStore()
-        store.edit {
             it[booleanPreferencesKey("show_waves")] = true
-            it[stringPreferencesKey("wave_look")] = "STRIPES"
+            it[stringPreferencesKey("wave_look")] = "STROBE"
         }
+        close()
+        repository().setLensLook(LensLook.TRAIL)
+        close()
 
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.STROBE, settings.waveLook)
+        val store = dataStore()
+        assertEquals("the trail picked, not the strobe 1.1 showed", LensLook.TRAIL, repository(store).settings.first().lensLook)
+        val saved = store.data.first()
+        assertEquals("TRAIL", saved[stringPreferencesKey("meter_look")])
+        assertEquals("1.1's display is removed", null, saved[stringPreferencesKey("tuner_display")])
+        assertEquals("the old wave-view switch is removed", null, saved[booleanPreferencesKey("show_waves")])
+        assertEquals("1.1's wave look is removed", null, saved[stringPreferencesKey("wave_look")])
+    }
+
+    @Test
+    fun `1_1's Calm or Bold glow is left in the file unread`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        // Any saved key counts the install as used (tourSeen); a key no longer read changes nothing else.
+        store.edit { it[booleanPreferencesKey("string_lock_tip_seen")] = true }
+        val before = repo.settings.first()
+        for (effect in listOf("CALM", "BOLD", "FIREWORKS")) {
+            store.edit { it[stringPreferencesKey("in_tune_effect")] = effect }
+            assertEquals(effect, before, repo.settings.first())
+        }
+        assertEquals("never removed", "FIREWORKS", store.data.first()[stringPreferencesKey("in_tune_effect")])
     }
 
     @Test
@@ -831,62 +819,20 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `every meter look is saved under meter_look by its name`() = runTest {
+    fun `every lens look is saved under meter_look by its name`() = runTest {
         val store = dataStore()
         val repo = repository(store)
-        for (look in MeterLook.entries) {
-            repo.setMeterLook(look)
-            assertEquals(look, repo.settings.first().meterLook)
+        for (look in LensLook.entries) {
+            repo.setLensLook(look)
+            assertEquals(look, repo.settings.first().lensLook)
             assertEquals(look.name, store.data.first()[stringPreferencesKey("meter_look")])
         }
     }
 
     @Test
-    fun `the six meter looks come in the owner's order, Classic first and the default`() {
-        assertEquals(
-            listOf(
-                MeterLook.CLASSIC,
-                MeterLook.LIGHT_ARC,
-                MeterLook.POINTERS,
-                MeterLook.LOUPE,
-                MeterLook.ARROWS,
-                MeterLook.LIGHT_BARS,
-            ),
-            MeterLook.entries,
-        )
-        assertEquals(MeterLook.CLASSIC, MeterLook.DEFAULT)
-    }
-
-    @Test
-    fun `a meter look that went in Phase 25 reads as Classic`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        for (gone in listOf("ROLLING_SCALE", "COMET", "STUDIO_METER")) {
-            store.edit { it[stringPreferencesKey("meter_look")] = gone }
-            assertEquals(gone, MeterLook.CLASSIC, repo.settings.first().meterLook)
-        }
-    }
-
-    @Test
-    fun `a saved spirit level opens as Pointers, which took its place in Phase 60`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        store.edit { it[stringPreferencesKey("meter_look")] = "SPIRIT_LEVEL" }
-        assertEquals(MeterLook.POINTERS, repo.settings.first().meterLook)
-        // Picking a look again saves it under its own name.
-        repo.setMeterLook(MeterLook.POINTERS)
-        assertEquals("POINTERS", store.data.first()[stringPreferencesKey("meter_look")])
-    }
-
-    @Test
-    fun `a saved eclipse opens as Loupe, which took its place in Phase 60`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        store.edit { it[stringPreferencesKey("meter_look")] = "ECLIPSE" }
-        assertEquals(MeterLook.LOUPE, repo.settings.first().meterLook)
-        // Picking a look again saves it under its own name.
-        repo.setMeterLook(MeterLook.LOUPE)
-        assertEquals("LOUPE", store.data.first()[stringPreferencesKey("meter_look")])
+    fun `the three lens looks, the trail first and the default`() {
+        assertEquals(listOf(LensLook.TRAIL, LensLook.LIGHT_ARC, LensLook.STROBE), LensLook.entries)
+        assertEquals(LensLook.TRAIL, LensLook.DEFAULT)
     }
 
     @Test
@@ -1230,10 +1176,7 @@ class DataStoreSettingsRepositoryTest {
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setShowTuneHint" to { repo.setShowTuneHint(!before.showTuneHint) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
-            "setDisplay" to { repo.setDisplay(TunerDisplay.entries.last()) },
-            "setWaveLook" to { repo.setWaveLook(WaveLook.entries.last()) },
-            "setMeterLook" to { repo.setMeterLook(MeterLook.entries.last()) },
-            "setInTuneEffect" to { repo.setInTuneEffect(InTuneEffect.entries.last()) },
+            "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             "setFocusMode" to { repo.setFocusMode(!before.focusMode) },
             "setTourSeen" to { repo.setTourSeen(!before.tourSeen) },
             "decideTourOnce" to { repo.decideTourOnce() },

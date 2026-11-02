@@ -9,7 +9,7 @@ import org.junit.Test
 class RestingCentreTest {
 
     private val roles = MeterRoles(
-        background = Color.Black, plate = Color.DarkGray, ink = Color.White, muted = Color.Gray, track = Color.Gray,
+        background = Color.Black, ink = Color.White, muted = Color.Gray, track = Color.Gray,
         // A green accent, as Retro's and some wallpaper colours have.
         accent = Color(0xFF5F6E0E), inTune = Color.Green, dark = true, numbers = FontFamily.Default, numberScale = 1f,
     )

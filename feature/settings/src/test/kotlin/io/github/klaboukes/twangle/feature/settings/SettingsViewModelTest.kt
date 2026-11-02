@@ -3,12 +3,8 @@ package io.github.klaboukes.twangle.feature.settings
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -78,38 +74,10 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `saves the meter look`() = runTest(dispatcher) {
-        val vm = SettingsViewModel(repository)
-        vm.setMeterLook(MeterLook.POINTERS)
-        runCurrent()
-        assertEquals(MeterLook.POINTERS, repository.current.meterLook)
-    }
-
-    @Test
-    fun `saves the in-tune effect`() = runTest(dispatcher) {
-        val vm = SettingsViewModel(repository)
-        vm.setInTuneEffect(InTuneEffect.BOLD)
-        runCurrent()
-        assertEquals(InTuneEffect.BOLD, repository.current.inTuneEffect)
-        vm.setInTuneEffect(InTuneEffect.CALM)
-        runCurrent()
-        assertEquals(InTuneEffect.CALM, repository.current.inTuneEffect)
-    }
-
-    @Test
-    fun `saves the wave look`() = runTest(dispatcher) {
-        val vm = SettingsViewModel(repository)
-        vm.setWaveLook(WaveLook.RIPPLES)
-        runCurrent()
-        assertEquals(WaveLook.RIPPLES, repository.current.waveLook)
-    }
-
-    @Test
-    fun `saves theme, wallpaper colours, display, layout, keep screen on, vibration and tune hint and signal bars`() = runTest(dispatcher) {
+    fun `saves theme, wallpaper colours, layout, keep screen on, vibration and tune hint and signal bars`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)
         vm.setDynamicColor(false)
-        vm.setDisplay(TunerDisplay.NEEDLE)
         vm.setKeepScreenOn(false)
         vm.setVibrateInTune(false)
         vm.setShowTuneHint(false)
@@ -117,8 +85,6 @@ class SettingsViewModelTest {
         vm.setFocusMode(true)
         vm.setLeftHanded(true)
         runCurrent()
-
-        assertEquals(TunerDisplay.NEEDLE, repository.current.display)
 
         assertEquals(ThemeMode.LIGHT, repository.current.theme)
         assertEquals(false, repository.current.dynamicColor)

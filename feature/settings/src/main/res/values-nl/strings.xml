@@ -39,29 +39,6 @@
     <string name="settings_dynamic_color_title">Achtergrondkleuren</string>
     <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
 
-    <string name="settings_meter_look_title">Meter</string>
-    <string name="settings_meter_look_classic">Klassiek</string>
-    <string name="settings_meter_look_light_arc">Lichtboog</string>
-    <string name="settings_meter_look_pointers">Wijzers</string>
-    <string name="settings_meter_look_loupe">Loep</string>
-    <string name="settings_meter_look_arrows">Pijlen</string>
-    <string name="settings_meter_look_light_bars">Lichtbalken</string>
-    <string name="settings_in_tune_effect_title">Effect bij zuiver</string>
-    <string name="settings_in_tune_effect_summary">Hoe sterk de meter oplicht als een noot zuiver is</string>
-    <string name="settings_in_tune_effect_calm">Rustig</string>
-    <string name="settings_in_tune_effect_bold">Krachtig</string>
-
-    <!-- Display: what shows how far off a note is, under the note (in the Tuner screen group). -->
-    <string name="settings_display_title">Onder de noot</string>
-    <string name="settings_display_numbers">Getallen: hoeveel cent ernaast</string>
-    <string name="settings_display_wave">Golf: een bewegend beeld, in de vorm die je kiest</string>
-    <string name="settings_wave_look_title">Vorm van de golf</string>
-    <string name="settings_wave_look_strobe">Stroboscoop</string>
-    <string name="settings_wave_look_ribbon">Lint</string>
-    <string name="settings_wave_look_dots">Stippen</string>
-    <string name="settings_wave_look_fireflies">Vuurvliegjes</string>
-    <string name="settings_wave_look_loop">Lus</string>
-    <string name="settings_wave_look_ripples">Rimpels</string>
     <string name="settings_focus_mode_title">Focusmodus</string>
     <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen op afstand</string>
     <string name="settings_left_handed_title">Linkshandig</string>

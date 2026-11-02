@@ -11,9 +11,6 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -23,9 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -37,10 +31,7 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
-import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
-import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import java.util.concurrent.TimeUnit
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -54,8 +45,8 @@ import org.junit.runners.Parameterized
  * fonts (Michroma and Orbitron are wide, Forum narrow), so rows differ in size. At 2× text,
  * upright (light) and on its side (dark), every title, choice and card name can be scrolled to and
  * is then wholly shown; About's titles, version and credits too. TalkBack, light and dark, hears every
- * style, meter and wave card and every light-or-dark choice as a radio button with its name and which
- * one is picked, and the back arrow by name. [SettingsContentTest] covers each behaviour in one style.
+ * light-or-dark choice as a radio button with its name and which one is picked, and the back arrow by
+ * name. (1.1's meter and wave cards went in Phase 67; the lens's Meter cards come in Phase 72.) [SettingsContentTest] covers each behaviour in one style.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -81,7 +72,7 @@ class SettingsStylesTest(private val style: String) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf<String?>(null)
 
-    /** Settings (with the wave display, so its rows show too) or, with [about], the About page. */
+    /** Settings or, with [about], the About page. */
     private fun show(about: Boolean = false) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
@@ -90,7 +81,7 @@ class SettingsStylesTest(private val style: String) {
                         AboutScreen(appVersion = VERSION, onOpenWebsite = {}, onRate = {}, onBack = {}, modifier = Modifier.testTag(WINDOW))
                     } else {
                         SettingsContent(
-                            AppSettings(display = TunerDisplay.WAVE, meterLook = MeterLook.POINTERS, waveLook = WaveLook.LOOP),
+                            AppSettings(),
                             appVersion = VERSION,
                             onOpenAbout = {},
                             onA4Change = {},
@@ -102,10 +93,6 @@ class SettingsStylesTest(private val style: String) {
                             onVibrateInTuneChange = {},
                             onShowTuneHintChange = {},
                             onShowSignalBarsChange = {},
-                            onDisplayChange = {},
-                            onMeterLookChange = {},
-                            onInTuneEffectChange = {},
-                            onWaveLookChange = {},
                             onFocusModeChange = {},
                             onLeftHandedChange = {},
                             modifier = Modifier.testTag(WINDOW),
@@ -175,15 +162,6 @@ class SettingsStylesTest(private val style: String) {
             R.string.settings_theme_light,
             R.string.settings_theme_dark,
             R.string.settings_group_tuner_screen,
-            R.string.settings_meter_look_title,
-            R.string.settings_in_tune_effect_title,
-            R.string.settings_in_tune_effect_summary,
-            R.string.settings_in_tune_effect_calm,
-            R.string.settings_in_tune_effect_bold,
-            R.string.settings_display_title,
-            R.string.settings_display_numbers,
-            R.string.settings_display_wave,
-            R.string.settings_wave_look_title,
             R.string.settings_group_while_tuning,
             R.string.settings_keep_screen_on_title,
             R.string.settings_vibrate_in_tune_title,
@@ -200,9 +178,6 @@ class SettingsStylesTest(private val style: String) {
         // The page title sits in the top bar, which doesn't scroll.
         assertWhollyShown(compose.onNodeWithText(context.getString(R.string.settings_title), useUnmergedTree = true), "$case title", scroll = false)
         for (text in texts) assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), "$case $text")
-        for ((tag, name) in cardNames()) {
-            assertWhollyShown(compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(tag)), useUnmergedTree = true), "$case $name card")
-        }
     }
 
     @Test
@@ -227,20 +202,12 @@ class SettingsStylesTest(private val style: String) {
     }
 
     @Test
-    fun talkBackHearsEveryCardAndChoiceByName() {
+    fun talkBackHearsEveryChoiceByName() {
         show()
         for (dark in listOf(false, true)) {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "$style ${if (dark) "dark" else "light"}:"
-            val picked = mapOf(meterLookCardTag(MeterLook.POINTERS) to true, waveLookCardTag(WaveLook.LOOP) to true)
-            for ((tag, name) in cardNames()) {
-                val card = compose.onNodeWithTag(tag).performScrollTo()
-                card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-                if (picked[tag] == true) card.assertIsSelected() else card.assertIsNotSelected()
-                // The card says its name and nothing else: the picture inside is silent.
-                assertEquals("$case $tag", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            }
             for ((id, selected) in listOf(R.string.settings_theme_system to true, R.string.settings_theme_light to false, R.string.settings_theme_dark to false)) {
                 val row = compose.onNodeWithText(context.getString(id)).performScrollTo()
                 row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
@@ -256,30 +223,6 @@ class SettingsStylesTest(private val style: String) {
             assertTrue("$case names line up $starts", starts.all { kotlin.math.abs(it - starts[0]) < 0.5f })
         }
     }
-
-    /** Each card's test tag with the name it shows. */
-    private fun cardNames(): List<Pair<String, String>> = buildList {
-        meterLookNames.forEach { (it, id) -> add(meterLookCardTag(it) to context.getString(id)) }
-        waveLookNames.forEach { (it, id) -> add(waveLookCardTag(it) to context.getString(id)) }
-    }
-
-    private val meterLookNames = mapOf(
-        MeterLook.CLASSIC to R.string.settings_meter_look_classic,
-        MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
-        MeterLook.POINTERS to R.string.settings_meter_look_pointers,
-        MeterLook.LOUPE to R.string.settings_meter_look_loupe,
-        MeterLook.ARROWS to R.string.settings_meter_look_arrows,
-        MeterLook.LIGHT_BARS to R.string.settings_meter_look_light_bars,
-    )
-
-    private val waveLookNames = mapOf(
-        WaveLook.STROBE to R.string.settings_wave_look_strobe,
-        WaveLook.RIBBON to R.string.settings_wave_look_ribbon,
-        WaveLook.DOTS to R.string.settings_wave_look_dots,
-        WaveLook.FIREFLIES to R.string.settings_wave_look_fireflies,
-        WaveLook.LOOP to R.string.settings_wave_look_loop,
-        WaveLook.RIPPLES to R.string.settings_wave_look_ripples,
-    )
 
     /**
      * Every language at 2× text, upright and on its side: every text of Settings, and of About, wholly

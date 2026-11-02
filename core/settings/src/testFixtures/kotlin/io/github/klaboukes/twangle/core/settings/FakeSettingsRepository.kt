@@ -132,13 +132,7 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
 
-    override suspend fun setDisplay(display: TunerDisplay) = write { it.copy(display = display) }
-
-    override suspend fun setWaveLook(look: WaveLook) = write { it.copy(waveLook = look) }
-
-    override suspend fun setMeterLook(look: MeterLook) = write { it.copy(meterLook = look) }
-
-    override suspend fun setInTuneEffect(effect: InTuneEffect) = write { it.copy(inTuneEffect = effect) }
+    override suspend fun setLensLook(look: LensLook) = write { it.copy(lensLook = look) }
 
     override suspend fun setFocusMode(enabled: Boolean) =
         write { it.copy(focusMode = enabled) }

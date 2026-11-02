@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Cores do papel de parede</string>
     <string name="settings_dynamic_color_summary">Usar as cores do seu papel de parede</string>
 
-    <string name="settings_meter_look_title">Medidor</string>
-    <string name="settings_meter_look_classic">Clássico</string>
-    <string name="settings_meter_look_light_arc">Arco de luz</string>
-    <string name="settings_meter_look_pointers">Ponteiros</string>
-    <string name="settings_meter_look_loupe">Lupa</string>
-    <string name="settings_meter_look_arrows">Setas</string>
-    <string name="settings_meter_look_light_bars">Barras de luz</string>
-    <string name="settings_in_tune_effect_title">Efeito ao afinar</string>
-    <string name="settings_in_tune_effect_summary">Quanto o medidor brilha quando a nota está afinada</string>
-    <string name="settings_in_tune_effect_calm">Suave</string>
-    <string name="settings_in_tune_effect_bold">Marcante</string>
-
-    <string name="settings_display_title">Abaixo da nota</string>
-    <string name="settings_display_numbers">Números: quantos cents de desvio</string>
-    <string name="settings_display_wave">Onda: uma imagem em movimento, no estilo que você escolher</string>
-    <string name="settings_wave_look_title">Estilo da onda</string>
-    <string name="settings_wave_look_strobe">Estroboscópio</string>
-    <string name="settings_wave_look_ribbon">Fita</string>
-    <string name="settings_wave_look_dots">Pontos</string>
-    <string name="settings_wave_look_fireflies">Vaga-lumes</string>
-    <string name="settings_wave_look_loop">Aro</string>
-    <string name="settings_wave_look_ripples">Ondulações</string>
     <string name="settings_focus_mode_title">Modo foco</string>
     <string name="settings_focus_mode_summary">Deixa o Twangle na horizontal com um medidor grande, fácil de ler de longe</string>
     <string name="settings_left_handed_title">Canhoto</string>

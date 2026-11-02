@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">배경화면 색상</string>
     <string name="settings_dynamic_color_summary">배경화면의 색상 사용</string>
 
-    <string name="settings_meter_look_title">미터</string>
-    <string name="settings_meter_look_classic">클래식</string>
-    <string name="settings_meter_look_light_arc">빛의 호</string>
-    <string name="settings_meter_look_pointers">포인터</string>
-    <string name="settings_meter_look_loupe">돋보기</string>
-    <string name="settings_meter_look_arrows">화살표</string>
-    <string name="settings_meter_look_light_bars">빛 막대</string>
-    <string name="settings_in_tune_effect_title">음이 맞을 때 효과</string>
-    <string name="settings_in_tune_effect_summary">음이 맞을 때 미터가 빛나는 정도</string>
-    <string name="settings_in_tune_effect_calm">차분하게</string>
-    <string name="settings_in_tune_effect_bold">화려하게</string>
-
-    <string name="settings_display_title">음이름 아래</string>
-    <string name="settings_display_numbers">숫자: 몇 센트 벗어났는지</string>
-    <string name="settings_display_wave">물결: 고른 모양으로 움직이는 그림</string>
-    <string name="settings_wave_look_title">물결 모양</string>
-    <string name="settings_wave_look_strobe">스트로브</string>
-    <string name="settings_wave_look_ribbon">리본</string>
-    <string name="settings_wave_look_dots">점</string>
-    <string name="settings_wave_look_fireflies">반딧불이</string>
-    <string name="settings_wave_look_loop">루프</string>
-    <string name="settings_wave_look_ripples">잔물결</string>
     <string name="settings_focus_mode_title">집중 모드</string>
     <string name="settings_focus_mode_summary">Twangle을 가로로 돌려 큰 미터 하나만 보여줘요. 멀리서도 읽기 쉬워요</string>
     <string name="settings_left_handed_title">왼손잡이</string>

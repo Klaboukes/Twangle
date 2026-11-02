@@ -29,14 +29,11 @@ import androidx.compose.ui.unit.width
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -52,9 +49,9 @@ import kotlin.math.abs
  * The compact landscape layout (focus mode) in each of the six styles: each style brings its own fonts
  * and dial. On a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the
  * meter fills the screen with the small note in its top start corner; with 2× font the note and a tip
- * are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. Every meter look, at its
- * biggest here, is clearly drawn inside its box in the style's colours, light and dark, skipped by
- * TalkBack, and moves nothing else on the screen, also at 2× font.
+ * are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. The meter (Classic, the one meter
+ * since Phase 67), at its biggest here, is clearly drawn inside its box, light and dark, and skipped by
+ * TalkBack, also at 2× font.
  * [TunerContentTest] covers the layout itself in one style.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -75,11 +72,9 @@ class CompactLandscapeStylesTest(private val style: String) {
     // Set these to change what the window shows without composing it again.
     private val shownState = mutableStateOf<TunerUiState>(detected())
     private val shownMode = mutableStateOf(TunerMode.AUTO)
-    private val shownDisplay = mutableStateOf(TunerDisplay.NEEDLE)
     private val shownSize = mutableStateOf(PHONE_LANDSCAPE)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
-    private val shownLook = mutableStateOf(MeterLook.DEFAULT)
     private val shownCompact = mutableStateOf(true)
 
     private fun show() {
@@ -95,8 +90,6 @@ class CompactLandscapeStylesTest(private val style: String) {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().background(BACKGROUND).testTag(WINDOW),
-                        display = shownDisplay.value,
-                        meterLook = shownLook.value,
                         showTuneHint = true,
                         showSignalBars = true,
                         compactLandscape = shownCompact.value,
@@ -128,7 +121,7 @@ class CompactLandscapeStylesTest(private val style: String) {
     private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
 
     /**
-     * Guitar mode with the needle and the wave, then chromatic mode: the meter fills the screen, the
+     * Guitar mode, then chromatic mode: the meter fills the screen, the
      * note in its corner, and nothing else shows (no cents, frequency, strings or signal bars).
      */
     @Test
@@ -137,11 +130,8 @@ class CompactLandscapeStylesTest(private val style: String) {
         forEachLook { case ->
             shownState.value = detected()
             shownMode.value = TunerMode.AUTO
-            for (display in TunerDisplay.entries) {
-                shownDisplay.value = display
-                compose.waitForIdle()
-                assertMeterFillsTheScreen("$case $display")
-            }
+            compose.waitForIdle()
+            assertMeterFillsTheScreen("$case guitar")
             shownState.value = detected(TunerMode.CHROMATIC)
             shownMode.value = TunerMode.CHROMATIC
             compose.waitForIdle()
@@ -254,87 +244,65 @@ class CompactLandscapeStylesTest(private val style: String) {
     }
 
     /**
-     * Every look on a phone (light) and a tablet (dark) on their side. With the test below, each size
-     * is seen in both themes; each capture of the window costs about a sixth of a second.
+     * The meter (1.1's Classic, the one meter since Phase 67) on a phone (light) and a tablet (dark) on their side.
+     * With the test below, each size is seen in both themes.
      */
     @Test
-    fun onItsSideEveryMeterLookStaysInItsBox() {
+    fun onItsSideTheMeterCoversItsBox() {
         show()
-        forEach(PHONE_LANDSCAPE to false, TABLET_LANDSCAPE to true) { case -> assertEveryMeterLookInItsBox(case) }
+        forEach(PHONE_LANDSCAPE to false, TABLET_LANDSCAPE to true) { case -> assertMeterCoversItsBox(case) }
     }
 
-    /** Every look with 2× font, on a phone (dark) and a tablet (light) on their side. */
+    /** The meter with 2× font, on a phone (dark) and a tablet (light) on their side. */
     @Test
-    fun withTheLargestFontEveryMeterLookStaysInItsBox() {
+    fun withTheLargestFontTheMeterCoversItsBox() {
         shownFontScale.value = 2f
         show()
-        forEach(PHONE_LANDSCAPE to true, TABLET_LANDSCAPE to false) { case -> assertEveryMeterLookInItsBox("$case 2x font") }
+        forEach(PHONE_LANDSCAPE to true, TABLET_LANDSCAPE to false) { case -> assertMeterCoversItsBox("$case 2x font") }
     }
 
     /**
-     * Shows each meter look in turn, against Classic: every other part of the screen keeps its place
-     * and looks as it did (nothing moved, nothing drawn outside the meter's 2:1 box but a look's soft
-     * glow fading out round it, which `MeterLooksTest` checks), the box
-     * is covered by the look with clear marks on it (Classic too, and Retro's backlit panel must show
-     * its scale and marker on it), and TalkBack finds nothing in the meter.
+     * The meter's 2:1 box is covered by the meter, with clear marks on it, and TalkBack finds nothing in it. (1.1 also
+     * checked each other meter look against Classic here; they went in Phase 67, and the lens's looks get `LensLooksTest`.)
      */
-    private fun assertEveryMeterLookInItsBox(case: String) {
-        shownLook.value = MeterLook.CLASSIC
+    private fun assertMeterCoversItsBox(case: String) {
         compose.waitForIdle()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val places = placesOnScreen()
-        val classic = compose.onNodeWithTag(WINDOW).captureToImage().toPixelMap()
-        val meter = places.getValue("meter")
-        val scale = classic.width / window.width.value
+        val pixels = compose.onNodeWithTag(WINDOW).captureToImage().toPixelMap()
+        val meter = gauge.getBoundsInRoot()
+        val scale = pixels.width / window.width.value
         // The 2:1 box, one pixel larger for antialiasing, in the window's pixels.
         val boxLeft = ((meter.left - window.left).value * scale).toInt() - 1
         val boxTop = ((meter.top - window.top).value * scale).toInt() - 1
         val boxRight = ((meter.right - window.left).value * scale).toInt() + 1
         val boxBottom = ((meter.top - window.top + meter.width / 2).value * scale).toInt() + 1
-        for (look in MeterLook.entries) {
-            shownLook.value = look
-            compose.waitForIdle()
-            val lookCase = "$case $look"
-            assertEquals("$lookCase: the other parts moved", places, placesOnScreen())
-            val node = gauge.fetchSemanticsNode()
-            assertNull("$lookCase: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
-            assertNull("$lookCase: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
-            assertTrue("$lookCase: something inside the meter for TalkBack", node.children.isEmpty())
-            val pixels = if (look == MeterLook.CLASSIC) classic else compose.onNodeWithTag(WINDOW).captureToImage().toPixelMap()
-            if (look != MeterLook.CLASSIC) {
-                assertSameOutsideTheBox(lookCase, pixels, classic, boxLeft, boxTop, boxRight, boxBottom)
+        val node = gauge.fetchSemanticsNode()
+        assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
+        assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
+        assertTrue("$case: something inside the meter for TalkBack", node.children.isEmpty())
+        // In the box (every other pixel): the calm field covers most of it (all of it that is on screen),
+        // with clear marks on it. Colours as ARGB ints, as a million pixels add up.
+        val background = BACKGROUND.toArgb()
+        var inBox = 0
+        var drawn = 0
+        val counts = HashMap<Int, Int>()
+        for (y in evenFrom(boxTop)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
+            for (x in evenFrom(boxLeft)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
+                val argb = pixels.argbAt(x, y)
+                inBox++
+                if (channelDistance(argb, background) >= 0.02f * 255) drawn++
+                counts[argb] = (counts[argb] ?: 0) + 1
             }
-            // In the box (every other pixel): the calm field covers most of it (all of it that is on screen),
-            // with clear marks on it. Colours as ARGB ints, as a million pixels a look add up.
-            val background = BACKGROUND.toArgb()
-            var inBox = 0
-            var drawn = 0
-            val counts = HashMap<Int, Int>()
-            for (y in evenFrom(boxTop)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
-                for (x in evenFrom(boxLeft)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
-                    val argb = pixels.argbAt(x, y)
-                    inBox++
-                    if (channelDistance(argb, background) >= 0.02f * 255) drawn++
-                    counts[argb] = (counts[argb] ?: 0) + 1
-                }
-            }
-            assertTrue("$lookCase covers ${drawn * 100 / inBox} % of its box", drawn > inBox * 0.75f)
-            val face = counts.maxBy { it.value }.key
-            var details = 0
-            for (y in boxTop.coerceAtLeast(0)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
-                for (x in boxLeft.coerceAtLeast(0)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
-                    if (channelDistance(pixels.argbAt(x, y), face) > 0.25f * 255) details++
-                }
-            }
-            assertTrue("$lookCase details ${details * 100 / inBox} %", details > inBox * 0.01f)
         }
-        shownLook.value = MeterLook.DEFAULT
-    }
-
-    /** Where the meter and the note in its corner are. */
-    private fun placesOnScreen(): Map<String, DpRect> = buildMap {
-        put("meter", gauge.getBoundsInRoot())
-        put("note", note.getBoundsInRoot())
+        assertTrue("$case covers ${drawn * 100 / inBox} % of its box", drawn > inBox * 0.75f)
+        val face = counts.maxBy { it.value }.key
+        var details = 0
+        for (y in boxTop.coerceAtLeast(0)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
+            for (x in boxLeft.coerceAtLeast(0)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
+                if (channelDistance(pixels.argbAt(x, y), face) > 0.25f * 255) details++
+            }
+        }
+        assertTrue("$case details ${details * 100 / inBox} %", details > inBox * 0.01f)
     }
 
     private fun PixelMap.argbAt(x: Int, y: Int): Int = buffer[bufferOffset + y * stride + x]
@@ -350,37 +318,6 @@ class CompactLandscapeStylesTest(private val style: String) {
     )
 
     /**
-     * Outside the box [left]..[right] x [top]..[bottom], [pixels] is the same as [reference], give or
-     * take a rounding step: nothing was drawn there and nothing moved.
-     */
-    private fun assertSameOutsideTheBox(
-        case: String,
-        pixels: PixelMap,
-        reference: PixelMap,
-        left: Int,
-        top: Int,
-        right: Int,
-        bottom: Int,
-    ) {
-        val a = pixels.buffer
-        val b = reference.buffer
-        for (y in 0 until pixels.height) {
-            val rowA = pixels.bufferOffset + y * pixels.stride
-            val rowB = reference.bufferOffset + y * reference.stride
-            val boxRow = y in top..bottom
-            for (x in 0 until pixels.width) {
-                if (boxRow && x in left..right) continue
-                val pa = a[rowA + x]
-                val pb = b[rowB + x]
-                val distance = if (pa == pb) 0 else channelDistance(pa, pb)
-                if (distance > GLOW_STEP) {
-                    throw AssertionError("$case drew outside its box ($left..$right x $top..$bottom), or moved something, at $x, $y (by $distance)")
-                }
-            }
-        }
-    }
-
-    /**
      * The signal bars stand out from what is behind them in the style's colours, light and dark, in the
      * full layout on its side (focus mode leaves them out).
      */
@@ -389,21 +326,18 @@ class CompactLandscapeStylesTest(private val style: String) {
         shownCompact.value = false
         show()
         forEachLook(bothThemes = true) { case ->
-            for (display in TunerDisplay.entries) {
-                shownDisplay.value = display
-                compose.waitForIdle()
-                val pixels = signalBars.captureToImage().toPixelMap()
-                // The top-left corner is above the shortest bar: what is behind them.
-                val behind = pixels[0, 0]
-                var drawn = 0
-                for (x in 0 until pixels.width) for (y in 0 until pixels.height) {
-                    val p = pixels[x, y]
-                    val distance = maxOf(abs(p.red - behind.red), abs(p.green - behind.green), abs(p.blue - behind.blue))
-                    if (distance > 0.3f) drawn++
-                }
-                val share = drawn / (pixels.width * pixels.height).toFloat()
-                assertTrue("$case $display: bars cover ${(share * 100).toInt()} % clearly", share > 0.1f)
+            compose.waitForIdle()
+            val pixels = signalBars.captureToImage().toPixelMap()
+            // The top-left corner is above the shortest bar: what is behind them.
+            val behind = pixels[0, 0]
+            var drawn = 0
+            for (x in 0 until pixels.width) for (y in 0 until pixels.height) {
+                val p = pixels[x, y]
+                val distance = maxOf(abs(p.red - behind.red), abs(p.green - behind.green), abs(p.blue - behind.blue))
+                if (distance > 0.3f) drawn++
             }
+            val share = drawn / (pixels.width * pixels.height).toFloat()
+            assertTrue("$case: bars cover ${(share * 100).toInt()} % clearly", share > 0.1f)
         }
     }
 
@@ -446,12 +380,6 @@ class CompactLandscapeStylesTest(private val style: String) {
 
         /** Long enough for the compact layout's cross-fade to finish. */
         private const val FADE_MS = 1_000L
-
-        /**
-         * Outside the meter's box a look may differ from Classic by this much (of 255) at most: a soft
-         * glow (the in-tune glow reaches past the box; Eclipse's sun halo did until Phase 60), not a drawn mark or a moved part.
-         */
-        private const val GLOW_STEP = 24
 
         /** Behind the tuner, a colour none of the styles uses. */
         private val BACKGROUND = Color(0xFF7F00FF)

@@ -43,8 +43,8 @@ import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 
 /**
  * A titled grid of look cards, three to a row (two from 1.3× system font on a small window,
- * [lookCardsPerRow]), shared by the style, wave look and meter look pickers so all three work the
- * same. Each card shows [preview] above its [label], on the plain background colour (no art); with [edgeToEdge] the
+ * [lookCardsPerRow]), which 1.1's style, wave look and meter look pickers shared. Nothing shows it since
+ * Phase 67 took those pickers out; it is kept, with [LookDemo], for the lens's Meter cards (Phase 72). Each card shows [preview] above its [label], on the plain background colour (no art); with [edgeToEdge] the
  * preview runs across the card's whole width (the meter and wave looks, Phase 65: their pictures are drawn on the
  * card's own ground and are small enough as it is), else 6 dp in from its sides (the style cards' framed pictures). The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
  * smaller rather than breaking in the middle of a word. The cards form one selectable group for

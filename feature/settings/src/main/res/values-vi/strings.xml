@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Màu hình nền</string>
     <string name="settings_dynamic_color_summary">Dùng màu từ hình nền của bạn</string>
 
-    <string name="settings_meter_look_title">Đồng hồ đo</string>
-    <string name="settings_meter_look_classic">Cổ điển</string>
-    <string name="settings_meter_look_light_arc">Cung đèn</string>
-    <string name="settings_meter_look_pointers">Con trỏ</string>
-    <string name="settings_meter_look_loupe">Kính lúp</string>
-    <string name="settings_meter_look_arrows">Mũi tên</string>
-    <string name="settings_meter_look_light_bars">Thanh đèn</string>
-    <string name="settings_in_tune_effect_title">Hiệu ứng khi chuẩn</string>
-    <string name="settings_in_tune_effect_summary">Đồng hồ đo sáng mạnh đến đâu khi nốt đã chuẩn</string>
-    <string name="settings_in_tune_effect_calm">Dịu</string>
-    <string name="settings_in_tune_effect_bold">Mạnh</string>
-
-    <string name="settings_display_title">Dưới nốt</string>
-    <string name="settings_display_numbers">Con số: lệch bao nhiêu cent</string>
-    <string name="settings_display_wave">Sóng: hình chuyển động, theo kiểu bạn chọn</string>
-    <string name="settings_wave_look_title">Kiểu sóng</string>
-    <string name="settings_wave_look_strobe">Strobe</string>
-    <string name="settings_wave_look_ribbon">Dải lụa</string>
-    <string name="settings_wave_look_dots">Chấm</string>
-    <string name="settings_wave_look_fireflies">Đom đóm</string>
-    <string name="settings_wave_look_loop">Vòng xoay</string>
-    <string name="settings_wave_look_ripples">Gợn sóng</string>
     <string name="settings_focus_mode_title">Chế độ tập trung</string>
     <string name="settings_focus_mode_summary">Xoay ngang Twangle với một đồng hồ đo lớn, dễ đọc từ xa</string>
     <string name="settings_left_handed_title">Tay trái</string>

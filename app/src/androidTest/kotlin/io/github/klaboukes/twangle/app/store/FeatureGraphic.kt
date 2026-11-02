@@ -46,8 +46,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
 import java.util.Locale
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
@@ -174,11 +172,9 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
         ) {
             WithoutMeterLabel {
                 MeterFrame(
-                    look = card.look,
                     cents = { 0f },
                     inTune = true,
                     glow = true,
-                    effect = InTuneEffect.DEFAULT,
                     animationsOff = true,
                     reception = { 1f },
                     modifier = Modifier.width(CARD_WIDTH - CARD_PADDING * 2),
@@ -188,8 +184,8 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
     }
 }
 
-/** One card of the fan: light or dark, and a meter look. */
-private data class FanCard(val dark: Boolean, val look: MeterLook)
+/** One card of the fan: light or dark (since Phase 67 every card draws the one meter, Classic, until the lens). */
+private data class FanCard(val dark: Boolean)
 
 /**
  * [content] with the meter's unit label ("CENTS", "CENT", "سنت" …) as an empty text, so the meters
@@ -213,9 +209,9 @@ const val FEATURE_HEIGHT = 500
 
 /** Left to right: the middle one in front, light between two darks. */
 private val FAN = listOf(
-    FanCard(dark = true, look = MeterLook.LOUPE),
-    FanCard(dark = false, look = MeterLook.CLASSIC),
-    FanCard(dark = true, look = MeterLook.POINTERS),
+    FanCard(dark = true),
+    FanCard(dark = false),
+    FanCard(dark = true),
 )
 
 /** The name is the app's own, the same in every language. */

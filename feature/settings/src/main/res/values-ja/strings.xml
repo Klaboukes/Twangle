@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">壁紙の色</string>
     <string name="settings_dynamic_color_summary">壁紙の色を使う</string>
 
-    <string name="settings_meter_look_title">メーター</string>
-    <string name="settings_meter_look_classic">クラシック</string>
-    <string name="settings_meter_look_light_arc">光のアーチ</string>
-    <string name="settings_meter_look_pointers">ポインター</string>
-    <string name="settings_meter_look_loupe">ルーペ</string>
-    <string name="settings_meter_look_arrows">矢印</string>
-    <string name="settings_meter_look_light_bars">光のバー</string>
-    <string name="settings_in_tune_effect_title">合ったときの効果</string>
-    <string name="settings_in_tune_effect_summary">音が合ったときのメーターの光り方</string>
-    <string name="settings_in_tune_effect_calm">控えめ</string>
-    <string name="settings_in_tune_effect_bold">華やか</string>
-
-    <string name="settings_display_title">音名の下</string>
-    <string name="settings_display_numbers">数字：何セントずれているか</string>
-    <string name="settings_display_wave">波：好みの見た目で動くアニメーション</string>
-    <string name="settings_wave_look_title">波の見た目</string>
-    <string name="settings_wave_look_strobe">ストロボ</string>
-    <string name="settings_wave_look_ribbon">リボン</string>
-    <string name="settings_wave_look_dots">ドット</string>
-    <string name="settings_wave_look_fireflies">ホタル</string>
-    <string name="settings_wave_look_loop">ループ</string>
-    <string name="settings_wave_look_ripples">波紋</string>
     <string name="settings_focus_mode_title">フォーカスモード</string>
     <string name="settings_focus_mode_summary">Twangle を横向きにして大きなメーターを 1 つだけ表示し、離れていても読みやすくします</string>
     <string name="settings_left_handed_title">左利き</string>

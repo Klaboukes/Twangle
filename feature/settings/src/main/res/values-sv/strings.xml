@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Bakgrundsfärger</string>
     <string name="settings_dynamic_color_summary">Använd färgerna från din bakgrundsbild</string>
 
-    <string name="settings_meter_look_title">Mätare</string>
-    <string name="settings_meter_look_classic">Klassisk</string>
-    <string name="settings_meter_look_light_arc">Ljusbåge</string>
-    <string name="settings_meter_look_pointers">Visare</string>
-    <string name="settings_meter_look_loupe">Lupp</string>
-    <string name="settings_meter_look_arrows">Pilar</string>
-    <string name="settings_meter_look_light_bars">Ljusstaplar</string>
-    <string name="settings_in_tune_effect_title">Effekt vid stämd ton</string>
-    <string name="settings_in_tune_effect_summary">Hur starkt mätaren lyser när en ton är stämd</string>
-    <string name="settings_in_tune_effect_calm">Lugn</string>
-    <string name="settings_in_tune_effect_bold">Kraftig</string>
-
-    <string name="settings_display_title">Under tonen</string>
-    <string name="settings_display_numbers">Siffror: hur många cent fel</string>
-    <string name="settings_display_wave">Våg: en rörlig bild, i det utseende du väljer</string>
-    <string name="settings_wave_look_title">Vågens utseende</string>
-    <string name="settings_wave_look_strobe">Stroboskop</string>
-    <string name="settings_wave_look_ribbon">Slinga</string>
-    <string name="settings_wave_look_dots">Prickar</string>
-    <string name="settings_wave_look_fireflies">Eldflugor</string>
-    <string name="settings_wave_look_loop">Ring</string>
-    <string name="settings_wave_look_ripples">Krusningar</string>
     <string name="settings_focus_mode_title">Fokusläge</string>
     <string name="settings_focus_mode_summary">Vänder Twangle på sidan med en stor mätare, lätt att läsa på avstånd</string>
     <string name="settings_left_handed_title">Vänsterhänt</string>

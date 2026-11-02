@@ -12,7 +12,6 @@ import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -20,16 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
@@ -47,23 +41,21 @@ import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import java.util.Locale
 import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.min
-import kotlin.math.sin
 
 /*
  * The shared art of the meter looks, "as if by the same artist" (docs/architecture/ui-meter-and-styles.md,
  * Meter art language; the approved mock-ups docs/design/meter-looks-preview.html and, for the open face,
  * docs/design/theme-styles-preview.html are the reference, and the names here match their helpers).
  * The meter has no plate or frame: it sits straight on the screen's background, with a calm field
- * (FieldArt) under its scale. Every look is built from these pieces: the same recessed glass over a
- * window that is an object lying on the screen (GlassArt, with its ContactShadowArt), the same marks
- * and numbers (ScaleMarks), the same soft marker shadow (markerShadowPaint) and the same glow
- * (GlowArt), in the same colour roles (MeterRoles). All lengths are in u = box width / 340 (about
+ * (FieldArt) under its scale. Every look is built from these pieces: the same marks and numbers
+ * (ScaleMarks), the same soft marker shadow (markerShadowPaint) and the same glow (GlowArt), in the
+ * same colour roles (MeterRoles). Since Phase 67 (one look) the needle, its hub and the scale's arc are
+ * 1.1's Contemporary ones, the plain finish; the glass and the other styles' finishes went with the
+ * meter looks that drew them. All lengths are in u = box width / 340 (about
  * 1 dp on a phone). The field and the glow reach past the box and fade out there: the art is never
  * clipped to its box, so whatever holds the meter leaves room around it (the tuner draws it behind
  * its other controls).
@@ -78,8 +70,6 @@ import kotlin.math.sin
 internal data class MeterRoles(
     /** The stage behind the meter. */
     val background: Color,
-    /** The surface colour: what a glass window's face is sunk from in light. */
-    val plate: Color,
     /** Lines, numbers, needles. */
     val ink: Color,
     /** Quieter text. */
@@ -95,10 +85,6 @@ internal data class MeterRoles(
     val numbers: FontFamily,
     /** How big the numbers are set against the looks' own size (1 for the plain sans). */
     val numberScale: Float = 1f,
-    /** How strong the in-tune moment's glow is ([tuneGlowAlpha], [tuneGlowSize]). */
-    val effect: InTuneEffect = InTuneEffect.DEFAULT,
-    /** The needle, hub, arc and tick caps: since Phase 67 always the plain one (1.1's Contemporary). */
-    val finish: MeterFinish = MeterFinish.PLAIN,
     /** The app's language, whose digits the numbers are written in ([localDigits]). */
     val locale: Locale = Locale.ROOT,
     /** Whether the calm field ([FieldArt]) is drawn: everywhere but the meter picker's cards ([LocalMeterField]). */
@@ -106,9 +92,6 @@ internal data class MeterRoles(
 ) {
     /** [value] in the app language's digits (Arabic-Indic in Arabic). */
     fun digits(value: Int): String = localDigits(value, locale)
-
-    /** A glass window's face: the surface sunk toward the stage. */
-    val face: Color = if (dark) mix(background, Color.Black, 0.3f) else mix(plate, background, 0.7f)
 
     /**
      * The centre mark's colour, [tuned] (0..1) of the way to "in tune". With [presence] (0 without a
@@ -122,47 +105,26 @@ internal data class MeterRoles(
     fun marker(tuned: Float): Color = mix(ink, inTune, tuned * 0.9f)
 
     /** The in-tune glow's opacity at its middle when fully lit (see [tuneGlowAlpha]). */
-    val tuneGlowAlpha: Float = tuneGlowAlpha(dark, effect)
-
-    /** How much larger than its look's own radius the in-tune glow is (see [tuneGlowSize]). */
-    val tuneGlowSize: Float = tuneGlowSize(effect)
+    val tuneGlowAlpha: Float = tuneGlowAlpha(dark)
 }
 
 /*
- * The in-tune moment's strength. Calm is the approved mock-up's soft glow: 32 % at its middle in
- * dark, 16 % in light. Bold is the same glow, eased the same way, only brighter (1.7 times, but at
- * most 52 % so the scale's numbers and the marker over it stay clearly readable in every style) and
- * 1.35 times larger.
+ * The in-tune moment's glow: the approved mock-up's soft glow, 32 % at its middle in dark, 16 % in light. It is 1.1's
+ * Calm; 1.1's Bold (brighter and larger) went in Phase 67, which left one glow (owner, 2026-11-02).
  */
 private const val TUNE_GLOW_DARK_ALPHA = 0.32f
 private const val TUNE_GLOW_LIGHT_ALPHA = 0.16f
-internal const val BOLD_GLOW_STRENGTH = 1.7f
-internal const val BOLD_GLOW_SIZE = 1.35f
-internal const val BOLD_GLOW_MAX_ALPHA = 0.52f
 
-/** The in-tune glow's opacity at its middle when fully lit, in [dark] or light, for [effect]. */
-internal fun tuneGlowAlpha(dark: Boolean, effect: InTuneEffect): Float {
-    val calm = if (dark) TUNE_GLOW_DARK_ALPHA else TUNE_GLOW_LIGHT_ALPHA
-    return when (effect) {
-        InTuneEffect.CALM -> calm
-        InTuneEffect.BOLD -> (calm * BOLD_GLOW_STRENGTH).coerceAtMost(BOLD_GLOW_MAX_ALPHA)
-    }
-}
+/** The in-tune glow's opacity at its middle when fully lit, in [dark] or light. */
+internal fun tuneGlowAlpha(dark: Boolean): Float = if (dark) TUNE_GLOW_DARK_ALPHA else TUNE_GLOW_LIGHT_ALPHA
 
-/** How much larger than its look's own radius the in-tune glow is for [effect]. */
-internal fun tuneGlowSize(effect: InTuneEffect): Float = when (effect) {
-    InTuneEffect.CALM -> 1f
-    InTuneEffect.BOLD -> BOLD_GLOW_SIZE
-}
-
-/** The current style's [MeterRoles], with the in-tune glow as strong as [effect] says. */
+/** The current style's [MeterRoles]. */
 @Composable
-internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles {
+internal fun meterRoles(): MeterRoles {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     return MeterRoles(
         background = scheme.background,
-        plate = scheme.surface,
         ink = scheme.onSurface,
         muted = scheme.onSurfaceVariant,
         track = scheme.outlineVariant,
@@ -170,8 +132,6 @@ internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles
         inTune = tokens.inTune,
         dark = tokens.dark,
         numbers = NumberFont,
-        effect = effect,
-        finish = MeterFinish.PLAIN,
         locale = appLocale(),
         calmField = LocalMeterField.current,
     )
@@ -256,76 +216,6 @@ internal fun meterField(size: Size, roles: MeterRoles): FieldArt {
 private const val FIELD_CENTRE_UNITS = 47f
 
 /**
- * The soft contact shadow of a window that lies on the screen as an object (the loupe's glass; the
- * spirit level's tube until Phase 60): [outline] filled in [fill] with a shadow 10u blurred and 4u
- * down (black at 50 % in dark, 16 % in light). Drawn first; the glass's art goes over the fill.
- */
-internal class ContactShadowArt(outline: Path, u: Float, roles: MeterRoles, fill: Color = roles.face) {
-    private val path = outline.asAndroidPath()
-    private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = fill.toArgb()
-        setShadowLayer(blurRadius(10f * u), 0f, 4f * u, Color.Black.copy(alpha = if (roles.dark) 0.5f else 0.16f).toArgb())
-    }
-
-    fun draw(scope: DrawScope) = with(scope) {
-        drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
-    }
-}
-
-/**
- * The glass over a look's window [face]: under the look's art ([drawUnder], for a recessed window,
- * as the spirit level's tube was until Phase 60) the face sunk toward the stage with a soft inner
- * shadow under its top edge (7u blur, 2.5u down); over the art ([drawOver], the loupe's glass too)
- * one sheen from the top (white at 28 % in light, 7 % in dark, gone by 45 % of the way from [top] to
- * [bottom]) and a 1u rim in ink at 14 %. The face is [fill]: the roles' glass face, or a tint of it
- * (as the spirit level's tube was). The loupe lies on the screen rather than in it, so it draws its
- * face with its [ContactShadowArt] and only the sheen and rim with this.
- */
-internal class GlassArt(
-    private val face: Path,
-    size: Size,
-    private val top: Float,
-    bottom: Float,
-    private val u: Float,
-    private val roles: MeterRoles,
-    private val fill: Color = roles.face,
-) {
-    private val width = size.width
-
-    /** Everything around the face: its shadow falls inside the face. */
-    private val surround = Path().apply {
-        addRect(Rect(-size.width, -size.height, size.width * 2f, size.height * 2f))
-        addPath(face)
-        fillType = PathFillType.EvenOdd
-    }
-    private val innerShadow = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = android.graphics.Color.BLACK
-        setShadowLayer(blurRadius(7f * u), 0f, 2.5f * u, Color.Black.copy(alpha = if (roles.dark) 0.6f else 0.2f).toArgb())
-    }
-    private val sheenHeight = (bottom - top) * 0.45f
-    private val sheen = Brush.verticalGradient(
-        listOf(Color.White.copy(alpha = if (roles.dark) 0.07f else 0.28f), Color.White.copy(alpha = 0f)),
-        startY = top,
-        endY = top + sheenHeight,
-    )
-    private val rim = roles.ink.copy(alpha = 0.14f)
-
-    fun drawUnder(scope: DrawScope) = with(scope) {
-        drawPath(face, fill)
-        clipPath(face) {
-            drawIntoCanvas { it.nativeCanvas.drawPath(surround.asAndroidPath(), innerShadow) }
-        }
-    }
-
-    fun drawOver(scope: DrawScope) = with(scope) {
-        clipPath(face) {
-            drawRect(sheen, topLeft = Offset(0f, top), size = Size(width, sheenHeight))
-        }
-        drawPath(face, rim, style = Stroke(u))
-    }
-}
-
-/**
  * How strong the scale's minor ticks and numbers are, as ink over the background: the mock-up's 50 %
  * and 80 %, so the numbers read at 4.5:1 and the minor ticks at 3:1 in every style (StylePaletteTest).
  */
@@ -341,9 +231,7 @@ internal fun interface MarkPlace {
 /**
  * The scale every look shares (the mock-up's `scale`): a tick every 5 cents, none at 0. Major ticks
  * (every 10) are [MAJOR_TICK_UNITS] long and [MAJOR_TICK_WIDTH] wide, in ink; minor ones
- * [MINOR_TICK_UNITS] and [MINOR_TICK_WIDTH], ink at 50 %; with the style's caps
- * ([MeterFinish.caps]), and drawn by hand in Ancient ([MeterFinish.jitter]: each tick a little
- * longer or shorter, thicker or thinner and turned, always the same way). Numbers 10 to 50 without a
+ * [MINOR_TICK_UNITS] and [MINOR_TICK_WIDTH], ink at 50 %; with round caps. Numbers 10 to 50 without a
  * sign, [NUMBER_SIZE_UNITS] (times [MeterRoles.numberScale]) in the style's number face, ink at 80 %,
  * centred [NUMBER_OUT_UNITS] from the tick's base. [place] puts each tick on the look's own scale.
  * Where a look's numbers sit close (a flat scale in a wide face) they are set a
@@ -353,7 +241,7 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
     /** Each tick's ends and width: x1, y1, x2, y2, width. */
     private val ticks = FloatArray(TICK_COUNT * 5)
     private val major = BooleanArray(TICK_COUNT)
-    private val cap = roles.finish.caps
+    private val cap = StrokeCap.Round
     private val ink = roles.ink
     private val minorInk = roles.ink.copy(alpha = MINOR_TICK_INK)
     private val numberInk = roles.ink.copy(alpha = SCALE_NUMBER_INK)
@@ -371,13 +259,10 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
             if (cents != 0f) {
                 place.place(cents, at)
                 val isMajor = cents.toInt() % 10 == 0
-                val jitter = if (roles.finish.jitter) handJitter(cents) else 0f
-                val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u * (1f + JITTER_LENGTH * jitter)
-                val width = (if (isMajor) MAJOR_TICK_WIDTH else MINOR_TICK_WIDTH) * u * (1f + JITTER_WIDTH * jitter)
-                val turnCos = cos(JITTER_TURN * jitter)
-                val turnSin = sin(JITTER_TURN * jitter)
-                val dx = at[2] * turnCos - at[3] * turnSin
-                val dy = at[2] * turnSin + at[3] * turnCos
+                val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u
+                val width = (if (isMajor) MAJOR_TICK_WIDTH else MINOR_TICK_WIDTH) * u
+                val dx = at[2]
+                val dy = at[3]
                 ticks[t * 5] = at[0]
                 ticks[t * 5 + 1] = at[1]
                 ticks[t * 5 + 2] = at[0] + dx * length
@@ -490,240 +375,67 @@ internal const val MARKER_SHADOW_X = 1.5f
 internal const val MARKER_SHADOW_Y = 2.5f
 
 /**
- * The needle in the style's finish ([MeterFinish.needle], the mock-up's `needle`), pointing straight
- * up from ([pivotX], [pivotY]) over [length]: a spear, a watch hand with a ring near its tip, a thin
- * VU needle with an accent tip, a plain rounded bar, a beam of light with a chevron tip and a soft
- * halo of itself, or a needle with a ball tip. The needle's layer turns it; [drawShadow] draws its
- * silhouette for the shadow layer under it (the beam glows instead and casts none). Its hub is
- * drawn apart ([HubArt]), so it doesn't turn with it.
+ * The needle (the mock-up's `needle`, 1.1's Contemporary bar), pointing straight up from ([pivotX], [pivotY]) over
+ * [length]: a plain rounded bar 2.6u wide. The needle's layer turns it; [drawShadow] draws its silhouette for the
+ * shadow layer under it. Its hub is drawn apart ([HubArt]), so it doesn't turn with it.
  */
-internal class NeedleArt(pivotX: Float, private val pivotY: Float, length: Float, private val u: Float, roles: MeterRoles) {
-    private val kind = roles.finish.needle
-    private val x = pivotX
-    private val body: Path = needleBody(kind, pivotX, pivotY, length, u)
+internal class NeedleArt(pivotX: Float, pivotY: Float, length: Float, u: Float, roles: MeterRoles) {
+    private val body: Path = Path().apply {
+        addRoundRect(RoundRect(pivotX - 1.3f * u, pivotY - length - 1.3f * u, pivotX + 1.3f * u, pivotY + 1.3f * u, CornerRadius(1.3f * u)))
+    }
     private val nativeBody = body.asAndroidPath()
     private val shadow = markerShadowPaint(u, roles)
 
-    /** The VU needle's accent tip, and the beam's line, run from here up to [lineEnd]. */
-    private val lineStart = when (kind) {
-        NeedleKind.VU -> pivotY - VU_SHAFT * length
-        else -> pivotY
-    }
-    private val lineEnd = when (kind) {
-        NeedleKind.VU -> pivotY - length
-        else -> pivotY - length + 4f * u
-    }
-
-    /** Whether the needle casts the shared marker shadow (the beam glows instead). */
-    val castsShadow: Boolean = kind != NeedleKind.BEAM
-
-    /** Draws the needle in [needleColor]; the VU needle's tip is in [tipColor] (the centre colour). */
-    fun draw(scope: DrawScope, needleColor: Color, tipColor: Color) = with(scope) {
-        when (kind) {
-            NeedleKind.BEAM -> {
-                drawLine(needleColor.copy(alpha = needleColor.alpha * BEAM_HALO_ALPHA), Offset(x, lineStart), Offset(x, lineEnd), 6f * u, StrokeCap.Round)
-                drawLine(needleColor, Offset(x, lineStart), Offset(x, lineEnd), 1.7f * u, StrokeCap.Round)
-                drawPath(body, needleColor)
-            }
-            NeedleKind.VU -> {
-                drawPath(body, needleColor)
-                drawLine(tipColor, Offset(x, lineStart), Offset(x, lineEnd), 1.8f * u, StrokeCap.Round)
-            }
-            else -> drawPath(body, needleColor)
-        }
+    /** Draws the needle in [needleColor]. */
+    fun draw(scope: DrawScope, needleColor: Color) = with(scope) {
+        drawPath(body, needleColor)
     }
 
     fun drawShadow(scope: DrawScope) = with(scope) {
-        if (castsShadow) drawIntoCanvas { it.nativeCanvas.drawPath(nativeBody, shadow) }
-    }
-
-    private companion object {
-        /** The VU needle's ink shaft runs this share of its length; the accent tip the rest. */
-        const val VU_SHAFT = 0.78f
-
-        /** The beam's halo of itself. */
-        const val BEAM_HALO_ALPHA = 0.18f
-    }
-}
-
-/** The filled outline of a [kind] needle pointing up from ([px], [py]) over [length] (for the beam: its chevron). */
-private fun needleBody(kind: NeedleKind, px: Float, py: Float, length: Float, u: Float): Path {
-    fun poly(vararg xy: Float) = Path().apply {
-        moveTo(px + xy[0], py + xy[1])
-        for (i in 2 until xy.size step 2) lineTo(px + xy[i], py + xy[i + 1])
-        close()
-    }
-    val l = length
-    return when (kind) {
-        NeedleKind.SPEAR -> poly(
-            -2.2f * u, 0f, -1.1f * u, -0.8f * l, -3.6f * u, -0.83f * l, 0f, -l,
-            3.6f * u, -0.83f * l, 1.1f * u, -0.8f * l, 2.2f * u, 0f,
-        )
-        NeedleKind.BREGUET -> {
-            // A tapered hand with a ring (4.2u, 1.5u wide) at 70 % of its length.
-            val ring = Path().apply {
-                addOval(Rect(Offset(px, py - 0.7f * l), 4.95f * u))
-                addOval(Rect(Offset(px, py - 0.7f * l), 3.45f * u))
-                fillType = PathFillType.EvenOdd
-            }
-            Path.combine(PathOperation.Union, poly(-1.8f * u, 0f, -0.5f * u, -l, 0.5f * u, -l, 1.8f * u, 0f), ring)
-        }
-        NeedleKind.VU -> Path().apply { addRect(Rect(px - 0.7f * u, py - 0.78f * l, px + 0.7f * u, py)) }
-        NeedleKind.BAR -> Path().apply {
-            addRoundRect(RoundRect(px - 1.3f * u, py - l - 1.3f * u, px + 1.3f * u, py + 1.3f * u, CornerRadius(1.3f * u)))
-        }
-        NeedleKind.BEAM -> poly(0f, -l - u, -4.5f * u, -l + 7f * u, 0f, -l + 4.5f * u, 4.5f * u, -l + 7f * u)
-        NeedleKind.BALL -> Path.combine(
-            PathOperation.Union,
-            poly(-1.8f * u, 0f, -0.8f * u, -l + 6f * u, 0.8f * u, -l + 6f * u, 1.8f * u, 0f),
-            Path().apply { addOval(Rect(Offset(px, py - l + 3.6f * u), 3.6f * u)) },
-        )
+        drawIntoCanvas { it.nativeCanvas.drawPath(nativeBody, shadow) }
     }
 }
 
 /**
- * The cap over a needle's pivot ([MeterFinish.hub], the mock-up's `hub`) at ([x], [y]), drawn over
- * the needle and not turned with it, with the shared marker shadow: a rough stone, a cap in the
- * centre colour with an ink button, an ink disc with a dot in the centre colour, a plain ink dot, an
- * ink ring round a dot, or a little ringed planet. Its centre colour fades to "in tune" with the
- * centre mark.
+ * The cap over a needle's pivot (the mock-up's `hub`, 1.1's Contemporary dot) at ([x], [y]): a plain ink dot of 5u,
+ * drawn over the needle and not turned with it, with the shared marker shadow.
  */
 internal class HubArt(private val x: Float, private val y: Float, private val u: Float, private val roles: MeterRoles) {
-    private val kind = roles.finish.hub
     private val shadow = markerShadowPaint(u, roles)
     private val dx = MARKER_SHADOW_X * u
     private val dy = MARKER_SHADOW_Y * u
-    private val stone = if (kind == HubKind.STONE) stoneOutline(0f, 0f) else null
-    private val stoneShadow = if (kind == HubKind.STONE) stoneOutline(dx, dy).asAndroidPath() else null
-    private val ringStroke = Stroke(2f * u)
-    private val planetRing = Stroke(1.6f * u)
-    private val planetRingTopLeft = Offset(x - 11f * u, y - 3.4f * u)
-    private val planetRingSize = Size(22f * u, 6.8f * u)
     private val centre = Offset(x, y)
 
-    /** A stone of nine corners, each a little in or out, a little flatter than round. */
-    private fun stoneOutline(offsetX: Float, offsetY: Float): Path = Path().apply {
-        for (k in 0 until STONE_CORNERS) {
-            val angle = k.toFloat() / STONE_CORNERS * 2f * PI.toFloat()
-            val radius = 7.5f * u * (1f + 0.14f * handJitter(k + 3f))
-            val px = x + offsetX + cos(angle) * radius
-            val py = y + offsetY + sin(angle) * radius * 0.9f
-            if (k == 0) moveTo(px, py) else lineTo(px, py)
-        }
-        close()
-    }
-
-    /** Draws the hub, its centre [tuned] of the way to "in tune" and muted at rest ([presence], see [MeterRoles.centre]). */
-    fun draw(scope: DrawScope, tuned: Float, presence: Float = 1f) = with(scope) {
-        val ink = roles.ink
-        when (kind) {
-            HubKind.STONE -> {
-                drawIntoCanvas { it.nativeCanvas.drawPath(stoneShadow!!, shadow) }
-                drawPath(stone!!, ink)
-                drawCircle(roles.centre(tuned, presence), 2.2f * u, centre)
-            }
-            HubKind.CAP -> {
-                castShadow(7.5f)
-                drawCircle(roles.centre(tuned * 0.5f, presence), 7.5f * u, centre)
-                drawCircle(ink, 3.4f * u, centre)
-            }
-            HubKind.DISC -> {
-                castShadow(7f)
-                drawCircle(ink, 7f * u, centre)
-                drawCircle(roles.centre(tuned, presence), 2.4f * u, centre)
-            }
-            HubKind.DOT -> {
-                castShadow(5f)
-                drawCircle(ink, 5f * u, centre)
-            }
-            HubKind.RING -> {
-                drawCircle(ink, 6.5f * u, centre, style = ringStroke)
-                drawCircle(roles.centre(tuned, presence), 2.4f * u, centre)
-            }
-            HubKind.SATURN -> {
-                castShadow(5.5f)
-                drawCircle(ink, 5.5f * u, centre)
-                rotate(PLANET_RING_DEGREES, centre) {
-                    drawOval(roles.centre(tuned, presence), planetRingTopLeft, planetRingSize, style = planetRing)
-                }
-            }
-        }
-    }
-
-    private fun DrawScope.castShadow(radiusUnits: Float) {
-        drawIntoCanvas { it.nativeCanvas.drawCircle(x + dx, y + dy, radiusUnits * u, shadow) }
+    /** Draws the hub. */
+    fun draw(scope: DrawScope) = with(scope) {
+        drawIntoCanvas { it.nativeCanvas.drawCircle(x + dx, y + dy, HUB_UNITS * u, shadow) }
+        drawCircle(roles.ink, HUB_UNITS * u, centre)
     }
 
     private companion object {
-        const val STONE_CORNERS = 9
-
-        /** The planet's ring tilts this far (the mock-up's −0.35 radians). */
-        const val PLANET_RING_DEGREES = -20f
+        const val HUB_UNITS = 5f
     }
 }
 
 /**
- * The scale's arc in the style's finish ([MeterFinish.track], the mock-up's `dialTrack`): an arc of
- * [radius] round ([cx], [cy]) from −50 to +50 cents, [angle] giving each reading's angle (radians,
- * clockwise from straight up). A thin line in the track colour, a railway of two ink hairlines (at
- * the radius and 6u inside), a broad band (5u) in the track colour just outside, a dashed line in
- * the accent, or a row of accent dots every 2.5 cents. Nothing reaches more than 2.5u past the arc.
- * Decoration only: the ticks carry the scale.
+ * The scale's arc (the mock-up's `dialTrack`, 1.1's Contemporary line): a thin line (1.8u) in the track colour of
+ * [radius] round ([cx], [cy]) from −50 to +50 cents, [angle] giving each reading's angle (radians, clockwise from
+ * straight up). Decoration only: the ticks carry the scale.
  */
-internal class TrackArt(cx: Float, cy: Float, radius: Float, private val u: Float, private val roles: MeterRoles, angle: (Float) -> Float) {
-    private val kind = roles.finish.track
+internal class TrackArt(cx: Float, cy: Float, private val radius: Float, u: Float, roles: MeterRoles, angle: (Float) -> Float) {
     private val start = -90f + angle(-METER_RANGE_CENTS) * DEGREES
     private val sweep = (angle(METER_RANGE_CENTS) - angle(-METER_RANGE_CENTS)) * DEGREES
-    private val centre = Offset(cx, cy)
-    // Just outside the ticks (they start 4u inside the arc), but at most 2.5u past the arc: the
-    // dial's arc tops out 7u under the box's top, and a settings card clips its preview to the box,
-    // so nothing may come near its edge.
-    private val arcRadius = when (kind) {
-        TrackKind.BAND -> radius - 0.5f * u
-        TrackKind.DOTS, TrackKind.DASHED -> radius + u
-        else -> radius
-    }
-    private val inner = radius - 6f * u
-    private val stroke = when (kind) {
-        TrackKind.LINE -> Stroke(1.8f * u)
-        TrackKind.RAIL -> Stroke(0.8f * u)
-        TrackKind.BAND -> Stroke(5f * u)
-        TrackKind.DASHED -> Stroke(2f * u, pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f * u, 3.5f * u)))
-        TrackKind.DOTS -> Stroke(u)
-    }
-    private val color = when (kind) {
-        TrackKind.LINE, TrackKind.BAND -> roles.track
-        TrackKind.RAIL -> roles.ink.copy(alpha = 0.4f)
-        TrackKind.DASHED -> roles.accent.copy(alpha = 0.55f)
-        TrackKind.DOTS -> roles.accent.copy(alpha = 0.6f)
-    }
-    private val dots = FloatArray(if (kind == TrackKind.DOTS) TRACK_DOTS * 2 else 0).also {
-        for (i in 0 until it.size / 2) {
-            val a = angle(-METER_RANGE_CENTS + i * TRACK_DOT_CENTS)
-            it[i * 2] = cx + arcRadius * sin(a)
-            it[i * 2 + 1] = cy - arcRadius * cos(a)
-        }
-    }
+    private val topLeft = Offset(cx - radius, cy - radius)
+    private val arcSize = Size(radius * 2f, radius * 2f)
+    private val stroke = Stroke(1.8f * u)
+    private val color = roles.track
 
     fun draw(scope: DrawScope) = with(scope) {
-        when (kind) {
-            TrackKind.DOTS -> for (i in 0 until TRACK_DOTS) drawCircle(color, 1.5f * u, Offset(dots[i * 2], dots[i * 2 + 1]))
-            TrackKind.RAIL -> {
-                arc(arcRadius)
-                arc(inner)
-            }
-            else -> arc(arcRadius)
-        }
-    }
-
-    private fun DrawScope.arc(r: Float) {
-        drawArc(color, start, sweep, false, Offset(centre.x - r, centre.y - r), Size(r * 2f, r * 2f), style = stroke)
+        drawArc(color, start, sweep, false, topLeft, arcSize, style = stroke)
     }
 
     private companion object {
         const val DEGREES = (180.0 / PI).toFloat()
-        const val TRACK_DOT_CENTS = 2.5f
-        const val TRACK_DOTS = 41
     }
 }
 
@@ -806,7 +518,7 @@ internal class GlowArt(private val radius: Float, color: Color) {
 
 /**
  * The in-tune moment's glow, the same in every look (the mock-up's `tuneGlow`): a [GlowArt] of
- * [radiusUnits] (times [MeterRoles.tuneGlowSize], larger in Bold) in the style's "in tune" colour
+ * [radiusUnits] in the style's "in tune" colour
  * around [centre], at [MeterRoles.tuneGlowAlpha] when fully lit. It is never clipped: it fades out
  * past the meter's box (the tuner leaves room around the meter for it). It is drawn once, in a layer
  * of its own under the look's marker; [MeterReading.glow] only sets that layer's opacity (and [move],
@@ -828,7 +540,7 @@ internal fun BoxScope.TuneGlow(
             compositingStrategy = CompositingStrategy.ModulateAlpha
             move?.invoke(this)
         }.drawWithCache {
-            val glow = GlowArt(radiusUnits * roles.tuneGlowSize * meterUnit(size.width), roles.inTune)
+            val glow = GlowArt(radiusUnits * meterUnit(size.width), roles.inTune)
             val at = centre(size)
             val peak = roles.tuneGlowAlpha
             onDrawBehind { glow.draw(this, at.x, at.y, peak) }

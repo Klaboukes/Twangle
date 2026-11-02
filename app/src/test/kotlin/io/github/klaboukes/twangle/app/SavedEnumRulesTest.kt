@@ -34,7 +34,7 @@ class SavedEnumRulesTest {
         // The enums read through enumOrNull / enumSetOrNull, plus those read by a helper of their own.
         // (Leaving out the helpers' own type parameter, E.)
         val read = READ.findAll(repository).map { it.groupValues[1] }.filter { it.length > 1 }.toSet() + HELPER_READ
-        assertTrue("the scan found the saved enums", read.size >= 20)
+        assertTrue("the scan found the saved enums", read.size >= 15)
         assertEquals("saved enums without a keep rule in app/proguard-rules.pro", emptySet<String>(), read - kept)
     }
 
@@ -42,7 +42,7 @@ class SavedEnumRulesTest {
         val KEEP_RULE = Regex("""^-keepclassmembers enum ([\w.]+) \{ public static final \*\* \*; }$""")
         val READ = Regex("""enum(?:Set)?OrNull<(\w+)>""")
 
-        /** Read through waveLookOrNull and meterLookOrNull, which map old names first. */
-        val HELPER_READ = setOf("WaveLook", "MeterLook")
+        /** Read through lensLook, which applies the lens look's rule to 1.1's keys. */
+        val HELPER_READ = setOf("LensLook")
     }
 }

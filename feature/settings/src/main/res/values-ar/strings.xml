@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">ألوان الخلفية</string>
     <string name="settings_dynamic_color_summary">استخدم ألوانًا من خلفية شاشتك</string>
 
-    <string name="settings_meter_look_title">المقياس</string>
-    <string name="settings_meter_look_classic">كلاسيكي</string>
-    <string name="settings_meter_look_light_arc">قوس ضوئي</string>
-    <string name="settings_meter_look_pointers">مؤشران</string>
-    <string name="settings_meter_look_loupe">عدسة مكبّرة</string>
-    <string name="settings_meter_look_arrows">أسهم</string>
-    <string name="settings_meter_look_light_bars">أشرطة ضوئية</string>
-    <string name="settings_in_tune_effect_title">تأثير الضبط</string>
-    <string name="settings_in_tune_effect_summary">مدى توهّج المقياس عندما تكون النغمة مضبوطة</string>
-    <string name="settings_in_tune_effect_calm">هادئ</string>
-    <string name="settings_in_tune_effect_bold">قوي</string>
-
-    <string name="settings_display_title">تحت النغمة</string>
-    <string name="settings_display_numbers">أرقام: مقدار الانحراف بالسنتات</string>
-    <string name="settings_display_wave">موجة: صورة متحركة بالشكل الذي تختاره</string>
-    <string name="settings_wave_look_title">شكل الموجة</string>
-    <string name="settings_wave_look_strobe">ستروب</string>
-    <string name="settings_wave_look_ribbon">شريط</string>
-    <string name="settings_wave_look_dots">نقاط</string>
-    <string name="settings_wave_look_fireflies">يراعات</string>
-    <string name="settings_wave_look_loop">حلقة</string>
-    <string name="settings_wave_look_ripples">تموّجات</string>
     <string name="settings_focus_mode_title">وضع التركيز</string>
     <string name="settings_focus_mode_summary">يُدير Twangle أفقيًا مع مقياس واحد كبير، تسهل قراءته من بعيد</string>
     <string name="settings_left_handed_title">وضع الأعسر</string>

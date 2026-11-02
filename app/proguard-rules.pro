@@ -7,10 +7,7 @@
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.TunerMode { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.InTunePrecision { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.ThemeMode { public static final ** *; }
--keepclassmembers enum io.github.klaboukes.twangle.core.settings.TunerDisplay { public static final ** *; }
--keepclassmembers enum io.github.klaboukes.twangle.core.settings.WaveLook { public static final ** *; }
--keepclassmembers enum io.github.klaboukes.twangle.core.settings.MeterLook { public static final ** *; }
--keepclassmembers enum io.github.klaboukes.twangle.core.settings.InTuneEffect { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.settings.LensLook { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.Meter { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.music.Notation { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.ClickSound { public static final ** *; }

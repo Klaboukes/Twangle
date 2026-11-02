@@ -62,21 +62,15 @@ import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
-import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
-import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
 /**
  * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
@@ -117,10 +111,6 @@ fun SettingsScreen(
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onShowTuneHintChange = viewModel::setShowTuneHint,
         onShowSignalBarsChange = viewModel::setShowSignalBars,
-        onDisplayChange = viewModel::setDisplay,
-        onMeterLookChange = viewModel::setMeterLook,
-        onInTuneEffectChange = viewModel::setInTuneEffect,
-        onWaveLookChange = viewModel::setWaveLook,
         onFocusModeChange = viewModel::setFocusMode,
         onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
@@ -140,8 +130,7 @@ fun SettingsScreen(
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
- * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+); the meter looks always show, and the wave looks only while the wave is the
- * display. The Language row shows when there are [languages]
+ * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's.
  */
 @Composable
@@ -158,10 +147,6 @@ fun SettingsContent(
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowTuneHintChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
-    onDisplayChange: (TunerDisplay) -> Unit,
-    onMeterLookChange: (MeterLook) -> Unit,
-    onInTuneEffectChange: (InTuneEffect) -> Unit,
-    onWaveLookChange: (WaveLook) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -190,10 +175,6 @@ fun SettingsContent(
                 onVibrateInTuneChange = onVibrateInTuneChange,
                 onShowTuneHintChange = onShowTuneHintChange,
                 onShowSignalBarsChange = onShowSignalBarsChange,
-                onDisplayChange = onDisplayChange,
-                onMeterLookChange = onMeterLookChange,
-                onInTuneEffectChange = onInTuneEffectChange,
-                onWaveLookChange = onWaveLookChange,
                 onFocusModeChange = onFocusModeChange,
                 onLeftHandedChange = onLeftHandedChange,
                 dynamicColorAvailable = dynamicColorAvailable,
@@ -341,10 +322,6 @@ private fun SettingsGroups(
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowTuneHintChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
-    onDisplayChange: (TunerDisplay) -> Unit,
-    onMeterLookChange: (MeterLook) -> Unit,
-    onInTuneEffectChange: (InTuneEffect) -> Unit,
-    onWaveLookChange: (WaveLook) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
@@ -408,36 +385,7 @@ private fun SettingsGroups(
         }
         SettingsGroup(title = stringResource(R.string.settings_group_tuner_screen)) {
             Rows {
-                // The meter sits above the note with both displays, so its looks come first.
-                MeterLookPicker(
-                    title = stringResource(R.string.settings_meter_look_title),
-                    selected = settings.meterLook,
-                    onSelect = onMeterLookChange,
-                    effect = settings.inTuneEffect,
-                    precision = settings.inTunePrecision,
-                ) { stringResource(meterLookLabel(it)) }
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_in_tune_effect_title),
-                    summary = stringResource(R.string.settings_in_tune_effect_summary),
-                    options = InTuneEffect.entries,
-                    selected = settings.inTuneEffect,
-                    onSelect = onInTuneEffectChange,
-                ) { stringResource(inTuneEffectLabel(it)) }
-                HorizontalDivider()
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_display_title),
-                    options = TunerDisplay.entries,
-                    selected = settings.display,
-                    onSelect = onDisplayChange,
-                ) { stringResource(displayLabel(it)) }
-                if (settings.display == TunerDisplay.WAVE) {
-                    WaveLookPicker(
-                        title = stringResource(R.string.settings_wave_look_title),
-                        selected = settings.waveLook,
-                        onSelect = onWaveLookChange,
-                    ) { stringResource(waveLookLabel(it)) }
-                }
-                HorizontalDivider()
+                // 1.1's meter look, Calm or Bold glow, display and wave look went in Phase 67; the lens's Meter comes in 72.
                 SwitchSetting(
                     title = stringResource(R.string.settings_focus_mode_title),
                     summary = stringResource(R.string.settings_focus_mode_summary),
@@ -577,34 +525,6 @@ private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precis
     InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
 }
 
-private fun displayLabel(display: TunerDisplay): Int = when (display) {
-    TunerDisplay.NEEDLE -> R.string.settings_display_numbers
-    TunerDisplay.WAVE -> R.string.settings_display_wave
-}
-
-private fun meterLookLabel(look: MeterLook): Int = when (look) {
-    MeterLook.CLASSIC -> R.string.settings_meter_look_classic
-    MeterLook.LIGHT_ARC -> R.string.settings_meter_look_light_arc
-    MeterLook.POINTERS -> R.string.settings_meter_look_pointers
-    MeterLook.LOUPE -> R.string.settings_meter_look_loupe
-    MeterLook.ARROWS -> R.string.settings_meter_look_arrows
-    MeterLook.LIGHT_BARS -> R.string.settings_meter_look_light_bars
-}
-
-private fun inTuneEffectLabel(effect: InTuneEffect): Int = when (effect) {
-    InTuneEffect.CALM -> R.string.settings_in_tune_effect_calm
-    InTuneEffect.BOLD -> R.string.settings_in_tune_effect_bold
-}
-
-private fun waveLookLabel(look: WaveLook): Int = when (look) {
-    WaveLook.STROBE -> R.string.settings_wave_look_strobe
-    WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
-    WaveLook.DOTS -> R.string.settings_wave_look_dots
-    WaveLook.FIREFLIES -> R.string.settings_wave_look_fireflies
-    WaveLook.LOOP -> R.string.settings_wave_look_loop
-    WaveLook.RIPPLES -> R.string.settings_wave_look_ripples
-}
-
 private fun themeLabel(theme: ThemeMode): Int = when (theme) {
     ThemeMode.SYSTEM -> R.string.settings_theme_system
     ThemeMode.LIGHT -> R.string.settings_theme_light
@@ -628,10 +548,6 @@ private fun SettingsContentPreview() {
             onVibrateInTuneChange = {},
             onShowTuneHintChange = {},
             onShowSignalBarsChange = {},
-            onDisplayChange = {},
-            onMeterLookChange = {},
-            onInTuneEffectChange = {},
-            onWaveLookChange = {},
             onFocusModeChange = {},
             onLeftHandedChange = {},
         )

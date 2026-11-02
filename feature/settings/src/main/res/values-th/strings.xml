@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">สีจากวอลเปเปอร์</string>
     <string name="settings_dynamic_color_summary">ใช้สีจากวอลเปเปอร์ของคุณ</string>
 
-    <string name="settings_meter_look_title">มาตรวัด</string>
-    <string name="settings_meter_look_classic">คลาสสิก</string>
-    <string name="settings_meter_look_light_arc">โค้งไฟ</string>
-    <string name="settings_meter_look_pointers">ตัวชี้</string>
-    <string name="settings_meter_look_loupe">แว่นขยาย</string>
-    <string name="settings_meter_look_arrows">ลูกศร</string>
-    <string name="settings_meter_look_light_bars">แถบไฟ</string>
-    <string name="settings_in_tune_effect_title">เอฟเฟกต์เมื่อตรงเสียง</string>
-    <string name="settings_in_tune_effect_summary">มาตรวัดเรืองแสงแรงแค่ไหนเมื่อโน้ตตรงเสียง</string>
-    <string name="settings_in_tune_effect_calm">นุ่มนวล</string>
-    <string name="settings_in_tune_effect_bold">เด่นชัด</string>
-
-    <string name="settings_display_title">ใต้โน้ต</string>
-    <string name="settings_display_numbers">ตัวเลข: เพี้ยนกี่เซนต์</string>
-    <string name="settings_display_wave">คลื่น: ภาพเคลื่อนไหวในแบบที่คุณเลือก</string>
-    <string name="settings_wave_look_title">แบบคลื่น</string>
-    <string name="settings_wave_look_strobe">สโตรบ</string>
-    <string name="settings_wave_look_ribbon">ริบบิ้น</string>
-    <string name="settings_wave_look_dots">จุด</string>
-    <string name="settings_wave_look_fireflies">หิ่งห้อย</string>
-    <string name="settings_wave_look_loop">ห่วง</string>
-    <string name="settings_wave_look_ripples">ระลอกน้ำ</string>
     <string name="settings_focus_mode_title">โหมดโฟกัส</string>
     <string name="settings_focus_mode_summary">หมุน Twangle เป็นแนวนอนพร้อมมาตรวัดใหญ่หนึ่งอัน อ่านง่ายจากระยะไกล</string>
     <string name="settings_left_handed_title">ถนัดซ้าย</string>

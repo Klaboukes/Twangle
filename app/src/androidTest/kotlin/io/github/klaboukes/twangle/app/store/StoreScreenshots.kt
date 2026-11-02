@@ -32,14 +32,10 @@ import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
@@ -110,8 +106,8 @@ class StoreScreenshots(private val shot: Shot) {
         val number: Int get() = ordinal + 1
     }
 
-    /** One of the six styles' screens: the tuner in [style] with [look], holding [string] (a MIDI note) in tune. */
-    data class StyleTile(val dark: Boolean, val look: MeterLook, val string: Int)
+    /** One of the six tiles: the tuner light or [dark] (one meter since Phase 67), holding [string] (a MIDI note) in tune. */
+    data class StyleTile(val dark: Boolean, val string: Int)
 
     @get:Rule
     val rules: RuleChain = RuleChain
@@ -154,10 +150,6 @@ class StoreScreenshots(private val shot: Shot) {
             settings.setMode(TunerMode.AUTO)
             settings.setNotation(null)
             settings.setInTunePrecision(InTunePrecision.DEFAULT)
-            settings.setDisplay(TunerDisplay.NEEDLE)
-            settings.setMeterLook(MeterLook.DEFAULT)
-            settings.setWaveLook(WaveLook.DEFAULT)
-            settings.setInTuneEffect(InTuneEffect.DEFAULT)
             settings.setShowTuneHint(true)
             settings.setShowSignalBars(false)
             settings.setKeepScreenOn(true)
@@ -186,12 +178,9 @@ class StoreScreenshots(private val shot: Shot) {
         when (shot) {
             Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
             Shot.SIX_STYLES -> {
-                // Each style with a meter look of its own, each holding another string in tune.
+                // Light and dark, each holding another string in tune (increment 4 of Phase 67 takes this shot down to one look).
                 val screens = STYLE_TILES.mapIndexed { i, tile ->
-                    runBlocking {
-                        settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT)
-                        settings.setMeterLook(tile.look)
-                    }
+                    runBlocking { settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT) }
                     capture(name = "${shot.number}${'a' + i}") {
                         recorder.play(StoreSounds.heldNote(StoreSounds.hz(tile.string), NOTE_SECONDS))
                         settle(NOTE_SETTLE_MS)
@@ -482,12 +471,12 @@ class StoreScreenshots(private val shot: Shot) {
          * own (six looks in all) and another string of the guitar in tune.
          */
         val STYLE_TILES = listOf(
-            StyleTile(dark = false, look = MeterLook.CLASSIC, string = 40),
-            StyleTile(dark = true, look = MeterLook.LIGHT_BARS, string = 45),
-            StyleTile(dark = true, look = MeterLook.LOUPE, string = 50),
-            StyleTile(dark = false, look = MeterLook.POINTERS, string = 55),
-            StyleTile(dark = false, look = MeterLook.LIGHT_ARC, string = 59),
-            StyleTile(dark = true, look = MeterLook.ARROWS, string = 64),
+            StyleTile(dark = false, string = 40),
+            StyleTile(dark = true, string = 45),
+            StyleTile(dark = true, string = 50),
+            StyleTile(dark = false, string = 55),
+            StyleTile(dark = false, string = 59),
+            StyleTile(dark = true, string = 64),
         )
 
         /** What each of the six styles' screens shows: the meter, the note and "In tune". */

@@ -23,42 +23,26 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.em
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.R
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import kotlin.math.cos
 import kotlin.math.sin
 
 /*
- * The meter looks. The tuner draws them inside its MeterFrame (`:feature:tuner`) and the meter
- * picker in settings draws them in its cards, so a look's art is written once, here, and shows in
- * both. A look fills its 2:1 box (METER_ASPECT_RATIO) straight on the screen's background, without a
- * plate or frame; its calm field and in-tune glow reach past the box and fade out (nothing clips
- * them; a card that must stay tidy clips its own preview). It reads the MeterReading it is handed in
- * its layer and draw phases only. Every look is built from the shared art in MeterArt.kt, in layers:
- * the static art under the marker (field, a window's contact shadow and glass, scale), the centre
- * mark (redrawn only while it fades to "in tune"), the moving marker, and a window's sheen and rim
- * over it. A part that only turns goes in its own graphicsLayer (like the classic needle); a part that
- * changes shape is redrawn from the reading in its own layer, with paths, brushes and paints made
- * once in drawWithCache, not per frame. Every moving layer calls MeterReading.applyMarkerLook for
- * the shared resting and reception fade.
+ * The tuner's meter until the lens takes its place (Phase 71): 1.1's Classic look alone, since Phase 67 took the
+ * other meter looks out (Light arc's art, LightArc.kt, is kept unused for the lens's Light arc, Phase 72, and shares
+ * the dial below). The tuner draws it inside its MeterFrame (`:feature:tuner`). It fills its 2:1 box
+ * (METER_ASPECT_RATIO) straight on the screen's background, without a plate or frame; its calm field and in-tune
+ * glow reach past the box and fade out (nothing clips them). It reads the MeterReading it is handed in its layer and
+ * draw phases only, and is built from the shared art in MeterArt.kt, in layers: the static art under the needle
+ * (field, scale), the centre mark (redrawn only while it fades to "in tune"), the turning needle and the hub. A part
+ * that only turns goes in its own graphicsLayer; paths, brushes and paints are made once in drawWithCache, not per
+ * frame. Every moving layer calls MeterReading.applyMarkerLook for the shared resting and reception fade.
  */
 
-/**
- * Draws [look] in the frame's box from [reading], with the in-tune glow as strong as [effect] says
- * (Bold: brighter and larger, eased the same way). The effect is part of the look's colour roles,
- * so changing it rebuilds the cached art once; it is never read per frame.
- */
+/** The Classic meter in the frame's box, from [reading], with the one in-tune glow (1.1's Calm). */
 @Composable
-fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading, effect: InTuneEffect = InTuneEffect.DEFAULT) {
+fun BoxScope.ClassicMeterArt(reading: MeterReading) {
     Box(modifier = Modifier.matchParentSize()) {
-        when (look) {
-            MeterLook.CLASSIC -> ClassicMeter(reading, effect)
-            MeterLook.LIGHT_ARC -> LightArcMeter(reading, effect)
-            MeterLook.POINTERS -> PointersMeter(reading, effect)
-            MeterLook.LOUPE -> LoupeMeter(reading, effect)
-            MeterLook.ARROWS -> ArrowsMeter(reading, effect)
-            MeterLook.LIGHT_BARS -> LightBarsMeter(reading, effect)
-        }
+        ClassicMeter(reading)
     }
 }
 
@@ -170,15 +154,14 @@ private const val DIAL_GLOW_UNITS = 80f
 
 /**
  * Classic: the dial with the style's needle ([NeedleArt]), which turns about the pivot on a slightly
- * underdamped spring ([meterFeel]), so it swings a little past a new string before it settles. The
+ * underdamped spring ([MeterFeels.CLASSIC]), so it swings a little past a new string before it settles. The
  * needle and its shadow are each drawn once, pointing up, in a layer of their own; a reading only
  * turns the layers. The shadow's layer is shifted down and right after turning, so the shadow always
- * falls the same way. The style's hub ([HubArt]) sits over the pivot in a layer of its own, which
- * doesn't turn, and redraws only while its centre colour fades to "in tune".
+ * falls the same way. The hub ([HubArt]) sits over the pivot in a layer of its own, which doesn't turn.
  */
 @Composable
-private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
-    val roles = meterRoles(effect)
+private fun BoxScope.ClassicMeter(reading: MeterReading) {
+    val roles = meterRoles()
     val measurer = rememberTextMeasurer()
     val unit = stringResource(R.string.meter_cents_label)
     DialUnder(roles, measurer) { size ->
@@ -207,7 +190,7 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
             val needle = classicNeedle(size, roles)
             onDrawBehind {
                 val tuned = reading.tuned
-                needle.draw(this, roles.marker(tuned), roles.centre(tuned, reading.presence))
+                needle.draw(this, roles.marker(tuned))
             }
         },
     )
@@ -215,7 +198,7 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val dial = DialGeometry(size)
             val hub = HubArt(dial.cx, dial.cy, dial.u, roles)
-            onDrawBehind { hub.draw(this, reading.tuned, reading.presence) }
+            onDrawBehind { hub.draw(this) }
         },
     )
 }

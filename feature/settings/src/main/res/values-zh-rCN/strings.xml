@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">壁纸配色</string>
     <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
 
-    <string name="settings_meter_look_title">表盘</string>
-    <string name="settings_meter_look_classic">经典</string>
-    <string name="settings_meter_look_light_arc">光弧</string>
-    <string name="settings_meter_look_pointers">双指针</string>
-    <string name="settings_meter_look_loupe">放大镜</string>
-    <string name="settings_meter_look_arrows">箭头</string>
-    <string name="settings_meter_look_light_bars">光柱</string>
-    <string name="settings_in_tune_effect_title">调准效果</string>
-    <string name="settings_in_tune_effect_summary">音准时表盘发光的强弱</string>
-    <string name="settings_in_tune_effect_calm">柔和</string>
-    <string name="settings_in_tune_effect_bold">醒目</string>
-
-    <string name="settings_display_title">音名下方</string>
-    <string name="settings_display_numbers">数字：偏差多少音分</string>
-    <string name="settings_display_wave">波形：动态画面，样式由你选</string>
-    <string name="settings_wave_look_title">波形样式</string>
-    <string name="settings_wave_look_strobe">频闪</string>
-    <string name="settings_wave_look_ribbon">丝带</string>
-    <string name="settings_wave_look_dots">圆点</string>
-    <string name="settings_wave_look_fireflies">萤火虫</string>
-    <string name="settings_wave_look_loop">环形</string>
-    <string name="settings_wave_look_ripples">涟漪</string>
     <string name="settings_focus_mode_title">专注模式</string>
     <string name="settings_focus_mode_summary">将 Twangle 横过来，只显示一个大表盘，远处也能看清</string>
     <string name="settings_left_handed_title">左手持琴</string>

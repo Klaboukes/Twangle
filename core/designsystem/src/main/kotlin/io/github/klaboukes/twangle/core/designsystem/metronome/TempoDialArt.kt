@@ -8,7 +8,6 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -22,9 +21,6 @@ import androidx.compose.ui.unit.Density
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.meter.FieldArt
 import io.github.klaboukes.twangle.core.designsystem.meter.GlowArt
-import io.github.klaboukes.twangle.core.designsystem.meter.JITTER_LENGTH
-import io.github.klaboukes.twangle.core.designsystem.meter.JITTER_TURN
-import io.github.klaboukes.twangle.core.designsystem.meter.JITTER_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.meter.MAJOR_TICK_UNITS
 import io.github.klaboukes.twangle.core.designsystem.meter.MAJOR_TICK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.meter.MARKER_SHADOW_X
@@ -36,8 +32,6 @@ import io.github.klaboukes.twangle.core.designsystem.meter.MeterRoles
 import io.github.klaboukes.twangle.core.designsystem.meter.NUMBER_SIZE_UNITS
 import io.github.klaboukes.twangle.core.designsystem.meter.NeedleArt
 import io.github.klaboukes.twangle.core.designsystem.meter.SCALE_NUMBER_INK
-import io.github.klaboukes.twangle.core.designsystem.meter.TrackKind
-import io.github.klaboukes.twangle.core.designsystem.meter.handJitter
 import io.github.klaboukes.twangle.core.designsystem.meter.meterRoles
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import kotlin.math.PI
@@ -109,7 +103,6 @@ fun TempoDialArt(
                 val track = DialTrack(dial, roles)
                 val needle = NeedleArt(dial.cx, dial.cy - (dial.r - NEEDLE_IN_UNITS * dial.u), NEEDLE_UNITS * dial.u, dial.u, roles)
                 val needleColor = roles.marker(0f)
-                val tipColor = roles.centre(0f)
                 val shadowX = MARKER_SHADOW_X * dial.u
                 val shadowY = MARKER_SHADOW_Y * dial.u
                 val centre = Offset(dial.cx, dial.cy)
@@ -123,7 +116,7 @@ fun TempoDialArt(
                     val degrees = dialDegrees(tempo)
                     // The shadow always falls down and to the right, however the needle turns.
                     translate(shadowX, shadowY) { rotate(degrees, centre) { needle.drawShadow(this) } }
-                    rotate(degrees, centre) { needle.draw(this, needleColor, tipColor) }
+                    rotate(degrees, centre) { needle.draw(this, needleColor) }
                     val listening = ringBpm()
                     if (listening > 0f) ring.draw(this, listening, ringAlpha().coerceIn(0f, 1f))
                 }
@@ -302,88 +295,38 @@ private class GoalRing(private val dial: DialShape, roles: MeterRoles) {
 }
 
 /**
- * The dial's arc in the style's finish (the mock-up's `trackArc`), unlit over the whole range and lit
- * in the accent up to the tempo: a line (lit thicker, with round ends), a railway of two hairlines, a
- * broad band, a dashed line or a row of dots. Strokes and dot places are made once; drawing allocates
- * nothing.
+ * The dial's arc (the mock-up's `trackArc`, in 1.1's Contemporary line, the one finish since Phase 67): a thin line in
+ * the track colour over the whole range, lit thicker in the accent, with round ends, up to the tempo. Strokes are made
+ * once; drawing allocates nothing.
  */
 private class DialTrack(private val dial: DialShape, roles: MeterRoles) {
-    private val kind = roles.finish.track
     private val u = dial.u
-    private val radius = if (kind == TrackKind.BAND) dial.r - 2f * u else dial.r
-    private val inner = dial.r - 6f * u
+    private val radius = dial.r
     private val startAngle = -90f - DIAL_HALF_SWEEP
-    private val unlitColor = when (kind) {
-        TrackKind.LINE, TrackKind.BAND -> roles.track
-        TrackKind.RAIL -> roles.ink.copy(alpha = 0.4f)
-        TrackKind.DASHED -> roles.accent.copy(alpha = 0.3f)
-        TrackKind.DOTS -> roles.accent.copy(alpha = 0.35f)
-    }
-    private val litColor = if (kind == TrackKind.BAND) roles.accent.copy(alpha = 0.9f) else roles.accent
-    private val unlitStroke = when (kind) {
-        TrackKind.LINE -> Stroke(1.8f * u)
-        TrackKind.RAIL -> Stroke(0.8f * u)
-        TrackKind.BAND -> Stroke(6f * u)
-        TrackKind.DASHED -> Stroke(2f * u, pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f * u, 3.5f * u)))
-        TrackKind.DOTS -> Stroke(u)
-    }
-    private val litStroke = when (kind) {
-        TrackKind.LINE -> Stroke(2.6f * u, cap = StrokeCap.Round)
-        TrackKind.RAIL -> Stroke(1.5f * u)
-        else -> unlitStroke
-    }
-    private val dots = FloatArray(if (kind == TrackKind.DOTS) DOT_COUNT * 2 else 0).also {
-        val at = FloatArray(4)
-        for (i in 0 until it.size / 2) {
-            dial.at(ClickTrack.MIN_BPM + i * DOT_STEP, radius, at)
-            it[i * 2] = at[0]
-            it[i * 2 + 1] = at[1]
-        }
-    }
+    private val unlitColor = roles.track
+    private val litColor = roles.accent
+    private val unlitStroke = Stroke(1.8f * u)
+    private val litStroke = Stroke(2.6f * u, cap = StrokeCap.Round)
 
     fun drawUnlit(scope: DrawScope) = with(scope) {
-        when (kind) {
-            TrackKind.DOTS -> for (i in 0 until DOT_COUNT) drawCircle(unlitColor, 1.4f * u, Offset(dots[i * 2], dots[i * 2 + 1]))
-            TrackKind.RAIL -> {
-                arc(radius, 2f * DIAL_HALF_SWEEP, unlitColor, unlitStroke)
-                arc(inner, 2f * DIAL_HALF_SWEEP, unlitColor, unlitStroke)
-            }
-            else -> arc(radius, 2f * DIAL_HALF_SWEEP, unlitColor, unlitStroke)
-        }
+        arc(radius, 2f * DIAL_HALF_SWEEP, unlitColor, unlitStroke)
     }
 
     fun drawLit(scope: DrawScope, bpm: Float) = with(scope) {
         val clamped = bpm.coerceIn(ClickTrack.MIN_BPM.toFloat(), ClickTrack.MAX_BPM.toFloat())
         if (clamped <= ClickTrack.MIN_BPM) return@with
-        val sweep = dialDegrees(clamped) + DIAL_HALF_SWEEP
-        when (kind) {
-            TrackKind.DOTS -> {
-                val last = ((clamped - ClickTrack.MIN_BPM) / DOT_STEP).toInt()
-                for (i in 0..last.coerceAtMost(DOT_COUNT - 1)) drawCircle(litColor, 1.9f * u, Offset(dots[i * 2], dots[i * 2 + 1]))
-            }
-            TrackKind.RAIL -> {
-                arc(radius, sweep, litColor, litStroke)
-                arc(inner, sweep, litColor, litStroke)
-            }
-            else -> arc(radius, sweep, litColor, litStroke)
-        }
+        arc(radius, dialDegrees(clamped) + DIAL_HALF_SWEEP, litColor, litStroke)
     }
 
     private fun DrawScope.arc(r: Float, sweep: Float, color: Color, stroke: Stroke) {
         drawArc(color, startAngle, sweep, false, Offset(dial.cx - r, dial.cy - r), Size(r * 2f, r * 2f), style = stroke)
-    }
-
-    private companion object {
-        /** A dot every 2.5 BPM, as the meter's dotted arc has one every 2.5 cents. */
-        const val DOT_STEP = 2.5f
-        val DOT_COUNT = (BPM_SPAN / DOT_STEP).toInt() + 1
     }
 }
 
 /**
  * The dial's scale with the meter's rules (docs/architecture/ui-meter-and-styles.md, Meter art language): a tick every
  * 10 BPM starting [TICK_OUT_UNITS] outside the arc and pointing out, major ones (30 and every 50)
- * 13u × 2.1u in ink, minor ones 7u × 1.3u at 50 %, in the style's caps, drawn by hand in Ancient;
+ * 13u × 2.1u in ink, minor ones 7u × 1.3u at 50 %, with round caps;
  * the major ticks' tempos in the style's number face at 12.5u, ink at 80 %, set
  * [NUMBER_GAP_UNITS] clear of the tick's end whichever way it points.
  */
@@ -391,7 +334,7 @@ private class DialScale(dial: DialShape, roles: MeterRoles, density: Density, me
     private val count = (ClickTrack.MAX_BPM - ClickTrack.MIN_BPM) / TICK_STEP + 1
     private val ticks = FloatArray(count * 5)
     private val major = BooleanArray(count)
-    private val cap = roles.finish.caps
+    private val cap = StrokeCap.Round
     private val ink = roles.ink
     private val minorInk = roles.ink.copy(alpha = MINOR_TICK_INK)
     private val numberInk = roles.ink.copy(alpha = SCALE_NUMBER_INK)
@@ -410,13 +353,10 @@ private class DialScale(dial: DialShape, roles: MeterRoles, density: Density, me
             val bpm = ClickTrack.MIN_BPM + i * TICK_STEP
             val isMajor = bpm == ClickTrack.MIN_BPM || bpm % MAJOR_STEP == 0
             dial.at(bpm.toFloat(), dial.r + TICK_OUT_UNITS * u, at)
-            val jitter = if (roles.finish.jitter) handJitter(bpm.toFloat()) else 0f
-            val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u * (1f + JITTER_LENGTH * jitter)
-            val width = (if (isMajor) MAJOR_TICK_WIDTH else MINOR_TICK_WIDTH) * u * (1f + JITTER_WIDTH * jitter)
-            val turnCos = cos(JITTER_TURN * jitter)
-            val turnSin = sin(JITTER_TURN * jitter)
-            val dx = at[2] * turnCos - at[3] * turnSin
-            val dy = at[2] * turnSin + at[3] * turnCos
+            val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u
+            val width = (if (isMajor) MAJOR_TICK_WIDTH else MINOR_TICK_WIDTH) * u
+            val dx = at[2]
+            val dy = at[3]
             ticks[i * 5] = at[0]
             ticks[i * 5 + 1] = at[1]
             ticks[i * 5 + 2] = at[0] + dx * length

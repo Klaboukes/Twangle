@@ -26,13 +26,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,8 +80,6 @@ import io.github.klaboukes.twangle.core.designsystem.pacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneTickRule
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenSide
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -111,9 +107,8 @@ data class NoteReadout(
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
- * frequency. With the [display] set to the wave ([WaveView], in [waveLook], e.g. the strobe),
- * that picture replaces both: the dial already shows how far off the note is, so the pill only shows
- * [hint] and stays empty during a note. [compact] makes the note and the picture smaller, for short spaces such as a phone on its side.
+ * frequency. (1.1's wave view, which could take the pill's and the frequency's place, went in Phase 67.)
+ * [compact] makes the note smaller, for short spaces such as a phone on its side.
  * With a [maxHeight] the note (only the note, whatever it says) gets smaller so the block fits in it,
  * down to [FIT_NOTE_MIN_SIZE]. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
@@ -121,25 +116,20 @@ data class NoteReadout(
  * start, so the state doesn't rely on colour alone (colour-blind players see it too). With the needle's
  * cents the pill also fills with that colour and says "In tune" instead of the cents, so the check
  * never stands beside "7 cents flat" (in tune holds until 7 cents, Precise 3; the needle still shows
- * where in that window the note sits). In the wave view the pill stays clear, the check is
- * drawn in the "in tune" colour, and the wave holds still on the note. Without a [readout] [hint]
+ * where in that window the note sits). Without a [readout] [hint]
  * ("Play a string") stands in the note's slot, in the note's face but smaller ([HintInNoteSlot]), so it
- * reads right under the meter, and the pill and the wave rest empty under it; without a hint the slot
- * shows a faint ♪. The wave moves by [waveCents], the exact cents read while drawing (NaN without a
- * note; by default the readout's, which the tuner rounds to what the text shows). [reception] (read
- * while drawing, NaN without a note) makes the wave crisp or faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
- * music ([musicText]).
+ * reads right under the meter, and the pill rests empty under it; without a hint the slot
+ * shows a faint ♪. A ♯ or ♭ is set smaller and raised, like in sheet music ([musicText]).
  *
  * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
  * "Tune down ↓", the readout's [NoteReadout.hint], held steady by [SteadyHint] so it doesn't flicker
- * near the note); in tune it says nothing extra. With a picture the hint
- * fills the otherwise empty pill; with cents it gets its own line under the pill, which keeps its
+ * near the note); in tune it says nothing extra. It gets its own line under the pill, which keeps its
  * height while empty so nothing jumps when the note comes in tune.
  *
  * A [tip] about the sound ("Play a bit louder", "Too noisy, move the phone closer", "Too loud, move the phone back")
  * takes the place of something less needed at that moment, so nothing is added to the screen and
- * nothing moves: without a note it replaces [hint] in the note's slot; with the wave it fills the pill instead of the
- * direction; with the needle it replaces the frequency, so "Tune up" / "Tune down" stays in view.
+ * nothing moves: without a note it replaces [hint] in the note's slot; with a note it replaces the frequency, so
+ * "Tune up" / "Tune down" stays in view.
  * TalkBack says it instead of the direction. A tip keeps to one line, set smaller when it doesn't
  * fit, so a long one ("Te hard, leg de telefoon verder weg") never pushes the note up.
  *
@@ -159,26 +149,20 @@ fun NoteDisplay(
     hint: String,
     modifier: Modifier = Modifier,
     spokenHint: String = hint,
-    display: TunerDisplay = TunerDisplay.NEEDLE,
     compact: Boolean = false,
     maxHeight: Dp = Dp.Unspecified,
-    waveLook: WaveLook = WaveLook.DEFAULT,
     showTuneHint: Boolean = false,
-    waveCents: LiveFloat = LiveFloat { if (readout != null) readout.cents else Float.NaN },
-    reception: LiveFloat = NO_LIVE_FLOAT,
     tip: ReceptionTip? = null,
     speech: PacedSpeech = rememberPacedSpeech(),
 ) {
     val inTune = readout?.inTune == true
-    // The wave shows how far off the note is in a picture instead of in cents.
-    val pictured = display != TunerDisplay.NEEDLE
     val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
     val directionText = direction?.let { stringResource(it.label) }.orEmpty()
     val tipText = tip?.let { stringResource(it.label) }
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val noteColor by animateInTuneColor(inTune, colors.onSurface, "noteColor")
-    // In the wave view too: the wave holding still says it as well, but a mark says it to everyone.
+    // A mark says it to everyone, not the colour alone.
     val checkShown by animateFloatAsState(if (inTune) 1f else 0f, label = "check")
     val glow = animateFloatAsState(if (inTune) 1f else 0f, tween(GLOW_MS), label = "glow")
     val pop = remember { Animatable(1f) }
@@ -189,14 +173,14 @@ fun NoteDisplay(
         }
     }
     val pillBase = animateColorAsState(
-        if (readout == null || pictured) Color.Transparent else colors.surfaceContainerHigh.copy(alpha = 0.85f),
+        if (readout == null) Color.Transparent else colors.surfaceContainerHigh.copy(alpha = 0.85f),
         label = "pill",
     )
     // The "in tune" colour over the pill: a little as the note comes close ([pillTint]), all of it in
     // tune. A slow spring, so it glides with the note instead of following every jitter of the cents.
     val pillFill = animateFloatAsState(
         when {
-            readout == null || pictured -> 0f
+            readout == null -> 0f
             inTune -> 1f
             else -> pillTint(readout.cents)
         },
@@ -215,7 +199,7 @@ fun NoteDisplay(
     }
     val sheenTarget = readout?.let { "${it.noteName}${it.octave}" }
     val currentSheenTarget by rememberUpdatedState(sheenTarget)
-    val sheenShown by rememberUpdatedState(!pictured && !animationsOff)
+    val sheenShown by rememberUpdatedState(!animationsOff)
     LaunchedEffect(inTune) {
         if (sheenRule.update(inTune, currentSheenTarget, SystemClock.uptimeMillis()) && sheenShown) {
             sheenScope.launch {
@@ -361,33 +345,14 @@ fun NoteDisplay(
                 HintInNoteSlot(idleText, hintStyle, hintColor) { noteLine(letterSize) }
             }
         }
-        // Everything under the note: the wave, the pill and the lines under it.
+        // Everything under the note: the pill and the lines under it.
         val rest = @Composable {
-            val pictureSize =Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
-            when (display) {
-                TunerDisplay.WAVE -> WaveView(
-                    // Without a note the wave rests, whatever the exact cents still say.
-                    cents = if (readout != null) waveCents else NO_LIVE_FLOAT,
-                    inTune = inTune,
-                    modifier = pictureSize.testTag(TunerTestTags.WAVE),
-                    look = waveLook,
-                    reception = reception,
-                )
-                TunerDisplay.NEEDLE -> Unit
-            }
-            // In the wave view the pill is empty in tune (unless a tip shows): there the check mark sits in
-            // its middle, under the wave, instead of at its start. Where it sat in tune it stays while it
-            // fades out, so it doesn't jump aside as the direction hint comes back.
-            val centredInTune = pictured && (tipText ?: directionText).isEmpty()
-            var checkCentred by remember { mutableStateOf(centredInTune) }
-            if (inTune && checkCentred != centredInTune) checkCentred = centredInTune
-            if (!pictured && checkCentred) checkCentred = false
             val check = @Composable { shown: Boolean ->
                 Icon(
                     painter = painterResource(R.drawable.ic_check_circle),
                     contentDescription = null,
-                    // Over the clear pill of the wave view, in the "in tune" colour; over the filled pill, in its text colour.
-                    tint = if (pictured) tuneColor else pillText,
+                    // Over the filled pill, in its text colour.
+                    tint = pillText,
                     modifier = Modifier
                         .size(CHECK_SIZE)
                         .graphicsLayer {
@@ -416,28 +381,19 @@ fun NoteDisplay(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     // The check mark's slot is mirrored on the right, so the text stays centred.
-                    check(!checkCentred)
+                    check(true)
                     val pillStyle = when {
-                        pictured -> MaterialTheme.typography.titleMedium
                         readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = NumberFont)
                         else -> MaterialTheme.typography.titleLarge
                     }
-                    // The wave's pill holds a tip or the direction on one line, set smaller where it
-                    // doesn't fit, so it is as tall as when it is empty and nothing moves as they come
-                    // and go (Dutch "Hoger stemmen ↑" took two lines at 2× text on a phone on its side).
-                    // Without a note the tip is in the note's slot, with the hint.
-                    val oneLineInPill = readout != null && pictured
-                    val pillLine = rememberLineHeight(pillStyle)
                     // As wide as the widest cents text, so the pill keeps its size while the cents change.
-                    val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
+                    val centsWidth = if (readout != null) rememberCentsTextWidth(pillStyle) else 0.dp
                     val inTuneLabel = inTuneLabel()
                     Text(
                         text = when {
                             // Resting, empty: the hint is in the note's slot. Still there, so the
                             // pill keeps its line and nothing moves when a note starts.
                             readout == null -> AnnotatedString("")
-                            // Empty (or the direction) but still there, so the screen doesn't jump when a note starts or stops.
-                            pictured -> AnnotatedString(tipText ?: directionText)
                             // In tune the pill says so, with the check, rather than "7 cents flat" beside it.
                             inTune -> AnnotatedString(inTuneLabel)
                             else -> AnnotatedString(centsText(readout.cents))
@@ -445,26 +401,18 @@ fun NoteDisplay(
                         style = pillStyle,
                         color = when {
                             readout == null -> colors.onSurface
-                            pictured -> colors.primary
                             else -> pillText
                         },
                         textAlign = TextAlign.Center,
-                        maxLines = if (oneLineInPill) 1 else Int.MAX_VALUE,
-                        // On its one line never wrapped, so the auto-size sees a tip too wide (Ear training's
-                        // AnswerButton in IntervalsPart.kt says why).
-                        softWrap = !oneLineInPill,
-                        autoSize = if (oneLineInPill) tipAutoSize(pillStyle.fontSize) else null,
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .widthIn(min = centsWidth)
-                            .then(if (oneLineInPill) Modifier.keepLineHeight(pillLine) else Modifier)
                             .hiddenFromTalkBack(),
                     )
                     Spacer(Modifier.size(CHECK_SIZE))
                 }
-                if (pictured) check(checkCentred)
             }
-            if (!pictured && showTuneHint) {
+            if (showTuneHint) {
                 // Always there (empty without a hint) and one line, set smaller where it doesn't fit,
                 // so the frequency below doesn't move.
                 val directionLine = rememberLineHeight(MaterialTheme.typography.titleMedium)
@@ -481,7 +429,7 @@ fun NoteDisplay(
                     modifier = Modifier.keepLineHeight(directionLine).hiddenFromTalkBack(),
                 )
             }
-            if (!pictured) {
+            run {
                 val tipInLine = tipText != null && readout != null
                 val frequencyLine = rememberLineHeight(MaterialTheme.typography.bodyLarge)
                 Text(
@@ -727,14 +675,9 @@ private val COMPACT_NOTE_SIZE = 80.dp
 /** A note fitted to a short screen ([NoteDisplay]'s maxHeight) gets no smaller than this. */
 private val FIT_NOTE_MIN_SIZE = 32.dp
 
-/** Between the note, the wave, the pill and the lines under it. */
+/** Between the note, the pill and the lines under it. */
 private val NOTE_SPACING = 6.dp
 private val CHECK_SIZE = 24.dp
-
-/** The wave view: narrower than the note's pill can grow, and low, so it stays in the background. */
-private val WAVE_WIDTH = 240.dp
-private val WAVE_HEIGHT = 40.dp
-private val COMPACT_WAVE_HEIGHT = 30.dp
 
 /** The note shrinks rather than grow wider than this, e.g. "Sol♯" in the wide Space Age face. */
 private val BIG_NOTE_MAX_WIDTH = 260.dp
@@ -893,8 +836,8 @@ internal fun spokenReadingKey(readout: NoteReadout): String =
     "${readout.noteName}${readout.octave}/${SpokenSide.of(readout.cents.roundToInt(), readout.inTune)}"
 
 /**
- * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, also in the
- * wave view, since TalkBack can't see the dial or the ribbon. A [direction] is added in words:
+ * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, since TalkBack
+ * can't see the dial. A [direction] is added in words:
  * "E 2, 12 cents flat, tune up". A [tip] is said in its place: "E 2, 12 cents flat, Play a bit louder".
  */
 @Composable

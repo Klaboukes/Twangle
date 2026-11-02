@@ -250,30 +250,14 @@ class DataStoreSettingsRepository internal constructor(
         save { it[SHOW_SIGNAL_BARS] = enabled }
     }
 
-    override suspend fun setDisplay(display: TunerDisplay) {
+    override suspend fun setLensLook(look: LensLook) {
         save {
-            // An old strobe display was showing as the wave's strobe look: keep that look for the wave.
-            if (it[DISPLAY] == OLD_STROBE_DISPLAY) it[WAVE_LOOK] = WaveLook.STROBE.name
-            it[DISPLAY] = display.name
-            // The old wave-view switch has done its job once a display is saved.
-            it.remove(SHOW_WAVES)
+            it[METER_LOOK] = look.name
+            // 1.1's display and wave look decide only until a look is picked (lensLook's rule).
+            it.remove(OLD_DISPLAY)
+            it.remove(OLD_SHOW_WAVES)
+            it.remove(OLD_WAVE_LOOK)
         }
-    }
-
-    override suspend fun setWaveLook(look: WaveLook) {
-        save {
-            // An old strobe display would otherwise keep overriding the look picked here.
-            if (it[DISPLAY] == OLD_STROBE_DISPLAY) it[DISPLAY] = TunerDisplay.WAVE.name
-            it[WAVE_LOOK] = look.name
-        }
-    }
-
-    override suspend fun setMeterLook(look: MeterLook) {
-        save { it[METER_LOOK] = look.name }
-    }
-
-    override suspend fun setInTuneEffect(effect: InTuneEffect) {
-        save { it[IN_TUNE_EFFECT] = effect.name }
     }
 
     override suspend fun setFocusMode(enabled: Boolean) {
@@ -412,7 +396,6 @@ class DataStoreSettingsRepository internal constructor(
     private fun toSettings(prefs: Preferences, device: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
-        val oldStrobe = prefs[DISPLAY] == OLD_STROBE_DISPLAY
         val customTunings = customTunings(prefs)
         val (instrument, tuning) = instrumentAndTuning(prefs, customTunings)
         return AppSettings(
@@ -429,14 +412,7 @@ class DataStoreSettingsRepository internal constructor(
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
-            display = if (oldStrobe) {
-                TunerDisplay.WAVE
-            } else {
-                enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display
-            },
-            waveLook = if (oldStrobe) WaveLook.STROBE else waveLookOrNull(prefs[WAVE_LOOK]) ?: defaults.waveLook,
-            meterLook = meterLookOrNull(prefs[METER_LOOK]) ?: defaults.meterLook,
-            inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
+            lensLook = lensLook(prefs) ?: defaults.lensLook,
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
             tourSeen = tourSeen(prefs),
             micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
@@ -496,22 +472,21 @@ class DataStoreSettingsRepository internal constructor(
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
         private val SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
         private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
-        private val DISPLAY = stringPreferencesKey("tuner_display")
-
-        /** The strobe display of versions before it became a wave look ([WaveLook.STROBE]). */
-        private const val OLD_STROBE_DISPLAY = "STROBE"
-
-        /** The stripes look of versions before the strobe look took its place. */
-        private const val OLD_STRIPES_LOOK = "STRIPES"
-
-        /** Meter looks of older versions and the looks that took their places (Phase 60: Pointers for Spirit level, Loupe for Eclipse). */
-        private val OLD_METER_LOOKS = mapOf("SPIRIT_LEVEL" to MeterLook.POINTERS, "ECLIPSE" to MeterLook.LOUPE)
-
-        /** The wave-view switch of versions before the display picker: read once, to carry it over. */
-        private val SHOW_WAVES = booleanPreferencesKey("show_waves")
-        private val WAVE_LOOK = stringPreferencesKey("wave_look")
+        /** The lens's look ([LensLook]), under 1.1's meter look's key, where 1.1's Light arc keeps its name. */
         private val METER_LOOK = stringPreferencesKey("meter_look")
-        private val IN_TUNE_EFFECT = stringPreferencesKey("in_tune_effect")
+
+        /*
+         * What 1.1 showed under its meter: read only for the lens look's rule ([lensLook]), and removed once a look
+         * is picked. 1.1's in-tune effect (`in_tune_effect`, Calm or Bold) is not read at all: 2.0 has one glow.
+         */
+        /** 1.1's display under the note: "NEEDLE" (the cents), "WAVE" (the wave view) or the older "STROBE". */
+        private val OLD_DISPLAY = stringPreferencesKey("tuner_display")
+
+        /** The wave-view switch of versions before 1.1's display picker, counted while no display was saved. */
+        private val OLD_SHOW_WAVES = booleanPreferencesKey("show_waves")
+
+        /** 1.1's wave look: "STROBE" (or the older "STRIPES") is the strobe. */
+        private val OLD_WAVE_LOOK = stringPreferencesKey("wave_look")
         /** Whether the first-start tour was skipped or finished; see [tourSeen] for an install without it. */
         private val TOUR_SEEN = booleanPreferencesKey("tour_seen")
 
@@ -708,19 +683,38 @@ class DataStoreSettingsRepository internal constructor(
             return if (saved == PracticeTool.CHORDS && prefs[OLD_PRACTICE_CHART] == "SCALES") PracticeTool.SCALES else saved
         }
 
-        /** The display a saved wave-view switch stands for: on is the wave, off the needle with cents. */
-        private fun displayFromWaveSwitch(showWaves: Boolean?): TunerDisplay? = when (showWaves) {
-            true -> TunerDisplay.WAVE
-            false -> TunerDisplay.NEEDLE
-            null -> null
+        /**
+         * The lens look's rule (docs/architecture/v2-plan.md, *Settings from 1.1*): a saved look 2.0 has (1.1's Light
+         * arc included); else the strobe where 1.1 showed its strobe wave under the meter ([showedStrobe]); else null,
+         * the default. 1.1's other meter looks (Classic, Pointers, Loupe, Arrows, Light bars and older names) say nothing.
+         */
+        private fun lensLook(prefs: Preferences): LensLook? =
+            enumOrNull<LensLook>(prefs[METER_LOOK]) ?: LensLook.STROBE.takeIf { showedStrobe(prefs) }
+
+        /**
+         * Whether 1.1 showed the strobe under its meter, read as 1.1 read it: the old strobe display; or the wave
+         * view (the saved display, else the older wave-view switch, else 1.1's default, the wave) in the strobe look
+         * (or the older stripes, which it replaced). Without a saved look 1.1's wave was the ribbon.
+         */
+        private fun showedStrobe(prefs: Preferences): Boolean {
+            val display = prefs[OLD_DISPLAY]
+            if (display == OLD_STROBE_DISPLAY) return true
+            val wave = when (display) {
+                OLD_WAVE_DISPLAY -> true
+                OLD_NEEDLE_DISPLAY -> false
+                else -> prefs[OLD_SHOW_WAVES] ?: true
+            }
+            return wave && prefs[OLD_WAVE_LOOK] in OLD_STROBE_LOOKS
         }
 
-        /** The saved look, with the old stripes look read as the strobe look that replaced it. */
-        private fun waveLookOrNull(name: String?): WaveLook? =
-            if (name == OLD_STRIPES_LOOK) WaveLook.STROBE else enumOrNull<WaveLook>(name)
+        private const val OLD_NEEDLE_DISPLAY = "NEEDLE"
+        private const val OLD_WAVE_DISPLAY = "WAVE"
 
-        /** The saved meter look, with an old look read as the one that took its place ([OLD_METER_LOOKS]). */
-        private fun meterLookOrNull(name: String?): MeterLook? = name?.let { OLD_METER_LOOKS[it] } ?: enumOrNull<MeterLook>(name)
+        /** The strobe display of versions before it became a wave look. */
+        private const val OLD_STROBE_DISPLAY = "STROBE"
+
+        /** 1.1's strobe wave look, and the stripes look of the versions before it. */
+        private val OLD_STROBE_LOOKS = setOf("STROBE", "STRIPES")
 
         /** The constants [names] gives that this version knows, in their own order; null for none (missing, empty or all unknown). */
         private inline fun <reified E : Enum<E>> enumSetOrNull(names: Set<String>?): Set<E>? =

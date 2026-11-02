@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.rememberTextMeasurer
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlinx.coroutines.flow.first
 import kotlin.math.cos
 import kotlin.math.max
@@ -92,8 +91,9 @@ internal class FanGeometry(size: Size) {
  * steady reading moves nothing.
  */
 @Composable
-internal fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect) {
-    val roles = meterRoles(effect)
+@Suppress("unused") // Kept for the lens's Light arc (Phase 72), which draws it again; nothing draws it since Phase 67.
+internal fun BoxScope.LightArcMeter(reading: MeterReading) {
+    val roles = meterRoles()
     val measurer = rememberTextMeasurer()
     val heat = remember(reading) { LightArcHeat(Snapshot.withoutReadObservation { reading.cents }) }
     val frames = remember(heat) { mutableIntStateOf(0) }

@@ -64,49 +64,6 @@
     <!-- The line under the Wallpaper colours switch. -->
     <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
 
-    <!-- Meter: the look of the meter above the note (in the Tuner screen group). -->
-    <string name="settings_meter_look_title">Meter</string>
-    <!-- Meter look, the name under its card: a needle on a numbered dial, as on an analogue meter. Shown on one line. -->
-    <string name="settings_meter_look_classic">Classic</string>
-    <!-- Meter look, the name under its card: a fan of little lights, like an LED pedal tuner. Shown on one line. -->
-    <string name="settings_meter_look_light_arc">Light arc</string>
-    <!-- Meter look, the name under its card: two triangular pointers, a fixed one above a straight scale and the note's one sliding below it; in tune their tips meet. Shown on one line. -->
-    <string name="settings_meter_look_pointers">Pointers</string>
-    <!-- Meter look, the name under its card: a straight scale with a slim marker under a round magnifying glass that enlarges its middle, like a jeweller's loupe. Shown on one line. -->
-    <string name="settings_meter_look_loupe">Loupe</string>
-    <!-- Meter look, the name under its card: chevrons each side that light towards the middle, as on a pedal tuner. Shown on one line. -->
-    <string name="settings_meter_look_arrows">Arrows</string>
-    <!-- Meter look, the name under its card: a row of bars that light up around the note, as on a pedal tuner. Shown on one line. -->
-    <string name="settings_meter_look_light_bars">Light bars</string>
-    <!-- Setting title over Calm and Bold: how the meter glows when the note is in tune. -->
-    <string name="settings_in_tune_effect_title">In-tune effect</string>
-    <!-- The line under In-tune effect. -->
-    <string name="settings_in_tune_effect_summary">How strongly the meter glows when a note is in tune</string>
-    <!-- In-tune effect choice (radio button): a soft glow. One short word. -->
-    <string name="settings_in_tune_effect_calm">Calm</string>
-    <!-- In-tune effect choice (radio button): a strong glow. One short word. -->
-    <string name="settings_in_tune_effect_bold">Bold</string>
-
-    <!-- Display: what shows how far off a note is, under the note (in the Tuner screen group). -->
-    <string name="settings_display_title">Below the note</string>
-    <!-- Below the note choice (radio button): the number of cents the note is off. -->
-    <string name="settings_display_numbers">Numbers: how many cents off</string>
-    <!-- Below the note choice (radio button): a moving picture that slows and stops when in tune, in the wave look picked below. -->
-    <string name="settings_display_wave">Wave: a moving picture, in the look you pick</string>
-    <!-- Title over the card grid of wave looks (the moving picture below the note). -->
-    <string name="settings_wave_look_title">Wave look</string>
-    <!-- Wave look, the name under its card: a pattern that drifts until in tune, as on a strobe tuner. Shown on one line. -->
-    <string name="settings_wave_look_strobe">Strobe</string>
-    <!-- Wave look, the name under its card: a ribbon whose pulses drift and smooth out in tune. Shown on one line. -->
-    <string name="settings_wave_look_ribbon">Ribbon</string>
-    <!-- Wave look, the name under its card: a scrolling dot-matrix strip. Shown on one line. -->
-    <string name="settings_wave_look_dots">Dots</string>
-    <!-- Wave look, the name under its card: glowing specks that glide into a line in tune. Shown on one line. -->
-    <string name="settings_wave_look_fireflies">Fireflies</string>
-    <!-- Wave look, the name under its card: a hoop spinning like a coin until in tune. Shown on one line. -->
-    <string name="settings_wave_look_loop">Loop</string>
-    <!-- Wave look, the name under its card: rings spreading as on water. Shown on one line. -->
-    <string name="settings_wave_look_ripples">Ripples</string>
     <!-- Switch title: focus mode, the tuner sideways full screen with one big meter. -->
     <string name="settings_focus_mode_title">Focus mode</string>
     <!-- The line under the Focus mode switch. -->

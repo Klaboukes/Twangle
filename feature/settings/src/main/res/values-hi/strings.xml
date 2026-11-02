@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">वॉलपेपर के रंग</string>
     <string name="settings_dynamic_color_summary">अपने वॉलपेपर के रंग इस्तेमाल करें</string>
 
-    <string name="settings_meter_look_title">मीटर</string>
-    <string name="settings_meter_look_classic">क्लासिक</string>
-    <string name="settings_meter_look_light_arc">लाइट आर्क</string>
-    <string name="settings_meter_look_pointers">पॉइंटर</string>
-    <string name="settings_meter_look_loupe">आवर्धक लेंस</string>
-    <string name="settings_meter_look_arrows">तीर</string>
-    <string name="settings_meter_look_light_bars">लाइट बार</string>
-    <string name="settings_in_tune_effect_title">सुर में आने का इफ़ेक्ट</string>
-    <string name="settings_in_tune_effect_summary">सुर में आने पर मीटर कितना चमके</string>
-    <string name="settings_in_tune_effect_calm">शांत</string>
-    <string name="settings_in_tune_effect_bold">ज़ोरदार</string>
-
-    <string name="settings_display_title">नोट के नीचे</string>
-    <string name="settings_display_numbers">अंक: कितने सेंट का अंतर</string>
-    <string name="settings_display_wave">तरंग: आपके चुने रूप में चलती तस्वीर</string>
-    <string name="settings_wave_look_title">तरंग का रूप</string>
-    <string name="settings_wave_look_strobe">स्ट्रोब</string>
-    <string name="settings_wave_look_ribbon">रिबन</string>
-    <string name="settings_wave_look_dots">बिंदु</string>
-    <string name="settings_wave_look_fireflies">जुगनू</string>
-    <string name="settings_wave_look_loop">लूप</string>
-    <string name="settings_wave_look_ripples">लहरें</string>
     <string name="settings_focus_mode_title">फ़ोकस मोड</string>
     <string name="settings_focus_mode_summary">Twangle को आड़ा करके एक बड़ा मीटर दिखाता है, जिसे दूर से भी आसानी से पढ़ सकें</string>
     <string name="settings_left_handed_title">बाएँ हाथ वाले</string>

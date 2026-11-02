@@ -100,18 +100,10 @@ interface SettingsRepository {
     suspend fun setShowSignalBars(enabled: Boolean)
 
     /**
-     * Numbers ([TunerDisplay.NEEDLE]) or wave. Replaces the old wave-view switch, which counts only until this is first
-     * saved, and carries an old saved strobe display over to the wave's strobe look.
+     * The lens's look. Also removes 1.1's display, wave-view switch and wave look, which the lens look's rule reads
+     * only until a look is picked (docs/architecture/v2-plan.md, *Settings from 1.1*).
      */
-    suspend fun setDisplay(display: TunerDisplay)
-
-    /** Also turns an old saved strobe display into the wave, so the picked look shows. */
-    suspend fun setWaveLook(look: WaveLook)
-
-    suspend fun setMeterLook(look: MeterLook)
-
-    /** Calm (the soft glow) or Bold (a stronger, larger one) when the note is reached. */
-    suspend fun setInTuneEffect(effect: InTuneEffect)
+    suspend fun setLensLook(look: LensLook)
 
     /** Focus mode: true shows the compact layout (one big meter) on its side; false (the default) the full one. */
     suspend fun setFocusMode(enabled: Boolean)

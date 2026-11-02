@@ -26,11 +26,4 @@ class HoldStillTest {
         assertEquals(frames.sorted().distinct(), frames)
     }
 
-    @Test
-    fun `the still meter card shows a note well flat, not yet in tune`() {
-        val demo = MeterDemo()
-        holdStill(demo)
-        assertTrue("${demo.cents.floatValue} cents", demo.cents.floatValue < -10f)
-        assertEquals(0f, demo.tuned.floatValue)
-    }
 }

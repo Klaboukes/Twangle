@@ -23,7 +23,6 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onAllNodesWithText
@@ -44,12 +43,8 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -63,8 +58,6 @@ import io.github.klaboukes.twangle.feature.settings.components.WEBSITE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
-import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
-import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -96,10 +89,6 @@ class SettingsContentTest {
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tuneHintChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
-    private val displayChanges = mutableListOf<TunerDisplay>()
-    private val meterLookChanges = mutableListOf<MeterLook>()
-    private val effectChanges = mutableListOf<InTuneEffect>()
-    private val waveLookChanges = mutableListOf<WaveLook>()
     private val focusModeChanges = mutableListOf<Boolean>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private var backs = 0
@@ -159,10 +148,6 @@ class SettingsContentTest {
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onShowTuneHintChange = { tuneHintChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
-                        onDisplayChange = { displayChanges += it },
-                        onMeterLookChange = { meterLookChanges += it },
-                        onInTuneEffectChange = { effectChanges += it },
-                        onWaveLookChange = { waveLookChanges += it },
                         onFocusModeChange = { focusModeChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
@@ -448,288 +433,27 @@ class SettingsContentTest {
         assertEquals(listOf(false), leftHandedChanges)
     }
 
+    /**
+     * 1.1's meter look cards, Calm or Bold, "Below the note" and the wave look cards went in Phase 67 (one meter and
+     * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left, and the Tuner screen
+     * group holds focus mode alone.
+     */
     @Test
-    fun displayPickerShowsTheChoiceAndReportsANewOne() {
-        show(AppSettings(display = TunerDisplay.WAVE))
-        compose.onNodeWithText(context.getString(R.string.settings_display_wave)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_display_numbers)).assertIsNotSelected().performClick()
-        assertEquals(listOf(TunerDisplay.NEEDLE), displayChanges)
-    }
-
-    /** Six meter cards, in the owner's order, with the needle display as well as the wave. */
-    @Test
-    fun theMeterPickerShowsSixCardsWithTheNeedle() = assertSixMeterCards(TunerDisplay.NEEDLE)
-
-    @Test
-    fun theMeterPickerShowsSixCardsWithTheWave() = assertSixMeterCards(TunerDisplay.WAVE)
-
-    private fun assertSixMeterCards(display: TunerDisplay) {
-        show(AppSettings(display = display))
-        compose.onNodeWithText(context.getString(R.string.settings_meter_look_title)).performScrollTo().assertIsDisplayed()
-        val cards = SemanticsMatcher("a meter look card") {
-            it.config.getOrElseNullable(SemanticsProperties.TestTag) { null }?.startsWith("meter_look_card_") == true
-        }
-        compose.onAllNodes(cards).assertCountEquals(6)
-        val places = MeterLook.entries.map { compose.onNodeWithTag(meterLookCardTag(it)).fetchSemanticsNode().positionInRoot }
-        // Read in rows: each card is beside the one before it, to the right, or in the row below.
-        places.zipWithNext().forEach { (a, b) -> assertTrue("$a then $b", b.y > a.y || (b.y == a.y && b.x > a.x)) }
-    }
-
-    @Test
-    fun meterLooksShowTheChoiceAndReportEachOne() {
-        show(AppSettings(meterLook = MeterLook.POINTERS))
-        compose.onNodeWithTag(meterLookCardTag(MeterLook.POINTERS)).performScrollTo().assertIsSelected()
-        compose.onNodeWithTag(meterLookCardTag(MeterLook.CLASSIC)).assertIsNotSelected()
-        for (look in MeterLook.entries) compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo().performClick()
-        assertEquals(MeterLook.entries, meterLookChanges)
-    }
-
-    /** The in-tune effect shows Calm picked on a fresh install, and reports Bold (and back) when tapped. */
-    @Test
-    fun inTuneEffectShowsTheChoiceAndReportsANewOne() {
+    fun theLooksAndTheirCardsAreGone() {
         show(AppSettings())
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_title)).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_calm)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_bold)).performScrollTo().assertIsNotSelected().performClick()
-        assertEquals(listOf(InTuneEffect.BOLD), effectChanges)
-    }
-
-    @Test
-    fun inTuneEffectShowsBoldWhenPicked() {
-        show(AppSettings(inTuneEffect = InTuneEffect.BOLD, display = TunerDisplay.NEEDLE))
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_bold)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_calm)).performScrollTo().assertIsNotSelected().performClick()
-        assertEquals(listOf(InTuneEffect.CALM), effectChanges)
-    }
-
-    /**
-     * TalkBack hears Calm and Bold as two radio buttons in one group, by name, with the picked one
-     * selected. In English and in Dutch ("Rustig", "Krachtig").
-     */
-    @Test
-    fun talkBackReadsTheInTuneEffectsAsRadioButtons() = assertInTuneEffectsSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsTheInTuneEffectsAsRadioButtons() = assertInTuneEffectsSpoken(locale = "nl")
-
-    private fun assertInTuneEffectsSpoken(locale: String?) {
-        show(AppSettings(inTuneEffect = InTuneEffect.BOLD), locale = locale)
-        val res = resourcesIn(locale)
-        for ((effect, id) in listOf(InTuneEffect.CALM to R.string.settings_in_tune_effect_calm, InTuneEffect.BOLD to R.string.settings_in_tune_effect_bold)) {
-            val name = res.getString(id)
-            val row = compose.onNodeWithText(name).performScrollTo()
-            row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (effect == InTuneEffect.BOLD) row.assertIsSelected() else row.assertIsNotSelected()
-            assertEquals("$effect", listOf(name), row.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            row.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        val lookCards = SemanticsMatcher("a 1.1 look card") {
+            val tag = it.config.getOrElseNullable(SemanticsProperties.TestTag) { null }.orEmpty()
+            tag.startsWith("meter_look_card_") || tag.startsWith("wave_look_card_")
         }
-    }
-
-    /** At 2× font the in-tune effect's title and both choices are wholly shown, in English and Dutch, also on a phone on its side. */
-    @Test
-    @Thorough
-    fun inTuneEffectFitsAtTwiceTheFontSize() = assertInTuneEffectFits(fontScale = 2f)
-
-    @Test
-    fun inTuneEffectFitsInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertInTuneEffectFits(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
-
-    private fun assertInTuneEffectFits(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
-        val res = resourcesIn(locale)
-        listOf(R.string.settings_in_tune_effect_title, R.string.settings_in_tune_effect_calm, R.string.settings_in_tune_effect_bold)
-            .map { res.getString(it) }
-            .forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
-        listOf(R.string.settings_in_tune_effect_calm, R.string.settings_in_tune_effect_bold).forEach {
-            val row = compose.onNodeWithText(res.getString(it)).performScrollTo().getBoundsInRoot()
-            assertTrue("${res.getString(it)} row is ${row.bottom - row.top} high", row.bottom - row.top >= 47.5.dp)
-        }
-    }
-
-    /**
-     * TalkBack hears every meter card as a radio button with its name, and which one is picked:
-     * one group, exactly one card selected. In English and in Dutch.
-     */
-    @Test
-    fun talkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = "nl")
-
-    private fun assertMeterLooksSpoken(locale: String?) {
-        show(AppSettings(meterLook = MeterLook.POINTERS), locale = locale)
-        val res = resourcesIn(locale)
-        for ((look, id) in meterLookNames) {
-            val name = res.getString(id)
-            val card = compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo()
-            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (look == MeterLook.POINTERS) card.assertIsSelected() else card.assertIsNotSelected()
-            // Its name, said once: the moving meter inside says nothing.
-            assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /**
-     * At 2× font every meter look's name still fits its card on one line (two cards to a row then,
-     * and the name gets smaller when needed), in English and Dutch ("Waterpas"), on a phone and
-     * on a phone on its side.
-     */
-    @Test
-    @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f)
-
-    @Test
-    @Thorough
-    fun meterLookNamesFitInDutchAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f, locale = "nl")
-
-    /** In the app's own theme (Ink), as it shows. */
-    @Test
-    @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSizeInInk() =
-        assertMeterLookNamesFit(fontScale = 2f, ink = true)
-
-    @Test
-    fun meterLookNamesFitInDutchAtTwiceTheFontSizeInInk() =
-        assertMeterLookNamesFit(fontScale = 2f, locale = "nl", ink = true)
-
-    @Test
-    @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertMeterLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
-
-    /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
-    @Test
-    fun meterLookNamesFitInALargerFontSizeInInk() =
-        assertMeterLookNamesFit(fontScale = 1.29f, ink = true)
-
-    private fun assertMeterLookNamesFit(
-        size: DpSize? = null,
-        fontScale: Float? = null,
-        locale: String? = null,
-        ink: Boolean = false,
-    ) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale, ink = ink)
-        val res = resourcesIn(locale)
-        for ((look, id) in meterLookNames) {
-            val name = res.getString(id)
-            val label = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(meterLookCardTag(look))), useUnmergedTree = true)
-            assertWhollyShown(label, name)
-            val layouts = mutableListOf<TextLayoutResult>()
-            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
-        }
-    }
-
-    private val meterLookNames = mapOf(
-        MeterLook.CLASSIC to R.string.settings_meter_look_classic,
-        MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
-        MeterLook.POINTERS to R.string.settings_meter_look_pointers,
-        MeterLook.LOUPE to R.string.settings_meter_look_loupe,
-        MeterLook.ARROWS to R.string.settings_meter_look_arrows,
-        MeterLook.LIGHT_BARS to R.string.settings_meter_look_light_bars,
-    )
-
-    @Test
-    fun waveLooksShowTheChoiceAndReportANewOne() {
-        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.LOOP))
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_loop)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_fireflies)).performScrollTo().performClick()
-        assertEquals(listOf(WaveLook.FIREFLIES), waveLookChanges)
-    }
-
-    /**
-     * TalkBack hears every look card as a radio button with its name, and which one is picked:
-     * one group, exactly one card selected. In English and in Dutch.
-     */
-    @Test
-    fun talkBackReadsEveryWaveLookAsARadioButton() = assertWaveLooksSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsEveryWaveLookAsARadioButton() = assertWaveLooksSpoken(locale = "nl")
-
-    private fun assertWaveLooksSpoken(locale: String?) {
-        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.DOTS), locale = locale)
-        val res = resourcesIn(locale)
-        val names = waveLookNames.mapValues { res.getString(it.value) }
-        for ((look, name) in names) {
-            val card = compose.onNodeWithText(name).performScrollTo()
-            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (look == WaveLook.DOTS) card.assertIsSelected() else card.assertIsNotSelected()
-            // Its name, said once: nothing else inside the card for TalkBack to read.
-            assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /**
-     * At 2× font every look's name still fits its card on one line (two cards to a row then, and
-     * the name gets smaller when needed) instead of breaking in the middle of a word, in English
-     * and Dutch ("Vuurvliegjes"), on a phone and on a phone on its side.
-     */
-    @Test
-    @Thorough
-    fun waveLookNamesFitAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f)
-
-    @Test
-    @Thorough
-    fun waveLookNamesFitInDutchAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f, locale = "nl")
-
-    /** In the app's own theme (Ink), as it shows. */
-    @Test
-    fun waveLookNamesFitInDutchAtTwiceTheFontSizeInInk() =
-        assertWaveLookNamesFit(fontScale = 2f, locale = "nl", ink = true)
-
-    @Test
-    @Thorough
-    fun waveLookNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertWaveLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
-
-    @Test
-    fun waveLookNamesFitInDutchAtALargerFontSize() =
-        assertWaveLookNamesFit(fontScale = 1.3f, locale = "nl", ink = true)
-
-    private fun assertWaveLookNamesFit(
-        size: DpSize? = null,
-        fontScale: Float? = null,
-        locale: String? = null,
-        ink: Boolean = false,
-    ) {
-        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = fontScale, locale = locale, ink = ink)
-        val res = resourcesIn(locale)
-        for (id in waveLookNames.values) {
-            val name = res.getString(id)
-            val label = compose.onNodeWithText(name, useUnmergedTree = true)
-            assertWhollyShown(label, name)
-            val layouts = mutableListOf<TextLayoutResult>()
-            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
-        }
-    }
-
-    private val waveLookNames = mapOf(
-        WaveLook.STROBE to R.string.settings_wave_look_strobe,
-        WaveLook.RIBBON to R.string.settings_wave_look_ribbon,
-        WaveLook.DOTS to R.string.settings_wave_look_dots,
-        WaveLook.FIREFLIES to R.string.settings_wave_look_fireflies,
-        WaveLook.LOOP to R.string.settings_wave_look_loop,
-        WaveLook.RIPPLES to R.string.settings_wave_look_ripples,
-    )
-
-    @Test
-    fun waveLooksAreHiddenWithTheNeedle() {
-        show(AppSettings(display = TunerDisplay.NEEDLE))
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertDoesNotExist()
-    }
-
-    @Test
-    fun theStrobeIsOneOfTheWaveLooks() {
-        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.STROBE))
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_strobe)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected().performClick()
-        assertEquals(listOf(WaveLook.RIBBON), waveLookChanges)
+        compose.onAllNodes(lookCards, useUnmergedTree = true).assertCountEquals(0)
+        val top = { text: Int -> compose.onNodeWithText(context.getString(text)).fetchSemanticsNode().positionInRoot.y }
+        val group = top(R.string.settings_group_tuner_screen)
+        val focus = top(R.string.settings_focus_mode_title)
+        assertTrue("focus mode under its group", focus > group)
+        assertTrue("and nothing else but its line before While tuning", top(R.string.settings_group_while_tuning) > focus)
+        val radios = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
+        val between = compose.onAllNodes(radios).fetchSemanticsNodes().map { it.positionInRoot.y }.filter { it > group && it < focus }
+        assertEquals("no choices between the group's heading and focus mode", emptyList<Float>(), between)
     }
 
     @Test
@@ -740,7 +464,7 @@ class SettingsContentTest {
 
     @Test
     fun settingsComeInFiveHeadedGroupsTheLastEndingInTheAboutLink() {
-        show(AppSettings(display = TunerDisplay.WAVE))
+        show(AppSettings())
         val headings = listOf(
             R.string.settings_group_pitch,
             R.string.settings_group_look,
@@ -763,11 +487,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_dynamic_color_title)),
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_group_tuner_screen)),
-            top(context.getString(R.string.settings_meter_look_title)),
-            top(context.getString(R.string.settings_in_tune_effect_title)),
-            top(context.getString(R.string.settings_in_tune_effect_summary)),
-            top(context.getString(R.string.settings_display_title)),
-            top(context.getString(R.string.settings_wave_look_title)),
+            top(context.getString(R.string.settings_focus_mode_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
@@ -845,42 +565,6 @@ class SettingsContentTest {
     private fun columnStart(): Dp {
         val safe = safeArea()
         return safe.left + maxOf(0.dp, (safe.right - safe.left - CONTENT_WIDTH) / 2)
-    }
-
-    /**
-     * The meter and wave cards come three to a row on a tablet at its 1.3× text (Phase 52), near their
-     * phone size: two to a row they were about 280 × 385 dp each on the Lenovo Tab M11, 1.1's six style cards a
-     * screen and a half upright and three screens on its side. On a phone they still go to two from 1.3×.
-     */
-    @Test
-    fun onATabletUprightTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_UPRIGHT, perRow = 3)
-
-    @Test
-    fun onATabletOnItsSideTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_ON_ITS_SIDE, perRow = 3)
-
-    @Test
-    fun onAPhoneAtTheTabletsTextTheCardsComeTwoToARow() = assertCardsPerRow(PHONE, perRow = 2)
-
-    private fun assertCardsPerRow(size: DpSize, perRow: Int) {
-        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = TABLET_FONT_SCALE)
-        val width = minOf(safeArea().let { it.right - it.left }, CONTENT_WIDTH) - ROW_INSET * 2
-        val cardWidth = (width - CARD_GAP * (perRow - 1)) / perRow
-        val grids = mapOf(
-            "meter" to MeterLook.entries.map(::meterLookCardTag),
-            "wave" to WaveLook.entries.map(::waveLookCardTag),
-        )
-        for ((grid, tags) in grids) {
-            // Unclipped: the lower rows may lie below the bottom of the screen.
-            val cards = tags.map { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
-            val rows = cards.chunked(perRow)
-            for ((index, row) in rows.withIndex()) {
-                for (card in row) {
-                    assertEquals("$size $grid row $index top", row.first().top.value, card.top.value, tolerance())
-                    assertEquals("$size $grid card width", cardWidth.value, (card.right - card.left).value, tolerance())
-                }
-                if (index > 0) assertTrue("$size $grid row $index under the one before", row.first().top >= rows[index - 1].first().bottom)
-            }
-        }
     }
 
     @Test
@@ -1188,10 +872,9 @@ class SettingsContentTest {
         /** The Lenovo Tab M11's own text size. */
         const val TABLET_FONT_SCALE = 1.3f
 
-        /** The rows' column at most, its rows' inset and the cards' gap, as SettingsScreen and LookCardGrid set them. */
+        /** The rows' column at most and its rows' inset, as SettingsScreen sets them. */
         val CONTENT_WIDTH = 600.dp
         val ROW_INSET = 16.dp
-        val CARD_GAP = 8.dp
 
         /** Positions compared in dp: at the tablet's 1.5 px a dp, a pixel's rounding is 0.67 dp ([tolerance]). */
         const val EDGE_TOLERANCE = 0.75f

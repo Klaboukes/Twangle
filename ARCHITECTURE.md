@@ -22,8 +22,8 @@ Topic files:
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
-  - **[Tuner screen and tour](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Pitch trail view · Tour · Display
-  - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Wave view · Strobe look · Wave looks · Visual styles
+  - **[Tuner screen and tour](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Pitch trail view · Tour · Under the note
+  - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Strobe · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
   - **[Translation glossary](docs/architecture/glossary.md)**: the app's words for its recurring terms, per language
@@ -67,7 +67,7 @@ Topic files:
 :app               Android application: Activity, Application, AppContainer (DI), navigation bar and screen switching,
                    home-screen widget
 :wear              Wear OS application (same app ID): the watch tuner, with its own mic and its own small UI
-:feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
+:feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
 :feature:practice  Practice tab (Phase 32, behind its switch): the tool button, Chords and Scales (charts, the neck, the
@@ -77,7 +77,7 @@ Topic files:
 :core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones, metronome clicks and the drone
                    (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
-:core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
+:core:designsystem The one look (Ink): TwangleTheme, palettes, fonts, background, the meter
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing,
                    strum check, chord naming, chord/scale/capo charts, string synthesis (the reference tone in
                    each instrument's voice), the drone's synthesis, metronome click track and tempo
@@ -163,19 +163,19 @@ core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
 core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer, FakeDronePlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
-    AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),
+    AppSettings (+ TunerMode, InTunePrecision, ThemeMode, LensLook, …),
     SettingsRepository (interface), DataStoreSettingsRepository, CustomTuning, ToolSwitches (music tools shown)
 core/settings/src/testFixtures/…/core/settings/   FakeSettingsRepository
 
 core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
-    TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop, StyleMood,
+    TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop,
     MusicSigns, NoteNameSpeech (rememberNoteNameSpeech), PacedSpeech, FontCredits,
     PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
     SegmentedSwitch, InstrumentButton, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
-    dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
-    meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat,
-                Pointers, Loupe, Arrows, LightBars, MeterFinish
+    dial/       DialGeometry, Strobe (kept for the lens, Phase 72)
+    meter/      MeterReading, MeterLooks (Classic), MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat
+                (Light arc, kept for the lens, Phase 72)
     metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
@@ -189,7 +189,7 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     SignalBars (+ SignalFigures),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
     IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake
-    components/ MeterFrame, NoteDisplay, WaveView, ChromaticReadout, StringSelector (+ StringRowFit),
+    components/ MeterFrame, NoteDisplay, StringSelector (+ StringRowFit),
                 InstrumentTuningPanel (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
                 IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint, LiveFloat (a per-frame reading, unboxed)
@@ -217,7 +217,7 @@ feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartrain
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel, AppLanguages, PlayPage
     components/ A4Calibration, RadioGroupSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
-                LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker, LanguageSetting
+                LookCardGrid (+ LookDemo, unused until the lens's Meter cards, Phase 72), LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
     TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour,

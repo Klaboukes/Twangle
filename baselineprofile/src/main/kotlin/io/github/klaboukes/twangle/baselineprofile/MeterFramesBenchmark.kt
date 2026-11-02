@@ -7,7 +7,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Configurator
-import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
@@ -18,12 +17,13 @@ import java.util.Locale
 import java.util.regex.Pattern
 
 /**
- * Frame times and main-thread work of every meter look in chromatic mode, with the meter moving
+ * Frame times and main-thread work of the tuner's meter in chromatic mode, with the meter moving
  * all the time. The `benchmarkRelease` app hears a synthetic tone that sweeps across about ±30
- * cents (`SyntheticAudioRecorder` in `:app`), so every look and every run gets the same input.
+ * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 67
+ * (2.0, one look) the meter is Classic alone, with the cents under the note, until the lens's looks
+ * come; Phase 76 measures one per lens look.
  *
- * For each look it picks the look in settings (below the note: numbers, so only the meter
- * moves), switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
+ * It switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
  * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in docs/architecture/performance.md.
  * No tracing runs meanwhile, so the numbers compare with the S26 table there.
@@ -35,9 +35,8 @@ import java.util.regex.Pattern
  *
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.
- * Instrumentation arguments: `meterLooks` (`MeterLook` names separated by colons, as Gradle cuts
- * arguments at commas; `CURRENT` keeps the look set in the app, e.g. an older build without
- * looks; `PITCH_TRAIL` the pitch trail), `runs`, `seconds`.
+ * Instrumentation arguments: `meterLooks` (names separated by colons, as Gradle cuts arguments at
+ * commas: `CLASSIC`, or `CURRENT`, the meter the app shows; `PITCH_TRAIL` the pitch trail), `runs`, `seconds`.
  */
 @RunWith(AndroidJUnit4::class)
 class MeterFramesBenchmark {
@@ -62,12 +61,7 @@ class MeterFramesBenchmark {
         waitFor(By.res(Pattern.compile("$MODE_CHROMATIC_TAG|$TOUR_SKIP_TAG")), "Tuner screen")
         device.findObject(By.res(TOUR_SKIP_TAG))?.let(::click)
         waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
-
-        // Only the meter moves: the cents display instead of the wave view.
-        openSettings()
-        click(findInSettings(By.text(NUMBERS_DISPLAY)))
-        device.pressBack()
-        waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
+        looks.forEach { check(it in KNOWN_LOOKS) { "No meter look $it since Phase 67: ${KNOWN_LOOKS.joinToString(":")}" } }
 
         var pid = pidOfApp()
         var renderTid = renderThreadOf(pid)
@@ -95,11 +89,6 @@ class MeterFramesBenchmark {
                 pid = pidOfApp()
                 renderTid = renderThreadOf(pid)
                 log("pitch trail: pid=$pid renderThread=$renderTid")
-            } else if (look != CURRENT) {
-                openSettings()
-                val card = findInSettings(By.res(CARD_TAG_PREFIX + look.lowercase(Locale.ROOT)))
-                click(card)
-                device.pressBack()
             }
             if (look != PITCH_TRAIL) click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
             SystemClock.sleep(SETTLE_MS)
@@ -183,19 +172,6 @@ class MeterFramesBenchmark {
         dir?.let { File(it.apply { mkdirs() }, "meter-frames.tsv").writeText(out.toString()) }
     }
 
-    private fun openSettings() {
-        click(waitFor(By.res(SETTINGS_TAB_TAG), "Settings tab"))
-        check(device.wait(Until.gone(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
-    }
-
-    /** Finds [selector] in the settings, scrolling up and then down to it (settings keep their scroll place). */
-    private fun findInSettings(selector: BySelector): UiObject2 {
-        device.wait(Until.findObject(selector), SHORT_WAIT_MS)?.let { return it }
-        val list = waitFor(By.scrollable(true), "Settings list")
-        list.scrollUntil(Direction.UP, Until.findObject(selector))?.let { return it }
-        return list.scrollUntil(Direction.DOWN, Until.findObject(selector)) ?: error("No $selector in settings")
-    }
-
     private fun waitFor(selector: BySelector, what: String): UiObject2 =
         device.wait(Until.findObject(selector), TIMEOUT_MS) ?: error("$what didn't appear")
 
@@ -243,13 +219,14 @@ class MeterFramesBenchmark {
     private companion object {
         const val TAG = "MeterFrames"
         const val ACTIVITY = "io.github.klaboukes.twangle.app.MainActivity"
-        const val SETTINGS_TAB_TAG = "nav_settings"
         const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
         const val MODE_GUITAR_TAG = "tuner_mode_auto"
-        const val CARD_TAG_PREFIX = "meter_look_card_"
         const val CURRENT = "CURRENT"
         const val PITCH_TRAIL = "PITCH_TRAIL"
-        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:POINTERS:LOUPE:ARROWS:LIGHT_BARS:$PITCH_TRAIL"
+        const val ALL_LOOKS = "CLASSIC:$PITCH_TRAIL"
+
+        /** The one meter (Classic, which [CURRENT] also measures) and the pitch trail. */
+        val KNOWN_LOOKS = setOf("CLASSIC", CURRENT, PITCH_TRAIL)
 
         const val MORE_TOOLS_TAG = "tuner_more_tools"
         const val PITCH_TRAIL_TOOL_TAG = "tuner_tool_pitch_trail"
@@ -260,16 +237,12 @@ class MeterFramesBenchmark {
         val JANK_CAUSE: Pattern = Pattern.compile("^\\s*(Number [A-Z].*|.*gpu percentile.*): ")
         const val JANK_CAUSE_LINES = 16
 
-        /** The display choice "Numbers: how many cents off", in English or Dutch (the meter on its own). */
-        val NUMBERS_DISPLAY: Pattern = Pattern.compile("(Numbers|Getallen): .*")
-
         const val RUNS = 3
         const val WINDOW_SECONDS = 7
         const val SETTLE_MS = 3_000L
         const val TAP_SETTLE_MS = 700L
         const val TAP_TRIES = 3
         const val TIMEOUT_MS = 10_000L
-        const val SHORT_WAIT_MS = 1_000L
         const val IDLE_TIMEOUT_MS = 100L
 
         /** /proc reports CPU time in clock ticks of 10 ms (USER_HZ = 100 on Android). */

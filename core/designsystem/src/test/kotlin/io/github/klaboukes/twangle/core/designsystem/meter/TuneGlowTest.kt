@@ -5,7 +5,6 @@ import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -48,40 +47,13 @@ class TuneGlowTest {
     }
 
     @Test
-    fun `the glow is 32 % strong in dark and 16 % in light, as on the mock-up`() {
+    fun `the one glow is 32 % strong in dark and 16 % in light, as on the mock-up (1_1's Calm)`() {
         assertEquals(0.32f, roles(dark = true).tuneGlowAlpha, 1e-6f)
         assertEquals(0.16f, roles(dark = false).tuneGlowAlpha, 1e-6f)
     }
 
-    @Test
-    fun `calm is the default, at the mock-up's size`() {
-        assertEquals(InTuneEffect.CALM, roles(dark = true).effect)
-        assertEquals(1f, roles(dark = true).tuneGlowSize, 1e-6f)
-    }
-
-    @Test
-    fun `bold is clearly stronger and larger`() {
-        for (dark in listOf(false, true)) {
-            val calm = roles(dark, InTuneEffect.CALM)
-            val bold = roles(dark, InTuneEffect.BOLD)
-            assertTrue("dark=$dark: ${bold.tuneGlowAlpha} vs ${calm.tuneGlowAlpha}", bold.tuneGlowAlpha >= calm.tuneGlowAlpha * 1.6f)
-            assertEquals(1.35f, bold.tuneGlowSize, 1e-6f)
-        }
-        // 1.7 times the calm glow, capped at 52 % in dark.
-        assertEquals(0.52f, roles(dark = true, InTuneEffect.BOLD).tuneGlowAlpha, 1e-6f)
-        assertEquals(0.272f, roles(dark = false, InTuneEffect.BOLD).tuneGlowAlpha, 1e-6f)
-    }
-
-    @Test
-    fun `bold never covers the readings, in light or dark`() {
-        for (dark in listOf(false, true)) {
-            assertTrue(tuneGlowAlpha(dark, InTuneEffect.BOLD) <= BOLD_GLOW_MAX_ALPHA)
-        }
-    }
-
-    private fun roles(dark: Boolean, effect: InTuneEffect = InTuneEffect.DEFAULT) = MeterRoles(
-        background = Color.Black, plate = Color.DarkGray, ink = Color.White, muted = Color.Gray, track = Color.Gray,
+    private fun roles(dark: Boolean) = MeterRoles(
+        background = Color.Black, ink = Color.White, muted = Color.Gray, track = Color.Gray,
         accent = Color.Blue, inTune = Color.Green, dark = dark, numbers = FontFamily.Default, numberScale = 1f,
-        effect = effect,
     )
 }

@@ -64,101 +64,24 @@ enum class ThemeMode {
 }
 
 /**
- * How the tuner shows how far off a note is, under the note. The needle dial is always there;
- * this picks what goes with it. Saved in settings by [name], so don't rename the entries. (A
- * third display, the strobe, became [WaveLook.STROBE]; a saved "STROBE" is read as [WAVE] with
- * that look.)
+ * What the tuner's lens draws (Phases 71 and 72; until then the tuner draws 1.1's Classic needle, whatever is
+ * saved). Saved in settings by [name] under 1.1's `meter_look` key, so don't rename the entries: 1.1's Light arc
+ * keeps its name, and a 1.1 look that 2.0 doesn't have is read by the lens look's rule
+ * (`DataStoreSettingsRepository`, docs/architecture/v2-plan.md, *Settings from 1.1*).
  */
-enum class TunerDisplay {
-    /** The number of cents in a pill, and the frequency. */
-    NEEDLE,
+enum class LensLook {
+    /** The last seconds of the reading, falling under the newest one (Phase 71, from 1.1's pitch trail tool). */
+    TRAIL,
 
-    /** A moving picture (in the [WaveLook] picked) instead of a number of cents. */
-    WAVE,
-    ;
-
-    companion object {
-        val DEFAULT = WAVE
-    }
-}
-
-/**
- * How the wave view draws how far off a note is. Saved in settings by [name], so don't rename the
- * entries. (The stripes look, saved as "STRIPES", made way for [STROBE] and is read as it.)
- */
-enum class WaveLook {
-    /** Rows of stripes in the style's own marks that drift and stand still in tune, like a strobe tuner. */
-    STROBE,
-
-    /** A soft ribbon in the style's own marks. */
-    RIBBON,
-
-    /** A grid of little lights. */
-    DOTS,
-
-    /** Glowing specks that line up when in tune. */
-    FIREFLIES,
-
-    /** A ring that tumbles until the note is in tune. */
-    LOOP,
-
-    /** Rings that spread out (sharp) or close in (flat). */
-    RIPPLES,
-    ;
-
-    companion object {
-        val DEFAULT = RIBBON
-    }
-}
-
-/**
- * How the meter above the note draws how far off a note is. Every look sits in the same frame (a
- * 2:1 box, ±50 cents, left flat and right sharp), so picking one moves nothing else on the screen.
- * Saved in settings by [name], so don't rename the entries. (Rolling scale, Comet and Studio meter,
- * saved as "ROLLING_SCALE", "COMET" and "STUDIO_METER", went in Phase 25; a saved one reads as the
- * default. Spirit level and Eclipse, saved as "SPIRIT_LEVEL" and "ECLIPSE", went in Phase 60; a saved
- * one reads as the look that took its place, [POINTERS] or [LOUPE].)
- */
-enum class MeterLook {
-    /** The half-circle dial with a needle and a numbered scale. */
-    CLASSIC,
-
-    /** A fan of little lights that opens from the centre toward the note. */
+    /** A fan of little lights that opens from the centre toward the note (1.1's Light arc meter look). */
     LIGHT_ARC,
 
-    /** The note's pointer slides along a straight track under a fixed one; in tune their tips meet. */
-    POINTERS,
-
-    /** A slim marker on a straight scale, magnified under a round glass over the scale's middle. */
-    LOUPE,
-
-    /** Chevrons on the side the note is off light up and point the way to turn. */
-    ARROWS,
-
-    /** A row of light bars with a soft peak where the note is. */
-    LIGHT_BARS,
+    /** Bands of stripes that drift the way the note is off and stand still in tune (1.1's strobe wave look). */
+    STROBE,
     ;
 
     companion object {
-        val DEFAULT = CLASSIC
-    }
-}
-
-/**
- * How strong the meter's glow is when the note is reached. Both ease in, hold and fade the same
- * way, without bursts or flashes; Bold is only brighter and larger. Saved in settings by [name], so
- * don't rename the entries.
- */
-enum class InTuneEffect {
-    /** The soft glow. */
-    CALM,
-
-    /** A stronger, larger glow, still smooth. */
-    BOLD,
-    ;
-
-    companion object {
-        val DEFAULT = CALM
+        val DEFAULT = TRAIL
     }
 }
 
@@ -229,14 +152,11 @@ data class AppSettings(
     val showTuneHint: Boolean = true,
     /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
     val showSignalBars: Boolean = false,
-    /** What shows how far off a note is under it: cents or the wave view. */
-    val display: TunerDisplay = TunerDisplay.DEFAULT,
-    /** What the wave view looks like. */
-    val waveLook: WaveLook = WaveLook.DEFAULT,
-    /** What the meter above the note looks like. */
-    val meterLook: MeterLook = MeterLook.DEFAULT,
-    /** How strong the meter's glow is when the note is reached. */
-    val inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
+    /**
+     * What the tuner's lens draws (read from Phase 71 on). 1.1's display, wave look and Calm or Bold glow are no
+     * longer settings: the tuner has one meter and one glow.
+     */
+    val lensLook: LensLook = LensLook.DEFAULT,
     /**
      * Focus mode: on its side the tuner shows the compact layout, one big meter that fills the
      * screen. Off (the default), it keeps the full two-pane layout (tuner beside its controls).

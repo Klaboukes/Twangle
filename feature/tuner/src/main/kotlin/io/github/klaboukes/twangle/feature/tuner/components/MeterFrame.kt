@@ -26,63 +26,57 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_RANGE_CENTS
-import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
+import io.github.klaboukes.twangle.core.designsystem.meter.ClassicMeterArt
+import io.github.klaboukes.twangle.core.designsystem.meter.MeterFeels
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
-import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import kotlinx.coroutines.launch
 
 /**
- * The meter above the note, in the [look] picked in settings. Every look sits in this one frame, so
- * picking another moves nothing else on the screen. The looks themselves are drawn in
- * `core.designsystem.meter` ([MeterLookArt]), so the meter picker in settings shows the same art.
- * The frame gives:
+ * The meter above the note: 1.1's Classic needle, the one meter since Phase 67 took the other looks out, until the
+ * lens takes this frame's place (Phase 71, `components/Lens.kt`). The needle is drawn in `core.designsystem.meter`
+ * ([ClassicMeterArt]). The frame gives:
  *
  * - the same 2:1 box, from −[METER_RANGE_CENTS] (left, flat, ♭) to +[METER_RANGE_CENTS] (right,
  *   sharp, ♯), in tune in the centre; each look draws its ♭ and ♯ inside the box, at its scale's ends;
- * - one reading for every look ([MeterReading], here [TunerMeterReading]): the marker springs to
- *   each new reading with the look's own feel ([meterFeel]), readings beyond the range are pinned at
+ * - one reading ([MeterReading], here [TunerMeterReading]): the needle springs to
+ *   each new reading with Classic's feel ([MeterFeels.CLASSIC]), readings beyond the range are pinned at
  *   the edge, and without a note ([cents] gives NaN) it rests in the centre, faded;
  * - while [inTune] the centre mark and the marker fade to the style's "in tune" colour
  *   ([MeterReading.tuned], eased in over 0.4 s and out over 0.6 s; the note's check mark in
  *   [NoteDisplay] says it without colour);
  * - while [glow] (from [rememberInTuneGlow]: lit with the haptic tick, held through a brief dropout)
- *   the look's soft in-tune glow eases in over 0.4 s and fades over 0.6 s ([MeterReading.glow]),
- *   as strong as [effect] (Bold: brighter and larger, eased the same way);
+ *   the soft in-tune glow eases in over 0.4 s and fades over 0.6 s ([MeterReading.glow]);
  * - with [animationsOff] (Android's "Remove animations", [rememberAnimationsOff]) the colour and the
  *   glow switch at once, without easing;
- * - the in-tune window of [precision] (5 cents each way, 2 with Precise: [meterInTuneWindow]), for
- *   the looks that show it ([MeterReading.inTuneWindow]);
+ * - the in-tune window of [precision] (5 cents each way, 2 with Precise: [meterInTuneWindow],
+ *   [MeterReading.inTuneWindow]; Classic doesn't show it, the lens will);
  * - how well the note is heard ([reception], 0..1, NaN without a note) makes the marker crisp and
  *   solid or faint and soft ([ReceptionLook], applied with [MeterReading.applyMarkerLook]); the scale
  *   stays as it is;
  * - TalkBack skips it: [NoteDisplay] speaks the same reading in words.
  *
- * [cents] and [reception] are never read while composing: each look reads the [MeterReading] in its
+ * [cents] and [reception] are never read while composing: the needle reads the [MeterReading] in its
  * layer and draw phases only, so readings move the meter without recomposing the screen around it.
  * Both are [LiveFloat]s, so those reads box nothing.
  */
 @Composable
 fun MeterFrame(
-    look: MeterLook,
     cents: LiveFloat,
     modifier: Modifier = Modifier,
     inTune: Boolean = false,
     glow: Boolean = inTune,
-    effect: InTuneEffect = InTuneEffect.DEFAULT,
     animationsOff: Boolean = false,
     precision: InTunePrecision = InTunePrecision.DEFAULT,
     reception: LiveFloat = NO_LIVE_FLOAT,
 ) {
     val currentCents by rememberUpdatedState(cents)
-    // Each look has its own spring (meterFeel): Classic swings a little past a new string.
-    val spring by rememberUpdatedState(remember(look) { meterFeel(look).spring() })
+    // Classic's spring swings a little past a new string.
+    val spring = remember { MeterFeels.CLASSIC.spring() }
     val marker = remember { Animatable(Snapshot.withoutReadObservation { meterCents(cents()) }) }
     LaunchedEffect(marker) {
         // What animateFloatAsState does: each new target starts the spring from where the marker is,
@@ -120,7 +114,7 @@ fun MeterFrame(
             .preferredFrameRate(METER_FRAME_RATE)
             .clearAndSetSemantics {},
     ) {
-        MeterLookArt(look, reading, effect)
+        ClassicMeterArt(reading)
     }
 }
 
@@ -170,5 +164,5 @@ private const val REST_ALPHA = 0.3f
 @Preview(showBackground = true, widthDp = 360)
 @Composable
 private fun MeterFramePreview() {
-    MaterialTheme { MeterFrame(look = MeterLook.DEFAULT, cents = { -18f }) }
+    MaterialTheme { MeterFrame(cents = { -18f }) }
 }

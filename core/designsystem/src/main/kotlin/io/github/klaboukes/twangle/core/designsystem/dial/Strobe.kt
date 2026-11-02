@@ -11,11 +11,11 @@ import kotlin.math.floor
 import kotlin.math.max
 
 /*
- * The strobe look of the wave view (WaveLook.STROBE): rows of stripes that drift the way the note
- * is off and stand still when it is in tune, like the striped disc of a mechanical strobe tuner.
- * WaveMotion moves them at the strobe's speed (StrobeMotion.driftSpeed) and drawWave passes its
- * phase here; this file only draws, in rounded bars (1.1's Contemporary marks; the other styles had
- * their own until Phase 67), the way SoundRibbon.kt draws the ribbon.
+ * 1.1's strobe wave look: rows of stripes that drift the way the note is off and stand still when it
+ * is in tune, like the striped disc of a mechanical strobe tuner. WaveMotion moves them at the strobe's
+ * speed (StrobeMotion.driftSpeed) and the caller passes its phase here; this file only draws, in
+ * rounded bars (1.1's Contemporary marks). Nothing draws it since Phase 67 took the wave view out of
+ * the tuner: it is kept, with StrobeTest, for the lens's strobe (Phase 72, docs/architecture/v2-plan.md).
  *
  * Every stripe of a row looks the same, so a pattern a whole period on looks exactly like the one
  * before: that is what lets the phase wrap from 1 back to 0 without a jump. Anything that sets a
@@ -73,8 +73,11 @@ private val ROW_GAP = 4.dp
 /** [this] colour made fainter by [share]. */
 private fun Color.faded(share: Float): Color = copy(alpha = alpha * share)
 
-/** How strong a halo is: always [base], stronger in tune ([glow] 1). The wave's [HALO] in tune. */
+/** How strong a halo is: always [base], stronger in tune ([glow] 1), toward [HALO]. */
 private fun halo(base: Float, glow: Float): Float = base + (HALO - base * 0.5f) * glow
+
+/** A mark's halo in tune (the wave view's, which went in Phase 67). */
+private const val HALO = 0.3f
 
 /** How visible a mark centred [x] px from the left is: faded out near both ends ([strobeFade]). */
 private fun DrawScope.fadeAt(x: Float): Float = strobeFade(x / size.width)

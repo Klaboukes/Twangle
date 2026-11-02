@@ -9,7 +9,7 @@
 #   scripts/ui-tests.sh :feature:tuner           whole module(s)
 #   scripts/ui-tests.sh :feature:tuner -f Tip    only tests whose Class#method name matches a regex
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
-#   scripts/ui-tests.sh :feature:tuner -c MeterLookScreenshots -a meterScreenshots=true
+#   scripts/ui-tests.sh :feature:tuner -c StyleScreenshots -a styleScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
 #   scripts/ui-tests.sh --thorough ...           also the double checks: every style, and the @Thorough
 #                                                tests (other font sizes, languages, orientations)
@@ -240,7 +240,7 @@ if time:
     t = re.sub(r'[.,]', '', t[:dec]) + '.' + t[dec + 1:] if dec >= 0 else t
     secs = f", {float(t):.0f}s on the phone"
 if tests == 0 and running is None:
-    # A class whose tests all wait for an argument (MeterLookScreenshots) runs none.
+    # A class whose tests all wait for an argument (StyleScreenshots) runs none.
     if re.search(r'^OK \(0 tests\)', text, re.M):
         print('0 tests')
         sys.exit(0)
@@ -468,7 +468,7 @@ for module in "${modules[@]}"; do
     wake_phone
     runner="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:\($package/[^ ]*\) .*|\1|p" | head -1)"
 
-    # Extra files a test writes (MeterLookScreenshots' pictures, a language check's failing screen) go
+    # Extra files a test writes (StyleScreenshots' pictures, a language check's failing screen) go
     # where Gradle's own run would put them, so scripts that read them work either way: the media
     # folder of the package the tests run in (:app's tests run in the app itself).
     target="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:$package/.*(target=\(.*\))|\1|p" | head -1)"

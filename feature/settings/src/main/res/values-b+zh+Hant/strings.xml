@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">桌布配色</string>
     <string name="settings_dynamic_color_summary">使用桌布中的顏色</string>
 
-    <string name="settings_meter_look_title">儀表</string>
-    <string name="settings_meter_look_classic">經典</string>
-    <string name="settings_meter_look_light_arc">光弧</string>
-    <string name="settings_meter_look_pointers">雙指針</string>
-    <string name="settings_meter_look_loupe">放大鏡</string>
-    <string name="settings_meter_look_arrows">箭頭</string>
-    <string name="settings_meter_look_light_bars">光條</string>
-    <string name="settings_in_tune_effect_title">調準效果</string>
-    <string name="settings_in_tune_effect_summary">音準時儀表發光的強弱</string>
-    <string name="settings_in_tune_effect_calm">柔和</string>
-    <string name="settings_in_tune_effect_bold">醒目</string>
-
-    <string name="settings_display_title">音名下方</string>
-    <string name="settings_display_numbers">數字：偏差多少音分</string>
-    <string name="settings_display_wave">波形：動態畫面，樣式由你選</string>
-    <string name="settings_wave_look_title">波形樣式</string>
-    <string name="settings_wave_look_strobe">頻閃</string>
-    <string name="settings_wave_look_ribbon">緞帶</string>
-    <string name="settings_wave_look_dots">圓點</string>
-    <string name="settings_wave_look_fireflies">螢火蟲</string>
-    <string name="settings_wave_look_loop">環形</string>
-    <string name="settings_wave_look_ripples">漣漪</string>
     <string name="settings_focus_mode_title">專注模式</string>
     <string name="settings_focus_mode_summary">將 Twangle 轉為橫向，只顯示一個大儀表，遠處也看得清楚</string>
     <string name="settings_left_handed_title">左撇子模式</string>

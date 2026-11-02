@@ -10,12 +10,8 @@ import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -356,12 +352,8 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `the looks start as the settings read at start, never the defaults for a frame`() = runTest(dispatcher) {
+    fun `the options start as the settings read at start, never the defaults for a frame`() = runTest(dispatcher) {
         val saved = AppSettings(
-            display = TunerDisplay.entries.first { it != AppSettings().display },
-            meterLook = MeterLook.entries.first { it != MeterLook.DEFAULT },
-            waveLook = WaveLook.entries.first { it != WaveLook.DEFAULT },
-            inTuneEffect = InTuneEffect.entries.first { it != InTuneEffect.DEFAULT },
             inTunePrecision = InTunePrecision.entries.first { it != InTunePrecision.DEFAULT },
             showTuneHint = !AppSettings().showTuneHint,
             showSignalBars = !AppSettings().showSignalBars,
@@ -371,10 +363,6 @@ class TunerViewModelTest {
         val vm = TunerViewModel(a2Recorder(), FakeSettingsRepository(saved), FakeTonePlayer(), StandardTestDispatcher(testScheduler), saved = saved)
 
         // Before anything has been read or collected: what the screen shows on its first frame.
-        assertEquals(saved.display, vm.display.value)
-        assertEquals(saved.meterLook, vm.meterLook.value)
-        assertEquals(saved.waveLook, vm.waveLook.value)
-        assertEquals(saved.inTuneEffect, vm.inTuneEffect.value)
         assertEquals(saved.inTunePrecision, vm.inTunePrecision.value)
         assertEquals(saved.showTuneHint, vm.showTuneHint.value)
         assertEquals(saved.showSignalBars, vm.showSignalBars.value)
@@ -544,54 +532,6 @@ class TunerViewModelTest {
         settings.setKeepScreenOn(false)
         runCurrent()
         assertFalse(vm.keepScreenOn.value)
-    }
-
-    @Test
-    fun `display follows the setting`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.display.collect {} }
-        runCurrent()
-        assertEquals("the wave by default", TunerDisplay.WAVE, vm.display.value)
-
-        settings.setDisplay(TunerDisplay.NEEDLE)
-        runCurrent()
-        assertEquals(TunerDisplay.NEEDLE, vm.display.value)
-    }
-
-    @Test
-    fun `waveLook follows the setting`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.waveLook.collect {} }
-        runCurrent()
-        assertEquals(WaveLook.RIBBON, vm.waveLook.value)
-
-        settings.setWaveLook(WaveLook.LOOP)
-        runCurrent()
-        assertEquals(WaveLook.LOOP, vm.waveLook.value)
-    }
-
-    @Test
-    fun `meterLook follows the setting, Classic by default`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.meterLook.collect {} }
-        runCurrent()
-        assertEquals(MeterLook.CLASSIC, vm.meterLook.value)
-
-        settings.setMeterLook(MeterLook.POINTERS)
-        runCurrent()
-        assertEquals(MeterLook.POINTERS, vm.meterLook.value)
-    }
-
-    @Test
-    fun `inTuneEffect follows the setting, Calm by default`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.inTuneEffect.collect {} }
-        runCurrent()
-        assertEquals(InTuneEffect.CALM, vm.inTuneEffect.value)
-
-        settings.setInTuneEffect(InTuneEffect.BOLD)
-        runCurrent()
-        assertEquals(InTuneEffect.BOLD, vm.inTuneEffect.value)
     }
 
     @Test

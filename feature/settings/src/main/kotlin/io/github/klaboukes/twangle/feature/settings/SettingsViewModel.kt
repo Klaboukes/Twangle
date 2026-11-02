@@ -4,13 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -58,22 +54,6 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setShowSignalBars(enabled: Boolean) {
         viewModelScope.launch { repository.setShowSignalBars(enabled) }
-    }
-
-    fun setDisplay(display: TunerDisplay) {
-        viewModelScope.launch { repository.setDisplay(display) }
-    }
-
-    fun setMeterLook(look: MeterLook) {
-        viewModelScope.launch { repository.setMeterLook(look) }
-    }
-
-    fun setInTuneEffect(effect: InTuneEffect) {
-        viewModelScope.launch { repository.setInTuneEffect(effect) }
-    }
-
-    fun setWaveLook(look: WaveLook) {
-        viewModelScope.launch { repository.setWaveLook(look) }
     }
 
     fun setFocusMode(enabled: Boolean) {

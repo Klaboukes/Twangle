@@ -34,28 +34,6 @@
     <string name="settings_dynamic_color_title">Taustakuvan värit</string>
     <string name="settings_dynamic_color_summary">Käytä taustakuvasi värejä</string>
 
-    <string name="settings_meter_look_title">Mittari</string>
-    <string name="settings_meter_look_classic">Klassinen</string>
-    <string name="settings_meter_look_light_arc">Valokaari</string>
-    <string name="settings_meter_look_pointers">Osoittimet</string>
-    <string name="settings_meter_look_loupe">Luuppi</string>
-    <string name="settings_meter_look_arrows">Nuolet</string>
-    <string name="settings_meter_look_light_bars">Valopalkit</string>
-    <string name="settings_in_tune_effect_title">Vire-efekti</string>
-    <string name="settings_in_tune_effect_summary">Kuinka voimakkaasti mittari hehkuu, kun sävel on vireessä</string>
-    <string name="settings_in_tune_effect_calm">Hillitty</string>
-    <string name="settings_in_tune_effect_bold">Voimakas</string>
-
-    <string name="settings_display_title">Sävelen alla</string>
-    <string name="settings_display_numbers">Luvut: montako senttiä heittää</string>
-    <string name="settings_display_wave">Aalto: liikkuva kuva valitsemassasi ulkoasussa</string>
-    <string name="settings_wave_look_title">Aallon ulkoasu</string>
-    <string name="settings_wave_look_strobe">Strobo</string>
-    <string name="settings_wave_look_ribbon">Nauha</string>
-    <string name="settings_wave_look_dots">Pisteet</string>
-    <string name="settings_wave_look_fireflies">Tulikärpäset</string>
-    <string name="settings_wave_look_loop">Rengas</string>
-    <string name="settings_wave_look_ripples">Väreet</string>
     <string name="settings_focus_mode_title">Keskittymistila</string>
     <string name="settings_focus_mode_summary">Kääntää näkymän kyljelleen: yksi iso mittari, helppo lukea kaukaa</string>
     <string name="settings_left_handed_title">Vasenkätinen</string>

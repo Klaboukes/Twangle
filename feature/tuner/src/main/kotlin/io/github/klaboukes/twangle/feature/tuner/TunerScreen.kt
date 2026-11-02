@@ -107,15 +107,10 @@ import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.WaveLook
-import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
@@ -235,10 +230,6 @@ fun TunerScreen(
     val customTunings by viewModel.customTunings.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
-    val display by viewModel.display.collectAsStateWithLifecycle()
-    val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
-    val meterLook by viewModel.meterLook.collectAsStateWithLifecycle()
-    val inTuneEffect by viewModel.inTuneEffect.collectAsStateWithLifecycle()
     val inTunePrecision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
@@ -318,10 +309,6 @@ fun TunerScreen(
                     soundingString = soundingString,
                     tunedStrings = tunedStrings,
                     onRetry = viewModel::retry,
-                    display = display,
-                    waveLook = waveLook,
-                    meterLook = meterLook,
-                    inTuneEffect = inTuneEffect,
                     inTunePrecision = inTunePrecision,
                     meterGlow = glowing,
                     animationsOff = animationsOff,
@@ -442,9 +429,6 @@ private fun TuningPanel(
 object TunerTestTags {
     /** A microphone error's message in the tuner's place (a polite live region, so TalkBack says it as it comes). */
     const val ERROR = "tuner_error"
-
-    /** The wave view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
-    const val WAVE = "tuner_wave"
 
     /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
     const val GAUGE = "tuner_gauge"
@@ -579,15 +563,13 @@ private fun KeepScreenOn() {
 /**
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
- * [needleCents] gives the needle's and the wave's position, by default the cents of [state] (NaN
+ * [needleCents] gives the needle's position, by default the cents of [state] (NaN
  * without a note). [TunerScreen] passes the exact cents there and a [state] rounded to what the text
  * shows ([asShown]). [reception] likewise gives how well the note is heard (NaN without one), which
- * the needle and the wave read while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. [display] picks how
- * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (holding
- * perfectly still on the note); the meter above the note is drawn in
- * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
- * tune; as strong as [inTuneEffect]; showing the in-tune window of [inTunePrecision] where the look has one; with
- * [animationsOff] its in-tune colour and glow switch without easing), and
+ * the needle reads while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. The meter above the
+ * note is 1.1's Classic needle (the one meter since Phase 67, until the lens; its in-tune glow lit by [meterGlow],
+ * from [rememberInTuneGlow]; by default while the note is in tune; with [animationsOff] its in-tune colour and glow
+ * switch without easing), the cents and the frequency are under the note, and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars at the start of the mode switch's row ([ModeSwitchRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
  * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. While
@@ -641,10 +623,6 @@ fun TunerContent(
     tunedStrings: TunedStrings? = null,
     needleCents: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.cents else Float.NaN },
     reception: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.reception else Float.NaN },
-    display: TunerDisplay = TunerDisplay.NEEDLE,
-    waveLook: WaveLook = WaveLook.DEFAULT,
-    meterLook: MeterLook = MeterLook.DEFAULT,
-    inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
     inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
@@ -677,8 +655,6 @@ fun TunerContent(
     onFullScreenChange: (Boolean) -> Unit = {},
     onFocusModeChange: ((Boolean) -> Unit)? = null,
 ) {
-    // The wave takes the cents' place, which changes the layout.
-    val pictured = display != TunerDisplay.NEEDLE
     // Movable, so the bars keep their count (and an open figures panel stays open) when the layout
     // changes and the header is built afresh around them.
     val currentReception by rememberUpdatedState(reception)
@@ -744,7 +720,7 @@ fun TunerContent(
                 },
             )
         }
-        GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
+        GuitarSlotFor(state, mode, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
     }
     val gauge = @Composable {
         // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
@@ -773,8 +749,6 @@ fun TunerContent(
             )
         } else {
             MeterFrame(
-                look = meterLook,
-                effect = inTuneEffect,
                 precision = inTunePrecision,
                 cents = needleCents,
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
@@ -797,13 +771,9 @@ fun TunerContent(
             is TunerUiState.Detected -> NoteDisplay(
                 readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
                 hint = "",
-                display = display,
                 compact = compact,
                 maxHeight = maxHeight,
-                waveLook = waveLook,
                 showTuneHint = showTuneHint,
-                waveCents = needleCents,
-                reception = reception,
                 tip = state.tip,
                 speech = speech,
             )
@@ -813,10 +783,8 @@ fun TunerContent(
                     readout = null,
                     hint = listeningHint(mode, state, soundingString),
                     spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
-                    display = display,
                     compact = compact,
                     maxHeight = maxHeight,
-                    waveLook = waveLook,
                     showTuneHint = showTuneHint,
                     // While a reference tone sounds its line says which, not a tip about the mic.
                     tip = state.tip.takeIf { soundingString == null },
@@ -825,10 +793,8 @@ fun TunerContent(
             else -> NoteDisplay(
                 readout = null,
                 hint = "",
-                display = display,
                 compact = compact,
                 maxHeight = maxHeight,
-                waveLook = waveLook,
                 showTuneHint = showTuneHint,
                 speech = speech,
             )
@@ -854,7 +820,7 @@ fun TunerContent(
             else -> FocusNote(readout = null, hint = "", speech = speech)
         }
     }
-    // The note (with its pill and frequency, or the wave) is lit with the meter in the tour's first step.
+    // The note (with its pill and frequency) is lit with the meter in the tour's first step.
     val note = @Composable { compact: Boolean, maxHeight: Dp -> Box(Modifier.tourTarget(TourPart.READOUT)) { noteFor(compact, maxHeight) } }
     val error = (state as? TunerUiState.Error)?.reason
     // The plain tuner's meter; with a tool on, its panel takes the meter's place.
@@ -870,7 +836,7 @@ fun TunerContent(
                 guitarSlot = guitarSlot,
                 gauge = gauge,
                 note = { compact -> note(compact, Dp.Unspecified) },
-                compactNote = pictured || showTuneHint,
+                compactNote = showTuneHint,
             )
         }
         val singleColumn = @Composable {
@@ -940,7 +906,7 @@ fun TunerContent(
                             onRetry = onRetry,
                             gauge = gauge,
                             note = { note(false, Dp.Unspecified) },
-                            below = { CompactExtraFor(state, mode, pictured) },
+                            below = { CompactExtraFor(state, mode) },
                             // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
                             focusNote = if (plainMeter) focusNote else null,
                             // The strum check's columns are buttons: each keeps a 48 dp touch width.
@@ -1293,15 +1259,11 @@ private fun CompactRow(
 
 /**
  * Under the note in the compact layout: in guitar mode a small string row with the target (or
- * locked) string highlighted; in chromatic mode with the wave view the cents and
- * frequency ([ChromaticReadout]), which those views leave out under the note.
+ * locked) string highlighted; nothing in chromatic mode, where the cents and frequency are under the note.
  */
 @Composable
-private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, pictured: Boolean) {
+private fun CompactExtraFor(state: TunerUiState, mode: TunerMode) {
     when {
-        mode == TunerMode.CHROMATIC && pictured && state is TunerUiState.Detected ->
-            ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune))
-        mode == TunerMode.CHROMATIC && pictured && state is TunerUiState.Listening -> ChromaticReadout(readout = null)
         mode == TunerMode.CHROMATIC -> Unit
         state is TunerUiState.Detected -> StringSelector(
             state.tuning,
@@ -1388,32 +1350,17 @@ private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -
 }
 
 /**
- * The [ModeSlot] for each [TunerUiState]: the string row (with the strum check's switch) for guitar mode and, with
- * [pictured] (the wave instead of cents), the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
- * already under the note, so chromatic mode leaves the slot empty.
+ * The [ModeSlot] for each [TunerUiState]: the string row (with the strum check's switch) for guitar mode. The cents
+ * and frequency are under the note, so chromatic mode leaves the slot empty.
  */
 @Composable
 private fun GuitarSlotFor(
     state: TunerUiState,
     mode: TunerMode,
-    pictured: Boolean,
     strings: StringActions,
     strum: ToolsState? = null,
     names: TuningNames? = null,
 ) {
-    val chromatic:(@Composable () -> Unit)? = if (pictured) {
-        when (state) {
-            is TunerUiState.Detected -> {
-                { ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune)) }
-            }
-            is TunerUiState.Listening -> {
-                { ChromaticReadout(readout = null) }
-            }
-            else -> null
-        }
-    } else {
-        null
-    }
     val controls = when (state) {
         // The strings ticked off only while they belong to the tuning shown (a new one starts afresh).
         is TunerUiState.Detected -> GuitarControlsState(
@@ -1459,7 +1406,7 @@ private fun GuitarSlotFor(
     } else {
         null
     }
-    ModeSlot(mode, guitar = guitar, chromatic = chromatic)
+    ModeSlot(mode, guitar = guitar, chromatic = null)
 }
 
 /** What [GuitarControls] shows for the current [TunerUiState]. */
