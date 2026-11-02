@@ -1,9 +1,9 @@
-- Nya instrument: 12-strängad gitarr och 5-strängad banjo.
-- Nya stämningar: Open C, barytonukulele och vilken stämning som helst upp till 2½ tonsteg lägre.
-- Skalor är ett eget verktyg: 14 skalor och en bordun att spela till.
-- Fyra nya ackordtyper, bland dem powerackordet.
-- Fyra metronomljud att välja mellan.
-- Ackordscheman för vänsterhänta, i Inställningar.
-- Twangle fyller nu en surfplattas skärm.
-- Referenstonerna låter som instrumentet.
-- En kortare rundtur och många små rättelser.
+- Nytt under Öva: Gehörsträning.
+- 12-strängad gitarr och 5-strängad banjo.
+- Open C, barytonukulele och stämningar upp till 2½ tonsteg lägre.
+- Skalor med bordun; fler ackordtyper.
+- Metronom: fyra ljud, klick mellan slagen, en tempotränare.
+- Nya mätare: Visare och Lupp.
+- Strängar bockas av när de är stämda.
+- Ackordscheman för vänsterhänta, en layout för surfplattor.
+- Hjälp och webbplats i Om Twangle, bättre TalkBack, små rättelser.

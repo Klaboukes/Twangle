@@ -1,9 +1,9 @@
-- Nouveaux instruments : guitare 12 cordes et banjo 5 cordes.
-- Nouveaux accordages : Open C, ukulélé baryton, et tout accordage jusqu'à 2½ tons plus bas.
-- Gammes devient un outil à part : 14 gammes et un bourdon de fond.
-- Quatre types d'accords en plus, dont le power chord.
-- Quatre sons de métronome au choix.
-- Diagrammes pour gauchers, dans Paramètres.
-- Twangle remplit l'écran d'une tablette.
-- Notes de référence au son de l'instrument.
-- Visite plus courte et petites corrections.
+- Nouveau dans Pratique : Oreille musicale.
+- La guitare 12 cordes et le banjo 5 cordes.
+- Open C, l'ukulélé baryton et des accordages jusqu'à 2½ tons plus bas.
+- Gammes avec bourdon ; plus de types d'accords.
+- Métronome : quatre sons, clics entre les temps, entraîneur de tempo.
+- Nouveaux cadrans : Pointeurs et Loupe.
+- Les cordes sont cochées une fois accordées.
+- Diagrammes pour gauchers, affichage tablette.
+- Aide et site web dans À propos, meilleur TalkBack, petites corrections.

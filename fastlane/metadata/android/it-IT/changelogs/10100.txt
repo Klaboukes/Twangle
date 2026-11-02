@@ -1,9 +1,9 @@
-- Nuovi strumenti: chitarra a 12 corde e banjo a 5 corde.
-- Nuove accordature: Open C, ukulele baritono e qualsiasi accordatura fino a 2½ toni sotto.
-- Scale è uno strumento a sé: 14 scale e un bordone di sottofondo.
-- Quattro tipi di accordo in più, tra cui il power chord.
-- Quattro suoni del metronomo a scelta.
-- Diagrammi per mancini, in Impostazioni.
-- Twangle riempie lo schermo di un tablet.
-- I toni di riferimento suonano come lo strumento.
-- Tour più breve e tante piccole correzioni.
+- Novità in Pratica: Orecchio musicale.
+- La chitarra a 12 corde e il banjo a 5 corde.
+- Open C, l'ukulele baritono e accordature fino a 2½ toni sotto.
+- Scale con bordone; più tipi di accordo.
+- Metronomo: quattro suoni, clic tra i battiti, un allenatore di tempo.
+- Nuovi indicatori: Indici e Lente.
+- Le corde vengono spuntate appena accordate.
+- Diagrammi per mancini, layout per tablet.
+- Aiuto e sito web in Info, TalkBack migliore, piccole correzioni.

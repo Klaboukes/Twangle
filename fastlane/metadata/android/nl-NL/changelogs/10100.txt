@@ -1,9 +1,9 @@
-- Nieuwe instrumenten: 12-snarige gitaar en 5-snarige banjo.
-- Nieuwe stemmingen: Open C, baritonukelele en elke stemming tot 2½ toon lager.
-- Toonladders is een eigen gereedschap: 14 toonladders en een bourdon eronder.
-- Vier akkoordsoorten erbij, waaronder het powerchord.
-- Vier metronoomgeluiden om uit te kiezen.
-- Linkshandige schema's, in Instellingen.
-- Twangle vult het scherm van een tablet.
-- Referentietonen klinken als het instrument.
-- Kortere rondleiding en kleine verbeteringen.
+- Nieuw onder Oefenen: Gehoortraining.
+- De 12-snarige gitaar en de 5-snarige banjo.
+- Open C, de baritonukelele en stemmingen tot 2½ toon lager.
+- Toonladders met een bourdon; meer akkoordsoorten.
+- Metronoom: vier geluiden, tikken tussen de tellen, een tempotrainer.
+- Nieuwe meters: Wijzers en Loep.
+- Snaren worden afgevinkt zodra ze gestemd zijn.
+- Linkshandige schema's, een indeling voor tablets.
+- Hulp en website in Over Twangle, betere TalkBack, kleine verbeteringen.

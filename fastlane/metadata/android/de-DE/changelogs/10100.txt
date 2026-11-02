@@ -1,9 +1,9 @@
-- Neue Instrumente: 12-saitige Gitarre und 5-saitiges Banjo.
-- Neue Stimmungen: Open C, Bariton-Ukulele und jede Stimmung bis 2½ Töne tiefer.
-- Tonleitern ist ein eigenes Werkzeug: 14 Tonleitern und ein Bordun zum Mitspielen.
-- Vier neue Akkordtypen, darunter der Powerchord.
-- Vier Metronom-Klänge zur Wahl.
-- Diagramme für Linkshänder, in Einstellungen.
-- Twangle füllt den Bildschirm eines Tablets.
-- Referenztöne klingen wie das Instrument.
-- Kürzere Tour und viele kleine Verbesserungen.
+- Neu unter Üben: Gehörbildung.
+- Die 12-saitige Gitarre und das 5-saitige Banjo.
+- Open C, die Bariton-Ukulele und Stimmungen bis 2½ Töne tiefer.
+- Tonleitern mit Bordun; mehr Akkordarten.
+- Metronom: vier Klänge, Klicks zwischen den Schlägen, ein Tempotrainer.
+- Neue Anzeigen: Zeiger und Lupe.
+- Saiten werden abgehakt, sobald sie gestimmt sind.
+- Diagramme für Linkshänder, ein Tablet-Layout.
+- Hilfe und Website in Über Twangle, besseres TalkBack, kleine Verbesserungen.

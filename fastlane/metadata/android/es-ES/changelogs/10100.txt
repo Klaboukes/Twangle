@@ -1,9 +1,9 @@
-- Nuevos instrumentos: guitarra de 12 cuerdas y banjo de 5 cuerdas.
-- Nuevas afinaciones: Open C, ukelele barítono y cualquier afinación hasta 2½ tonos más baja.
-- Escalas es una herramienta propia: 14 escalas y un bordón de fondo.
-- Cuatro tipos de acorde más, como el power chord.
-- Cuatro sonidos de metrónomo a elegir.
-- Diagramas para zurdos, en Ajustes.
-- Twangle llena la pantalla de una tableta.
-- Los tonos de referencia suenan como el instrumento.
-- Recorrido más corto y mejoras.
+- Nuevo en Práctica: Oído musical.
+- La guitarra de 12 cuerdas y el banjo de 5 cuerdas.
+- Open C, el ukelele barítono y afinaciones hasta 2½ tonos más bajas.
+- Escalas con bordón; más tipos de acorde.
+- Metrónomo: cuatro sonidos, clics entre los tiempos, un entrenador de tempo.
+- Nuevos indicadores: Punteros y Lupa.
+- Las cuerdas se marcan al afinarlas.
+- Diagramas para zurdos, diseño para tableta.
+- Ayuda y sitio web en Acerca de, mejor TalkBack, pequeñas mejoras.
