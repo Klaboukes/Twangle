@@ -1,0 +1,286 @@
+<!doctype html>
+<!--
+Twangle 2.0, the one look: the rough candidates of 2026-11-02 (ROADMAP.md, "2.0 — the app designed again").
+Open it in Firefox from a local server (python -I -m http.server 8765 --bind 127.0.0.1 in this folder);
+"?light" in the address opens it in the light versions.
+
+Decided (owner, 2026-11-02):
+- One look instead of six styles: Ink, the first of the four (blue-grey dark, near-white light, a plain sans,
+  rounded corners). Warm (Retro's warmth), Neon (Futuristic's glow) and Studio (rack gear) were the alternatives.
+  In the owner's own words, the current styles exist because no choice was made; this is the choice.
+- Light and dark follow the phone, with the switch in Settings kept to force one.
+- The phone's wallpaper colours (Android 12 and up, the dynamicColor switch, on by default) are the one
+  personalisation: the surfaces and the accent take the wallpaper's palette; amber (far off) and green (in tune)
+  stay the app's own, so a resting meter never looks in tune.
+- Styles come back only as a later phase if players ask.
+- "Where the picker went": the chip "Guitar · Standard ▾" at the top opens the sheet "What are you tuning?":
+  instrument pills, that instrument's tunings with their strings, Edit tunings, Any note as a switch.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>One look, four candidates</title>
+<style>
+:root{--page:#eceef1;--ink:#15191e;--ink2:#5b6470;--card:#fff;--rule:#d9dde3;--brand:#1f6fd6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI Variable Text","Segoe UI",Inter,Roboto,system-ui,sans-serif;background:var(--page);color:var(--ink);line-height:1.45}
+.page{max-width:1360px;margin:0 auto;padding:36px 24px 90px}
+h1{font-size:38px;margin:0 0 8px;letter-spacing:-.025em;line-height:1.1}
+.lede{font-size:17px;color:var(--ink2);max-width:900px;margin:0 0 18px}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--page) 90%,transparent);backdrop-filter:blur(8px);padding:12px 0;margin:0 0 28px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;border-bottom:1px solid var(--rule)}
+.bar button{font:inherit;font-size:14px;padding:7px 13px;border-radius:999px;border:1px solid var(--rule);background:var(--card);cursor:pointer;color:var(--ink)}
+.bar button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.bar label{font-size:14px;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.bar input[type=range]{width:240px}
+.bar .val{font-variant-numeric:tabular-nums;min-width:112px;color:var(--ink);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;background:var(--card)}
+.seg button{font:inherit;font-size:14px;padding:7px 11px;min-width:38px;border:0;border-radius:0;background:var(--card);color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--brand);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 26px;justify-items:center}
+figure{margin:0;width:300px}
+figcaption{margin-top:12px;font-size:14px;color:var(--ink2);line-height:1.4}
+figcaption b{display:block;color:var(--ink);font-size:18px;margin-bottom:3px}
+figcaption .k{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin:0 6px 4px 0;border:1px solid color-mix(in srgb,var(--brand) 35%,transparent);border-radius:999px;padding:1px 7px}
+figcaption p{margin:4px 0 0}
+h2{font-size:24px;margin:64px 0 8px;letter-spacing:-.015em}
+.same{columns:2;column-gap:40px;color:var(--ink2);font-size:15px;max-width:900px;padding-left:20px}
+.same li{break-inside:avoid;margin-bottom:6px}
+.same b{color:var(--ink);font-weight:600}
+
+/* ---------- phone ---------- */
+.phone{width:300px;height:650px;background:#0b0c0f;border-radius:42px;padding:8px;box-shadow:0 22px 50px rgba(0,0,0,.26),inset 0 0 0 2px #2b2f36;position:relative}
+.screen{width:284px;height:634px;border-radius:34px;overflow:hidden;position:relative;color:var(--fg);user-select:none;transition:background .4s;font-family:var(--font);
+ background:color-mix(in srgb,var(--tone) var(--tint),var(--bg))}
+.screen.idle{background:var(--bg)}
+.screen.glow{background:radial-gradient(ellipse 90% 55% at 50% 32%,color-mix(in srgb,var(--tone) 26%,var(--bg)),var(--bg) 75%)}
+.screen.glow.idle{background:var(--bg)}
+.status{height:30px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;font-weight:600;color:var(--muted);position:relative;z-index:2}
+.gear,.focus{position:absolute;top:30px;width:34px;height:34px;color:var(--muted);display:flex;align-items:center;justify-content:center;z-index:2}
+.gear{left:12px}.focus{right:12px}
+.gear svg,.focus svg{width:20px;height:20px}
+.content{position:absolute;left:0;right:0;top:30px;height:470px}
+.which{position:absolute;left:0;right:0;top:6px;text-align:center;font-size:13px;color:var(--muted);font-weight:500}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;color:var(--fg)}
+.sq .chip{border-radius:8px}
+.chip .caret{color:var(--muted);font-size:10px}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:3}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:24px 24px 0 0;padding:8px 18px 20px;z-index:4;color:var(--fg)}
+.grab{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.sh-title{font-size:18px;font-weight:700;margin-bottom:12px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill{padding:6px 11px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--fg)}
+.pill.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.sh-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.sh-list .it{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px;font-weight:600}
+.sh-list .it span{color:var(--muted);font-weight:500;font-size:12px}
+.sh-list .it.on span::after{content:" ✓";color:var(--fg);font-weight:700}
+.sh-any{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.sh-any b{display:block;font-size:14px}.sh-any small{color:var(--muted);font-size:11px}
+.tog{width:40px;height:22px;border-radius:11px;border:2px solid var(--muted);position:relative;flex:none}
+.tog::after{content:"";position:absolute;left:3px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--muted)}
+canvas.m{position:absolute;left:0;top:34px;width:284px;height:372px}
+.adv{position:absolute;left:0;right:0;top:412px;text-align:center;font-size:26px;font-weight:700;color:var(--tone);transition:color .3s;letter-spacing:-.01em}
+.sub{position:absolute;left:0;right:0;top:446px;text-align:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.idle .adv{color:var(--muted);font-weight:600;font-size:20px}
+.caps .adv,.caps .which,.caps .sub,.caps .tab{text-transform:uppercase;letter-spacing:.06em}
+.caps .adv{font-weight:600}
+.strings{position:absolute;left:0;right:0;top:506px;height:60px;display:flex;justify-content:center;gap:9px;align-items:center}
+.peg{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--fg);transition:border-color .25s,box-shadow .25s}
+.peg.on{border-color:var(--tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--tone) 22%,transparent)}
+.sq .peg{border-radius:9px}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:62px;background:var(--tab);border-top:1px solid var(--line);display:flex;padding:6px 8px 12px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:600;color:var(--muted)}
+.tab .ico{width:44px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.tab .ico svg{width:18px;height:18px}
+.tab.on{color:var(--fg)}.tab.on .ico{background:color-mix(in srgb,var(--good) 22%,transparent);color:var(--good)}
+.sq .tab .ico{border-radius:6px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>One look, four candidates</h1>
+<p class="lede">The same screen, the ruler, the lens and the colour with the trail inside, in four characters. Everything that works stays the same in all four: left flat, right sharp, amber far off, green in tune, light and dark. What differs is what the app <em>feels</em> like: its colours, its lettering, the shape of its lens and buttons. Pick the one you would want to open every day.</p>
+
+<div class="bar">
+ <label>Reading <input id="cents" type="range" min="-50" max="50" value="-18"> <span class="val" id="centsval"></span></label>
+ <span class="seg" id="strings"></span>
+ <button id="demo">▶ Tune a string for me</button>
+ <button id="silence">Silence</button>
+ <button id="light">Light</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<h2>Where the picker went</h2>
+<p class="intro">The chip at the top, <strong>Guitar · Standard</strong>, is the one picker. Tap it and the sheet asks what you are tuning: instrument, tuning and Any note live there and nowhere else, so the mode switch is gone. The pegs stay what they are, the strings of that tuning: tap one to tune only it, hold it to hear it. In Any note the pegs go and the chip says so.</p>
+<div class="grid" id="picker"></div>
+
+<h2>The same in all four</h2>
+<ul class="same">
+ <li><b>The lens contract:</b> left flat, right sharp, green in tune, quiet when the string dies; the trail, the Light arc or the strobe inside.</li>
+ <li><b>The two colours are the app's own:</b> amber far off, green in tune. They never come from the wallpaper, so a resting meter never looks in tune.</li>
+ <li><b>Light and dark,</b> following the phone, with the switch in Settings to force one.</li>
+ <li><b>The phone's colours</b> as the only personalisation: on Android 12 and up, the surfaces and the accent take the wallpaper's palette when the switch is on (it is today, in Contemporary); off, the look's own palette.</li>
+ <li><b>The top row:</b> the gear top left, the picker chip in the middle, focus mode top right; the three tabs below.</li>
+</ul>
+</div>
+
+<script>
+const STRINGS=[{n:'E',o:2,midi:40,lbl:'6th string'},{n:'A',o:2,midi:45,lbl:'5th string'},{n:'D',o:3,midi:50,lbl:'4th string'},{n:'G',o:3,midi:55,lbl:'3rd string'},{n:'B',o:3,midi:59,lbl:'2nd string'},{n:'E',o:4,midi:64,lbl:'1st string'}];
+const NAMES=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const rgba=(a,al=1)=>`rgba(${a[0]},${a[1]},${a[2]},${al})`;
+const mix=(a,b,k)=>[0,1,2].map(i=>Math.round(a[i]+(b[i]-a[i])*k));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+const STYLES=[
+ {id:'ink',name:'Ink',from:'Contemporary, as the mock-up had it',
+  feel:'Blue-grey dark, near-white light, a plain sans. The safe one: nothing in it will date, and nothing in it will be remembered either.',
+  font:'"Segoe UI Variable Text","Segoe UI",Roboto,sans-serif',radius:22,tint:14,
+  dark:{bg:[14,17,22],surface:[23,27,34],fg:[238,241,245],muted:[141,150,163],line:[38,44,53],amber:[255,182,72],green:[61,220,132],tab:[18,21,27]},
+  light:{bg:[246,247,249],surface:[255,255,255],fg:[20,24,29],muted:[107,116,130],line:[225,229,234],amber:[217,132,0],green:[21,163,90],tab:[255,255,255]}},
+ {id:'warm',name:'Warm',from:'Retro\'s warmth',
+  feel:'Brown-black dark, paper light, cream lettering and a serif for the note names. The one that feels like a wooden instrument rather than a phone.',
+  font:'Cambria,Georgia,"Palatino Linotype",serif',radius:14,tint:16,
+  dark:{bg:[27,22,18],surface:[38,32,26],fg:[243,233,216],muted:[163,145,124],line:[58,48,39],amber:[255,179,71],green:[123,211,137],tab:[33,27,22]},
+  light:{bg:[244,236,221],surface:[251,246,236],fg:[42,33,26],muted:[125,108,91],line:[226,214,195],amber:[196,110,0],green:[46,140,80],tab:[251,246,236]}},
+ {id:'neon',name:'Neon',from:'Futuristic\'s glow',
+  feel:'Deep navy with the reading\'s colour glowing behind the lens, square corners, a geometric sans. Loud and unmistakable: the one a store listing is built around.',
+  font:'Bahnschrift,"Segoe UI",sans-serif',radius:8,tint:18,glow:true,sq:true,
+  dark:{bg:[7,11,22],surface:[14,21,38],fg:[230,244,255],muted:[111,133,168],line:[27,39,64],amber:[255,159,67],green:[62,242,166],tab:[10,15,28]},
+  light:{bg:[238,243,255],surface:[255,255,255],fg:[15,26,51],muted:[96,114,150],line:[213,222,240],amber:[224,122,0],green:[0,170,110],tab:[255,255,255]}},
+ {id:'studio',name:'Studio',from:'new: rack gear',
+  feel:'Matte black, hardware-orange LEDs, condensed capitals, hairlines. The one a sound engineer would trust on a stage.',
+  font:'"Bahnschrift Condensed","Bahnschrift SemiCondensed",Bahnschrift,"Arial Narrow",sans-serif',radius:10,tint:10,caps:true,sq:true,
+  dark:{bg:[18,18,18],surface:[28,28,28],fg:[242,242,242],muted:[138,138,138],line:[44,44,44],amber:[255,167,38],green:[102,227,107],tab:[22,22,22]},
+  light:{bg:[236,236,236],surface:[250,250,250],fg:[22,22,22],muted:[110,110,110],line:[214,214,214],amber:[214,120,0],green:[36,150,60],tab:[250,250,250]}},
+];
+
+const GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+const FOCUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V3h6"/><path d="M21 9V3h-6"/><path d="M3 15v6h6"/><path d="M21 15v6h-6"/></svg>';
+const ICO={
+ tune:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 16a8 8 0 0 1 16 0"/><path d="M12 16l3-6"/></svg>',
+ metro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l3 16H6z"/><path d="M12 16l5-9"/></svg>',
+ practice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>'};
+
+const D=[];
+const SHEET=`<div class="dim"></div><div class="sheet"><div class="grab"></div><div class="sh-title">What are you tuning?</div>
+ <div class="pills"><span class="pill on">Guitar</span><span class="pill">Bass</span><span class="pill">Ukulele</span><span class="pill">Mandolin</span><span class="pill">…</span></div>
+ <div class="sh-label">Tuning</div>
+ <div class="sh-list"><div class="it on">Standard<span>E A D G B E</span></div><div class="it">Drop D<span>D A D G B E</span></div><div class="it">Half step down<span>E♭ A♭ D♭ G♭ B♭ E♭</span></div><div class="it">DADGAD<span>D A D G A D</span></div><div class="it">Open G<span>D G D G B D</span></div><div class="it">Edit tunings…<span></span></div></div>
+ <div class="sh-any"><div><b>Any note</b><small>The nearest note, no strings</small></div><span class="tog"></span></div></div>`;
+function build(st,parent,cap={}){
+ const fig=document.createElement('figure');
+ fig.innerHTML=`<div class="phone"><div class="screen${st.glow?' glow':''}${st.caps?' caps':''}${st.sq?' sq':''}">
+  <div class="status"><span>9:41</span><span>▮▮▮ ◗</span></div>
+  <div class="gear">${GEAR}</div><div class="focus">${FOCUS}</div>
+  <div class="content"><div class="which"><span class="chip">Guitar · Standard <span class="caret">▾</span></span></div><canvas class="m"></canvas><div class="adv"></div><div class="sub"></div></div>
+  <div class="strings">${STRINGS.map(s=>`<div class="peg">${s.n}</div>`).join('')}</div>
+  <div class="tabs"><div class="tab on"><span class="ico">${ICO.tune}</span>Tune</div><div class="tab"><span class="ico">${ICO.metro}</span>Metronome</div><div class="tab"><span class="ico">${ICO.practice}</span>Practice</div></div>
+  ${cap.sheet?SHEET:''}
+ </div></div>
+ <figcaption><b>${cap.name||st.name}</b><span class="k">${cap.from||st.from}</span><p>${cap.feel||st.feel}</p></figcaption>`;
+ parent.appendChild(fig);
+ const screen=fig.querySelector('.screen'),cv=fig.querySelector('canvas'),W=cv.offsetWidth,H=cv.offsetHeight;
+ const k=(cv.getBoundingClientRect().width/W)*(window.devicePixelRatio||1);
+ cv.width=Math.round(W*k);cv.height=Math.round(H*k);
+ const ctx=cv.getContext('2d');ctx.setTransform(k,0,0,k,0,0);
+ screen.style.setProperty('--font',st.font);screen.style.setProperty('--tint',st.tint+'%');
+ D.push({...st,screen,ctx,W,H,adv:fig.querySelector('.adv'),sub:fig.querySelector('.sub'),pegs:[...fig.querySelectorAll('.peg')]});
+}
+for(const st of STYLES)build(st,document.getElementById('grid'));
+build(STYLES[0],document.getElementById('picker'),{sheet:true,name:'Ink, the picker open',from:'the one picker',
+ feel:'The sheet slides up over the tuner: the instrument as pills, the tunings of that instrument as a list with the strings spelled out, Any note as a switch at the bottom. Pick, and it closes. The chip then says what you chose.'});
+function applyPal(d,pal){for(const key of['bg','surface','fg','muted','line','tab'])d.screen.style.setProperty('--'+key,rgba(pal[key]));d.screen.style.setProperty('--good',rgba(pal.green));}
+
+/* ---------- the shared reading ---------- */
+const S={target:-18,c:-18,wob:0,heard:true,str:0,hist:[],goodSince:null,t:0,demo:null,light:false};
+const SCRIPT=[{c:-28,d:1.6,h:true},{c:-11,d:1.0,h:true},{c:-4,d:0.8,h:true},{c:6,d:0.7,h:true},{c:1,d:0.7,h:true},{c:0,d:2.6,h:true},{c:0,d:1.3,h:false,next:true}];
+const slider=document.getElementById('cents'),centsval=document.getElementById('centsval');
+const demoBtn=document.getElementById('demo'),silenceBtn=document.getElementById('silence'),lightBtn=document.getElementById('light');
+const strSeg=document.getElementById('strings');
+STRINGS.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.n+s.o;b.onclick=()=>{stopDemo();setString(i);};strSeg.appendChild(b);});
+function setString(i){S.str=i;S.hist.length=0;S.c=S.target;S.goodSince=null;[...strSeg.children].forEach((b,j)=>b.classList.toggle('on',j===i));}
+setString(0);
+function showVal(){const v=Math.round(S.heard?S.c:S.target);centsval.textContent=S.heard?`${v>0?'+':v<0?'−':''}${Math.abs(v)} ¢ ${Math.abs(v)<=3?'in tune':v<0?'flat':'sharp'}`:'silence';}
+slider.oninput=()=>{stopDemo();S.target=+slider.value;setHeard(true);};
+function setHeard(h){if(h&&!S.heard){S.c=S.target;S.goodSince=null;}S.heard=h;silenceBtn.classList.toggle('on',!h);}
+silenceBtn.onclick=()=>{stopDemo();setHeard(!S.heard);};
+lightBtn.onclick=()=>{S.light=!S.light;lightBtn.classList.toggle('on',S.light);};
+if(location.search.includes('light')){D.forEach(d=>d.screen.style.transition='none');lightBtn.onclick();setTimeout(()=>D.forEach(d=>d.screen.style.transition=''),600);}
+demoBtn.onclick=()=>{if(S.demo)stopDemo();else{S.demo={i:-1,left:0};demoBtn.classList.add('on');demoBtn.textContent='■ Stop the demo';}};
+function stopDemo(){S.demo=null;demoBtn.classList.remove('on');demoBtn.textContent='▶ Tune a string for me';}
+function demoStep(dt){const d=S.demo;d.left-=dt;if(d.left>0)return;d.i=(d.i+1)%SCRIPT.length;const st=SCRIPT[d.i];d.left=st.d;if(st.next)setString((S.str+1)%6);S.target=st.c;setHeard(st.h);slider.value=Math.round(st.c);}
+
+let last=performance.now();
+function frame(now){
+ const dt=Math.min(0.25,(now-last)/1000);last=now;S.t+=dt;
+ if(S.demo)demoStep(dt);
+ let sh=null;
+ if(S.heard){S.c+=(S.target-S.c)*(1-Math.exp(-dt*5));S.wob=S.wob*0.88+(Math.random()-0.5)*0.5;sh=S.c+S.wob;S.hist.push({t:S.t,c:sh});}
+ while(S.hist.length&&S.t-S.hist[0].t>6)S.hist.shift();
+ const near=sh!==null&&Math.abs(sh)<=3;
+ if(near){if(S.goodSince===null)S.goodSince=S.t;}else S.goodSince=null;
+ const good=near&&S.t-S.goodSince>0.35;
+ showVal();render(sh,good);requestAnimationFrame(frame);
+}
+function render(sh,good){
+ const st=STRINGS[S.str];
+ const adv=sh===null?'Pluck a string':good?'In tune':sh<0?'Tighten':'Loosen';
+ const n=sh===null?0:Math.abs(sh)<0.5?0:Math.round(Math.abs(sh));
+ const sub=sh===null?'':good||n===0?`${n} ¢`:`${n} ¢ ${sh<0?'flat':'sharp'}`;
+ for(const d of D){
+  const pal=S.light?d.light:d.dark;applyPal(d,pal);
+  const tnA=sh===null?pal.muted:good?pal.green:mix(pal.amber,pal.green,clamp(1-(Math.abs(sh)-3)/14,0,1)*0.7);
+  d.screen.style.setProperty('--tone',rgba(tnA));d.screen.classList.toggle('idle',sh===null);
+  d.adv.textContent=adv;d.sub.textContent=sub;
+  d.pegs.forEach((p,i)=>p.classList.toggle('on',i===S.str));
+  d.ctx.clearRect(0,0,d.W,d.H);drawLens(d,sh,good,pal,tnA);
+ }
+}
+
+/* ---------- drawing ---------- */
+function seg(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function glowDot(ctx,x,y,r,tnA,blur){ctx.save();ctx.shadowColor=rgba(tnA,.9);ctx.shadowBlur=blur;ctx.fillStyle=rgba(tnA);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore();}
+function label(ctx,d,s,x,y,pal,size=13,weight=500){ctx.font=`${weight} ${size}px ${d.font}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=rgba(pal.muted);ctx.fillText(s,x,y);}
+function trail(ctx,map,visible,grad){
+ ctx.strokeStyle=grad;ctx.lineWidth=3;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();let prev=null;
+ for(const p of S.hist){const [x,y]=map(p);if(!visible(x,y)){prev=null;continue;}if(prev&&p.t-prev.t<0.2)ctx.lineTo(x,y);else ctx.moveTo(x,y);prev=p;}
+ ctx.stroke();
+}
+function fade(ctx,x1,y1,x2,y2,tnA){const g=ctx.createLinearGradient(x1,y1,x2,y2);g.addColorStop(0,rgba(tnA,1));g.addColorStop(.7,rgba(tnA,.28));g.addColorStop(1,rgba(tnA,0));return g;}
+function drawLens(d,sh,good,pal,tnA){
+ const {ctx,W,H}=d,cx=W/2,step=58,st=STRINGS[S.str],pos=st.midi+(sh??0)/100,base=70;
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ for(let m=st.midi-3;m<=st.midi+3;m++){
+  const x=cx+(m-pos)*step;if(x<-24||x>W+24)continue;const cur=m===st.midi;
+  ctx.font=cur?`${d.caps?600:800} 36px ${d.font}`:`500 17px ${d.font}`;ctx.fillStyle=cur?rgba(pal.fg):rgba(pal.muted,.9);
+  ctx.fillText(NAMES[((m%12)+12)%12],x,cur?36:40);
+  ctx.strokeStyle=rgba(pal.muted,.6);ctx.lineWidth=1.5;seg(ctx,x,base-7,x,base);
+ }
+ ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=1.5;seg(ctx,8,base,W-8,base);
+ ctx.fillStyle=sh===null?rgba(pal.muted):rgba(tnA);ctx.beginPath();ctx.moveTo(cx-6,base+11);ctx.lineTo(cx+6,base+11);ctx.lineTo(cx,base+2);ctx.closePath();ctx.fill();
+ const lx=20,ly=112,lw=W-40,lh=206,lcx=lx+lw/2,r=d.radius;
+ ctx.strokeStyle=rgba(pal.muted,.35);ctx.lineWidth=1;ctx.setLineDash([3,4]);seg(ctx,cx-step/2,base+13,lx+4,ly);seg(ctx,cx+step/2,base+13,lx+lw-4,ly);ctx.setLineDash([]);
+ ctx.beginPath();ctx.roundRect(lx,ly,lw,lh,r);ctx.fillStyle=rgba(pal.surface);ctx.fill();
+ if(sh!==null){ctx.save();ctx.shadowColor=rgba(tnA,good?.55:.3);ctx.shadowBlur=good?28:14;ctx.strokeStyle=rgba(tnA,.75);ctx.lineWidth=d.glow?2.5:2;ctx.stroke();ctx.restore();}
+ else{ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=1.5;ctx.stroke();}
+ ctx.save();ctx.beginPath();ctx.roundRect(lx,ly,lw,lh,r);ctx.clip();
+ const lhalf=lw/2-24,ltop=ly+28,pps=80;
+ ctx.strokeStyle=rgba(pal.muted,.7);ctx.lineWidth=1.5;
+ for(let c=-50;c<=50;c+=10){const x=lcx+c/50*lhalf,l=c%50===0?12:c%25===0?9:5;seg(ctx,x,ly,x,ly+l);}
+ label(ctx,d,'♭',lx+14,ly+lh-14,pal,12);label(ctx,d,'♯',lx+lw-14,ly+lh-14,pal,12);
+ ctx.fillStyle=rgba(pal.green,.12);ctx.fillRect(lcx-3/50*lhalf,ly,6/50*lhalf,lh);
+ ctx.strokeStyle=rgba(pal.muted,.45);ctx.lineWidth=1;seg(ctx,lcx,ly,lcx,ly+lh);
+ trail(ctx,p=>[lcx+clamp(p.c,-55,55)/50*lhalf,ltop+(S.t-p.t)*pps],(x,y)=>y<ly+lh+6,fade(ctx,0,ltop,0,ly+lh,tnA));
+ if(sh!==null)glowDot(ctx,lcx+clamp(sh,-55,55)/50*lhalf,ltop,7,tnA,good?20:10);
+ ctx.restore();
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

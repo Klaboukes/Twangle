@@ -1,0 +1,456 @@
+<!doctype html>
+<!--
+Twangle 2.0, the tuner screen: the rough comparison of 2026-11-02 (ROADMAP.md, "2.0 — the app designed again").
+Open it in Firefox from a local server (python -I -m http.server 8765 --bind 127.0.0.1 in this folder); the
+built-in browser pane runs its animation at a crawl. Every phone follows the one slider and the demo.
+
+Decided (owner, 2026-11-02):
+- The tuner is "the combination": the ruler on top (the chromatic scale sliding under a fixed pointer: which note),
+  the lens below it (how far: left flat, right sharp, the in-tune zone, green in tune, quiet when the string dies),
+  the whole screen softly tinted by the reading (amber far off, green in tune: how close), one word at the bottom
+  with the cents small under it, the pegs as a plain row. No big note, no cents pill, no hertz, no wave view,
+  no mode switch, no strings backdrop.
+- Three looks in the lens, picked in Settings, the one choice a player gets: the pitch trail (the default), the
+  Light arc (as today), the strobe. The lens is the contract; only what is drawn inside it changes. Not more than three.
+- The picker chip "Guitar · Standard ▾" top centre opens "What are you tuning?" (see v2-one-look-preview.html);
+  the gear top left; the focus mode button top right, the same corner as its exit button on its side.
+- Focus mode: one button, no switch in Settings; the same screen laid out wide (the section "On its side"),
+  the pegs and tabs back with a tap.
+- The string tick-off (a tuned peg gets a check) is a beginner helper: a toggle in Settings, off by default,
+  so it is not drawn here.
+- The six single designs below the combination are the alternatives compared on the way (the fall, the flow,
+  the comet, the ruler and the lens alone, the colour field, the strobe alone); "the flow" breaks left-is-flat.
+The one look is Ink (v2-one-look-preview.html); this page draws it in a placeholder dark and light.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Six tuner screens</title>
+<style>
+:root{--page:#eceef1;--ink:#15191e;--ink2:#5b6470;--card:#fff;--rule:#d9dde3;--brand:#1f6fd6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI Variable Text","Segoe UI",Inter,Roboto,system-ui,sans-serif;background:var(--page);color:var(--ink);line-height:1.45}
+.page{max-width:1120px;margin:0 auto;padding:36px 24px 90px}
+h1{font-size:38px;margin:0 0 8px;letter-spacing:-.025em;line-height:1.1}
+.lede{font-size:17px;color:var(--ink2);max-width:880px;margin:0 0 16px}
+.intro{color:var(--ink2);margin:0 0 22px;max-width:860px;font-size:15px}
+.rules{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;padding:0;list-style:none}
+.rules li{background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--ink2)}
+.rules li b{color:var(--ink);font-weight:600}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--page) 90%,transparent);backdrop-filter:blur(8px);padding:12px 0;margin:0 0 28px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;border-bottom:1px solid var(--rule)}
+.bar button{font:inherit;font-size:14px;padding:7px 13px;border-radius:999px;border:1px solid var(--rule);background:var(--card);cursor:pointer;color:var(--ink)}
+.bar button:hover{border-color:#aab2bd}
+.bar button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.bar label{font-size:14px;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.bar input[type=range]{width:240px}
+.bar .val{font-variant-numeric:tabular-nums;min-width:112px;color:var(--ink);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;background:var(--card)}
+.seg button{font:inherit;font-size:14px;padding:7px 11px;min-width:38px;border:0;border-radius:0;background:var(--card);color:var(--ink);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--brand);color:#fff}
+.hintline{font-size:13px;color:var(--ink2);flex-basis:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 26px;justify-items:center}
+figure{margin:0;width:300px}
+figcaption{margin-top:12px;font-size:14px;color:var(--ink2);line-height:1.4}
+figcaption b{display:block;color:var(--ink);font-size:17px;margin-bottom:3px}
+figcaption .k{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin:0 6px 4px 0;border:1px solid color-mix(in srgb,var(--brand) 35%,transparent);border-radius:999px;padding:1px 7px}
+figcaption p{margin:4px 0 0}
+h2{font-size:24px;margin:64px 0 8px;letter-spacing:-.015em}
+h2.first{margin-top:0}
+.side{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-start}
+.side figure{width:auto;display:flex;gap:36px;flex-wrap:wrap;align-items:flex-start}
+.side figcaption{max-width:400px;margin-top:0;padding-top:6px;font-size:15px}
+.side figcaption b{font-size:20px}
+.pick{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:14px;color:var(--ink2)}
+.same{columns:2;column-gap:40px;color:var(--ink2);font-size:15px;max-width:900px;padding-left:20px}
+.same li{break-inside:avoid;margin-bottom:6px}
+.same b{color:var(--ink);font-weight:600}
+
+/* ---------- phone ---------- */
+.phone{width:300px;height:650px;background:#0b0c0f;border-radius:42px;padding:8px;box-shadow:0 22px 50px rgba(0,0,0,.26),inset 0 0 0 2px #2b2f36;position:relative}
+.screen{width:284px;height:634px;border-radius:34px;overflow:hidden;position:relative;background:var(--bg);color:var(--fg);user-select:none;transition:background .4s;
+ --bg:#0e1116;--surface:#171b22;--fg:#eef1f5;--muted:#8d96a3;--line:#262c35;--accent:#5fc4ff;--good:#3ddc84;--tab:#12151b;--tone:var(--muted)}
+.screen.light{--bg:#f6f7f9;--surface:#fff;--fg:#14181d;--muted:#6b7482;--line:#e1e5ea;--accent:#1e7fe0;--good:#15a35a;--tab:#fff}
+.status{height:30px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;font-weight:600;color:var(--muted);position:relative;z-index:2}
+.gear{position:absolute;left:12px;top:30px;width:34px;height:34px;color:var(--muted);display:flex;align-items:center;justify-content:center;z-index:2}
+.gear svg{width:21px;height:21px}
+.focus{position:absolute;right:12px;top:30px;width:34px;height:34px;color:var(--muted);display:flex;align-items:center;justify-content:center;z-index:2}
+.focus svg{width:20px;height:20px}
+.d-wide .focus{display:none}
+.content{position:absolute;left:0;right:0;top:30px;height:470px}
+.which{position:absolute;left:0;right:0;top:6px;text-align:center;font-size:13px;color:var(--muted);font-weight:500}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;color:var(--fg)}
+.chip .caret{color:var(--muted);font-size:10px}
+.note{position:absolute;left:0;right:0;top:30px;height:96px;display:flex;align-items:center;justify-content:center;font-size:86px;line-height:1;font-weight:800;letter-spacing:-.045em}
+.note .oct{font-size:26px;font-weight:600;color:var(--muted);align-self:flex-end;margin:0 0 12px 3px;letter-spacing:0}
+canvas.m{position:absolute;left:0;top:130px;width:284px;height:280px}
+.adv{position:absolute;left:0;right:0;top:412px;text-align:center;font-size:26px;font-weight:700;color:var(--tone);transition:color .3s;letter-spacing:-.01em}
+.sub{position:absolute;left:0;right:0;top:446px;text-align:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.idle .adv{color:var(--muted);font-weight:600;font-size:20px}
+.strings{position:absolute;left:0;right:0;top:506px;height:60px;display:flex;justify-content:center;gap:9px;align-items:center}
+.peg{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--fg);transition:border-color .25s,box-shadow .25s}
+.peg.on{border-color:var(--tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--tone) 22%,transparent)}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:62px;background:var(--tab);border-top:1px solid var(--line);display:flex;padding:6px 8px 12px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:600;color:var(--muted)}
+.tab .ico{width:44px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.tab .ico svg{width:18px;height:18px}
+.tab.on{color:var(--fg)}.tab.on .ico{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent)}
+.exit{display:none;position:absolute;right:16px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid color-mix(in srgb,var(--muted) 60%,transparent);background:color-mix(in srgb,var(--surface) 45%,transparent);color:var(--fg);align-items:center;justify-content:center;z-index:2}
+.exit svg{width:18px;height:18px}
+
+/* per design */
+.d-lens .note,.d-combo .note{display:none}
+.d-lens canvas.m,.d-combo canvas.m{top:34px;height:372px}
+.d-combo{background:color-mix(in srgb,var(--tone) 14%,var(--bg))}
+.d-combo.idle{background:var(--bg)}
+.d-field{background:color-mix(in srgb,var(--tone) 17%,var(--bg))}
+.d-field.idle{background:var(--bg)}
+.d-field .note{top:40px;height:150px;font-size:140px}
+.d-field .note .oct{font-size:36px;margin-bottom:24px}
+.d-field canvas.m{top:200px;height:70px}
+.d-field .adv{top:288px;font-size:40px}
+.d-field .sub{top:342px;font-size:15px}
+.d-field.idle .adv{top:296px}
+
+/* on its side: focus mode */
+.phone.wide{width:650px;height:300px}
+.screen.wide{width:634px;height:284px}
+.d-wide .status,.d-wide .gear,.d-wide .strings,.d-wide .tabs,.d-wide .sub{display:none}
+.d-wide .content{top:0;height:284px}
+.d-wide canvas.m{top:0;height:284px;width:634px}
+.d-wide .which{top:258px;left:auto;right:24px;text-align:right;font-size:12px}
+.d-wide .adv{top:251px;left:24px;right:auto;text-align:left;font-size:17px}
+.d-wide.idle .adv{font-size:15px;top:253px}
+.d-wide .exit{display:flex}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>Six tuner screens</h1>
+<p class="lede">Rough on purpose: one look, the same phone, the same reading in every design. Only the middle of the screen, the meter itself, differs. Drag the slider or let the demo tune a string, and compare how each one tells you <em>which way</em> and <em>how far</em>, and what it looks like while you turn the peg.</p>
+<ul class="rules">
+ <li><b>Kept:</b> the pitch trail is the meter, the default; the Light arc and the strobe are the two other looks, in the same lens</li>
+ <li><b>Gone:</b> the strings as a backdrop behind the meter</li>
+ <li><b>Gone:</b> the tick-off per string: a toggle, off by default, so not drawn here</li>
+ <li><b>Same in all:</b> the picker chip on top, one word at the bottom, plain pegs, focus mode top right and the gear top left, three tabs</li>
+</ul>
+
+<div class="bar">
+ <label>Reading <input id="cents" type="range" min="-50" max="50" value="-18"> <span class="val" id="centsval"></span></label>
+ <span class="seg" id="strings"></span>
+ <button id="demo">▶ Tune a string for me</button>
+ <button id="silence">Silence</button>
+ <button id="light">Light</button>
+ <span class="hintline">Every phone shows the same reading. The demo plucks flat, tunes up, overshoots, settles, then goes quiet and moves to the next string.</span>
+</div>
+
+<h2 class="first">The combination: the ruler, the lens and the colour</h2>
+<p class="intro">The ruler on top says <strong>which note</strong>: the whole chromatic scale sliding under a fixed pointer. The lens says <strong>how far</strong>. The colour of the whole screen says <strong>how close</strong>: a soft amber far off, a soft green in tune. The lens is the contract: left flat, right sharp, green in tune, quiet when the string dies. Only what is drawn inside it changes, and that is the one choice a player gets.</p>
+<div class="grid" id="hero"></div>
+
+<h2>On its side: focus mode</h2>
+<p class="intro">One button turns the app on its side, even with rotation locked, and the same screen is laid out wide with nothing else on it. The ruler across the full width shows more of the scale, the lens gains pixels per cent, the colour fills the screen. The word and the string are small under the lens, the exit button has the corner. The pegs and the tabs come back with a tap.</p>
+<div class="pick">In the lens: <span class="seg" id="sidepick"></span></div>
+<div class="side" id="side"></div>
+
+<h2>The six, for reference</h2>
+<div class="grid" id="grid"></div>
+
+<h2>The same in all</h2>
+<ul class="same">
+ <li><b>The note</b> and its octave on top, with which string it is.</li>
+ <li><b>One word</b> at the bottom: Tighten, Loosen, In tune. The cents under it, small.</li>
+ <li><b>Colour</b> says how close: amber far off, green in tune. No colour is the meter on its own.</li>
+ <li><b>The six strings</b> as plain pegs; the one heard is ringed. No tick-off: that is a toggle in Settings, off by default, and when on, a tuned string's peg gets a small check.</li>
+ <li><b>No mode switch.</b> The chip at the top, Guitar · Standard, opens the one picker, "What are you tuning?": instrument, tuning and Any note. One string shows the string; a strum shows the chord.</li>
+ <li><b>No tour, no hints.</b> The focus mode button top right, the same corner its exit button has on its side (one button, no switch in Settings); the gear top left; the three tabs below.</li>
+</ul>
+</div>
+
+<script>
+const STRINGS=[{n:'E',o:2,midi:40,lbl:'6th string'},{n:'A',o:2,midi:45,lbl:'5th string'},{n:'D',o:3,midi:50,lbl:'4th string'},{n:'G',o:3,midi:55,lbl:'3rd string'},{n:'B',o:3,midi:59,lbl:'2nd string'},{n:'E',o:4,midi:64,lbl:'1st string'}];
+const NAMES=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const PAL={
+ dark:{amber:[255,182,72],green:[61,220,132],fg:[238,241,245],muted:[141,150,163],line:[38,44,53],surface:[23,27,34],bg:[14,17,22]},
+ light:{amber:[217,132,0],green:[21,163,90],fg:[20,24,29],muted:[107,116,130],line:[225,229,234],surface:[255,255,255],bg:[246,247,249]}};
+const FONT='"Segoe UI Variable Text","Segoe UI",Inter,Roboto,system-ui,sans-serif';
+const rgba=(a,al=1)=>`rgba(${a[0]},${a[1]},${a[2]},${al})`;
+const mix=(a,b,k)=>[0,1,2].map(i=>Math.round(a[i]+(b[i]-a[i])*k));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+const LOOKS={trail:{name:'Trail',fn:lensFall},arc:{name:'Light arc',fn:lensArc},strobe:{name:'Strobe',fn:lensStrobe}};
+const combo=(d,sh,good,pal,tn,tnA)=>drawLens(d,sh,good,pal,tn,tnA,true,d.content);
+const COMBOS=[
+ {id:'combo',draw:combo,content:lensFall,tag:'the default',name:'Trail',
+  text:'The newest reading at the top, the last seconds falling under it. You see the string settle, and a wobble is a wobble, not a fault of the tuner. In tune, the line hangs straight down the middle.'},
+ {id:'combo',draw:combo,content:lensArc,tag:'the glance look',name:'Light arc',
+  text:'Your favourite, as it is today: a fan of lights opening from the centre toward the note, like an LED pedal, with marks at 5 and 10 cents. Readable in a glance; the side that lights up is the direction.'},
+ {id:'combo',draw:combo,content:lensStrobe,tag:'the pro look',name:'Strobe',
+  text:'Stripes drifting flat or sharp, faster the further off, dead still in tune. The look of professional strobe tuners; stillness reads to the cent.'},
+];
+const SIDE={id:'combo',cls:'d-wide',wide:true,draw:combo,content:lensFall,tag:'focus mode',name:'The phone on its side',
+ text:'What focus mode shows in 2.0. Nothing under the hood changes: the button turns the whole app on its side, Back and the corner button leave, a tap brings the pegs and the tabs for a moment. What it draws is this screen, wide. Switch the lens above to see each look on its side.'};
+const DESIGNS=[
+ {id:'fall',draw:drawFall,tag:'Trail = meter',name:'1 · The fall',
+  text:'Left is flat, right is sharp, like every meter. Time falls: the newest reading sits at the top, right under the note, and the line below it is the last few seconds. In tune, the line hangs straight down the middle.',
+  con:'What you watch is the shape of the line, so a wobbly string looks busy.'},
+ {id:'flow',draw:drawFlow,tag:'Trail = meter',name:'2 · The flow',
+  text:'A heart monitor: the reading enters on the right and flows left. Sharp is up, flat is down. Tuning up is pushing the line up to the middle.',
+  con:'Breaks the left-is-flat habit every other tuner has; the word does the direction work.'},
+ {id:'arc',draw:drawArc,tag:'Trail = comet',name:'3 · The comet',
+  text:'The classic needle, read by angle like any gauge, and its last second as a fading comet along the arc. You see it swing, overshoot and settle.',
+  con:'The trail is short, so you see the settling but not the whole pluck.'},
+ {id:'lens',draw:(d,sh,good,pal,tn,tnA)=>drawLens(d,sh,good,pal,tn,tnA,false,lensFall),tag:'Trail = meter',name:'4 · The ruler and the lens',
+  text:'The strip on top is the whole chromatic scale sliding under a fixed pointer: coarse, which note you are at. The lens below magnifies the 100 cents around that note, with the fall inside it.',
+  con:'Two things to look at, and the most instrument-like of the six.'},
+ {id:'field',draw:drawField,tag:'Colour first',name:'5 · The colour field',
+  text:'The whole screen is the meter: amber far off, green in tune, readable from across the room. One thin bar with a dot and a short comet, the note as big as it goes, the word as big as it goes.',
+  con:'The least precise: it leans on the colour and the word.'},
+ {id:'strobe',draw:drawStrobe,tag:'No trail',name:'6 · The strobe',
+  text:'Stripes drift towards flat or sharp, faster the further off, and stand still when you are in tune. The metaphor of professional strobe tuners. The alternative without a trail, to compare against.',
+  con:'Shows direction only while it moves, and nothing about how it got there.'},
+];
+
+const GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+const EXIT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6H3"/><path d="M15 3v6h6"/><path d="M9 21v-6H3"/><path d="M15 21v-6h6"/></svg>';
+const FOCUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V3h6"/><path d="M21 9V3h-6"/><path d="M3 15v6h6"/><path d="M21 15v6h-6"/></svg>';
+const ICO={
+ tune:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 16a8 8 0 0 1 16 0"/><path d="M12 16l3-6"/></svg>',
+ metro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l3 16H6z"/><path d="M12 16l5-9"/></svg>',
+ practice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>'};
+
+const D=[];
+function build(des,parent){
+ const fig=document.createElement('figure');
+ fig.innerHTML=`<div class="frame"><div class="phone${des.wide?' wide':''}"><div class="screen${des.wide?' wide':''} d-${des.id}${des.cls?' '+des.cls:''}">
+  <div class="status"><span>9:41</span><span>▮▮▮ ◗</span></div>
+  <div class="gear">${GEAR}</div>
+  <div class="focus">${FOCUS}</div>
+  <div class="exit">${EXIT}</div>
+  <div class="content">
+   <div class="which">${des.wide?'':'<span class="chip">Guitar · Standard <span class="caret">▾</span></span>'}</div>
+   <div class="note"><span class="n">E</span><span class="oct">2</span></div>
+   <canvas class="m"></canvas>
+   <div class="adv"></div>
+   <div class="sub"></div>
+  </div>
+  <div class="strings">${STRINGS.map(s=>`<div class="peg">${s.n}</div>`).join('')}</div>
+  <div class="tabs"><div class="tab on"><span class="ico">${ICO.tune}</span>Tune</div><div class="tab"><span class="ico">${ICO.metro}</span>Metronome</div><div class="tab"><span class="ico">${ICO.practice}</span>Practice</div></div>
+ </div></div></div>
+ <figcaption><b>${des.name}</b><span class="k">${des.tag}</span><p>${des.text}</p>${des.con?`<p><i>Against it:</i> ${des.con}</p>`:''}</figcaption>`;
+ parent.appendChild(fig);
+ const screen=fig.querySelector('.screen'),cv=fig.querySelector('canvas'),W=cv.offsetWidth,H=cv.offsetHeight;
+ const k=(cv.getBoundingClientRect().width/W)*(window.devicePixelRatio||1);
+ cv.width=Math.round(W*k);cv.height=Math.round(H*k);
+ const ctx=cv.getContext('2d');ctx.setTransform(k,0,0,k,0,0);
+ const d={...des,screen,ctx,W,H,which:fig.querySelector('.which'),n:fig.querySelector('.n'),oct:fig.querySelector('.oct'),
+  adv:fig.querySelector('.adv'),sub:fig.querySelector('.sub'),pegs:[...fig.querySelectorAll('.peg')]};
+ D.push(d);return d;
+}
+for(const des of COMBOS)build(des,document.getElementById('hero'));
+const sideD=build(SIDE,document.getElementById('side'));
+const sidePick=document.getElementById('sidepick');
+for(const key of Object.keys(LOOKS)){const b=document.createElement('button');b.textContent=LOOKS[key].name;b.onclick=()=>{sideD.content=LOOKS[key].fn;[...sidePick.children].forEach(x=>x.classList.toggle('on',x===b));};sidePick.appendChild(b);}
+sidePick.firstChild.classList.add('on');
+for(const des of DESIGNS)build(des,document.getElementById('grid'));
+
+/* ---------- the shared reading ---------- */
+const S={target:-18,c:-18,wob:0,heard:true,str:0,hist:[],goodSince:null,t:0,strobe:0,demo:null,light:false};
+const SCRIPT=[{c:-28,d:1.6,h:true},{c:-11,d:1.0,h:true},{c:-4,d:0.8,h:true},{c:6,d:0.7,h:true},{c:1,d:0.7,h:true},{c:0,d:2.6,h:true},{c:0,d:1.3,h:false,next:true}];
+const slider=document.getElementById('cents'),centsval=document.getElementById('centsval');
+const demoBtn=document.getElementById('demo'),silenceBtn=document.getElementById('silence'),lightBtn=document.getElementById('light');
+const strSeg=document.getElementById('strings');
+STRINGS.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.n+s.o;b.onclick=()=>{stopDemo();setString(i);};strSeg.appendChild(b);});
+function setString(i){S.str=i;S.hist.length=0;S.c=S.target;S.goodSince=null;[...strSeg.children].forEach((b,j)=>b.classList.toggle('on',j===i));}
+setString(0);
+function showVal(){const v=Math.round(S.heard?S.c:S.target);centsval.textContent=S.heard?`${v>0?'+':v<0?'−':''}${Math.abs(v)} ¢ ${Math.abs(v)<=3?'in tune':v<0?'flat':'sharp'}`:'silence';}
+slider.oninput=()=>{stopDemo();S.target=+slider.value;setHeard(true);};
+function setHeard(h){if(h&&!S.heard){S.c=S.target;S.goodSince=null;}S.heard=h;silenceBtn.classList.toggle('on',!h);}
+silenceBtn.onclick=()=>{stopDemo();setHeard(!S.heard);};
+lightBtn.onclick=()=>{S.light=!S.light;lightBtn.classList.toggle('on',S.light);D.forEach(d=>d.screen.classList.toggle('light',S.light));};
+demoBtn.onclick=()=>{if(S.demo)stopDemo();else{S.demo={i:-1,left:0};demoBtn.classList.add('on');demoBtn.textContent='■ Stop the demo';}};
+function stopDemo(){S.demo=null;demoBtn.classList.remove('on');demoBtn.textContent='▶ Tune a string for me';}
+function demoStep(dt){const d=S.demo;d.left-=dt;if(d.left>0)return;d.i=(d.i+1)%SCRIPT.length;const st=SCRIPT[d.i];d.left=st.d;if(st.next)setString((S.str+1)%6);S.target=st.c;setHeard(st.h);slider.value=Math.round(st.c);}
+
+let last=performance.now();
+function frame(now){
+ const dt=Math.min(0.25,(now-last)/1000);last=now;S.t+=dt;
+ if(S.demo)demoStep(dt);
+ let sh=null;
+ if(S.heard){S.c+=(S.target-S.c)*(1-Math.exp(-dt*5));S.wob=S.wob*0.88+(Math.random()-0.5)*0.5;sh=S.c+S.wob;S.hist.push({t:S.t,c:sh});}
+ while(S.hist.length&&S.t-S.hist[0].t>6)S.hist.shift();
+ const near=sh!==null&&Math.abs(sh)<=3;
+ if(near){if(S.goodSince===null)S.goodSince=S.t;}else S.goodSince=null;
+ const good=near&&S.t-S.goodSince>0.35;
+ if(sh!==null)S.strobe+=sh*1.8*dt;
+ showVal();render(sh,good);requestAnimationFrame(frame);
+}
+function render(sh,good){
+ const st=STRINGS[S.str],pal=S.light?PAL.light:PAL.dark;
+ const tnA=sh===null?pal.muted:good?pal.green:mix(pal.amber,pal.green,clamp(1-(Math.abs(sh)-3)/14,0,1)*0.7);
+ const tn=rgba(tnA);
+ const adv=sh===null?'Pluck a string':good?'In tune':sh<0?'Tighten':'Loosen';
+ const n=sh===null?0:Math.abs(sh)<0.5?0:Math.round(Math.abs(sh));
+ const sub=sh===null?'':good||n===0?`${n} ¢`:`${n} ¢ ${sh<0?'flat':'sharp'}`;
+ for(const d of D){
+  d.screen.style.setProperty('--tone',tn);d.screen.classList.toggle('good',good);d.screen.classList.toggle('idle',sh===null);
+  if(d.wide)d.which.textContent=st.lbl;d.n.textContent=st.n;d.oct.textContent=st.o;d.adv.textContent=d.wide&&sub?`${adv} · ${sub}`:adv;d.sub.textContent=sub;
+  d.pegs.forEach((p,i)=>p.classList.toggle('on',i===S.str));
+  d.ctx.clearRect(0,0,d.W,d.H);d.draw(d,sh,good,pal,tn,tnA);
+ }
+}
+
+/* ---------- drawing helpers ---------- */
+function seg(ctx,x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function glowDot(ctx,x,y,r,tnA,blur){ctx.save();ctx.shadowColor=rgba(tnA,.9);ctx.shadowBlur=blur;ctx.fillStyle=rgba(tnA);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore();}
+function label(ctx,s,x,y,pal,size=13,weight=500){ctx.font=`${weight} ${size}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=rgba(pal.muted);ctx.fillText(s,x,y);}
+/* a polyline through the samples, broken where nothing was heard for a while or the point is off the canvas */
+function trail(ctx,map,visible,grad){
+ ctx.strokeStyle=grad;ctx.lineWidth=3;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();let prev=null;
+ for(const p of S.hist){const [x,y]=map(p);if(!visible(x,y)){prev=null;continue;}if(prev&&p.t-prev.t<0.2)ctx.lineTo(x,y);else ctx.moveTo(x,y);prev=p;}
+ ctx.stroke();
+}
+function fade(ctx,x1,y1,x2,y2,tnA){const g=ctx.createLinearGradient(x1,y1,x2,y2);g.addColorStop(0,rgba(tnA,1));g.addColorStop(.7,rgba(tnA,.28));g.addColorStop(1,rgba(tnA,0));return g;}
+
+/* 1 · the fall */
+function drawFall(d,sh,good,pal,tn,tnA){
+ const {ctx,W,H}=d,cx=W/2,half=W/2-28,pps=105,top=16;
+ label(ctx,'♭',cx-half-16,top,pal);label(ctx,'♯',cx+half+16,top,pal);
+ ctx.strokeStyle=rgba(pal.muted,.7);ctx.lineWidth=1.5;
+ for(let c=-50;c<=50;c+=10){const x=cx+c/50*half,h=c%50===0?12:c%25===0?9:5;seg(ctx,x,top-h/2,x,top+h/2);}
+ ctx.fillStyle=rgba(pal.green,.12);ctx.fillRect(cx-3/50*half,top,6/50*half,H-top);
+ ctx.strokeStyle=rgba(pal.muted,.45);ctx.lineWidth=1;seg(ctx,cx,top,cx,H);
+ trail(ctx,p=>[cx+clamp(p.c,-55,55)/50*half,top+(S.t-p.t)*pps],(x,y)=>y<H+6,fade(ctx,0,top,0,H,tnA));
+ if(sh!==null)glowDot(ctx,cx+clamp(sh,-55,55)/50*half,top,7,tnA,good?20:10);
+}
+/* 2 · the flow */
+function drawFlow(d,sh,good,pal,tn,tnA){
+ const {ctx,W,H}=d,cy=H/2,half=H/2-20,pps=90,right=W-34;
+ label(ctx,'♯',W-14,cy-half,pal);label(ctx,'♭',W-14,cy+half,pal);
+ ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=1;ctx.setLineDash([3,5]);
+ for(const c of[-50,-25,25,50]){const y=cy-c/50*half;seg(ctx,8,y,W-26,y);}ctx.setLineDash([]);
+ ctx.fillStyle=rgba(pal.green,.12);ctx.fillRect(8,cy-3/50*half,W-34,6/50*half);
+ ctx.strokeStyle=rgba(pal.muted,.45);seg(ctx,8,cy,W-26,cy);
+ trail(ctx,p=>[right-(S.t-p.t)*pps,cy-clamp(p.c,-55,55)/50*half],(x,y)=>x>-6,fade(ctx,right,0,0,0,tnA));
+ if(sh!==null)glowDot(ctx,right,cy-clamp(sh,-55,55)/50*half,7,tnA,good?20:10);
+}
+/* 3 · the comet */
+function drawArc(d,sh,good,pal,tn,tnA){
+ const {ctx,W,H}=d,cx=W/2,cy=238,R=150,ang=c=>(-90+clamp(c,-55,55)*1.1)*Math.PI/180;
+ const pt=(c,r)=>[cx+r*Math.cos(ang(c)),cy+r*Math.sin(ang(c))];
+ ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,ang(-50),ang(50));ctx.stroke();
+ ctx.strokeStyle=rgba(pal.muted,.7);ctx.lineWidth=1.5;
+ for(let c=-50;c<=50;c+=10){const l=c%50===0?14:c%25===0?10:6,[x1,y1]=pt(c,R+3),[x2,y2]=pt(c,R+3+l);seg(ctx,x1,y1,x2,y2);}
+ ctx.strokeStyle=rgba(pal.green,.28);ctx.lineWidth=12;ctx.beginPath();ctx.arc(cx,cy,R,ang(-3),ang(3));ctx.stroke();
+ let [lx,ly]=pt(-50,R);label(ctx,'♭',lx,ly+26,pal);[lx,ly]=pt(50,R);label(ctx,'♯',lx,ly+26,pal);
+ for(const p of S.hist){const age=S.t-p.t;if(age>1.6)continue;const a=1-age/1.6,[x,y]=pt(p.c,R);ctx.fillStyle=rgba(tnA,a*.85);ctx.beginPath();ctx.arc(x,y,2+4.5*a,0,Math.PI*2);ctx.fill();}
+ if(sh!==null){const [x,y]=pt(sh,R-14);ctx.save();ctx.shadowColor=rgba(tnA,.8);ctx.shadowBlur=good?16:8;ctx.strokeStyle=tn;ctx.lineWidth=4;ctx.lineCap='round';seg(ctx,cx,cy,x,y);ctx.restore();}
+ ctx.fillStyle=sh===null?rgba(pal.muted):tn;ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();
+}
+/* 4 · the ruler and the lens (also the combination, toned, and the phone on its side, wide) */
+function drawLens(d,sh,good,pal,tn,tnA,toned,content){
+ const {ctx,W,H}=d,wide=W>H,cx=W/2,step=58,st=STRINGS[S.str],pos=st.midi+(sh??0)/100;
+ const base=wide?58:70,nameY=wide?30:36,smallY=wide?34:40,range=wide?4:3;
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ for(let m=st.midi-range;m<=st.midi+range;m++){
+  const x=cx+(m-pos)*step;if(x<-24||x>W+24)continue;const cur=m===st.midi;
+  ctx.font=cur?`800 36px ${FONT}`:`500 17px ${FONT}`;ctx.fillStyle=cur?rgba(pal.fg):rgba(pal.muted,.9);
+  ctx.fillText(NAMES[((m%12)+12)%12],x,cur?nameY:smallY);
+  ctx.strokeStyle=rgba(pal.muted,.6);ctx.lineWidth=1.5;seg(ctx,x,base-7,x,base);
+ }
+ ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=1.5;seg(ctx,8,base,W-8,base);
+ ctx.fillStyle=sh===null?rgba(pal.muted):tn;ctx.beginPath();ctx.moveTo(cx-6,base+11);ctx.lineTo(cx+6,base+11);ctx.lineTo(cx,base+2);ctx.closePath();ctx.fill();
+ const lx=wide?24:20,ly=wide?base+14:112,lw=W-2*lx,lh=wide?H-ly-38:206,L={lx,ly,lw,lh,lcx:lx+lw/2};
+ ctx.strokeStyle=rgba(pal.muted,.35);ctx.lineWidth=1;ctx.setLineDash([3,4]);seg(ctx,cx-step/2,base+13,lx+4,ly);seg(ctx,cx+step/2,base+13,lx+lw-4,ly);ctx.setLineDash([]);
+ ctx.beginPath();ctx.roundRect(lx,ly,lw,lh,22);ctx.fillStyle=rgba(pal.surface);ctx.fill();
+ if(toned&&sh!==null){ctx.save();ctx.shadowColor=rgba(tnA,good?.55:.3);ctx.shadowBlur=good?28:14;ctx.strokeStyle=rgba(tnA,.75);ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+ else{ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=1.5;ctx.stroke();}
+ ctx.save();ctx.beginPath();ctx.roundRect(lx,ly,lw,lh,22);ctx.clip();
+ content(ctx,L,sh,good,pal,tnA);
+ ctx.restore();
+}
+/* what the lens can hold */
+function lensFall(ctx,L,sh,good,pal,tnA){
+ const {lx,ly,lw,lh,lcx}=L,lhalf=lw/2-24,ltop=ly+28,pps=80;
+ ctx.strokeStyle=rgba(pal.muted,.7);ctx.lineWidth=1.5;
+ for(let c=-50;c<=50;c+=10){const x=lcx+c/50*lhalf,l=c%50===0?12:c%25===0?9:5;seg(ctx,x,ly,x,ly+l);}
+ label(ctx,'♭',lx+14,ly+lh-14,pal,12);label(ctx,'♯',lx+lw-14,ly+lh-14,pal,12);
+ ctx.fillStyle=rgba(pal.green,.12);ctx.fillRect(lcx-3/50*lhalf,ly,6/50*lhalf,lh);
+ ctx.strokeStyle=rgba(pal.muted,.45);ctx.lineWidth=1;seg(ctx,lcx,ly,lcx,ly+lh);
+ trail(ctx,p=>[lcx+clamp(p.c,-55,55)/50*lhalf,ltop+(S.t-p.t)*pps],(x,y)=>y<ly+lh+6,fade(ctx,0,ltop,0,ly+lh,tnA));
+ if(sh!==null)glowDot(ctx,lcx+clamp(sh,-55,55)/50*lhalf,ltop,7,tnA,good?20:10);
+}
+/* the Light arc as it is today: 17 rays of 5 lights on a stretched scale, lit as a wedge from the centre to the reading */
+const RAY_CENTS=[0,2.7,5.9,9.7,14.3,20,27.3,36.8,50];
+function rayPos(c){const a=Math.min(Math.abs(c),50);let i=0;while(i<8&&RAY_CENTS[i+1]<=a)i++;const p=i>=8?8:i+(a-RAY_CENTS[i])/(RAY_CENTS[i+1]-RAY_CENTS[i]);return c<0?-p:p;}
+function lensArc(ctx,L,sh,good,pal,tnA){
+ const {lx,ly,lw,lh,lcx}=L;
+ const spread=lw/lh>1.8?0.8:1.2;
+ const r1=Math.min((lw/2-16)/Math.sin(spread),(lh-36)/(1-0.53*Math.cos(spread)));
+ const r0=0.53*r1,span=r1-r0*Math.cos(spread),py=ly+(lh-span)/2+r1,s=r1/120;
+ const p=sh===null?0:rayPos(sh),side=Math.sign(p),ap=Math.abs(p);
+ for(let k=-8;k<=8;k++){
+  const a=k*spread/8,sa=Math.sin(a),ca=Math.cos(a),ak=Math.abs(k);
+  let n=0,al=0,col=tnA;
+  if(k===0){if(good){n=5;al=1;col=pal.green;}}
+  else if(sh!==null&&Math.sign(k)===side&&ak<=Math.ceil(ap)){const f=Math.min(1,ak/ap);n=1.6+3.4*f;al=0.4+0.6*f;if(ak>ap)n=5*(1-(ak-ap));}
+  else if(good&&ak===1){n=2.5;al=.6;col=pal.green;}
+  for(let j=0;j<5;j++){
+   const r=r0+(r1-r0)*j/4,x=lcx+r*sa,y=py-r*ca,rad=(2.2+0.4*j)*s;
+   ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);
+   if(k===0&&!good){ctx.fillStyle=rgba(pal.muted,j<2?.45:.14);ctx.fill();}
+   else if(j<n){ctx.fillStyle=rgba(col,al*Math.min(1,n-j));ctx.fill();ctx.save();ctx.shadowColor=rgba(col,.6);ctx.shadowBlur=8*s;ctx.fill();ctx.restore();}
+   else{ctx.fillStyle=rgba(pal.muted,.16);ctx.fill();}
+  }
+  if(ak===2||ak===3){const r=r1+10*s,x=lcx+r*sa,y=py-r*ca;ctx.fillStyle=rgba(pal.fg,ak===2?.55:.32);ctx.beginPath();ctx.arc(x,y,(ak===2?1.8:1.3)*s,0,Math.PI*2);ctx.fill();}
+ }
+ if(py<ly+lh-6){ctx.fillStyle=rgba(pal.muted,.5);ctx.beginPath();ctx.arc(lcx,py,3*s,0,Math.PI*2);ctx.fill();}
+ label(ctx,'♭',lx+14,ly+lh-14,pal,12);label(ctx,'♯',lx+lw-14,ly+lh-14,pal,12);
+}
+/* the strobe in the lens: three bands, finer ones faster */
+function lensStrobe(ctx,L,sh,good,pal,tnA){
+ const {lx,ly,lw,lh,lcx}=L,pad=14,gap=10,room=20;
+ const bh=(lh-2*pad-2*gap-room)/3,x0=lx+pad,bw=lw-2*pad,base=Math.min(64,Math.max(24,Math.round(lw/5)));
+ for(let i=0;i<3;i++){
+  const y=ly+pad+i*(bh+gap),per=base/Math.pow(2,i);
+  ctx.save();ctx.beginPath();ctx.roundRect(x0,y,bw,bh,8);ctx.fillStyle=rgba(pal.bg,.55);ctx.fill();ctx.clip();
+  const off=((S.strobe*(64/per))%per+per)%per;
+  ctx.fillStyle=sh===null?rgba(pal.muted,.3):rgba(tnA,.85);
+  for(let x=x0-per+off;x<x0+bw+per;x+=per)ctx.fillRect(x,y,per/2,bh);
+  ctx.restore();
+ }
+ ctx.strokeStyle=rgba(pal.fg,.6);ctx.lineWidth=2;seg(ctx,lcx,ly+pad-4,lcx,ly+pad+3*bh+2*gap+4);
+ label(ctx,'♭',lx+14,ly+lh-12,pal,12);label(ctx,'♯',lx+lw-14,ly+lh-12,pal,12);
+ label(ctx,sh===null?'':good?'still':sh<0?'◀ drifting':'drifting ▶',lcx,ly+lh-12,pal,11);
+}
+/* 5 · the colour field */
+function drawField(d,sh,good,pal,tn,tnA){
+ const {ctx,W,H}=d,cx=W/2,cy=H/2,half=W/2-46;
+ ctx.strokeStyle=rgba(pal.muted,.45);ctx.lineWidth=2;seg(ctx,cx-half,cy,cx+half,cy);
+ ctx.strokeStyle=rgba(pal.muted,.7);seg(ctx,cx-half,cy-8,cx-half,cy+8);seg(ctx,cx+half,cy-8,cx+half,cy+8);seg(ctx,cx,cy-13,cx,cy+13);
+ ctx.fillStyle=rgba(pal.green,.2);ctx.beginPath();ctx.roundRect(cx-3/50*half,cy-11,6/50*half,22,4);ctx.fill();
+ label(ctx,'♭',cx-half-22,cy,pal);label(ctx,'♯',cx+half+22,cy,pal);
+ for(const p of S.hist){const age=S.t-p.t;if(age>1)continue;const a=1-age;ctx.fillStyle=rgba(tnA,a*.45);ctx.beginPath();ctx.arc(cx+clamp(p.c,-55,55)/50*half,cy,2+5*a,0,Math.PI*2);ctx.fill();}
+ if(sh!==null)glowDot(ctx,cx+clamp(sh,-55,55)/50*half,cy,9,tnA,good?22:12);
+}
+/* 6 · the strobe */
+function drawStrobe(d,sh,good,pal,tn,tnA){
+ const {ctx,W,H}=d,cx=W/2,x0=16,bw=W-32,bands=[{y:30,h:52,per:64},{y:102,h:52,per:32},{y:174,h:52,per:16}];
+ for(const b of bands){
+  ctx.save();ctx.beginPath();ctx.roundRect(x0,b.y,bw,b.h,10);ctx.fillStyle=rgba(pal.surface);ctx.fill();ctx.clip();
+  const off=((S.strobe*(64/b.per))%b.per+b.per)%b.per;
+  ctx.fillStyle=sh===null?rgba(pal.muted,.3):rgba(tnA,.85);
+  for(let x=x0-b.per+off;x<x0+bw+b.per;x+=b.per)ctx.fillRect(x,b.y,b.per/2,b.h);
+  ctx.restore();ctx.strokeStyle=rgba(pal.line);ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x0,b.y,bw,b.h,10);ctx.stroke();
+ }
+ ctx.strokeStyle=rgba(pal.fg,.6);ctx.lineWidth=2;seg(ctx,cx,20,cx,236);
+ label(ctx,'♭',x0+10,254,pal);label(ctx,'♯',x0+bw-10,254,pal);label(ctx,sh===null?'':good?'still':sh<0?'◀ drifting':'drifting ▶',cx,254,pal,12);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
