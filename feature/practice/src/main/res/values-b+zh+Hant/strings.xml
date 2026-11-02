@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">和弦</string>
     <string name="practice_tool_scales">音階</string>
     <string name="practice_tool_ear_training">練耳</string>
-    <string name="practice_tool_button">工具</string>
-    <string name="practice_tool_list">工具清單</string>
     <string name="practice_root">根音</string>
     <string name="practice_chord_type">和弦類型</string>
     <string name="practice_chord_major">%1$s 大三和弦</string>

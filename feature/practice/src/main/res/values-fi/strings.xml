@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">Soinnut</string>
     <string name="practice_tool_scales">Asteikot</string>
     <string name="practice_tool_ear_training">Korvaharjoitus</string>
-    <string name="practice_tool_button">Työkalu</string>
-    <string name="practice_tool_list">Työkalut</string>
     <string name="practice_root">Pohjasävel</string>
     <string name="practice_chord_type">Sointutyyppi</string>
     <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->

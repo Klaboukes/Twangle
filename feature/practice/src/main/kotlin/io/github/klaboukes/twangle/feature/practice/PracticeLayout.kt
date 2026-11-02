@@ -1,7 +1,7 @@
 package io.github.klaboukes.twangle.feature.practice
 
 /**
- * How Chords, Scales and the Capo helper arrange themselves, picked from the room they get (in dp), not from the
+ * How Chords, Scales, the Capo helper and the Practice cards arrange themselves, picked from the room they get (in dp), not from the
  * device ([practiceLayoutFor]).
  */
 internal enum class PracticeLayout {
@@ -16,13 +16,13 @@ internal enum class PracticeLayout {
     LARGE_COLUMN,
 
     /**
-     * On its side on a phone (≥ 600 dp wide and wider than tall, but short): two halves side by side, the tool
-     * button's row at the top of the start half and the rest in the end half, as the height is too short to stack.
+     * On its side on a phone (≥ 600 dp wide and wider than tall, but short): two halves side by side, the back arrow's
+     * row at the top of the start half and the rest in the end half, as the height is too short to stack.
      */
     HALVES,
 
     /**
-     * On its side on a large window (a tablet on its side, Phase 52): the tool button's row and the name button share
+     * On its side on a large window (a tablet on its side, Phase 52): the top row and the name button share
      * one row at the top, and the chart or the neck runs the whole width under it; the capo helper's two halves
      * stand under that row, in the middle of the height.
      */

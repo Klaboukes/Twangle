@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
@@ -32,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -72,7 +78,7 @@ internal fun TuningLine(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = if (onPickInstrument != null) TextAlign.Start else TextAlign.Center,
             // One line (Phase 65), ending in "…" where the name is longer than its room: two lines
-            // made the header taller than the tool button for a long custom tuning's name.
+            // made the top row taller than the tool button (1.1) for a long custom tuning's name.
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Ellipsis,
@@ -107,71 +113,74 @@ internal fun TuningLine(
 }
 
 /**
- * The top row of the Chords and Capo tools (Phase 47, the owner's pick A in
- * docs/design/tool-button-preview.html): the tool button ([toolButton], [TOOL_BUTTON_WIDTH] wide)
- * at the start, then the instrument and tuning line ([TuningLine]) in the room left, its name on one
- * line ending in "…" where it is longer (Phase 65; up to two lines before). Only where the room left
- * is too narrow for a few letters ([MIN_NAME_EMS] wide, a 320 dp phone at a very large text size) does
- * the tuning line go on a line of its own under the button, at the start too. Public for the tools of
- * other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
- *
- * A [settingsButton] (the app's gear that opens Settings, Phase 69, in its 48 dp touch area) stands
- * before the tool button, in the top start corner as on every tab, and the name's room is reckoned
- * without it.
+ * The top row of every Practice tool (2.0, Phase 69; until then the tool button, Phase 47): the back arrow
+ * ([PracticeBackButton], [onBack], back to the Practice cards) in the top start corner, where the cards page
+ * has the app's gear, then the instrument and tuning line ([TuningLine]) in the room left, its name on one
+ * line ending in "…" where it is longer. Only where the room left is too narrow for a few letters
+ * ([MIN_NAME_EMS] wide, a 320 dp phone at a very large text size) does the tuning line go on a line of its
+ * own under the arrow, at the start too. Public for the tools of other modules (Ear training,
+ * `:feature:eartraining`), whose top row `:app` builds with it.
  */
 @Composable
-fun ToolAndTuningRow(
-    toolButton: @Composable () -> Unit,
+fun BackAndTuningRow(
+    onBack: () -> Unit,
     tuningName: String,
     spokenTuningName: String,
     onPickInstrument: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     val style = MaterialTheme.typography.bodyMedium
-    val buttons = @Composable {
-        if (settingsButton != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                settingsButton()
-                Spacer(Modifier.width(GEAR_GAP))
-                toolButton()
-            }
-        } else {
-            toolButton()
-        }
-    }
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val gear = if (settingsButton != null) GEAR_TOUCH + GEAR_GAP else 0.dp
-        val beforeName = gear + TOOL_BUTTON_WIDTH + ROW_GAP + if (onPickInstrument != null) INSTRUMENT_TOUCH + NAME_GAP + NAME_PADDING * 2 else 0.dp
+        val beforeName = BACK_TOUCH + ROW_GAP + if (onPickInstrument != null) INSTRUMENT_TOUCH + NAME_GAP + NAME_PADDING * 2 else 0.dp
         // A few letters of the name at its size, however large the text is set.
         val minRoom = with(LocalDensity.current) { style.fontSize.toDp() } * MIN_NAME_EMS
         if (maxWidth - beforeName >= minRoom) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                buttons()
+                PracticeBackButton(onBack)
                 Spacer(Modifier.width(ROW_GAP))
                 TuningLine(tuningName, spokenTuningName, onPickInstrument, Modifier.weight(1f), start = true)
             }
         } else {
             Column {
-                buttons()
+                PracticeBackButton(onBack)
                 TuningLine(tuningName, spokenTuningName, onPickInstrument, start = true)
             }
         }
     }
 }
 
-/** The app's gear before the tool button: its touch area, and the gap after it. */
-private val GEAR_TOUCH = 48.dp
-private val GEAR_GAP = 4.dp
+/**
+ * The back arrow in a Practice tool's top start corner (2.0, Phase 69): [onBack] leads back to the cards, as
+ * Back does. Drawn as the app's gear in that corner on the cards page (the button's [BACK_FACE] round face, in
+ * a 48 dp touch area), so the corner doesn't change look between the two; the arrow turns round in
+ * right-to-left languages. TalkBack hears "Back", a button.
+ */
+@Composable
+fun PracticeBackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
+    StyleButton(
+        onClick = onBack,
+        label = stringResource(R.string.practice_back),
+        modifier = modifier,
+        face = BACK_FACE,
+        faceModifier = Modifier.testTag(PracticeTestTags.BACK),
+    ) {
+        Icon(painterResource(DesignR.drawable.ic_arrow_back), contentDescription = null, modifier = Modifier.size(BACK_ICON))
+    }
+}
 
-/** The name stays beside the tool button where its room holds about this many letters' widths (in ems) or more. */
+/** The back arrow's touch area, its face (the gear's 44 dp) and its icon. */
+private val BACK_TOUCH = 48.dp
+private val BACK_FACE = 44.dp
+private val BACK_ICON = 24.dp
+
+/** The name stays beside the back arrow where its room holds about this many letters' widths (in ems) or more. */
 private const val MIN_NAME_EMS = 4f
 
 /** Between the instrument button's touch target and the name's pressable box; the name this far in from that box's ends. */
 private val NAME_GAP = 2.dp
 private val NAME_PADDING = 4.dp
 
-/** Between the tool button and the instrument button's touch target; the instrument button's touch target. */
+/** Between the back arrow's touch area and the instrument button's touch target; the instrument button's touch target. */
 private val ROW_GAP = 8.dp
 private val INSTRUMENT_TOUCH = 48.dp
 

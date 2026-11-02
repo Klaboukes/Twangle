@@ -84,8 +84,8 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  * instrument and tuning picked with the instrument button ([tuningName], heard as [spokenTuningName];
  * with [onPickInstrument] the button stands before that line and opens the instrument and tuning panel).
  *
- * Upright, one column: the tool button ([header], after the app's gear, [settingsButton], where given) 8 dp from the top at the start with the tuning
- * line beside it ([ToolAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
+ * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start with the tuning
+ * line beside it ([BackAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
  * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
  * half, the table the end half. All but the top row stand in the middle of the height they have (on a
  * tablet on its side, [practiceLayoutFor], the two halves together under the top row), as Chords centres
@@ -115,11 +115,10 @@ fun CapoScreen(
     onShapesChange: (SongKey) -> Unit,
     onFretChange: (Int) -> Unit,
     onOpenChord: (Chord) -> Unit,
-    header: @Composable () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onPickInstrument: (() -> Unit)? = null,
     shortString: Boolean = false,
-    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     var shapesIndex by rememberSaveable { mutableIntStateOf(CAPO_SHAPES.indexOf(capoShapesToOpen(savedShapes))) }
     var fret by rememberSaveable { mutableIntStateOf(capoFretToOpen(savedFret)) }
@@ -136,7 +135,7 @@ fun CapoScreen(
         }
     }
 
-    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument, settingsButton = settingsButton) }
+    val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
     val picker = @Composable {
         ShapesPicker(shapes, notation, speech, onPick = { picked ->
             val index = CAPO_SHAPES.indexOf(picked)
@@ -551,13 +550,13 @@ private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, spee
 
 /** On its side from this width, as the other Practice tools. */
 
-/** The tool button stands this far down from the top, as on the other Practice tools. */
+/** The back arrow stands this far down from the top, as on the other Practice tools. */
 private val HEADER_TOP = 8.dp
 
 /** Upright, as the other Practice tools' column. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
-/** On its side, the table's top, about level with the tool button. */
+/** On its side, the table's top, about level with the back arrow. */
 private val TABLE_TOP_WIDE = 12.dp
 
 private val TABLE_MAX_WIDTH = 320.dp

@@ -40,7 +40,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -111,7 +110,7 @@ class ChordsScreenTest {
                         savedQuality = quality,
                         onRootChange = { savedRoots += it },
                         onQualityChange = { savedQualities += it },
-                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) },
+                        onBack = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                         leftHanded = shownLeftHanded.value,
@@ -508,17 +507,17 @@ class ChordsScreenTest {
             awaitChart("C major")
             val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
-            for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
+            for (tag in listOf(PracticeTestTags.BACK, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // One row: the tool button at the start, the instrument and tuning beside it (Phase 47).
-            val toolButton = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+            // One row: the back arrow at the start, the instrument and tuning beside it (Phase 47, Phase 69).
+            val backArrow = node(PracticeTestTags.BACK).getBoundsInRoot()
             val instrument = node(PracticeTestTags.INSTRUMENT_BUTTON).getBoundsInRoot()
             assertTrue(
-                "$case the tuning beside the tool button $toolButton $instrument",
-                instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
+                "$case the tuning beside the back arrow $backArrow $instrument",
+                instrument.left >= backArrow.right && instrument.top < backArrow.bottom && instrument.bottom > backArrow.top,
             )
             // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not.
             assertThePanel(case, wide = size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT)
@@ -539,7 +538,7 @@ class ChordsScreenTest {
             } else if (size == TABLET_LANDSCAPE) {
                 // A tablet on its side (Phase 52): the tuning line and the name share the top row, the chart runs the whole width under it.
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
-                assertTrue("$case the name in the end half, beside the tool button", name.left >= middle && name.top < toolButton.bottom)
+                assertTrue("$case the name in the end half, beside the back arrow", name.left >= middle && name.top < backArrow.bottom)
                 assertTrue("$case the chart's room the whole width $chart", chart.left <= window.left + 25.dp && chart.right >= window.right - 25.dp)
                 assertTrue("$case a large chart's room ${chart.height}", chart.height >= 500.dp)
             } else {
@@ -654,8 +653,8 @@ class ChordsScreenTest {
             assertEquals("$name the one picker face's height", NAME_PICKER_HEIGHT.value, long.height.value, 0.5f)
             assertEquals("$name the chart stays put", chartTop.value, chart().getBoundsInRoot().top.value, 0.5f)
             if (case.size.width < case.size.height) {
-                val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
-                assertEquals("$name at the row's start", tool.left.value, long.left.value, 1f)
+                val tool = node(PracticeTestTags.BACK).getBoundsInRoot()
+                assertEquals("$name at the row's start", tool.left.value, long.left.value, ARROW_INSET)
                 assertTrue("$name as wide as the row ${long.width}", long.width >= case.size.width - 32.dp - 1.dp)
             }
             assertWhollyShown(picker(), "$name the name")
@@ -691,3 +690,6 @@ class ChordsScreenTest {
         private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
     }
 }
+
+/** The back arrow's face stands this far (in dp, give or take one) inside the row's start: 2 dp in its 48 dp touch area. */
+internal const val ARROW_INSET = 3f

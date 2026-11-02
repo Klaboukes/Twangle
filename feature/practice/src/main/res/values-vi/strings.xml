@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">Hợp âm</string>
     <string name="practice_tool_scales">Âm giai</string>
     <string name="practice_tool_ear_training">Luyện tai</string>
-    <string name="practice_tool_button">Công cụ</string>
-    <string name="practice_tool_list">Các công cụ</string>
     <string name="practice_root">Nốt gốc</string>
     <string name="practice_chord_type">Loại hợp âm</string>
     <string name="practice_chord_major">%1$s trưởng</string>

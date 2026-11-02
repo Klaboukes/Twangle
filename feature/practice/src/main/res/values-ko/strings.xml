@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">코드</string>
     <string name="practice_tool_scales">스케일</string>
     <string name="practice_tool_ear_training">청음 훈련</string>
-    <string name="practice_tool_button">도구</string>
-    <string name="practice_tool_list">도구 목록</string>
     <string name="practice_root">근음</string>
     <string name="practice_chord_type">코드 종류</string>
     <string name="practice_chord_major">%1$s 메이저</string>

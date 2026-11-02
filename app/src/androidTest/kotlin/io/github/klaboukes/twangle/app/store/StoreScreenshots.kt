@@ -228,12 +228,14 @@ class StoreScreenshots(private val shot: Shot) {
                 val screens = mutableListOf<Bitmap>()
                 ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                     waitFor(navigation)
+                    // Practice's cards (Phase 69) open each tool full screen; the store pictures redo the set in Phase 69's next step.
                     click(NavigationTestTags.tab(Destination.PRACTICE))
+                    click(PracticeTestTags.card(PracticeTool.CHORDS))
                     waitFor(PracticeTestTags.CHORDS)
                     settle(PANEL_SETTLE_MS)
                     screens += screenshot(scenario, "${shot.number}a")
-                    click(PracticeTestTags.TOOL_BUTTON)
-                    click(PracticeTestTags.tool(PracticeTool.CAPO))
+                    click(PracticeTestTags.BACK)
+                    click(PracticeTestTags.card(PracticeTool.CAPO))
                     device.wait(Until.gone(By.res(PracticeTestTags.CHORDS)), WAIT_MS)
                     settle(PANEL_SETTLE_MS)
                     screens += screenshot(scenario, "${shot.number}b")

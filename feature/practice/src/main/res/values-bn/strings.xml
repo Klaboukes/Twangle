@@ -2,8 +2,6 @@
     <string name="practice_tool_chords">কর্ড</string>
     <string name="practice_tool_scales">স্কেল</string>
     <string name="practice_tool_ear_training">ইয়ার ট্রেনিং</string>
-    <string name="practice_tool_button">টুল</string>
-    <string name="practice_tool_list">সব টুল</string>
     <string name="practice_root">রুট</string>
     <string name="practice_chord_type">কর্ডের ধরন</string>
     <string name="practice_chord_major">%1$s মেজর</string>

@@ -52,16 +52,17 @@ import org.junit.rules.Timeout
 
 /**
  * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): a tab of its own
- * beside the metronome's (Phase 69), the tool button at its top (Phase 47) picks chords, scales, the capo
- * helper or Ear training from its list, with no metronome among them, the pick is saved at once, and the
- * tab opens on the tool used last, also after the app starts again, or on Chords while none was;
- * the Chords tool's chord picked is saved too and comes back with it, and so is the Scales tool's
- * scale, on the same root. The capo helper (Phase 33) saves its shapes and fret, and a row
- * tapped opens its shape in Chords. The drone on Scales (Phase 48, a silent stand-in here) saves its panel's picks and
- * stops when another tab takes Practice's place or the app goes to the background. The Metronome tab
- * (a silent stand-in) is the metronome alone, with no tool button, and stops when Practice takes its place. Ear training (Phase 55,
- * a silent speaker and microphone here) asks its first question at once and
- * holds the microphone only while it is shown.
+ * beside the metronome's (Phase 69), it shows a card per tool (Phase 69: chords, scales, the capo helper
+ * and Ear training, no metronome), a card opens its tool full screen without the bar and its back arrow
+ * and Back come back to the cards; the tool opened is saved at once and the "last time" row under the
+ * cards reopens it, also after the app starts again, with none while nothing was used. The Chords
+ * tool's chord picked is saved too and comes back with it, and so is the Scales tool's scale, on the
+ * same root. The capo helper (Phase 33) saves its shapes and fret, and a row tapped opens its shape in
+ * Chords, whose Back leads back to the capo helper. The drone on Scales (Phase 48, a silent stand-in
+ * here) saves its panel's picks and stops when Scales goes or the app goes to the background. The
+ * Metronome tab (a silent stand-in) is the metronome alone and stops when Practice takes its place. Ear
+ * training (Phase 55, a silent speaker and microphone here) asks its first question at once and holds
+ * the microphone only while it is shown.
  */
 class PracticeTabTest {
 
@@ -170,20 +171,17 @@ class PracticeTabTest {
 
     private fun checked(tag: String): Boolean = device.findObject(By.res(tag)).isChecked
 
-    /** Opens the tool button's list and picks [tool] in it, which closes it. */
-    private fun pickTool(tool: PracticeTool) {
-        click(PracticeTestTags.TOOL_BUTTON)
-        click(PracticeTestTags.tool(tool))
-        gone(PracticeTestTags.tool(tool))
+    /** From the cards, opens [tool] with its card: full screen, the cards and the bar gone. */
+    private fun openTool(tool: PracticeTool) {
+        click(PracticeTestTags.card(tool))
+        assertTrue("the cards go", gone(PracticeTestTags.CARDS))
+        assertTrue("the tool's back arrow shows", shown(PracticeTestTags.BACK))
     }
 
-    /** Whether [tool] is the one picked in the tool button's list; the list is closed again with Back. */
-    private fun toolPicked(tool: PracticeTool): Boolean {
-        click(PracticeTestTags.TOOL_BUTTON)
-        val picked = device.wait(Until.findObject(By.res(PracticeTestTags.tool(tool))), WAIT_MS).isChecked
-        device.pressBack()
-        gone(PracticeTestTags.tool(tool))
-        return picked
+    /** From a tool, back to the cards with its back arrow. */
+    private fun backToCards() {
+        click(PracticeTestTags.BACK)
+        assertTrue("back on the cards", shown(PracticeTestTags.CARDS))
     }
 
     /** For each of [options]: opens the name button's panel and taps it there, which closes the panel. */
@@ -212,56 +210,64 @@ class PracticeTabTest {
             device.findObject(By.res(tab)).hasObject(By.text(context.getString(R.string.nav_practice))),
         )
         click(tab)
-        assertTrue("the tool button shows", shown(PracticeTestTags.TOOL_BUTTON))
+        assertTrue("the cards show", shown(PracticeTestTags.CARDS))
     }
 
     @Test
-    fun theToolButtonPicksTheToolAndPracticeOpensOnTheOneUsedLast() {
+    fun theCardsOpenEachToolFullScreenAndTheLastTimeRowReopensTheOneUsedLast() {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
-            assertTrue("a fresh Practice opens on Chords, the first tool", shown(PracticeTestTags.CHORDS))
-            assertFalse("no metronome in Practice", device.hasObject(By.res(MetronomeTestTags.DIAL)))
-            assertEquals("nothing saved until a tool is picked", null, savedTool())
-            click(PracticeTestTags.TOOL_BUTTON)
-            assertTrue(
-                "the list has every tool",
-                PracticeTool.entries.all { shown(PracticeTestTags.tool(it)) },
-            )
-            assertFalse("and no metronome", device.hasObject(By.res(METRONOME_TOOL_TAG)))
-            assertTrue("Chords picked", checked(PracticeTestTags.tool(PracticeTool.CHORDS)))
-            click(PracticeTestTags.tool(PracticeTool.SCALES))
-            assertTrue("the list closes", gone(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            assertTrue("a card for every tool", PracticeTool.entries.all { shown(PracticeTestTags.card(it)) })
+            assertFalse("no metronome in Practice", device.hasObject(By.res(MetronomeTestTags.DIAL)) || device.hasObject(By.res(METRONOME_CARD_TAG)))
+            assertFalse("no tool opens by itself", device.hasObject(By.res(PracticeTestTags.CHORDS)))
+            assertFalse("nothing used yet: no last time row", device.hasObject(By.res(PracticeTestTags.LAST_TIME)))
+            assertEquals("nothing saved until a tool is opened", null, savedTool())
+
+            openTool(PracticeTool.SCALES)
             assertTrue("scales show", shown(PracticeTestTags.SCALES))
-            assertEquals("the pick is saved", PracticeTool.SCALES, waitForSaved(PracticeTool.SCALES))
-            pickTool(PracticeTool.CHORDS)
+            assertFalse("full screen: no bar", device.hasObject(By.res(NavigationTestTags.tab(Destination.PRACTICE))))
+            assertEquals("the tool opened is saved", PracticeTool.SCALES, waitForSaved(PracticeTool.SCALES))
+            device.pressBack()
+            assertTrue("Back leads to the cards", shown(PracticeTestTags.CARDS))
+            assertTrue("with the bar", shown(NavigationTestTags.tab(Destination.PRACTICE)))
+            assertTrue("and the last time row", shown(PracticeTestTags.LAST_TIME))
+
+            openTool(PracticeTool.CHORDS)
             assertTrue("chords show", shown(PracticeTestTags.CHORDS))
-            assertEquals("the pick is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
+            assertEquals("the tool opened is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
             // A chord picked is saved too.
             assertTrue("a fresh install shows C major", shown(PracticeTestTags.CHART) && picked(PracticeTestTags.root(PitchClass.C)))
             pick(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR))
             assertEquals("the chord is saved", PitchClass.A to ChordQuality.MINOR, waitForSavedChord(PitchClass.A, ChordQuality.MINOR))
 
-            // Another tab and back: still chords.
+            // The back arrow, another tab and back: the cards, with Chords last time.
+            backToCards()
             click(NavigationTestTags.tab(Destination.METRONOME))
-            assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
+            assertTrue(gone(PracticeTestTags.CARDS))
             click(NavigationTestTags.tab(Destination.PRACTICE))
-            assertTrue("back on chords", shown(PracticeTestTags.CHORDS))
+            assertTrue("the tab opens on its cards", shown(PracticeTestTags.CARDS))
+            // "A minor", or "La minor" where an earlier test left solfège picked.
+            assertTrue(
+                "the last time row names Chords and its chord",
+                device.wait(Until.hasObject(By.res(PracticeTestTags.LAST_TIME).hasDescendant(By.desc(Pattern.compile(".*(A|La) minor.*")))), WAIT_MS),
+            )
         }
-        // A fresh start opens Practice on the tool used last.
+        // A fresh start: the cards again, the last time row reopening the tool used last.
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
-            assertTrue("opens on chords", shown(PracticeTestTags.CHORDS))
+            assertFalse("no tool opens by itself", device.hasObject(By.res(PracticeTestTags.CHORDS)))
+            click(PracticeTestTags.LAST_TIME)
+            assertTrue("the row opens chords", shown(PracticeTestTags.CHORDS))
             assertTrue(
                 "on the chord picked last",
                 picked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR)),
             )
-            // "A minor", or "La minor" where an earlier test left solfège picked.
             assertTrue("its chart in words", device.wait(Until.hasObject(By.res(PracticeTestTags.CHART).desc(Pattern.compile("(A|La) minor, shape 1 of .*"))), WAIT_MS))
-            assertFalse("not on the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
 
             // Scales, a tool of its own: the tool and the scale are saved too, the root shared.
-            pickTool(PracticeTool.SCALES)
+            backToCards()
+            openTool(PracticeTool.SCALES)
             assertTrue("the Scales tool shows", shown(PracticeTestTags.SCALES))
             assertTrue("the neck shows", shown(PracticeTestTags.NECK))
             assertFalse("no chord chart", device.hasObject(By.res(PracticeTestTags.CHART)))
@@ -273,8 +279,13 @@ class PracticeTabTest {
             )
             assertEquals("the scale is saved", ScaleType.MINOR_PENTATONIC, waitForSavedScale(ScaleType.MINOR_PENTATONIC))
             // Back to Chords: on the same root.
-            pickTool(PracticeTool.CHORDS)
+            backToCards()
+            openTool(PracticeTool.CHORDS)
             assertTrue("on the chord picked last", picked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR)))
+            device.pressBack()
+            assertTrue(shown(PracticeTestTags.CARDS))
+            device.pressBack()
+            assertTrue("Back from the cards leads to the tuner", gone(PracticeTestTags.CARDS))
         }
     }
 
@@ -290,18 +301,18 @@ class PracticeTabTest {
             )
             click(tab)
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
-            assertFalse("with no tool button", device.hasObject(By.res(PracticeTestTags.TOOL_BUTTON)))
+            assertFalse("with no Practice cards", device.hasObject(By.res(PracticeTestTags.CARDS)))
             click(MetronomeTestTags.START)
             assertTrue("Start clicks", waitFor { metronome.isPlaying.value })
 
             click(NavigationTestTags.tab(Destination.PRACTICE))
-            assertTrue("Practice shows", shown(PracticeTestTags.TOOL_BUTTON))
+            assertTrue("Practice shows", shown(PracticeTestTags.CARDS))
             assertTrue("the metronome has gone", gone(MetronomeTestTags.DIAL))
             assertTrue("and stopped", waitFor { !metronome.isPlaying.value })
             assertEquals("the metronome is no Practice tool", null, savedTool())
 
             device.pressBack()
-            assertTrue("Back from Practice leads to the tuner", gone(PracticeTestTags.TOOL_BUTTON))
+            assertTrue("Back from Practice leads to the tuner", gone(PracticeTestTags.CARDS))
             assertFalse("not to the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
         }
     }
@@ -311,10 +322,11 @@ class PracticeTabTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
             // Scales first, so Chords and Scales have state of their own to be replaced.
-            pickTool(PracticeTool.SCALES)
+            openTool(PracticeTool.SCALES)
             assertTrue("scales show", shown(PracticeTestTags.NECK))
+            backToCards()
 
-            pickTool(PracticeTool.CAPO)
+            openTool(PracticeTool.CAPO)
             assertTrue("the capo helper shows", shown(PracticeTestTags.CAPO))
             assertEquals("the pick is saved", PracticeTool.CAPO, waitForSaved(PracticeTool.CAPO))
             val noCapo = device.findObject(By.res(PracticeTestTags.CAPO_SOUNDS_IN)).contentDescription
@@ -330,15 +342,18 @@ class PracticeTabTest {
                 "on the shape tapped",
                 picked(PracticeTestTags.root(PitchClass.F), PracticeTestTags.type(ChordQuality.MAJOR)),
             )
-            assertTrue("the tool button on Chords", toolPicked(PracticeTool.CHORDS))
             assertEquals("the chord is saved", PitchClass.F to ChordQuality.MAJOR, waitForSavedChord(PitchClass.F, ChordQuality.MAJOR))
             assertEquals("the tool is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
-            pickTool(PracticeTool.CAPO)
+            // Back from those Chords leads back to the capo helper, then to the cards.
+            click(PracticeTestTags.BACK)
+            assertTrue("back on the capo helper", shown(PracticeTestTags.CAPO))
             assertTrue(
                 "the capo helper kept its fret",
                 device.wait(Until.hasObject(By.res(PracticeTestTags.CAPO_FRET).desc(Pattern.compile(Pattern.quote(onFret(3)) + ".*"))), WAIT_MS),
             )
+            device.pressBack()
+            assertTrue("then the cards", shown(PracticeTestTags.CARDS))
         }
     }
 
@@ -346,7 +361,7 @@ class PracticeTabTest {
     fun theDroneSavesItsPicksAndStopsWhenScalesGoes() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             openPractice()
-            pickTool(PracticeTool.SCALES)
+            openTool(PracticeTool.SCALES)
             assertTrue("the drone button shows", shown(PracticeTestTags.DRONE_PLAY))
             click(PracticeTestTags.DRONE_PLAY)
             assertTrue("▶ plays", waitFor { drone.isPlaying.value })
@@ -361,12 +376,11 @@ class PracticeTabTest {
             assertTrue("the picks are saved", waitFor { savedDrone() == Triple(DroneSound.FLUTE_ORGAN, DroneVoicing.ROOT, true) })
             assertEquals("and heard", Triple(DroneSound.FLUTE_ORGAN, DroneVoicing.ROOT, true), drone.lastPlay!!.let { Triple(it.sound, it.voicing, it.lower) })
 
-            // Another tab stops it; back on Scales it stays still.
-            click(NavigationTestTags.tab(Destination.METRONOME))
-            assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
-            assertTrue("another tab stops the drone", waitFor { !drone.isPlaying.value })
+            // Back to the cards stops it; back on Scales it stays still.
+            backToCards()
+            assertTrue("leaving Scales stops the drone", waitFor { !drone.isPlaying.value })
             val plays = drone.plays.size
-            click(NavigationTestTags.tab(Destination.PRACTICE))
+            openTool(PracticeTool.SCALES)
             assertTrue("back on Scales", shown(PracticeTestTags.DRONE_PLAY))
             assertEquals("still until a tap", plays, drone.plays.size)
 
@@ -380,6 +394,7 @@ class PracticeTabTest {
         // A fresh start opens the panel on the picks saved.
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
+            openTool(PracticeTool.SCALES)
             assertTrue(shown(PracticeTestTags.DRONE_SOUND))
             click(PracticeTestTags.DRONE_SOUND)
             assertTrue("the flute organ picked", device.wait(Until.findObject(By.res(PracticeTestTags.droneSound(DroneSound.FLUTE_ORGAN))), WAIT_MS).isChecked)
@@ -395,7 +410,7 @@ class PracticeTabTest {
     fun earTrainingAsksAtOnceAndHoldsTheMicrophoneOnlyWhileItIsShown() {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
-            pickTool(PracticeTool.EAR_TRAINING)
+            openTool(PracticeTool.EAR_TRAINING)
             assertTrue("Ear training shows", shown(EarTrainingTestTags.SCREEN))
             assertTrue("with its three exercises", Exercise.entries.all { shown(EarTrainingTestTags.exercise(it)) })
             assertEquals("the pick is saved", PracticeTool.EAR_TRAINING, waitForSaved(PracticeTool.EAR_TRAINING))
@@ -404,14 +419,16 @@ class PracticeTabTest {
             assertTrue("Play it back listens", waitFor { ears.isRecording.value })
 
             // Another tool takes its place: the microphone is let go (5 s later, as the tuner's).
-            pickTool(PracticeTool.CHORDS)
+            backToCards()
+            openTool(PracticeTool.CHORDS)
             assertTrue(shown(PracticeTestTags.CHORDS))
             val end = SystemClock.uptimeMillis() + MIC_RELEASE_MS
             while (ears.isRecording.value && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
             assertFalse("the microphone let go", ears.isRecording.value)
 
             // Back on it, a new visit asks at once.
-            pickTool(PracticeTool.EAR_TRAINING)
+            backToCards()
+            openTool(PracticeTool.EAR_TRAINING)
             assertTrue(shown(EarTrainingTestTags.SCREEN))
             assertTrue("a new visit asks at once", waitFor { tone.played.size == 2 })
         }
@@ -445,7 +462,7 @@ class PracticeTabTest {
         /** Ear training keeps the microphone 5 s after its screen goes (a turning phone), as the tuner does. */
         const val MIC_RELEASE_MS = 9_000L
 
-        /** The metronome's row in the tool list until 2.0 (`PracticeTestTags.tool` of 1.1's `PracticeTool.METRONOME`). */
-        const val METRONOME_TOOL_TAG = "practice_tool_metronome"
+        /** The metronome's card, were there one (1.1's `PracticeTool.METRONOME`): none since 2.0. */
+        const val METRONOME_CARD_TAG = "practice_card_metronome"
     }
 }

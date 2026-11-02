@@ -47,7 +47,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -125,7 +124,7 @@ class ScalesScreenTest {
                         savedQuality = ChordQuality.MAJOR,
                         onRootChange = { savedRoots += it },
                         onQualityChange = {},
-                        header = { PracticeToolButton(if (shownScales.value) PracticeTool.SCALES else PracticeTool.CHORDS, {}, TOOLS) },
+                        onBack = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         scales = shownScales.value,
                         savedScaleType = type,
@@ -219,7 +218,7 @@ class ScalesScreenTest {
             spoken.startsWith("A minor pentatonic, notes A, C, D, E, G, E 2 string, open E, fret 3 G, fret 5 A, root, fret 8 C"),
         )
         assertName("A minor pentatonic")
-        node(PracticeTestTags.TOOL_BUTTON).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Scales"))
+        assertTrue("the Scales tool shows", exists(PracticeTestTags.NECK))
         assertPicked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
         assertFalse("no chord chart", exists(PracticeTestTags.CHART))
         assertFalse("no pager", exists(PracticeTestTags.NEXT))
@@ -252,7 +251,7 @@ class ScalesScreenTest {
     fun aPickClosesThePanelAndTheNeckShowsIt() {
         show(PitchClass.C, ScaleType.MAJOR)
         compose.waitForIdle()
-        node(PracticeTestTags.TOOL_BUTTON).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Scales"))
+        assertTrue("the Scales tool shows", exists(PracticeTestTags.NECK))
         openPanel()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).performScrollTo().performClick()
         awaitPanelClosed()
@@ -316,7 +315,7 @@ class ScalesScreenTest {
         show(PitchClass.D, ScaleType.BLUES)
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
         assertFalse("chords first", exists(PracticeTestTags.NECK))
-        node(PracticeTestTags.TOOL_BUTTON).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Chords"))
+        assertTrue("the Chords tool shows", exists(PracticeTestTags.CHART))
 
         shownScales.value = true
         compose.waitForIdle()
@@ -555,7 +554,7 @@ class ScalesScreenTest {
             val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
             val tags = listOf(
-                PracticeTestTags.TOOL_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER,
+                PracticeTestTags.BACK, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER,
                 PracticeTestTags.DRONE_PLAY, PracticeTestTags.DRONE_SOUND,
             )
             for (tag in tags) {
@@ -585,9 +584,9 @@ class ScalesScreenTest {
                 assertTrue("$case the neck in the end half", area.left >= middle)
             } else if (size == TABLET_LANDSCAPE) {
                 // A tablet on its side (Phase 52): the tuning line and the name share the top row, the neck runs the whole width under it.
-                val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+                val tool = node(PracticeTestTags.BACK).getBoundsInRoot()
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
-                assertTrue("$case the name in the end half, beside the tool button", name.left >= middle && name.top < tool.bottom)
+                assertTrue("$case the name in the end half, beside the back arrow", name.left >= middle && name.top < tool.bottom)
                 assertTrue("$case the neck across the whole width $drawn", drawn.left < middle && drawn.right > middle && drawn.width >= (window.right - window.left) * 0.85f)
             } else {
                 assertTrue("$case the tuning line over the name", tuning.bottom <= name.top + 1.dp)
@@ -961,8 +960,8 @@ class ScalesScreenTest {
                     assertTrue("$what set smaller on two lines: ${layout.letterWidth()} px an o, D Dorian ${dorian.letterWidth()}", layout.letterWidth() < dorian.letterWidth() - 0.5f)
                 }
                 if (case.size.width < case.size.height) {
-                    val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
-                    assertEquals("$what at the row's start", tool.left.value, long.left.value, 1f)
+                    val tool = node(PracticeTestTags.BACK).getBoundsInRoot()
+                    assertEquals("$what at the row's start", tool.left.value, long.left.value, ARROW_INSET)
                     val end = node(PracticeTestTags.DRONE_SOUND).getBoundsInRoot().right
                     assertTrue("$what with the drone button as wide as the row ${long.left} to $end", end - long.left >= case.size.width - 32.dp - 1.dp)
                 }
@@ -1024,7 +1023,6 @@ class ScalesScreenTest {
             ScaleType.PHRYGIAN_DOMINANT, ScaleType.MAJOR_BLUES,
         )
 
-        private val TOOLS = listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L

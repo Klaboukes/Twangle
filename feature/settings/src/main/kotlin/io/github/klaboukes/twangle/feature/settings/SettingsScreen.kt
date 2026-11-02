@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.OneLineAutoSize
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
@@ -241,7 +242,7 @@ private fun SettingsScaffold(
                     navigationIcon = {
                         if (onBack != null) {
                             TwangleIconButton(onClick = onBack) {
-                                Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
+                                Icon(painterResource(DesignR.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
                             }
                         }
                     },

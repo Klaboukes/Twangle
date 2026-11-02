@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">Akor</string>
     <string name="practice_tool_scales">Tangga nada</string>
     <string name="practice_tool_ear_training">Latihan pendengaran</string>
-    <string name="practice_tool_button">Alat</string>
-    <string name="practice_tool_list">Daftar alat</string>
     <string name="practice_root">Nada dasar</string>
     <string name="practice_chord_type">Jenis akor</string>
     <string name="practice_chord_major">%1$s mayor</string>

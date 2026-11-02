@@ -2,8 +2,6 @@
     <string name="practice_tool_chords">Акорди</string>
     <string name="practice_tool_scales">Гами</string>
     <string name="practice_tool_ear_training">Тренування слуху</string>
-    <string name="practice_tool_button">Функція</string>
-    <string name="practice_tool_list">Функції</string>
     <string name="practice_root">Тоніка</string>
     <string name="practice_chord_type">Тип акорду</string>
     <string name="practice_chord_major">%1$s мажор</string>

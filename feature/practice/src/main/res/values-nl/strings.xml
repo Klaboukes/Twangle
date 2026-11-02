@@ -2,9 +2,14 @@
 <resources>
     <string name="practice_tool_chords">Akkoorden</string>
     <string name="practice_tool_scales">Toonladders</string>
+    <string name="practice_card_chords">Elke greep, ook linkshandig</string>
+    <string name="practice_card_scales">Met een bourdon om mee te spelen</string>
+    <string name="practice_card_capo">Welke fret voor de toonsoort die je wilt</string>
+    <string name="practice_card_ear_training">Hoor een noot, speel hem na</string>
+    <string name="practice_last_time">Vorige keer</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Terug</string>
     <string name="practice_tool_ear_training">Gehoortraining</string>
-    <string name="practice_tool_button">Functie</string>
-    <string name="practice_tool_list">Functies</string>
     <string name="practice_root">Grondtoon</string>
     <string name="practice_chord_type">Akkoordsoort</string>
     <string name="practice_chord_major">%1$s majeur</string>

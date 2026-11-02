@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">Ackord</string>
     <string name="practice_tool_scales">Skalor</string>
     <string name="practice_tool_ear_training">Gehörsträning</string>
-    <string name="practice_tool_button">Verktyg</string>
-    <string name="practice_tool_list">Verktyg</string>
     <string name="practice_root">Grundton</string>
     <string name="practice_chord_type">Ackordtyp</string>
     <string name="practice_chord_major">%1$s-dur</string>

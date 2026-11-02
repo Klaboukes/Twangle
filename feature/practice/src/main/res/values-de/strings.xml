@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">Akkorde</string>
     <string name="practice_tool_scales">Tonleitern</string>
     <string name="practice_tool_ear_training">Gehörbildung</string>
-    <string name="practice_tool_button">Werkzeug</string>
-    <string name="practice_tool_list">Werkzeuge</string>
     <string name="practice_root">Grundton</string>
     <string name="practice_chord_type">Akkordart</string>
     <string name="practice_chord_major">%1$s-Dur</string>

@@ -258,11 +258,9 @@ feature/practice practice_spoken_separator f240463d
 feature/practice practice_spoken_shape d1ab5cf8
 feature/practice practice_spoken_short_string f74a73ba
 feature/practice practice_spoken_string 5db5f4ae
-feature/practice practice_tool_button 2e53bdcd
 feature/practice practice_tool_capo 936e4161
 feature/practice practice_tool_chords c534559c
 feature/practice practice_tool_ear_training 0ba4a968
-feature/practice practice_tool_list ea93d6a2
 feature/practice practice_tool_scales 42a0052b
 feature/settings about_title 1e68861c
 feature/settings settings_a4_lower d775d788

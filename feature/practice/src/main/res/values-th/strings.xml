@@ -3,8 +3,6 @@
     <string name="practice_tool_chords">คอร์ด</string>
     <string name="practice_tool_scales">สเกล</string>
     <string name="practice_tool_ear_training">ฝึกหู</string>
-    <string name="practice_tool_button">เครื่องมือ</string>
-    <string name="practice_tool_list">เครื่องมือ</string>
     <string name="practice_root">รูท</string>
     <string name="practice_chord_type">ชนิดคอร์ด</string>
     <string name="practice_chord_major">%1$s เมเจอร์</string>

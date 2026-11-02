@@ -28,25 +28,31 @@ fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> {
 }
 
 /**
- * The tool Practice opens on: the one used last ([saved]) while it is [offered], else the first one
- * offered (Chords), or none when nothing is. It goes when Practice's cards come (Phase 69), which open no tool by themselves.
+ * The tool the Practice cards' "last time" row opens (2.0, Phase 69): the one used last ([saved]) while it is
+ * [offered], else none, and then there is no row (nothing used yet, 1.1's metronome, or a tool whose switch is
+ * now off). Practice itself opens on its cards, never on a tool by itself.
  */
-fun practiceToolToOpen(saved: PracticeTool?, offered: List<PracticeTool>): PracticeTool? =
-    saved?.takeIf { it in offered } ?: offered.firstOrNull()
+fun lastTimeTool(saved: PracticeTool?, offered: List<PracticeTool>): PracticeTool? = saved?.takeIf { it in offered }
 
 /** Test tags for UI tests (as resource ids in the app, see `MainActivity`). */
 object PracticeTestTags {
-    /** The tool button at the top start of every Practice tool, which opens the list of tools. */
-    const val TOOL_BUTTON = "practice_tool_button"
+    /** The Practice tab's cards page (2.0, Phase 69). */
+    const val CARDS = "practice_cards"
+
+    /** A tool's card on that page, e.g. "practice_card_chords". */
+    fun card(tool: PracticeTool): String = "practice_card_" + tool.name.lowercase()
+
+    /** The "last time" row under the cards, which opens the tool used last. */
+    const val LAST_TIME = "practice_last_time"
+
+    /** The back arrow in the top start corner of every Practice tool, which leads back to the cards. */
+    const val BACK = "practice_back"
 
     /** The Chords tool's screen. */
     const val CHORDS = "practice_chords"
 
     /** The Scales tool's screen. */
     const val SCALES = "practice_scales"
-
-    /** A tool's row in the tool button's list, e.g. "practice_tool_chords". */
-    fun tool(tool: PracticeTool): String = "practice_tool_" + tool.name.lowercase()
 
     /** The Chords, Scales and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */
     const val TUNING = "practice_tuning"

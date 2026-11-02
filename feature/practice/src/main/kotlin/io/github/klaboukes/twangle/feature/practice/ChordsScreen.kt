@@ -90,8 +90,8 @@ import kotlinx.coroutines.withContext
  * to 12, every note named and the root in the accent ([ScaleNeck]). The two are one screen, so they
  * share their saved UI state: the root picked in one is the other's root too.
  *
- * Upright, one column: the tool button ([header], after the app's gear, [settingsButton], where given) 8 dp from the top at the start, the instrument and tuning
- * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
+ * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start, the instrument and tuning
+ * beside it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
  * the chord's or the scale's full name on the one picker face as wide as the row ("C minor seventh ⌄",
  * "D Dorian ⌄", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
@@ -138,7 +138,7 @@ fun ChordsScreen(
     savedQuality: ChordQuality,
     onRootChange: (PitchClass) -> Unit,
     onQualityChange: (ChordQuality) -> Unit,
-    header: @Composable () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     scales: Boolean = false,
     savedScaleType: ScaleType = ScaleType.MAJOR,
@@ -149,7 +149,6 @@ fun ChordsScreen(
     savedDrone: DroneChoice = DroneChoice(),
     onDroneChange: (DroneChoice) -> Unit = {},
     leftHanded: Boolean = false,
-    settingsButton: (@Composable () -> Unit)? = null,
 ) {
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
@@ -193,7 +192,7 @@ fun ChordsScreen(
         )
     }
 
-    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument, settingsButton = settingsButton) }
+    val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
     var panelOpen by remember { mutableStateOf(false) }
     val panel = @Composable { width: Dp ->
         ChordPanel(
@@ -285,7 +284,7 @@ fun ChordsScreen(
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
         val height = maxHeight
         if (layout == PracticeLayout.LARGE_SIDE) {
-            // A tablet on its side: the tool button's row and the name share the top row (the panels drop under the
+            // A tablet on its side: the top row and the name share one row (the panels drop under the
             // name, as upright), and the chart or the neck runs the whole width under it.
             FillColumn(
                 viewport = height,
@@ -565,7 +564,7 @@ private fun FillColumn(
     }
 }
 
-/** The tool button stands this far down from the top, as on the metronome and as the tuner's mode switch. */
+/** The back arrow stands this far down from the top, as the gear on the metronome and as the tuner's mode switch. */
 private val HEADER_TOP = 8.dp
 
 /** Upright, as the metronome's column. */

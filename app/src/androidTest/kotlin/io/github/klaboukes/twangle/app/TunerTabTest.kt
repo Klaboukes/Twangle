@@ -87,7 +87,7 @@ class TunerTabTest {
             tab(Destination.METRONOME)
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
             tab(Destination.PRACTICE)
-            assertTrue("Practice shows", shown(PracticeTestTags.TOOL_BUTTON))
+            assertTrue("Practice shows", shown(PracticeTestTags.CARDS))
             tab(Destination.TUNER)
             assertTrue("the tuner shows", shown(TunerTestTags.MORE_TOOLS))
             assertTrue("the Tuner tab from another tab closes it", gone(TunerTestTags.STRUM_PANEL))
@@ -116,7 +116,7 @@ class TunerTabTest {
             for ((destination, landmark) in listOf(
                 Destination.TUNER to TunerTestTags.MORE_TOOLS,
                 Destination.METRONOME to MetronomeTestTags.DIAL,
-                Destination.PRACTICE to PracticeTestTags.TOOL_BUTTON,
+                Destination.PRACTICE to PracticeTestTags.CARDS,
             )) {
                 for (arrow in listOf(false, true)) {
                     tab(destination)

@@ -32,7 +32,6 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
-import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -85,7 +84,6 @@ class CapoScreenTest {
     private val savedFrets = mutableListOf<Int>()
     private val opened = mutableListOf<Chord>()
     private var instrumentTaps = 0
-    private val tools = listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
 
     private fun show(shapes: SongKey = SongKey(PitchClass.C), fret: Int = 0) {
         compose.setContent {
@@ -100,7 +98,7 @@ class CapoScreenTest {
                         onShapesChange = { savedShapes += it },
                         onFretChange = { savedFrets += it },
                         onOpenChord = { opened += it },
-                        header = { PracticeToolButton(PracticeTool.CAPO, {}, tools) },
+                        onBack = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                         shortString = shownShortString.value,
@@ -264,25 +262,25 @@ class CapoScreenTest {
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
-            for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
+            for (tag in listOf(PracticeTestTags.BACK, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // One row: the tool button at the start, the instrument and tuning beside it (Phase 47).
-            val toolButton = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+            // One row: the back arrow at the start, the instrument and tuning beside it (Phase 47, Phase 69).
+            val backArrow = node(PracticeTestTags.BACK).getBoundsInRoot()
             val instrument = node(PracticeTestTags.INSTRUMENT_BUTTON).getBoundsInRoot()
             assertTrue(
-                "$case the tuning beside the tool button $toolButton $instrument",
-                instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
+                "$case the tuning beside the back arrow $backArrow $instrument",
+                instrument.left >= backArrow.right && instrument.top < backArrow.bottom && instrument.bottom > backArrow.top,
             )
             val middle = (window.left + window.right) / 2
             if (size.width > size.height) {
                 assertTrue("$case the capo in the start half", node(PracticeTestTags.CAPO_HIGHER).getBoundsInRoot().right <= middle)
                 assertTrue("$case the table in the end half", node(last).getBoundsInRoot().left >= middle)
             }
-            val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
-            assertTrue("$case the tool button at the top $tool", tool.top >= window.top && tool.top <= window.top + 16.dp)
+            val tool = node(PracticeTestTags.BACK).getBoundsInRoot()
+            assertTrue("$case the back arrow at the top $tool", tool.top >= window.top && tool.top <= window.top + 16.dp)
             if (size == TABLET_UPRIGHT || size == TABLET_LANDSCAPE) {
                 // A tablet (Phase 52): the part under the top row in the middle of the height left, not hanging at the top.
                 val first = if (size == TABLET_UPRIGHT) node(PracticeTestTags.CAPO_SHAPES) else node(PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR)))

@@ -28,10 +28,11 @@ private val TUNER_TOOLS = listOf(
     "tuner_tool_pitch_trail" to "tuner_trail_panel",
 )
 
-private const val PRACTICE_TOOL_BUTTON_TAG = "practice_tool_button"
-private const val PRACTICE_CHORDS_TAG = "practice_tool_chords"
-private const val PRACTICE_SCALES_TAG = "practice_tool_scales"
-private const val PRACTICE_CAPO_TAG = "practice_tool_capo"
+private const val PRACTICE_CARDS_TAG = "practice_cards"
+private const val PRACTICE_BACK_TAG = "practice_back"
+private const val PRACTICE_CHORDS_TAG = "practice_card_chords"
+private const val PRACTICE_SCALES_TAG = "practice_card_scales"
+private const val PRACTICE_CAPO_TAG = "practice_card_capo"
 private const val METRONOME_START_TAG = "metronome_start"
 private const val METRONOME_FASTER_TAG = "metronome_faster"
 private const val METRONOME_SLOWER_TAG = "metronome_slower"
@@ -125,7 +126,7 @@ fun MacrobenchmarkScope.usePractice() {
     repeat(TAPS) { clickTag(METRONOME_TAP_TAG, settleMs = TAP_TEMPO_MS) }
 
     clickTag(PRACTICE_TAB_TAG)
-    check(device.wait(Until.hasObject(By.res(PRACTICE_TOOL_BUTTON_TAG)), TIMEOUT_MS)) { "Practice didn't open" }
+    check(device.wait(Until.hasObject(By.res(PRACTICE_CARDS_TAG)), TIMEOUT_MS)) { "Practice didn't open" }
     pickTool(PRACTICE_CHORDS_TAG)
     check(device.wait(Until.hasObject(By.res(CHORDS_TAG)), TIMEOUT_MS)) { "Chords didn't open" }
     pickInPanel(ROOT_A_TAG)
@@ -145,6 +146,8 @@ fun MacrobenchmarkScope.usePractice() {
     clickTag(CAPO_LOWER_TAG)
     Thread.sleep(SHOW_MS)
 
+    device.pressBack() // To the cards.
+    check(device.wait(Until.hasObject(By.res(PRACTICE_CARDS_TAG)), TIMEOUT_MS)) { "Back didn't lead to the cards" }
     device.pressBack()
     waitForTuner()
 }
@@ -156,9 +159,9 @@ private fun MacrobenchmarkScope.pickInPanel(tag: String) {
     check(device.wait(Until.gone(By.res(tag)), TIMEOUT_MS)) { "The panel didn't close after picking $tag" }
 }
 
-/** Opens the Practice tool button's list and picks the tool [tag] names, which closes the list. */
+/** Opens the Practice tool whose card [tag] names, from the cards or (with the back arrow first) from another tool. */
 private fun MacrobenchmarkScope.pickTool(tag: String) {
-    clickTag(PRACTICE_TOOL_BUTTON_TAG)
+    if (!device.hasObject(By.res(PRACTICE_CARDS_TAG))) clickTag(PRACTICE_BACK_TAG)
     clickTag(tag)
 }
 

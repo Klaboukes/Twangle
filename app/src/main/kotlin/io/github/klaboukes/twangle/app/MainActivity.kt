@@ -43,7 +43,9 @@ import io.github.klaboukes.twangle.app.navigation.Screen
 import io.github.klaboukes.twangle.app.navigation.back
 import io.github.klaboukes.twangle.app.navigation.destination
 import io.github.klaboukes.twangle.app.navigation.destinationsFor
+import io.github.klaboukes.twangle.app.navigation.practiceTool
 import io.github.klaboukes.twangle.app.navigation.screen
+import io.github.klaboukes.twangle.app.navigation.shownScreen
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
@@ -62,9 +64,9 @@ import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
 import io.github.klaboukes.twangle.feature.practice.DroneChoice
-import io.github.klaboukes.twangle.feature.practice.PracticeToolButton
-import io.github.klaboukes.twangle.feature.practice.ToolAndTuningRow
-import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
+import io.github.klaboukes.twangle.feature.practice.BackAndTuningRow
+import io.github.klaboukes.twangle.feature.practice.PracticeCards
+import io.github.klaboukes.twangle.feature.practice.lastTimeTool
 import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
@@ -121,9 +123,11 @@ class MainActivity : AppCompatActivity() {
      * the bottom, or the rail at the start edge on its side. The gear in the top start corner of every
      * tab (upright in the tab's own top row, on its side at the rail's top) opens Settings over the whole
      * window, without the bar; Settings' back arrow and Back return to the tab that opened it, About's to
-     * Settings. The instrument and tuning panel opens
+     * Settings. The Practice tab shows its cards ([PracticeCards]), one per tool, and a card opens its tool
+     * over the whole window too, without the bar ([PracticeToolScreen]); the tool's back arrow and Back
+     * return to the cards. The instrument and tuning panel opens
      * over the tuner, or over the Practice tools, from their instrument button. Back leads from the
-     * metronome, Practice and the tuning editor to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
+     * metronome, Practice's cards and the tuning editor to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
      * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
      * tuner's tools (strum check and the others), so the tab always leads to the plain tuner.
@@ -175,8 +179,13 @@ class MainActivity : AppCompatActivity() {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
             Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
                 var picked by rememberSaveable { mutableStateOf(Screen.TUNER) }
-                // Practice without a tool is no tab (its switch off): the metronome then, never an empty screen.
-                val screen = if (picked == Screen.PRACTICE && practiceTools.isEmpty()) Screen.METRONOME else picked
+                // Practice without a tool is no tab (its switch off): the metronome then, never an empty screen;
+                // a tool whose switch is off shows the cards.
+                val screen = shownScreen(picked, practiceTools)
+                // Whether the capo helper opened Chords (a row of its table), so Back from Chords returns to it.
+                var chordsFromCapo by rememberSaveable { mutableStateOf(false) }
+                // The chord the capo helper opened in Chords, until the saved settings have caught up with it.
+                var openedChord by remember { mutableStateOf<Chord?>(null) }
                 // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
                 var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -230,8 +239,29 @@ class MainActivity : AppCompatActivity() {
                 }
                 // From the tuner, Back is Android's own: it leaves the app.
                 if (screen != Screen.TUNING_EDITOR) {
-                    screen.back(settingsOpener)?.let { target -> BackHandler { picked = target } }
+                    screen.back(settingsOpener, chordsFromCapo)?.let { target -> BackHandler { picked = target } }
                 }
+                // A card or the "last time" row opens its tool full screen, and it is the tool used last from then on.
+                val openTool: (PracticeTool) -> Unit = { tool ->
+                    chordsFromCapo = false
+                    openedChord = null
+                    picked = tool.screen
+                    lifecycleScope.launch { container.settingsRepository.setPracticeTool(tool) }
+                }
+                // A row of the capo helper's table opens its chord in Chords: Chords' saved state is dropped, so it
+                // opens afresh on that chord (saved too, as if picked there), and Back leads back to the capo helper.
+                val openChordFromCapo: (Chord) -> Unit = { chord ->
+                    openedChord = chord
+                    saveableState.removeState(CHORDS_STATE)
+                    lifecycleScope.launch {
+                        container.settingsRepository.setPracticeRoot(chord.root)
+                        container.settingsRepository.setPracticeChordQuality(chord.quality)
+                        container.settingsRepository.setPracticeTool(PracticeTool.CHORDS)
+                    }
+                    chordsFromCapo = true
+                    picked = Screen.PRACTICE_CHORDS
+                }
+                val backFromTool: () -> Unit = { screen.back(settingsOpener, chordsFromCapo)?.let { picked = it } }
                 AppNavigationFrame(
                     selected = screen.destination,
                     onSelect = {
@@ -243,7 +273,8 @@ class MainActivity : AppCompatActivity() {
                     navigationHidden = fullScreen,
                     onOpenSettings = openSettings,
                 ) { gear ->
-                    saveableState.SaveableStateProvider(screen.name) {
+                    // Chords and Scales are one screen ([ChordsScreen]) that keeps its saved state across them.
+                    saveableState.SaveableStateProvider(if (screen == Screen.PRACTICE_SCALES) CHORDS_STATE else screen.name) {
                         when (screen) {
                             Screen.TUNER -> {
                                 // The volume keys set the reference tone's loudness (the media volume)
@@ -267,9 +298,27 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                             Screen.METRONOME -> MetronomeTab(container, settings, tools, gear)
-                            Screen.PRACTICE -> PracticeTab(container, settings, practiceTools, gear) { instrument, customTuningId ->
-                                openTuningEditor(instrument, customTuningId, Screen.PRACTICE)
-                            }
+                            Screen.PRACTICE -> PracticeCards(
+                                title = stringResource(R.string.nav_practice),
+                                tools = practiceTools,
+                                lastTime = lastTimeTool(settings.practiceTool, practiceTools),
+                                notation = settings.notationFor(appLanguage()),
+                                savedRoot = settings.practiceRoot,
+                                savedQuality = settings.practiceChordQuality,
+                                savedScaleType = settings.practiceScaleType,
+                                onOpen = openTool,
+                                settingsButton = gear,
+                            )
+                            Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING ->
+                                PracticeToolScreen(
+                                    container = container,
+                                    settings = settings,
+                                    tool = checkNotNull(screen.practiceTool),
+                                    openedChord = openedChord,
+                                    onOpenChord = openChordFromCapo,
+                                    onBack = backFromTool,
+                                    onOpenTuningEditor = { instrument, customTuningId -> openTuningEditor(instrument, customTuningId, screen) },
+                                )
                             Screen.SETTINGS -> SettingsScreen(
                                 settingsRepository = container.settingsRepository,
                                 appVersion = BuildConfig.VERSION_NAME,
@@ -327,27 +376,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The bar's Practice tab (Phase 32), shown only with tools in it ([offered], [practiceToolsFor]): the
-     * tool button at the top of each tool (Phase 47) picks chords, scales, the capo helper or Ear training,
-     * each with its own switch (Phase 33, 55), and the tab opens on the tool used last
-     * ([AppSettings.practiceTool], saved as soon as it is picked), or on the first one, Chords, while none
-     * was (a fresh install, or 1.1's metronome; [practiceToolToOpen], until Practice's cards come). Each
-     * tool keeps its own saved UI state while another shows, but for Chords and Scales, one screen that
-     * shares it (one root for both). A chord tapped in the capo helper opens in Chords: its saved state is
-     * dropped, so Chords opens afresh on that chord (saved too, as if picked there). The instrument
-     * button in Chords and the capo helper opens the instrument and tuning panel over the tool
-     * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
-     * Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its saved choices; it stops the
-     * drone itself when it goes. Ear training (Phase 55) gets the reference tones and its own microphone through the tuner's pipeline
-     * ([AppContainer.earTrainingListener]), and the same top row as Chords and Capo. Upright the [gear]
-     * that opens Settings stands before the tool button in that row.
+     * A Practice tool full screen (2.0, Phase 69), opened from its card on the Practice tab or the "last
+     * time" row: chords, scales, the capo helper or Ear training, each with its own switch (Phase 33, 55).
+     * Its back arrow in the top start corner ([onBack]) and Back lead back to the cards (Chords opened from
+     * the capo helper back to it). Each tool keeps its own saved UI state while another shows, but for Chords
+     * and Scales, one screen that shares it (one root for both). A chord tapped in the capo helper opens in
+     * Chords ([onOpenChord]), which then opens on [openedChord]. The instrument button in each tool opens the
+     * instrument and tuning panel over it ([PracticeTuningPanel]); its New tuning and Edit open the tuning
+     * editor ([onOpenTuningEditor]). Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its
+     * saved choices; it stops the drone itself when it goes. Ear training (Phase 55) gets the reference tones
+     * and its own microphone through the tuner's pipeline ([AppContainer.earTrainingListener]), and the same
+     * top row as Chords and Capo.
      */
     @Composable
-    private fun PracticeTab(
+    private fun PracticeToolScreen(
         container: AppContainer,
         settings: AppSettings,
-        offered: List<PracticeTool>,
-        gear: (@Composable () -> Unit)?,
+        tool: PracticeTool,
+        openedChord: Chord?,
+        onOpenChord: (Chord) -> Unit,
+        onBack: () -> Unit,
         onOpenTuningEditor: (Instrument, String?) -> Unit,
     ) {
         var panelOpen by rememberSaveable { mutableStateOf(false) }
@@ -358,97 +406,71 @@ class MainActivity : AppCompatActivity() {
                 onOpenTuningEditor(instrument, id)
             })
         }
-        // Never null here: the tab shows only with a tool offered.
-        var tool by rememberSaveable { mutableStateOf(practiceToolToOpen(settings.practiceTool, offered) ?: offered.first()) }
-        // The chord the capo helper opened in Chords, until the saved settings have caught up with it.
-        var opened by remember { mutableStateOf<Chord?>(null) }
-        val pickTool: (PracticeTool) -> Unit = { picked ->
-            if (picked != tool) {
-                tool = picked
-                lifecycleScope.launch { container.settingsRepository.setPracticeTool(picked) }
-            }
-        }
-        val header: @Composable () -> Unit = { PracticeToolButton(tool = tool, onToolChange = pickTool, tools = offered) }
-        val toolState = rememberSaveableStateHolder()
-        // Chords and Scales are one screen ([ChordsScreen]) that keeps its saved state across them.
-        toolState.SaveableStateProvider(if (tool == PracticeTool.SCALES) PracticeTool.CHORDS.name else tool.name) {
-            when (tool) {
-                PracticeTool.CHORDS, PracticeTool.SCALES -> {
-                    // On Scales the volume keys set the drone's loudness (the media volume).
-                    if (tool == PracticeTool.SCALES) MediaVolumeKeys()
-                    ChordsScreen(
-                        tuning = settings.tuning,
-                        tuningName = practiceTuningName(settings),
-                        spokenTuningName = spokenTuning(settings),
-                        notation = settings.notationFor(appLanguage()),
-                        savedRoot = opened?.root ?: settings.practiceRoot,
-                        savedQuality = opened?.quality ?: settings.practiceChordQuality,
-                        onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
-                        onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
-                        header = header,
-                        scales = tool == PracticeTool.SCALES,
-                        savedScaleType = settings.practiceScaleType,
-                        onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
-                        onPickInstrument = openPanel,
-                        drone = container.dronePlayer,
-                        a4Hz = settings.a4Hz,
-                        savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
-                        onDroneChange = { picked ->
-                            lifecycleScope.launch {
-                                with(container.settingsRepository) {
-                                    setDroneSound(picked.sound)
-                                    setDroneVoicing(picked.voicing)
-                                    setDroneLower(picked.lower)
-                                }
-                            }
-                        },
-                        leftHanded = settings.leftHanded,
-                        settingsButton = gear,
-                    )
-                }
-                PracticeTool.CAPO -> CapoScreen(
+        when (tool) {
+            PracticeTool.CHORDS, PracticeTool.SCALES -> {
+                // On Scales the volume keys set the drone's loudness (the media volume).
+                if (tool == PracticeTool.SCALES) MediaVolumeKeys()
+                ChordsScreen(
+                    tuning = settings.tuning,
                     tuningName = practiceTuningName(settings),
                     spokenTuningName = spokenTuning(settings),
                     notation = settings.notationFor(appLanguage()),
-                    savedShapes = settings.practiceCapoShapes,
-                    savedFret = settings.practiceCapoFret,
-                    onShapesChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoShapes(it) } },
-                    onFretChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoFret(it) } },
-                    onOpenChord = { chord ->
-                        opened = chord
-                        toolState.removeState(PracticeTool.CHORDS.name)
-                        lifecycleScope.launch {
-                            container.settingsRepository.setPracticeRoot(chord.root)
-                            container.settingsRepository.setPracticeChordQuality(chord.quality)
-                        }
-                        pickTool(PracticeTool.CHORDS)
-                    },
-                    header = header,
+                    savedRoot = openedChord?.root ?: settings.practiceRoot,
+                    savedQuality = openedChord?.quality ?: settings.practiceChordQuality,
+                    onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
+                    onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
+                    onBack = onBack,
+                    scales = tool == PracticeTool.SCALES,
+                    savedScaleType = settings.practiceScaleType,
+                    onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
                     onPickInstrument = openPanel,
-                    // The banjo's short fifth string needs a capo of its own, so the capo table's sums don't hold for it.
-                    shortString = settings.tuning.hasShortString,
-                    settingsButton = gear,
+                    drone = container.dronePlayer,
+                    a4Hz = settings.a4Hz,
+                    savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
+                    onDroneChange = { picked ->
+                        lifecycleScope.launch {
+                            with(container.settingsRepository) {
+                                setDroneSound(picked.sound)
+                                setDroneVoicing(picked.voicing)
+                                setDroneLower(picked.lower)
+                            }
+                        }
+                    },
+                    leftHanded = settings.leftHanded,
                 )
-                PracticeTool.EAR_TRAINING -> {
-                    // The volume keys set the questions' loudness (the media volume).
-                    MediaVolumeKeys()
-                    EarTrainingScreen(
-                        listener = container.earTrainingListener,
-                        tonePlayer = container.tonePlayer,
-                        settingsRepository = container.settingsRepository,
-                        notation = settings.notationFor(appLanguage()),
-                        header = {
-                            ToolAndTuningRow(
-                                toolButton = header,
-                                tuningName = practiceTuningName(settings),
-                                spokenTuningName = spokenTuning(settings),
-                                onPickInstrument = openPanel,
-                                settingsButton = gear,
-                            )
-                        },
-                        savedSettings = settings,
-                    )
-                }
+            }
+            PracticeTool.CAPO -> CapoScreen(
+                tuningName = practiceTuningName(settings),
+                spokenTuningName = spokenTuning(settings),
+                notation = settings.notationFor(appLanguage()),
+                savedShapes = settings.practiceCapoShapes,
+                savedFret = settings.practiceCapoFret,
+                onShapesChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoShapes(it) } },
+                onFretChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoFret(it) } },
+                onOpenChord = onOpenChord,
+                onBack = onBack,
+                onPickInstrument = openPanel,
+                // The banjo's short fifth string needs a capo of its own, so the capo table's sums don't hold for it.
+                shortString = settings.tuning.hasShortString,
+            )
+            PracticeTool.EAR_TRAINING -> {
+                // The volume keys set the questions' loudness (the media volume).
+                MediaVolumeKeys()
+                EarTrainingScreen(
+                    listener = container.earTrainingListener,
+                    tonePlayer = container.tonePlayer,
+                    settingsRepository = container.settingsRepository,
+                    notation = settings.notationFor(appLanguage()),
+                    header = {
+                        BackAndTuningRow(
+                            onBack = onBack,
+                            tuningName = practiceTuningName(settings),
+                            spokenTuningName = spokenTuning(settings),
+                            onPickInstrument = openPanel,
+                        )
+                    },
+                    savedSettings = settings,
+                )
             }
         }
     }
@@ -528,5 +550,8 @@ class MainActivity : AppCompatActivity() {
     private companion object {
         // From this short side on, a screen may letterbox an orientation request instead of turning (FocusTurn).
         const val LARGE_SCREEN_DP = 600
+
+        // The saved UI state Chords and Scales share (one screen, one root for both).
+        val CHORDS_STATE = Screen.PRACTICE_CHORDS.name
     }
 }

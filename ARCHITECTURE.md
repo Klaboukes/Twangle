@@ -70,7 +70,7 @@ Topic files:
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
-:feature:practice  Practice tab (Phase 32, behind its switch): the tool button, Chords and Scales (charts, the neck, the
+:feature:practice  Practice tab (Phase 32, behind its switch): the cards (Phase 69), Chords and Scales (charts, the neck, the
                    drone button), the Capo helper
 :feature:eartraining Ear training (Phase 55, a Practice tool behind its switch): Play it back, Intervals, Chord type;
                    EarTrainingViewModel, the screen, the choices panel; the one Practice tool that listens
@@ -203,10 +203,12 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
-    PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolButton, PracticeToolIcons,
+    PracticeTools (practiceToolsFor, lastTimeTool, PracticeTestTags), PracticeCards (the cards, the last time row),
+    PracticeToolIcons (practiceToolIcon, practiceToolPicture),
     ChordsScreen (root and type pickers, chart, ‹ › pager), ChordPicker (RootPicker, ChordTypePicker),
     ChordChart (+ ChartGeometry), ChordSpeech (chordWords, spokenChart),
-    ScaleNeck, ScaleSpeech, DroneButton, TuningLine, PracticeLayout (practiceLayoutFor),
+    ScaleNeck, ScaleSpeech, DroneButton, TuningLine (TuningLine, BackAndTuningRow, PracticeBackButton),
+    PracticeLayout (practiceLayoutFor),
     CapoScreen (shapes list, capo ‹ ›, the shape → sounds table), CapoTable (CAPO_SHAPES, capoChordsOf, capoPlanOf)
 
 feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartraining/
@@ -219,7 +221,7 @@ feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
                 LookCardGrid (+ LookDemo, unused until the lens's Meter cards, Phase 72), LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode,
+    TwangleApplication, AppContainer, MainActivity (+ PracticeToolScreen), FocusMode,
     BuildToolSwitches (toolSwitchesFor), TunerPitchListener (Ear training's ears: the tuner's PitchPipeline),
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons,

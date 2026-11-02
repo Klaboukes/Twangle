@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.app.navigation
 
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -45,6 +46,38 @@ class NavigationTest {
     fun theMetronomeAndPracticeAreTabsOfTheirOwn() {
         assertEquals(Destination.METRONOME, Screen.METRONOME.destination)
         assertEquals(Destination.PRACTICE, Screen.PRACTICE.destination)
+    }
+
+    /** Each Practice tool opens full screen from its card (Phase 69): no bar, and Back leads to the cards. */
+    @Test
+    fun eachPracticeToolIsAFullScreenOfItsOwnAndBackLeadsToTheCards() {
+        assertEquals(PracticeTool.entries.size, PracticeTool.entries.map { it.screen }.toSet().size)
+        for (tool in PracticeTool.entries) {
+            assertEquals(tool, tool.screen.practiceTool)
+            assertNull("$tool has no bar", tool.screen.destination)
+            for (opener in Destination.entries) assertEquals(Screen.PRACTICE, tool.screen.back(opener))
+        }
+        assertNull(Screen.PRACTICE.practiceTool)
+        assertNull(Screen.TUNER.practiceTool)
+    }
+
+    @Test
+    fun chordsOpenedFromTheCapoHelperGoBackToIt() {
+        assertEquals(Screen.PRACTICE_CAPO, Screen.PRACTICE_CHORDS.back(Destination.PRACTICE, chordsFromCapo = true))
+        assertEquals(Screen.PRACTICE, Screen.PRACTICE_SCALES.back(Destination.PRACTICE, chordsFromCapo = true))
+        assertEquals(Screen.PRACTICE, Screen.PRACTICE_CAPO.back(Destination.PRACTICE, chordsFromCapo = true))
+    }
+
+    @Test
+    fun aToolWhoseSwitchIsOffShowsTheCardsAndNoToolsShowTheMetronome() {
+        val all = PracticeTool.entries
+        for (screen in Screen.entries) assertEquals(screen, shownScreen(screen, all))
+        val noCapo = all - PracticeTool.CAPO
+        assertEquals(Screen.PRACTICE, shownScreen(Screen.PRACTICE_CAPO, noCapo))
+        assertEquals(Screen.PRACTICE_CHORDS, shownScreen(Screen.PRACTICE_CHORDS, noCapo))
+        assertEquals(Screen.METRONOME, shownScreen(Screen.PRACTICE, emptyList()))
+        assertEquals(Screen.METRONOME, shownScreen(Screen.PRACTICE_SCALES, emptyList()))
+        assertEquals(Screen.SETTINGS, shownScreen(Screen.SETTINGS, emptyList()))
     }
 
     @Test
