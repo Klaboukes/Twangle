@@ -7,6 +7,7 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.SettledChord
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -41,7 +42,8 @@ class ChordNameFlowTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private val settings = FakeSettingsRepository()
+    // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
+    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
     private val tones = FakeTonePlayer()
 
     private val am = Chord.of(PitchClass.A, ChordQuality.MINOR)
@@ -49,7 +51,7 @@ class ChordNameFlowTest {
     private val g = Chord.of(PitchClass.G, ChordQuality.MAJOR)
 
     private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
-        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), tools = tools)
+        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), saved = settings.settings.value, tools = tools)
 
     private fun TunerViewModel.chord(): TunerUiState.ChordName {
         val state = state.value

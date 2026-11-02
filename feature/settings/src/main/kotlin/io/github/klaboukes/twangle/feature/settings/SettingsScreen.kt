@@ -81,6 +81,9 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
  * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
  * Android 8–12 AppCompat keeps it. The app's screens are then recreated in it; [onLanguageChange]
  * follows, for what lives outside them (the home-screen widget).
+ *
+ * [intonationCheck] is the build's switch for the 12th-fret check (`ToolSwitches.intonationCheck`): off, the
+ * While tuning group has no switch for its way in on the tuner screen.
  */
 @Composable
 fun SettingsScreen(
@@ -91,6 +94,7 @@ fun SettingsScreen(
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
     onBack: (() -> Unit)? = null,
+    intonationCheck: Boolean = true,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -113,6 +117,7 @@ fun SettingsScreen(
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onFocusModeChange = viewModel::setFocusMode,
         onLeftHandedChange = viewModel::setLeftHanded,
+        onShowIntonationCheckChange = if (intonationCheck) viewModel::setShowIntonationCheck else null,
         modifier = modifier,
         onBack = onBack,
         languages = languageTags,
@@ -132,7 +137,8 @@ fun SettingsScreen(
  * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
- * [onBack] the top bar has a back arrow, as About's.
+ * [onBack] the top bar has a back arrow, as About's. The 12th-fret check's switch (its way in on the tuner screen,
+ * 2.0 Phase 71) shows only with [onShowIntonationCheckChange], which a build without the check leaves out.
  */
 @Composable
 fun SettingsContent(
@@ -151,6 +157,7 @@ fun SettingsContent(
     onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    onShowIntonationCheckChange: ((Boolean) -> Unit)? = null,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
@@ -177,6 +184,7 @@ fun SettingsContent(
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onFocusModeChange = onFocusModeChange,
                 onLeftHandedChange = onLeftHandedChange,
+                onShowIntonationCheckChange = onShowIntonationCheckChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
         }
@@ -323,6 +331,7 @@ private fun SettingsGroups(
     onShowSignalBarsChange: (Boolean) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
+    onShowIntonationCheckChange: ((Boolean) -> Unit)?,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -414,6 +423,15 @@ private fun SettingsGroups(
                     checked = settings.stringTickOff,
                     onCheckedChange = onStringTickOffChange,
                 )
+                // The 12th-fret check's way in on the tuner screen (2.0, Phase 71), off by default; none in a build without the check.
+                if (onShowIntonationCheckChange != null) {
+                    SwitchSetting(
+                        title = stringResource(R.string.settings_intonation_check_title),
+                        summary = stringResource(R.string.settings_intonation_check_summary),
+                        checked = settings.showIntonationCheck,
+                        onCheckedChange = onShowIntonationCheckChange,
+                    )
+                }
                 SwitchSetting(
                     title = stringResource(R.string.settings_show_signal_bars_title),
                     summary = stringResource(R.string.settings_show_signal_bars_summary),

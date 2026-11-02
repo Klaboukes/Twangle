@@ -19,10 +19,13 @@ private const val SETTINGS_GEAR_TAG = "nav_settings"
 private const val PICKER_CHIP_TAG = "tuner_picker_chip"
 private const val MORE_TOOLS_TAG = "tuner_more_tools"
 
-/** The tuner's tools in the "more tools" menu (`TunerTool`), each with the panel it shows. */
+/**
+ * The tuner's tools in the "more tools" menu (`TunerTool`), each with the panel it shows. The 12th-fret check left
+ * the menu in 2.0 (Phase 71): its own button shows only after its Settings switch is turned on, which a fresh
+ * install hasn't.
+ */
 private val TUNER_TOOLS = listOf(
     "tuner_tool_strum_check" to "tuner_strum_panel",
-    "tuner_tool_intonation_check" to "tuner_intonation_panel",
     "tuner_tool_chord_name" to "tuner_chord_panel",
 )
 

@@ -333,6 +333,8 @@ class MainActivity : AppCompatActivity() {
                                     // Android 13+ redraws the widget itself on the new configuration.
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
                                     onBack = { picked = settingsOpener.screen },
+                                    // Without the check in this build, no switch for its way in either.
+                                    intonationCheck = tools.intonationCheck,
                                 )
                                 Screen.ABOUT -> AboutScreen(
                                     appVersion = BuildConfig.VERSION_NAME,

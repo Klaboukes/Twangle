@@ -1,0 +1,188 @@
+<!doctype html>
+<!--
+Twangle 2.0, the 12th-fret check's way in from the tuner screen: the rough mock-up of Phase 71 (ROADMAP.md,
+"Phase 71 — The tuner screen"; docs/architecture/v2-plan.md, "The two tools"). Ink only, the bare idea.
+Self-contained: open it straight from disk in Firefox.
+
+Decided (owner, 2026-11-02):
+- The 12th-fret check stays a tuner feature, not a Practice tool: it is opened on the tuner, which has the
+  microphone, the tuning and the strings it needs.
+- Its way in shows only while a new switch in Settings (While tuning) is on. ToolSwitches.intonationCheck stays
+  the build's brake: off, the way in and the Settings switch are both gone.
+- The 1.1 way in, the "more tools" menu's 12th-fret entry, goes. (The menu keeps the strum check and the chord
+  name until Phase 74 makes those happen by themselves.)
+- While the check is on, the player picks the string by tapping a peg, as on the tuner; each peg carries its result.
+
+The owner picks:
+1. The way in: A (a small button over the first peg), B (a row in the "What are you tuning?" sheet) or
+   C (a small button in the top row). Built on v2 meanwhile: A, the recommendation.
+2. The Settings switch's default: off (built), since the check is for setting up a guitar, done now and then,
+   not while tuning every day; or on, so every player finds it.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>The 12th-fret check's way in</title>
+<style>
+:root{--page:#eceef1;--ink:#15191e;--ink2:#5b6470;--card:#fff;--rule:#d9dde3;--brand:#1f6fd6;
+ --bg:#0e1116;--surface:#171b22;--fg:#eef1f5;--muted:#8d96a3;--line:#262c35;--amber:#ffb648;--green:#3ddc84;--accent:#8ab4ff;--tab:#12151b}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI Variable Text","Segoe UI",Inter,Roboto,system-ui,sans-serif;background:var(--page);color:var(--ink);line-height:1.45}
+.page{max-width:1120px;margin:0 auto;padding:36px 24px 90px}
+h1{font-size:36px;margin:0 0 8px;letter-spacing:-.025em;line-height:1.1}
+h2{font-size:24px;margin:44px 0 8px}
+.lede{font-size:17px;color:var(--ink2);max-width:880px;margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:40px 26px;justify-items:center}
+figure{margin:0;width:300px}
+figcaption{margin-top:12px;font-size:14px;color:var(--ink2)}
+figcaption b{display:block;color:var(--ink);font-size:17px;margin-bottom:3px}
+.k{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin:0 6px 4px 0;border:1px solid color-mix(in srgb,var(--brand) 35%,transparent);border-radius:999px;padding:1px 7px}
+.k.rec{background:var(--brand);color:#fff}
+.pc{margin:8px 0 0;padding-left:18px}
+.pc li{margin:2px 0}
+.pc .pro::marker{content:"+  ";color:#15a35a;font-weight:700}
+.pc .con::marker{content:"–  ";color:#c0392b;font-weight:700}
+.phone{width:300px;height:650px;background:#0b0c0f;border-radius:42px;padding:8px;box-shadow:0 22px 50px rgba(0,0,0,.26),inset 0 0 0 2px #2b2f36;position:relative}
+.screen{position:relative;width:284px;height:634px;border-radius:34px;overflow:hidden;background:radial-gradient(ellipse 90% 55% at 50% 32%,color-mix(in srgb,var(--amber) 12%,var(--bg)),var(--bg) 75%);color:var(--fg)}
+.status{height:30px}
+.top{position:absolute;top:30px;left:12px;right:12px;height:36px;display:flex;align-items:center;justify-content:space-between}
+.ib{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.ib svg{width:20px;height:20px}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600}
+.chip i{color:var(--muted);font-style:normal;font-size:10px}
+.ruler{position:absolute;top:80px;left:0;right:0;text-align:center;font-size:13px;color:var(--muted);letter-spacing:.5em}
+.ruler b{font-size:30px;color:var(--fg);letter-spacing:0;margin:0 4px}
+.lens{position:absolute;top:130px;left:20px;right:20px;height:250px;border-radius:22px;border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.lens.check{border-color:var(--line);flex-direction:column;gap:10px}
+.steps{display:flex;gap:16px;font-size:12px}
+.steps span::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--muted);margin-right:6px;vertical-align:1px}
+.steps .on{color:var(--fg)}.steps .on::before{background:var(--accent);border-color:var(--accent)}
+.ring{width:96px;height:96px;border-radius:50%;border:5px solid var(--line);border-top-color:var(--accent);border-right-color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:var(--fg)}
+.word{position:absolute;top:396px;left:0;right:0;text-align:center;font-size:26px;font-weight:700;color:var(--amber)}
+.word.q{font-size:18px;color:var(--fg);font-weight:600}
+.sub{position:absolute;top:430px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted)}
+.row{position:absolute;top:470px;left:22px;right:22px;height:34px;display:flex;justify-content:space-between;align-items:center}
+.tb{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--fg);font-size:11px;font-weight:700;background:var(--surface)}
+.tb.on{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 22%,var(--surface))}
+.tb svg{width:18px;height:18px}
+.new{outline:2px dashed #ff6bcb;outline-offset:3px}
+.pegs{position:absolute;top:512px;left:0;right:0;display:flex;justify-content:center;gap:9px}
+.peg{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;position:relative}
+.peg.on{border-color:var(--amber);box-shadow:0 0 0 3px color-mix(in srgb,var(--amber) 22%,transparent)}
+.peg.pick{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.peg .b{position:absolute;right:-5px;top:-5px;width:15px;height:15px;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--bg);box-shadow:0 0 0 2px var(--bg)}
+.b.f{background:var(--green)}.b.m{background:var(--accent)}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:62px;background:var(--tab);border-top:1px solid var(--line);display:flex;padding:8px;font-size:10px;color:var(--muted);font-weight:600}
+.tabs span{flex:1;text-align:center;padding-top:26px}
+.tabs .on{color:var(--fg)}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:24px 24px 0 0;padding:10px 18px 22px}
+.grab{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.st{font-size:18px;font-weight:700;margin-bottom:10px}
+.pills{display:flex;gap:6px;margin-bottom:12px;font-size:12px;font-weight:600}
+.pills span{padding:5px 10px;border-radius:999px;border:1px solid var(--line)}
+.pills .on{background:var(--fg);color:var(--bg)}
+.it{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:14px;font-weight:600}
+.it small{color:var(--muted);font-weight:500;font-size:12px}
+.tg{width:38px;height:22px;border-radius:11px;border:2px solid var(--muted);position:relative}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--muted)}
+.set{background:var(--card);border-radius:14px;border:1px solid var(--rule);padding:16px 18px;max-width:520px}
+.set h3{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.set .r{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--rule)}
+.set .r b{display:block;font-size:15px}.set .r small{color:var(--ink2)}
+.set .tg{border-color:#8d96a3}.set .tg::after{background:#8d96a3}
+.set .r.new{outline-offset:-2px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>The 12th-fret check: how you get there</h1>
+<p class="lede">2.0's tuner has no "more tools" menu, so the 12th-fret check needs a way in of its own. It shows only after you turn it on in Settings, so a player who never sets up a guitar never sees it. Three ways, each drawn on the plain tuner (left) and with the check open (where it goes for all three: the check's steps in the lens's place, its line in the word's, and the pegs to pick a string). The pink dashes mark what is new.</p>
+
+<h2>The three ways</h2>
+<div class="grid" id="ways"></div>
+
+<h2>The check open (the same for all three)</h2>
+<p class="lede">The lens's place shows the two steps (Open · 12th fret) and the ring that fills while the note is taken; the word's place says what to do. You pick the string by tapping its peg, which is ringed in the accent while it is checked; a checked string carries its result on its peg (✓ fine, → move the saddle back, ← forward). Once a string has a result, the lens's place shows every string as a row of small pegs with its cents.</p>
+<div class="grid" id="open"></div>
+
+<h2>The switch in Settings</h2>
+<div class="set">
+ <h3>While tuning</h3>
+ <div class="r"><div><b>Vibrate when in tune</b><small>A short tick when the string is in tune</small></div><span class="tg"></span></div>
+ <div class="r"><div><b>Tick off tuned strings</b><small>A check on each peg you have tuned</small></div><span class="tg"></span></div>
+ <div class="r new"><div><b>12th-fret check</b><small>Check a string's intonation from the tuner</small></div><span class="tg"></span></div>
+</div>
+<p class="lede" style="margin-top:12px">Off to start with (built so): the check is for setting up a guitar now and then, not for tuning every day. On would make it easier to find.</p>
+</div>
+
+<script>
+const GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2.3"/></svg>';
+const FOCUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>';
+const FRET='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h18M3 16h18"/><path d="M12 5v14"/><circle cx="7" cy="12" r="1.2" fill="currentColor"/><circle cx="17" cy="12" r="1.2" fill="currentColor"/></svg>';
+const MORE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M17 14v6M14 17h6"/></svg>';
+const NAMES=['E','A','D','G','B','E'];
+
+function pegs(opts={}){
+  return '<div class="pegs">'+NAMES.map((n,i)=>{
+    const cls=['peg'];if(opts.heard===i)cls.push('on');if(opts.pick===i)cls.push('pick');
+    const mk=opts.marks&&opts.marks[i];
+    const badge=mk?`<span class="b ${mk==='✓'?'f':'m'}">${mk}</span>`:'';
+    return `<span class="${cls.join(' ')}">${n}${badge}</span>`}).join('')+'</div>';
+}
+function screen({topExtra='',rowStart='',rowEnd='',lens,word,sub,pegsHtml,overlay=''}){
+  return `<div class="phone"><div class="screen"><div class="status"></div>
+   <div class="top"><span class="ib">${GEAR}</span>${topExtra||'<span class="chip">Guitar · Standard <i>▾</i></span>'}<span class="ib">${FOCUS}</span></div>
+   <div class="ruler">C D <b>E</b> F G</div>
+   ${lens}
+   <div class="word ${word.q?'q':''}">${word.t}</div><div class="sub">${sub}</div>
+   <div class="row"><span>${rowStart}</span><span>${rowEnd}</span></div>
+   ${pegsHtml}
+   <div class="tabs"><span class="on">Tune</span><span>Metronome</span><span>Practice</span></div>${overlay}</div></div>`;
+}
+const plainLens='<div class="lens">the trail</div>';
+const plain={lens:plainLens,word:{t:'Tighten'},sub:'18 cents flat',pegsHtml:pegs({heard:0})};
+
+const WAYS=[
+ {k:'A',rec:true,title:'A small button over the first peg',
+  html:screen({...plain,rowStart:`<span class="tb new">${FRET}</span>`}),
+  what:'The 12th-fret button sits above the pegs at their start, in the row the pegs already keep room for. Tap: the check opens; the button is ringed while it is on; tap it again, or the Tune tab, to go back to the tuner.',
+  pro:['One tap, right by the pegs the check uses','The top row and the chip keep their room; nothing on the screen moves when it shows','Off in Settings, the row is just empty: no trace'],
+  con:['One more thing on the tuner screen for those who turn it on','Phase 74\'s strum marks above the pegs must keep clear of it']},
+ {k:'B',title:'A row in "What are you tuning?"',
+  html:screen({...plain,overlay:`<div class="dim"></div><div class="sheet"><div class="grab"></div><div class="st">What are you tuning?</div>
+   <div class="pills"><span class="on">Guitar</span><span>Bass</span><span>Ukulele</span><span>…</span></div>
+   <div class="it">Standard<small>E A D G B E ✓</small></div><div class="it">Drop D<small>D A D G B E</small></div>
+   <div class="it"><span>Any note<br><small>The nearest note, no strings</small></span><span class="tg"></span></div>
+   <div class="it new"><span>12th-fret check<br><small>Is the saddle in the right place?</small></span><small>›</small></div></div>`}),
+  what:'Tap the chip; the sheet\'s last row opens the check. To leave it, the chip (or a close button on the check).',
+  pro:['The tuner screen stays exactly as bare as without it','The sheet already says what the tuner does with your strings'],
+  con:['Two taps, and hidden: the sheet is about what you tune, not a check','Leaving the check needs a way of its own','The sheet gets longer on a short phone']},
+ {k:'C',title:'A small button in the top row',
+  html:screen({...plain,topExtra:`<span class="chip">Guitar · Standard <i>▾</i></span><span class="tb new" style="position:absolute;right:42px">${FRET}</span>`}),
+  what:'Between the chip and focus mode\'s button.',
+  pro:['Always in sight, one tap','Far from the pegs, so nothing touches it by accident'],
+  con:['The top row gets crowded and lopsided: the chip is no longer centred between two equal slots','A long tuning name runs out of room sooner','Far from the pegs the check is done with']},
+];
+document.getElementById('ways').innerHTML=WAYS.map(w=>`<figure>${w.html}<figcaption><span class="k ${w.rec?'rec':''}">${w.k}${w.rec?' · recommended, built':''}</span><b>${w.title}</b>${w.what}
+ <ul class="pc">${w.pro.map(p=>`<li class="pro">${p}</li>`).join('')}${w.con.map(c=>`<li class="con">${c}</li>`).join('')}</ul></figcaption></figure>`).join('')+
+ `<figure><figcaption><span class="k">not drawn</span><b>A long press on a peg</b>Holding a peg already plays its note, so a second meaning for the same press would surprise; and nothing on screen would say the check is there.</figcaption></figure>`;
+
+const checkLens=(note,on)=>`<div class="lens check"><div class="steps"><span class="${on===0?'on':''}">Open</span><span class="${on===1?'on':''}">12th fret</span></div><div class="ring">${note}</div></div>`;
+const summaryLens=`<div class="lens check" style="flex-direction:row;gap:9px">${NAMES.map((n,i)=>{const r=[['✓','+1'],['→','+8'],['←','−6'],null,null,null][i];
+  return `<div style="text-align:center"><span class="peg" style="border-color:${r?(r[0]==='✓'?'var(--green)':'var(--accent)'):'var(--line)'}">${n}</span><div style="margin-top:8px;color:${r?(r[0]==='✓'?'var(--green)':'var(--accent)'):'var(--muted)'};font-weight:700">${r?r[1]:'–'}</div></div>`}).join('')}</div>`;
+const OPEN=[
+ {t:'Choose a string',html:screen({rowStart:`<span class="tb on">${FRET}</span>`,lens:checkLens('',null),word:{t:'Choose a string',q:true},sub:'Tap the string to check',pegsHtml:pegs({})}),
+  cap:'The check open, before a string is picked: the pegs are the way to pick one.'},
+ {t:'Play the open A string',html:screen({rowStart:`<span class="tb on">${FRET}</span>`,lens:checkLens('A₂',0),word:{t:'Play the open A2 string',q:true},sub:'Let it ring',pegsHtml:pegs({pick:1,marks:['✓']})}),
+  cap:'A tapped: its peg ringed in the accent while it is checked; E already has its ✓.'},
+ {t:'Every result',html:screen({rowStart:`<span class="tb on">${FRET}</span>`,lens:summaryLens,word:{t:'2 strings to move',q:true},sub:'Tap a string to check it again',pegsHtml:pegs({marks:['✓','→','←']})}),
+  cap:'After some strings: each string as a small peg with its cents in the lens\'s place; tap a peg below to check it again.'},
+];
+document.getElementById('open').innerHTML=OPEN.map(o=>`<figure>${o.html}<figcaption><b>${o.t}</b>${o.cap}</figcaption></figure>`).join('');
+</script>
+</body>
+</html>

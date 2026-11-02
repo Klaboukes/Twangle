@@ -130,6 +130,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setStringTickOff(enabled: Boolean) = write { it.copy(stringTickOff = enabled) }
 
+    override suspend fun setShowIntonationCheck(enabled: Boolean) = write { it.copy(showIntonationCheck = enabled) }
+
     override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
 
     override suspend fun setLensLook(look: LensLook) = write { it.copy(lensLook = look) }

@@ -17,8 +17,9 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * The tools the tuner's "more tools" button gathers (docs/architecture/ui-tuner.md, *More tools*),
- * each a mode that takes the meter's and the note's place while it is on. One at a time.
+ * The tuner's tools (docs/architecture/ui-tuner.md, *More tools*), each a mode that takes the meter's and the
+ * note's place while it is on. One at a time. The "more tools" button gathers the strum check and the chord name
+ * (until Phase 74); the 12th-fret check has its own button above the pegs (2.0, Phase 71).
  */
 enum class TunerTool {
     /** Strum once and every string shows flat, in tune or sharp (v1.0). */
@@ -39,12 +40,14 @@ enum class TunerTool {
  * 12-string), the 12th-fret check where its switch is on and the instrument has
  * frets and a saddle ([IntonationInstruments.offers]), the chord name where its switch is on and the
  * instrument is strummed in chords ([ChordInstruments.offers]). (The pitch trail is no tool since 2.0's
- * Phase 71: its switch is the trail look's brake.) With the strum check alone the tuner shows its
- * switch as in v1.0; with any other tool or more, one "more tools" button opens a menu of them.
+ * Phase 71: its switch is the trail look's brake.) The 12th-fret check also needs the player's Settings switch
+ * for its way in ([showIntonationCheck], `AppSettings.showIntonationCheck`; 2.0, Phase 71). The 12th-fret check
+ * has its own button above the pegs; of the others, the strum check alone shows its switch as in v1.0, and
+ * with the chord name too one "more tools" button opens a menu of them.
  */
-fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
+fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument, showIntonationCheck: Boolean = true): List<TunerTool> = buildList {
     if (tools.strumCheck && StrumInstruments.offers(instrument)) add(TunerTool.STRUM_CHECK)
-    if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
+    if (tools.intonationCheck && showIntonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
     if (tools.chordNaming && ChordInstruments.offers(instrument)) add(TunerTool.CHORD_NAME)
 }
 

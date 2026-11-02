@@ -85,6 +85,10 @@
     <string name="settings_string_tick_off_title">Tick off tuned strings</string>
     <!-- The line under the Tick off tuned strings switch. The quoted words are the tuner's own line once every string is in tune (tuner_hint_all_in_tune): use the same translation. -->
     <string name="settings_string_tick_off_summary">A check on each string once it\'s in tune, and “In tune. Play.” when all are</string>
+    <!-- Switch title: shows a small button above the strings' round buttons (pegs) on the tuner that opens the 12th-fret check, a check of whether each string's saddle is in the right place (intonation). Use the same name as the check itself (tuner_intonation_check). -->
+    <string name="settings_intonation_check_title">12th-fret check</string>
+    <!-- The line under the 12th-fret check switch. -->
+    <string name="settings_intonation_check_summary">A button above the strings to check the intonation</string>
     <!-- Switch title: show small bars by the note for how loud and clear the sound is heard. -->
     <string name="settings_show_signal_bars_title">Show signal bars</string>
     <!-- The line under the Show signal bars switch. -->

@@ -246,6 +246,10 @@ class DataStoreSettingsRepository internal constructor(
         save { it[STRING_TICK_OFF] = enabled }
     }
 
+    override suspend fun setShowIntonationCheck(enabled: Boolean) {
+        save { it[SHOW_INTONATION_CHECK] = enabled }
+    }
+
     override suspend fun setShowSignalBars(enabled: Boolean) {
         save { it[SHOW_SIGNAL_BARS] = enabled }
     }
@@ -403,6 +407,7 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
+            showIntonationCheck = prefs[SHOW_INTONATION_CHECK] ?: defaults.showIntonationCheck,
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
@@ -463,6 +468,8 @@ class DataStoreSettingsRepository internal constructor(
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
         /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") is no longer read. */
         private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
+        /** The 12th-fret check's way in on the tuner screen (2.0); in 1.1 the check was in the "more tools" menu, unsaved. */
+        private val SHOW_INTONATION_CHECK = booleanPreferencesKey("show_intonation_check")
         private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
         /** The lens's look ([LensLook]), under 1.1's meter look's key, where 1.1's Light arc keeps its name. */
         private val METER_LOOK = stringPreferencesKey("meter_look")

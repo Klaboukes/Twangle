@@ -146,6 +146,12 @@ data class AppSettings(
      * under "Show tuning help", `show_tune_hint`, which 2.0 no longer reads) starts without them.
      */
     val stringTickOff: Boolean = false,
+    /**
+     * The 12th-fret check's way in on the tuner screen (2.0, Phase 71): its button above the pegs shows only while
+     * this is on. Off by default and when missing (the check is for setting up a guitar now and then, not for tuning
+     * every day); with `ToolSwitches.intonationCheck` off in a build neither the button nor this switch shows.
+     */
+    val showIntonationCheck: Boolean = false,
     /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
     val showSignalBars: Boolean = false,
     /**

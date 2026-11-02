@@ -200,7 +200,8 @@ class ChordNameStylesTest {
         chord.assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuner_chord_name)).assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.tool(TunerTool.STRUM_CHECK)).assertIsDisplayed()
-        compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).assertIsDisplayed()
+        // The 12th-fret check has its own button above the pegs since 2.0 (Phase 71), no entry here.
+        compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).assertDoesNotExist()
         assertEquals(ToggleableState.On, chord.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
         assertEquals(Role.Switch, chord.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Role))
         chord.performClick()

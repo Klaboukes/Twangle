@@ -88,6 +88,7 @@ class SettingsContentTest {
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tickOffChanges = mutableListOf<Boolean>()
+    private val intonationCheckChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val focusModeChanges = mutableListOf<Boolean>()
     private val leftHandedChanges = mutableListOf<Boolean>()
@@ -121,6 +122,7 @@ class SettingsContentTest {
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
         settingsBack: Boolean = false,
+        intonationCheck: Boolean = true,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
@@ -151,6 +153,7 @@ class SettingsContentTest {
                         onFocusModeChange = { focusModeChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
+                        onShowIntonationCheckChange = if (intonationCheck) ({ intonationCheckChanges += it }) else null,
                         dynamicColorAvailable = dynamicColorAvailable,
                         languages = languages,
                         appLanguage = appLanguage,
@@ -395,6 +398,44 @@ class SettingsContentTest {
         assertEquals(listOf(true), tickOffChanges)
     }
 
+    /**
+     * The 12th-fret check's switch (2.0, Phase 71) in While tuning, after the tick-off: off by default, its words in
+     * English and Dutch, a tap turns it on; on, it shows so and turns off. A build without the check has no switch.
+     */
+    @Test
+    fun theTwelfthFretCheckSwitchIsOffByDefaultAndToggles() = assertIntonationCheckSwitch("en", "12th-fret check")
+
+    @Test
+    fun dutchTwelfthFretCheckSwitchIsOffByDefaultAndToggles() = assertIntonationCheckSwitch("nl", "12e-fretcheck")
+
+    private fun assertIntonationCheckSwitch(locale: String, title: String) {
+        show(AppSettings(), locale = locale)
+        val res = resourcesIn(locale)
+        assertEquals(title, res.getString(R.string.settings_intonation_check_title))
+        val switch = compose.onNodeWithText(title)
+        switch.performScrollTo().assertIsOff()
+        compose.onNodeWithText(res.getString(R.string.settings_intonation_check_summary)).assertIsDisplayed()
+        switch.performClick()
+        assertEquals(listOf(true), intonationCheckChanges)
+    }
+
+    @Test
+    fun theTwelfthFretCheckSwitchShowsItIsOnAndTurnsOff() {
+        show(AppSettings(showIntonationCheck = true))
+        compose.onNodeWithText(context.getString(R.string.settings_intonation_check_title)).performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), intonationCheckChanges)
+    }
+
+    @Test
+    fun aBuildWithoutTheTwelfthFretCheckHasNoSwitchForIt() {
+        show(AppSettings(showIntonationCheck = true), intonationCheck = false)
+        compose.onAllNodesWithText(context.getString(R.string.settings_intonation_check_title)).assertCountEquals(0)
+        compose.onAllNodesWithText(context.getString(R.string.settings_intonation_check_summary)).assertCountEquals(0)
+        // The rest of While tuning is all there.
+        compose.onNodeWithText(context.getString(R.string.settings_string_tick_off_title)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_show_signal_bars_title)).performScrollTo().assertIsDisplayed()
+    }
+
     @Test
     fun signalBarsSwitchIsOffByDefaultAndToggles() {
         show(AppSettings())
@@ -500,6 +541,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),
+            top(context.getString(R.string.settings_intonation_check_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.settings_group_app)),
             top(context.getString(R.string.about_title)),

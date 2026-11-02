@@ -52,6 +52,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setStringTickOff(enabled) }
     }
 
+    fun setShowIntonationCheck(enabled: Boolean) {
+        viewModelScope.launch { repository.setShowIntonationCheck(enabled) }
+    }
+
     fun setShowSignalBars(enabled: Boolean) {
         viewModelScope.launch { repository.setShowSignalBars(enabled) }
     }

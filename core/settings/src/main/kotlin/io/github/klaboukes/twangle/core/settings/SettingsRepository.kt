@@ -97,6 +97,8 @@ interface SettingsRepository {
 
     suspend fun setStringTickOff(enabled: Boolean)
 
+    suspend fun setShowIntonationCheck(enabled: Boolean)
+
     suspend fun setShowSignalBars(enabled: Boolean)
 
     /**

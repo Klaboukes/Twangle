@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationVerdict
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
+import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -38,11 +39,12 @@ class IntonationFlowTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private val settings = FakeSettingsRepository()
+    // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
+    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
-        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), tools = tools)
+        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), saved = settings.settings.value, tools = tools)
 
     private fun TunerViewModel.check(): TunerUiState.IntonationCheck {
         val state = state.value
@@ -160,6 +162,32 @@ class IntonationFlowTest {
         backgroundScope.launch { vm.state.collect {} }
         assertEquals(emptyList<TunerTool>(), vm.tunerTools.value)
         vm.setIntonationCheck(true)
+        advanceTimeBy(100)
+        assertFalse(vm.intonationCheck.value)
+        assertTrue(vm.state.value is TunerUiState.Listening)
+    }
+
+    @Test
+    fun `with its Settings switch off the check is not offered, and turning the switch off turns it off`() = runTest(dispatcher) {
+        settings.setShowIntonationCheck(false)
+        val vm = viewModel(FakeAudioRecorder.silence())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(100)
+        assertFalse(TunerTool.INTONATION_CHECK in vm.tunerTools.value)
+        vm.setIntonationCheck(true)
+        advanceTimeBy(100)
+        assertFalse(vm.intonationCheck.value)
+        assertTrue(vm.state.value is TunerUiState.Listening)
+
+        settings.setShowIntonationCheck(true)
+        advanceTimeBy(100)
+        assertTrue(TunerTool.INTONATION_CHECK in vm.tunerTools.value)
+        vm.setIntonationCheck(true)
+        advanceTimeBy(100)
+        assertTrue(vm.state.value is TunerUiState.IntonationCheck)
+
+        settings.setShowIntonationCheck(false)
         advanceTimeBy(100)
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)

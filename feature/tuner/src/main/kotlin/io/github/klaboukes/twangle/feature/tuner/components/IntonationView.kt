@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.controlOutline
+import io.github.klaboukes.twangle.core.designsystem.stringChipFill
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,9 +77,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.progressBarRangeInfo
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -146,8 +145,10 @@ fun spokenMark(mark: StringMark): String = stringResource(
  * The 12th-fret check's readout, in the meter's place and at its 2:1 shape (like the strum check's
  * panel), drawn in the style's colours and faces on a calm field and sized by its width, not the font
  * size. Its top says where the check is (Open · 12th fret). Then, by [TunerUiState.IntonationCheck.step]:
- * - choosing: the two steps and an empty ring (the line under it asks for a string), or once a string has a result, one column per string (its name, its
- *   mark, its cents), each a button for its string, as on the string row ([onStringClick]);
+ * - choosing: the two steps and an empty ring (the line under it asks for a string), or once a string has a result, every
+ *   string as a small peg in the pegs' order (2.0, Phase 71): its name in a round face ringed in its result's colour,
+ *   its mark on the face's corner as on the peg below, its cents under it. The pegs below the panel pick the string
+ *   (a tap on one checks it, again), so the panel itself has nothing to tap;
  * - the open string and the 12th fret: a ring that fills while the steady note is taken, round the
  *   note asked for (A₂, then A₃);
  * - the verdict: the string from the neck to its saddle, an arrow for the move (a check mark when
@@ -157,8 +158,6 @@ fun spokenMark(mark: StringMark): String = stringResource(
 fun IntonationPanel(
     state: TunerUiState.IntonationCheck,
     modifier: Modifier = Modifier,
-    onStringClick: ((Int) -> Unit)? = null,
-    toneSounding: Boolean = false,
 ) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
@@ -169,6 +168,10 @@ fun IntonationPanel(
         accent = scheme.primary,
         inTune = tokens.inTune,
         background = scheme.background,
+        onAccent = scheme.onPrimary,
+        onInTune = tokens.onInTune,
+        face = stringChipFill(scheme),
+        edge = controlOutline(scheme),
     )
     val summary = state.step == IntonationStep.CHOOSE && state.results.any { it != null }
     Box(
@@ -189,7 +192,7 @@ fun IntonationPanel(
             },
     ) {
         if (summary) {
-            IntonationSummary(state, colours, onStringClick, toneSounding)
+            IntonationSummary(state, colours)
         } else {
             IntonationStepView(state, colours)
         }
@@ -355,27 +358,21 @@ private fun arrowPath(from: Offset, to: Offset, head: Float): Path = Path().appl
 }
 
 /**
- * Every string's result once one has been checked: a column per string in the string row's order,
- * its name, its mark (or "–" not checked yet) and its cents. Each column is a button that checks its
- * string (again); TalkBack hears "A 2, move saddle back, 8 cents sharp".
+ * Every string's result once one has been checked, drawn as the pegs (2.0, Phase 71): a column per string in the
+ * pegs' order, its name in a round face whose ring is its result's colour (the "in tune" colour when fine, the
+ * accent when its saddle moves, the plain edge not checked yet), its mark on the face's top end corner as the peg
+ * below carries it, and its cents under it ("–" not checked yet). Nothing here is a button: the pegs below pick the
+ * string. TalkBack hears each column: "A 2, move saddle back, 8 cents sharp".
  */
 @Composable
-private fun IntonationSummary(
-    state: TunerUiState.IntonationCheck,
-    colours: IntonationColours,
-    onStringClick: ((Int) -> Unit)?,
-    toneSounding: Boolean,
-) {
-    val tokens = MaterialTheme.styleTokens
+private fun IntonationSummary(state: TunerUiState.IntonationCheck, colours: IntonationColours) {
     val measurer = rememberTextMeasurer()
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
-    val nameStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
+    val nameStyle = MaterialTheme.typography.titleMedium.copy(lineHeight = TextUnit.Unspecified)
     val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
-    val checkLabel = stringResource(R.string.tuner_intonation_check_string)
-    val stopLabel = stringResource(R.string.tuner_string_stop_tone)
     val notChecked = stringResource(R.string.tuner_intonation_spoken_not_checked)
-    val pressShape = MaterialTheme.shapes.medium
+    val separator = stringResource(R.string.tuner_spoken_separator)
     Row(Modifier.fillMaxSize().testTag(TunerTestTags.INTONATION_PANEL), horizontalArrangement = Arrangement.SpaceEvenly) {
         state.tuning.strings.forEachIndexed { index, note ->
             val name = state.notation.nameIn(state.tuning, note.pitchClass)
@@ -385,12 +382,9 @@ private fun IntonationSummary(
             val spoken = if (mark == null || result == null) {
                 notChecked.format(spokenName)
             } else {
-                stringResource(R.string.tuner_strum_spoken_string, spokenName, spokenMark(mark) + stringResource(R.string.tuner_spoken_separator) + centsPhrase(result.offsetCents))
+                stringResource(R.string.tuner_strum_spoken_string, spokenName, spokenMark(mark) + separator + centsPhrase(result.offsetCents))
             }
-            val click: (() -> Unit)? = onStringClick?.let { { it(index) } }
-            val clickLabel = if (toneSounding) stopLabel else checkLabel.format(spokenName)
             val label = result?.let { signedCents(it.offsetCents) } ?: NOT_CHECKED_MARK
-            val interactions = remember { MutableInteractionSource() }
             Box(
                 Modifier
                     .weight(1f)
@@ -398,57 +392,45 @@ private fun IntonationSummary(
                     .clearAndSetSemantics {
                         contentDescription = spoken
                         testTag = TunerTestTags.intonationString(index)
-                        if (click != null) {
-                            role = Role.Button
-                            onClick(label = clickLabel) {
-                                click()
-                                true
-                            }
-                        }
                     }
                     .drawWithCache {
                         val u = size.height / UNITS_HIGH
-                        val maxText = size.width * 0.9f
+                        // As round as the pegs, as big as the column lets it be.
+                        val radius = minOf(PEG_RADIUS * u, size.width * PEG_WIDTH_SHARE / 2f)
                         val nameLayout = measurer.fitted(
                             buildAnnotatedString {
                                 append(musicText(name))
                                 withStyle(SpanStyle(fontSize = OCTAVE_SIZE.em, baselineShift = BaselineShift(OCTAVE_DROP))) { append(note.octave.toString()) }
                             },
-                            nameStyle.copy(color = colours.ink, fontSize = (COLUMN_NAME_UNITS * u).toSpNoScale(this)),
-                            maxText,
+                            nameStyle.copy(color = colours.ink, fontSize = (radius * PEG_NAME_SHARE).toSpNoScale(this)),
+                            radius * 1.6f,
                         )
-                        val labelColour = when (mark) {
+                        val resultColour = when (mark) {
                             null -> colours.muted
                             StringMark.FINE -> colours.inTune
                             else -> colours.accent
                         }
                         val labelLayout = measurer.fitted(
                             AnnotatedString(label),
-                            numberStyle.copy(color = labelColour, fontSize = (COLUMN_LABEL_UNITS * u).toSpNoScale(this)),
-                            maxText,
+                            numberStyle.copy(color = resultColour, fontSize = (COLUMN_LABEL_UNITS * u).toSpNoScale(this)),
+                            size.width * 0.9f,
                         )
-                        val x = size.width / 2f
+                        val centre = Offset(size.width / 2f, PEG_Y * u)
+                        val ring = if (mark == null) 1.dp.toPx() else PEG_RING * u
                         onDrawBehind {
-                            drawText(nameLayout, topLeft = Offset(x - nameLayout.size.width / 2f, COLUMN_NAME_Y * u - nameLayout.size.height / 2f))
-                            val centre = Offset(x, COLUMN_MARK_Y * u)
-                            if (mark == null) {
-                                drawCircle(colours.track, COLUMN_MARK_RADIUS * u, centre, style = Stroke(1.6f * u))
-                            } else {
-                                drawMark(mark, centre, COLUMN_MARK_RADIUS * u, if (mark == StringMark.FINE) colours.inTune else colours.accent, colours.background)
+                            drawCircle(colours.face, radius, centre)
+                            drawCircle(if (mark == null) colours.edge else resultColour, radius - ring / 2f, centre, style = Stroke(ring))
+                            drawText(nameLayout, topLeft = Offset(centre.x - nameLayout.size.width / 2f, centre.y - nameLayout.size.height / 2f))
+                            if (mark != null) {
+                                // On the face's top end corner, as on the peg (stringMarkBadge), ringed in the background.
+                                val badge = radius * BADGE_SHARE
+                                val at = Offset(centre.x + radius * 0.7f, centre.y - radius * 0.7f)
+                                drawCircle(colours.background, badge + 1.5.dp.toPx(), at)
+                                drawMark(mark, at, badge, resultColour, if (mark == StringMark.FINE) colours.onInTune else colours.onAccent)
                             }
-                            drawText(labelLayout, topLeft = Offset(x - labelLayout.size.width / 2f, COLUMN_LABEL_Y * u - labelLayout.size.height / 2f))
+                            drawText(labelLayout, topLeft = Offset(centre.x - labelLayout.size.width / 2f, COLUMN_LABEL_Y * u - labelLayout.size.height / 2f))
                         }
-                    }
-                    .then(
-                        if (click == null) {
-                            Modifier
-                        } else {
-                            Modifier
-                                .clickable(interactions, indication = null, onClickLabel = clickLabel, role = Role.Button, onClick = click)
-                                .clip(pressShape)
-                                .indication(interactions, LocalIndication.current)
-                        },
-                    ),
+                    },
             )
         }
     }
@@ -689,13 +671,47 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 }
 
 /**
- * The tuner's tools (strum check, the 12th-fret check, the chord name; later ones join) behind one small "more tools"
+ * The 12th-fret check's way in on the tuner screen (2.0, Phase 71; until then an entry of the "more tools" menu): a
+ * small button above the pegs at the row's start, its outline in line with the first peg's face, the style's button
+ * ([StyleButton]) with the 12th-fret icon and no word, picked (the container colour with a 2 dp accent outline) while
+ * the check is [on]. A tap turns the check on, or off again. It shows only while the player's Settings switch is on
+ * (`AppSettings.showIntonationCheck`) and the build has the check (`ToolSwitches.intonationCheck`). TalkBack hears it
+ * as a switch, "12th-fret check, on"; a long-press shows its name in a tooltip.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun IntonationCheckButton(on: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    val label = stringResource(R.string.tuner_intonation_check)
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(label) } },
+        state = rememberTooltipState(),
+    ) {
+        StyleButton(
+            onClick = { onChange(!on) },
+            label = label,
+            modifier = modifier,
+            face = STRUM_TOGGLE_SIZE,
+            picked = on,
+            role = Role.Switch,
+            faceModifier = Modifier
+                .testTag(TunerTestTags.INTONATION_BUTTON)
+                .semantics { toggleableState = ToggleableState(on) },
+        ) {
+            Icon(painterResource(R.drawable.ic_twelfth_fret), contentDescription = null, modifier = Modifier.size(MORE_ICON_SIZE))
+        }
+    }
+}
+
+/**
+ * The tuner's tools (strum check and the chord name until Phase 74 makes them happen by themselves; the 12th-fret
+ * check has its own button since Phase 71, [IntonationCheckButton]) behind one small "more tools"
  * button above the strings (three tiles and a plus, Material Symbols `dashboard_customize`, no word), where the strum
  * check's switch sits when it is the only tool: the style's button ([StyleButton]), picked (the container colour with
  * a 2 dp accent outline) while a tool is on. A tap opens a small menu that lifts softly off the screen (no outline):
  * each tool with its icon and name, the one that is on marked as Practice's tool menu marks its tool (the container
  * colour with a 2 dp accent outline; Phase 63, never green, which means in tune); picking one turns it on (and the
- * other off), picking the one that is on turns it off. TalkBack: "More tools, 12th-fret check on, button" (just
+ * other off), picking the one that is on turns it off. TalkBack: "More tools, chord name on, button" (just
  * "More tools" with none on), and each tool in the menu as a switch, on or off, since one can be turned off and
  * leave none; a long-press shows its name in a tooltip.
  */
@@ -846,6 +862,10 @@ private class IntonationColours(
     val accent: Color,
     val inTune: Color,
     val background: Color,
+    val onAccent: Color,
+    val onInTune: Color,
+    val face: Color,
+    val edge: Color,
 )
 
 private const val PANEL_ASPECT_RATIO = 2f
@@ -888,10 +908,13 @@ private const val DRAWING_LABEL_UNITS = 12f
 private const val FIGURE_Y = 152f
 private const val FIGURE_UNITS = 22f
 
-private const val COLUMN_NAME_Y = 30f
-private const val COLUMN_NAME_UNITS = 24f
-private const val COLUMN_MARK_Y = 88f
-private const val COLUMN_MARK_RADIUS = 16f
+/** The summary's pegs: their centre, their radius at most (in units), at most this share of a column's width, the name this share of the radius, the result's ring, the mark's disc this share of the radius. */
+private const val PEG_Y = 72f
+private const val PEG_RADIUS = 34f
+private const val PEG_WIDTH_SHARE = 0.8f
+private const val PEG_NAME_SHARE = 0.75f
+private const val PEG_RING = 3.5f
+private const val BADGE_SHARE = 0.42f
 private const val COLUMN_LABEL_Y = 140f
 private const val COLUMN_LABEL_UNITS = 19f
 private const val NOT_CHECKED_MARK = "–"

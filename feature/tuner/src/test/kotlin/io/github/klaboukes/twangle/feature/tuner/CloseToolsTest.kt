@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
+import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -33,11 +34,12 @@ class CloseToolsTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private val settings = FakeSettingsRepository()
+    // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
+    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel() =
-        TunerViewModel(FakeAudioRecorder.silence(), settings, tones, StandardTestDispatcher(testScheduler), tools = ToolSwitches.ALL_ON)
+        TunerViewModel(FakeAudioRecorder.silence(), settings, tones, StandardTestDispatcher(testScheduler), saved = settings.settings.value, tools = ToolSwitches.ALL_ON)
 
     @Test
     fun `each new request turns the tool that is on off, and the tuner listens again`() = runTest(dispatcher) {

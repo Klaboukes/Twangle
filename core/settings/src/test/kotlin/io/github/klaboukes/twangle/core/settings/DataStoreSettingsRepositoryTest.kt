@@ -110,6 +110,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
+        assertEquals("the 12th-fret check's way in is off on a fresh install", false, settings.showIntonationCheck)
         assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
         assertEquals(false, settings.focusMode)
@@ -149,6 +150,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setStringTickOff(true)
+        repo.setShowIntonationCheck(true)
         repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
         repo.setFocusMode(true)
@@ -188,6 +190,7 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             stringTickOff = true,
+            showIntonationCheck = true,
             showSignalBars = true,
             lensLook = LensLook.STROBE,
             focusMode = true,
@@ -871,6 +874,17 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun `the 12th-fret check's way in is saved under show_intonation_check and survives a restart`() = runTest {
+        val store = dataStore()
+        assertEquals("off when missing, so a 1_1 player starts without it", false, repository(store).settings.first().showIntonationCheck)
+        repository(store).setShowIntonationCheck(true)
+        assertEquals(true, store.data.first()[booleanPreferencesKey("show_intonation_check")])
+        assertEquals(true, repository(store).settings.first().showIntonationCheck)
+        repository(store).setShowIntonationCheck(false)
+        assertEquals(false, repository(store).settings.first().showIntonationCheck)
+    }
+
+    @Test
     fun `1_1's Show tuning help is left in the file unread, so a 1_1 player starts without the tick-off`() = runTest {
         val store = dataStore()
         val repo = repository(store)
@@ -1162,6 +1176,7 @@ class DataStoreSettingsRepositoryTest {
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
+            "setShowIntonationCheck" to { repo.setShowIntonationCheck(!before.showIntonationCheck) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             "setFocusMode" to { repo.setFocusMode(!before.focusMode) },
