@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.LaunchedEffect
@@ -117,6 +118,12 @@ import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import io.github.klaboukes.twangle.feature.tuner.components.PitchTrailPanel
+import io.github.klaboukes.twangle.feature.tuner.components.RULER_HEIGHT
+import io.github.klaboukes.twangle.feature.tuner.components.Ruler
+import io.github.klaboukes.twangle.feature.tuner.components.rulerHeardMidi
+import io.github.klaboukes.twangle.feature.tuner.components.rulerNames
+import io.github.klaboukes.twangle.feature.tuner.components.rulerPosition
+import io.github.klaboukes.twangle.feature.tuner.components.rulerRestMidi
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
@@ -212,6 +219,10 @@ fun TunerScreen(
     // The exact cents and the reception, read while drawing (NaN without a note).
     val exactCents = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.cents else Float.NaN } } }
     val reception = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.reception else Float.NaN } } }
+    // Where the exact reading sits on the ruler's scale, read while drawing too, from the same reading as the cents.
+    val rulerPitch = remember(readings) {
+        LiveFloat { readings.value.let { if (it is TunerUiState.Detected) rulerPosition(it.targetMidi, it.cents) else Float.NaN } }
+    }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val instrument by viewModel.instrument.collectAsStateWithLifecycle()
     val customTunings by viewModel.customTunings.collectAsStateWithLifecycle()
@@ -275,6 +286,7 @@ fun TunerScreen(
                     state = state,
                     needleCents = exactCents,
                     reception = reception,
+                    rulerPitch = rulerPitch,
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
@@ -450,7 +462,13 @@ object TunerTestTags {
     /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
     const val GAUGE = "tuner_gauge"
 
-    /** The optional signal bars by the note, and the figures panel a tap on them opens. */
+    /**
+     * The ruler at the top (2.0, Phase 71): the chromatic scale under its pointer. TalkBack skips it; UI tests read
+     * the note it shows and whether it is quiet from its semantics (`RulerNote`, `RulerQuiet`).
+     */
+    const val RULER = "tuner_ruler"
+
+    /** The optional signal bars by the ruler's heard note (in the chip row while a tool's panel takes the meter's place), and the figures panel a tap on them opens. */
     const val SIGNAL_BARS = "tuner_signal_bars"
     const val SIGNAL_FIGURES = "tuner_signal_figures"
 
@@ -636,6 +654,7 @@ fun TunerContent(
     tunedStrings: TunedStrings? = null,
     needleCents: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.cents else Float.NaN },
     reception: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.reception else Float.NaN },
+    rulerPitch: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) rulerPosition(state.targetMidi, state.cents) else Float.NaN },
     inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
@@ -687,7 +706,8 @@ fun TunerContent(
         is TunerUiState.ChordName -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
-    val header = @Composable {
+    // barsInRow: the signal bars in the chip's row, where no ruler stands beside them (a tool's panel, a phone on its side).
+    val header = @Composable { barsInRow: Boolean ->
         // The picker chip, top centre (2.0, Phase 70); none over an error, where the sheet can't open.
         val chip = @Composable {
             if (shownTuning != null) {
@@ -711,7 +731,8 @@ fun TunerContent(
         }
         ChipRow(
             chip = chip,
-            bars = if (showSignalBars) ({ movableSignalBars() }) else null,
+            // Beside the ruler's heard note; in the row only while a tool's panel stands in the ruler's and the meter's place.
+            bars = if (showSignalBars && barsInRow) ({ movableSignalBars() }) else null,
             button = focusButton,
             gear = settingsButton,
         )
@@ -803,6 +824,8 @@ fun TunerContent(
                 showTuneHint = showTuneHint,
                 tip = state.tip,
                 speech = speech,
+                // The ruler above names the note: on a short screen the big one makes room for it (Phase 71).
+                noteMayGo = true,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->
@@ -816,6 +839,7 @@ fun TunerContent(
                     // While a reference tone sounds its line says which, not a tip about the mic.
                     tip = state.tip.takeIf { soundingString == null },
                     speech = speech,
+                    noteMayGo = true,
                 )
             else -> NoteDisplay(
                 readout = null,
@@ -848,21 +872,55 @@ fun TunerContent(
         }
     }
     val note = @Composable { compact: Boolean, maxHeight: Dp -> noteFor(compact, maxHeight) }
+    // The ruler over the meter (2.0, Phase 71) while the tuner reads a note or waits for one; a tool's
+    // panel in the meter's place has none. Focus mode's full-screen meter has none until Phase 73 lays it out wide.
+    val lastHeard = remember { LastHeardNote() }
+    val ruler = rulerFor(state, lastHeard)?.let { shown ->
+        @Composable {
+            Ruler(
+                pitch = rulerPitch,
+                names = shown.names,
+                rest = shown.rest,
+                heard = shown.heard,
+                cents = needleCents,
+                inTune = (state as? TunerUiState.Detected)?.inTune == true,
+                precision = inTunePrecision,
+                animationsOff = animationsOff,
+                bars = if (showSignalBars) ({ movableSignalBars() }) else null,
+            )
+        }
+    }
+    val rulerAndGauge = @Composable {
+        if (ruler == null) {
+            gauge()
+        } else {
+            // Under its neighbours, as the meter is on its own: the meter's glow reaches past its box, behind them.
+            Column(Modifier.zIndex(-1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                ruler()
+                Spacer(Modifier.height(RULER_METER_GAP))
+                gauge()
+            }
+        }
+    }
     val error = (state as? TunerUiState.Error)?.reason
     // The plain tuner's meter; with a tool on, its panel takes the meter's place.
     val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
         !(pitchTrail && pitchHistory != null)
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        // On its side the readout pane holds the ruler only where it is tall enough for the ruler, the meter
+        // and the note (a tablet; not a phone, whose ruler waits for Phase 73's wide layout without the big note).
+        val rulerBesideControls = ruler.takeIf { maxHeight >= TWO_PANE_RULER_MIN_HEIGHT }
         val twoPane = @Composable {
             TwoPaneLayout(
                 error = error,
                 onRetry = onRetry,
-                header = header,
+                header = { header(rulerBesideControls == null) },
                 guitarSlot = guitarSlot,
                 gauge = gauge,
                 note = { compact -> note(compact, Dp.Unspecified) },
                 compactNote = showTuneHint,
+                ruler = rulerBesideControls,
             )
         }
         val singleColumn = @Composable {
@@ -873,8 +931,8 @@ fun TunerContent(
                     height = maxHeight / scale,
                     error = error,
                     onRetry = onRetry,
-                    header = header,
-                    gauge = gauge,
+                    header = { header(ruler == null) },
+                    gauge = rulerAndGauge,
                     note = { maxHeight -> note(false, maxHeight) },
                     noteShrinks = plainMeter,
                     guitarSlot = guitarSlot,
@@ -963,6 +1021,47 @@ fun TunerContent(
     }
 }
 
+/** What the ruler shows: its 12 [names], where it rests while quiet ([rest]) and the [heard] note (null while quiet). */
+private class RulerShown(val names: List<String>, val rest: Int, val heard: Int?)
+
+/** The note the ruler last showed as heard, so it rests there once the string dies away (not state: nothing redraws for it). */
+private class LastHeardNote {
+    var midi: Int? = null
+}
+
+/**
+ * What the ruler shows for [state] ([RulerShown]): with a note, the heard note as the screen's text has the
+ * reading; waiting for one, where it rests ([rulerRestMidi]: a locked string, the note [lastHeard], the
+ * tuning's first string or A4). Null for every other state: the ruler shows only in the plain tuner.
+ */
+@Composable
+private fun rulerFor(state: TunerUiState, lastHeard: LastHeardNote): RulerShown? {
+    val mode: TunerMode
+    val tuning: Tuning
+    val notation: Notation
+    val locked: Int?
+    when (state) {
+        is TunerUiState.Detected -> {
+            mode = state.mode
+            tuning = state.tuning
+            notation = state.notation
+            locked = state.lockedString
+        }
+        is TunerUiState.Listening -> {
+            mode = state.mode
+            tuning = state.tuning
+            notation = state.notation
+            locked = state.lockedString
+        }
+        else -> return null
+    }
+    val guitar = mode == TunerMode.AUTO
+    val names = remember(notation, tuning.spelling, guitar) { rulerNames(notation, tuning, guitar) }
+    val heard = (state as? TunerUiState.Detected)?.let { rulerHeardMidi(rulerPosition(it.targetMidi, it.cents)) }
+    if (heard != null) SideEffect { lastHeard.midi = heard }
+    return RulerShown(names, rest = heard ?: rulerRestMidi(mode, tuning, locked, lastHeard.midi), heard = heard)
+}
+
 /**
  * The upright layout, as on the approved mock-up (docs/design/theme-styles-preview.html): the mode
  * switch centred at the top, the meter as wide
@@ -1038,6 +1137,7 @@ private fun TwoPaneLayout(
     gauge: @Composable () -> Unit,
     note: @Composable (compact: Boolean) -> Unit,
     compactNote: Boolean,
+    ruler: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
@@ -1059,7 +1159,10 @@ private fun TwoPaneLayout(
                     TunerErrorMessage(error, onRetry)
                 } else {
                     val compact = compactNote && paneHeight < COMPACT_PANE_HEIGHT
-                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
+                    // The ruler across the whole pane, not only as wide as the meter that shrinks under it.
+                    if (ruler != null) Box(Modifier.zIndex(1f)) { ruler() }
+                    val rulerRoom = if (ruler != null) RULER_HEIGHT + SECTION_SPACING else 0.dp
+                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight - rulerRoom)
                 }
             }
         }
@@ -1620,6 +1723,12 @@ private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
 }
 
 private val SECTION_SPACING = 24.dp
+
+/** The least height of the two-pane layout that shows the ruler over the meter and the note: a tablet on its side, not a phone. */
+private val TWO_PANE_RULER_MIN_HEIGHT = 480.dp
+
+/** Between the ruler and the meter under it. */
+private val RULER_METER_GAP = 12.dp
 
 /** Between the strum check's switch and the string row under it. */
 private val TOGGLE_STRINGS_GAP = 8.dp

@@ -110,7 +110,8 @@ data class NoteReadout(
  * frequency. (1.1's wave view, which could take the pill's and the frequency's place, went in Phase 67.)
  * [compact] makes the note smaller, for short spaces such as a phone on its side.
  * With a [maxHeight] the note (only the note, whatever it says) gets smaller so the block fits in it,
- * down to [FIT_NOTE_MIN_SIZE]. The note is set in the style's display face and shrinks to fit when a face or a
+ * down to [FIT_NOTE_MIN_SIZE]; with [noteMayGo] (2.0, Phase 71: the ruler above shows the note) a block that
+ * still doesn't fit leaves the note out, and without a readout the hint or tip moves into the empty pill's line. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and a small check mark shows at the pill's
  * start, so the state doesn't rely on colour alone (colour-blind players see it too). With the needle's
@@ -154,6 +155,7 @@ fun NoteDisplay(
     showTuneHint: Boolean = false,
     tip: ReceptionTip? = null,
     speech: PacedSpeech = rememberPacedSpeech(),
+    noteMayGo: Boolean = false,
 ) {
     val inTune = readout?.inTune == true
     val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
@@ -346,7 +348,8 @@ fun NoteDisplay(
             }
         }
         // Everything under the note: the pill and the lines under it.
-        val rest = @Composable {
+        // hintInPill: the note's slot is left out (noteMayGo), so the idle hint or tip takes the empty pill's line.
+        val rest = @Composable { hintInPill: Boolean ->
             val check = @Composable { shown: Boolean ->
                 Icon(
                     painter = painterResource(R.drawable.ic_check_circle),
@@ -391,6 +394,7 @@ fun NoteDisplay(
                     val inTuneLabel = inTuneLabel()
                     Text(
                         text = when {
+                            readout == null && hintInPill -> idleText ?: AnnotatedString("")
                             // Resting, empty: the hint is in the note's slot. Still there, so the
                             // pill keeps its line and nothing moves when a note starts.
                             readout == null -> AnnotatedString("")
@@ -400,10 +404,14 @@ fun NoteDisplay(
                         },
                         style = pillStyle,
                         color = when {
+                            readout == null && hintInPill -> hintColor
                             readout == null -> colors.onSurface
                             else -> pillText
                         },
                         textAlign = TextAlign.Center,
+                        maxLines = if (hintInPill) 1 else Int.MAX_VALUE,
+                        softWrap = !hintInPill,
+                        autoSize = if (hintInPill && readout == null) tipAutoSize(pillStyle.fontSize) else null,
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .widthIn(min = centsWidth)
@@ -453,11 +461,11 @@ fun NoteDisplay(
             }
         }
         if (maxHeight.isSpecified) {
-            FitNoteColumn(maxHeight, noteSize, rememberLineHeight(noteStyle(noteSize)), noteRow, rest)
+            FitNoteColumn(maxHeight, noteSize, rememberLineHeight(noteStyle(noteSize)), noteRow, rest, noteMayGo, hintInSlot = readout == null)
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(NOTE_SPACING)) {
                 noteRow(noteSize)
-                rest()
+                rest(false)
             }
         }
     }
@@ -467,7 +475,9 @@ fun NoteDisplay(
  * [note] above [rest], as [NoteDisplay]'s column, with the note at the size that fills what [rest]
  * leaves of [maxHeight]: at most [fullSize] (whose line is [fullLine] px tall in the style's face),
  * at least [FIT_NOTE_MIN_SIZE]. It follows the room, not the note's name, so it doesn't change from
- * one note to the next.
+ * one note to the next. With [noteMayGo], where even that size doesn't fit, the note is left out and
+ * the rest stands alone, in a readout and without one alike, so nothing moves between the two; with [hintInSlot]
+ * (no readout: the hint or tip is in the note's slot) [rest] is told so (its hintInPill) and takes it.
  */
 @Composable
 private fun FitNoteColumn(
@@ -475,17 +485,28 @@ private fun FitNoteColumn(
     fullSize: Dp,
     fullLine: Int,
     note: @Composable (size: Dp) -> Unit,
-    rest: @Composable () -> Unit,
+    rest: @Composable (hintInPill: Boolean) -> Unit,
+    noteMayGo: Boolean = false,
+    hintInSlot: Boolean = false,
 ) {
     SubcomposeLayout { constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0, maxHeight = Constraints.Infinity)
         val restPlaceable = subcompose(FitSlot.REST) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(NOTE_SPACING)) { rest() }
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(NOTE_SPACING)) { rest(false) }
         }.single().measure(loose)
         val spacing = NOTE_SPACING.roundToPx()
         val room = maxHeight.roundToPx() - restPlaceable.height - spacing
         // The line grows with the note, so the size that fills the room is in proportion to it.
-        val size = (fullSize * (room.toFloat() / fullLine)).coerceIn(FIT_NOTE_MIN_SIZE, fullSize)
+        val fitting = fullSize * (room.toFloat() / fullLine)
+        if (noteMayGo && fitting < FIT_NOTE_MIN_SIZE) {
+            // A readout's rest is the same either way; only the idle hint needs the pill's line.
+            if (!hintInSlot) return@SubcomposeLayout layout(restPlaceable.width, restPlaceable.height) { restPlaceable.placeRelative(0, 0) }
+            val alone = subcompose(FitSlot.REST_ALONE) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(NOTE_SPACING)) { rest(true) }
+            }.single().measure(loose)
+            return@SubcomposeLayout layout(alone.width, alone.height) { alone.placeRelative(0, 0) }
+        }
+        val size = fitting.coerceIn(FIT_NOTE_MIN_SIZE, fullSize)
         val notePlaceable = subcompose(FitSlot.NOTE) { note(size) }.single().measure(loose)
         val width = maxOf(notePlaceable.width, restPlaceable.width)
         layout(width, notePlaceable.height + spacing + restPlaceable.height) {
@@ -495,7 +516,7 @@ private fun FitNoteColumn(
     }
 }
 
-private enum class FitSlot { NOTE, REST }
+private enum class FitSlot { NOTE, REST, REST_ALONE }
 
 /**
  * [text] (the idle hint, "Play a string", or a tip) in the note's slot: [slot] (the ♪'s line, drawn

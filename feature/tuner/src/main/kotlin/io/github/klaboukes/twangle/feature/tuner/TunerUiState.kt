@@ -4,8 +4,11 @@ import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.dsp.chord.SettledChord
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
 import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
+import io.github.klaboukes.twangle.core.dsp.music.Accidental
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
@@ -80,6 +83,13 @@ sealed interface TunerUiState {
          * back"), held steady by [SteadyHint]; null for none. [TunerInterpreter] sets it.
          */
         val tip: ReceptionTip? = null,
+        /**
+         * The target note's MIDI number (the note [noteName] and [octave] name, 40 for E2), so the ruler
+         * places the reading at `targetMidi + cents / 100` without parsing a name. [TunerInterpreter] sets
+         * it; by default it is read back from [noteName], [octave] and [notation] (or, for a name of none
+         * of the notations, from [frequencyHz] and [cents]).
+         */
+        val targetMidi: Int = targetMidiOf(noteName, octave, notation, frequencyHz, a4Hz, cents),
     ) : TunerUiState
 
     /**
@@ -169,6 +179,7 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         inTune == other.inTune &&
         hint == other.hint &&
         tip == other.tip &&
+        targetMidi == other.targetMidi &&
         shownCents(cents) == shownCents(other.cents) &&
         shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
         abs(meterCents(cents) - meterCents(other.cents)) < NEEDLE_STEP_CENTS &&
@@ -189,6 +200,23 @@ internal const val NEEDLE_STEP_CENTS = 0.03f
 internal const val RECEPTION_STEP = 0.02f
 
 private fun shownCents(cents: Float): Float = cents.roundToInt().toFloat()
+
+/**
+ * The MIDI number of the note called [noteName] in [notation] (either spelling) in [octave]; for a name of
+ * no pitch class, the note nearest [frequencyHz] less [cents] at [a4Hz], or A4 without a frequency.
+ */
+internal fun targetMidiOf(noteName: String, octave: Int, notation: Notation, frequencyHz: Float, a4Hz: Float, cents: Float): Int {
+    for (pitchClass in PitchClass.entries) {
+        if (notation.nameOf(pitchClass, Accidental.SHARP) == noteName || notation.nameOf(pitchClass, Accidental.FLAT) == noteName) {
+            return Note.of(pitchClass, octave).midi
+        }
+    }
+    if (!(frequencyHz > 0f) || !frequencyHz.isFinite() || a4Hz !in NoteMapper.MIN_A4_HZ..NoteMapper.MAX_A4_HZ) return A4_MIDI
+    return (NoteMapper(a4Hz).midiOf(frequencyHz) - cents / CENTS_PER_SEMITONE).roundToInt()
+}
+
+private const val A4_MIDI = 69
+private const val CENTS_PER_SEMITONE = 100f
 
 /** The frequency is shown to 0.1 Hz (`tuner_frequency`). */
 private fun shownHz(frequencyHz: Float): Float = (frequencyHz * 10f).roundToInt() / 10f

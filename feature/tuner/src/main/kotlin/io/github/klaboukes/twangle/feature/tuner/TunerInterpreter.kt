@@ -192,6 +192,7 @@ class TunerInterpreter(
             hint = hint,
             reception = reception.reception,
             tip = tip,
+            targetMidi = target.midi,
         )
     }
 

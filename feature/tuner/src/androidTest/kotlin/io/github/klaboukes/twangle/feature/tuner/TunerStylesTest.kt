@@ -16,6 +16,8 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.then
@@ -120,8 +122,11 @@ class TunerStylesTest {
     /** Every part of the screen, by name. (1.1's wave view, which took the cents' and frequency's place, went in Phase 67.) */
     private fun parts(): List<Pair<String, SemanticsNodeInteraction>> = buildList {
         add("picker chip" to pickerChip)
+        // On a phone on its side there is no ruler yet (Phase 73 lays the tuner out wide).
+        if (compose.onAllNodesWithTag(TunerTestTags.RULER).fetchSemanticsNodes().isNotEmpty()) add("ruler" to compose.onNodeWithTag(TunerTestTags.RULER))
         add("meter" to gauge)
-        add("note" to compose.onNodeWithText("A"))
+        // On a short phone the big note makes room for the ruler above, which names it (Phase 71).
+        if (compose.onAllNodesWithText("A").fetchSemanticsNodes().isNotEmpty()) add("note" to compose.onNodeWithText("A"))
         add("cents" to compose.onNodeWithText(twelveCentsFlat))
         add("frequency" to compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f)))
         add("tune hint" to compose.onNodeWithText(context.getString(R.string.tuner_tune_up)))
@@ -264,6 +269,14 @@ class TunerStylesTest {
                     val hintBounds = hint.getBoundsInRoot()
                     shownState.value = detected().copy(mode = mode, targetString = if (mode == TunerMode.AUTO) 1 else null)
                     compose.waitForIdle()
+                    if (compose.onAllNodesWithText("A").fetchSemanticsNodes().isEmpty()) {
+                        // A short screen leaves the big note out for the ruler (Phase 71): the hint takes the pill's line.
+                        val cents = compose.onNodeWithText(resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).getBoundsInRoot()
+                        if (hintBounds.top < cents.top - PILL_PADDING - SLACK || hintBounds.bottom > cents.bottom + PILL_PADDING + SLACK) {
+                            fail("$case hint $hintBounds is not in the pill's line $cents")
+                        }
+                        continue
+                    }
                     val note = compose.onNodeWithText("A").getBoundsInRoot()
                     if (hintBounds.top < note.top - SLACK || hintBounds.bottom > note.bottom + SLACK) {
                         fail("$case hint $hintBounds reaches past the note's slot $note")
@@ -303,6 +316,8 @@ class TunerStylesTest {
                 val (b, second) = bounds[j]
                 // The mode switch's two segments share their border.
                 if (a.startsWith("mode switch") && b.startsWith("mode switch")) continue
+                // The signal bars stand inside the ruler, beside its heard note.
+                if (setOf(a, b) == setOf("ruler", "signal bars")) continue
                 if (first.overlaps(second)) fail("$case $a $first overlaps $b $second")
             }
         }
@@ -356,5 +371,8 @@ class TunerStylesTest {
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
+
+        /** The cents pill's padding above and below its text. */
+        private val PILL_PADDING = 6.dp
     }
 }

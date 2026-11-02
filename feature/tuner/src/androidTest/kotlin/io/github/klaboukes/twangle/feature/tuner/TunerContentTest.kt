@@ -286,7 +286,8 @@ class TunerContentTest {
      */
     @Test
     fun theOctaveStaysSmallBesideAShrunkenNote() {
-        show(detected(-12.3f), fontScale = 2f, size = DpSize(393.dp, 713.dp), locale = "pl", showTuneHint = true)
+        // A little taller than the Xiaomi's 713 dp since the ruler came (Phase 71): there the big note makes room for it.
+        show(detected(-12.3f), fontScale = 2f, size = DpSize(393.dp, 820.dp), locale = "pl", showTuneHint = true)
         val letter = compose.onNodeWithText("E").getBoundsInRoot()
         val octave = compose.onNodeWithText("2").getBoundsInRoot()
         assertTrue(
@@ -1374,16 +1375,15 @@ class TunerContentTest {
         assertEquals("the picker chip stays centred", switch, pickerChip.getBoundsInRoot())
     }
 
-    // Across from focus mode's button, which took the row's end on 2026-10-25.
+    // Beside the ruler's heard note since 2.0 (Phase 71; RulerTest has where exactly), no longer at the chip row's start.
     @Test
-    fun theSignalBarsSitAtTheStartOfTheChipRow() {
+    fun theSignalBarsSitInTheRulerUnderTheChipRow() {
         show(detected(-12.3f), size = PHONE_UPRIGHT, signalBars = true)
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
+        val ruler = compose.onNodeWithTag(TunerTestTags.RULER).getBoundsInRoot()
         val switch = pickerChip.getBoundsInRoot()
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        assertTrue("bars $bars not before the chip $switch", bars.right <= switch.left)
-        assertTrue("bars $bars not level with the chip $switch", bars.top < switch.bottom && bars.bottom > switch.top)
-        assertTrue("bars $bars not near the window's start $window", bars.left - window.left <= 40.dp)
+        assertTrue("bars $bars not in the ruler $ruler", bars.top >= ruler.top && bars.bottom <= ruler.bottom && bars.left >= ruler.left && bars.right <= ruler.right)
+        assertTrue("bars $bars not under the chip $switch", bars.top >= switch.bottom)
     }
 
     // By the note they rode along with its text ("Play a string", "12 cents flat"); in the corner they stay put.
@@ -1398,13 +1398,13 @@ class TunerContentTest {
         }
     }
 
-    // A long name at the largest font ends in "…" rather than run under the bars' touch area.
+    // The chip, taller at the largest font, never runs into the bars' touch area under it in the ruler.
     @Test
     fun withTheLargestFontThePickerChipKeepsClearOfTheSignalBars() {
         show(detected(-12.3f), fontScale = 2f, size = PHONE, signalBars = true)
         val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
         val strings = pickerChip.getBoundsInRoot()
-        assertTrue("chip $strings runs under the bars $button", strings.left >= button.right - 0.5.dp)
+        assertTrue("chip $strings runs into the bars $button", strings.bottom <= button.top + 0.5.dp)
     }
 
     @Test

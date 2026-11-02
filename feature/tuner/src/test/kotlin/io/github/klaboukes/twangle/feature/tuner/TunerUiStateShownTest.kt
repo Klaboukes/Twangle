@@ -77,6 +77,7 @@ class TunerUiStateShownTest {
         assertFalse(base.looksLike(base.copy(notation = Notation.SOLFEGE)))
         assertFalse(base.looksLike(base.copy(reception = 0.9f)))
         assertFalse(base.looksLike(base.copy(tip = ReceptionTip.TOO_SOFT)))
+        assertFalse(base.looksLike(base.copy(targetMidi = base.targetMidi + 12)))
         assertFalse(base.looksLike(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)))
         val listening = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
         assertTrue(listening.looksLike(listening.copy()))
@@ -93,9 +94,21 @@ class TunerUiStateShownTest {
     }
 
     @Test
+    fun `a reading's target note is read back from its name by default`() {
+        assertEquals(40, detected(-12f).targetMidi)
+        assertEquals(56, targetMidiOf("Sol♯", 3, Notation.SOLFEGE, 207f, 440f, 0f))
+        assertEquals(59, targetMidiOf("H", 3, Notation.GERMAN, 247f, 440f, 0f))
+        assertEquals(58, targetMidiOf("B", 3, Notation.GERMAN, 233f, 440f, 0f))
+        assertEquals(51, targetMidiOf("E♭", 3, Notation.SHARPS, 155f, 440f, 0f))
+        // A name of no notation: from the frequency, less the cents.
+        assertEquals(69, targetMidiOf("?", 4, Notation.SHARPS, 445f, 440f, 19.6f))
+        assertEquals(69, targetMidiOf("?", 4, Notation.SHARPS, 0f, 440f, 0f))
+    }
+
+    @Test
     fun `looksLike compares every field of Detected`() {
         // looksLike lists the fields one by one so it allocates nothing. A new field needs a line
         // there and in the test above; then update this count.
-        assertEquals(15, TunerUiState.Detected::class.java.declaredFields.size)
+        assertEquals(16, TunerUiState.Detected::class.java.declaredFields.size)
     }
 }
