@@ -60,10 +60,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.app.R
+import io.github.klaboukes.twangle.core.designsystem.LocalScreenTint
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.over
 import kotlin.math.min
 
 /**
@@ -173,12 +175,15 @@ fun AppNavigationBar(
     destinations: List<Destination> = Destination.entries,
     onReselect: (Destination) -> Unit = {},
 ) {
-    val field = MaterialTheme.colorScheme.background
+    val background = MaterialTheme.colorScheme.background
+    val tint = LocalScreenTint.current
     Row(
         modifier
             .fillMaxWidth()
             .testTag(NavigationTestTags.BAR)
             .drawBehind {
+                // The background as the backdrop under it shows it, the tuner's tint included (no untinted strip).
+                val field = tint.over(background)
                 val reach = FIELD_REACH.toPx()
                 val total = size.height + reach
                 drawRect(
@@ -219,12 +224,15 @@ fun AppNavigationRail(
     onReselect: (Destination) -> Unit = {},
     gear: (@Composable () -> Unit)? = null,
 ) {
-    val field = MaterialTheme.colorScheme.background
+    val background = MaterialTheme.colorScheme.background
+    val tint = LocalScreenTint.current
     Box(
         modifier
             .fillMaxHeight()
             .testTag(NavigationTestTags.RAIL)
             .drawBehind {
+                // As the bar's: tinted as the backdrop under it.
+                val field = tint.over(background)
                 val reach = FIELD_REACH.toPx()
                 val total = size.width + reach
                 val rtl = layoutDirection == LayoutDirection.Rtl

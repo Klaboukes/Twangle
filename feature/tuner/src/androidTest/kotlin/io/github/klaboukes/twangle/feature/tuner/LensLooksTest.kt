@@ -283,7 +283,8 @@ class LensLooksTest {
         assertNull(node.config.getOrNull(SemanticsProperties.ContentDescription))
         assertNull(node.config.getOrNull(SemanticsProperties.Text))
         assertTrue("nothing inside the lens for TalkBack", node.children.isEmpty())
-        val reading = "E 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}"
+        // The word speaks the reading (Phase 71): "E 2, 12 cents flat, Tighten".
+        val reading = "E 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}, ${context.getString(R.string.tuner_word_tighten)}"
         // Steady: the reading alone.
         compose.waitUntil(WORDS_WAIT_MS) { compose.onAllNodes(hasContentDescription(reading)).fetchSemanticsNodes().size == 1 }
         // A bend and vibrato are said after it.

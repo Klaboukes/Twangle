@@ -97,8 +97,6 @@
         <item quantity="other">%1$d cent crescente</item>
     </plurals>
     <string name="tuner_in_tune">intonato</string>
-    <string name="tuner_tune_up">Alza ↑</string>
-    <string name="tuner_tune_down">Abbassa ↓</string>
     <string name="tuner_tip_too_soft">Suona un po\' più forte</string>
     <string name="tuner_tip_too_noisy">Troppo rumore, avvicina il telefono</string>
     <string name="tuner_tip_too_loud">Troppo forte, allontana il telefono</string>
@@ -112,8 +110,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">alza</string>
-    <string name="tuner_spoken_tune_down">abbassa</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, con corda all\'ottava</string>

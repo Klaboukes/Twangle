@@ -95,8 +95,6 @@
         <item quantity="other">%1$d sent yüksek</item>
     </plurals>
     <string name="tuner_in_tune">akortlu</string>
-    <string name="tuner_tune_up">Yükselt ↑</string>
-    <string name="tuner_tune_down">Düşür ↓</string>
     <string name="tuner_tip_too_soft">Biraz daha güçlü çal</string>
     <string name="tuner_tip_too_noisy">Çok gürültülü, telefonu yaklaştır</string>
     <string name="tuner_tip_too_loud">Çok yüksek, telefonu uzaklaştır</string>
@@ -110,8 +108,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">yükselt</string>
-    <string name="tuner_spoken_tune_down">düşür</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, oktav telli</string>

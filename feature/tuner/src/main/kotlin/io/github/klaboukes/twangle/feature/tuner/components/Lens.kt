@@ -12,7 +12,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +49,6 @@ import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
-import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.LensLook
@@ -78,12 +75,13 @@ import kotlin.math.roundToInt
  *   last seconds ([history]) for the trail; the in-tune window of [precision] ([meterInTuneWindow]); "in tune"
  *   while [inTune], eased; the in-tune glow while [glow] ([rememberInTuneGlow]), eased; with [animationsOff]
  *   both switch at once;
- * - the reading's tone ([LensReading.tone], [readingToneAmount]): muted without a reading, amber eased toward
- *   green as the note nears the zone, green in tune. The border is the line colour at rest and the tone with a
- *   reading, with a soft glow round the box, wider in tune. No red anywhere;
+ * - the reading's tone ([tone], a [LiveTone], [readingToneAmount]; the tuner shares it with the word and the
+ *   screen's tint): muted without a reading, amber eased toward green as the note nears the zone, green in tune.
+ *   The border is the line colour at rest and the tone with a reading, with a soft glow round the box, wider in
+ *   tune. No red anywhere;
  * - the quiet state: when the string dies the lens fades to rest (presence to 0.3 over the fade), its border
  *   back to the line colour, the glow off; the trail falls out of the box, then nothing moves;
- * - TalkBack skips it, one silent item: the note's line speaks the reading (and the trail's words, [trailMotionWords]).
+ * - TalkBack skips it, one silent item: the word under it speaks the reading (and the trail's words, [trailMotionWords]).
  *
  * [cents] and [reception] are never read while composing: the look reads the [LensReading] in its layer and
  * draw phases only, so readings move it without recomposing the screen around it. Both are [LiveFloat]s, so
@@ -101,6 +99,7 @@ fun Lens(
     reception: LiveFloat = NO_LIVE_FLOAT,
     wide: Boolean = false,
     animationsOff: Boolean = false,
+    tone: LiveTone = rememberLiveTone(cents, inTune, precision, animationsOff),
 ) {
     val currentCents = rememberUpdatedState(cents)
     val spring = remember(look) { meterFeel(look).spring() }
@@ -112,18 +111,6 @@ fun Lens(
             launch { if (target != marker.targetValue) marker.animateTo(target, spring) }
         }
     }
-    // Recomposes only when a note appears or goes away, not on every reading.
-    val hasReading by remember { derivedStateOf { !currentCents.value().isNaN() } }
-    val restFade = animateFloatAsState(
-        targetValue = if (hasReading) 1f else REST_ALPHA,
-        animationSpec = if (animationsOff) snap() else meterTunedSpec(hasReading),
-        label = "lensRestFade",
-    )
-    val tuned = animateFloatAsState(
-        targetValue = if (inTune) 1f else 0f,
-        animationSpec = if (animationsOff) snap() else meterTunedSpec(inTune),
-        label = "lensTuned",
-    )
     val glowAmount = animateFloatAsState(
         targetValue = if (glow) 1f else 0f,
         animationSpec = if (animationsOff) snap() else meterGlowSpec(glow),
@@ -132,22 +119,16 @@ fun Lens(
     val window = rememberUpdatedState(meterInTuneWindow(precision))
     val currentReception = rememberUpdatedState(reception)
     val scheme = MaterialTheme.colorScheme
-    val tokens = MaterialTheme.styleTokens
-    val colours = rememberUpdatedState(
-        LensColours(
-            face = scheme.surface,
-            line = scheme.outlineVariant,
-            muted = scheme.onSurfaceVariant,
-            farOff = tokens.farOff,
-            green = tokens.inTune,
-        ),
-    )
+    val colours = rememberUpdatedState(LensColours(face = scheme.surface, line = scheme.outlineVariant, muted = scheme.onSurfaceVariant))
     val blurs = rememberReceptionBlurs()
+    val currentTone = rememberUpdatedState(tone)
     val reading = remember(blurs, history) {
-        TunerLensReading(marker, restFade, tuned, glowAmount, window, currentCents, currentReception, blurs, colours, history)
+        TunerLensReading(marker, currentTone, glowAmount, window, currentReception, blurs, history)
     }
     val measurer = rememberTextMeasurer(cacheSize = 0)
     val shape = remember { RoundedCornerShape(LENS_CORNER) }
+    // Read here, so the lens's semantics follow a note coming and going (it changes only then).
+    val quiet = !tone.hasReading
 
     // Android 15+ picks the screen's rate from what apps ask for, and a plain Compose animation only asks for
     // the "normal" rate (60 Hz on the S26). The moving look asks for 120 Hz; the request only counts while it
@@ -156,7 +137,7 @@ fun Lens(
         modifier
             .lensSize(wide)
             .preferredFrameRate(LENS_FRAME_RATE)
-            .clearAndSetSemantics { lensQuiet = !hasReading }
+            .clearAndSetSemantics { lensQuiet = quiet }
             .drawWithCache {
                 val corner = LENS_CORNER.toPx()
                 val restBorder = Stroke(width = REST_BORDER.toPx())
@@ -224,58 +205,46 @@ private fun Modifier.lensSize(wide: Boolean): Modifier = layout { measurable, co
     layout(width, height) { placeable.placeRelative(0, 0) }
 }
 
-/** The lens's colours, from the theme: its face, its rest border, the signs, and the tone's two ends. */
+/** The lens's colours, from the theme: its face, its rest border and the signs (the tone is the [LiveTone]'s). */
 @Immutable
-private data class LensColours(val face: Color, val line: Color, val muted: Color, val farOff: Color, val green: Color)
+private data class LensColours(val face: Color, val line: Color, val muted: Color)
 
 /**
- * The tuner's live [LensReading]: the marker's spring, the resting fade, the "in tune" amount, the in-tune glow,
- * the in-tune window, the tone, the reception's fade and blur and the history. Nothing here allocates.
+ * The tuner's live [LensReading]: the marker's spring, the [LiveTone] (the resting fade, the "in tune" amount and the
+ * tone, shared with the word and the screen's tint), the in-tune glow, the in-tune window, the reception's fade and
+ * blur and the history. Nothing here allocates.
  */
 @Stable
 private class TunerLensReading(
     private val marker: Animatable<Float, AnimationVector1D>,
-    private val restFade: State<Float>,
-    private val tunedAmount: State<Float>,
+    private val liveTone: State<LiveTone>,
     private val glowAmount: State<Float>,
     private val window: State<Float>,
-    private val liveCents: State<LiveFloat>,
     private val reception: State<LiveFloat>,
     private val blurs: Array<RenderEffect?>,
-    private val colours: State<LensColours>,
     override val history: PitchHistory,
 ) : LensReading {
     private val heldReception = HeldReception()
-
-    /** The last cents heard, so the tone doesn't jump to amber while a note fades to rest. */
-    private var heldCents = Float.NaN
 
     override val cents: Float get() = marker.value
 
     // The vector, not Animatable.velocity, which boxes a new Float on every read.
     override val velocity: Float get() = marker.velocityVector.value
 
-    override val presence: Float get() = ((restFade.value - REST_ALPHA) / (1f - REST_ALPHA)).coerceIn(0f, 1f)
+    override val presence: Float get() = liveTone.value.presence
 
-    override val tuned: Float get() = tunedAmount.value
+    override val tuned: Float get() = liveTone.value.tuned
 
     override val glow: Float get() = glowAmount.value
 
     override val inTuneWindow: Float get() = window.value
 
-    override val tone: Color
-        get() {
-            val now = liveCents.value()
-            if (!now.isNaN()) heldCents = now
-            val shown = colours.value
-            val live = mixColour(mixColour(shown.farOff, shown.green, readingToneAmount(heldCents, window.value)), shown.green, tunedAmount.value)
-            return mixColour(shown.muted, live, presence)
-        }
+    override val tone: Color get() = liveTone.value.colour
 
     override fun applyMarkerLook(layer: GraphicsLayerScope) {
         val presence = presence
         val heard = heldReception.of(reception.value())
-        layer.alpha = restFade.value * ReceptionLook.alphaFor(heard, presence)
+        layer.alpha = liveTone.value.restFade * ReceptionLook.alphaFor(heard, presence)
         layer.renderEffect = blurs[ReceptionLook.blurStepFor(heard, presence)]
     }
 }
@@ -302,14 +271,6 @@ fun trailMotionWords(history: PitchHistory): String? {
         TrailMotion.BENDING_DOWN -> stringResource(R.string.tuner_trail_bending_down)
     }
 }
-
-/** [a] blended [t] (0..1) of the way to [b], channel by channel, without allocating (as the meter's `mix`). */
-private fun mixColour(a: Color, b: Color, t: Float): Color = Color(
-    red = a.red + (b.red - a.red) * t,
-    green = a.green + (b.green - a.green) * t,
-    blue = a.blue + (b.blue - a.blue) * t,
-    alpha = a.alpha + (b.alpha - a.alpha) * t,
-)
 
 /** Whether the lens is quiet: nothing heard, its border at rest (for UI tests; TalkBack hears nothing of the lens). */
 val LensQuiet = SemanticsPropertyKey<Boolean>("LensQuiet")
@@ -340,9 +301,6 @@ private val SIGN_SIZE = 12.dp
 
 /** The frame rate the moving look asks for: the S26's full rate. Phones without it pick the nearest they have. */
 private const val LENS_FRAME_RATE = 120f
-
-/** The lens without a note: resting, faded. */
-private const val REST_ALPHA = 0.3f
 
 /** TalkBack's trail words are worked out this often (and settle over two of them). */
 private const val DESCRIBE_EVERY_MS = 500L

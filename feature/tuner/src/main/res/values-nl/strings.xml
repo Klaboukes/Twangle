@@ -103,8 +103,14 @@
         <item quantity="other">%1$d cent te hoog</item>
     </plurals>
     <string name="tuner_in_tune">zuiver</string>
-    <string name="tuner_tune_up">Hoger stemmen ↑</string>
-    <string name="tuner_tune_down">Lager stemmen ↓</string>
+    <string name="tuner_word_tighten">Strakker</string>
+    <string name="tuner_word_loosen">Losser</string>
+    <string name="tuner_word_too_low">Te laag</string>
+    <string name="tuner_word_too_high">Te hoog</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d cent</item>
+        <item quantity="other">%1$d cent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Speel wat harder</string>
     <string name="tuner_tip_too_noisy">Te veel lawaai, leg de telefoon dichterbij</string>
     <string name="tuner_tip_too_loud">Te hard, leg de telefoon verder weg</string>
@@ -119,8 +125,6 @@
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cent te laag" or "zuiver". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">hoger stemmen</string>
-    <string name="tuner_spoken_tune_down">lager stemmen</string>
     <string name="tuner_spoken_separator">", "</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>

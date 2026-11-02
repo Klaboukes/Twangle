@@ -94,8 +94,6 @@
         <item quantity="other">%1$d цента вище</item>
     </plurals>
     <string name="tuner_in_tune">налаштовано</string>
-    <string name="tuner_tune_up">Підтягни ↑</string>
-    <string name="tuner_tune_down">Послаб ↓</string>
     <string name="tuner_tip_too_soft">Грай трохи голосніше</string>
     <string name="tuner_tip_too_noisy">Надто шумно, присунь телефон</string>
     <string name="tuner_tip_too_loud">Надто гучно, відсунь телефон</string>
@@ -108,8 +106,6 @@
     <string name="tuner_signal_clarity">Чіткість</string>
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">підтягни</string>
-    <string name="tuner_spoken_tune_down">послаб</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, з октавною струною</string>

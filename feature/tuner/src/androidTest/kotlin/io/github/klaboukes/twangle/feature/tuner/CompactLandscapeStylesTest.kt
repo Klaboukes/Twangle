@@ -177,8 +177,11 @@ class CompactLandscapeStylesTest {
             corner.right <= window.left + window.width * CORNER_SHARE && corner.bottom <= window.top + window.height * CORNER_SHARE,
         )
         assertTrue("$case: note $corner over the lens $meter", corner.bottom <= meter.top + 0.5.dp)
-        // Nothing else: the meter shows how far off the note is.
-        cents.assertDoesNotExist()
+        // The word with the cents under it in the top row's middle, over the lens (Phase 71); nothing else.
+        val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("$case: word $word over the lens $meter", word.bottom <= meter.top + 0.5.dp)
+        assertTrue("$case: word $word beside the note $corner", word.left >= corner.right)
+        cents.assertIsDisplayed()
         frequency.assertDoesNotExist()
         targetString.assertDoesNotExist()
         signalBars.assertDoesNotExist()
@@ -214,7 +217,7 @@ class CompactLandscapeStylesTest {
         shownDark.value = true
         compose.mainClock.advanceTimeBy(FADE_MS)
         // TalkBack hears the reading as one sentence, and the screen is a "Show controls" button.
-        val spoken = "A 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}, ${context.getString(R.string.tuner_spoken_tune_up)}"
+        val spoken = "A 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}, ${context.getString(R.string.tuner_word_tighten)}"
         compose.onNode(hasContentDescription(spoken)).assertExists()
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
             .performSemanticsAction(SemanticsActions.OnClick)

@@ -199,9 +199,9 @@ class StrumCheckStylesTest {
         val inTuneWord = context.getString(R.string.tuner_in_tune)
         val expected = listOf(
             "E 2, $inTuneWord",
-            "A 2, $flat, ${context.getString(R.string.tuner_spoken_tune_up)}",
+            "A 2, $flat, ${context.getString(R.string.tuner_word_tighten)}",
             "D 3, $inTuneWord",
-            "G 3, $sharp, ${context.getString(R.string.tuner_spoken_tune_down)}",
+            "G 3, $sharp, ${context.getString(R.string.tuner_word_loosen)}",
             context.getString(R.string.tuner_strum_spoken_not_heard, "B 3"),
             context.getString(R.string.tuner_strum_spoken_less_sure, "E 4, $inTuneWord"),
         )

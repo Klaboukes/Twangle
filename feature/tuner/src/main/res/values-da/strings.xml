@@ -94,8 +94,6 @@
         <item quantity="other">%1$d cent for høj</item>
     </plurals>
     <string name="tuner_in_tune">stemt</string>
-    <string name="tuner_tune_up">Stem op ↑</string>
-    <string name="tuner_tune_down">Stem ned ↓</string>
     <string name="tuner_tip_too_soft">Spil lidt kraftigere</string>
     <string name="tuner_tip_too_noisy">For meget støj, flyt telefonen tættere på</string>
     <string name="tuner_tip_too_loud">For højt, flyt telefonen væk</string>
@@ -109,8 +107,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">stem op</string>
-    <string name="tuner_spoken_tune_down">stem ned</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, med oktavstreng</string>

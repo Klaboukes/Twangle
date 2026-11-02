@@ -46,6 +46,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.abs
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
@@ -129,7 +130,7 @@ class TunerStylesTest {
         if (compose.onAllNodesWithText("A").fetchSemanticsNodes().isNotEmpty()) add("note" to compose.onNodeWithText("A"))
         add("cents" to compose.onNodeWithText(twelveCentsFlat))
         add("frequency" to compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f)))
-        add("tune hint" to compose.onNodeWithText(context.getString(R.string.tuner_tune_up)))
+        add("word" to compose.onNodeWithText(context.getString(R.string.tuner_word_tighten)))
         add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON))
         add("strum check switch" to compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE))
         strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
@@ -229,7 +230,7 @@ class TunerStylesTest {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"}"
-            val spoken = "A 2, $twelveCentsFlat, ${context.getString(R.string.tuner_spoken_tune_up)}"
+            val spoken = "A 2, $twelveCentsFlat, ${context.getString(R.string.tuner_word_tighten)}"
             compose.onNode(hasContentDescription(spoken)).assertExists()
             val node = gauge.fetchSemanticsNode()
             assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
@@ -245,13 +246,12 @@ class TunerStylesTest {
     }
 
     /**
-     * While nothing is heard the hint ("Play a string", "Play a note") stands in the note's slot, in
-     * the note's face, where the note then comes, so nothing moves: upright and on its side, at 1× and,
-     * in Dutch, at 2× text, in both modes. It is
-     * wholly shown (wrapped or set smaller where it must) and never reaches past the note's slot.
+     * While nothing is heard the word ("Play a string", "Play a note") stands where the word will stand with a note
+     * (2.0, Phase 71: until then the hint stood in the note's slot), so nothing moves: upright and on its side, at 1x
+     * and, in Dutch, at 2x text, in both modes. It is wholly shown (set smaller where it must).
      */
     @Test
-    fun theIdleHintFitsTheNotesSlot() {
+    fun theQuietWordFitsTheWordsLine() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             for ((fontScale, locale) in listOf(1f to null, 2f to "nl")) {
@@ -267,20 +267,13 @@ class TunerStylesTest {
                     val words = resources.getString(if (mode == TunerMode.AUTO) R.string.tuner_hint_play_string else R.string.tuner_hint_play_note)
                     val hint = compose.onNodeWithText(words)
                     assertWhollyShown(hint, "$case hint")
-                    val hintBounds = hint.getBoundsInRoot()
+                    val line = compose.onNodeWithTag(TunerTestTags.WORD_TEXT).getBoundsInRoot()
                     shownState.value = detected().copy(mode = mode, targetString = if (mode == TunerMode.AUTO) 1 else null)
                     compose.waitForIdle()
-                    if (compose.onAllNodesWithText("A").fetchSemanticsNodes().isEmpty()) {
-                        // A short screen leaves the big note out for the ruler (Phase 71): the hint takes the pill's line.
-                        val cents = compose.onNodeWithText(resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).getBoundsInRoot()
-                        if (hintBounds.top < cents.top - PILL_PADDING - SLACK || hintBounds.bottom > cents.bottom + PILL_PADDING + SLACK) {
-                            fail("$case hint $hintBounds is not in the pill's line $cents")
-                        }
-                        continue
-                    }
-                    val note = compose.onNodeWithText("A").getBoundsInRoot()
-                    if (hintBounds.top < note.top - SLACK || hintBounds.bottom > note.bottom + SLACK) {
-                        fail("$case hint $hintBounds reaches past the note's slot $note")
+                    val withNote = compose.onNodeWithTag(TunerTestTags.WORD_TEXT).getBoundsInRoot()
+                    // The quiet word is set smaller, centred in the same line.
+                    if (abs(((line.top + line.bottom) - (withNote.top + withNote.bottom)).value) / 2f > 1f) {
+                        fail("$case the quiet word $line is not in the word's line $withNote")
                     }
                 }
             }
@@ -372,8 +365,5 @@ class TunerStylesTest {
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
-
-        /** The cents pill's padding above and below its text. */
-        private val PILL_PADDING = 6.dp
     }
 }

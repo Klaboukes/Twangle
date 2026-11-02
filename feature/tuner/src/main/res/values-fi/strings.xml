@@ -96,8 +96,6 @@
         <item quantity="other">%1$d senttiä korkealla</item>
     </plurals>
     <string name="tuner_in_tune">vireessä</string>
-    <string name="tuner_tune_up">Kiristä ↑</string>
-    <string name="tuner_tune_down">Löysää ↓</string>
     <string name="tuner_tip_too_soft">Soita vähän kovempaa</string>
     <string name="tuner_tip_too_noisy">Liian meluisaa, tuo puhelin lähemmäs</string>
     <string name="tuner_tip_too_loud">Liian kovaa, vie puhelin kauemmas</string>
@@ -111,8 +109,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">kiristä</string>
-    <string name="tuner_spoken_tune_down">löysää</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, oktaavikielen kanssa</string>

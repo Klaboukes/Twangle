@@ -450,8 +450,6 @@ feature/tuner tuner_spoken_reading 6a076bf0
 feature/tuner tuner_spoken_reading_hint 6a8c05b0
 feature/tuner tuner_spoken_separator f240463d
 feature/tuner tuner_spoken_string d2911fe6
-feature/tuner tuner_spoken_tune_down 4222af1c
-feature/tuner tuner_spoken_tune_up bc018fed
 feature/tuner tuner_spoken_tuning 75e53fce
 feature/tuner tuner_string_lock c0cdfc34
 feature/tuner tuner_string_locked a424e33d
@@ -482,8 +480,6 @@ feature/tuner tuner_tip_too_soft c4245991
 feature/tuner tuner_tool_on 18f4ce5b
 feature/tuner tuner_trail_bending_down ee077523
 feature/tuner tuner_trail_bending_up 24f95a46
-feature/tuner tuner_tune_down 0a43bc24
-feature/tuner tuner_tune_up e97d072e
 feature/tuner tuner_tuning_name fed2d9b8
 feature/tuner tuner_tuning_options 5d1beaa1
 feature/tuner tuning_a_standard 326c79d9

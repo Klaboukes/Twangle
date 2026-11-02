@@ -100,7 +100,7 @@ import kotlin.math.roundToInt
  * merged with another string's, see [StrumString.sure]) gets a hollow marker and paler figures.
  * While a new strum is heard, the strum before stays faded. Drawn in the current style's colours and
  * faces on a calm field like the meter's, sized by its width (like the meter, not by the font size);
- * TalkBack hears each string as one item ("A 2, 12 cents flat, tune up").
+ * TalkBack hears each string as one item ("A 2, 12 cents flat, Tighten").
  *
  * With [onStringClick], once the strum has given readings, each column is a button for its string,
  * as on the string row: tapping it calls [onStringClick] with the string's index (leave strum check,
@@ -212,9 +212,9 @@ private fun spokenStrumString(spokenName: String, string: StrumString?): String 
         StrumVerdict.NOT_HEARD -> return stringResource(R.string.tuner_strum_spoken_not_heard, spokenName)
         StrumVerdict.IN_TUNE -> stringResource(R.string.tuner_in_tune)
         StrumVerdict.FLAT -> pluralStringResource(R.plurals.tuner_cents_flat, cents, cents) +
-            stringResource(R.string.tuner_spoken_separator) + stringResource(R.string.tuner_spoken_tune_up)
+            stringResource(R.string.tuner_spoken_separator) + stringResource(R.string.tuner_word_tighten)
         StrumVerdict.SHARP -> pluralStringResource(R.plurals.tuner_cents_sharp, cents, cents) +
-            stringResource(R.string.tuner_spoken_separator) + stringResource(R.string.tuner_spoken_tune_down)
+            stringResource(R.string.tuner_spoken_separator) + stringResource(R.string.tuner_word_loosen)
     }
     val spoken = stringResource(R.string.tuner_strum_spoken_string, spokenName, reading)
     return if (string.sure) spoken else stringResource(R.string.tuner_strum_spoken_less_sure, spoken)

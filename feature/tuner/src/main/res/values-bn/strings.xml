@@ -90,8 +90,6 @@
         <item quantity="other">%1$d সেন্ট উপরে</item>
     </plurals>
     <string name="tuner_in_tune">সুরে আছে</string>
-    <string name="tuner_tune_up">সুর চড়ান ↑</string>
-    <string name="tuner_tune_down">সুর নামান ↓</string>
     <string name="tuner_tip_too_soft">আরেকটু জোরে বাজান</string>
     <string name="tuner_tip_too_noisy">খুব শব্দ, ফোন একটু কাছে আনুন</string>
     <string name="tuner_tip_too_loud">খুব জোরে, ফোন একটু দূরে নিন</string>
@@ -104,8 +102,6 @@
     <string name="tuner_signal_clarity">স্পষ্টতা</string>
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">সুর চড়ান</string>
-    <string name="tuner_spoken_tune_down">সুর নামান</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, অক্টেভ তারসহ</string>

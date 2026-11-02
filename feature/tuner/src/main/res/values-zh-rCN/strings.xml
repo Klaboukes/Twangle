@@ -92,8 +92,6 @@
         <item quantity="other">偏高 %1$d 音分</item>
     </plurals>
     <string name="tuner_in_tune">已调准</string>
-    <string name="tuner_tune_up">调高 ↑</string>
-    <string name="tuner_tune_down">调低 ↓</string>
     <string name="tuner_tip_too_soft">弹得再响一点</string>
     <string name="tuner_tip_too_noisy">太吵了，把手机拿近点</string>
     <string name="tuner_tip_too_loud">太响了，把手机拿远点</string>
@@ -107,8 +105,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d，%3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d，%3$s，%4$s</string>
-    <string name="tuner_spoken_tune_up">调高</string>
-    <string name="tuner_spoken_tune_down">调低</string>
     <string name="tuner_spoken_separator">，</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s，带八度弦</string>

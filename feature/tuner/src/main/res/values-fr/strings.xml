@@ -97,8 +97,6 @@
         <item quantity="other">%1$d cents trop haut</item>
     </plurals>
     <string name="tuner_in_tune">juste</string>
-    <string name="tuner_tune_up">Plus haut ↑</string>
-    <string name="tuner_tune_down">Plus bas ↓</string>
     <string name="tuner_tip_too_soft">Jouez un peu plus fort</string>
     <string name="tuner_tip_too_noisy">Trop de bruit, rapprochez le téléphone</string>
     <string name="tuner_tip_too_loud">Trop fort, éloignez le téléphone</string>
@@ -112,8 +110,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">plus haut</string>
-    <string name="tuner_spoken_tune_down">plus bas</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, avec corde à l\'octave</string>

@@ -103,8 +103,6 @@
         <item quantity="other">أعلى بـ%1$d سنت</item>
     </plurals>
     <string name="tuner_in_tune">مضبوط</string>
-    <string name="tuner_tune_up">شُدّ ↑</string>
-    <string name="tuner_tune_down">أرخِ ↓</string>
     <string name="tuner_tip_too_soft">اعزف بصوت أعلى قليلًا</string>
     <string name="tuner_tip_too_noisy">ضجيج كثير، قرّب الهاتف</string>
     <string name="tuner_tip_too_loud">الصوت عالٍ جدًا، أبعد الهاتف</string>
@@ -118,8 +116,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d، %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d، %3$s، %4$s</string>
-    <string name="tuner_spoken_tune_up">شُدّ</string>
-    <string name="tuner_spoken_tune_down">أرخِ</string>
     <string name="tuner_spoken_separator">"، "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s، مع وتر الأوكتاف</string>

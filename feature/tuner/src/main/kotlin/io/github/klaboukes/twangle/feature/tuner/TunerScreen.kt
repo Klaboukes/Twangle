@@ -116,6 +116,9 @@ import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
 import io.github.klaboukes.twangle.feature.tuner.components.LENS_SHORT
 import io.github.klaboukes.twangle.feature.tuner.components.trailMotionWords
+import io.github.klaboukes.twangle.feature.tuner.components.ScreenTintFrom
+import io.github.klaboukes.twangle.feature.tuner.components.TuneWordLine
+import io.github.klaboukes.twangle.feature.tuner.components.rememberLiveTone
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
@@ -474,6 +477,15 @@ object TunerTestTags {
      */
     const val RULER = "tuner_ruler"
 
+    /**
+     * The word under the lens (2.0, Phase 71: Tighten, Loosen, In tune, Too low, Too high, Play a string) with the
+     * cents under it: [WORD] is the block TalkBack speaks (its description is the spoken reading), [WORD_TEXT] the
+     * word as drawn and [WORD_CENTS] the small line under it (the cents, or a tip about the sound).
+     */
+    const val WORD = "tuner_word"
+    const val WORD_TEXT = "tuner_word_text"
+    const val WORD_CENTS = "tuner_word_cents"
+
     /** The optional signal bars by the ruler's heard note (in the chip row while a tool's panel takes the meter's place), and the figures panel a tap on them opens. */
     const val SIGNAL_BARS = "tuner_signal_bars"
     const val SIGNAL_FIGURES = "tuner_signal_figures"
@@ -601,11 +613,13 @@ private fun KeepScreenOn() {
  * [needleCents] gives the needle's position, by default the cents of [state] (NaN
  * without a note). [TunerScreen] passes the exact cents there and a [state] rounded to what the text
  * shows ([asShown]). [reception] likewise gives how well the note is heard (NaN without one), which
- * the needle reads while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. The meter above the
- * note is 1.1's Classic needle (the one meter since Phase 67, until the lens; its in-tune glow lit by [meterGlow],
- * from [rememberInTuneGlow]; by default while the note is in tune; with [animationsOff] its in-tune colour and glow
- * switch without easing), the cents and the frequency are under the note, and
- * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
+ * the lens reads while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. The lens's in-tune glow
+ * is lit by [meterGlow] (from [rememberInTuneGlow]; by default while the note is in tune; with [animationsOff] its
+ * in-tune colour and glow switch without easing). The frequency is under the note, and under it the word (2.0,
+ * Phase 71, [TuneWordLine]: Tighten · Loosen · In tune, Too low · Too high in Any note, "Play a string" while
+ * nothing is heard) with the cents small under it, always there: the tuner's one item TalkBack speaks. The
+ * reading's tone ([rememberLiveTone]) is the lens's border, the word's colour and, while the app gives a
+ * [io.github.klaboukes.twangle.core.designsystem.ScreenTint], the whole screen's tint ([ScreenTintFrom]). [showSignalBars]
  * adds small signal bars at the start of the top row ([ChipRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
  * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. The app's
  * [settingsButton] (the gear, Phase 69) stands at the very start of that row, before the bars. In the
@@ -622,8 +636,8 @@ private fun KeepScreenOn() {
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
  * sounds a tap on any string calls [onStringClick], which stops the tone. [tunedStrings] are the strings
  * tuned since the tuner opened and not played clearly off since, ticked off on their buttons in the plain tuner (not
- * while a tool is on, nor in the compact layout's small row), and only with [showTuneHint] on: the
- * "Show tuning help" setting covers both. With [onStrumCheckChange] a
+ * while a tool is on, nor in the compact layout's small row), and only with [showTuneHint] on (the "Show tuning
+ * help" setting, which since the word came covers the ticks alone, until the pegs' tick-off toggle takes them). With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
  * is whether it is on). A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
  * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
@@ -636,7 +650,7 @@ private fun KeepScreenOn() {
  * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). In the plain
  * tuner the lens ([Lens], 2.0 Phase 71) stands under the ruler in the meter's place, drawing [lensLook] (the
  * trail for every look until Phase 72) from [pitchHistory], the last seconds of readings (an empty one when
- * none is given); while it is given, the trail's motion ("wavering", "bending up") joins the note's spoken
+ * none is given); while it is given, the trail's motion ("wavering", "bending up") joins the word's spoken
  * reading ([trailMotionWords]).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
@@ -773,6 +787,9 @@ fun TunerContent(
     // The lens's last seconds: the tuner's, or an empty one where none is given (its look then draws no line).
     val emptyHistory = remember { PitchHistory() }
     val history = pitchHistory ?: emptyHistory
+    // The reading's tone, one for the lens's border, the word and the whole screen's tint (Phase 71), so they agree.
+    val tone = rememberLiveTone(needleCents, (state as? TunerUiState.Detected)?.inTune == true, inTunePrecision, animationsOff)
+    ScreenTintFrom(tone)
     val gauge = @Composable {
         // Strum check, the 12th-fret check and the chord name take the lens's place, at the old meter's shape.
         if (state is TunerUiState.ChordName) {
@@ -803,6 +820,7 @@ fun TunerContent(
                 // Drawn under its neighbours, with room at its sides for its glow, which reaches past its box.
                 modifier = Modifier.zIndex(-1f).padding(horizontal = LENS_INSET).testTag(TunerTestTags.GAUGE),
                 reception = reception,
+                tone = tone,
             )
         }
     }
@@ -811,68 +829,44 @@ fun TunerContent(
     val speech = rememberPacedSpeech()
     // The trail's motion, said after the reading while the lens shows the trail (the lens itself is silent).
     val motion = if (pitchHistory != null) trailMotionWords(pitchHistory) else null
+    val detected = state as? TunerUiState.Detected
+    val readout = detected?.let { NoteReadout(it.noteName, it.octave, it.frequencyHz, it.cents, it.inTune, it.hint) }
+    // The word under the lens (Phase 71), the tuner's one speaking item: what to do, the cents under it, or what to play.
+    val word = @Composable { compact: Boolean ->
+        val listening = state as? TunerUiState.Listening
+        TuneWordLine(
+            readout = readout,
+            hint = detected?.hint,
+            chromatic = mode == TunerMode.CHROMATIC,
+            quiet = listening?.let { listeningHint(mode, it, soundingString) }.orEmpty(),
+            spokenQuiet = listening?.let { listeningHint(mode, it, soundingString, rememberNoteNameSpeech()) }.orEmpty(),
+            // While a reference tone sounds its line says which, not a tip about the mic.
+            tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null },
+            motion = motion,
+            tone = tone,
+            compact = compact,
+            speech = speech,
+        )
+    }
     val noteFor = @Composable { compact: Boolean, maxHeight: Dp ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state, compact = compact)
             is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString, compact = compact)
             is TunerUiState.ChordName -> ChordStatus(state, compact = compact)
-            is TunerUiState.Detected -> NoteDisplay(
-                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
-                hint = "",
-                compact = compact,
-                maxHeight = maxHeight,
-                showTuneHint = showTuneHint,
-                tip = state.tip,
-                speech = speech,
-                // The ruler above names the note: on a short screen the big one makes room for it (Phase 71).
-                noteMayGo = true,
-                motion = motion,
-            )
-            // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
-            is TunerUiState.Listening ->
-                NoteDisplay(
-                    readout = null,
-                    hint = listeningHint(mode, state, soundingString),
-                    spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
-                    compact = compact,
-                    maxHeight = maxHeight,
-                    showTuneHint = showTuneHint,
-                    // While a reference tone sounds its line says which, not a tip about the mic.
-                    tip = state.tip.takeIf { soundingString == null },
-                    speech = speech,
-                    noteMayGo = true,
-                )
+            // One call for a note, the wait for one and the start, so the word keeps what it showed as a note comes.
             else -> NoteDisplay(
-                readout = null,
-                hint = "",
+                readout = readout,
                 compact = compact,
                 maxHeight = maxHeight,
-                showTuneHint = showTuneHint,
-                speech = speech,
+                // The ruler above names the note: on a short screen the big one makes room for it (Phase 71).
+                noteMayGo = state is TunerUiState.Detected || state is TunerUiState.Listening,
+                word = { word(compact) },
             )
         }
     }
-    // Focus mode's note: small in the corner, beside the full-screen meter.
-    val focusNote = @Composable {
-        when (state) {
-            is TunerUiState.Detected -> FocusNote(
-                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
-                hint = "",
-                showTuneHint = showTuneHint,
-                tip = state.tip,
-                speech = speech,
-                motion = motion,
-            )
-            is TunerUiState.Listening -> FocusNote(
-                readout = null,
-                hint = listeningHint(mode, state, soundingString),
-                spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
-                tip = state.tip.takeIf { soundingString == null },
-                speech = speech,
-            )
-            else -> FocusNote(readout = null, hint = "", speech = speech)
-        }
-    }
+    // Focus mode's note: small in the corner, above the full-screen lens; the word under the lens.
+    val focusNote = @Composable { FocusNote(readout) }
+    val focusWord = @Composable { word(true) }
     val note = @Composable { compact: Boolean, maxHeight: Dp -> noteFor(compact, maxHeight) }
     // The ruler over the meter (2.0, Phase 71) while the tuner reads a note or waits for one; a tool's
     // panel in the meter's place has none. Focus mode's full-screen meter has none until Phase 73 lays it out wide.
@@ -920,7 +914,8 @@ fun TunerContent(
                 guitarSlot = guitarSlot,
                 gauge = gauge,
                 note = { compact -> note(compact, Dp.Unspecified) },
-                compactNote = showTuneHint,
+                // The word's two lines make the readout taller: on a phone on its side it fits with a smaller note.
+                compactNote = true,
                 ruler = rulerBesideControls,
             )
         }
@@ -993,6 +988,7 @@ fun TunerContent(
                             below = { CompactExtraFor(state, mode) },
                             // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
                             focusNote = if (plainMeter) focusNote else null,
+                            focusWord = focusWord,
                             // The strum check's columns are buttons: each keeps a 48 dp touch width.
                             gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
                             onShowControls = { controlsShown = true },
@@ -1280,6 +1276,7 @@ private fun CompactLayout(
     onShowControls: () -> Unit,
     onExitFocus: (() -> Unit)?,
     focusNote: (@Composable () -> Unit)? = null,
+    focusWord: @Composable () -> Unit = {},
 ) {
     val fullMeter = focusNote != null && error == null
     val showControls = stringResource(R.string.tuner_show_controls)
@@ -1299,7 +1296,7 @@ private fun CompactLayout(
             },
     ) {
         if (fullMeter && focusNote != null) {
-            FocusMeter(gauge, focusNote)
+            FocusMeter(gauge, focusNote, focusWord)
         } else {
             CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
         }
@@ -1373,22 +1370,31 @@ private fun ChipRow(
 /**
  * Focus mode's plain tuner: the [gauge] as big as the screen under its top row allows (keeping its 2:1
  * shape, so on a phone on its side its height decides), with [note] small in the top start corner of
- * that row, which is as high as focus mode's exit button in the other corner at least. The lens's box
- * fills its corners, so nothing stands over it (until Phase 73 lays focus mode out wide).
+ * that row, which is as high as focus mode's exit button in the other corner at least, and the [word] (Phase 71)
+ * in the row's middle, so it costs the lens no height. The lens's box fills its corners, so nothing stands over
+ * it (until Phase 73 lays focus mode out wide, the word under the lens).
  */
 @Composable
-private fun FocusMeter(gauge: @Composable () -> Unit, note: @Composable () -> Unit) {
+private fun FocusMeter(gauge: @Composable () -> Unit, note: @Composable () -> Unit, word: @Composable () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         Box(
             Modifier
+                .fillMaxWidth()
                 .heightIn(min = FOCUS_EDGE_TOP + FOCUS_BUTTON_SLOT)
-                .padding(start = FOCUS_EDGE_SIDE, top = FOCUS_EDGE_TOP),
-        ) { note() }
+                .padding(top = FOCUS_EDGE_TOP),
+        ) {
+            Box(Modifier.align(Alignment.TopStart).padding(start = FOCUS_EDGE_SIDE)) { note() }
+            // Clear of the note's corner and the exit button's.
+            Box(Modifier.align(Alignment.TopCenter).padding(horizontal = FOCUS_WORD_CLEARANCE)) { word() }
+        }
         Box(Modifier.fillMaxWidth().weight(1f).padding(FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
             FitGauge(gauge, maxWidth = FOCUS_GAUGE_MAX_WIDTH)
         }
     }
 }
+
+/** Focus mode's word keeps this far from the screen's sides, where the small note and the exit button stand. */
+private val FOCUS_WORD_CLEARANCE = 160.dp
 
 /** The compact layout's meter, at least [gaugeMinWidth] wide, beside the note column, or the [error]. */
 @Composable

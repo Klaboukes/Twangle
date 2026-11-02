@@ -94,8 +94,6 @@
         <item quantity="other">%1$d सेंट ऊपर</item>
     </plurals>
     <string name="tuner_in_tune">सुर में</string>
-    <string name="tuner_tune_up">ऊपर ट्यून करें ↑</string>
-    <string name="tuner_tune_down">नीचे ट्यून करें ↓</string>
     <string name="tuner_tip_too_soft">थोड़ा ज़ोर से बजाएँ</string>
     <string name="tuner_tip_too_noisy">बहुत शोर है, फ़ोन को पास रखें</string>
     <string name="tuner_tip_too_loud">बहुत तेज़ है, फ़ोन को दूर रखें</string>
@@ -109,8 +107,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">ऊपर ट्यून करें</string>
-    <string name="tuner_spoken_tune_down">नीचे ट्यून करें</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, ऑक्टेव तार के साथ</string>

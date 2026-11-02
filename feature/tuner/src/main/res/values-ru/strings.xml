@@ -99,8 +99,6 @@
         <item quantity="other">%1$d цента выше</item>
     </plurals>
     <string name="tuner_in_tune">настроено</string>
-    <string name="tuner_tune_up">Подтяни ↑</string>
-    <string name="tuner_tune_down">Ослабь ↓</string>
     <string name="tuner_tip_too_soft">Играй чуть громче</string>
     <string name="tuner_tip_too_noisy">Слишком шумно, придвинь телефон</string>
     <string name="tuner_tip_too_loud">Слишком громко, отодвинь телефон</string>
@@ -114,8 +112,6 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">подтяни</string>
-    <string name="tuner_spoken_tune_down">ослабь</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, с октавной струной</string>
