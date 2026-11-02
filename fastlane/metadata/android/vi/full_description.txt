@@ -35,8 +35,6 @@ DÀNH CHO MỌI NGƯỜI
 • Tên nốt theo cách bạn đã học: C D E, kiểu Đức với H thay cho B, hoặc Đô Rê Mi
 
 THEO CÁCH CỦA BẠN
-• Sáu phong cách, từ Cổ xưa đến Vũ trụ, mỗi phong cách có màu sắc, kiểu chữ và hình nền riêng
-• Sáu kiểu đồng hồ đo và sáu kiểu sóng, trong đó có strobe
 • Sáng, tối, hoặc theo điện thoại, với màu từ hình nền trên Android 12 trở lên
 • Chế độ tập trung: một đồng hồ đo lớn trên điện thoại xoay ngang, dễ đọc từ xa
 

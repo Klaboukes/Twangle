@@ -28,6 +28,7 @@ import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
@@ -36,6 +37,7 @@ import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
@@ -81,14 +83,18 @@ class StoreScreenshots(private val shot: Shot) {
     /**
      * The eight screenshots of the plan, in its order, each in its theme, with the part of the
      * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
-     * screens fit whole). [LIGHT_AND_DARK]'s screens are [TILES].
+     * screens fit whole).
      */
     enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
         /** The meter, the note and "In tune". */
         IN_TUNE(dark = false, focus = 0f..0.62f),
 
-        /** 1.1's six styles; in 2.0's one look the six strings in tune, light and dark crossed (Phase 69 redoes the set). */
-        LIGHT_AND_DARK(dark = true),
+        /**
+         * Practice's four cards and the "Last time" row, the bar's three tabs under them: the whole
+         * screen (2.0's navigation, Phase 69). Its case also saves the metronome's screen for the
+         * website (`raw-metronome.png`), which has no store picture of its own.
+         */
+        PRACTICE(dark = true),
 
         /** The meter, the note, its pill and "Tune up". */
         TUNE_UP(dark = true, focus = 0f..0.68f),
@@ -107,9 +113,6 @@ class StoreScreenshots(private val shot: Shot) {
 
         val number: Int get() = ordinal + 1
     }
-
-    /** One of the six tiles: the tuner light or [dark], holding [string] (a MIDI note) in tune. */
-    data class Tile(val dark: Boolean, val string: Int)
 
     @get:Rule
     val rules: RuleChain = RuleChain
@@ -178,17 +181,32 @@ class StoreScreenshots(private val shot: Shot) {
     private fun shoot() {
         when (shot) {
             Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
-            Shot.LIGHT_AND_DARK -> {
-                // Light and dark, each holding another string in tune.
-                val screens = TILES.mapIndexed { i, tile ->
-                    runBlocking { settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT) }
-                    capture(name = "${shot.number}${'a' + i}") {
-                        recorder.play(StoreSounds.heldNote(StoreSounds.hz(tile.string), NOTE_SECONDS))
-                        settle(NOTE_SETTLE_MS)
-                    }
+            Shot.PRACTICE -> {
+                runBlocking {
+                    // "Last time": Chords, C major.
+                    settings.setPracticeTool(PracticeTool.CHORDS)
+                    settings.setPracticeRoot(PitchClass.C)
+                    settings.setPracticeChordQuality(ChordQuality.MAJOR)
+                    settings.setMetronomeBpm(METRONOME_BPM)
+                    settings.setMetronomeMeter(Meter.FOUR_FOUR)
                 }
-                val focus = if (tablet) TABLET_TILE_FOCUS else TILE_FOCUS
-                compose(screens.map { Window(it.asImageBitmap(), focus) }.chunked(2))
+                lateinit var cards: Bitmap
+                ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                    waitFor(navigation)
+                    measureCrop(scenario)
+                    click(NavigationTestTags.tab(Destination.PRACTICE))
+                    waitFor(PracticeTestTags.LAST_TIME)
+                    settle(PANEL_SETTLE_MS)
+                    cards = screenshot(scenario, "${shot.number}")
+                    // The website's metronome picture: 120 beats a minute in 4/4, the first beat lit.
+                    click(NavigationTestTags.tab(Destination.METRONOME))
+                    click(MetronomeTestTags.START)
+                    settle(PANEL_SETTLE_MS)
+                    metronome.beat(0)
+                    SystemClock.sleep(BEAT_LIT_MS)
+                    screenshot(scenario, "metronome")
+                }
+                save(cards)
             }
             Shot.TUNE_UP -> tuner { recorder.play(flatLowE()); settle(NOTE_SETTLE_MS) }
             Shot.INSTRUMENTS -> tuner {
@@ -228,7 +246,7 @@ class StoreScreenshots(private val shot: Shot) {
                 val screens = mutableListOf<Bitmap>()
                 ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                     waitFor(navigation)
-                    // Practice's cards (Phase 69) open each tool full screen; the store pictures redo the set in Phase 69's next step.
+                    // Practice's cards (Phase 69) open each tool full screen, Back leading to the cards.
                     click(NavigationTestTags.tab(Destination.PRACTICE))
                     click(PracticeTestTags.card(PracticeTool.CHORDS))
                     waitFor(PracticeTestTags.CHORDS)
@@ -469,22 +487,6 @@ class StoreScreenshots(private val shot: Shot) {
         fun shots(): List<Shot> =
             if (InstrumentationRegistry.getArguments().getString(LOCALE_ARGUMENT).isNullOrBlank()) emptyList() else Shot.entries
 
-        /** [Shot.LIGHT_AND_DARK]'s grid, two a row, light and dark crossed: each with another string of the guitar in tune. */
-        val TILES = listOf(
-            Tile(dark = false, string = 40),
-            Tile(dark = true, string = 45),
-            Tile(dark = true, string = 50),
-            Tile(dark = false, string = 55),
-            Tile(dark = false, string = 59),
-            Tile(dark = true, string = 64),
-        )
-
-        /** What each of the six tiles shows: the meter, the note and "In tune". */
-        private val TILE_FOCUS = 0.08f..0.66f
-
-        /** The same on the tablet upright, whose taller column is about as tall a share (unchecked on the tablet). */
-        private val TABLET_TILE_FOCUS = 0.06f..0.66f
-
         /** The app's language before the first picture, put back after the last. */
         private var languageBefore: String? = null
         private var current: String? = null
@@ -546,6 +548,10 @@ class StoreScreenshots(private val shot: Shot) {
         private const val LAST_STRUM_SETTLE_MS = 1_800L
 
         private const val CAPO_FRET = 2
+
+        /** The website's metronome picture: its tempo, and how long after the first beat it is taken, still lit. */
+        private const val METRONOME_BPM = 120
+        private const val BEAT_LIT_MS = 120L
 
         /** The navigation rail's width (NavigationBar.kt, RAIL_WIDTH). */
         private const val RAIL_DP = 80
