@@ -724,6 +724,73 @@ class DataStoreSettingsRepositoryTest {
         assertFalse("nor after a restart", repository().takeOldFocusMode())
     }
 
+    /**
+     * The settings file 1.1.0 wrote on the Xiaomi 12X on 2026-11-03 (Phase 76's upgrade check), every
+     * value set to something other than its default through the app: read as it lies, nothing is lost.
+     */
+    @Test
+    fun `a real 1_1 file is read with every kept setting, and the gone ones fall back as planned`() = runTest {
+        javaClass.getResourceAsStream("/settings-1.1.preferences_pb")!!.use { input -> file.outputStream().use { input.copyTo(it) } }
+        val store = dataStore()
+        val repo = repository(store)
+        val settings = repo.settings.first()
+
+        // Tuning
+        assertEquals(442f, settings.a4Hz)
+        assertEquals(TunerMode.AUTO, settings.mode)
+        assertEquals(Instruments.UKULELE, settings.instrument)
+        assertEquals("ukulele_baritone", settings.tuning.id)
+        assertEquals(2, settings.tuning.loweredBy)
+        val own = settings.customTunings.single()
+        assertEquals("UpgradeCheck", own.name)
+        assertEquals(Instruments.GUITAR, own.instrument)
+        assertEquals(listOf(38, 45, 50, 55, 60, 64), own.notes.map { it.midi })
+        assertEquals(Notation.SOLFEGE, settings.notationChoice)
+        assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
+        // While tuning
+        assertFalse(settings.keepScreenOn)
+        assertFalse(settings.vibrateInTune)
+        assertFalse("1.1's Show tuning help on gives no tick-off", settings.stringTickOff)
+        assertFalse(settings.showIntonationCheck)
+        // Look: Retro, Bold and the Loupe go; the strobe wave under the Loupe makes the lens the strobe
+        assertEquals(ThemeMode.DARK, settings.theme)
+        assertTrue(settings.dynamicColor)
+        assertTrue(settings.showSignalBars)
+        assertEquals(LensLook.STROBE, settings.lensLook)
+        // Metronome
+        assertEquals(97, settings.metronomeBpm)
+        assertEquals(Meter.SEVEN_EIGHT, settings.metronomeMeter)
+        assertEquals(ClickSound.CLAVES, settings.metronomeClickSound)
+        assertEquals(Subdivision.TWO, settings.metronomeSubdivision)
+        assertTrue(settings.metronomeVibrate)
+        assertEquals(SpeedTrainer(90, 130, 2, 8), settings.metronomeTrainer)
+        assertTrue(settings.metronomeTrainerOn)
+        // Practice
+        assertEquals(PracticeTool.SCALES, settings.practiceTool)
+        assertEquals(PitchClass.F_SHARP, settings.practiceRoot)
+        assertEquals(ChordQuality.MINOR_SEVENTH, settings.practiceChordQuality)
+        assertEquals(ScaleType.DORIAN, settings.practiceScaleType)
+        assertEquals(SongKey(PitchClass.E, minor = true), settings.practiceCapoShapes)
+        assertEquals(3, settings.practiceCapoFret)
+        assertEquals(DroneSound.WARM_PAD, settings.droneSound)
+        assertEquals(DroneVoicing.FIFTH_OCTAVE, settings.droneVoicing)
+        assertTrue(settings.droneLower)
+        assertTrue(settings.leftHanded)
+        assertEquals(Exercise.CHORD_TYPE, settings.earExercise)
+        assertEquals(
+            setOf(ChordQuality.MAJOR, ChordQuality.MINOR, ChordQuality.DOMINANT_SEVENTH, ChordQuality.MAJOR_SEVENTH, ChordQuality.SUS4),
+            settings.earChordTypes,
+        )
+        // Google's rating window
+        assertEquals(1_793_687_587_874L, settings.firstUseMillis)
+        assertFalse(settings.ratingAsked)
+
+        // 1.1's focus mode was on: the first start opens in it, and its key is all that is written.
+        val before = store.data.first().asMap()
+        assertTrue(repo.takeOldFocusMode())
+        assertEquals(before - booleanPreferencesKey("focus_mode"), store.data.first().asMap())
+    }
+
     @Test
     fun `1_1's focus mode off is removed too, and the tuner opens as usual`() = runTest {
         dataStore().edit { it[booleanPreferencesKey("focus_mode")] = false }

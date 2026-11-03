@@ -1,13 +1,13 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 1 november 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 3 november 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
 ## De microfoon
 - Twangle heeft de microfoon nodig om de noot te horen die je speelt. Android vraagt eerst je toestemming, en die kun je altijd weer intrekken in de instellingen van je telefoon.
 - De microfoon staat alleen aan **zolang het stemscherm open is**. Ga je naar een ander scherm, wissel je van app, vergrendel je de telefoon of gaat het scherm uit, dan laat Twangle de microfoon binnen ongeveer 5 seconden los. De microfoonindicator van Android laat zien wanneer hij aan staat.
-- De extra tools van de stemmer (strumcheck, 12e-fretcheck, akkoordnaam en toonlijn) horen bij het stemscherm en luisteren op precies dezelfde manier. De toonlijn wordt alleen op het scherm getekend en is weg zodra je het scherm verlaat.
+- De strumcheck en de akkoordnaam horen bij het stemscherm: je hoeft ze niet aan te zetten, maar ze luisteren met de microfoon van de stemmer op precies dezelfde manier en geven na een strum vanzelf antwoord. De 12e-fretcheck ook. De toonlijn, een van de uiterlijken van de meter, wordt alleen op het scherm getekend en is weg zodra je het scherm verlaat.
 - Akkoorden, toonladders (en de bourdon die je onder een toonladder kunt laten klinken) en de capohulp in het tabblad Oefenen gebruiken de microfoon nooit, en de oefeningen Intervallen en Akkoordsoort van Gehoortraining ook niet. Naspelen in Gehoortraining gebruikt hem alleen zolang het op het scherm staat, om de toon te horen die je naspeelt, en laat hem los zoals de stemmer dat doet.
 - Bij de metronoom gebruikt Twangle de microfoon alleen **als je op Luisteren tikt**, om de muziek in de buurt te horen en het tempo te vinden. Hij luistert hooguit 15 seconden en stopt eerder als je op Stop tikt, een andere knop aanraakt of het scherm verlaat.
 - Het geluid wordt live in het geheugen van de telefoon geanalyseerd om de toonhoogte of het tempo te vinden, en daarna meteen weggegooid. Twangle **neemt nooit geluid op, bewaart het niet en verstuurt het niet**.
@@ -32,10 +32,11 @@ De website wordt gehost door GitHub (GitHub Pages). Zoals elke webhost ziet GitH
 
 ## Instellingen blijven op je telefoon
 Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan alleen op je telefoon:
-- **Stemmen:** het instrument en de stemming (en hoeveel lager je die hebt gezet), stemmingen die je zelf hebt gemaakt, snaar- of chromatische modus, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
-- **Uiterlijk:** de stijl, licht of donker, kleuren van je achtergrond, het uiterlijk van de meter en het effect bij gestemd, de weergave (naald of golf), het uiterlijk van de golf, of de focusmodus aan staat, of de signaalstreepjes te zien zijn, en de taal van de app als je die hebt gekozen.
-- **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en de hint om hoger of lager te stemmen.
-- **Oefenen:** de tool die je het laatst gebruikte; het tempo, de maatsoort en het klikgeluid van de metronoom, de tikken tussen de tellen en of hij trilt op de tel; het begintempo, het doel, de stap en het aantal maten per stap van de tempotrainer, en of die aan staat; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.
+- **Stemmen:** het instrument en de stemming (en hoeveel lager je die hebt gezet), stemmingen die je zelf hebt gemaakt, of Elke noot aan staat, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
+- **Uiterlijk:** de meter (toonlijn, lichtboog of stroboscoop), licht of donker, kleuren van je achtergrond, of de signaalstreepjes te zien zijn, en de taal van de app als je die hebt gekozen.
+- **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd, of gestemde snaren worden afgevinkt en of de 12e-fretcheck te zien is.
+- **Metronoom:** het tempo, de maatsoort en het klikgeluid, de tikken tussen de tellen en of hij trilt op de tel; het begintempo, het doel, de stap en het aantal maten per stap van de tempotrainer, en of die aan staat.
+- **Oefenen:** de tool die je het laatst gebruikte; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.
 - Of je ooit nee hebt gezegd tegen de microfoon, zodat Twangle weet of Android het je nog kan vragen.
 - Wanneer je Twangle voor het eerst opende, en of het beoordelingsvenster van Google Play al is gevraagd, zodat het hooguit één keer komt en nooit op de eerste dag.
 
