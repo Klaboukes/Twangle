@@ -94,7 +94,7 @@
     <!-- Switch title: show small bars by the note for how loud and clear the sound is heard. -->
     <string name="settings_show_signal_bars_title">Show signal bars</string>
     <!-- The line under the Show signal bars switch. -->
-    <string name="settings_show_signal_bars_summary">For the curious: small bars by the note show how well the tuner hears you. Tap them for the figures</string>
+    <string name="settings_show_signal_bars_summary">For the curious: small bars above the strings show how well the tuner hears you. Tap them for the figures</string>
 
     <!-- About (the last group). -->
     <string name="settings_language_title">Language</string>

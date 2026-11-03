@@ -12,6 +12,9 @@ internal val TOOL_STRINGS_GAP = 8.dp
 
 internal val SECTION_SPACING = 24.dp
 
+/** Upright, the ruler is drawn big (the needle, 2026-11-03) from this column height; a shorter one keeps it plain. */
+internal val LARGE_RULER_MIN_HEIGHT = 640.dp
+
 /** Between the ruler and the lens under it. */
 internal val RULER_METER_GAP = 12.dp
 

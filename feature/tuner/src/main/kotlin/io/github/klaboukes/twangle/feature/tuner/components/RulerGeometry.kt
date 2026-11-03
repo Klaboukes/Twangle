@@ -9,6 +9,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.tanh
 
 // Where the ruler's chromatic scale sits (2.0, Phase 71; docs/architecture/v2-plan.md, *The ruler*): pure
 // numbers, so they are tested on the JVM (RulerGeometryTest). Nothing here allocates but [rulerNames].
@@ -24,9 +25,31 @@ fun rulerHeardMidi(position: Float): Int = floor(position + 0.5f).toInt()
 
 /**
  * The x of note [midi]'s mark when the scale sits at [position] under the pointer at [pointerX], [step]
- * apart: the scale slides left as the note goes sharp, so the pointer moves right along it.
+ * apart: the scale slides left as the note goes sharp, so the pointer moves right along it. Near the pointer
+ * the scale is zoomed in ([rulerWarp]), so the last cents to the note move it far enough to read.
  */
-fun rulerNoteX(midi: Int, position: Float, pointerX: Float, step: Float): Float = pointerX + (midi - position) * step
+fun rulerNoteX(midi: Int, position: Float, pointerX: Float, step: Float): Float = rulerPlaceX(midi.toFloat(), position, pointerX, step)
+
+/** The x of any place [at] on the scale (in semitones, as [position]), as [rulerNoteX] places the notes' marks. */
+fun rulerPlaceX(at: Float, position: Float, pointerX: Float, step: Float): Float = pointerX + rulerWarp(at - position) * step
+
+/**
+ * The ruler zoomed in round the pointer (the owner's pick B of docs/design/v2-ruler-needle-preview.html,
+ * 2026-11-03): [d] semitones from the pointer are drawn `d + ZOOM · REACH · tanh(d / REACH)` steps away, so the
+ * scale is [RULER_ZOOM] + 1 times as wide at the pointer (10 cents ≈ 0.29 steps, not 0.1), eases back to its plain
+ * width a semitone out ([RULER_ZOOM_REACH]), and keeps its order (it only ever grows with [d]). At rest [d] is 0.
+ */
+fun rulerWarp(d: Float): Float = d + RULER_ZOOM * RULER_ZOOM_REACH * tanh(d / RULER_ZOOM_REACH)
+
+/**
+ * How much the cent marks round the note show (0..1) for a reading [cents] off it: all within [RULER_MARKS_FULL],
+ * none from [RULER_MARKS_NONE] on, so they come in as the note gets close and the ruler reads like a needle. NaN (no
+ * note) shows none.
+ */
+fun rulerMarksShown(cents: Float): Float {
+    if (cents.isNaN()) return 0f
+    return (1f - (abs(cents) - RULER_MARKS_FULL) / (RULER_MARKS_NONE - RULER_MARKS_FULL)).coerceIn(0f, 1f)
+}
 
 /** The lowest note whose mark (and its name, up to a [step] wide) can be seen on a ruler [width] wide. */
 fun rulerFirstMidi(position: Float, width: Float, step: Float): Int = floor(position - (width / 2f + step) / step).toInt()
@@ -76,6 +99,16 @@ fun rulerRestMidi(mode: TunerMode, tuning: Tuning, locked: Int?, lastHeard: Int?
 private val A4 = Note(69)
 
 private const val CENTS_PER_SEMITONE = 100f
+
+/** How much wider than plain the scale is drawn at the pointer, less one ([rulerWarp]). */
+const val RULER_ZOOM = 2f
+
+/** Over how many semitones round the pointer the zoom eases back ([rulerWarp]). */
+const val RULER_ZOOM_REACH = 0.22f
+
+/** Within this many cents of the note its cent marks show whole, and from this many on not at all ([rulerMarksShown]). */
+const val RULER_MARKS_FULL = 5f
+const val RULER_MARKS_NONE = 30f
 
 /** Within this many semitones of the pointer a name is drawn full size. */
 const val EMPHASIS_FULL = 0.25f

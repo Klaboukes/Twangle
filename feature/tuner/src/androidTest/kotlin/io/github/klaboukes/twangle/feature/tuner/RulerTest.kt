@@ -13,6 +13,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
@@ -214,15 +215,17 @@ class RulerTest {
 
     /**
      * With the big note gone (Phase 71's last step) a phone on its side has room for the ruler over the lens and the
-     * word (until then it had none, and its signal bars stood in the chip's row): the bars stand beside its heard note.
+     * word (until then it had none). Its signal bars stand in the chip's row (beside the heard note until 2026-11-03).
      */
     @Test
-    fun aPhoneOnItsSideHasTheRulerWithTheBarsBesideTheHeardNote() {
+    fun aPhoneOnItsSideHasTheRulerAndTheBarsInTheChipRow() {
         show(string(-12.3f), size = PHONE_ON_ITS_SIDE, signalBars = true)
         val box = ruler.assertIsDisplayed().getBoundsInRoot()
         assertRulerShows("E")
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("bars $bars not in the ruler $box", bars.top >= box.top && bars.bottom <= box.bottom && bars.left > box.left && bars.right < box.right)
+        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
+        assertTrue("bars $bars not in the chip's row $chip", bars.top < chip.bottom && bars.bottom > chip.top)
+        assertTrue("bars $bars over the ruler $box", bars.bottom <= box.top)
         val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         assertTrue("word $word below the window $window", word.bottom <= window.bottom)
@@ -247,20 +250,41 @@ class RulerTest {
         compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertDoesNotExist()
     }
 
+    /**
+     * Upright the signal bars stand at the start of the strum check's row over the pegs, their left edge over the first
+     * peg's (the owner's review of 2026-11-03: beside the ruler's heard note they read as the next note's); not in the
+     * ruler, and they stay put when the note goes. In Any note, with no pegs, they stand in the chip's row.
+     */
     @Test
-    fun theSignalBarsStandBesideTheHeardNote() {
+    fun theSignalBarsStandAtTheStartOfTheRowOverThePegs() {
         show(string(-12.3f), signalBars = true)
         val box = ruler.getBoundsInRoot()
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        val middle = (box.left + box.right) / 2
-        assertTrue("bars $bars not right of the ruler's middle $middle", bars.left > middle && bars.left - middle <= 60.dp)
-        assertTrue("bars $bars not in the ruler's top half $box", bars.top >= box.top && bars.bottom <= box.top + box.height / 2)
-        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        assertTrue("bars' button runs into the chip $chip", compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot().top >= chip.bottom)
+        val firstPeg = compose.onNodeWithText("E2").getBoundsInRoot()
+        val word = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
+        assertTrue("bars $bars in the ruler $box", bars.top >= box.bottom)
+        assertTrue("bars $bars not between the word $word and the first peg $firstPeg", bars.top >= word.bottom && bars.bottom <= firstPeg.top)
+        assertTrue("bars $bars not over the first peg $firstPeg", bars.left >= firstPeg.left && bars.left <= firstPeg.left + 12.dp)
         // Quiet, they stay put.
         shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
         compose.waitForIdle()
         assertTrue(bars == compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot())
+        // Any note: no pegs, so the chip's row.
+        shownState.value = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD)
+        compose.waitForIdle()
+        val chromatic = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
+        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
+        assertTrue("Any note: bars $chromatic not in the chip's row $chip", chromatic.top < chip.bottom && chromatic.bottom > chip.top)
+    }
+
+    /** Upright the ruler is the big needle where the column has room (the Xiaomi's), the plain one on a short screen (the S26's). */
+    @Test
+    fun theRulerIsBigOnATallScreenAndPlainOnAShortOne() {
+        show(string(-12.3f))
+        assertEquals("tall", 100f, ruler.getBoundsInRoot().height.value, 0.5f)
+        shownSize.value = DpSize(360.dp, 570.dp)
+        compose.waitForIdle()
+        assertEquals("short", 78f, ruler.getBoundsInRoot().height.value, 0.5f)
     }
 
     /** The 12th-fret check's panel takes the ruler's and the meter's place; the signal bars go back to the chip's row. */

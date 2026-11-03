@@ -30,8 +30,9 @@ import kotlin.math.min
 // The pegs' slot under the word: the strings to tap and hold, the strum check's button, the 12th-fret check's panel.
 
 /**
- * The [PegsSlot] for each [TunerUiState]: the pegs (with the strum check's button [strumButton] and a strum's marks
- * above them in the plain tuner) in guitar mode; chromatic mode (Any note) leaves the slot empty, at the same height.
+ * The [PegsSlot] for each [TunerUiState]: the pegs (with the strum check's button [strumButton], the signal [bars] and
+ * a strum's marks above them in the plain tuner) in guitar mode; chromatic mode (Any note) leaves the slot empty, at
+ * the same height.
  */
 @Composable
 internal fun GuitarSlotFor(
@@ -40,9 +41,12 @@ internal fun GuitarSlotFor(
     strings: StringActions,
     strumButton: (@Composable () -> Unit)? = null,
     wide: Boolean = false,
+    bars: (@Composable () -> Unit)? = null,
 ) {
-    // The strum check's button with the plain tuner's pegs only (the 12th-fret check's pegs pick its string).
-    val button = strumButton.takeIf { state is TunerUiState.Detected || state is TunerUiState.Listening }
+    // The strum check's button and the signal bars with the plain tuner's pegs only (the 12th-fret check's pegs pick its string).
+    val plain = state is TunerUiState.Detected || state is TunerUiState.Listening
+    val button = strumButton.takeIf { plain }
+    val shownBars = bars.takeIf { plain }
     val controls = when (state) {
         // The strings ticked off only while they belong to the tuning shown (a new one starts afresh).
         is TunerUiState.Detected -> GuitarControlsState(
@@ -82,6 +86,7 @@ internal fun GuitarSlotFor(
                 strumMarks = controls.strumMarks,
                 strumButton = button,
                 beside = wide,
+                bars = shownBars,
             )
         }
     } else {
@@ -141,8 +146,10 @@ internal fun instrumentOf(state: TunerUiState): Instrument {
  * nothing moves when either comes or goes. The row's height is kept without the button too (the 12-string, the
  * 12th-fret check, a build without the check). [beside] (the wide layout, Phase 73, where height is scarce) puts the
  * button beside the strings instead, after the last, in a slot kept whether it shows or not and as wide a one before
- * the first, so the strings stay centred and never move. The instrument button and the tuning's name that started
- * this row until Phase 70 went (the picker chip at the top says and opens the same), and the 12th-fret check's
+ * the first, so the strings stay centred and never move. The signal [bars] (behind their Settings switch) stand at the
+ * row's start, across from the button, the bars' left edge in line with the first string's face (the owner's review of
+ * 2026-11-03: beside the ruler's heard note they read as the next note's); not in [beside]. The instrument button and
+ * the tuning's name that started this row until Phase 70 went (the picker chip at the top says and opens the same), and the 12th-fret check's
  * button, at this row's start, when the check moved to the picker sheet (Phase 71, 2026-11-03).
  */
 @Composable
@@ -160,8 +167,10 @@ internal fun GuitarControls(
     strumMarks: List<StrumString>? = null,
     strumButton: (@Composable () -> Unit)? = null,
     beside: Boolean = false,
+    bars: (@Composable () -> Unit)? = null,
 ) {
     val buttonSlot = @Composable { if (strumButton != null) strumButton() }
+    val barsSlot = @Composable { if (bars != null && !beside) Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
     val strings = @Composable {
         StringSelector(
             tuning,
@@ -186,10 +195,11 @@ internal fun GuitarControls(
     val facesSpan = LocalStringFacesSpan.current
     // Without the strings, the header over them takes its own width again.
     if (facesSpan != null) DisposableEffect(facesSpan) { onDispose { facesSpan.width = 0 } }
-    Layout(contents = listOf(strings, buttonSlot)) { (stringMeasurables, buttonMeasurables), constraints ->
+    Layout(contents = listOf(strings, buttonSlot, barsSlot)) { (stringMeasurables, buttonMeasurables, barsMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
         val buttonPlaceable = buttonMeasurables.firstOrNull()?.measure(partConstraints)
+        val barsPlaceable = barsMeasurables.firstOrNull()?.measure(partConstraints)
         val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
         val stringsX = (width - stringsPlaceable.width) / 2
         // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
@@ -209,6 +219,8 @@ internal fun GuitarControls(
         facesSpan?.width = (facesEnd - facesStart).coerceAtLeast(0)
         layout(width, height) {
             if (buttonPlaceable != null && buttonX != null) buttonPlaceable.placeRelative(buttonX, (rowHeight - buttonPlaceable.height) / 2)
+            // The bars' left edge where the first string's face starts, level with the button.
+            barsPlaceable?.placeRelative(facesStart.coerceIn(0, (width - barsPlaceable.width).coerceAtLeast(0)), (rowHeight - barsPlaceable.height) / 2)
             stringsPlaceable.placeRelative(stringsX, stringsY)
         }
     }

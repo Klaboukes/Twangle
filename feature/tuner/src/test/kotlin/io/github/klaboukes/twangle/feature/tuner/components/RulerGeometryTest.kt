@@ -33,19 +33,56 @@ class RulerGeometryTest {
     @Test
     fun `in tune the heard note's mark is under the pointer`() {
         assertEquals(pointer, rulerNoteX(40, rulerPosition(40, 0f), pointer, step), 0f)
-        // Its neighbours a step to each side.
-        assertEquals(pointer - step, rulerNoteX(39, 40f, pointer, step), 1e-3f)
-        assertEquals(pointer + step, rulerNoteX(41, 40f, pointer, step), 1e-3f)
+        // Its neighbours to each side, pushed a little further out by the zoom round the pointer.
+        assertEquals(pointer - step * rulerWarp(1f), rulerNoteX(39, 40f, pointer, step), 1e-3f)
+        assertEquals(pointer + step * rulerWarp(1f), rulerNoteX(41, 40f, pointer, step), 1e-3f)
+        assertTrue(rulerWarp(1f) in 1.4f..1.5f)
     }
 
     @Test
     fun `a sharp note slides the scale left, a flat one right`() {
-        // 25 cents sharp: the note's mark a quarter step left of the pointer, so the pointer stands right of it.
-        assertEquals(pointer - step / 4f, rulerNoteX(40, rulerPosition(40, 25f), pointer, step), 1e-3f)
-        assertEquals(pointer + step / 4f, rulerNoteX(40, rulerPosition(40, -25f), pointer, step), 1e-3f)
+        // 25 cents sharp: the note's mark left of the pointer, so the pointer stands right of it; zoomed, further than plain.
+        val sharp = rulerNoteX(40, rulerPosition(40, 25f), pointer, step)
+        assertEquals(pointer - step * rulerWarp(0.25f), sharp, 1e-3f)
+        assertTrue(sharp < pointer - step / 4f)
+        assertEquals(pointer + step * rulerWarp(0.25f), rulerNoteX(40, rulerPosition(40, -25f), pointer, step), 1e-3f)
         // Half way between E and F the pointer is half way between their marks.
         val between = rulerPosition(40, 50f)
         assertEquals(pointer, (rulerNoteX(40, between, pointer, step) + rulerNoteX(41, between, pointer, step)) / 2f, 1e-3f)
+    }
+
+    @Test
+    fun `the needle zooms in round the pointer, three times as wide there, plain further out, in order`() {
+        assertEquals(0f, rulerWarp(0f), 0f)
+        // At the pointer a cent moves the scale three times as far as plain.
+        assertEquals(3f, rulerWarp(0.001f) / 0.001f, 0.01f)
+        // 10 cents off: 0.29 of a step, not 0.1; 2 cents: 0.06.
+        assertEquals(0.287f, rulerWarp(0.1f), 0.002f)
+        assertEquals(0.06f, rulerWarp(0.02f), 0.002f)
+        // A few semitones out the spacing is the plain step again, the scale shifted by the zoom's 0.44.
+        assertEquals(1f, rulerWarp(4f) - rulerWarp(3f), 1e-3f)
+        // Never out of order, and the same either way.
+        var last = rulerWarp(-6f)
+        var d = -6f
+        while (d <= 6f) {
+            val x = rulerWarp(d)
+            assertTrue("$d", x >= last)
+            assertEquals(-x, rulerWarp(-d), 1e-5f)
+            last = x
+            d += 0.01f
+        }
+        // Any place on the scale is placed the same way as the notes' marks.
+        assertEquals(rulerNoteX(41, 40.3f, pointer, step), rulerPlaceX(41f, 40.3f, pointer, step), 0f)
+    }
+
+    @Test
+    fun `the cent marks come in as the note gets within 30 cents, whole within 5`() {
+        assertEquals(0f, rulerMarksShown(Float.NaN), 0f)
+        assertEquals(0f, rulerMarksShown(30f), 0f)
+        assertEquals(0f, rulerMarksShown(-45f), 0f)
+        assertEquals(0.5f, rulerMarksShown(-17.5f), 1e-6f)
+        assertEquals(1f, rulerMarksShown(5f), 0f)
+        assertEquals(1f, rulerMarksShown(0f), 0f)
     }
 
     @Test

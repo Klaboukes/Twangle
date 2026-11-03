@@ -1550,15 +1550,15 @@ class TunerContentTest {
         assertEquals("the picker chip stays centred", switch, pickerChip.getBoundsInRoot())
     }
 
-    // Beside the ruler's heard note since 2.0 (Phase 71; RulerTest has where exactly), no longer at the chip row's start.
+    // Over the pegs since the owner's review of 2026-11-03 (RulerTest has where exactly); beside the ruler's heard note before.
     @Test
-    fun theSignalBarsSitInTheRulerUnderTheChipRow() {
+    fun theSignalBarsSitOverThePegsUnderTheWord() {
         show(detected(-12.3f), size = PHONE_UPRIGHT, signalBars = true)
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
         val ruler = compose.onNodeWithTag(TunerTestTags.RULER).getBoundsInRoot()
-        val switch = pickerChip.getBoundsInRoot()
-        assertTrue("bars $bars not in the ruler $ruler", bars.top >= ruler.top && bars.bottom <= ruler.bottom && bars.left >= ruler.left && bars.right <= ruler.right)
-        assertTrue("bars $bars not under the chip $switch", bars.top >= switch.bottom)
+        val wordBox = word.getBoundsInRoot()
+        assertTrue("bars $bars in the ruler $ruler", bars.top >= ruler.bottom)
+        assertTrue("bars $bars not under the word $wordBox", bars.top >= wordBox.bottom)
     }
 
     // By the note they rode along with its text ("Play a string", "12 cents flat"); in the corner they stay put.

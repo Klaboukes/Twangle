@@ -92,7 +92,7 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
-import io.github.klaboukes.twangle.feature.tuner.components.RULER_HEIGHT
+import io.github.klaboukes.twangle.feature.tuner.components.rulerHeight
 import io.github.klaboukes.twangle.feature.tuner.components.Ruler
 import io.github.klaboukes.twangle.feature.tuner.components.rulerHeardMidi
 import io.github.klaboukes.twangle.feature.tuner.components.rulerNames
@@ -506,7 +506,7 @@ fun TunerContent(
         is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
-    // barsInRow: the signal bars in the chip's row, where no ruler stands beside them (the 12th-fret check's panel).
+    // barsInRow: the signal bars in the chip's row, where they don't stand over the pegs.
     val header = @Composable { barsInRow: Boolean ->
         // The picker chip, top centre (2.0, Phase 70); none over an error, where the sheet can't open.
         val chip = @Composable {
@@ -531,7 +531,6 @@ fun TunerContent(
         }
         ChipRow(
             chip = chip,
-            // Beside the ruler's heard note; in the row only while a tool's panel stands in the ruler's and the lens's place.
             bars = if (showSignalBars && barsInRow) ({ movableSignalBars() }) else null,
             button = focusButton,
             gear = settingsButton,
@@ -555,8 +554,11 @@ fun TunerContent(
             toleranceCents = StrumCheckInterpreter.toleranceFor(inTunePrecision),
         ).takeIf { strumCheck }
     }
-    // wide: the pegs in the wide layout's one row (Phase 73).
-    val guitarSlotWith = @Composable { wide: Boolean ->
+    // The signal bars at the start of the strum check's row over the pegs, upright in guitar mode (the owner's review of
+    // 2026-11-03); elsewhere (Any note, a tool's panel, on its side) at the start of the chip's row, by the gear.
+    val barsByPegs = showSignalBars && mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening)
+    // wide: the pegs in the wide layout's one row (Phase 73), where the bars stay in the chip's row; withBars: upright.
+    val guitarSlotWith = @Composable { wide: Boolean, withBars: Boolean ->
         // No marks over the pegs: the panel's columns show the strum (the marks stay for the other layouts' tests).
         val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, null)
         // The strum check's button above the pegs at their end (beside them, after the last, on its side).
@@ -564,9 +566,9 @@ fun TunerContent(
         val strumButton = onStrumCheckChange?.takeIf { TunerTool.STRUM_CHECK in tunerTools && mode == TunerMode.AUTO }?.let { onStrum ->
             @Composable { StrumCheckButton(on = strumCheck, onChange = onStrum) }
         }
-        GuitarSlotFor(state, mode, strings, strumButton, wide = wide)
+        GuitarSlotFor(state, mode, strings, strumButton, wide = wide, bars = if (barsByPegs && withBars) ({ movableSignalBars() }) else null)
     }
-    val guitarSlot = @Composable { guitarSlotWith(false) }
+    val guitarSlot = @Composable { guitarSlotWith(false, false) }
     // The lens's last seconds: the tuner's, or an empty one where none is given (its look then draws no line).
     val emptyHistory = remember { PitchHistory() }
     val history = pitchHistory ?: emptyHistory
@@ -649,7 +651,8 @@ fun TunerContent(
     val lastHeard = remember { LastHeardNote() }
     // None over the strum check's panel either: it names its strings itself.
     val rulerShown = rulerFor(state, lastHeard)?.takeIf { strumPanel == null }
-    val rulerWith = @Composable { bars: Boolean, edgeClear: Dp ->
+    // large: upright, the needle in the room over the lens (2026-11-03); on its side and in focus mode the plain size.
+    val rulerWith = @Composable { large: Boolean, edgeClear: Dp ->
         if (rulerShown != null) {
             Ruler(
                 pitch = rulerPitch,
@@ -660,19 +663,19 @@ fun TunerContent(
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 precision = inTunePrecision,
                 animationsOff = animationsOff,
-                bars = if (showSignalBars && bars) ({ movableSignalBars() }) else null,
                 edgeClear = edgeClear,
+                large = large,
             )
         }
     }
-    val ruler = rulerShown?.let { @Composable { rulerWith(true, 0.dp) } }
-    val rulerAndGauge = @Composable {
+    val ruler = rulerShown?.let { @Composable { rulerWith(false, 0.dp) } }
+    val rulerAndGauge = @Composable { largeRuler: Boolean ->
         if (ruler == null) {
             gauge()
         } else {
             // Under its neighbours, as the lens is on its own: the lens's glow reaches past its box, behind them.
             Column(Modifier.zIndex(-1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                ruler()
+                rulerWith(largeRuler, 0.dp)
                 Spacer(Modifier.height(RULER_METER_GAP))
                 gauge()
             }
@@ -687,8 +690,8 @@ fun TunerContent(
             TwoPaneLayout(
                 error = error,
                 onRetry = onRetry,
-                // The signal bars beside the ruler's heard note; in the chip's row only while a tool's panel stands in their place.
-                header = { header(ruler == null) },
+                // On its side the signal bars stay in the chip's row.
+                header = { header(true) },
                 guitarSlot = guitarSlot,
                 gauge = gauge,
                 status = status,
@@ -698,17 +701,20 @@ fun TunerContent(
         val singleColumn = @Composable {
             // On a tablet held upright the whole column is drawn bigger, as on a phone (1 on every phone).
             val scale = columnScaleFor(maxWidth.value, maxHeight.value)
+            // The big ruler where the column has room for it (the Xiaomi's 750 dp); a short one (the S26's 570) keeps the plain one.
+            val largeRuler = maxHeight / scale >= LARGE_RULER_MIN_HEIGHT
             ScaledUp(scale) {
                 SingleColumnLayout(
                     height = maxHeight / scale,
                     error = error,
                     onRetry = onRetry,
-                    header = { header(ruler == null) },
-                    gauge = rulerAndGauge,
+                    header = { header(!barsByPegs) },
+                    gauge = { rulerAndGauge(largeRuler) },
                     status = { status(false) },
                     lensGivesWay = plainMeter,
-                    guitarSlot = guitarSlot,
-                    overLens = if (ruler != null) RULER_HEIGHT + RULER_METER_GAP else 0.dp,
+                    // Upright the signal bars stand in the strum check's row over the pegs.
+                    guitarSlot = { guitarSlotWith(false, true) },
+                    overLens = if (ruler != null) rulerHeight(largeRuler) + RULER_METER_GAP else 0.dp,
                 )
             }
         }
@@ -720,11 +726,11 @@ fun TunerContent(
                 height = windowHeight,
                 error = error,
                 onRetry = onRetry,
-                header = if (focus) null else ({ header(ruler == null) }),
+                header = if (focus) null else ({ header(true) }),
                 ruler = rulerShown?.let { if (focus) ({ rulerWith(false, WIDE_RULER_CLEAR) }) else ruler },
                 gauge = gauge,
                 word = { word(true, true) },
-                pegs = if (focus) null else ({ guitarSlotWith(true) }),
+                pegs = if (focus) null else ({ guitarSlotWith(true, false) }),
                 string = if (focus) ({ FocusString(state) }) else null,
             )
         }

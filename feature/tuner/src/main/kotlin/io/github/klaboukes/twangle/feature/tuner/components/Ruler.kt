@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -21,13 +22,13 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.preferredFrameRate
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
@@ -39,7 +40,6 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.lens.meterInTuneExit
@@ -74,12 +74,17 @@ import kotlinx.coroutines.launch
  *
  * [heard] is the heard note as the screen's text has it (null while quiet), only for the ruler's semantics:
  * TalkBack skips the ruler (the reading is spoken elsewhere), and UI tests read the note it shows
- * ([RulerNote], [RulerQuiet]). The signal [bars], when given, stand beside the heard note, above its
- * right-hand neighbour's name, where no name ever reaches. No name or mark is drawn within [edgeClear] of either
- * end (focus mode's ruler across the full width keeps its exit button's corner clear, Phase 73), as far from both
- * so the pointer stays in the middle.
+ * ([RulerNote], [RulerQuiet]). No name or mark is drawn within [edgeClear] of either end (focus mode's ruler across
+ * the full width keeps its exit button's corner clear, Phase 73), as far from both so the pointer stays in the middle.
  *
- * Its height is fixed ([RULER_HEIGHT]) and its names do not grow with the font size: the ruler is a
+ * **The needle** (the owner's pick B of docs/design/v2-ruler-needle-preview.html, 2026-11-03): round the pointer the
+ * scale is zoomed in ([rulerWarp]), so the last cents to the note slide it far enough to tune by, and as the note gets
+ * within 30 cents marks every 5 cents fade in round it, with the in-tune zone a green band on the line
+ * ([rulerMarksShown]). Upright it is [large] (taller, its names bigger and further apart, in the room the word and the
+ * pegs left); on its side and in focus mode it keeps 2.0's first size, so the lens keeps its height there. (The signal
+ * bars stood beside its heard note until then; they moved to the strum check's row.)
+ *
+ * Its height is fixed ([rulerHeight]) and its names do not grow with the font size: the ruler is a
  * drawing, like the meter's scale. Nothing here allocates while drawing: the names are measured once.
  */
 @Composable
@@ -93,9 +98,10 @@ fun Ruler(
     inTune: Boolean = false,
     precision: InTunePrecision = InTunePrecision.DEFAULT,
     animationsOff: Boolean = false,
-    bars: (@Composable () -> Unit)? = null,
     edgeClear: Dp = 0.dp,
+    large: Boolean = false,
 ) {
+    val sizes = if (large) LARGE else PLAIN
     val currentPitch by rememberUpdatedState(pitch)
     val currentCents by rememberUpdatedState(cents)
     val currentRest by rememberUpdatedState(rest)
@@ -139,14 +145,14 @@ fun Ruler(
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer(cacheSize = 0)
     // Sizes in dp, not sp: the ruler is a drawing, and a 2× font would not fit its height.
-    val bigStyle = TextStyle(fontSize = with(density) { BIG_NAME_SIZE.toSp() }, fontWeight = FontWeight.ExtraBold)
-    val smallStyle = TextStyle(fontSize = with(density) { SMALL_NAME_SIZE.toSp() }, fontWeight = FontWeight.Medium)
-    val big = remember(names, density) { Array(names.size) { measurer.measure(musicText(names[it]), bigStyle) } }
-    val small = remember(names, density) { Array(names.size) { measurer.measure(musicText(names[it]), smallStyle) } }
+    val bigStyle = TextStyle(fontSize = with(density) { sizes.bigName.toSp() }, fontWeight = FontWeight.ExtraBold)
+    val smallStyle = TextStyle(fontSize = with(density) { sizes.smallName.toSp() }, fontWeight = FontWeight.Medium)
+    val big = remember(names, density, sizes) { Array(names.size) { measurer.measure(musicText(names[it]), bigStyle) } }
+    val small = remember(names, density, sizes) { Array(names.size) { measurer.measure(musicText(names[it]), smallStyle) } }
 
     val shownMidi = heard ?: rest
     val shownName = names[shownMidi.mod(names.size)]
-    Box(modifier.fillMaxWidth().height(RULER_HEIGHT)) {
+    Box(modifier.fillMaxWidth().height(sizes.height)) {
         Spacer(
             Modifier
                 .fillMaxSize()
@@ -159,18 +165,21 @@ fun Ruler(
                 // The sliding scale asks for the screen's full rate while it draws, as the meter does.
                 .preferredFrameRate(RULER_FRAME_RATE)
                 .drawWithCache {
-                    val step = RULER_STEP.toPx()
+                    val step = sizes.step.toPx()
                     val pointerX = size.width / 2f
-                    val baseY = BASE_Y.toPx()
+                    val baseY = sizes.base.toPx()
                     val tickTop = baseY - TICK_LENGTH.toPx()
                     val line = LINE_WIDTH.toPx()
                     val inset = LINE_INSET.toPx()
                     val fade = EDGE_FADE.toPx()
                     val clear = edgeClear.toPx()
-                    val bigBaseline = BIG_BASELINE.toPx()
-                    val smallBaseline = SMALL_BASELINE.toPx()
-                    val bigPx = BIG_NAME_SIZE.toPx()
-                    val smallPx = SMALL_NAME_SIZE.toPx()
+                    val bigBaseline = sizes.bigBaseline.toPx()
+                    val smallBaseline = sizes.smallBaseline.toPx()
+                    val bigPx = sizes.bigName.toPx()
+                    val smallPx = sizes.smallName.toPx()
+                    val centTick = CENT_TICK.toPx()
+                    val tenCentTick = TEN_CENT_TICK.toPx()
+                    val zoneHalf = ZONE_HALF_HEIGHT.toPx()
                     val half = POINTER_HALF_WIDTH.toPx()
                     val pointer = Path().apply {
                         moveTo(pointerX - half, baseY + POINTER_BOTTOM.toPx())
@@ -200,23 +209,29 @@ fun Ruler(
                             if (emphasis < 1f) drawName(small[index], x, baseline, textPx / smallPx, color, alpha * (1f - emphasis))
                         }
                         val cents = currentCents()
+                        // The needle: cent marks round the note being tuned, and its in-tune zone on the line, as it nears.
+                        val near = rulerMarksShown(cents) * shown
+                        if (near > 0f) {
+                            val target = position - cents / CENTS_PER_SEMITONE
+                            val zoneFrom = rulerPlaceX(target - window / CENTS_PER_SEMITONE, position, pointerX, step)
+                            val zoneTo = rulerPlaceX(target + window / CENTS_PER_SEMITONE, position, pointerX, step)
+                            drawRect(green.copy(alpha = ZONE_ALPHA * near), Offset(zoneFrom, baseY - zoneHalf), Size(zoneTo - zoneFrom, 2f * zoneHalf))
+                            var mark = -MARKS_REACH_CENTS
+                            while (mark <= MARKS_REACH_CENTS) {
+                                if (mark != 0) {
+                                    val x = rulerPlaceX(target + mark / CENTS_PER_SEMITONE, position, pointerX, step)
+                                    val edge = rulerEdgeFade(x, size.width, fade, clear)
+                                    val length = if (mark % 10 == 0) tenCentTick else centTick
+                                    if (edge > 0f) drawLine(muted.copy(alpha = CENT_ALPHA * near * edge), Offset(x, baseY - length), Offset(x, baseY), line)
+                                }
+                                mark += MARK_STEP_CENTS
+                            }
+                        }
                         val tone = mix(farOff, green, readingToneShare(cents, window, exit, tuned.value))
                         drawPath(pointer, mix(muted, tone, shown))
                     }
                 },
         )
-        if (bars != null) {
-            Box(
-                Modifier
-                    .layout { measurable, constraints ->
-                        val side = BARS_SIZE.roundToPx()
-                        val placeable = measurable.measure(Constraints.fixed(side, side))
-                        layout(constraints.maxWidth, side + BARS_TOP.roundToPx()) {
-                            placeable.placeRelative(constraints.maxWidth / 2 + BARS_FROM_POINTER.roundToPx(), BARS_TOP.roundToPx())
-                        }
-                    },
-            ) { bars() }
-        }
     }
 }
 
@@ -250,20 +265,34 @@ var SemanticsPropertyReceiver.rulerNote by RulerNote
 val RulerQuiet = SemanticsPropertyKey<Boolean>("RulerQuiet")
 var SemanticsPropertyReceiver.rulerQuiet by RulerQuiet
 
-/** The ruler's height: the mock-up's 78 under the gear, chip and focus row. */
-val RULER_HEIGHT = 78.dp
+/**
+ * One size of the ruler: its [height], how far apart the semitones' marks are ([step], before the zoom), the heard
+ * note's name and its neighbours' and where their baselines sit, and the scale's line ([base]), with a mark per
+ * semitone standing on it and the pointer under it, pointing up at it.
+ */
+@Immutable
+private data class RulerSizes(
+    val height: Dp,
+    val step: Dp,
+    val bigName: Dp,
+    val smallName: Dp,
+    val bigBaseline: Dp,
+    val smallBaseline: Dp,
+    val base: Dp,
+)
 
-/** How far apart the semitones' marks are (the mock-up's 58 on a 284-wide screen). */
-private val RULER_STEP = 58.dp
+/** 2.0's first ruler, the tuner mock-up's 78 under the gear, chip and focus row (58 between marks on a 284-wide screen). */
+private val PLAIN = RulerSizes(78.dp, 58.dp, 36.dp, 17.dp, 47.dp, 45.dp, 65.dp)
 
-/** The heard note's name and its neighbours', and where their baselines sit. */
-private val BIG_NAME_SIZE = 36.dp
-private val SMALL_NAME_SIZE = 17.dp
-private val BIG_BASELINE = 47.dp
-private val SMALL_BASELINE = 45.dp
+/** Upright, in the room the word and the pegs left (the needle mock-up's B, 2026-11-03). */
+private val LARGE = RulerSizes(100.dp, 72.dp, 56.dp, 22.dp, 66.dp, 63.dp, 87.dp)
 
-/** The scale's line, with a mark per semitone standing on it, and the pointer under it, pointing up at it. */
-private val BASE_Y = 65.dp
+/** The ruler's height, [large] (upright) or not (on its side and in focus mode). */
+fun rulerHeight(large: Boolean): Dp = if (large) LARGE.height else PLAIN.height
+
+/** The plain ruler's height, on its side and in focus mode. */
+val RULER_HEIGHT = PLAIN.height
+
 private val TICK_LENGTH = 7.dp
 private val LINE_WIDTH = 1.5.dp
 private val LINE_INSET = 8.dp
@@ -274,14 +303,18 @@ private val POINTER_BOTTOM = 11.dp
 /** Names fade out over this much at each end of the ruler. */
 private val EDGE_FADE = 32.dp
 
-/**
- * The signal bars: their small slot's start this far right of the pointer and its top this far down, so
- * they stand beside the heard note (whose widest name, "Sol♯", reaches about 38 dp from the pointer)
- * and above the neighbours' names (whose tops are about 33 dp down).
- */
-private val BARS_FROM_POINTER = 42.dp
-private val BARS_TOP = 4.dp
-private val BARS_SIZE = 24.dp
+/** The needle's cent marks round the note: every [MARK_STEP_CENTS] out to [MARKS_REACH_CENTS], the tens longer. */
+private const val MARK_STEP_CENTS = 5
+private const val MARKS_REACH_CENTS = 30
+private val CENT_TICK = 3.5.dp
+private val TEN_CENT_TICK = 6.dp
+private const val CENT_ALPHA = 0.75f
+
+/** The in-tune zone on the needle's line: this high each way from it, in the in-tune green at this much. */
+private val ZONE_HALF_HEIGHT = 3.dp
+private const val ZONE_ALPHA = 0.3f
+
+private const val CENTS_PER_SEMITONE = 100f
 
 /** A small neighbour's name and the marks, at this much of their colour. */
 private const val SMALL_ALPHA = 0.9f
