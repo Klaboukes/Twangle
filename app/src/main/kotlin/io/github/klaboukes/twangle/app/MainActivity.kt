@@ -45,7 +45,9 @@ import io.github.klaboukes.twangle.app.navigation.back
 import io.github.klaboukes.twangle.app.navigation.destination
 import io.github.klaboukes.twangle.app.navigation.destinationsFor
 import io.github.klaboukes.twangle.app.navigation.practiceTool
+import io.github.klaboukes.twangle.app.navigation.reselected
 import io.github.klaboukes.twangle.app.navigation.screen
+import io.github.klaboukes.twangle.app.navigation.screenFrom
 import io.github.klaboukes.twangle.app.navigation.shownScreen
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -151,10 +153,11 @@ class MainActivity : AppCompatActivity() {
      * tuning editor over the app's background, with the navigation bar (Tune · Metronome · Practice) at
      * the bottom, or the rail at the start edge on its side. The gear in the top start corner of every
      * tab (upright in the tab's own top row, on its side at the rail's top) opens Settings over the whole
-     * window, without the bar; Settings' back arrow and Back return to the tab that opened it, About's to
+     * window, without the bar; Settings' back arrow and Back return to the screen that opened it, About's to
      * Settings. The Practice tab shows its cards ([PracticeCards]), one per tool, and a card opens its tool
-     * over the whole window too, without the bar ([PracticeToolScreen]); the tool's back arrow and Back
-     * return to the cards. The instrument and tuning panel opens
+     * under the bar ([PracticeToolScreen]); the tool's back arrow, Back and a tap on the Practice tab return
+     * to the cards, and the tab, opened again from another, comes back to the tool it was left on. The
+     * instrument and tuning panel opens
      * over the tuner, or over the Practice tools, from their instrument button. Back leads from the
      * metronome, Practice's cards and the tuning editor to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
@@ -225,12 +228,16 @@ class MainActivity : AppCompatActivity() {
                     var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
                     // Where the tuning editor goes back to: the tuner, or Practice when its panel opened it.
                     var editorReturn by rememberSaveable { mutableStateOf(Screen.TUNER) }
-                    // The tab whose gear opened Settings, where Settings goes back to.
-                    var settingsOpener by rememberSaveable { mutableStateOf(Destination.TUNER) }
+                    // The screen whose gear opened Settings, where Settings goes back to: a tab, or on its side a
+                    // Practice tool (the rail's gear).
+                    var settingsOpener by rememberSaveable { mutableStateOf(Screen.TUNER) }
                     val openSettings = {
-                        settingsOpener = screen.destination ?: Destination.TUNER
+                        settingsOpener = if (screen.destination != null) screen else Screen.TUNER
                         picked = Screen.SETTINGS
                     }
+                    // Where the Practice tab was left, the cards or a tool, so the tab comes back to it.
+                    var practiceLeftOn by rememberSaveable { mutableStateOf(Screen.PRACTICE) }
+                    SideEffect { if (screen.destination == Destination.PRACTICE) practiceLeftOn = screen }
                     // Whether the instrument and tuning panel shows over the tuner (its instrument button opens it).
                     var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
                     // Focus mode's tuner without its controls: the meter takes the whole screen, so the rail
@@ -300,9 +307,12 @@ class MainActivity : AppCompatActivity() {
                         selected = screen.destination,
                         onSelect = {
                             if (it == Destination.TUNER) closeTunerToolsRequests++
-                            picked = it.screen
+                            picked = it.screenFrom(practiceLeftOn)
                         },
-                        onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
+                        onReselect = {
+                            if (it == Destination.TUNER) closeTunerToolsRequests++
+                            screen.reselected()?.let { target -> picked = target }
+                        },
                         destinations = destinationsFor(practice = practiceTools.isNotEmpty()),
                         navigationHidden = fullScreen,
                         onOpenSettings = openSettings,
@@ -362,7 +372,7 @@ class MainActivity : AppCompatActivity() {
                                     languages = BuildConfig.LANGUAGES.split(","),
                                     // Android 13+ redraws the widget itself on the new configuration.
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
-                                    onBack = { picked = settingsOpener.screen },
+                                    onBack = { picked = settingsOpener },
                                     // Without the trail in this build, Meter offers the Light arc and the strobe.
                                     trailLook = tools.pitchTrail,
                                 )
@@ -415,7 +425,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * A Practice tool full screen (2.0, Phase 69), opened from its card on the Practice tab or the "last
+     * A Practice tool under the bar (2.0, Phase 69; full screen until 2026-11-03), opened from its card on the Practice tab or the "last
      * time" row: chords, scales, the capo helper or Ear training, each with its own switch (Phase 33, 55).
      * Its back arrow in the top start corner ([onBack]) and Back lead back to the cards (Chords opened from
      * the capo helper back to it). Each tool keeps its own saved UI state while another shows, but for Chords

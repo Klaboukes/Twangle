@@ -4,8 +4,8 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
  * The app's screens. Navigation is just this one value (no navigation library): the tabs of the
- * navigation bar, the Practice tools that the Practice tab's cards open full screen (2.0, Phase 69),
- * Settings (opened from the gear on any tab) with About (opened from Settings), and the tuning editor
+ * navigation bar, the Practice tools that the Practice tab's cards open (2.0, Phase 69; under the bar
+ * since 2026-11-03), Settings (opened from the gear on any tab) with About (opened from Settings), and the tuning editor
  * (opened from the tuner or a Practice tool).
  */
 enum class Screen {
@@ -26,21 +26,21 @@ fun destinationsFor(practice: Boolean): List<Destination> =
     if (practice) Destination.entries else Destination.entries - Destination.PRACTICE
 
 /**
- * The tab [this] screen is, or null where the bar isn't shown: the Practice tools, which their cards open
- * over the whole window with a back arrow, Settings and About, which the gear opens the same way, and the
- * tuning editor.
+ * The tab [this] screen is, or null where the bar isn't shown: Settings and About, which the gear opens
+ * over the whole window, and the tuning editor. The Practice tools are the Practice tab's, with the bar
+ * (owner, 2026-11-03: the player goes back and forth between a chord chart, the tuner and the metronome;
+ * from Phase 69 until then they were full screen).
  */
 val Screen.destination: Destination?
     get() = when (this) {
         Screen.TUNER -> Destination.TUNER
         Screen.METRONOME -> Destination.METRONOME
-        Screen.PRACTICE -> Destination.PRACTICE
-        Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING,
-        Screen.SETTINGS, Screen.ABOUT, Screen.TUNING_EDITOR,
-        -> null
+        Screen.PRACTICE, Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING,
+        -> Destination.PRACTICE
+        Screen.SETTINGS, Screen.ABOUT, Screen.TUNING_EDITOR -> null
     }
 
-/** The screen a tab opens: Practice its cards, never a tool by itself. */
+/** The screen a tab opens at first: Practice its cards, never a tool by itself. */
 val Destination.screen: Screen
     get() = when (this) {
         Destination.TUNER -> Screen.TUNER
@@ -48,7 +48,7 @@ val Destination.screen: Screen
         Destination.PRACTICE -> Screen.PRACTICE
     }
 
-/** The full-screen screen of a Practice tool, which its card opens. */
+/** The screen of a Practice tool, which its card opens. */
 val PracticeTool.screen: Screen
     get() = when (this) {
         PracticeTool.CHORDS -> Screen.PRACTICE_CHORDS
@@ -62,19 +62,33 @@ val Screen.practiceTool: PracticeTool?
     get() = PracticeTool.entries.firstOrNull { it.screen == this }
 
 /**
- * Where Back leads from [this] screen: About to Settings, Settings to the tab whose gear opened it
- * ([settingsOpener]), a Practice tool to the Practice cards (Chords to the capo helper where a row of its
+ * Where Back leads from [this] screen: About to Settings, Settings to the screen whose gear opened it
+ * ([settingsOpener]: a tab, or a Practice tool from the rail's gear), a Practice tool to the Practice cards (Chords to the capo helper where a row of its
  * table opened it, [chordsFromCapo]), the other tabs and the tuning editor to the tuner, and from the tuner
  * nowhere (null: Back leaves the app, as Android does by itself).
  */
-fun Screen.back(settingsOpener: Destination, chordsFromCapo: Boolean = false): Screen? = when (this) {
+fun Screen.back(settingsOpener: Screen, chordsFromCapo: Boolean = false): Screen? = when (this) {
     Screen.TUNER -> null
     Screen.ABOUT -> Screen.SETTINGS
-    Screen.SETTINGS -> settingsOpener.screen
+    Screen.SETTINGS -> settingsOpener
     Screen.PRACTICE_CHORDS -> if (chordsFromCapo) Screen.PRACTICE_CAPO else Screen.PRACTICE
     Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING -> Screen.PRACTICE
     Screen.METRONOME, Screen.PRACTICE, Screen.TUNING_EDITOR -> Screen.TUNER
 }
+
+/**
+ * The screen a tap on [this] tab opens from another tab: Practice the screen it was left on ([practiceLeftOn],
+ * the cards or a tool), as a tab keeps its place; the others their one screen.
+ */
+fun Destination.screenFrom(practiceLeftOn: Screen): Screen =
+    if (this == Destination.PRACTICE && practiceLeftOn.destination == Destination.PRACTICE) practiceLeftOn else screen
+
+/**
+ * The screen a tap on the open tab leads to from [this] screen: from a Practice tool the Practice cards
+ * (Chords opened from the capo helper too, where its back arrow leads to the capo helper); null where it
+ * stays (the tuner closes its tools itself).
+ */
+fun Screen.reselected(): Screen? = if (practiceTool != null) Screen.PRACTICE else null
 
 /**
  * The screen [picked] stands for with only the [offered] Practice tools: a tool not offered (its switch

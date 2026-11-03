@@ -23,17 +23,17 @@ class NavigationTest {
     }
 
     @Test
-    fun backLeadsSettingsToTheTabThatOpenedItAboutToSettingsAndLeavesFromTheTuner() {
-        for (opener in Destination.entries) {
+    fun backLeadsSettingsToTheScreenThatOpenedItAboutToSettingsAndLeavesFromTheTuner() {
+        val openers = Screen.entries.filter { it.destination != null }
+        for (opener in openers) {
             assertNull(Screen.TUNER.back(opener))
             assertEquals(Screen.TUNER, Screen.METRONOME.back(opener))
             assertEquals(Screen.TUNER, Screen.PRACTICE.back(opener))
             assertEquals(Screen.TUNER, Screen.TUNING_EDITOR.back(opener))
             assertEquals(Screen.SETTINGS, Screen.ABOUT.back(opener))
+            // A Practice tool too: on its side the rail's gear opens Settings from it.
+            assertEquals(opener, Screen.SETTINGS.back(opener))
         }
-        assertEquals(Screen.TUNER, Screen.SETTINGS.back(Destination.TUNER))
-        assertEquals(Screen.METRONOME, Screen.SETTINGS.back(Destination.METRONOME))
-        assertEquals(Screen.PRACTICE, Screen.SETTINGS.back(Destination.PRACTICE))
     }
 
     @Test
@@ -48,14 +48,17 @@ class NavigationTest {
         assertEquals(Destination.PRACTICE, Screen.PRACTICE.destination)
     }
 
-    /** Each Practice tool opens full screen from its card (Phase 69): no bar, and Back leads to the cards. */
+    /**
+     * Each Practice tool opens from its card (Phase 69) under the bar, the Practice tab open (owner,
+     * 2026-11-03; full screen until then), and Back leads to the cards.
+     */
     @Test
-    fun eachPracticeToolIsAFullScreenOfItsOwnAndBackLeadsToTheCards() {
+    fun eachPracticeToolIsOnThePracticeTabAndBackLeadsToTheCards() {
         assertEquals(PracticeTool.entries.size, PracticeTool.entries.map { it.screen }.toSet().size)
         for (tool in PracticeTool.entries) {
             assertEquals(tool, tool.screen.practiceTool)
-            assertNull("$tool has no bar", tool.screen.destination)
-            for (opener in Destination.entries) assertEquals(Screen.PRACTICE, tool.screen.back(opener))
+            assertEquals("$tool is on the Practice tab", Destination.PRACTICE, tool.screen.destination)
+            assertEquals(Screen.PRACTICE, tool.screen.back(Screen.PRACTICE))
         }
         assertNull(Screen.PRACTICE.practiceTool)
         assertNull(Screen.TUNER.practiceTool)
@@ -63,9 +66,28 @@ class NavigationTest {
 
     @Test
     fun chordsOpenedFromTheCapoHelperGoBackToIt() {
-        assertEquals(Screen.PRACTICE_CAPO, Screen.PRACTICE_CHORDS.back(Destination.PRACTICE, chordsFromCapo = true))
-        assertEquals(Screen.PRACTICE, Screen.PRACTICE_SCALES.back(Destination.PRACTICE, chordsFromCapo = true))
-        assertEquals(Screen.PRACTICE, Screen.PRACTICE_CAPO.back(Destination.PRACTICE, chordsFromCapo = true))
+        assertEquals(Screen.PRACTICE_CAPO, Screen.PRACTICE_CHORDS.back(Screen.PRACTICE, chordsFromCapo = true))
+        assertEquals(Screen.PRACTICE, Screen.PRACTICE_SCALES.back(Screen.PRACTICE, chordsFromCapo = true))
+        assertEquals(Screen.PRACTICE, Screen.PRACTICE_CAPO.back(Screen.PRACTICE, chordsFromCapo = true))
+    }
+
+    /** The Practice tab, opened from another, comes back to where it was left: the cards or a tool. */
+    @Test
+    fun thePracticeTabComesBackToTheToolItWasLeftOn() {
+        for (left in Screen.entries.filter { it.destination == Destination.PRACTICE }) {
+            assertEquals(left, Destination.PRACTICE.screenFrom(practiceLeftOn = left))
+            assertEquals(Screen.TUNER, Destination.TUNER.screenFrom(practiceLeftOn = left))
+            assertEquals(Screen.METRONOME, Destination.METRONOME.screenFrom(practiceLeftOn = left))
+        }
+        // Never a screen of no tab.
+        assertEquals(Screen.PRACTICE, Destination.PRACTICE.screenFrom(practiceLeftOn = Screen.SETTINGS))
+    }
+
+    /** A tap on the open Practice tab in a tool leads to the cards; elsewhere it stays. */
+    @Test
+    fun aTapOnTheOpenPracticeTabInAToolLeadsToTheCards() {
+        for (tool in PracticeTool.entries) assertEquals(Screen.PRACTICE, tool.screen.reselected())
+        for (screen in listOf(Screen.TUNER, Screen.METRONOME, Screen.PRACTICE)) assertNull(screen.reselected())
     }
 
     @Test

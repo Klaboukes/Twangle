@@ -53,8 +53,9 @@ import org.junit.rules.Timeout
 /**
  * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): a tab of its own
  * beside the metronome's (Phase 69), it shows a card per tool (Phase 69: chords, scales, the capo helper
- * and Ear training, no metronome), a card opens its tool full screen without the bar and its back arrow
- * and Back come back to the cards; the tool opened is saved at once and the "last time" row under the
+ * and Ear training, no metronome), a card opens its tool under the bar (full screen until 2026-11-03) and
+ * its back arrow, Back and a tap on the Practice tab come back to the cards, while the tab opened again
+ * from another comes back to the tool; the tool opened is saved at once and the "last time" row under the
  * cards reopens it, also after the app starts again, with none while nothing was used. The Chords
  * tool's chord picked is saved too and comes back with it, and so is the Scales tool's scale, on the
  * same root. The capo helper (Phase 33) saves its shapes and fret, and a row tapped opens its shape in
@@ -172,7 +173,7 @@ class PracticeTabTest {
 
     private fun checked(tag: String): Boolean = device.findObject(By.res(tag)).isChecked
 
-    /** From the cards, opens [tool] with its card: full screen, the cards and the bar gone. */
+    /** From the cards, opens [tool] with its card: the cards go, the bar stays. */
     private fun openTool(tool: PracticeTool) {
         click(PracticeTestTags.card(tool))
         assertTrue("the cards go", gone(PracticeTestTags.CARDS))
@@ -226,9 +227,19 @@ class PracticeTabTest {
 
             openTool(PracticeTool.SCALES)
             assertTrue("scales show", shown(PracticeTestTags.SCALES))
-            // Waited for: the bar slides away as the tool comes.
-            assertTrue("full screen: no bar", gone(NavigationTestTags.tab(Destination.PRACTICE)))
+            assertTrue("the bar stays", shown(NavigationTestTags.tab(Destination.PRACTICE)))
+            assertTrue("on the Practice tab", device.findObject(By.res(NavigationTestTags.tab(Destination.PRACTICE))).isSelected)
             assertEquals("the tool opened is saved", PracticeTool.SCALES, waitForSaved(PracticeTool.SCALES))
+            // Another tab and back: the tool it was left on, not the cards.
+            click(NavigationTestTags.tab(Destination.TUNER))
+            assertTrue(gone(PracticeTestTags.SCALES))
+            click(NavigationTestTags.tab(Destination.PRACTICE))
+            assertTrue("the tab comes back to Scales", shown(PracticeTestTags.SCALES))
+            assertFalse("not to the cards", device.hasObject(By.res(PracticeTestTags.CARDS)))
+            // A tap on the open tab: the cards.
+            click(NavigationTestTags.tab(Destination.PRACTICE))
+            assertTrue("a tap on the Practice tab leads to the cards", shown(PracticeTestTags.CARDS))
+            openTool(PracticeTool.SCALES)
             device.pressBack()
             assertTrue("Back leads to the cards", shown(PracticeTestTags.CARDS))
             assertTrue("with the bar", shown(NavigationTestTags.tab(Destination.PRACTICE)))
