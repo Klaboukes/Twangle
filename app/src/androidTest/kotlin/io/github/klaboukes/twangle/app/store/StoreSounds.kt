@@ -106,7 +106,8 @@ object StoreSounds {
 /**
  * A stand-in microphone for the store screenshots: it delivers whatever [play] last handed it, once,
  * in real time like `AudioRecord`, then a very faint hiss (so the tuner never takes it for a
- * silenced microphone). The hiss also plays before the first sound.
+ * silenced microphone). The hiss also plays before the first sound. With nothing played it is
+ * [io.github.klaboukes.twangle.app.QuietMicrophoneRule]'s microphone, the hiss alone.
  */
 class FixedSoundRecorder : AudioRecorder {
     override val config = AudioConfig()

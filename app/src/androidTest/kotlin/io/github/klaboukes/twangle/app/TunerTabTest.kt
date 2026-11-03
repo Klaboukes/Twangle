@@ -43,6 +43,7 @@ class TunerTabTest {
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
         .around(FocusModeOffRule())
+        .around(QuietMicrophoneRule())
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

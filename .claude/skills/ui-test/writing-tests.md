@@ -23,6 +23,7 @@ Background and measurements: [docs/architecture/testing.md](../../../docs/archit
 ## Traps
 
 - `StyleScreenshots` is skipped unless `-a styleScreenshots=true` is passed (`scripts/style-screens.sh` passes it); `StoreScreenshots` has no cases without `-a storeScreenshots=<locale>` (`scripts/store-screenshots.sh`).
+- **The room's sound can hang an `:app` test.** With the real microphone, sound near the phone keeps the tuner's lens drawing and the main thread never goes idle, so `ActivityScenario.onActivity` and `close`, and UI Automator's `pressBack`, wait until the test times out (`TunerTabTest`, 2 runs in 3, 2026-11-03). A test of the app's screens that launches `MainActivity` adds `QuietMicrophoneRule` (a faint hiss instead of the microphone) around it; only a test of the microphone itself keeps the real one (`MicLifecycleTest`, `TuningWidgetTest`'s "no recording").
 
 ## Profiling a slow test
 

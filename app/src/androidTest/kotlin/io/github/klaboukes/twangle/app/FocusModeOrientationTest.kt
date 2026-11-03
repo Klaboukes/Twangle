@@ -46,6 +46,7 @@ class FocusModeOrientationTest {
     val rules: RuleChain = RuleChain
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
+        .around(QuietMicrophoneRule())
 
     private val focusMode = ApplicationProvider.getApplicationContext<TwangleApplication>().container.focusMode
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

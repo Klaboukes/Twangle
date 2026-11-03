@@ -27,6 +27,7 @@ class VolumeKeysTest {
     val rules: RuleChain = RuleChain
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
+        .around(QuietMicrophoneRule())
 
     @Test
     fun volumeKeysSetTheMediaVolumeOnTheTuner() {

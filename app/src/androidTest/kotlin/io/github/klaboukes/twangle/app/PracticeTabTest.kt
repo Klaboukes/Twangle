@@ -72,6 +72,7 @@ class PracticeTabTest {
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
         // Focus mode's full-screen tuner hides the bar these tests open Practice from.
         .around(FocusModeOffRule())
+        .around(QuietMicrophoneRule())
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -225,7 +226,8 @@ class PracticeTabTest {
 
             openTool(PracticeTool.SCALES)
             assertTrue("scales show", shown(PracticeTestTags.SCALES))
-            assertFalse("full screen: no bar", device.hasObject(By.res(NavigationTestTags.tab(Destination.PRACTICE))))
+            // Waited for: the bar slides away as the tool comes.
+            assertTrue("full screen: no bar", gone(NavigationTestTags.tab(Destination.PRACTICE)))
             assertEquals("the tool opened is saved", PracticeTool.SCALES, waitForSaved(PracticeTool.SCALES))
             device.pressBack()
             assertTrue("Back leads to the cards", shown(PracticeTestTags.CARDS))
