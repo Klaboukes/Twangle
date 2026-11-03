@@ -47,6 +47,10 @@ import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
+import io.github.klaboukes.twangle.feature.tuner.StrumString
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -123,6 +127,11 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
  * button's box so nothing moves; TalkBack hears "Tuned" as the button's state ("Locked, tuned" on the
  * locked string). [tuned] must be of this [tuning]. The [small] chips leave it out.
  *
+ * With [strumMarks] (a strum of the open strings heard, 2.0 Phase 74) each string's verdict stands above its peg
+ * ([StrumMark]: ↑ tighten, ↓ loosen, ✓ in tune, – not heard), [MARK_SIZE] high and [MARK_GAP] above the face, outside
+ * the peg's box so nothing moves (the row above the pegs keeps room for it, `GuitarControls`), and TalkBack hears it
+ * as the peg's state ("Tighten"; "Locked, Tighten" on the locked peg).
+ *
  * [small] draws a narrow row of small pegs, for the compact landscape layout: it only shows which
  * string is the target, and the lock. It takes no more width than it needs and is hidden from TalkBack, since the
  * note's reading already names the string.
@@ -143,6 +152,7 @@ fun StringSelector(
     checking: Boolean = false,
     tuned: TunedStrings? = null,
     tone: LiveTone? = null,
+    strumMarks: List<StrumString>? = null,
 ) {
     val checkLabel = stringResource(R.string.tuner_intonation_check_string)
     val markLabels = StringMark.entries.associateWith { spokenMark(it) }
@@ -154,6 +164,9 @@ fun StringSelector(
     val lockedSoundingState = stringResource(R.string.tuner_string_locked_sounding)
     val tunedState = stringResource(R.string.tuner_string_tuned)
     val lockedTunedState = stringResource(R.string.tuner_string_locked_tuned)
+    val lockedMarkState = stringResource(R.string.tuner_string_locked_mark)
+    val strumLabels = StrumVerdict.entries.associateWith { strumMarkLabel(it) }
+    val marksAnimationsOff = strumMarks != null && rememberAnimationsOff()
     val playLabel = stringResource(R.string.tuner_string_play)
     val animationsOff = soundingString != null && rememberAnimationsOff()
     val speech = rememberNoteNameSpeech()
@@ -183,6 +196,18 @@ fun StringSelector(
                     val mark = marks?.getOrNull(index)
                     val octaveString = tuning.hasOctaveString(index)
                     val ticked = !small && tuned != null && index in tuned
+                    val strum = strumMarks?.getOrNull(index)?.takeIf { !small }
+                    val strumLabel = strum?.let { strumLabels.getValue(it.verdict) }
+                    PegWithMark(
+                        mark = strum?.let { { StrumMark(it, index, animationsOff = marksAnimationsOff) } },
+                        modifier = when {
+                            fit.squeezed -> Modifier.weight(1f)
+                            // Outside the button, so the gap is no part of it to touch.
+                            endsShortStrings(tuning, index) -> Modifier.padding(end = shortGap)
+                            else -> Modifier
+                        },
+                        faceInset = fit.ringGapDp.dp,
+                    ) {
                     StringChip(
                         name = name,
                         spokenName = if (octaveString) spokenOctaveCourse.format(spokenName) else spokenName,
@@ -203,10 +228,12 @@ fun StringSelector(
                         longClickLabel = playLabel.format(spokenName),
                         state = when {
                             locked && sounding -> lockedSoundingState
+                            locked && strumLabel != null -> lockedMarkState.format(strumLabel)
                             locked && ticked -> lockedTunedState
                             locked -> lockedState
                             sounding -> soundingState
                             mark != null -> markLabels.getValue(mark)
+                            strumLabel != null -> strumLabel
                             ticked -> tunedState
                             else -> null
                         },
@@ -216,15 +243,31 @@ fun StringSelector(
                         animationsOff = animationsOff,
                         fit = fit,
                         small = small,
-                        modifier = when {
-                            fit.squeezed -> Modifier.weight(1f)
-                            // Outside the button, so the gap is no part of it to touch.
-                            endsShortStrings(tuning, index) -> Modifier.padding(end = shortGap)
-                            else -> Modifier
-                        },
+                        modifier = if (fit.squeezed) Modifier.fillMaxWidth() else Modifier,
                     )
+                    }
                 }
             }
+        }
+    }
+}
+
+/**
+ * A [peg] with its strum [mark] (if any) centred above it, [MARK_GAP] above its face (its box less [faceInset] at the
+ * top), placed outside the peg's box: the row and everything round it keep their places with or without it.
+ */
+@Composable
+private fun PegWithMark(mark: (@Composable () -> Unit)?, modifier: Modifier, faceInset: Dp, peg: @Composable () -> Unit) {
+    val markSlot = @Composable { if (mark != null) mark() }
+    Layout(contents = listOf(peg, markSlot), modifier = modifier) { (pegMeasurables, markMeasurables), constraints ->
+        val pegPlaceable = pegMeasurables.single().measure(constraints)
+        val markPlaceable = markMeasurables.firstOrNull()?.measure(Constraints())
+        layout(pegPlaceable.width, pegPlaceable.height) {
+            pegPlaceable.placeRelative(0, 0)
+            markPlaceable?.placeRelative(
+                (pegPlaceable.width - markPlaceable.width) / 2,
+                faceInset.roundToPx() - MARK_GAP.roundToPx() - markPlaceable.height,
+            )
         }
     }
 }

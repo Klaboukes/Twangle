@@ -13,12 +13,12 @@ enum class TunerLayout {
      */
     WIDE,
 
-    /** A tool's panel (strum check, the 12th-fret check, the chord name) beside its controls on its side (until Phase 74). */
+    /** The 12th-fret check's panel beside its controls on its side (1.1's arrangement, kept for the check). */
     TWO_PANE,
 
     /**
-     * Focus mode with a tool on: its panel as big as the screen allows beside the tool's lines (until Phase 74). A tap
-     * brings back the controls for a few seconds, as in the [WIDE] layout.
+     * Focus mode with the 12th-fret check on: its panel as big as the screen allows beside its lines. A tap brings back
+     * the controls for a few seconds, as in the [WIDE] layout.
      */
     COMPACT,
 }
@@ -30,10 +30,11 @@ enum class TunerLayout {
  * 578 dp beside the rail and the buttons, 663 dp without), and a layout that followed it switched about 40 times a
  * second. Upright and square windows keep the [TunerLayout.SINGLE_COLUMN].
  *
- * With a [toolPanel] (a tool's panel in the lens's place) a window wider than tall keeps the layouts of 1.1 until
- * Phase 74 lays the tools out wide: in [focusMode] [TunerLayout.COMPACT], else two panes once the window is wide
- * enough for two columns of controls ([TWO_PANE_MIN_WIDTH_DP], the Material 3 "medium" width class) and the single
- * column below that.
+ * With a [toolPanel] (the 12th-fret check's panel in the lens's place) a window wider than tall keeps the layouts of
+ * 1.1: in [focusMode] [TunerLayout.COMPACT], else two panes once the window is wide enough for two columns of
+ * controls ([TWO_PANE_MIN_WIDTH_DP], the Material 3 "medium" width class) and the single column below that. The
+ * strum check and the chord name have no panel since Phase 74: they show in the plain tuner's places, so the wide
+ * layout and focus mode keep them.
  */
 fun tunerLayoutFor(widthDp: Float, heightDp: Float, focusMode: Boolean, toolPanel: Boolean = false): TunerLayout = when {
     widthDp <= heightDp -> TunerLayout.SINGLE_COLUMN

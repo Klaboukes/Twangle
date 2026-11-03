@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-# Plays synthetic strums from this computer's speaker to the connected phone and shows what strum
-# check reads for each: all in tune, strings 10-30 cents flat or sharp, a string left out. See
-# docs/architecture/strum-and-metronome.md, "Strum check (polyphonic)", *Phone check*.
+# Plays synthetic strums from this computer's speaker to the connected phone and shows what the tuner
+# marks for each (2.0: the strum check happens by itself, no mode to switch on): all in tune, strings
+# 10-30 cents flat or sharp, a string left out. See docs/architecture/strum-and-metronome.md,
+# "Strum check (polyphonic)", *Phone check*.
 #
 #   scripts/strum-check.sh            guitar, standard tuning (the phone must show Guitar · Standard)
 #   scripts/strum-check.sh bass       4-string bass, standard tuning (Bass · Standard)
 #
 # Needs the phone connected, unlocked, with Twangle open on the tuner in that tuning, next to the
 # speaker (a laptop's own is fine) at a normal listening volume, in a quiet room. Takes about 10 s
-# per strum. It turns strum check on if it is off. For each strum it prints what was played and
-# what TalkBack would read for every string ("in tune" strings show a check mark, not their cents),
-# and saves a screenshot in build/strum-check/. Windows only (plays through PowerShell); needs
-# Python 3 (scripts/strum-wav.py makes the strums).
+# per strum. For each strum it prints what was played and the count in the word's place as TalkBack
+# says it ("4 of 6 in tune"), and saves a screenshot in build/strum-check/, which shows the mark above
+# every peg (↑ tighten, ↓ loosen, ✓ in tune, – not heard; UI Automator's dump has no TalkBack states,
+# so the marks are read from the picture). Windows only (plays through PowerShell); needs Python 3
+# (scripts/strum-wav.py makes the strums).
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -63,16 +65,11 @@ dump() {
     "$ADB" exec-out cat /sdcard/strum-check.xml | grep -o '<node [^>]*>' \
         | sed -E 's/.* text="([^"]*)" resource-id="([^"]*)".* content-desc="([^"]*)".* bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\2|\3|\1|\4 \5 \6 \7/'
 }
-centre_of() { awk -F'|' -v id="$1" '$1 == id { split($4, b, " "); print int((b[1] + b[3]) / 2), int((b[2] + b[4]) / 2); exit }'; }
 
 screen="$(dump)"
 if ! grep -q "|$picker|" <<<"$screen"; then
     echo "Twangle isn't showing ${picker/, / · } on the tuner. Open it and pick that tuning, then run this again." >&2
     exit 5
-fi
-if ! grep -q '^tuner_strum_panel|' <<<"$screen"; then
-    "$ADB" shell input tap $(centre_of tuner_strum_toggle <<<"$screen")
-    sleep 1
 fi
 
 for c in "${cases[@]}"; do
@@ -81,17 +78,14 @@ for c in "${cases[@]}"; do
     wav="$OUT/$name.wav"
     python scripts/strum-wav.py "$wav" "$notes" "$cents" || exit 6
     powershell.exe -NoProfile -Command "(New-Object System.Media.SoundPlayer '$(cygpath -w "$ROOT/$wav")').PlaySync()"
-    # The sound stops at once at the end, which the phone may take for a strum; give it time to see
-    # that it isn't one.
+    # The sound stops at once at the end, which the phone may take for a sound of its own; give it
+    # time to see that it isn't a strum, and the count time to take the word's place.
     sleep 1.5
     screen="$(dump)"
     "$ADB" exec-out screencap -p > "$OUT/$name.png"
-    echo "== $name"
-    paste -d' ' <(tr ' ' '\n' <<<"$notes") <(tr ' ' '\n' <<<"$cents") | while read -r note off; do
-        printf '   played %-4s %-4s shown: ' "$note" "$off"
-        i=$(( $(tr ' ' '\n' <<<"$notes" | grep -n -x -m1 "$note" | cut -d: -f1) - 1 ))
-        awk -F'|' -v id="tuner_strum_string_$i" '$1 == id { print $2 }' <<<"$screen"
-    done
-    echo "   $(awk -F'|' '$1 == "tuner_strum_status" { getline; print $3; getline; print "(" $3 ")"; exit }' <<<"$screen" | paste -sd' ')"
+    echo "== $name: played $(paste -d' ' <(tr ' ' '\n' <<<"$notes") <(tr ' ' '\n' <<<"$cents") | paste -sd',' | sed 's/,/, /g')"
+    # The word's spoken text is on the node right under the one tagged tuner_word.
+    count="$(awk -F'|' 'found { print $2; exit } $1 == "tuner_word" { found = 1 }' <<<"$screen")"
+    echo "   the word says: ${count:-(nothing)}   marks: $OUT/$name.png"
 done
 echo "Screenshots: $OUT/"

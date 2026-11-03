@@ -113,7 +113,6 @@ class LensLooksTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         inTunePrecision = shownPrecision.value,
                         focusMode = shownCompact.value,
-                        onStrumCheckChange = {},
                         onFocusModeChange = {},
                         lensLook = shownLook.value,
                         pitchHistory = shownHistory.value,

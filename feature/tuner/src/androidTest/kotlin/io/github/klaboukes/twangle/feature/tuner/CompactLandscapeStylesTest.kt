@@ -91,7 +91,6 @@ class CompactLandscapeStylesTest {
                         modifier = Modifier.fillMaxSize().background(BACKGROUND).testTag(WINDOW),
                         showSignalBars = true,
                         focusMode = shownCompact.value,
-                        onStrumCheckChange = {},
                         onFocusModeChange = {},
                     )
                 }
@@ -185,7 +184,7 @@ class CompactLandscapeStylesTest {
         assertTrue("$case: word $word under the lens $meter", word.top >= meter.bottom - 0.5.dp)
         cents.assertIsDisplayed()
         pickerChip.assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
+        compose.onNodeWithText("E2").assertDoesNotExist()
         signalBars.assertDoesNotExist()
     }
 
@@ -213,7 +212,7 @@ class CompactLandscapeStylesTest {
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
         pickerChip.assertIsDisplayed()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
+        compose.onNodeWithText("E2").assertIsDisplayed()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
         pickerChip.assertDoesNotExist()
         shownDark.value = true

@@ -92,6 +92,7 @@
     <string name="tuner_string_locked_sounding">Vastgezet, klinkt</string>
     <string name="tuner_string_tuned">Gestemd</string>
     <string name="tuner_string_locked_tuned">Vastgezet, gestemd</string>
+    <string name="tuner_string_locked_mark">Vastgezet, %1$s</string>
     <!-- In Dutch the unit stays singular after a number: "12 cent". -->
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
@@ -159,26 +160,13 @@
     <string name="tuner_delete_tuning_title">Deze stemming verwijderen?</string>
     <string name="tuner_delete_tuning_text">“%1$s” is daarna voorgoed weg.</string>
     <string name="tuner_delete_tuning_cancel">Annuleren</string>
-    <!-- Strum check: strum once and every string shows flat, in tune or sharp at once (guitar mode). -->
-    <string name="tuner_strum_check">Strumcheck</string>
-    <string name="tuner_strum_waiting">Strum alle losse snaren</string>
-    <string name="tuner_strum_waiting_detail">Elke snaar toont te laag, zuiver of te hoog</string>
-    <string name="tuner_strum_hearing">Luisteren…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">%1$d snaar bijstemmen</item>
-        <item quantity="other">%1$d snaren bijstemmen</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Niet elke snaar was te horen</string>
     <string name="tuner_strum_all_in_tune">Alle snaren zijn zuiver</string>
-    <string name="tuner_strum_tap_to_tune">Kies een snaar om die te stemmen</string>
-    <string name="tuner_strum_again">Strum opnieuw, of kies een snaar om die te stemmen</string>
-    <string name="tuner_strum_tune_string">%1$s stemmen</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d van de %2$d zuiver</item>
+        <item quantity="other">%1$d van de %2$d zuiver</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Niet gehoord</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, niet gehoord</string>
-    <string name="tuner_strum_spoken_waiting">%1$s, nog niet gestrumd</string>
-    <string name="tuner_strum_spoken_less_sure">%1$s, minder zeker</string>
-    <string name="tuner_more_tools">Meer functies</string>
-    <string name="tuner_tool_on">%1$s aan</string>
     <string name="tuner_intonation_check">12e-fretcheck</string>
     <string name="tuner_intonation_step_open">Los</string>
     <string name="tuner_intonation_step_fret">12e fret</string>
@@ -216,7 +204,6 @@
     <string name="tuner_intonation_mark_back">zadel naar achteren</string>
     <string name="tuner_intonation_mark_forward">zadel naar voren</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, nog niet gecheckt</string>
-    <string name="tuner_chord_name">Akkoordnaam</string>
     <string name="tuner_chord_major">%1$s majeur</string>
     <string name="tuner_chord_minor">%1$s mineur</string>
     <string name="tuner_chord_seventh">%1$s septiem</string>
@@ -229,16 +216,6 @@
     <string name="tuner_chord_minor_ninth">%1$s mineur noon</string>
     <string name="tuner_chord_major_ninth">%1$s groot noon</string>
     <string name="tuner_chord_slash">%1$s, %2$s in de bas</string>
-    <string name="tuner_chord_bass">bas</string>
-    <string name="tuner_chord_strum">Strum een akkoord</string>
-    <string name="tuner_chord_strum_detail">Laat alle snaren klinken</string>
-    <string name="tuner_chord_next">Strum opnieuw voor het volgende akkoord</string>
-    <string name="tuner_chord_let_ring">Laat het doorklinken</string>
-    <string name="tuner_chord_unclear">Geen duidelijk akkoord</string>
-    <string name="tuner_chord_unclear_detail">Strum alle snaren van het akkoord</string>
-    <string name="tuner_chord_none">Nog geen akkoord</string>
-    <string name="tuner_chord_spoken_notes">noten %1$s</string>
-    <string name="tuner_chord_spoken_recent">daarvoor %1$s</string>
     <string name="tuner_trail_bending_up">buigt omhoog</string>
     <string name="tuner_trail_bending_down">buigt omlaag</string>
     <string name="tuner_spoken_wavering">wisselend</string>

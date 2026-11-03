@@ -6,6 +6,8 @@ import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,13 +38,25 @@ class TunerOptionsTest {
     }
 
     @Test
-    fun `strum check listens for the open strings at the current A4, only in guitar mode`() {
-        val options = TunerOptions(tuning = Tunings.DROP_D, a4Hz = 432f, strumCheck = true)
+    fun `a strum is checked against the open strings at the current A4, only in guitar mode`() {
+        val options = TunerOptions(tuning = Tunings.DROP_D, a4Hz = 432f, strumsHeard = true)
         assertEquals(6, options.stringHz.size)
         assertEquals(73.42f * 432f / 440f, options.stringHz[0], 0.01f)
         assertEquals(329.63f * 432f / 440f, options.stringHz[5], 0.01f)
-        assertTrue(options.strumChecking)
-        assertFalse(options.copy(mode = TunerMode.CHROMATIC).strumChecking)
-        assertFalse(TunerOptions().strumChecking)
+        assertSame(options.stringHz, options.heardStrings)
+        assertTrue(options.hearing)
+        assertNull(options.copy(mode = TunerMode.CHROMATIC).heardStrings)
+        assertFalse(options.copy(mode = TunerMode.CHROMATIC).hearing)
+        assertFalse(TunerOptions().hearing)
+    }
+
+    @Test
+    fun `chords are named in any-note mode too, and the 12th-fret check stops the analysis`() {
+        val chords = TunerOptions(mode = TunerMode.CHROMATIC, chordsHeard = true)
+        assertTrue(chords.hearing)
+        assertNull(chords.heardStrings)
+        val both = TunerOptions(strumsHeard = true, chordsHeard = true)
+        assertTrue(both.hearing)
+        assertFalse(both.copy(intonationCheck = true).hearing)
     }
 }

@@ -17,17 +17,6 @@ private const val PRACTICE_TAB_TAG = "nav_practice"
 // The gear that opens Settings (Phase 69; the Settings tab until then, with the same id).
 private const val SETTINGS_GEAR_TAG = "nav_settings"
 private const val PICKER_CHIP_TAG = "tuner_picker_chip"
-private const val MORE_TOOLS_TAG = "tuner_more_tools"
-
-/**
- * The tuner's tools in the "more tools" menu (`TunerTool`), each with the panel it shows. The 12th-fret check left
- * the menu in 2.0 (Phase 71): its own button shows only after its Settings switch is turned on, which a fresh
- * install hasn't.
- */
-private val TUNER_TOOLS = listOf(
-    "tuner_tool_strum_check" to "tuner_strum_panel",
-    "tuner_tool_chord_name" to "tuner_chord_panel",
-)
 
 private const val PRACTICE_CARDS_TAG = "practice_cards"
 private const val PRACTICE_BACK_TAG = "practice_back"
@@ -86,10 +75,11 @@ fun MacrobenchmarkScope.waitForTuner() {
 
 /**
  * What a user does after the tuner opens: listens, opens the picker sheet and turns Any note (chromatic
- * mode) on, then off again the same way, then tries each
- * tool of the "more tools" menu (strum check, 12th-fret check, chord name) and turns
- * the last one off again, back to the lens (whose trail draws while the tuner listens). A short tone burst near the phone during the run also covers the "note
- * detected" readout; the profile is still useful without one.
+ * mode) on, then off again the same way, back to the lens (whose trail draws while the tuner listens). The tuner
+ * has no tools menu since 2.0's Phase 74 (the strum check and the chord name happen by themselves, beside the
+ * tuner; the 12th-fret check's button shows only after its Settings switch is turned on, which a fresh install
+ * hasn't). A short tone burst near the phone during the run also covers the "note detected" readout; the profile
+ * is still useful without one.
  */
 fun MacrobenchmarkScope.useTuner() {
     waitForTuner()
@@ -99,15 +89,6 @@ fun MacrobenchmarkScope.useTuner() {
     Thread.sleep(LISTEN_MS)
     toggleAnyNote()
     Thread.sleep(LISTEN_MS)
-
-    // Picking a tool turns the one that is on off; picking the ticked one turns it off.
-    for ((tool, panel) in TUNER_TOOLS) {
-        pickTunerTool(tool)
-        check(device.wait(Until.hasObject(By.res(panel)), TIMEOUT_MS)) { "$tool didn't show $panel" }
-        Thread.sleep(SHOW_MS)
-    }
-    pickTunerTool(TUNER_TOOLS.last().first)
-    check(device.wait(Until.gone(By.res(TUNER_TOOLS.last().second)), TIMEOUT_MS)) { "The chord name didn't close" }
 }
 
 /**
@@ -220,12 +201,6 @@ fun MacrobenchmarkScope.useSettings() {
     device.pressBack()
     waitForTuner()
     Thread.sleep(LISTEN_MS)
-}
-
-/** Opens the "more tools" menu above the strings and picks [tool] in it. */
-private fun MacrobenchmarkScope.pickTunerTool(tool: String) {
-    clickTag(MORE_TOOLS_TAG)
-    clickTag(tool)
 }
 
 /** Scrolls the screen's scrolling column to its end, which draws every row on the way. */

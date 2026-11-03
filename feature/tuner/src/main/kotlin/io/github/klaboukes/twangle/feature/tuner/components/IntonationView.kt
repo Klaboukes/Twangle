@@ -1,21 +1,12 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.stringChipFill
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
-import io.github.klaboukes.twangle.core.designsystem.faceFill
-import io.github.klaboukes.twangle.core.designsystem.faceOutline
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,14 +32,9 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
@@ -65,7 +50,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -80,10 +64,13 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -91,15 +78,12 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
@@ -111,7 +95,6 @@ import io.github.klaboukes.twangle.feature.tuner.IntonationSnag
 import io.github.klaboukes.twangle.feature.tuner.IntonationStep
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
 import java.text.NumberFormat
 import kotlin.math.roundToInt
@@ -691,139 +674,16 @@ fun IntonationCheckButton(on: Boolean, onChange: (Boolean) -> Unit, modifier: Mo
             onClick = { onChange(!on) },
             label = label,
             modifier = modifier,
-            face = STRUM_TOGGLE_SIZE,
+            face = TUNER_BUTTON_FACE,
             picked = on,
             role = Role.Switch,
             faceModifier = Modifier
                 .testTag(TunerTestTags.INTONATION_BUTTON)
                 .semantics { toggleableState = ToggleableState(on) },
         ) {
-            Icon(painterResource(R.drawable.ic_twelfth_fret), contentDescription = null, modifier = Modifier.size(MORE_ICON_SIZE))
+            Icon(painterResource(R.drawable.ic_twelfth_fret), contentDescription = null, modifier = Modifier.size(BUTTON_ICON_SIZE))
         }
     }
-}
-
-/**
- * The tuner's tools (strum check and the chord name until Phase 74 makes them happen by themselves; the 12th-fret
- * check has its own button since Phase 71, [IntonationCheckButton]) behind one small "more tools"
- * button above the strings (three tiles and a plus, Material Symbols `dashboard_customize`, no word), where the strum
- * check's switch sits when it is the only tool: the style's button ([StyleButton]), picked (the container colour with
- * a 2 dp accent outline) while a tool is on. A tap opens a small menu that lifts softly off the screen (no outline):
- * each tool with its icon and name, the one that is on marked as Practice's tool menu marks its tool (the container
- * colour with a 2 dp accent outline; Phase 63, never green, which means in tune); picking one turns it on (and the
- * other off), picking the one that is on turns it off. TalkBack: "More tools, chord name on, button" (just
- * "More tools" with none on), and each tool in the menu as a switch, on or off, since one can be turned off and
- * leave none; a long-press shows its name in a tooltip.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MoreToolsButton(
-    tools: List<TunerTool>,
-    active: TunerTool?,
-    onToolChange: (TunerTool, Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val scheme = MaterialTheme.colorScheme
-    val label = stringResource(R.string.tuner_more_tools)
-    val state = active?.let { stringResource(R.string.tuner_tool_on, toolName(it)) }
-    var open by remember { mutableStateOf(false) }
-    // The menu ends in line with the button wherever it opens (Phase 52): Material opens it from the button's start
-    // where it fits, which on a tablet upright pushed it against the screen's edge (3 dp from it), and from its end
-    // elsewhere. Moved by the button's width less its own, its start-aligned place is the end-aligned one, so
-    // Material keeps it there. Its width is known once it has been measured: the first frame of the first opening,
-    // still faded out, may stand elsewhere.
-    var buttonWidth by remember { mutableIntStateOf(0) }
-    var menuWidth by remember { mutableIntStateOf(0) }
-    Box(modifier.onSizeChanged { buttonWidth = it.width }) {
-        TooltipBox(
-            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-            tooltip = { PlainTooltip { Text(label) } },
-            state = rememberTooltipState(),
-        ) {
-            StyleButton(
-                onClick = { open = true },
-                label = label,
-                face = STRUM_TOGGLE_SIZE,
-                picked = active != null,
-                state = state,
-                faceModifier = Modifier.testTag(TunerTestTags.MORE_TOOLS),
-            ) {
-                Icon(painterResource(R.drawable.ic_more_tools), contentDescription = null, modifier = Modifier.size(MORE_ICON_SIZE))
-            }
-        }
-        val density = LocalDensity.current
-        DropdownMenu(
-            expanded = open,
-            onDismissRequest = { open = false },
-            shape = MaterialTheme.shapes.medium,
-            containerColor = scheme.surfaceContainerHigh,
-            tonalElevation = 0.dp,
-            shadowElevation = MENU_LIFT,
-            offset = with(density) { DpOffset((buttonWidth - menuWidth).toDp(), 0.dp) },
-            // The menu is a window of its own: UI Automator finds its rows by tag only when it says so too (as MainActivity's root does).
-            modifier = Modifier
-                .onSizeChanged { menuWidth = it.width }
-                .testTag(TunerTestTags.MORE_TOOLS_MENU)
-                .semantics { testTagsAsResourceId = true },
-        ) {
-            ScreenDensity(density) {
-                // As wide as the longest name, every row as wide as the menu, so each mark is the same width.
-                Column(Modifier.width(IntrinsicSize.Max).padding(horizontal = MENU_PADDING)) {
-                    for (tool in tools) {
-                        val picked = tool == active
-                        ToolRow(tool, picked) {
-                            open = false
-                            onToolChange(tool, !picked)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * One tool in the "more tools" menu, as a row of Practice's tool menu: its icon and name in a 48 dp row, the one
- * that is on ([picked]) in the container colour with a 2 dp accent outline. TalkBack hears it as a switch.
- */
-@Composable
-private fun ToolRow(tool: TunerTool, picked: Boolean, onToggle: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        Modifier
-            .testTag(TunerTestTags.tool(tool))
-            .fillMaxWidth()
-            .heightIn(min = MENU_ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium, fill = if (picked) faceFill(picked = true) else Color.Transparent, outline = if (picked) faceOutline(picked = true) else null)
-            .toggleable(value = picked, interactionSource = source, indication = null, role = Role.Switch) {
-                source.pressFlash()
-                onToggle()
-            }
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        val color = if (picked) scheme.onPrimaryContainer else scheme.onSurface
-        Icon(painterResource(toolIcon(tool)), contentDescription = null, tint = color, modifier = Modifier.size(MENU_ICON_SIZE))
-        Spacer(Modifier.width(12.dp))
-        Text(toolName(tool), color = color, style = MaterialTheme.typography.labelLarge.copy(fontSize = MENU_NAME_SIZE), modifier = Modifier.padding(end = 8.dp))
-    }
-}
-
-/** A tool's name: "Strum check", "12th-fret check", "Chord name". */
-@Composable
-fun toolName(tool: TunerTool): String = stringResource(
-    when (tool) {
-        TunerTool.STRUM_CHECK -> R.string.tuner_strum_check
-        TunerTool.INTONATION_CHECK -> R.string.tuner_intonation_check
-        TunerTool.CHORD_NAME -> R.string.tuner_chord_name
-    },
-)
-
-private fun toolIcon(tool: TunerTool): Int = when (tool) {
-    TunerTool.STRUM_CHECK -> R.drawable.ic_strum
-    TunerTool.INTONATION_CHECK -> R.drawable.ic_twelfth_fret
-    TunerTool.CHORD_NAME -> R.drawable.ic_chord_name
 }
 
 /**
@@ -922,12 +782,43 @@ private const val NOT_CHECKED_MARK = "–"
 private val BUTTON_WIDTH = 148.dp
 private val BUTTON_GAP = 12.dp
 private val BUTTON_ROW_TOP_GAP = 6.dp
-private val MORE_ICON_SIZE = 24.dp
-private val MENU_ICON_SIZE = 24.dp
-private val MENU_LIFT = 8.dp
-
-/** The menu's rows: this far in from its sides, at least this tall, their names this big (as Practice's tool menu). */
-private val MENU_PADDING = 6.dp
-private val MENU_ROW_HEIGHT = 48.dp
-private val MENU_NAME_SIZE = 16.sp
+private val BUTTON_ICON_SIZE = 24.dp
 private val BADGE_RADIUS = 8.dp
+
+/** The tuner's round buttons' outline (the 12th-fret check's, focus mode's): 44 dp like the style's buttons, in a 48 dp touch target. */
+internal val TUNER_BUTTON_FACE = 44.dp
+
+/**
+ * Every one of [texts] drawn by [text] is measured, and this takes the widest width and the tallest
+ * height of them, but only the one at [shown] is placed (centred) and heard by TalkBack. So a
+ * line that changes its words never changes its size.
+ */
+@Composable
+internal fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String) -> Unit) {
+    Layout(
+        content = {
+            texts.forEachIndexed { index, value ->
+                Box(if (index == shown) Modifier else Modifier.clearAndSetSemantics {}) { text(value) }
+            }
+        },
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+        val width = placeables.maxOf { it.width }.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = placeables.maxOf { it.height }.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            val placeable = placeables[shown]
+            placeable.placeRelative((width - placeable.width) / 2, 0)
+        }
+    }
+}
+
+/** [text] laid out on one line in [style], set smaller where it would be wider than [maxWidth] px. */
+internal fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidth: Float): TextLayoutResult {
+    val full = measure(text, style, maxLines = 1, softWrap = false)
+    if (full.size.width <= maxWidth || full.size.width == 0) return full
+    val scale = maxWidth / full.size.width
+    return measure(text, style.copy(fontSize = style.fontSize * scale), maxLines = 1, softWrap = false)
+}
+
+/** [this] px as a font size that ignores the font scale: the panel is sized by its width, like the lens. */
+internal fun Float.toSpNoScale(density: Density): TextUnit = (this / density.density).sp

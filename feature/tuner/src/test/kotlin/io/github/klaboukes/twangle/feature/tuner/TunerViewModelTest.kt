@@ -808,6 +808,7 @@ class TunerViewModelTest {
     @Test
     fun `the ticks stay while a tool is on, and go when the tuner is left`() = runTest(dispatcher) {
         settings.setStringTickOff(true)
+        settings.setShowIntonationCheck(true)
         val vm = viewModel(a2Recorder())
         vm.onPermissionChanged(true)
         val ui = launch { vm.state.collect {} }
@@ -815,9 +816,9 @@ class TunerViewModelTest {
         val ticked = TunedStrings(Tunings.STANDARD, 0b10L)
         assertEquals(ticked, vm.tunedStrings.value)
 
-        vm.setStrumCheck(true)
+        vm.setIntonationCheck(true)
         advanceTimeBy(500)
-        vm.setStrumCheck(false)
+        vm.setIntonationCheck(false)
         advanceTimeBy(100)
         assertEquals("kept for the tuner, which shows them again", ticked, vm.tunedStrings.value)
 

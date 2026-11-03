@@ -17,7 +17,6 @@ import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.settings.R as SettingsR
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -47,13 +46,17 @@ class TunerTabTest {
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private var instrumentBefore: Instrument? = null
+    private var intonationButtonBefore: Boolean? = null
 
     @Before
     fun setUp() {
         runBlocking {
-            instrumentBefore = container.settingsRepository.settings.first().instrument
-            // The guitar offers every tool, so its "more tools" button shows.
+            val before = container.settingsRepository.settings.first()
+            instrumentBefore = before.instrument
+            intonationButtonBefore = before.showIntonationCheck
+            // The guitar has the 12th-fret check, the tuner's one tool since 2.0's Phase 74; its button shows with its Settings switch on.
             container.settingsRepository.setInstrument(Instruments.GUITAR)
+            container.settingsRepository.setShowIntonationCheck(true)
             container.settingsRepository.setMode(TunerMode.AUTO)
         }
     }
@@ -61,6 +64,7 @@ class TunerTabTest {
     @After
     fun tearDown() {
         instrumentBefore?.let { runBlocking { container.settingsRepository.setInstrument(it) } }
+        intonationButtonBefore?.let { runBlocking { container.settingsRepository.setShowIntonationCheck(it) } }
     }
 
     private fun shown(tag: String): Boolean = device.wait(Until.hasObject(By.res(tag)), WAIT_MS)
@@ -68,38 +72,37 @@ class TunerTabTest {
     private fun click(tag: String) = (device.wait(Until.findObject(By.res(tag)), WAIT_MS) ?: error("no $tag")).click()
     private fun tab(destination: Destination) = click(NavigationTestTags.tab(destination))
 
-    private fun turnStrumCheckOn() {
-        click(TunerTestTags.MORE_TOOLS)
-        click(TunerTestTags.tool(TunerTool.STRUM_CHECK))
-        assertTrue("strum check is on", shown(TunerTestTags.STRUM_PANEL))
+    private fun turnTheCheckOn() {
+        click(TunerTestTags.INTONATION_BUTTON)
+        assertTrue("the 12th-fret check is on", shown(TunerTestTags.INTONATION_PANEL))
     }
 
     @Test
     fun theTunerTabClosesTheToolAndBackKeepsIt() {
         ActivityScenario.launch(MainActivity::class.java).use {
             // While the tuner shows.
-            turnStrumCheckOn()
+            turnTheCheckOn()
             tab(Destination.TUNER)
-            assertTrue("a tap on the open Tuner tab closes it", gone(TunerTestTags.STRUM_PANEL))
+            assertTrue("a tap on the open Tuner tab closes it", gone(TunerTestTags.INTONATION_PANEL))
 
             // From another tab: the metronome's, then Practice's.
-            turnStrumCheckOn()
+            turnTheCheckOn()
             tab(Destination.METRONOME)
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
             tab(Destination.PRACTICE)
             assertTrue("Practice shows", shown(PracticeTestTags.CARDS))
             tab(Destination.TUNER)
-            assertTrue("the tuner shows", shown(TunerTestTags.MORE_TOOLS))
-            assertTrue("the Tuner tab from another tab closes it", gone(TunerTestTags.STRUM_PANEL))
+            assertTrue("the tuner shows", shown(TunerTestTags.PICKER_CHIP))
+            assertTrue("the Tuner tab from another tab closes it", gone(TunerTestTags.INTONATION_PANEL))
             device.waitForIdle()
-            assertFalse("and it doesn't come back", device.hasObject(By.res(TunerTestTags.STRUM_PANEL)))
+            assertFalse("and it doesn't come back", device.hasObject(By.res(TunerTestTags.INTONATION_PANEL)))
 
             // Back is no tap on the tab: the tool stays.
-            turnStrumCheckOn()
+            turnTheCheckOn()
             click(NavigationTestTags.SETTINGS)
-            assertTrue("Settings shows", gone(TunerTestTags.MORE_TOOLS))
+            assertTrue("Settings shows", gone(TunerTestTags.PICKER_CHIP))
             device.pressBack()
-            assertTrue("back on the tuner, still in strum check", shown(TunerTestTags.STRUM_PANEL))
+            assertTrue("back on the tuner, still in the 12th-fret check", shown(TunerTestTags.INTONATION_PANEL))
         }
     }
 
@@ -112,9 +115,9 @@ class TunerTabTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             var backArrow = ""
             scenario.onActivity { backArrow = it.getString(SettingsR.string.settings_back) }
-            assertTrue("the tuner shows", shown(TunerTestTags.MORE_TOOLS))
+            assertTrue("the tuner shows", shown(TunerTestTags.PICKER_CHIP))
             for ((destination, landmark) in listOf(
-                Destination.TUNER to TunerTestTags.MORE_TOOLS,
+                Destination.TUNER to TunerTestTags.PICKER_CHIP,
                 Destination.METRONOME to MetronomeTestTags.DIAL,
                 Destination.PRACTICE to PracticeTestTags.CARDS,
             )) {

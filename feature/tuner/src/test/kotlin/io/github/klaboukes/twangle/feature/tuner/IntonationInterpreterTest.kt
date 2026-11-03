@@ -173,26 +173,25 @@ class IntonationInterpreterTest {
 
     @Test
     fun `the tools offered follow the switches and the instrument`() {
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.UKULELE))
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR))
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.UKULELE))
         // Basses aren't strummed in chords; the violin has neither frets nor chords.
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BASS_4))
-        assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.VIOLIN))
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BASS_4))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.VIOLIN))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR))
         // The 12-string's octave strings blur a strum and a chord: only the 12th-fret check.
         assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR_12))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR_12))
         // The banjo: a strum and a chord read well; no 12th-fret check (its short string's octave is at the 17th).
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BANJO_5))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BANJO_5))
         // The 12th-fret check also needs the player's Settings switch for its way in (2.0, Phase 71).
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR, showIntonationCheck = false))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR, showIntonationCheck = false))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR_12, showIntonationCheck = false))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR, showIntonationCheck = true))
         // Each tool follows its own switch.
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON.copy(intonationCheck = false), Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON.copy(chordNaming = false), Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false), Instruments.GUITAR))
-        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false), Instruments.VIOLIN))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON.copy(intonationCheck = false), Instruments.GUITAR))
+        // The strum check's and the chord name's switches are brakes, no tools (Phase 74).
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON.copy(chordNaming = false, strumCheck = false), Instruments.GUITAR))
         // The pitch trail is no tool since 2.0's Phase 71 (the trail is the lens's look): its switch offers nothing here.
         assertEquals(tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR), tunerToolsFor(ToolSwitches.ALL_ON.copy(pitchTrail = false), Instruments.GUITAR))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF.copy(pitchTrail = true), Instruments.VIOLIN))

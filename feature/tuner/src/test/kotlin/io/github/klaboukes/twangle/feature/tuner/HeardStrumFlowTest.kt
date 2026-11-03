@@ -9,6 +9,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.strum.StrumKind
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
+import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -69,7 +70,7 @@ class HeardStrumFlowTest {
     }
 
     private suspend fun TestScope.listen(signal: FloatArray, hearing: StrumHearing?): List<PipelineReading> =
-        PitchPipeline(FakeAudioRecorder(signal), StandardTestDispatcher(testScheduler)).listen(hearing = hearing) { null }.toList()
+        PitchPipeline(FakeAudioRecorder(signal), StandardTestDispatcher(testScheduler)).listen(hearing = hearing).toList()
 
     // --- The pipeline ---
 
@@ -123,18 +124,26 @@ class HeardStrumFlowTest {
 
     // --- The ViewModel ---
 
-    private val settings = FakeSettingsRepository()
+    // The 12th-fret check's way in is on (its Settings switch, off on a fresh install), for the test that turns it on.
+    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel(signal: FloatArray, tools: ToolSwitches = ToolSwitches.ALL_ON) =
         TunerViewModel(FakeAudioRecorder(signal), settings, tones, StandardTestDispatcher(testScheduler), tools = tools)
 
     @Test
-    fun `a strum of the open strings shows each string's verdict, and the tuner's states stay as they were`() = runTest(dispatcher) {
+    fun `a strum of the open strings shows each string's verdict, the tuner waiting while it rings`() = runTest(dispatcher) {
         val vm = viewModel(openStrum)
         vm.onPermissionChanged(true)
         val states = mutableListOf<TunerUiState>()
-        backgroundScope.launch { vm.state.collect { states += it } }
+        // Each state with whether what the tuner heard rang as it came: the strum's notes are no string's reading.
+        val whileRinging = mutableListOf<TunerUiState>()
+        backgroundScope.launch {
+            vm.state.collect {
+                states += it
+                if (vm.heardStrum.value.rings) whileRinging += it
+            }
+        }
         advanceTimeBy(1_500)
         val shown = vm.heardStrum.value
         assertTrue("$shown", shown is HeardStrum.OpenStrings)
@@ -147,15 +156,32 @@ class HeardStrumFlowTest {
         assertEquals(StrumPhase.RINGING, check.phase)
         advanceTimeBy(3_000)
         assertTrue(states.none { it is TunerUiState.StrumCheck || it is TunerUiState.ChordName })
+        assertTrue(whileRinging.none { it is TunerUiState.Detected })
 
-        // The same sound with both brakes on: no strum shown, and the very same tuner states.
+        // The same sound with both brakes on: no strum shown.
         val braked = viewModel(openStrum, ToolSwitches.ALL_ON.copy(strumCheck = false, chordNaming = false))
         braked.onPermissionChanged(true)
         val brakedStates = mutableListOf<TunerUiState>()
         backgroundScope.launch { braked.state.collect { brakedStates += it } }
         advanceTimeBy(4_500)
         assertSame(HeardStrum.None, braked.heardStrum.value)
+        // This strum gives the tuner no note of its own, so its states are the same either way.
         assertEquals(brakedStates, states)
+    }
+
+    @Test
+    fun `the A string tuned on its own after the strum takes the tuner's verdict`() = runTest(dispatcher) {
+        // The strum found the A string 20 cents flat; then it is plucked alone, in tune.
+        val vm = viewModel(openStrum + aString)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(2_000)
+        assertEquals(StrumVerdict.FLAT, (vm.heardStrum.value as HeardStrum.OpenStrings).check.strings[1].verdict)
+        advanceTimeBy(3_500)
+        val after = (vm.heardStrum.value as HeardStrum.OpenStrings).check
+        assertEquals(StrumVerdict.IN_TUNE, after.strings[1].verdict)
+        assertEquals(StrumVerdict.SHARP, after.strings[3].verdict)
+        assertEquals(StrumPhase.DONE, after.phase)
     }
 
     @Test
@@ -202,7 +228,7 @@ class HeardStrumFlowTest {
     }
 
     @Test
-    fun `a strum stays shown after it, a tool switched on clears it, and listening ends with nothing shown`() = runTest(dispatcher) {
+    fun `a strum stays shown after it, the 12th-fret check clears it, and listening ends with nothing shown`() = runTest(dispatcher) {
         // The strum, then 3 s of quiet before the microphone's sound ends.
         val vm = viewModel(openStrum + FloatArray(3 * SyntheticStrum.SAMPLE_RATE))
         vm.onPermissionChanged(true)
@@ -211,7 +237,7 @@ class HeardStrumFlowTest {
         val done = vm.heardStrum.value as HeardStrum.OpenStrings
         assertEquals(StrumPhase.DONE, done.check.phase)
 
-        vm.setStrumCheck(true)
+        vm.setIntonationCheck(true)
         advanceTimeBy(100)
         assertSame(HeardStrum.None, vm.heardStrum.value)
 

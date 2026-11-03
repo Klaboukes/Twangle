@@ -141,26 +141,8 @@
     <string name="tuner_delete_tuning_title">Poistetaanko viritys?</string>
     <string name="tuner_delete_tuning_text">”%1$s” poistetaan pysyvästi.</string>
     <string name="tuner_delete_tuning_cancel">Peruuta</string>
-    <string name="tuner_strum_check">Lyöntitesti</string>
-    <string name="tuner_strum_waiting">Soita kaikki avoimet kielet kerralla</string>
-    <string name="tuner_strum_waiting_detail">Jokainen kieli näyttää: matalalla, vireessä tai korkealla</string>
-    <string name="tuner_strum_hearing">Kuunnellaan…</string>
-    <!-- Käskymuoto välttää taivutuksen: Viritä 1 kieli, Viritä 2 kieltä. -->
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">Viritä %1$d kieli</item>
-        <item quantity="other">Viritä %1$d kieltä</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Kaikkia kieliä ei kuultu</string>
     <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
-    <string name="tuner_strum_tap_to_tune">Napauta kieltä, niin virität sen</string>
-    <string name="tuner_strum_again">Soita uudelleen tai napauta kieltä, niin virität sen</string>
-    <string name="tuner_strum_tune_string">Viritä %1$s</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
-    <string name="tuner_strum_spoken_waiting">%1$s, ei vielä soitettu</string>
-    <string name="tuner_strum_spoken_less_sure">%1$s, epävarmempi</string>
-    <string name="tuner_more_tools">Lisää työkaluja</string>
-    <string name="tuner_tool_on">%1$s päällä</string>
     <string name="tuner_intonation_check">12. nauhan testi</string>
     <string name="tuner_intonation_step_open">Avoin</string>
     <string name="tuner_intonation_step_fret">12. nauha</string>
@@ -198,7 +180,6 @@
     <string name="tuner_intonation_mark_back">siirrä tallaa taakse</string>
     <string name="tuner_intonation_mark_forward">siirrä tallaa eteen</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ei vielä tarkistettu</string>
-    <string name="tuner_chord_name">Soinnun nimi</string>
     <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->
     <string name="tuner_chord_major">%1$s-duuri</string>
     <string name="tuner_chord_minor">%1$s-molli</string>
@@ -212,16 +193,6 @@
     <string name="tuner_chord_minor_ninth">%1$s-mollinoonisointu</string>
     <string name="tuner_chord_major_ninth">%1$s-duurinoonisointu</string>
     <string name="tuner_chord_slash">%1$s, bassossa %2$s</string>
-    <string name="tuner_chord_bass">basso</string>
-    <string name="tuner_chord_strum">Soita sointu</string>
-    <string name="tuner_chord_strum_detail">Anna kaikkien kielten soida</string>
-    <string name="tuner_chord_next">Soita seuraava sointu</string>
-    <string name="tuner_chord_let_ring">Anna soida</string>
-    <string name="tuner_chord_unclear">Epäselvä sointu</string>
-    <string name="tuner_chord_unclear_detail">Soita soinnun kaikki kielet</string>
-    <string name="tuner_chord_none">Ei vielä sointua</string>
-    <string name="tuner_chord_spoken_notes">sävelet %1$s</string>
-    <string name="tuner_chord_spoken_recent">ennen sitä %1$s</string>
     <string name="tuner_trail_bending_up">nousee</string>
     <string name="tuner_trail_bending_down">laskee</string>
     <string name="tuner_screen_off_soon">Näyttö sammuu pian</string>

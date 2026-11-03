@@ -16,11 +16,17 @@ package io.github.klaboukes.twangle.core.settings
  * Not a saved setting: nothing here is stored, and the player can't change it.
  */
 data class ToolSwitches(
-    /** Phase 18: the strum check, a mode in the tuner. */
+    /**
+     * Phase 18: the strum check, a mode in the tuner until 2.0's Phase 74; since then the brake of the strum marks:
+     * off, a strum of the open strings shows no marks above the pegs and no count, and isn't listened for.
+     */
     val strumCheck: Boolean,
     /** Phase 29: the intonation check, a mode in the tuner. */
     val intonationCheck: Boolean,
-    /** Phase 30: "What chord is this?", a mode in the tuner. */
+    /**
+     * Phase 30: "What chord is this?", a mode in the tuner until 2.0's Phase 74; since then the brake of the chord name
+     * in the ruler's place: off, no chord is named.
+     */
     val chordNaming: Boolean,
     /**
      * Phase 31: the pitch trail, a mode in the tuner until 2.0 made it the lens's default look (Phase 71); since

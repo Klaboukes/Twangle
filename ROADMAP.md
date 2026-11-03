@@ -61,8 +61,8 @@ Decided on 2026-11-02, from the from-scratch design of 2026-11-01 ([IDEAS.md](ID
 ### Phase 74 — Strum check and chord name by themselves
 Goal: a strum shows which strings are off and a fretted chord shows its name, with no mode to switch on.
 - ☑ DSP first: the strum detector and the chord detector next to the pitch detector on every frame, within the CPU budget (hard rule 2; `scripts/dsp-phone-benchmark.sh` before and after), telling a strum from one string without false alarms, against the recorded plucks and the synthetic strums
-- ☐ The marks above the pegs (↑ ↓ ✓) and "4 of 6 in tune" in the word's place after a strum of open strings; a fretted chord's name in the ruler's place; the strum check and chord name tools and their switching on go (their switches stay as the brake)
-- ☐ The owner's guitar check, then the website's pages follow
+- ☑ The marks above the pegs (↑ ↓ ✓) and "4 of 6 in tune" in the word's place after a strum of open strings; a fretted chord's name in the ruler's place; the strum check and chord name tools and their switching on go (their switches stay as the brake)
+- ☐ The owner's guitar check, then the website's pages follow (the website's strum check and chord name pages, English and Dutch, already say it happens by themselves; not published until 2.0 is on `main`. Left: the owner's check with a real guitar on the Xiaomi, upright and on its side: strum the open strings with one or two off, the marks and "4 of 6 in tune" right, then tune those strings one by one and see their marks turn ✓ and the count go up; strum a few chords (open and barre, a power chord), each named in the ruler's place and giving way to the note when a single string is played; pluck strings one at a time and see no marks or chord come up; leave it quiet for 30 s and see them go)
 
 ### Phase 75 — The other screens as drawn
 Goal: the metronome, Practice's tools, Settings, About, the widget and the watch in the one look, as the first mock-up draws them.

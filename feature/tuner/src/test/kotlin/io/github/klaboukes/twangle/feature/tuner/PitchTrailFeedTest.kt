@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
+import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
@@ -20,7 +21,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -149,11 +149,17 @@ class PitchTrailFeedTest {
     }
 
     @Test
-    fun `a tool on draws no note in the trail`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true))
+    fun `the 12th-fret check on draws no note in the trail`() = runTest(dispatcher) {
+        val vm = TunerViewModel(
+            FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true),
+            FakeSettingsRepository(AppSettings(showIntonationCheck = true)),
+            FakeTonePlayer(),
+            StandardTestDispatcher(testScheduler),
+            saved = AppSettings(showIntonationCheck = true),
+        )
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
-        vm.setChordName(true)
+        vm.setIntonationCheck(true)
         advanceTimeBy(500)
 
         vm.pitchHistory.forEachWithin { _, target, _, _ -> assertEquals(PitchHistory.NO_NOTE, target) }

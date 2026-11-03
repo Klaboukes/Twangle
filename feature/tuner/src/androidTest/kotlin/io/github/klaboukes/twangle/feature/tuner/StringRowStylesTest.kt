@@ -26,6 +26,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
+import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -75,6 +76,7 @@ class StringRowStylesTest {
     private val shownLocale = mutableStateOf("en")
     private val shownTuned = mutableStateOf<TunedStrings?>(null)
     private val shownTickOff = mutableStateOf(false)
+    private val shownHeard = mutableStateOf<HeardStrum>(HeardStrum.None)
     private val clicked = mutableListOf<Int>()
 
     private enum class Layout(val size: DpSize) {
@@ -116,8 +118,7 @@ class StringRowStylesTest {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         focusMode = false,
-                        // As in the app: the strum check's switch above the strings.
-                        onStrumCheckChange = {},
+                        heard = shownHeard.value,
                         tunedStrings = shownTuned.value,
                         // The ticks show only with the string tick-off on (off by default in the app).
                         stringTickOff = shownTickOff.value,
@@ -390,46 +391,42 @@ class StringRowStylesTest {
     }
 
     /**
-     * The strum check's switch sits above the strings at their end upright, and beside them after the last one on its
-     * side (the wide layout, Phase 73), in the window, for every instrument (4 to 8 strings), at normal and at 2x text.
+     * After a strum of the open strings (2.0, Phase 74) each string's mark stands centred over its peg, wholly shown in
+     * the window, upright and on its side (the wide layout), for the rows that differ (4 to 8 strings, the banjo's short
+     * string apart), at normal and at 2x text; it never reaches into its peg.
      */
     @Test
-    fun theStrumSwitchSitsAtTheStringsEnd() {
+    fun theStrumMarksStandOverEveryInstrumentsPegs() {
         show(listening = true, focusButton = true)
+        val verdicts = listOf(StrumVerdict.FLAT, StrumVerdict.IN_TUNE, StrumVerdict.SHARP, StrumVerdict.NOT_HEARD)
         for (scale in listOf(1f, 2f)) {
             shownFontScale.value = scale
             for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
                 shownLayout.value = layout
-                for (tuning in Instruments.all.map { it.defaultTuning }) {
+                for (tuning in MARKED_ROWS.map { it.defaultTuning }) {
                     shownTuning.value = tuning
+                    shownHeard.value = HeardStrum.OpenStrings(
+                        TunerUiState.StrumCheck(tuning, phase = StrumPhase.DONE, strings = tuning.strings.indices.map { StrumString(verdicts[it % verdicts.size]) }),
+                        strum = 1,
+                    )
                     compose.waitForIdle()
                     val case = "$layout ${tuning.id} at ${scale}x"
-                    val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-                    val toggle = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE)
-                    assertWhollyShown(toggle, "$case: strum check switch", scroll = true)
-                    val strum = toggle.getBoundsInRoot()
-                    if (strum.left < window.left - SLACK || strum.right > window.right + SLACK) fail("$case: the switch $strum is outside the window $window")
-                    // Where they are, also when scrolled out of view (bounds in the root are cut to the window).
-                    val switchNode = toggle.fetchSemanticsNode()
                     val labels = labels(tuning, Notation.SHARPS)
-                    val first = compose.onNodeWithText(labels.first()).fetchSemanticsNode()
-                    val last = compose.onNodeWithText(labels.last()).fetchSemanticsNode()
-                    val switchBottom = switchNode.positionInRoot.y + switchNode.size.height
-                    val switchEnd = switchNode.positionInRoot.x + switchNode.size.width
-                    val stringsEnd = last.positionInRoot.x + last.size.width
-                    if (layout == Layout.FULL_ON_ITS_SIDE) {
-                        // Beside the last string, level with the strings.
-                        assertTrue("$case: the switch starts at ${switchNode.positionInRoot.x} px, the strings end at $stringsEnd", switchNode.positionInRoot.x >= stringsEnd - 1f)
-                        val switchMiddle = switchNode.positionInRoot.y + switchNode.size.height / 2f
-                        val stringsMiddle = last.positionInRoot.y + last.size.height / 2f
-                        assertEquals("$case: the switch level with the strings", stringsMiddle, switchMiddle, 2f)
-                    } else {
-                        if (switchBottom > first.positionInRoot.y + 1f) fail("$case: the switch ends at $switchBottom px, the strings start at ${first.positionInRoot.y}")
-                        assertTrue("$case: the switch ends at $switchEnd px, the strings at $stringsEnd", switchEnd <= stringsEnd + 1f)
+                    labels.forEachIndexed { index, label ->
+                        val mark = compose.onNodeWithTag(TunerTestTags.strumMark(index), useUnmergedTree = true)
+                        assertWhollyShown(mark, "$case: the mark over $label", scroll = true)
+                        val markNode = mark.fetchSemanticsNode()
+                        val peg = compose.onNodeWithText(label).fetchSemanticsNode()
+                        val markMiddle = markNode.positionInRoot.x + markNode.size.width / 2f
+                        val pegMiddle = peg.positionInRoot.x + peg.size.width / 2f
+                        assertEquals("$case: the mark over $label centred", pegMiddle, markMiddle, 2f)
+                        val markBottom = markNode.positionInRoot.y + markNode.size.height
+                        if (markBottom > peg.positionInRoot.y + 1f) fail("$case: the mark over $label ends at $markBottom px, its peg starts at ${peg.positionInRoot.y}")
                     }
                 }
             }
         }
+        shownHeard.value = HeardStrum.None
     }
 
     /** Each of [tuning]'s buttons in the window, wholly shown, clear of the others. */
@@ -455,6 +452,9 @@ class StringRowStylesTest {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     companion object {
+        /** The rows the strum marks are checked over: 8, 6 and 4 strings and the banjo's short string (the test's time is short). */
+        private val MARKED_ROWS = listOf(Instruments.GUITAR_8, Instruments.GUITAR, Instruments.BASS_4, Instruments.BANJO_5)
+
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp

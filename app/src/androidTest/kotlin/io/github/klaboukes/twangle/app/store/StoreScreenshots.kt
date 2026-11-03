@@ -40,7 +40,6 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.AfterClass
@@ -224,10 +223,8 @@ class StoreScreenshots(private val shot: Shot) {
                 }
                 save(screen, bubble = spoken ?: error("TalkBack's reading of the note wasn't found"))
             }
+            // The chord's name in the ruler's place, by itself (2.0, Phase 74: no mode to switch on). The picture is made again in Phase 76.
             Shot.CHORD_NAME -> tuner {
-                click(TunerTestTags.MORE_TOOLS)
-                click(TunerTestTags.tool(TunerTool.CHORD_NAME))
-                waitFor(TunerTestTags.CHORD_PANEL)
                 recorder.play(
                     StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
                         StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +

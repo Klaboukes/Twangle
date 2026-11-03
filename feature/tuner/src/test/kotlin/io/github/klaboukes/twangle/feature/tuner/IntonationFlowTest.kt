@@ -111,20 +111,10 @@ class IntonationFlowTest {
     }
 
     @Test
-    fun `one tool at a time, and chromatic mode turns the check off`() = runTest(dispatcher) {
+    fun `chromatic mode turns the check off, and the check turns guitar mode on`() = runTest(dispatcher) {
         val vm = viewModel(FakeAudioRecorder.silence())
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
-        vm.setStrumCheck(true)
-        vm.setIntonationCheck(true)
-        advanceTimeBy(100)
-        assertFalse(vm.strumCheck.value)
-        assertTrue(vm.intonationCheck.value)
-        vm.setStrumCheck(true)
-        advanceTimeBy(100)
-        assertFalse(vm.intonationCheck.value)
-        assertTrue(vm.state.value is TunerUiState.StrumCheck)
-
         vm.setIntonationCheck(true)
         vm.setMode(TunerMode.CHROMATIC)
         advanceTimeBy(100)
@@ -147,7 +137,7 @@ class IntonationFlowTest {
         assertTrue(vm.intonationCheck.value)
         vm.setInstrument(Instruments.VIOLIN)
         advanceTimeBy(100)
-        assertEquals(listOf(TunerTool.STRUM_CHECK), vm.tunerTools.value)
+        assertEquals(emptyList<TunerTool>(), vm.tunerTools.value)
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)
         vm.setIntonationCheck(true)

@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import android.content.res.Configuration
-import android.content.res.Resources
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,7 +50,6 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -220,7 +218,6 @@ class TunerContentTest {
                         focusMode = shownCompact.value,
                         showSignalBars = shownSignalBars.value,
                         signalFigures = signalFigures,
-                        onStrumCheckChange = {},
                         onFullScreenChange = { fullScreenReports += it },
                         onFocusModeChange = { focusChanges += it },
                     )
@@ -420,7 +417,6 @@ class TunerContentTest {
         pickerChip.assertIsDisplayed().assert(hasContentDescription(text(R.string.tuner_any_note)))
         stringChip("E2").assertDoesNotExist()
         stringChip("A2").assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
     }
 
     /** The mode switch went (Phase 70): the sheet's Any note switch sets the mode, and closes the sheet. */
@@ -883,7 +879,7 @@ class TunerContentTest {
         compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
 
         shownTuned.value = TunedStrings(Tunings.STANDARD, 0b10L)
-        shownState.value = TunerUiState.StrumCheck(Tunings.STANDARD)
+        shownState.value = TunerUiState.IntonationCheck(Tunings.STANDARD)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
     }
@@ -1048,15 +1044,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun aLongPressOnTheStrumCheckSwitchShowsItsName() {
-        show(listening)
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOOLTIP).assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).performTouchInput { longClick() }
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOOLTIP).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_strum_check)).assertIsDisplayed()
-    }
-
-    @Test
     fun stringsAndHintFollowTheNotation() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1, notation = Notation.SOLFEGE))
         stringChip("La2").assertIsSelected()
@@ -1165,7 +1152,6 @@ class TunerContentTest {
         pickerChip.performScrollTo().assertIsDisplayed()
         stringChip("E4").performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).performScrollTo().assertIsDisplayed()
     }
 
     // A phone on its side (2.0, Phase 73): the wide layout, the ruler, the lens and the word with the pegs under them.
@@ -2009,7 +1995,8 @@ class TunerContentTest {
         assertTrue("word ends at ${said.bottom}, window at ${window.bottom}", said.bottom <= window.bottom)
         assertEquals("the word at the start", (window.left + 24.dp).value, said.left.value, 2f)
         pickerChip.assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
+        // No pegs (the E2 heard is named small at the line's end, the focus string).
+        stringChip("A2").assertDoesNotExist()
     }
 
     @Test
@@ -2184,7 +2171,6 @@ class TunerContentTest {
         shownState.value = chromatic(-12.3f)
         compose.waitForIdle()
         assertEquals(guitar, enterButton.assertIsDisplayed().getBoundsInRoot())
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
     }
@@ -2245,7 +2231,6 @@ class TunerContentTest {
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
         pickerChip.assertIsDisplayed()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
         stringChip("E4").assertIsDisplayed().performClick()
         assertEquals(listOf(5), stringClicks)
         // Without touching them again they hide after a few seconds.

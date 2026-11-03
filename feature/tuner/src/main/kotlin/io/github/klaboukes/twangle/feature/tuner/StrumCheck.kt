@@ -1,18 +1,15 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
-import io.github.klaboukes.twangle.core.dsp.strum.StrumDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumListener
-import io.github.klaboukes.twangle.core.dsp.strum.StrumResult
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-/** Where the strum check is: see [TunerUiState.StrumCheck]. */
+/** Where a strum of the open strings is: see [TunerUiState.StrumCheck]. */
 enum class StrumPhase {
-    /** No strum heard yet (or the tuning, the A4 or a reference tone started it over). */
+    /** No strum heard yet (or the tuning, the A4 or the mode started it over). */
     WAITING,
 
     /** A strum was heard; its first reading comes about 0.4 s after it. Earlier readings, if any, are of the strum before. */
@@ -37,15 +34,16 @@ data class StrumString(
     val sure: Boolean = true,
 )
 
-/** What the pipeline hands on: a tuner reading per hop, or a step of the strum check. */
+/** What the pipeline hands on: a tuner reading per hop, or a step of the analysis beside the tuner ([HeardReading]). */
 sealed interface PipelineReading
 
 /**
- * A step of the strum check, from [PitchPipeline.listen]: when strum check starts (or starts over),
- * when a strum is heard, when its strings stop ringing, and with each reading of the strings.
+ * A step of a strum of the open strings, as [HeardStrumInterpreter] hands it to [StrumCheckInterpreter]: when the
+ * analysis starts (or starts over), when a strum is heard, when its strings stop ringing, and with each reading of
+ * the strings.
  */
 data class StrumReading(
-    /** Strums heard since the strum check (re)started; 0 before the first. */
+    /** Strums heard since the analysis (re)started; 0 before the first. */
     val strumCount: Int,
     /** Whether the latest strum still rings. */
     val ringing: Boolean,
@@ -180,69 +178,5 @@ class StrumCheckInterpreter {
             InTunePrecision.RELAXED -> StrumVerdict.DEFAULT_TOLERANCE_CENTS
             InTunePrecision.PRECISE -> InTuneDetector.PRECISE_ENTER_CENTS
         }
-    }
-}
-
-/**
- * The strum check's part of [PitchPipeline]: a [StrumListener] and [StrumDetector] for one range,
- * made the first time strum check starts (the detector's buffers are large) and again only for
- * another range. [start] begins afresh; after each [push], [next] gives the reading to hand on, if
- * anything changed. Not thread-safe.
- */
-internal class StrumAnalysis(private val sampleRate: Int) {
-    private var listener: StrumListener? = null
-    private var detector: StrumDetector? = null
-    private var frame = FloatArray(0)
-    private val result = StrumResult(StrumDetector.MAX_STRINGS)
-    private var expectedHz = FloatArray(0)
-    private var stringCount = 0
-    private var lastStrumCount = 0
-    private var lastRinging = false
-
-    /** The expected strings this analysis listens for (the array [start] was given). */
-    val expected: FloatArray get() = expectedHz
-
-    /** Starts listening for strums of strings at [hz] (Hz, in the tuning's order) in [range]. */
-    fun start(hz: FloatArray, range: PitchRange): StrumReading {
-        val current = listener
-        if (current == null || current.range != range) {
-            val made = StrumListener(sampleRate, range)
-            listener = made
-            detector = StrumDetector(sampleRate, made.frameLength)
-            frame = FloatArray(made.frameLength)
-        } else {
-            current.reset()
-        }
-        expectedHz = hz
-        stringCount = minOf(hz.size, StrumDetector.MAX_STRINGS)
-        lastStrumCount = 0
-        lastRinging = false
-        return StrumReading(strumCount = 0, ringing = false, readingsSinceStrum = 0)
-    }
-
-    /** Takes samples like [StrumListener.push]: stops when a frame is ready, so call [next] after each push. */
-    fun push(samples: FloatArray, offset: Int, length: Int): Int = listener!!.push(samples, offset, length)
-
-    /** A reading of the strings when a frame was ready, a status when a strum began or stopped ringing, else null. */
-    fun next(): StrumReading? {
-        val listener = listener!!
-        if (listener.isFrameReady) {
-            listener.readFrame(frame)
-            detector!!.detect(frame, expectedHz, stringCount, result)
-            lastStrumCount = listener.strumCount
-            lastRinging = listener.isRinging
-            val strings = List(expectedHz.size) { i ->
-                if (i < stringCount) {
-                    StrumStringReading(result.cents[i], result.present[i], result.shadowed[i])
-                } else {
-                    StrumStringReading(Float.NaN, present = false, shadowed = false)
-                }
-            }
-            return StrumReading(listener.strumCount, listener.isRinging, listener.readingsSinceStrum, strings, listener.frameLevelDbfs)
-        }
-        if (listener.strumCount == lastStrumCount && listener.isRinging == lastRinging) return null
-        lastStrumCount = listener.strumCount
-        lastRinging = listener.isRinging
-        return StrumReading(listener.strumCount, listener.isRinging, listener.readingsSinceStrum)
     }
 }

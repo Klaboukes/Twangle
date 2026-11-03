@@ -57,7 +57,7 @@ internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier:
         StyleButton(
             onClick = onClick,
             label = label,
-            face = STRUM_TOGGLE_SIZE,
+            face = TUNER_BUTTON_FACE,
             faceModifier = Modifier
                 .testTag(
                     when (action) {

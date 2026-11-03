@@ -51,9 +51,8 @@ data class PitchReading(
  * Microphone → [FrameAssembler] (in the low range through the [MainsHumCanceller]) → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
  * clarity ([Clarity]). That chain is `:core:dsp`'s [PitchChain], the one the watch runs too; this class
- * adds the microphone, the strum check and the chord name: since 2.0 (Phase 74) beside the tuner on every chunk
- * ([StrumWatcher], told what to listen for by a [StrumHearing]), and as 1.1's tools, which take the microphone
- * while they are on. See docs/architecture/signal-pipeline.md.
+ * adds the microphone, and the strum and chord analysis beside the tuner on every chunk (2.0, Phase 74:
+ * [StrumWatcher], told what to listen for by a [StrumHearing]). See docs/architecture/signal-pipeline.md.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
  * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside
@@ -78,37 +77,22 @@ class PitchPipeline(
 
     /** One reading per hop; [range] is asked every frame how low to listen (it must not allocate). */
     fun readings(range: () -> PitchRange = { PitchRange.STANDARD }): Flow<PitchReading> =
-        listen(range) { null }.map { it as PitchReading }
+        listen(range).map { it as PitchReading }
 
     /**
-     * Like [readings], but while [strumStrings] gives the open strings' frequencies (Hz, in the
-     * tuning's order) the microphone's chunks go to the strum check instead: a [StrumReading] when
-     * it starts, when a strum is heard or stops ringing, and with each reading of the strings
-     * (about every 0.1 s while they ring). It starts over whenever the frequencies change. The
-     * microphone stays open through every switch. Likewise, while [chordA4Hz] gives a concert pitch
-     * (not NaN) the chunks go to the chord name: a [ChordReading] when it starts, when a strum is heard
-     * or stops ringing, with each reading of a strum named at that A4, and about every 0.1 s between.
-     * [strumStrings], [chordA4Hz] and [range] are asked for every chunk and must not allocate.
-     *
-     * Otherwise the tuner hears the chunks and, while [hearing] says so, so does the strum and chord analysis beside
-     * it ([StrumWatcher]): a [HeardReading] when it starts afresh ([HeardReading.strumCount] 0: what it listens for
-     * changed), when a sudden sound is heard, decided or stops ringing, and with each reading of a strum of open
-     * strings or a chord. Paused (a tone, a tool) it says the latest strum no longer rings; it picks up again
-     * without starting afresh, the strums counted on.
+     * Like [readings], and while [hearing] says so the strum and chord analysis beside the tuner hears the same
+     * chunks ([StrumWatcher]): a [HeardReading] when it starts afresh ([HeardReading.strumCount] 0: what it listens
+     * for changed), when a sudden sound is heard, decided or stops ringing, and with each reading of a strum of open
+     * strings or a chord. Paused (a tone, the 12th-fret check) it says the latest strum no longer rings; it picks up
+     * again without starting afresh, the strums counted on. [range] and [hearing] are asked for every chunk and must
+     * not allocate. (Until 2.0's Phase 74 the strum check and the chord name were tools of their own here, which
+     * took the microphone's chunks from the tuner while they were on.)
      */
     fun listen(
         range: () -> PitchRange = { PitchRange.STANDARD },
-        chordA4Hz: () -> Float = { Float.NaN },
         hearing: StrumHearing? = null,
-        strumStrings: () -> FloatArray?,
     ): Flow<PipelineReading> = flow {
         var tuner = PitchChain(supportedRate())
-        // Made the first time strum check starts: its buffers are large.
-        var strum: StrumAnalysis? = null
-        var strumming = false
-        // Made the first time the chord name starts: its buffers are large too.
-        var chords: ChordAnalysis? = null
-        var naming = false
         // Made the first time the analysis beside the tuner starts: its buffers are large.
         var watcher: StrumWatcher? = null
         var watching = false
@@ -123,46 +107,6 @@ class PitchPipeline(
                 if (rate != tuner.sampleRate) tuner = PitchChain(rate)
             }
             val rate = tuner.sampleRate
-            val strings = strumStrings()
-            val chordA4 = if (strings == null) chordA4Hz() else Float.NaN
-            if (!chordA4.isNaN()) {
-                val analysis = chords ?: ChordAnalysis(rate).also { chords = it }
-                if (!naming) {
-                    emit(analysis.start())
-                    naming = true
-                }
-                strumming = false
-                watching = false
-                var pos = 0
-                while (pos < chunk.size) {
-                    pos += analysis.push(chunk, pos, chunk.size - pos)
-                    analysis.next(chordA4)?.let { emit(it) }
-                }
-                return@collect
-            }
-            if (strings != null) {
-                naming = false
-                watching = false
-                val analysis = strum ?: StrumAnalysis(rate).also { strum = it }
-                val expected = analysis.expected
-                if (!strumming || (strings !== expected && !strings.contentEquals(expected))) {
-                    emit(analysis.start(strings, PitchRange.forLowestNote(strings.minOrNull() ?: 0f)))
-                    strumming = true
-                }
-                var pos = 0
-                while (pos < chunk.size) {
-                    pos += analysis.push(chunk, pos, chunk.size - pos)
-                    analysis.next()?.let { emit(it) }
-                }
-                return@collect
-            }
-            if (strumming || naming) {
-                // Back to the tuner: its window starts afresh rather than joining audio from before,
-                // and the hum canceller learns the hum afresh (it missed the audio in between).
-                strumming = false
-                naming = false
-                tuner.restart()
-            }
             var pos = 0
             while (pos < chunk.size) {
                 tuner.range = range()

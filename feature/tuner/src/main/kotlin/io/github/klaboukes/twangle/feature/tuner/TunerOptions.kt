@@ -26,8 +26,6 @@ data class TunerOptions(
     val notation: Notation = Notation.DEFAULT,
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
-    /** Whether strum check is switched on; it only runs in guitar mode ([strumChecking]). */
-    val strumCheck: Boolean = false,
     /** Whether the 12th-fret check is switched on (Phase 29); it only runs in guitar mode ([intonationChecking]). */
     val intonationCheck: Boolean = false,
     /** The string the 12th-fret check checks, or null while none is chosen. */
@@ -36,8 +34,6 @@ data class TunerOptions(
     val intonationAttempt: Int = 0,
     /** The scale length the saddle's millimetres assume, or null where they aren't shown (not a guitar). */
     val intonationScaleMm: Float? = null,
-    /** Whether the chord name is switched on (Phase 30); it only runs in guitar mode ([chordNaming]). */
-    val chordName: Boolean = false,
     /** How the picked instrument's strings sound when a reference tone is played. */
     val voice: StringVoice = StringVoices.DEFAULT,
     /**
@@ -48,27 +44,21 @@ data class TunerOptions(
     /** Whether a fretted chord is named by itself, beside the tuner: the chord name's switch (its brake) on an instrument it is offered for. */
     val chordsHeard: Boolean = false,
 ) {
-    /** Strum check runs: switched on, and in guitar mode, where there are strings to check. */
-    val strumChecking: Boolean get() = strumCheck && mode == TunerMode.AUTO
-
     /** The 12th-fret check runs: switched on, and in guitar mode. */
     val intonationChecking: Boolean get() = intonationCheck && mode == TunerMode.AUTO
-
-    /** The chord name runs: switched on, and in guitar mode. */
-    val chordNaming: Boolean get() = chordName && mode == TunerMode.AUTO
 
     /** The open strings a strum is checked against beside the tuner: [stringHz] in guitar mode while [strumsHeard], else null. */
     val heardStrings: FloatArray? get() = if (strumsHeard && mode == TunerMode.AUTO) stringHz else null
 
     /**
      * The strum and chord analysis runs beside the tuner: something to listen for ([heardStrings], [chordsHeard]) and
-     * none of 1.1's tools on (strum check and the chord name take the microphone; the 12th-fret check plucks one string).
+     * the 12th-fret check off (it plucks one string, open and at the 12th fret).
      */
-    val hearing: Boolean get() = (heardStrings != null || chordsHeard) && !strumChecking && !chordNaming && !intonationChecking
+    val hearing: Boolean get() = (heardStrings != null || chordsHeard) && !intonationChecking
 
     /**
-     * The open strings' frequencies at [a4Hz], in the tuning's order: what the strum check listens
-     * for. Worked out once here, so the DSP loop only reads it; never changed after.
+     * The open strings' frequencies at [a4Hz], in the tuning's order: what a strum of the open strings is
+     * checked against. Worked out once here, so the DSP loop only reads it; never changed after.
      */
     val stringHz: FloatArray = NoteMapper(a4Hz).let { mapper -> FloatArray(tuning.strings.size) { mapper.frequencyOf(tuning.strings[it]) } }
 

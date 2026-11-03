@@ -85,7 +85,6 @@ class WideLayoutTest {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         focusMode = shownFocus.value,
-                        onStrumCheckChange = {},
                         onFocusModeChange = {},
                         onFullScreenChange = { fullScreenReports += it },
                         lensLook = shownLook.value,
@@ -153,15 +152,13 @@ class WideLayoutTest {
             assertTrue("$case chip $chip over the ruler $rulerAt", chip.bottom <= rulerAt.top + 0.5.dp)
             val pegs = pegs()
             for (peg in pegs) assertTrue("$case peg $peg under the lens $lensAt, in the window", peg.top >= lensAt.bottom && peg.bottom <= window.bottom)
-            val toggle = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed().getBoundsInRoot()
             if (centred) {
                 assertEquals("$case the pegs centred", ((window.left + window.right) / 2).value, ((pegs.first().left + pegs.last().right) / 2).value, 1.5f)
             } else {
-                // The switch's 44 dp outline in its 48 dp slot, which ends 24 dp from the side.
-                assertEquals("$case the pegs at the end", (window.right - 26.dp).value, toggle.right.value, 1.5f)
+                // At the line's end: the last peg ends where the empty slot after it begins (the 12th-fret button's twin,
+                // 48 dp and 8 dp of gap, kept so the pegs never move), 24 dp + 56 dp from the side.
+                assertEquals("$case the pegs at the end", (window.right - 80.dp).value, pegs.last().right.value, 8f)
             }
-            assertTrue("$case the switch $toggle after the last peg ${pegs.last()}", toggle.left >= pegs.last().right)
-            assertTrue("$case the switch $toggle level with the pegs", abs(((toggle.top + toggle.bottom) - (pegs.last().top + pegs.last().bottom)).value) < 2f)
             val wordAt = word.getBoundsInRoot()
             assertTrue("$case the word $wordAt before the pegs", wordAt.right <= pegs.first().left)
             val focusButton = compose.onNodeWithTag(TunerTestTags.ENTER_FOCUS).assertIsDisplayed().getBoundsInRoot()
@@ -179,7 +176,7 @@ class WideLayoutTest {
         compose.waitForIdle()
         assertEquals(guitar.left.value, word.getBoundsInRoot().left.value, 0.5f)
         assertEquals(guitar.top.value, word.getBoundsInRoot().top.value, 0.5f)
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
+        peg("E2").assertDoesNotExist()
     }
 
     /** Focus mode: no pegs, no chip, the whole screen, until a tap brings them back for a few seconds. */
@@ -191,13 +188,12 @@ class WideLayoutTest {
         compose.mainClock.autoAdvance = false
         compose.mainClock.advanceTimeBy(FRAME_MS)
         pickerChip.assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
         peg("E2").assertDoesNotExist()
         assertEquals("the app hides the rail and the bars", true, fullScreenReports.last())
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
         pickerChip.assertIsDisplayed()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
+        peg("E2").assertIsDisplayed()
         assertEquals("the rail and the bars back", false, fullScreenReports.last())
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
         pickerChip.assertDoesNotExist()

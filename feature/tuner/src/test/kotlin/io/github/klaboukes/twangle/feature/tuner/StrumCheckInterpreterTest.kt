@@ -12,7 +12,7 @@ import org.junit.Test
 
 class StrumCheckInterpreterTest {
 
-    private val options = TunerOptions(mode = TunerMode.AUTO, tuning = Tunings.STANDARD, strumCheck = true)
+    private val options = TunerOptions(mode = TunerMode.AUTO, tuning = Tunings.STANDARD)
 
     private fun strings(vararg cents: Float, shadowed: Set<Int> = emptySet()): List<StrumStringReading> =
         cents.mapIndexed { i, c -> StrumStringReading(c, present = !c.isNaN(), shadowed = i in shadowed) }

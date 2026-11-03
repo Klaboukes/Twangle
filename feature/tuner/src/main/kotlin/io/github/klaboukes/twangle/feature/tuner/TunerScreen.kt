@@ -110,10 +110,9 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
-import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
+import io.github.klaboukes.twangle.feature.tuner.components.TUNER_BUTTON_FACE
 import io.github.klaboukes.twangle.feature.tuner.components.shortStringGapFor
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
-import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
 import io.github.klaboukes.twangle.feature.tuner.components.LENS_SHORT
@@ -136,15 +135,16 @@ import io.github.klaboukes.twangle.feature.tuner.components.rulerRestMidi
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
-import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckToggle
-import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
-import io.github.klaboukes.twangle.feature.tuner.components.StrumStatus
-import io.github.klaboukes.twangle.feature.tuner.components.ChordPanel
-import io.github.klaboukes.twangle.feature.tuner.components.ChordStatus
+import io.github.klaboukes.twangle.feature.tuner.components.ChordInRuler
+import io.github.klaboukes.twangle.feature.tuner.components.MARK_GAP
+import io.github.klaboukes.twangle.feature.tuner.components.MARK_SIZE
+import io.github.klaboukes.twangle.feature.tuner.components.StrumMark
+import io.github.klaboukes.twangle.feature.tuner.components.chordWords
+import io.github.klaboukes.twangle.feature.tuner.components.strumCountText
+import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationCheckButton
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationPanel
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationStatus
-import io.github.klaboukes.twangle.feature.tuner.components.MoreToolsButton
 import io.github.klaboukes.twangle.feature.tuner.components.StringMark
 import io.github.klaboukes.twangle.feature.tuner.components.markOf
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
@@ -246,9 +246,8 @@ fun TunerScreen(
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
     val tunedStrings by viewModel.tunedStrings.collectAsStateWithLifecycle()
-    val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
-    val chordName by viewModel.chordName.collectAsStateWithLifecycle()
+    val heard by viewModel.heardStrum.collectAsStateWithLifecycle()
     val lensLook by viewModel.lensLook.collectAsStateWithLifecycle()
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
@@ -323,15 +322,12 @@ fun TunerScreen(
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
                     focusMode = focusMode,
-                    strumCheck = strumCheck,
-                    onStrumCheckChange = viewModel::setStrumCheck,
+                    heard = heard,
                     tunerTools = tunerTools,
                     intonationCheck = intonationCheck,
                     onIntonationCheckChange = viewModel::setIntonationCheck,
                     onCheckAgain = viewModel::checkIntonationAgain,
                     onNextString = viewModel::checkNextString,
-                    chordName = chordName,
-                    onChordNameChange = viewModel::setChordName,
                     lensLook = lensLook,
                     pitchHistory = viewModel.pitchHistory,
                     onFullScreenChange = onFullScreenChange,
@@ -529,7 +525,7 @@ object TunerTestTags {
     fun customTuning(id: String): String = "tuner_custom_tuning_$id"
     fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
 
-    /** Focus mode's full-screen tuner (the wide layout without its controls, or a tool's panel), which shows the controls when tapped. */
+    /** Focus mode's full-screen tuner (the wide layout without its controls, or the 12th-fret check's panel), which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
     /** The wide layout (2.0, Phase 73): a window wider than tall, the ruler, the lens and the word, with the pegs or in focus mode without. */
@@ -547,21 +543,8 @@ object TunerTestTags {
     /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */
     const val HIDE_CONTROLS = "tuner_hide_controls"
 
-    /** Strum check: its switch above the strings, its panel in the meter's place, and the line under it. */
-    const val STRUM_TOGGLE = "tuner_strum_toggle"
-    const val STRUM_PANEL = "tuner_strum_panel"
-    const val STRUM_STATUS = "tuner_strum_status"
-
-    /** The switch's name in a tooltip, shown on a long-press. */
-    const val STRUM_TOOLTIP = "tuner_strum_tooltip"
-
-    /** String [index]'s column in the strum check's panel. */
-    fun strumString(index: Int): String = "tuner_strum_string_$index"
-
-    /** The "more tools" button (tiles and a plus) above the strings, the menu it opens, and each tool's item in it (the strum check and the chord name). */
-    const val MORE_TOOLS = "tuner_more_tools"
-    const val MORE_TOOLS_MENU = "tuner_more_tools_menu"
-    fun tool(tool: TunerTool): String = "tuner_tool_" + tool.name.lowercase()
+    /** After a strum of the open strings (2.0, Phase 74): string [index]'s mark above its peg (↑, ↓, ✓ or –). */
+    fun strumMark(index: Int): String = "tuner_strum_mark_$index"
 
     /** The 12th-fret check's way in (2.0, Phase 71): its button above the pegs, at their start, behind its Settings switch. */
     const val INTONATION_BUTTON = "tuner_intonation_button"
@@ -572,9 +555,8 @@ object TunerTestTags {
     const val INTONATION_AGAIN = "tuner_intonation_again"
     const val INTONATION_NEXT = "tuner_intonation_next"
 
-    /** The chord name: its panel in the meter's place and the line under it. */
-    const val CHORD_PANEL = "tuner_chord_panel"
-    const val CHORD_STATUS = "tuner_chord_status"
+    /** A fretted chord's name in the ruler's place (2.0, Phase 74). */
+    const val CHORD_NAME = "tuner_chord_name"
 
     /** String [index]'s column in the 12th-fret check's summary. */
     fun intonationString(index: Int): String = "tuner_intonation_string_$index"
@@ -652,19 +634,15 @@ private fun KeepScreenOn() {
  * tuned since the tuner opened and not played clearly off since, ticked off on their pegs in the plain tuner (not
  * while a tool is on, nor in the compact layout's small row), and only with [stringTickOff] on (the string tick-off,
  * 2.0's beginner's help, off by default); once every string of the tuning shown is ticked, the word says "In tune.
- * Play." while nothing is heard, in the in-tune colour. With [onStrumCheckChange] a
- * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
- * is whether it is on). A [TunerUiState.StrumCheck] state shows its panel in the ruler's and the lens's place and
- * its lines in the word's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
- * Where [tunerTools] holds the chord name too, one "more tools" button takes the switch's place and opens a menu of
- * them ([MoreToolsButton]). The 12th-fret check is no entry of that menu (2.0, Phase 71): where [tunerTools] holds it
- * (its Settings switch on) and [onIntonationCheckChange] is given, its own button stands above the pegs at their
- * start ([IntonationCheckButton]), turning it on and off ([intonationCheck] is whether it is on). A
- * [TunerUiState.IntonationCheck] shows its panel and line in the same places ([IntonationPanel], [IntonationStatus]),
- * the verdict's buttons calling [onCheckAgain] and [onNextString]; the pegs pick the string ([onStringClick]) and
- * carry each string's result. The chord
- * name is turned on and off with [onChordNameChange] ([chordName] is whether it is on); a
- * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). In the plain
+ * Play." while nothing is heard, in the in-tune colour. What the tuner [heard] besides one string (2.0, Phase 74, no
+ * mode to switch on: [TunerViewModel.heardStrum]) shows in the plain tuner's own places: after a strum of the open
+ * strings each peg's verdict above it ([StrumMark]: ↑, ↓, ✓) and, while no string is heard, "4 of 6 in tune" in the
+ * word's place ([strumCountText]); a fretted chord's name in the ruler's place ([ChordInRuler]) and its words in the
+ * word's. Where [tunerTools] holds the 12th-fret check (its Settings switch on) and [onIntonationCheckChange] is given,
+ * its button stands above the pegs at their start ([IntonationCheckButton]), turning it on and off
+ * ([intonationCheck] is whether it is on). A [TunerUiState.IntonationCheck] shows its panel in the lens's place and
+ * its lines in the word's ([IntonationPanel], [IntonationStatus]), the verdict's buttons calling [onCheckAgain] and
+ * [onNextString]; the pegs pick the string ([onStringClick]) and carry each string's result. In the plain
  * tuner the lens ([Lens], 2.0 Phase 71) stands under the ruler, drawing [lensLook] (the
  * trail for every look until Phase 72) from [pitchHistory], the last seconds of readings (an empty one when
  * none is given); while it is given, the trail's motion ("wavering", "bending up") joins the word's spoken
@@ -673,8 +651,8 @@ private fun KeepScreenOn() {
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held upright; any
  * window wider than tall the wide layout (2.0, Phase 73, [WideLayout]): the ruler across the full width, the lens
  * wide, the word under it and the pegs, or in [focusMode] nothing but the ruler, the lens and the word with the
- * string small beside it, until a tap brings the pegs and the tabs back for a few seconds. A tool's panel keeps
- * 1.1's arrangements on its side until Phase 74 (two panes, in focus mode the compact row). All state lives in the
+ * string small beside it, until a tap brings the pegs and the tabs back for a few seconds. The 12th-fret check's panel
+ * keeps 1.1's arrangements on its side (two panes, in focus mode the compact row). All state lives in the
  * ViewModel, so rotating keeps the mode, the tuning and a locked string.
  */
 @Composable
@@ -708,15 +686,12 @@ fun TunerContent(
     onLoweredByChange: ((Int) -> Unit)? = null,
     pickerOpen: Boolean = false,
     onPickerOpenChange: (Boolean) -> Unit = {},
-    strumCheck: Boolean = false,
-    onStrumCheckChange: ((Boolean) -> Unit)? = null,
-    tunerTools: List<TunerTool> = listOf(TunerTool.STRUM_CHECK),
+    heard: HeardStrum = HeardStrum.None,
+    tunerTools: List<TunerTool> = emptyList(),
     intonationCheck: Boolean = false,
     onIntonationCheckChange: ((Boolean) -> Unit)? = null,
     onCheckAgain: () -> Unit = {},
     onNextString: () -> Unit = {},
-    chordName: Boolean = false,
-    onChordNameChange: ((Boolean) -> Unit)? = null,
     lensLook: LensLook = LensLook.DEFAULT,
     pitchHistory: PitchHistory? = null,
     onFullScreenChange: (Boolean) -> Unit = {},
@@ -737,12 +712,10 @@ fun TunerContent(
     val shownTuning = when (state) {
         is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
         is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.StrumCheck -> PanelTuning(state.tuning, state.notation)
         is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.ChordName -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
-    // barsInRow: the signal bars in the chip's row, where no ruler stands beside them (a tool's panel, a phone on its side).
+    // barsInRow: the signal bars in the chip's row, where no ruler stands beside them (the 12th-fret check's panel).
     val header = @Composable { barsInRow: Boolean ->
         // The picker chip, top centre (2.0, Phase 70); none over an error, where the sheet can't open.
         val chip = @Composable {
@@ -778,58 +751,25 @@ fun TunerContent(
     val tone = rememberLiveTone(needleCents, (state as? TunerUiState.Detected)?.inTune == true, inTunePrecision, animationsOff)
     ScreenTintFrom(tone)
     val ticks = tunedStrings.takeIf { stringTickOff }
-    // wide: the tools' buttons beside the pegs, not above them (the wide layout, Phase 73).
+    // What the tuner heard besides one string (Phase 74): a strum's verdicts above the pegs, a chord in the ruler's place.
+    val strumShown = (heard as? HeardStrum.OpenStrings)?.check?.takeIf { it.strings.isNotEmpty() && it.tuning == shownTuning?.tuning && mode == TunerMode.AUTO }
+    val chordShown = (heard as? HeardStrum.FrettedChord)?.name?.takeIf { it.chord != null && shownTuning != null }
+    // wide: the 12th-fret check's button beside the pegs, not above them (the wide layout, Phase 73).
     val guitarSlotWith = @Composable { wide: Boolean ->
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone)
-        val strum = onStrumCheckChange?.let { onStrum ->
-            // Only tools whose switch the screen was given; the strum check's alone is its own switch, as in v1.0.
-            // The 12th-fret check has its own button (below), no entry in the menu.
-            val offered = tunerTools.filter {
-                when (it) {
-                    TunerTool.STRUM_CHECK -> true
-                    TunerTool.INTONATION_CHECK -> false
-                    TunerTool.CHORD_NAME -> onChordNameChange != null
-                }
-            }
-            ToolsState(
-                tools = offered,
-                // The 12th-fret check on picks its own button, not the menu's.
-                active = when {
-                    strumCheck -> TunerTool.STRUM_CHECK
-                    chordName -> TunerTool.CHORD_NAME
-                    else -> null
-                },
-                onChange = { tool, on ->
-                    when (tool) {
-                        TunerTool.STRUM_CHECK -> onStrum(on)
-                        TunerTool.INTONATION_CHECK -> onIntonationCheckChange?.invoke(on)
-                        TunerTool.CHORD_NAME -> onChordNameChange?.invoke(on)
-                    }
-                },
-            )
-        }
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, strumShown?.strings)
         // The 12th-fret check's way in (2.0, Phase 71), only while its Settings switch is on.
         val wayIn = onIntonationCheckChange?.takeIf { TunerTool.INTONATION_CHECK in tunerTools }?.let { onIntonation ->
             @Composable { IntonationCheckButton(on = intonationCheck, onChange = onIntonation) }
         }
-        GuitarSlotFor(state, mode, strings, strum, wayIn, wide = wide)
+        GuitarSlotFor(state, mode, strings, wayIn, wide = wide)
     }
     val guitarSlot = @Composable { guitarSlotWith(false) }
     // The lens's last seconds: the tuner's, or an empty one where none is given (its look then draws no line).
     val emptyHistory = remember { PitchHistory() }
     val history = pitchHistory ?: emptyHistory
     val gauge = @Composable {
-        // Strum check, the 12th-fret check and the chord name take the lens's place, at the old meter's shape.
-        if (state is TunerUiState.ChordName) {
-            ChordPanel(state, Modifier.zIndex(-1f))
-        } else if (state is TunerUiState.StrumCheck) {
-            StrumPanel(
-                state,
-                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL),
-                onStringClick = onStringClick,
-                toneSounding = soundingString != null,
-            )
-        } else if (state is TunerUiState.IntonationCheck) {
+        // The 12th-fret check takes the lens's place, at the old meter's shape.
+        if (state is TunerUiState.IntonationCheck) {
             // The pegs below pick the string; the panel has nothing to tap.
             IntonationPanel(state, Modifier.zIndex(-1f))
         } else {
@@ -862,15 +802,25 @@ fun TunerContent(
         val listening = state as? TunerUiState.Listening
         // Every string ticked off (the string tick-off on): "In tune. Play." while nothing is heard.
         val allTuned = mode != TunerMode.CHROMATIC && listening != null && ticks.coversAll(listening.tuning)
+        // While no string is heard (and no reference tone says which plays) the strum's count or the chord's words
+        // stand in the word's place (Phase 74).
+        val noteSpeech = rememberNoteNameSpeech()
+        val heardQuiet = listening?.takeIf { soundingString == null }?.let {
+            strumShown?.let { check -> strumCountText(check)?.let { count -> HeardWords(count, count) } }
+                ?: chordShown?.chord?.let { chord -> HeardWords(chordWords(chord, chordShown.notation, null), chordWords(chord, chordShown.notation, noteSpeech)) }
+        }
+        // Every string of the strum in tune: its line in the in-tune colour, as the tick-off's "In tune. Play." is.
+        val strumAllInTune = heardQuiet != null && strumShown != null && strumShown.strings.all { it.verdict == StrumVerdict.IN_TUNE }
         TuneWordLine(
             readout = readout,
             hint = detected?.hint,
             chromatic = mode == TunerMode.CHROMATIC,
-            quiet = listening?.let { listeningHint(mode, it, soundingString, allTuned = allTuned) }.orEmpty(),
-            spokenQuiet = listening?.let { listeningHint(mode, it, soundingString, rememberNoteNameSpeech(), allTuned) }.orEmpty(),
-            quietInTune = allTuned && soundingString == null,
+            quiet = heardQuiet?.shown ?: listening?.let { listeningHint(mode, it, soundingString, allTuned = allTuned) }.orEmpty(),
+            spokenQuiet = heardQuiet?.spoken ?: listening?.let { listeningHint(mode, it, soundingString, noteSpeech, allTuned) }.orEmpty(),
+            quietInTune = (allTuned && soundingString == null && heardQuiet == null) || strumAllInTune,
             // While a reference tone sounds its line says which, not a tip about the mic.
-            tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null },
+            // Nor while a strum's count or a chord's words stand there: a strum's many notes read as noise to the tuner.
+            tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null && heardQuiet == null },
             motion = motion,
             tone = tone,
             compact = compact,
@@ -881,9 +831,7 @@ fun TunerContent(
     // Under the lens the word; under a tool's panel the tool's own lines.
     val status = @Composable { compact: Boolean ->
         when (state) {
-            is TunerUiState.StrumCheck -> StrumStatus(state, compact = compact)
             is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString, compact = compact)
-            is TunerUiState.ChordName -> ChordStatus(state, compact = compact)
             // One call for a note, the wait for one and the start, so the word keeps what it showed as a note comes.
             else -> word(compact, false)
         }
@@ -893,7 +841,11 @@ fun TunerContent(
     val lastHeard = remember { LastHeardNote() }
     val rulerShown = rulerFor(state, lastHeard)
     val rulerWith = @Composable { bars: Boolean, edgeClear: Dp ->
-        if (rulerShown != null) {
+        val chord = chordShown?.chord
+        if (rulerShown != null && chord != null) {
+            // A fretted chord's name in the ruler's place (Phase 74); no signal bars beside it (a chord has no one note to hear).
+            ChordInRuler(chord, chordShown.notation, faded = chordShown.faded, animationsOff = animationsOff, edgeClear = edgeClear)
+        } else if (rulerShown != null) {
             Ruler(
                 pitch = rulerPitch,
                 names = rulerShown.names,
@@ -971,8 +923,8 @@ fun TunerContent(
                 string = if (focus) ({ FocusString(state) }) else null,
             )
         }
-        // A tool's panel is laid out as in 1.1 on its side until Phase 74.
-        val toolPanel = state is TunerUiState.StrumCheck || state is TunerUiState.IntonationCheck || state is TunerUiState.ChordName
+        // The 12th-fret check's panel is laid out as in 1.1 on its side.
+        val toolPanel = state is TunerUiState.IntonationCheck
         val controls = @Composable {
             when (tunerLayoutFor(maxWidth.value, maxHeight.value, focusMode = false, toolPanel = toolPanel)) {
                 TunerLayout.WIDE -> wide(false)
@@ -1027,15 +979,14 @@ fun TunerContent(
                                 if (layout == TunerLayout.WIDE) {
                                     wide(true)
                                 } else {
-                                    // A tool keeps its panel beside its own lines and buttons.
+                                    // The 12th-fret check keeps its panel beside its own lines and buttons.
                                     CompactRow(
                                         error = error,
                                         onRetry = onRetry,
                                         gauge = gauge,
                                         status = { status(false) },
                                         below = { CompactPegsFor(state) },
-                                        // The strum check's columns are buttons: each keeps a 48 dp touch width.
-                                        gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
+                                        gaugeMinWidth = GAUGE_MIN_WIDTH,
                                     )
                                 }
                             }
@@ -1064,6 +1015,9 @@ fun TunerContent(
         )
     }
 }
+
+/** A chord's words in the word's place: as [shown], and as TalkBack says them ([spoken], "B flat major"). */
+private class HeardWords(val shown: String, val spoken: String)
 
 /** What the ruler shows: its 12 [names], where it rests while quiet ([rest]) and the [heard] note (null while quiet). */
 private class RulerShown(val names: List<String>, val rest: Int, val heard: Int?)
@@ -1298,7 +1252,7 @@ private val LocalLensWide = staticCompositionLocalOf { false }
 
 /**
  * Focus mode's full-screen tuner without its controls, around its [content]: the wide layout with nothing but the
- * ruler, the lens and the word (2.0, Phase 73), or a tool's panel beside its lines ([CompactRow], until Phase 74).
+ * ruler, the lens and the word (2.0, Phase 73), or the 12th-fret check's panel beside its lines ([CompactRow]).
  * No picker chip, tools' buttons or pegs. A tap anywhere, or TalkBack's double tap on the screen's "Show controls"
  * button, calls [onShowControls]. Focus mode's exit button ([onExitFocus]) sits in the top end corner, where the
  * button that turned it on is (owner, 2026-10-19: in place of a "Tap to show the controls" line, as the way out).
@@ -1379,7 +1333,7 @@ private fun ChipRow(
             chipPlaceable?.placeRelative((width - chipPlaceable.width) / 2, (height - chipPlaceable.height) / 2)
             // The gear's touch area is wider than its outline; the outline starts at the row's start.
             val gearEnd = gearPlaceable?.let {
-                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+                val outlineInset = (it.width - TUNER_BUTTON_FACE.roundToPx()).coerceAtLeast(0) / 2
                 it.placeRelative(-outlineInset, (height - it.height) / 2)
                 it.width - outlineInset
             } ?: 0
@@ -1387,7 +1341,7 @@ private fun ChipRow(
             barsPlaceable?.placeRelative(gearEnd + (SIGNAL_BARS_SLOT.roundToPx() - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
             // The touch area is wider than the outline; the outline ends at the row's end.
             buttonPlaceable?.let {
-                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+                val outlineInset = (it.width - TUNER_BUTTON_FACE.roundToPx()).coerceAtLeast(0) / 2
                 it.placeRelative(width - it.width + outlineInset, (height - it.height) / 2)
             }
         }
@@ -1549,38 +1503,37 @@ private fun FocusString(state: TunerUiState) {
 }
 
 /**
- * The [count] pegs ([strings]) with the tools' buttons beside them, in the wide layout ([GuitarControls] with
- * `beside`): the pegs [WIDE_PEG_PITCH] apart (closer where the width is short), the 12th-fret check's button ([wayIn])
- * before the first string, the strum check's switch or the "more tools" button ([toggle]) after the last, each in a
- * slot of at least [WIDE_TOOL_SLOT] kept whether its button shows or not, so the strings stay centred and never move
- * when a button comes or goes. [shortGap] is the room for the gap after a banjo's short string ([shortStringGapFor]).
+ * The [count] pegs ([strings]) with the 12th-fret check's button ([wayIn]) beside them, in the wide layout
+ * ([GuitarControls] with `beside`): the pegs [WIDE_PEG_PITCH] apart (closer where the width is short), the button
+ * before the first string in a slot of at least [WIDE_TOOL_SLOT], and as wide a slot kept empty after the last
+ * (until Phase 74 the strum check's switch stood there), so the strings stay centred and never move when the button
+ * comes or goes. Above the pegs [MARKS_ROOM] is kept for a strum's marks ([StrumMark]), shown or not.
+ * [shortGap] is the room for the gap after a banjo's short string ([shortStringGapFor]).
  */
 @Composable
 private fun PegsBesideTools(
     count: Int,
     strings: @Composable () -> Unit,
-    toggle: @Composable () -> Unit,
     wayIn: @Composable () -> Unit,
     shortGap: Dp = 0.dp,
 ) {
-    Layout(contents = listOf(strings, toggle, wayIn)) { (stringMeasurables, toggleMeasurables, wayInMeasurables), constraints ->
+    Layout(contents = listOf(strings, wayIn)) { (stringMeasurables, wayInMeasurables), constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(loose)
         val wayInPlaceable = wayInMeasurables.firstOrNull()?.measure(loose)
         val gap = TOGGLE_STRINGS_GAP.roundToPx()
-        val slot = maxOf(WIDE_TOOL_SLOT.roundToPx(), togglePlaceable?.width ?: 0, wayInPlaceable?.width ?: 0)
+        val slot = maxOf(WIDE_TOOL_SLOT.roundToPx(), wayInPlaceable?.width ?: 0)
         val stringsRoom = if (constraints.hasBoundedWidth) (constraints.maxWidth - 2 * (slot + gap)).coerceAtLeast(0) else Int.MAX_VALUE
         // A dp to spare, so rounding to pixels never leaves the row a hair short of full-size buttons (it would squeeze them).
         val stringsWidth = minOf(stringsRoom, (WIDE_PEG_PITCH * count + shortGap + 1.dp).roundToPx())
         val stringsPlaceable = stringMeasurables.single().measure(loose.copy(maxWidth = stringsWidth))
+        val marks = MARKS_ROOM.roundToPx()
+        val row = maxOf(stringsPlaceable.height, wayInPlaceable?.height ?: 0)
         val width = (stringsPlaceable.width + 2 * (slot + gap)).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = maxOf(stringsPlaceable.height, togglePlaceable?.height ?: 0, wayInPlaceable?.height ?: 0)
-            .coerceIn(constraints.minHeight, constraints.maxHeight)
+        val height = (marks + row).coerceIn(constraints.minHeight, constraints.maxHeight)
         layout(width, height) {
             val stringsX = (width - stringsPlaceable.width) / 2
-            stringsPlaceable.placeRelative(stringsX, (height - stringsPlaceable.height) / 2)
-            wayInPlaceable?.placeRelative(stringsX - gap - wayInPlaceable.width, (height - wayInPlaceable.height) / 2)
-            togglePlaceable?.placeRelative(stringsX + stringsPlaceable.width + gap, (height - togglePlaceable.height) / 2)
+            stringsPlaceable.placeRelative(stringsX, marks + (row - stringsPlaceable.height) / 2)
+            wayInPlaceable?.placeRelative(stringsX - gap - wayInPlaceable.width, marks + (row - wayInPlaceable.height) / 2)
         }
     }
 }
@@ -1609,7 +1562,7 @@ private val WIDE_PEG_PITCH = 56.dp
 /** Beside the pegs the word needs at least this much room, else it stands over them. */
 private val WIDE_WORD_LEAST = 96.dp
 
-/** A tool's button beside the wide layout's pegs: its 48 dp touch area, kept whether it shows or not. */
+/** The 12th-fret check's button beside the wide layout's pegs: its 48 dp touch area, kept whether it shows or not (and as much after the last peg). */
 private val WIDE_TOOL_SLOT = 48.dp
 
 /** The compact layout's gauge, at least [gaugeMinWidth] wide, beside the tool's lines ([status]), or the [error]. */
@@ -1734,15 +1687,14 @@ private fun GaugeAboveStatus(gauge: @Composable () -> Unit, status: @Composable 
 }
 
 /**
- * The [PegsSlot] for each [TunerUiState]: the pegs (with the strum check's switch, and the 12th-fret check's
- * button [wayIn]) in guitar mode; chromatic mode (Any note) leaves the slot empty, at the same height.
+ * The [PegsSlot] for each [TunerUiState]: the pegs (with the 12th-fret check's button [wayIn], and a strum's marks
+ * above them in the plain tuner) in guitar mode; chromatic mode (Any note) leaves the slot empty, at the same height.
  */
 @Composable
 private fun GuitarSlotFor(
     state: TunerUiState,
     mode: TunerMode,
     strings: StringActions,
-    strum: ToolsState? = null,
     wayIn: (@Composable () -> Unit)? = null,
     wide: Boolean = false,
 ) {
@@ -1752,18 +1704,15 @@ private fun GuitarSlotFor(
             state.tuning, state.notation, state.targetString, state.lockedString, state.inTune,
             tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
             tone = strings.tone,
+            strumMarks = strings.strumMarks,
         )
         // A locked string is the target before anything is played, so it stays ringed (in the resting tone).
         is TunerUiState.Listening -> GuitarControlsState(
             state.tuning, state.notation, state.lockedString, state.lockedString, inTune = false,
             tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
             tone = strings.tone,
+            strumMarks = strings.strumMarks,
         )
-        // Strum check reads every string at once, the chord name every note: none is the target.
-        is TunerUiState.StrumCheck ->
-            GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, inTune = false)
-        is TunerUiState.ChordName ->
-            GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, inTune = false)
         // The 12th-fret check: the string being checked, and every string's result on its button.
         is TunerUiState.IntonationCheck ->
             GuitarControlsState(
@@ -1781,19 +1730,19 @@ private fun GuitarSlotFor(
             GuitarControls(
                 controls.tuning, controls.notation, strings,
                 controls.targetString, controls.lockedString, controls.inTune,
-                strum,
                 wayIn = wayIn,
                 marks = controls.marks,
                 checking = controls.checking,
                 tuned = controls.tuned,
                 tone = controls.tone,
+                strumMarks = controls.strumMarks,
                 beside = wide,
             )
         }
     } else {
         null
     }
-    PegsSlot(shown = mode == TunerMode.AUTO, pegs = guitar, minHeight = if (wide) WIDE_PEGS_HEIGHT else GUITAR_SLOT_HEIGHT)
+    PegsSlot(shown = mode == TunerMode.AUTO, pegs = guitar, minHeight = if (wide) WIDE_PEGS_HEIGHT + MARKS_ROOM else GUITAR_SLOT_HEIGHT)
 }
 
 /** What [GuitarControls] shows for the current [TunerUiState]. */
@@ -1807,13 +1756,14 @@ private data class GuitarControlsState(
     val checking: Boolean = false,
     val tuned: TunedStrings? = null,
     val tone: LiveTone? = null,
+    val strumMarks: List<StrumString>? = null,
 )
 
 /**
  * What the pegs do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
  * ([onLongClick]: play the string's note, none without it), which string's tone is [sounding],
- * which strings are ticked off as tuned ([tuned], only with the string tick-off on), and the reading's [tone] the
- * heard peg is ringed in.
+ * which strings are ticked off as tuned ([tuned], only with the string tick-off on), the reading's [tone] the
+ * heard peg is ringed in, and a strum's verdicts to mark above the pegs ([strumMarks], Phase 74).
  */
 private data class StringActions(
     val onClick: (Int) -> Unit,
@@ -1821,6 +1771,7 @@ private data class StringActions(
     val sounding: Int?,
     val tuned: TunedStrings? = null,
     val tone: LiveTone? = null,
+    val strumMarks: List<StrumString>? = null,
 )
 
 /** Whether these ticks are of [tuning] and tick off every one of its strings. */
@@ -1855,23 +1806,14 @@ private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
 }
 
 /**
- * The tools the tuner offers ([tools]: the strum check, and in builds with its switch the 12th-fret
- * check), the one that is [active] (null: none), and what turning one on or off calls ([onChange]).
- */
-private data class ToolsState(val tools: List<TunerTool>, val active: TunerTool?, val onChange: (TunerTool, Boolean) -> Unit)
-
-private val STRUM_CHECK_ALONE = listOf(TunerTool.STRUM_CHECK)
-
-/**
- * The string row: what guitar mode shows in the [PegsSlot]. With [strum] the strum check's switch (or
- * the "more tools" button) sits in a row of its own above the strings, at its end, its outline ending
- * in line with the last string's button ([stringFaceInsetFor]). The 12th-fret check's button ([wayIn], 2.0 Phase 71)
- * sits in the same row at its start, its outline starting in line with the first string's button, so the two never
- * meet and neither moves when the other comes or goes. [beside] (the wide layout, Phase 73, where height is scarce)
- * puts the two beside the strings instead, the 12th-fret button before the first and the switch after the last, each
- * in a slot kept whether it shows or not, so the strings stay centred and never move. The instrument button and the
- * tuning's name that started this row until Phase 70 went: the picker chip at the top says and opens
- * the same.
+ * The string row: what guitar mode shows in the [PegsSlot]. The 12th-fret check's button ([wayIn], 2.0 Phase 71) sits
+ * in a row of its own above the strings at its start, its outline starting in line with the first string's button
+ * ([stringFaceInsetFor]); between that row and the pegs [MARKS_ROOM] is kept for a strum's marks above each peg
+ * ([strumMarks], 2.0 Phase 74: ↑ ↓ ✓), so a mark never meets the button and nothing moves when either comes or goes.
+ * [beside] (the wide layout, Phase 73, where height is scarce) puts the button beside the strings instead, before the
+ * first, in a slot kept whether it shows or not, so the strings stay centred and never move. The instrument button
+ * and the tuning's name that started this row until Phase 70 went (the picker chip at the top says and opens the
+ * same), and the strum check's switch, or the "more tools" button, at the row's end in Phase 74.
  */
 @Composable
 private fun GuitarControls(
@@ -1881,12 +1823,12 @@ private fun GuitarControls(
     targetString: Int?,
     lockedString: Int?,
     inTune: Boolean = false,
-    strum: ToolsState? = null,
     wayIn: (@Composable () -> Unit)? = null,
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
     tuned: TunedStrings? = null,
     tone: LiveTone? = null,
+    strumMarks: List<StrumString>? = null,
     beside: Boolean = false,
 ) {
     val wayInSlot = @Composable { if (wayIn != null) wayIn() }
@@ -1904,29 +1846,19 @@ private fun GuitarControls(
             checking = checking,
             tuned = tuned,
             tone = tone,
+            strumMarks = strumMarks,
         )
     }
-    val toggle = @Composable {
-        when {
-            strum == null || strum.tools.isEmpty() -> Unit
-            // The strum check alone keeps its own switch, exactly as in v1.0.
-            strum.tools == STRUM_CHECK_ALONE -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) })
-            // Any other tool, or more than one (the 12-string has no strum check): one "more tools"
-            // button gathers them, in the switch's place.
-            else -> MoreToolsButton(strum.tools, strum.active, strum.onChange)
-        }
-    }
     if (beside) {
-        PegsBesideTools(tuning.strings.size, strings, toggle, wayInSlot, shortGap = shortStringGapFor(Dp.Infinity, tuning, small = false))
+        PegsBesideTools(tuning.strings.size, strings, wayInSlot, shortGap = shortStringGapFor(Dp.Infinity, tuning, small = false))
         return
     }
     val facesSpan = LocalStringFacesSpan.current
     // Without the strings, the header over them takes its own width again.
     if (facesSpan != null) DisposableEffect(facesSpan) { onDispose { facesSpan.width = 0 } }
-    Layout(contents = listOf(strings, toggle, wayInSlot)) { (stringMeasurables, toggleMeasurables, wayInMeasurables), constraints ->
+    Layout(contents = listOf(strings, wayInSlot)) { (stringMeasurables, wayInMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
-        val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(partConstraints)
         val wayInPlaceable = wayInMeasurables.firstOrNull()?.measure(partConstraints)
         val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
         val stringsX = (width - stringsPlaceable.width) / 2
@@ -1934,23 +1866,18 @@ private fun GuitarControls(
         val faceInset = stringFaceInsetFor(stringsPlaceable.width.toDp(), tuning).dp.roundToPx().coerceAtLeast(0)
         val facesStart = stringsX + faceInset
         val facesEnd = stringsX + stringsPlaceable.width - faceInset
-        // The switch's outline sits inside its 48 dp touch target and ends where the last string's face does.
-        val toggleX = togglePlaceable?.let {
-            val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
-            (facesEnd - it.width + outlineInset).coerceIn(0, (width - it.width).coerceAtLeast(0))
-        }
         // The 12th-fret button's outline starts where the first string's face does.
         val wayInX = wayInPlaceable?.let {
-            val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+            val outlineInset = (it.width - TUNER_BUTTON_FACE.roundToPx()).coerceAtLeast(0) / 2
             (facesStart - outlineInset).coerceIn(0, (width - it.width).coerceAtLeast(0))
         }
-        val rowHeight = maxOf(togglePlaceable?.height ?: 0, wayInPlaceable?.height ?: 0)
-        val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
+        val rowHeight = wayInPlaceable?.height ?: 0
+        // Under the button's row, room for a strum's marks above the pegs (Phase 74).
+        val stringsY = if (rowHeight > 0) rowHeight + MARKS_ROOM.roundToPx() else 0
         val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
         // For the header over the strings on its side: as wide as the faces (they are centred, as it is).
         facesSpan?.width = (facesEnd - facesStart).coerceAtLeast(0)
         layout(width, height) {
-            if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, 0)
             if (wayInPlaceable != null && wayInX != null) wayInPlaceable.placeRelative(wayInX, 0)
             stringsPlaceable.placeRelative(stringsX, stringsY)
         }
@@ -1984,8 +1911,14 @@ private val SECTION_SPACING = 24.dp
 /** Between the ruler and the lens under it. */
 private val RULER_METER_GAP = 12.dp
 
-/** Between the strum check's switch and the string row under it. */
+/** Between the wide layout's pegs and the 12th-fret check's button beside them. */
 private val TOGGLE_STRINGS_GAP = 8.dp
+
+/**
+ * Above the pegs, room kept for a strum's marks ([StrumMark], Phase 74): the mark, its gap to the face and a little
+ * clear of what is above (upright the 12th-fret check's button, whose outline sits 2 dp inside its row).
+ */
+private val MARKS_ROOM = MARK_SIZE + MARK_GAP + 2.dp
 
 /** The signal bars as drawn, and their touch area's width at the picker chip row's start. */
 private val SIGNAL_BARS_SIZE = 24.dp
@@ -2046,10 +1979,10 @@ private val EDGE_INSET = 8.dp
 /** Above and below the controls pane's column, so it keeps a margin when it scrolls (a large font on a phone on its side). */
 private val CONTROLS_PANE_CLEARANCE = 56.dp
 
-/** The tools button (a 48 dp touch target) + 8 dp + string row (48 dp). */
-private val GUITAR_SLOT_HEIGHT = 104.dp
+/** The 12th-fret check's button (a 48 dp touch target), the room for a strum's marks, and the string row (48 dp). */
+private val GUITAR_SLOT_HEIGHT = 48.dp + MARKS_ROOM + 48.dp
 
-/** The wide layout's pegs: one row of 48 dp buttons, the tools' buttons beside them. */
+/** The wide layout's pegs: one row of 48 dp buttons, the 12th-fret check's button beside them (a strum's marks' room above, [MARKS_ROOM]). */
 private val WIDE_PEGS_HEIGHT = 48.dp
 
 /** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */

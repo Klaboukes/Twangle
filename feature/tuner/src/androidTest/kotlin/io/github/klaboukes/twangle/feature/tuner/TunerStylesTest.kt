@@ -16,8 +16,6 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.then
@@ -96,7 +94,6 @@ class TunerStylesTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showSignalBars = true,
                         focusMode = false,
-                        onStrumCheckChange = {},
                     )
                 }
             }
@@ -128,7 +125,6 @@ class TunerStylesTest {
         add("cents" to compose.onNodeWithText(twelveCentsFlat))
         add("word" to compose.onNodeWithText(context.getString(R.string.tuner_word_tighten)))
         add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON))
-        add("strum check switch" to compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE))
         strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
     }
 
@@ -237,7 +233,6 @@ class TunerStylesTest {
                 val chip = compose.onNode(hasContentDescription(name)).assertHasClickAction()
                 if (index == 1) chip.assertIsSelected() else chip.assertIsNotSelected()
             }
-            compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertHasClickAction()
         }
     }
 

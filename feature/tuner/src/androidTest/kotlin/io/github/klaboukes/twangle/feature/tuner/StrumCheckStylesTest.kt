@@ -1,37 +1,42 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import android.os.LocaleList
+import android.Manifest
+import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
+import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
+import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
+import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
+import io.github.klaboukes.twangle.core.testing.onPhoneScreen
+import java.io.File
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -39,6 +44,7 @@ import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.feature.tuner.components.StrumMarkVerdict
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Rule
@@ -46,20 +52,17 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The strum check in Ink: its panel in the meter's place, the line under it, and
- * its switch beside the instrument-and-tuning button. Upright (a narrow phone, and the owner's
- * Xiaomi 12X at 1.25× text) and on its side (full and compact layout), every part fits without
- * scrolling, in the window, clear of the settings button and of each other, and nothing moves from
- * one phase to the next. At 2× text in Dutch every part can be scrolled to and is wholly shown.
- * TalkBack hears each string with its reading, the line as a live region and the switch with its
- * state. Each string's marker is drawn in the app's colours, light and dark. Once the strum is
- * read, each string's column is a button that tunes that string, as on the string row (also for
- * TalkBack), big enough to touch.
+ * A strum of the open strings heard by itself (2.0, Phase 74; 1.1's strum check without its mode): each string's
+ * mark above its peg (↑ to tighten, ↓ to loosen, ✓ in tune, – not heard), "3 of 6 in tune" in the word's place while
+ * no single string is heard, nothing at all with nothing heard (a brake on, or no strum yet). Upright on a narrow
+ * phone and on the owner's Xiaomi at 1.25× text, light and dark, on its side and in focus mode: each mark centred over
+ * its peg, clear of the 12th-fret check's button above the first peg and of everything else, inside the window; the
+ * pegs, the lens and the word don't move when the marks come and go. TalkBack hears each peg's mark as its state and
+ * the count through the word. At 2× text in Dutch the count line is wholly shown.
  */
 @RunWith(AndroidJUnit4::class)
 class StrumCheckStylesTest {
@@ -70,286 +73,318 @@ class StrumCheckStylesTest {
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
         Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
-    ).around(compose)
+    ).around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)).around(compose)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val arguments = InstrumentationRegistry.getArguments()
 
     // Set these to change what the window shows without composing it again.
-    private val shownState = mutableStateOf<TunerUiState>(ringing(StrumPhase.RINGING))
+    private val shownState = mutableStateOf<TunerUiState>(LISTENING)
+    private val shownHeard = mutableStateOf<HeardStrum>(HeardStrum.OpenStrings(strum(StrumPhase.DONE), 1))
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
-    private val shownCompact = mutableStateOf(false)
-    private val shownSounding = mutableStateOf<Int?>(null)
-    private val switched = mutableListOf<Boolean>()
-    private val stringClicks = mutableListOf<Int>()
+    private val shownFocus = mutableStateOf(false)
+    private val shownMode = mutableStateOf(TunerMode.AUTO)
 
     // The app's colours, read while composing.
-    private var accent = Color.Unspecified
-    private var inTune = Color.Unspecified
+    private var background = Color.Unspecified
 
     private fun show() {
         compose.setContent {
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
             PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
                 TwangleTheme(darkTheme = shownDark.value, animate = false) {
-                    accent = MaterialTheme.colorScheme.primary
-                    inTune = MaterialTheme.styleTokens.inTune
+                    background = MaterialTheme.colorScheme.background
                     TunerContent(
                         shownState.value,
-                        TunerMode.AUTO,
+                        shownMode.value,
                         onModeChange = {},
                         onTuningChange = {},
-                        onStringClick = { stringClicks += it },
+                        onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        focusMode = shownCompact.value,
-                        soundingString = shownSounding.value,
-                        strumCheck = true,
-                        onStrumCheckChange = { switched += it },
+                        focusMode = shownFocus.value,
+                        heard = shownHeard.value,
+                        // The 12th-fret check's button above the first peg, which the first mark keeps clear of.
+                        tunerTools = listOf(TunerTool.INTONATION_CHECK),
+                        onIntonationCheckChange = {},
+                        animationsOff = true,
                     )
                 }
             }
         }
     }
 
-    private val panel get() = compose.onNodeWithTag(TunerTestTags.STRUM_PANEL)
-    private val status get() = compose.onNodeWithTag(TunerTestTags.STRUM_STATUS)
-    private val toggle get() = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE)
     private val strings = listOf("E2", "A2", "D3", "G3", "B3", "E4")
+    private fun mark(index: Int) = compose.onNodeWithTag(TunerTestTags.strumMark(index), useUnmergedTree = true)
+    private fun peg(index: Int) = compose.onNodeWithText(strings[index])
+    private val wordText get() = compose.onNodeWithTag(TunerTestTags.WORD_TEXT, useUnmergedTree = true)
 
-    private fun parts(controls: Boolean): List<Pair<String, SemanticsNodeInteraction>> = buildList {
-        add("panel" to panel)
-        add("status" to status)
-        if (controls) {
-            add("strum check switch" to toggle)
-            strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
-        }
-    }
-
-    /** Upright at normal text and at the owner's 1.25× on the Xiaomi, light and dark, in every phase: all in view, nothing moves. */
+    /** Upright, light and dark, at normal text and the owner's 1.25×: each mark is the string's verdict, centred over its peg, clear of the 12th-fret button. */
     @Test
-    fun uprightEverythingFitsAndNothingMovesBetweenPhases() {
+    fun uprightEachMarkStandsAboveItsPegClearOfTheTwelfthFretButton() {
         show()
         for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE)) {
             shownSize.value = size
             shownFontScale.value = scale
             for (dark in listOf(false, true)) {
                 shownDark.value = dark
-                // Heights only: a shorter line is centred, which moves nothing.
-                var where: List<Pair<Float, Float>>? = null
-                for (phase in StrumPhase.entries) {
-                    shownState.value = ringing(phase)
-                    compose.waitForIdle()
-                    val case = "${if (dark) "dark" else "light"} $phase ${size.width} x ${size.height} at ${scale}x:"
-                    val bounds = assertAllInView(case, parts(controls = true)).map { it.top.value to it.bottom.value }
-                    if (where == null) where = bounds
-                    if (bounds != where) fail("$case moved: $bounds, was $where")
-                }
+                compose.waitForIdle()
+                assertMarksAbovePegs("${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x")
             }
         }
     }
 
-    /** On its side, in the full layout and the compact one (where the controls are hidden): all in view. */
+    /** On its side (the wide layout, Phase 73): the marks above the pegs too, inside the window and clear of the lens; focus mode has no pegs, so no marks, but the count. */
     @Test
-    fun onItsSideEverythingFits() {
+    fun onItsSideAndInFocusMode() {
         shownSize.value = PHONE_LANDSCAPE
         show()
-        for (compact in listOf(false, true)) {
-            shownCompact.value = compact
+        compose.onNodeWithTag(TunerTestTags.WIDE).assertIsDisplayed()
+        assertMarksAbovePegs("on its side")
+        val lens = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
+        for (index in strings.indices) {
+            val rect = mark(index).getBoundsInRoot()
+            if (rect.overlaps(lens)) fail("on its side: the mark over ${strings[index]} $rect overlaps the lens $lens")
+        }
+        assertEquals(count(3, 6), wordText.text())
+
+        shownFocus.value = true
+        compose.waitForIdle()
+        compose.onNodeWithTag(TunerTestTags.COMPACT).assertIsDisplayed()
+        compose.onAllNodesWithTag(TunerTestTags.strumMark(0), useUnmergedTree = true).assertCountEquals(0)
+        assertEquals(count(3, 6), wordText.text())
+    }
+
+    /** "3 of 6 in tune" in the word's place while no string is heard (said by TalkBack too); a string heard takes the word back, the marks staying; all in tune says so. */
+    @Test
+    fun theCountStandsInTheWordsPlace() {
+        show()
+        assertEquals(count(3, 6), wordText.text())
+        compose.onNode(hasContentDescription(count(3, 6))).assertExists()
+        // A strum's many notes may read as noise to the tuner: no tip about the microphone under the count.
+        shownState.value = LISTENING.copy(tip = ReceptionTip.TOO_NOISY)
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_noisy)).assertDoesNotExist()
+        assertEquals(count(3, 6), wordText.text())
+        shownState.value = LISTENING
+
+        shownState.value = DETECTED_A2
+        compose.waitForIdle()
+        assertEquals(context.getString(R.string.tuner_word_tighten), wordText.text())
+        mark(1).assertExists()
+
+        shownState.value = LISTENING
+        shownHeard.value = HeardStrum.OpenStrings(strum(StrumPhase.DONE, allInTune = true), 1)
+        compose.waitForIdle()
+        assertEquals(context.getString(R.string.tuner_strum_all_in_tune), wordText.text())
+        for (index in strings.indices) mark(index).assert(verdict(StrumVerdict.IN_TUNE))
+    }
+
+    /** With nothing heard (no strum yet, or the strum check's brake on) no mark and no count: the plain tuner, and nothing else moves. */
+    @Test
+    fun nothingHeardShowsNothingAndTheMarksMoveNothing() {
+        show()
+        val parts = listOf(
+            "lens" to compose.onNodeWithTag(TunerTestTags.GAUGE),
+            "word" to compose.onNodeWithTag(TunerTestTags.WORD),
+            "first peg" to peg(0),
+            "last peg" to peg(5),
+            "12th-fret button" to compose.onNodeWithTag(TunerTestTags.INTONATION_BUTTON),
+        )
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            shownHeard.value = HeardStrum.OpenStrings(strum(StrumPhase.DONE), 1)
             compose.waitForIdle()
-            val case = "on its side ${if (compact) "compact" else "full"}:"
-            assertAllInView(case, parts(controls = !compact))
-            if (compact) toggle.assertDoesNotExist()
-            val panelBounds = panel.getBoundsInRoot()
-            val statusBounds = status.getBoundsInRoot()
-            // The panel beside or above the line, never under it.
-            if (statusBounds.top < panelBounds.top - SLACK) fail("$case the line $statusBounds starts above the panel $panelBounds")
+            val withMarks = parts.map { (_, node) -> node.getBoundsInRoot() }
+            shownHeard.value = HeardStrum.None
+            compose.waitForIdle()
+            for (index in strings.indices) compose.onAllNodesWithTag(TunerTestTags.strumMark(index), useUnmergedTree = true).assertCountEquals(0)
+            assertEquals(context.getString(R.string.tuner_hint_play_string), wordText.text())
+            val without = parts.map { (_, node) -> node.getBoundsInRoot() }
+            parts.forEachIndexed { i, (name, _) ->
+                // The word's width follows its text ("3 of 6 in tune", "Play a string"), centred or at the start: only its line may not move.
+                val moved = if (name == "word") withMarks[i].top != without[i].top || withMarks[i].bottom != without[i].bottom else withMarks[i] != without[i]
+                if (moved) fail("$size: the $name moved, ${withMarks[i]} with the marks, ${without[i]} without")
+            }
         }
     }
 
-    /** At 2× text in Dutch, upright and in the full layout on its side: every part, scrolled to, is wholly shown. */
+    /** In Any note there are no pegs, so no marks (the analysis checks open strings in guitar mode only). */
     @Test
-    fun atTwiceTheTextSizeInDutchEveryPartIsWhollyShown() {
+    fun anyNoteHasNoMarks() {
+        shownMode.value = TunerMode.CHROMATIC
+        shownState.value = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD)
+        show()
+        compose.onAllNodesWithTag(TunerTestTags.strumMark(0), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    /** TalkBack hears each peg's mark as its state: "Tighten", "Loosen", "in tune", "Not heard"; on the locked peg after "Locked". */
+    @Test
+    fun talkBackHearsEveryPegsMark() {
+        show()
+        val inTune = context.getString(R.string.tuner_in_tune)
+        val expected = listOf(
+            inTune,
+            context.getString(R.string.tuner_word_tighten),
+            inTune,
+            context.getString(R.string.tuner_word_loosen),
+            context.getString(R.string.tuner_strum_not_heard),
+            inTune,
+        )
+        expected.forEachIndexed { index, state ->
+            assertEquals(strings[index], state, peg(index).fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription))
+        }
+        // The marks themselves are silent: the peg says it.
+        val markConfig = mark(1).fetchSemanticsNode().config
+        assertEquals(null, markConfig.getOrNull(SemanticsProperties.ContentDescription))
+
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1)
+        compose.waitForIdle()
+        assertEquals(
+            context.getString(R.string.tuner_string_locked_mark, context.getString(R.string.tuner_word_tighten)),
+            peg(1).fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription),
+        )
+    }
+
+    /** Light and dark: every mark is drawn (pixels of its own over the background), the paler less sure one too. */
+    @Test
+    fun everyMarkIsDrawn() {
+        show()
+        for (dark in listOf(false, true)) {
+            shownDark.value = dark
+            compose.waitForIdle()
+            for (index in strings.indices) {
+                val image = mark(index).captureToImage().toPixelMap()
+                val back = background.toArgb()
+                var drawn = 0
+                for (y in 0 until image.height) for (x in 0 until image.width) if (!near(image[x, y].toArgb(), back)) drawn++
+                if (drawn < MARK_PIXELS) fail("${if (dark) "dark" else "light"}: the mark over ${strings[index]} has only $drawn pixels")
+            }
+        }
+    }
+
+    /** At 2× text in Dutch, upright and on its side: the count line is wholly shown, and so is every mark. */
+    @Test
+    fun atTwiceTheTextSizeInDutchTheCountIsWhollyShown() {
         shownLocale.value = "nl"
         shownFontScale.value = 2f
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
-            for (phase in listOf(StrumPhase.WAITING, StrumPhase.DONE)) {
-                shownState.value = ringing(phase)
-                compose.waitForIdle()
-                for ((name, node) in parts(controls = true)) assertWhollyShown(node, "nl $phase $size at 2x: $name")
-                val texts = listOf(
-                    nl(R.string.tuner_strum_waiting).takeIf { phase == StrumPhase.WAITING },
-                    nl(R.string.tuner_strum_again).takeIf { phase == StrumPhase.DONE },
-                )
-                for (text in texts.filterNotNull()) assertWhollyShown(compose.onNode(hasText(text), useUnmergedTree = true), "$size: $text")
-            }
-        }
-    }
-
-    /** TalkBack hears every string with its reading, the line as a live region, and the switch with its state; tapping it switches off. */
-    @Test
-    fun talkBackHearsEveryStringAndTheSwitch() {
-        show()
-        val flat = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
-        val sharp = context.resources.getQuantityString(R.plurals.tuner_cents_sharp, 8, 8)
-        val inTuneWord = context.getString(R.string.tuner_in_tune)
-        val expected = listOf(
-            "E 2, $inTuneWord",
-            "A 2, $flat, ${context.getString(R.string.tuner_word_tighten)}",
-            "D 3, $inTuneWord",
-            "G 3, $sharp, ${context.getString(R.string.tuner_word_loosen)}",
-            context.getString(R.string.tuner_strum_spoken_not_heard, "B 3"),
-            context.getString(R.string.tuner_strum_spoken_less_sure, "E 4, $inTuneWord"),
-        )
-        expected.forEachIndexed { index, spoken ->
-            val node = compose.onNodeWithTag(TunerTestTags.strumString(index)).fetchSemanticsNode()
-            assertEquals("string $index", listOf(spoken), node.config.getOrNull(SemanticsProperties.ContentDescription))
-        }
-        val line = status.fetchSemanticsNode().config
-        assertEquals(androidx.compose.ui.semantics.LiveRegionMode.Polite, line.getOrNull(SemanticsProperties.LiveRegion))
-        status.assert(hasText(context.resources.getQuantityString(R.plurals.tuner_strum_to_tune, 2, 2), substring = true))
-
-        val switch = toggle.fetchSemanticsNode().config
-        assertEquals(listOf(context.getString(R.string.tuner_strum_check)), switch.getOrNull(SemanticsProperties.ContentDescription))
-        assertEquals(Role.Switch, switch.getOrNull(SemanticsProperties.Role))
-        assertEquals(ToggleableState.On, switch.getOrNull(SemanticsProperties.ToggleableState))
-        toggle.performClick()
-        assertEquals(listOf(false), switched)
-        // A string is still a button: tapping it tunes that string.
-        compose.onNodeWithText("A2").performClick()
-        assertEquals(listOf(1), stringClicks)
-    }
-
-    /** In every phase with readings a tap on a string's column tunes that string, as on the string row; before the first reading there is nothing to tap. */
-    @Test
-    fun tappingAStringsColumnTunesThatString() {
-        show()
-        for (phase in StrumPhase.entries) {
-            shownState.value = ringing(phase)
             compose.waitForIdle()
-            stringClicks.clear()
-            for (index in strings.indices) compose.onNodeWithTag(TunerTestTags.strumString(index)).performClick()
-            val expected = if (phase == StrumPhase.WAITING) emptyList() else strings.indices.toList()
-            assertEquals("$phase", expected, stringClicks)
+            assertWhollyShown(wordText, "nl $size at 2x: the count")
+            for (index in strings.indices) assertWhollyShown(mark(index), "nl $size at 2x: the mark over ${strings[index]}")
         }
-    }
-
-    /** Each column is at least 48 dp each way to touch, upright on a narrow phone and on its side in both layouts. */
-    @Test
-    fun everyColumnIsBigEnoughToTouch() {
-        show()
-        for ((size, compact) in listOf(PHONE_UPRIGHT to false, PHONE_LANDSCAPE to false, PHONE_LANDSCAPE to true)) {
-            shownSize.value = size
-            shownCompact.value = compact
-            compose.waitForIdle()
-            for (index in strings.indices) {
-                val cell = compose.onNodeWithTag(TunerTestTags.strumString(index)).getBoundsInRoot()
-                val case = "$size${if (compact) " compact" else ""}: ${strings[index]} $cell"
-                if (cell.right - cell.left < MIN_TOUCH - SLACK || cell.bottom - cell.top < MIN_TOUCH - SLACK) fail("$case is under $MIN_TOUCH")
-            }
-        }
-    }
-
-    /** TalkBack: each string's column is a button, "Tune A 2" (or "Stop the tone" while a tone sounds), and the action tunes it; not before the first reading. */
-    @Test
-    fun talkBackCanTuneEachStringFromItsColumn() {
-        show()
-        val spoken = listOf("E 2", "A 2", "D 3", "G 3", "B 3", "E 4")
-        spoken.forEachIndexed { index, name ->
-            val node = compose.onNodeWithTag(TunerTestTags.strumString(index))
-            val config = node.fetchSemanticsNode().config
-            assertEquals("$name", Role.Button, config.getOrNull(SemanticsProperties.Role))
-            assertEquals("$name", context.getString(R.string.tuner_strum_tune_string, name), config.getOrNull(SemanticsActions.OnClick)?.label)
-        }
-        compose.onNodeWithTag(TunerTestTags.strumString(1)).performSemanticsAction(SemanticsActions.OnClick)
-        assertEquals(listOf(1), stringClicks)
-
-        shownSounding.value = 0
-        compose.waitForIdle()
-        val stop = compose.onNodeWithTag(TunerTestTags.strumString(3)).fetchSemanticsNode().config
-        assertEquals(context.getString(R.string.tuner_string_stop_tone), stop.getOrNull(SemanticsActions.OnClick)?.label)
-
-        shownState.value = ringing(StrumPhase.WAITING)
-        compose.waitForIdle()
-        compose.onNodeWithTag(TunerTestTags.strumString(1))
-            .assert(SemanticsMatcher.keyNotDefined(SemanticsActions.OnClick))
-            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))
     }
 
     /**
-     * Light and dark: the in-tune strings' markers are drawn in the "in tune" colour at the
-     * centre, the flat one's in its accent below the centre and the sharp one's above it, and a
-     * string not heard has no marker.
+     * The phone check with a synthetic strum through a fake microphone: the real screen and ViewModel with the 12th-fret
+     * button shown, no mode to switch on, then a strum of the open strings with A2 20 cents flat and G3 15 sharp: ↑ over
+     * A2, ↓ over G3, ✓ over the others, and "4 of 6 in tune" once it has rung out. The verdicts stay while the screen is
+     * turned and its theme changes: upright and on its side, light and dark (`-a strumScreens=true` saves pictures).
      */
     @Test
-    fun markersAreDrawnInTheStylesColours() {
-        show()
-        for (dark in listOf(false, true)) {
+    fun aSyntheticStrumIsMarkedOnTheRealScreen() {
+        val standard = TunerOptions(tuning = Tunings.STANDARD).stringHz
+        val off = floatArrayOf(0f, -20f, 0f, 15f, 0f, 0f)
+        val recorder = StrumOnCue(FakeStrums.strum(FakeStrums.detuned(standard, off), 3.0) + FakeStrums.quiet(1.0))
+        val saved = AppSettings(showIntonationCheck = true)
+        val settings = FakeSettingsRepository(saved)
+        val side = mutableStateOf(false)
+        compose.mainClock.autoAdvance = true
+        compose.setContent {
+            val onItsSide = side.value
+            PhoneScreen(if (onItsSide) XIAOMI_ON_ITS_SIDE else XIAOMI_UPRIGHT, SystemBars.tab(onItsSide)) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
+                    StyleBackdrop(Modifier.fillMaxSize())
+                    TunerScreen(
+                        audioRecorder = recorder,
+                        settingsRepository = settings,
+                        tonePlayer = FakeTonePlayer(),
+                        tools = ToolSwitches.ALL_ON,
+                        saved = saved,
+                    )
+                }
+            }
+        }
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_BUTTON).fetchSemanticsNodes().isNotEmpty() }
+        picture("real-1-waiting")
+        recorder.cue = true
+        val expected = listOf(StrumVerdict.IN_TUNE, StrumVerdict.FLAT, StrumVerdict.IN_TUNE, StrumVerdict.SHARP, StrumVerdict.IN_TUNE, StrumVerdict.IN_TUNE)
+        compose.waitUntil(STEP_WAIT_MS) { strings.indices.all { markVerdict(it) == expected[it] } }
+        picture("real-2-ringing")
+        // Rung out: the count in the word's place.
+        compose.waitUntil(STEP_WAIT_MS) { wordTextOrNull() == count(4, 6) }
+        for ((name, onItsSide, dark) in listOf(
+            Triple("upright-light", false, false),
+            Triple("upright-dark", false, true),
+            Triple("side-dark", true, true),
+            Triple("side-light", true, false),
+        )) {
+            side.value = onItsSide
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "${if (dark) "dark" else "light"}"
-            val image = panel.captureToImage().toPixelMap()
-            val panelBounds = panel.getBoundsInRoot()
-            fun count(index: Int, colour: Color, fromShare: Float, toShare: Float): Int {
-                val cell = compose.onNodeWithTag(TunerTestTags.strumString(index)).getBoundsInRoot()
-                val scale = image.width / (panelBounds.right - panelBounds.left).value
-                val left = ((cell.left - panelBounds.left).value * scale).toInt().coerceIn(0, image.width - 1)
-                val right = ((cell.right - panelBounds.left).value * scale).toInt().coerceIn(left + 1, image.width)
-                val top = (image.height * fromShare).toInt()
-                val bottom = (image.height * toShare).toInt()
-                val wanted = colour.toArgb()
-                var found = 0
-                for (y in top until bottom) for (x in left until right) if (near(image[x, y].toArgb(), wanted)) found++
-                return found
-            }
-            // The scale runs from 26 % to 80 % of the panel's height, its centre at 53 %.
-            if (count(0, inTune, 0.48f, 0.58f) < MARKER_PIXELS) fail("$case: no in-tune marker on E2")
-            if (count(1, accent, 0.54f, 0.80f) < MARKER_PIXELS) fail("$case: no marker below the centre on the flat A2")
-            if (count(3, accent, 0.26f, 0.52f) < MARKER_PIXELS) fail("$case: no marker above the centre on the sharp G3")
-            val stray = count(4, accent, 0.26f, 0.80f) + count(4, inTune, 0.26f, 0.80f)
-            if (stray > STRAY_PIXELS) fail("$case: $stray marker pixels on B3, which wasn't heard")
+            assertEquals(name, count(4, 6), wordText.text())
+            strings.indices.forEach { mark(it).assert(verdict(expected[it])) }
+            picture("real-3-$name")
         }
     }
 
-    private fun nl(id: Int): String {
-        val configuration = android.content.res.Configuration(context.resources.configuration)
-        configuration.setLocales(LocaleList(Locale.forLanguageTag("nl")))
-        return context.createConfigurationContext(configuration).getString(id)
+    private fun markVerdict(index: Int): StrumVerdict? =
+        compose.onAllNodesWithTag(TunerTestTags.strumMark(index), useUnmergedTree = true).fetchSemanticsNodes()
+            .firstOrNull()?.config?.getOrNull(StrumMarkVerdict)
+
+    private fun wordTextOrNull(): String? =
+        compose.onAllNodesWithTag(TunerTestTags.WORD_TEXT, useUnmergedTree = true).fetchSemanticsNodes()
+            .firstOrNull()?.config?.getOrNull(SemanticsProperties.Text)?.joinToString("") { it.text }
+
+    private fun picture(name: String) {
+        if (arguments.getString(SCREENS_ARGUMENT) != "true") return
+        val dir = arguments.getString(OUTPUT_DIR_ARGUMENT) ?: return
+        compose.waitForIdle()
+        val bitmap = compose.onPhoneScreen().captureToImage().asAndroidBitmap()
+        File(File(dir).apply { mkdirs() }, "strum-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    /** Every part is in view without scrolling, in the window, clear of each other. */
-    private fun assertAllInView(case: String, parts: List<Pair<String, SemanticsNodeInteraction>>): List<DpRect> {
+    /** Each mark the string's verdict, centred over its peg and above its face, clear of the 12th-fret button and of each other, inside the window. */
+    private fun assertMarksAbovePegs(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val bounds = parts.map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
-        for ((name, rect) in bounds) {
-            if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
-                fail("$case $name $rect is outside the window $window")
-            }
+        val button = compose.onNodeWithTag(TunerTestTags.INTONATION_BUTTON).assertIsDisplayed().getBoundsInRoot()
+        val verdicts = strum(StrumPhase.DONE).strings.map { it.verdict }
+        val marks = strings.indices.map { index ->
+            val node = mark(index).assert(verdict(verdicts[index]))
+            val rect = node.getBoundsInRoot()
+            val pegRect = peg(index).getBoundsInRoot()
+            val name = "$case: the mark over ${strings[index]} $rect"
+            if (abs((rect.left + rect.right).value / 2f - (pegRect.left + pegRect.right).value / 2f) > 1f) fail("$name isn't centred over its peg $pegRect")
+            if (rect.bottom > pegRect.top + SLACK) fail("$name reaches into its peg $pegRect")
+            if (rect.overlaps(button)) fail("$name overlaps the 12th-fret button $button")
+            if (rect.left < window.left - SLACK || rect.right > window.right + SLACK || rect.top < window.top - SLACK) fail("$name is outside the window $window")
+            rect
         }
-        for (i in bounds.indices) {
-            for (j in i + 1 until bounds.size) {
-                val (a, first) = bounds[i]
-                val (b, second) = bounds[j]
-                if (first.overlaps(second)) fail("$case $a $first overlaps $b $second")
-            }
-        }
-        return bounds.map { it.second }
+        for (i in marks.indices) for (j in i + 1 until marks.size) if (marks[i].overlaps(marks[j])) fail("$case: marks $i and $j overlap")
     }
+
+    private fun verdict(verdict: StrumVerdict) = SemanticsMatcher.expectValue(StrumMarkVerdict, verdict)
+
+    private fun count(inTune: Int, of: Int) = context.resources.getQuantityString(R.plurals.tuner_strum_count, inTune, inTune, of)
+
+    private fun androidx.compose.ui.test.SemanticsNodeInteraction.text(): String =
+        fetchSemanticsNode().config.getOrNull(SemanticsProperties.Text)?.joinToString("") { it.text }.orEmpty()
 
     private fun DpRect.overlaps(other: DpRect) =
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     companion object {
         /** Standard tuning: E2 in tune, A2 12 cents flat, D3 in tune, G3 8 sharp, B3 not heard, E4 in tune but less sure. */
-        fun ringing(phase: StrumPhase) = TunerUiState.StrumCheck(
+        fun strum(phase: StrumPhase, allInTune: Boolean = false) = TunerUiState.StrumCheck(
             tuning = Tunings.STANDARD,
             phase = phase,
-            strings = if (phase == StrumPhase.WAITING) {
-                emptyList()
+            strings = if (allInTune) {
+                List(6) { StrumString(StrumVerdict.IN_TUNE, 0f) }
             } else {
                 listOf(
                     StrumString(StrumVerdict.IN_TUNE, 1f),
@@ -362,31 +397,39 @@ class StrumCheckStylesTest {
             },
         )
 
-        /** ARGB colours within a few steps per channel: the marker's own colour, not blended with what is under it. */
-        private fun near(a: Int, b: Int): Boolean =
-            abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)) <= 6 &&
-                abs((a shr 8 and 0xFF) - (b shr 8 and 0xFF)) <= 6 &&
-                abs((a and 0xFF) - (b and 0xFF)) <= 6
+        private val LISTENING = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
+        private val DETECTED_A2 = TunerUiState.Detected(
+            mode = TunerMode.AUTO, tuning = Tunings.STANDARD, noteName = "A", octave = 2, frequencyHz = 109f, cents = -14f,
+            targetString = 1, inTune = false, hint = TunerHint.TUNE_UP,
+        )
 
-        private const val MARKER_PIXELS = 20
-        private const val STRAY_PIXELS = 4
+        /** ARGB colours within a few steps per channel. */
+        private fun near(a: Int, b: Int): Boolean =
+            abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)) <= 12 &&
+                abs((a shr 8 and 0xFF) - (b shr 8 and 0xFF)) <= 12 &&
+                abs((a and 0xFF) - (b and 0xFF)) <= 12
+
+        private const val MARK_PIXELS = 12
 
         private const val WINDOW = "window"
-        private const val TEST_TIMEOUT_SECONDS = 15L
+        private const val TEST_TIMEOUT_SECONDS = 30L
+        private const val STEP_WAIT_MS = 8_000L
+        private const val SCREENS_ARGUMENT = "strumScreens"
+        private const val OUTPUT_DIR_ARGUMENT = "additionalTestOutputDir"
 
         /**
          * A short narrow phone (360 x 720 dp with navigation buttons: 650 dp without the status bar and
-         * the buttons; a Galaxy S26 has more): upright less the app's navigation bar (at most 80 dp), on its side less the 80 dp rail (it stays in focus mode too).
+         * the buttons): upright less the app's navigation bar (at most 80 dp), on its side less the 80 dp rail.
          */
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
 
         /** The owner's Xiaomi 12X upright (393 x 873 dp) without the status bar, the button bar and the app's navigation bar. */
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
+
+        /** The Xiaomi on its side, less the app's 80 dp rail (the status bar and the gesture bar are the bars'). */
+        private val XIAOMI_ON_ITS_SIDE = DpSize(793.dp, 393.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
-
-        /** Android's smallest touch target. */
-        private val MIN_TOUCH = 48.dp
     }
 }

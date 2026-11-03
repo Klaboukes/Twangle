@@ -78,7 +78,6 @@ class RulerTest {
                         showSignalBars = signalBars,
                         // On its side the two panes, or focus mode's full-screen ruler and lens.
                         focusMode = focus,
-                        onStrumCheckChange = {},
                         onFocusModeChange = {},
                     )
                 }
@@ -264,10 +263,10 @@ class RulerTest {
         assertTrue(bars == compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot())
     }
 
-    /** A tool's panel takes the ruler's and the meter's place; the signal bars go back to the chip's row. */
+    /** The 12th-fret check's panel takes the ruler's and the meter's place; the signal bars go back to the chip's row. */
     @Test
     fun aToolsPanelHasNoRuler() {
-        show(TunerUiState.StrumCheck(Tunings.STANDARD), signalBars = true)
+        show(TunerUiState.IntonationCheck(Tunings.STANDARD), signalBars = true)
         ruler.assertDoesNotExist()
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
         val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
