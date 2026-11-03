@@ -16,34 +16,19 @@ import androidx.compose.ui.graphics.Color
 import io.github.klaboukes.twangle.core.designsystem.LocalScreenTint
 import io.github.klaboukes.twangle.core.designsystem.ScreenTint
 import io.github.klaboukes.twangle.core.designsystem.ScreenTone
+import io.github.klaboukes.twangle.core.designsystem.lens.meterInTuneExit
+import io.github.klaboukes.twangle.core.designsystem.lens.readingToneAmount
+import io.github.klaboukes.twangle.core.designsystem.lens.readingToneShare
 import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import kotlin.math.abs
-
-/**
- * How far the reading's tone has eased from amber (far off, 0) toward green (in tune, 1) for a note [cents]
- * off with the in-tune [window] (docs/architecture/v2-plan.md, *The lens*, the reading's tone):
- * `0.7 · clamp(1 − (|cents| − window) / 14)`, so amber from about 19 cents out and never quite green until
- * the tuner says in tune, which then takes it the rest of the way. The ruler's pointer takes it (Phase 71);
- * the lens's border, the word and the screen's tint take the same ([LiveTone]). NaN (no note) gives 0.
- */
-fun readingToneAmount(cents: Float, window: Float): Float {
-    if (cents.isNaN()) return 0f
-    return TONE_NEAR_SHARE * (1f - (abs(cents) - window) / TONE_EASE_CENTS).coerceIn(0f, 1f)
-}
-
-/** The most of the way to green a note gets before it is in tune. */
-private const val TONE_NEAR_SHARE = 0.7f
-
-/** Over how many cents outside the window the tone eases from amber. */
-private const val TONE_EASE_CENTS = 14f
 
 /**
  * The reading's tone as it is now, shared by the lens's border and glow, the word under it and the screen's
  * tint (Phase 71), so the three never disagree: amber eased toward green as the note nears the in-tune zone
- * ([readingToneAmount]), green while the tuner says in tune ([tuned], eased), and muted without a note
+ * ([readingToneAmount]), green while the tuner says in tune ([tuned], eased, letting go as the reading leaves:
+ * [readingToneShare]), and muted without a note
  * ([presence] fading to 0 as the string dies, so the screen's tint goes with it). Read in the draw phase:
  * reading it recomposes nothing and allocates nothing. Made by [rememberLiveTone].
  */
@@ -53,6 +38,7 @@ class LiveTone internal constructor(
     private val restFadeAmount: State<Float>,
     private val tunedAmount: State<Float>,
     private val window: State<Float>,
+    private val exit: State<Float>,
     private val colours: State<ToneColours>,
     hasReadingState: State<Boolean>,
 ) : ScreenTone {
@@ -77,7 +63,7 @@ class LiveTone internal constructor(
             val now = cents.value()
             if (!now.isNaN()) heldCents = now
             val shown = colours.value
-            return mixColour(mixColour(shown.farOff, shown.green, readingToneAmount(heldCents, window.value)), shown.green, tunedAmount.value)
+            return mixColour(shown.farOff, shown.green, readingToneShare(heldCents, window.value, exit.value, tunedAmount.value))
         }
 
     /** The tone as the lens and the word show it: [heard], muted as the note fades to rest. */
@@ -118,10 +104,11 @@ fun rememberLiveTone(
         label = "toneTuned",
     )
     val window = rememberUpdatedState(meterInTuneWindow(precision))
+    val exit = rememberUpdatedState(meterInTuneExit(precision))
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     val colours = rememberUpdatedState(ToneColours(muted = scheme.onSurfaceVariant, farOff = tokens.farOff, green = tokens.inTune))
-    return remember { LiveTone(currentCents, restFade, tuned, window, colours, hasReading) }
+    return remember { LiveTone(currentCents, restFade, tuned, window, exit, colours, hasReading) }
 }
 
 /**

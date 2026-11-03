@@ -21,6 +21,8 @@ import io.github.klaboukes.twangle.core.designsystem.dial.STROBE_ROWS
 import io.github.klaboukes.twangle.core.designsystem.dial.drawStrobeBand
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlin.math.abs
 import kotlin.math.floor
 
 /**
@@ -64,13 +66,19 @@ internal fun BoxScope.StrobeLook(reading: LensReading) {
 
 /**
  * Steps [drift] on every frame while there is a reading, from the reading's cents, and bumps [frames] when the
- * stripes moved; waits, without frames, while there is none.
+ * stripes moved; waits, without frames, while there is none, and while the stripes stand still on the note
+ * (Phase 72: the Settings card holding still in tune with Android's "Remove animations", and the tuner held in tune,
+ * asked for every frame and drew none).
  */
 private suspend fun runStrobe(reading: LensReading, drift: StrobeDrift, frames: MutableIntState) {
     snapshotFlow { reading.presence > 0f }.collectLatest { hearing ->
         if (!hearing) return@collectLatest
         var last = 0L
         while (true) {
+            if (drift.speed == 0f && abs(reading.cents) <= StrobeMotion.STILL_CENTS) {
+                snapshotFlow { reading.cents }.first { abs(it) > StrobeMotion.STILL_CENTS }
+                last = 0L
+            }
             withInfiniteAnimationFrameNanos { now ->
                 val seconds = if (last == 0L) 0f else (now - last) / NANOS_PER_SECOND
                 last = now

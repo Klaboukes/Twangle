@@ -40,11 +40,12 @@ import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
+import kotlin.math.roundToInt
 
 /**
  * A titled grid of look cards, three to a row (two from 1.3× system font on a small window,
- * [lookCardsPerRow]), which 1.1's style, wave look and meter look pickers shared. Nothing shows it since
- * Phase 67 took those pickers out; it is kept, with [LookDemo], for the lens's Meter cards (Phase 72). Each card shows [preview] above its [label], on the plain background colour (no art); with [edgeToEdge] the
+ * [lookCardsPerRow]), which 1.1's style, wave look and meter look pickers shared and the lens's Meter cards use
+ * since Phase 72 ([MeterPicker]). Each card shows [preview] above its [label], on the plain background colour (no art); with [edgeToEdge] the
  * preview runs across the card's whole width (the meter and wave looks, Phase 65: their pictures are drawn on the
  * card's own ground and are small enough as it is), else 6 dp in from its sides (the style cards' framed pictures). The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
  * smaller rather than breaking in the middle of a word. The cards form one selectable group for
@@ -53,8 +54,8 @@ import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
  * [demo] is advanced on every animation frame while some of the cards are on screen; the previews
  * read what it moves in their layer and draw phases only, so nothing is recomposed. It is an
  * "infinite" animation, like the tuner's wave view: UI tests skip these. With Android's "Remove
- * animations" ([rememberAnimationsOff]) the cards hold still instead, on the loop's first moment
- * ([STILL_SECONDS] in, so a wave has its shape), and follow the setting if it changes.
+ * animations" ([rememberAnimationsOff]) the cards hold still instead, on the demo's still moment
+ * ([LookDemo.stillSeconds] in), and follow the setting if it changes.
  */
 @Composable
 internal fun <T> LookCardGrid(
@@ -89,7 +90,10 @@ internal fun <T> LookCardGrid(
         Column(
             modifier = Modifier
                 .selectableGroup()
-                .onVisibilityChanged(minFractionVisible = MIN_VISIBLE) { onScreen = it },
+                .onVisibilityChanged(minFractionVisible = MIN_VISIBLE) {
+                    onScreen = it
+                    demo.onScreenChanged(it)
+                },
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             looks.chunked(perRow).forEach { row ->
@@ -116,6 +120,12 @@ internal fun <T> LookCardGrid(
 internal interface LookDemo {
     /** Moves the loop on by [seconds] (at most [MAX_STEP_SECONDS] are used) to the frame at [frameNanos]. */
     fun advance(seconds: Float, frameNanos: Long)
+
+    /** How far into its loop a still card shows ([holdStill]). */
+    val stillSeconds: Float get() = STILL_SECONDS
+
+    /** Told whether some of the cards are on screen, so a picture with a frame loop of its own can rest while none is. */
+    fun onScreenChanged(onScreen: Boolean) {}
 }
 
 @Composable
@@ -181,15 +191,16 @@ private fun LookCard(
 private val CARD_PADDING = 8.dp
 private val CARD_PADDING_SIDE = 6.dp
 
-/** Plays [demo]'s first [STILL_SECONDS] at once, in the steps a smooth frame rate would take. */
+/** Plays [demo]'s first [LookDemo.stillSeconds] at once, in the steps a smooth frame rate would take. */
 internal fun holdStill(demo: LookDemo) {
-    repeat(STILL_STEPS) { step -> demo.advance(STILL_SECONDS / STILL_STEPS, (step + 1) * STILL_STEP_NANOS) }
+    val steps = (demo.stillSeconds * STILL_STEPS_PER_SECOND).roundToInt().coerceAtLeast(1)
+    repeat(steps) { step -> demo.advance(demo.stillSeconds / steps, (step + 1) * STILL_STEP_NANOS) }
 }
 
-/** How far into its loop a still card shows: still flat, with the wave drawn and the needle at rest. */
+/** How far into its loop a still card shows unless its demo says otherwise: still flat, with the wave drawn and the needle at rest. */
 internal const val STILL_SECONDS = 1f
-private const val STILL_STEPS = 60
-private const val STILL_STEP_NANOS = 1_000_000_000L / STILL_STEPS
+private const val STILL_STEPS_PER_SECOND = 60
+private const val STILL_STEP_NANOS = 1_000_000_000L / STILL_STEPS_PER_SECOND
 
 /** A long pause (e.g. coming back to the app) counts as one short step in a preview loop. */
 internal const val MAX_STEP_SECONDS = 0.1f

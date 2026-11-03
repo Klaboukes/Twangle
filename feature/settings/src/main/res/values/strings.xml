@@ -8,7 +8,7 @@
     <string name="settings_group_pitch">Pitch and notes</string>
     <!-- Settings group heading over the style, light or dark, and wallpaper colours. -->
     <string name="settings_group_look">Look</string>
-    <!-- Settings group heading over what the tuner screen shows: the meter, its in-tune glow, what is below the note, focus mode. -->
+    <!-- Settings group heading over what the tuner screen shows: the meter's look, focus mode. -->
     <string name="settings_group_tuner_screen">Tuner screen</string>
     <!-- Settings group heading over what happens while tuning: keep screen on, vibration, the tune up/down hint, signal bars. -->
     <string name="settings_group_while_tuning">While tuning</string>
@@ -63,6 +63,15 @@
     <string name="settings_dynamic_color_title">Wallpaper colours</string>
     <!-- The line under the Wallpaper colours switch. -->
     <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
+
+    <!-- Meter: the title over three picture cards that choose what the tuner draws in its box under the note names (in the Tuner screen group). -->
+    <string name="settings_meter_title">Meter</string>
+    <!-- Meter look, the name under its card: the last seconds of the note drawn as a line falling down the box, the newest reading at the top as a dot. Shown on one line. -->
+    <string name="settings_meter_trail">Trail</string>
+    <!-- Meter look, the name under its card: a fan of little lights that opens from the centre toward the note, like an LED pedal tuner. Shown on one line. -->
+    <string name="settings_meter_light_arc">Light arc</string>
+    <!-- Meter look, the name under its card: bands of stripes that drift while out of tune and stand still in tune, as on a strobe tuner. Shown on one line. -->
+    <string name="settings_meter_strobe">Strobe</string>
 
     <!-- Switch title: focus mode, the tuner sideways full screen with one big meter. -->
     <string name="settings_focus_mode_title">Focus mode</string>

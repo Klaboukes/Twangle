@@ -156,17 +156,38 @@ fun MacrobenchmarkScope.usePractice() {
 
 /**
  * Opens the picker sheet from its chip and taps its Any note switch, which closes the sheet. The sheet
- * is a window of its own, whose parts UI Automator can't find by tag: the switch is the one there.
+ * is a window of its own, whose parts UI Automator can't find by tag, so the switch is found as its last
+ * row, as `MeterFramesBenchmark` finds it (Phase 72): the lowest checkable item, once the sheet's pills and
+ * tunings have joined what was checkable before (the pegs, in guitar mode). Compose shows the row as a
+ * checkable View, not an android.widget.Switch (since Phase 70). The sheet has closed once nothing checkable
+ * is left where the switch was (the pegs come back in guitar mode, higher up).
  */
 private fun MacrobenchmarkScope.toggleAnyNote() {
+    val before = device.findObjects(By.checkable(true)).size
     clickTag(PICKER_CHIP_TAG)
-    val switch = device.wait(Until.findObject(By.clazz(SWITCH_CLASS)), TIMEOUT_MS) ?: error("No Any note switch in the picker sheet")
+    val switch = waitUntil("The picker sheet didn't open") {
+        runCatching { device.findObjects(By.checkable(true)).takeIf { it.size > before }?.maxByOrNull { it.visibleBounds.bottom } }.getOrNull()
+    }
+    val place = switch.visibleBounds
     switch.click()
-    check(device.wait(Until.gone(By.clazz(SWITCH_CLASS)), TIMEOUT_MS)) { "The picker sheet didn't close" }
+    waitUntil("The picker sheet didn't close") {
+        // An item can go stale while it is read (the sheet closing under it): it is no longer there.
+        Unit.takeIf { device.findObjects(By.checkable(true)).none { runCatching { it.visibleBounds == place }.getOrDefault(false) } }
+    }
     Thread.sleep(TAP_SETTLE_MS)
 }
 
-private const val SWITCH_CLASS = "android.widget.Switch"
+/** Checks [find] every [POLL_MS] until it gives something, for at most [TIMEOUT_MS]; fails with [failure] after that. */
+private fun <T : Any> waitUntil(failure: String, find: () -> T?): T {
+    val deadline = System.currentTimeMillis() + TIMEOUT_MS
+    while (true) {
+        find()?.let { return it }
+        check(System.currentTimeMillis() < deadline) { failure }
+        Thread.sleep(POLL_MS)
+    }
+}
+
+private const val POLL_MS = 100L
 
 /** Opens the Chords or Scales name button's panel and picks the root, chord type or scale [tag] names, which closes the panel. */
 private fun MacrobenchmarkScope.pickInPanel(tag: String) {

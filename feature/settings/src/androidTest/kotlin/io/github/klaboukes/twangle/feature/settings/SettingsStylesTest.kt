@@ -46,7 +46,8 @@ import org.junit.runner.RunWith
  * upright (light) and on its side (dark), every title, choice and card name can be scrolled to and
  * is then wholly shown; About's titles, version and credits too. TalkBack, light and dark, hears every
  * light-or-dark choice as a radio button with its name and which one is picked, and the back arrow by
- * name. (1.1's meter and wave cards went in Phase 67; the lens's Meter cards come in Phase 72.) [SettingsContentTest] covers each behaviour.
+ * name. The lens's Meter cards (Phase 72) and their names are among the texts checked, every language's too
+ * (`@EveryLanguage`, overnight). [SettingsContentTest] covers each behaviour.
  */
 @RunWith(AndroidJUnit4::class)
 class SettingsStylesTest {
@@ -91,6 +92,7 @@ class SettingsStylesTest {
                             onVibrateInTuneChange = {},
                             onStringTickOffChange = {},
                             onShowSignalBarsChange = {},
+                            onLensLookChange = {},
                             onFocusModeChange = {},
                             onLeftHandedChange = {},
                             modifier = Modifier.testTag(WINDOW),
@@ -160,6 +162,10 @@ class SettingsStylesTest {
             R.string.settings_theme_light,
             R.string.settings_theme_dark,
             R.string.settings_group_tuner_screen,
+            R.string.settings_meter_title,
+            R.string.settings_meter_trail,
+            R.string.settings_meter_light_arc,
+            R.string.settings_meter_strobe,
             R.string.settings_group_while_tuning,
             R.string.settings_keep_screen_on_title,
             R.string.settings_vibrate_in_tune_title,

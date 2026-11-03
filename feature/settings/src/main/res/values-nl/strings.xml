@@ -39,6 +39,11 @@
     <string name="settings_dynamic_color_title">Achtergrondkleuren</string>
     <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
 
+    <string name="settings_meter_title">Meter</string>
+    <string name="settings_meter_trail">Toonlijn</string>
+    <string name="settings_meter_light_arc">Lichtboog</string>
+    <string name="settings_meter_strobe">Stroboscoop</string>
+
     <string name="settings_focus_mode_title">Focusmodus</string>
     <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen op afstand</string>
     <string name="settings_left_handed_title">Linkshandig</string>

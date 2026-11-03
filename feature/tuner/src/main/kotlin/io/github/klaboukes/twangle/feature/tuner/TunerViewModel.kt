@@ -148,15 +148,18 @@ class TunerViewModel(
     /**
      * The last few seconds of the tuner's readings, for the lens's trail (2.0, Phase 71; 1.1's pitch trail tool):
      * written on the DSP thread with every reading while [tools] has the pitch trail, read in the draw phase
-     * without recomposing (see [PitchHistory]). Stays empty while the switch is off (the trail look's brake,
-     * which Phase 72 wires to the Light arc).
+     * without recomposing (see [PitchHistory]). Stays empty while the switch is off (the trail look's brake: the
+     * lens then shows the Light arc, [lensLook]).
      */
     val pitchHistory: PitchHistory get() = trailFeed.history
 
-    /** What the tuner's lens draws inside it (a saved setting; Phase 71 draws the trail for every look, 72 the other two). */
+    /**
+     * What the tuner's lens draws inside it: the saved look, but the Light arc for a saved or defaulted trail while
+     * [tools] has the trail's brake on ([ToolSwitches.shownLensLook], Phase 72).
+     */
     val lensLook: StateFlow<LensLook> = settingsRepository.settings
-        .map { it.lensLook }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.lensLook)
+        .map { tools.shownLensLook(it.lensLook) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tools.shownLensLook(saved.lensLook))
 
     /**
      * What the tuner hears now, for the signal bars' figures: updated about [SIGNAL_UPDATES_PER_SECOND]

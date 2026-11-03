@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import kotlinx.coroutines.flow.SharingStarted
@@ -58,6 +59,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setShowSignalBars(enabled: Boolean) {
         viewModelScope.launch { repository.setShowSignalBars(enabled) }
+    }
+
+    fun setLensLook(look: LensLook) {
+        viewModelScope.launch { repository.setLensLook(look) }
     }
 
     fun setFocusMode(enabled: Boolean) {

@@ -64,12 +64,14 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
+import io.github.klaboukes.twangle.feature.settings.components.MeterPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 
@@ -83,7 +85,8 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
  * follows, for what lives outside them (the home-screen widget).
  *
  * [intonationCheck] is the build's switch for the 12th-fret check (`ToolSwitches.intonationCheck`): off, the
- * While tuning group has no switch for its way in on the tuner screen.
+ * While tuning group has no switch for its way in on the tuner screen. [trailLook] is the trail look's
+ * (`ToolSwitches.pitchTrail`): off, Meter offers the Light arc and the strobe only, a saved trail showing as the Light arc.
  */
 @Composable
 fun SettingsScreen(
@@ -95,6 +98,7 @@ fun SettingsScreen(
     onLanguageChange: () -> Unit = {},
     onBack: (() -> Unit)? = null,
     intonationCheck: Boolean = true,
+    trailLook: Boolean = true,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -115,9 +119,11 @@ fun SettingsScreen(
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onStringTickOffChange = viewModel::setStringTickOff,
         onShowSignalBarsChange = viewModel::setShowSignalBars,
+        onLensLookChange = viewModel::setLensLook,
         onFocusModeChange = viewModel::setFocusMode,
         onLeftHandedChange = viewModel::setLeftHanded,
         onShowIntonationCheckChange = if (intonationCheck) viewModel::setShowIntonationCheck else null,
+        trailLook = trailLook,
         modifier = modifier,
         onBack = onBack,
         languages = languageTags,
@@ -138,7 +144,8 @@ fun SettingsScreen(
  * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
  * [onBack] the top bar has a back arrow, as About's. The 12th-fret check's switch (its way in on the tuner screen,
- * 2.0 Phase 71) shows only with [onShowIntonationCheckChange], which a build without the check leaves out.
+ * 2.0 Phase 71) shows only with [onShowIntonationCheckChange], which a build without the check leaves out. Meter's
+ * cards (2.0 Phase 72) are the trail, the Light arc and the strobe, or the last two in a build without [trailLook].
  */
 @Composable
 fun SettingsContent(
@@ -154,10 +161,12 @@ fun SettingsContent(
     onVibrateInTuneChange: (Boolean) -> Unit,
     onStringTickOffChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
+    onLensLookChange: (LensLook) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onShowIntonationCheckChange: ((Boolean) -> Unit)? = null,
+    trailLook: Boolean = true,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
@@ -182,9 +191,11 @@ fun SettingsContent(
                 onVibrateInTuneChange = onVibrateInTuneChange,
                 onStringTickOffChange = onStringTickOffChange,
                 onShowSignalBarsChange = onShowSignalBarsChange,
+                onLensLookChange = onLensLookChange,
                 onFocusModeChange = onFocusModeChange,
                 onLeftHandedChange = onLeftHandedChange,
                 onShowIntonationCheckChange = onShowIntonationCheckChange,
+                trailLook = trailLook,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
         }
@@ -306,7 +317,7 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
  * Every setting, in five headed groups: Pitch and notes (which note it is and what counts as in
  * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
  * wallpaper colours, then light or dark; the style picker went with 1.1's six styles in Phase 67), Tuner
- * screen (the meter's look and in-tune effect, what shows below the note and the layout on its side), While tuning (what the tuner does while
+ * screen (the lens's look, Meter, and focus mode), While tuning (what the tuner does while
  * it listens) and App (the app's language and one row that opens the About page: version,
  * promise, privacy and licences, so those long texts don't crowd the settings). A line divides two
  * subjects; a setting that belongs to the one above stays with it. Rows, including the card grids, keep
@@ -329,9 +340,11 @@ private fun SettingsGroups(
     onVibrateInTuneChange: (Boolean) -> Unit,
     onStringTickOffChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
+    onLensLookChange: (LensLook) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     onShowIntonationCheckChange: ((Boolean) -> Unit)?,
+    trailLook: Boolean,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -393,7 +406,14 @@ private fun SettingsGroups(
         }
         SettingsGroup(title = stringResource(R.string.settings_group_tuner_screen)) {
             Rows {
-                // 1.1's meter look, Calm or Bold glow, display and wave look went in Phase 67; the lens's Meter comes in 72.
+                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
+                MeterPicker(
+                    looks = LensLook.offered(trailLook),
+                    selected = LensLook.shown(settings.lensLook, trailLook),
+                    onSelect = onLensLookChange,
+                    precision = settings.inTunePrecision,
+                )
+                HorizontalDivider()
                 SwitchSetting(
                     title = stringResource(R.string.settings_focus_mode_title),
                     summary = stringResource(R.string.settings_focus_mode_summary),
@@ -555,6 +575,7 @@ private fun SettingsContentPreview() {
             onVibrateInTuneChange = {},
             onStringTickOffChange = {},
             onShowSignalBarsChange = {},
+            onLensLookChange = {},
             onFocusModeChange = {},
             onLeftHandedChange = {},
         )

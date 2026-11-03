@@ -41,6 +41,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.lens.meterInTuneExit
+import io.github.klaboukes.twangle.core.designsystem.lens.readingToneAmount
+import io.github.klaboukes.twangle.core.designsystem.lens.readingToneShare
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
@@ -59,7 +62,8 @@ import kotlinx.coroutines.launch
  * muted, each growing and shrinking with its distance to the pointer ([rulerEmphasis]), so nothing jumps as
  * the note passes between two. The names are [names] (12, by pitch class: the notation setting's, [rulerNames]).
  * The pointer takes the reading's tone, amber far off easing toward green, green while [inTune]
- * ([readingToneAmount], with the in-tune window of [precision]).
+ * ([readingToneAmount], with the in-tune window of [precision]; the green letting go as the reading leaves,
+ * [readingToneShare]).
  *
  * [pitch] is where the reading sits on the scale ([rulerPosition]: the target note plus its cents), NaN
  * without a note. It is read only while drawing, through a spring, so readings slide the scale without
@@ -118,6 +122,7 @@ fun Ruler(
         label = "rulerTuned",
     )
     val window = meterInTuneWindow(precision)
+    val exit = meterInTuneExit(precision)
 
     val colors = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
@@ -190,7 +195,7 @@ fun Ruler(
                             if (emphasis < 1f) drawName(small[index], x, baseline, textPx / smallPx, color, alpha * (1f - emphasis))
                         }
                         val cents = currentCents()
-                        val tone = mix(mix(farOff, green, readingToneAmount(cents, window)), green, tuned.value)
+                        val tone = mix(farOff, green, readingToneShare(cents, window, exit, tuned.value))
                         drawPath(pointer, mix(muted, tone, shown))
                     }
                 },

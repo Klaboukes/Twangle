@@ -170,4 +170,21 @@ class PitchTrailFeedTest {
         advanceTimeBy(100)
         assertEquals(LensLook.STROBE, vm.lensLook.value)
     }
+
+    @Test
+    fun `with the trail's brake on, a saved or defaulted trail shows as the Light arc`() = runTest(dispatcher) {
+        val settings = FakeSettingsRepository()
+        val tools = ToolSwitches.ALL_ON.copy(pitchTrail = false)
+        val vm = TunerViewModel(FakeAudioRecorder.silence(), settings, FakeTonePlayer(), StandardTestDispatcher(testScheduler), tools = tools)
+        assertEquals("before the settings come", LensLook.LIGHT_ARC, vm.lensLook.value)
+        backgroundScope.launch { vm.lensLook.collect {} }
+        advanceTimeBy(100)
+        assertEquals("the default", LensLook.LIGHT_ARC, vm.lensLook.value)
+        settings.setLensLook(LensLook.STROBE)
+        advanceTimeBy(100)
+        assertEquals(LensLook.STROBE, vm.lensLook.value)
+        settings.setLensLook(LensLook.TRAIL)
+        advanceTimeBy(100)
+        assertEquals("a saved trail", LensLook.LIGHT_ARC, vm.lensLook.value)
+    }
 }

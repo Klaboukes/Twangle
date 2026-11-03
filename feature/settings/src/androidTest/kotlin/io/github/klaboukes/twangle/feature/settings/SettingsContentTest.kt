@@ -44,6 +44,7 @@ import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
@@ -56,6 +57,7 @@ import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.RATE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.WEBSITE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
+import io.github.klaboukes.twangle.feature.settings.components.lensLookCardTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import org.junit.Assert.assertEquals
@@ -91,6 +93,7 @@ class SettingsContentTest {
     private val intonationCheckChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val focusModeChanges = mutableListOf<Boolean>()
+    private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
@@ -123,6 +126,7 @@ class SettingsContentTest {
         appLanguage: String? = null,
         settingsBack: Boolean = false,
         intonationCheck: Boolean = true,
+        trailLook: Boolean = true,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
@@ -150,10 +154,12 @@ class SettingsContentTest {
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onStringTickOffChange = { tickOffChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
+                        onLensLookChange = { lensLookChanges += it },
                         onFocusModeChange = { focusModeChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         onShowIntonationCheckChange = if (intonationCheck) ({ intonationCheckChanges += it }) else null,
+                        trailLook = trailLook,
                         dynamicColorAvailable = dynamicColorAvailable,
                         languages = languages,
                         appLanguage = appLanguage,
@@ -488,8 +494,8 @@ class SettingsContentTest {
      * group holds focus mode alone.
      */
     @Test
-    fun theLooksAndTheirCardsAreGone() {
-        show(AppSettings())
+    fun meterOffersTheThreeLooksAsCardsWithTheSavedOnePicked() {
+        show(AppSettings(lensLook = LensLook.STROBE))
         val lookCards = SemanticsMatcher("a 1.1 look card") {
             val tag = it.config.getOrElseNullable(SemanticsProperties.TestTag) { null }.orEmpty()
             tag.startsWith("meter_look_card_") || tag.startsWith("wave_look_card_")
@@ -497,12 +503,48 @@ class SettingsContentTest {
         compose.onAllNodes(lookCards, useUnmergedTree = true).assertCountEquals(0)
         val top = { text: Int -> compose.onNodeWithText(context.getString(text)).fetchSemanticsNode().positionInRoot.y }
         val group = top(R.string.settings_group_tuner_screen)
+        val meter = top(R.string.settings_meter_title)
         val focus = top(R.string.settings_focus_mode_title)
-        assertTrue("focus mode under its group", focus > group)
-        assertTrue("and nothing else but its line before While tuning", top(R.string.settings_group_while_tuning) > focus)
-        val radios = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
-        val between = compose.onAllNodes(radios).fetchSemanticsNodes().map { it.positionInRoot.y }.filter { it > group && it < focus }
-        assertEquals("no choices between the group's heading and focus mode", emptyList<Float>(), between)
+        assertTrue("Meter under the Tuner screen heading, focus mode under it", meter > group && focus > meter)
+        val names = mapOf(
+            LensLook.TRAIL to R.string.settings_meter_trail,
+            LensLook.LIGHT_ARC to R.string.settings_meter_light_arc,
+            LensLook.STROBE to R.string.settings_meter_strobe,
+        )
+        val lefts = LensLook.entries.map { look ->
+            // Not scrolled to, so every place is measured on the same page.
+            val card = compose.onNodeWithTag(lensLookCardTag(look))
+            // TalkBack: a radio button named after its look, the saved one picked.
+            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            card.assert(hasText(context.getString(names.getValue(look))))
+            if (look == LensLook.STROBE) card.assertIsSelected() else card.assertIsNotSelected()
+            // Unclipped: a card below the fold has no bounds on screen.
+            val node = card.fetchSemanticsNode()
+            val top = node.positionInRoot.y
+            val bottom = top + node.size.height
+            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and focus mode ($focus)", top > meter && bottom < focus)
+            node.positionInRoot.x
+        }
+        assertEquals("Trail · Light arc · Strobe, in one row", lefts.sorted(), lefts)
+    }
+
+    @Test
+    fun pickingAMeterCardSavesItsLook() {
+        show(AppSettings())
+        compose.onNodeWithTag(lensLookCardTag(LensLook.TRAIL)).performScrollTo().assertIsSelected()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.LIGHT_ARC)).performClick()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.STROBE)).performClick()
+        assertEquals(listOf(LensLook.LIGHT_ARC, LensLook.STROBE), lensLookChanges)
+    }
+
+    /** The trail look's brake (`ToolSwitches.pitchTrail` off in a build): no trail card, and a saved trail shows as the Light arc. */
+    @Test
+    fun withoutTheTrailMeterOffersTheLightArcAndTheStrobe() {
+        show(AppSettings(lensLook = LensLook.TRAIL), trailLook = false)
+        compose.onNodeWithTag(lensLookCardTag(LensLook.TRAIL)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.settings_meter_trail)).assertDoesNotExist()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.LIGHT_ARC)).performScrollTo().assertIsSelected()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.STROBE)).assertIsNotSelected()
     }
 
     @Test

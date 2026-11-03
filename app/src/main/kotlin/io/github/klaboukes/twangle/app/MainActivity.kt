@@ -352,6 +352,8 @@ class MainActivity : AppCompatActivity() {
                                     onBack = { picked = settingsOpener.screen },
                                     // Without the check in this build, no switch for its way in either.
                                     intonationCheck = tools.intonationCheck,
+                                    // Without the trail in this build, Meter offers the Light arc and the strobe.
+                                    trailLook = tools.pitchTrail,
                                 )
                                 Screen.ABOUT -> AboutScreen(
                                     appVersion = BuildConfig.VERSION_NAME,

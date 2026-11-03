@@ -82,6 +82,19 @@ enum class LensLook {
 
     companion object {
         val DEFAULT = TRAIL
+
+        /**
+         * The looks Settings' Meter offers, in their order: all three, or without the trail in a build whose [trail]
+         * is braked off (`ToolSwitches.pitchTrail`, Phase 72).
+         */
+        fun offered(trail: Boolean): List<LensLook> = if (trail) entries else entries - TRAIL
+
+        /**
+         * The look the lens draws, and Settings' Meter shows picked, for the [saved] one: itself, but the Light arc
+         * for the trail in a build without it ([trail] off; the Light arc is then the default). The saved value is
+         * left as it is, so a build with the trail back shows it again.
+         */
+        fun shown(saved: LensLook, trail: Boolean): LensLook = if (saved == TRAIL && !trail) LIGHT_ARC else saved
     }
 }
 

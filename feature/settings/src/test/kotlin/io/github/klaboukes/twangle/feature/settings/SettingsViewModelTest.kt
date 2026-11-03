@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,5 +95,13 @@ class SettingsViewModelTest {
         assertEquals(true, repository.current.showSignalBars)
         assertEquals(true, repository.current.focusMode)
         assertEquals(true, repository.current.leftHanded)
+    }
+
+    @Test
+    fun `saves the meter's look`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setLensLook(LensLook.STROBE)
+        runCurrent()
+        assertEquals(LensLook.STROBE, repository.current.lensLook)
     }
 }
