@@ -144,11 +144,12 @@ class WatchPitchPipeline(
         const val HOLD_SECONDS = 0.6f
 
         /**
-         * How long after a note comes in tune the wrist tap's buzz may still be heard: the tap is
-         * played a frame or two of the screen after the reading (up to some 60 ms with the motor's
-         * start), drives the motor for [TAP_MILLIS] and rings out for some 20 ms more. About 320 ms
-         * of frames with the window.
+         * How long after a note comes in tune the wrist tap's buzz may still be heard: the screen
+         * plays the tap a frame or a few after the reading (up to 60 ms), the microphone's frames
+         * hear the motor 45–90 ms after that, it drives the motor for [TAP_MILLIS] and rings out
+         * for some 50 ms more. Measured on the Galaxy Watch 5 (2026-11-03): the buzz was over by
+         * 280 ms after the tap was asked for. About 450 ms of frames with the window.
          */
-        const val TAP_SECONDS = (60 + TAP_MILLIS + 20) / 1000f
+        const val TAP_SECONDS = (60 + 90 + TAP_MILLIS + 60) / 1000f
     }
 }

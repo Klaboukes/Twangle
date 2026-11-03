@@ -152,13 +152,15 @@ class WatchPitchPipelineTest {
      * The microphone hears the watch's own motor. A watch's vibration motor (a linear resonant
      * actuator) rings at its resonance, about 150–250 Hz; the tap drives it for [TAP_MILLIS], then
      * it dies away; the microphone sits in the same case, so it picks the buzz up through the body.
-     * Modelled as a sine at [hz] at full strength for [TAP_MILLIS], then fading (8 ms decay) for
-     * 40 ms more, its peak [level] times the note's peak.
+     * Modelled as a sine at [hz] at full strength for [TAP_MILLIS], then fading (7 ms decay) for
+     * 50 ms more, its peak [level] times the note's peak: as the Galaxy Watch 5 heard its own tap
+     * (2026-11-03, lying on a table), some 250 times the quiet room, halving every 5 ms after the
+     * drive and down to the room in about 45 ms.
      */
     private fun motorBuzz(hz: Float, level: Float, notePeak: Float): FloatArray {
         val drive = (48_000 * TAP_MILLIS / 1000).toInt()
-        val sine = TestSignals.sine(hz, length = drive + 48_000 * 40 / 1000, amplitude = level * notePeak)
-        return FloatArray(sine.size) { i -> if (i < drive) sine[i] else sine[i] * exp(-(i - drive) / (48_000 * 0.008)).toFloat() }
+        val sine = TestSignals.sine(hz, length = drive + 48_000 * 50 / 1000, amplitude = level * notePeak)
+        return FloatArray(sine.size) { i -> if (i < drive) sine[i] else sine[i] * exp(-(i - drive) / (48_000 * 0.007)).toFloat() }
     }
 
     /**
@@ -241,14 +243,14 @@ class WatchPitchPipelineTest {
     fun `the wrist tap leaves the reading steady on every string`() {
         // Each string of a guitar in standard tuning, held (a bright sawtooth) and plucked (dying
         // away), the motor buzzing across a watch motor's range at half the note's level, starting at
-        // once, 30 or 60 ms late.
+        // once or up to MAX_LATENCY_MILLIS late.
         for (hz in floatArrayOf(82.41f, 110f, 146.83f, 196f, 246.94f, 329.63f)) {
             val held = TestSignals.sawtooth(hz, length = 72_000)
             val plucked = TestSignals.pluck(hz, length = 72_000, decaySeconds = 2.0)
             for ((kind, signal) in listOf("held" to held, "plucked" to plucked)) {
                 val peak = signal.maxOf { abs(it) }
                 for (buzzHz in floatArrayOf(150f, 175f, 200f, 225f, 250f)) {
-                    for (latency in intArrayOf(0, 30, 60)) {
+                    for (latency in intArrayOf(0, 45, 90, MAX_LATENCY_MILLIS)) {
                         assertSteadyAcrossTheTap(
                             "$kind $hz Hz, $buzzHz Hz buzz $latency ms late",
                             signal,
@@ -272,16 +274,34 @@ class WatchPitchPipelineTest {
     }
 
     @Test
-    fun `even a buzz as loud as the note or twice as loud leaves the reading steady`() {
-        // A margin: the motor heard as loud as the string, or louder, on the strings round its range.
+    fun `even a buzz far louder than the note leaves the reading steady`() {
+        // The motor heard as loud as the string, or louder: on a table the Galaxy Watch 5's own tap
+        // came in at a quarter of full scale, far above a guitar across the room. As late as it can be.
         for (hz in floatArrayOf(110f, 146.83f, 196f, 246.94f)) {
             val plucked = TestSignals.pluck(hz, length = 72_000, decaySeconds = 2.0)
             val peak = plucked.maxOf { abs(it) }
-            for (level in floatArrayOf(1f, 2f)) {
+            for (level in floatArrayOf(1f, 2f, 10f)) {
                 for (buzzHz in floatArrayOf(150f, 200f, 250f)) {
-                    assertSteadyAcrossTheTap("$hz Hz, $buzzHz Hz buzz at $level×", plucked, motorBuzz(buzzHz, level, peak), latencyMillis = 20, cleanCents = 0)
+                    for (latency in intArrayOf(20, MAX_LATENCY_MILLIS)) {
+                        assertSteadyAcrossTheTap(
+                            "$hz Hz, $buzzHz Hz buzz at $level×, $latency ms late",
+                            plucked,
+                            motorBuzz(buzzHz, level, peak),
+                            latency,
+                            cleanCents = 0,
+                        )
+                    }
                 }
             }
         }
+    }
+
+    private companion object {
+        /**
+         * The latest the buzz can start after the reading came in tune, on the Galaxy Watch 5
+         * (2026-11-03): up to 60 ms for the screen to play the tap, then 45–90 ms (measured) before
+         * the microphone's frames hear the motor.
+         */
+        const val MAX_LATENCY_MILLIS = 150
     }
 }
