@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">마이크를 열 수 없었어요. 마이크를 쓰는 다른 앱을 닫고 다시 시도를 탭하거나 기기를 다시 시작하세요.</string>
     <string name="error_mic_stopped">마이크가 멈췄어요. 통화나 다른 앱 때문일 수 있어요. 튜닝을 계속하려면 다시 시도를 탭하세요.</string>
     <string name="error_retry">다시 시도</string>
+    <string name="tuner_any_note">모든 음</string>
+    <string name="tuner_any_note_summary">줄 구분 없이 가장 가까운 음</string>
 
     <string name="tuner_show_controls">컨트롤 보기</string>
     <string name="tuner_focus_mode">집중 모드</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">음을 연주하세요</string>
     <string name="tuner_hint_play_locked_string">%1$s 줄을 튕기세요</string>
     <string name="tuner_hint_playing">%1$s 재생 중</string>
+    <string name="tuner_hint_all_in_tune">음이 맞아요. 연주하세요.</string>
     <string name="tuner_string_lock">이 줄로 고정</string>
     <string name="tuner_string_unlock">줄 자동 선택</string>
     <string name="tuner_string_locked">고정됨</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">고정됨, 재생 중</string>
     <string name="tuner_string_tuned">튜닝됨</string>
     <string name="tuner_string_locked_tuned">고정됨, 튜닝됨</string>
+    <string name="tuner_string_locked_mark">고정됨, %1$s</string>
     <string name="tuner_cents_zero">0센트</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">%1$d센트 낮음</item>
@@ -91,6 +95,13 @@
         <item quantity="other">%1$d센트 높음</item>
     </plurals>
     <string name="tuner_in_tune">음이 맞음</string>
+    <string name="tuner_word_tighten">조이기</string>
+    <string name="tuner_word_loosen">풀기</string>
+    <string name="tuner_word_too_low">너무 낮음</string>
+    <string name="tuner_word_too_high">너무 높음</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d센트</item>
+    </plurals>
     <string name="tuner_tip_too_soft">조금 더 세게 연주하세요</string>
     <string name="tuner_tip_too_noisy">너무 시끄러워요. 휴대폰을 가까이 두세요</string>
     <string name="tuner_tip_too_loud">너무 커요. 휴대폰을 멀리 두세요</string>
@@ -110,7 +121,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">악기 및 튜닝</string>
+    <string name="tuner_picker_title">무엇을 튜닝하나요?</string>
 
     <string name="tuner_new_tuning">새 튜닝</string>
 
@@ -138,6 +149,10 @@
     <string name="tuner_delete_tuning_text">“%1$s” 튜닝이 완전히 삭제돼요.</string>
     <string name="tuner_delete_tuning_cancel">취소</string>
     <string name="tuner_strum_all_in_tune">모든 줄의 음이 맞아요</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">%2$d줄 중 %1$d줄 맞음</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">안 들림</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12프렛 체크</string>
     <string name="tuner_intonation_step_open">개방현</string>
@@ -189,6 +204,7 @@
     <string name="tuner_chord_slash">%1$s, 베이스 %2$s</string>
     <string name="tuner_trail_bending_up">올라가는 중</string>
     <string name="tuner_trail_bending_down">내려가는 중</string>
+    <string name="tuner_spoken_wavering">흔들리는 중</string>
     <string name="tuner_screen_off_soon">곧 화면이 꺼져요</string>
     <string name="tuner_screen_off_keep_on">탭하면 계속 켜져 있어요</string>
 </resources>

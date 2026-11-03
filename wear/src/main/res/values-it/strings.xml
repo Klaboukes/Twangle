@@ -19,6 +19,8 @@
         <item quantity="many">%1$d cent crescente</item>
         <item quantity="other">%1$d cent crescente</item>
     </plurals>
+    <string name="wear_word_tighten">Tendi</string>
+    <string name="wear_word_loosen">Allenta</string>
     <string name="wear_spoken_sharp">%1$s diesis</string>
     <string name="wear_mic_needed">Twangle ascolta il tuo strumento con il microfono dell\'orologio.</string>
     <string name="wear_allow_mic">Consenti microfono</string>

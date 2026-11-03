@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d phách mỗi phút, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">phách mỗi phút · %1$s</string>
     <string name="metronome_slower">Chậm hơn</string>
     <string name="metronome_faster">Nhanh hơn</string>
-    <string name="metronome_tap">Gõ nhịp</string>
+    <string name="metronome_tap">Gõ theo nhịp</string>
     <string name="metronome_start">Bắt đầu</string>
     <string name="metronome_stop">Dừng</string>
     <string name="metronome_vibrate">Rung theo phách</string>

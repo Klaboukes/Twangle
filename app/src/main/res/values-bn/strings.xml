@@ -1,5 +1,5 @@
 <resources>
-    <string name="nav_tuner">টিউনার</string>
+    <string name="nav_tuner">টিউন</string>
     <string name="nav_metronome">মেট্রোনোম</string>
     <string name="nav_practice">অনুশীলন</string>
     <string name="nav_settings">সেটিংস</string>

@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Acordes</string>
     <string name="practice_tool_scales">Escalas</string>
+    <string name="practice_card_chords">Todas as posições, também para canhotos</string>
+    <string name="practice_card_scales">Com bordão para tocar junto</string>
+    <string name="practice_card_capo">Qual casa para o tom desejado</string>
+    <string name="practice_card_ear_training">Ouça uma nota e tire de ouvido</string>
+    <string name="practice_last_time">Última vez</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Voltar</string>
     <string name="practice_tool_ear_training">Treino de ouvido</string>
     <string name="practice_root">Tônica</string>
     <string name="practice_chord_type">Tipo de acorde</string>

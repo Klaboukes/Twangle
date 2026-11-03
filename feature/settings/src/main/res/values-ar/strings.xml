@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">الإعدادات</string>
     <string name="settings_back">رجوع</string>
+    <string name="settings_group_tuning">الضبط</string>
 
     <string name="settings_group_look">المظهر</string>
     <string name="settings_group_while_tuning">أثناء الضبط</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">داكن</string>
     <string name="settings_dynamic_color_title">ألوان الخلفية</string>
     <string name="settings_dynamic_color_summary">استخدم ألوانًا من خلفية شاشتك</string>
+    <string name="settings_meter_title">المؤشر</string>
+    <string name="settings_meter_trail">مسار النغمة</string>
+    <string name="settings_meter_light_arc">قوس ضوئي</string>
+    <string name="settings_meter_strobe">ستروب</string>
 
     <string name="settings_left_handed_title">وضع الأعسر</string>
     <string name="settings_left_handed_summary">مخططات الكوردات وزند السلالم مرسومة لجيتار يُمسك بالاتجاه المعاكس</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة أثناء الدوزنة</string>
     <string name="settings_vibrate_in_tune_title">اهتزاز عند الضبط</string>
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
+    <string name="settings_string_tick_off_title">وضع علامة على الأوتار المضبوطة</string>
+    <string name="settings_string_tick_off_summary">علامة على كل وتر حين يُضبط، و«مضبوط. اعزف.» حين تُضبط كلها</string>
+    <string name="settings_intonation_check_title">فحص الدستان ١٢</string>
+    <string name="settings_intonation_check_summary">زر فوق الأوتار لفحص دقة التنغيم</string>
     <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
     <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة بجانب النغمة تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
 

@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">Không mở được micrô. Hãy đóng các ứng dụng khác đang dùng micrô rồi chạm vào Thử lại, hoặc khởi động lại thiết bị.</string>
     <string name="error_mic_stopped">Micrô đã dừng, có thể vì một cuộc gọi hoặc ứng dụng khác. Hãy chạm vào Thử lại để tiếp tục lên dây.</string>
     <string name="error_retry">Thử lại</string>
+    <string name="tuner_any_note">Mọi nốt</string>
+    <string name="tuner_any_note_summary">Nốt gần nhất, không theo dây</string>
 
     <string name="tuner_show_controls">Hiện nút điều khiển</string>
     <string name="tuner_focus_mode">Chế độ tập trung</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">Đàn một nốt</string>
     <string name="tuner_hint_play_locked_string">Gảy dây %1$s</string>
     <string name="tuner_hint_playing">Đang phát %1$s</string>
+    <string name="tuner_hint_all_in_tune">Đã chuẩn. Đàn thôi.</string>
     <string name="tuner_string_lock">Khóa vào dây này</string>
     <string name="tuner_string_unlock">Tự động nhận dây</string>
     <string name="tuner_string_locked">Đã khóa</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">Đã khóa, đang phát</string>
     <string name="tuner_string_tuned">Đã chuẩn</string>
     <string name="tuner_string_locked_tuned">Đã khóa, đã chuẩn</string>
+    <string name="tuner_string_locked_mark">Đã khóa, %1$s</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">Thấp %1$d cent</item>
@@ -91,6 +95,13 @@
         <item quantity="other">Cao %1$d cent</item>
     </plurals>
     <string name="tuner_in_tune">chuẩn</string>
+    <string name="tuner_word_tighten">Căng lên</string>
+    <string name="tuner_word_loosen">Chùng xuống</string>
+    <string name="tuner_word_too_low">Quá thấp</string>
+    <string name="tuner_word_too_high">Quá cao</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d cent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Gảy to hơn một chút</string>
     <string name="tuner_tip_too_noisy">Ồn quá, để điện thoại gần lại</string>
     <string name="tuner_tip_too_loud">To quá, để điện thoại xa ra</string>
@@ -110,7 +121,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Nhạc cụ và kiểu lên dây</string>
+    <string name="tuner_picker_title">Bạn đang lên dây gì?</string>
 
     <string name="tuner_new_tuning">Kiểu lên dây mới</string>
 
@@ -138,6 +149,10 @@
     <string name="tuner_delete_tuning_text">“%1$s” sẽ bị xóa vĩnh viễn.</string>
     <string name="tuner_delete_tuning_cancel">Hủy</string>
     <string name="tuner_strum_all_in_tune">Tất cả dây đều chuẩn</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">%1$d trên %2$d dây chuẩn</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Không nghe thấy</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Kiểm tra phím 12</string>
     <string name="tuner_intonation_step_open">Dây buông</string>
@@ -189,6 +204,7 @@
     <string name="tuner_chord_slash">%1$s, bass %2$s</string>
     <string name="tuner_trail_bending_up">đang lên cao dần</string>
     <string name="tuner_trail_bending_down">đang xuống thấp dần</string>
+    <string name="tuner_spoken_wavering">đang dao động</string>
     <string name="tuner_screen_off_soon">Màn hình sắp tắt</string>
     <string name="tuner_screen_off_keep_on">Chạm để giữ màn hình bật</string>
 </resources>

@@ -16,6 +16,8 @@
         <item quantity="one">%1$d sentin korkealla</item>
         <item quantity="other">%1$d senttiä korkealla</item>
     </plurals>
+    <string name="wear_word_tighten">Kiristä</string>
+    <string name="wear_word_loosen">Löysää</string>
     <string name="wear_spoken_sharp">%1$s ylennetty</string>
     <string name="wear_mic_needed">Twangle kuuntelee soitintasi kellon mikrofonilla.</string>
     <string name="wear_allow_mic">Salli mikrofoni</string>

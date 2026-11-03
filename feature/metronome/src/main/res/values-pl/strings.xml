@@ -8,6 +8,7 @@
         <item quantity="many">%1$d uderzeń na minutę, %2$s</item>
         <item quantity="other">%1$d uderzenia na minutę, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">uderzeń na minutę · %1$s</string>
     <string name="metronome_slower">Wolniej</string>
     <string name="metronome_faster">Szybciej</string>
     <string name="metronome_tap">Wystukaj tempo</string>

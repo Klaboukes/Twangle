@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Setelan</string>
     <string name="settings_back">Kembali</string>
+    <string name="settings_group_tuning">Penyeteman</string>
 
     <string name="settings_group_look">Tampilan</string>
     <string name="settings_group_while_tuning">Saat menyetem</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Gelap</string>
     <string name="settings_dynamic_color_title">Warna wallpaper</string>
     <string name="settings_dynamic_color_summary">Gunakan warna dari wallpaper Anda</string>
+    <string name="settings_meter_title">Meter</string>
+    <string name="settings_meter_trail">Jejak nada</string>
+    <string name="settings_meter_light_arc">Busur cahaya</string>
+    <string name="settings_meter_strobe">Strobo</string>
 
     <string name="settings_left_handed_title">Kidal</string>
     <string name="settings_left_handed_summary">Diagram akor dan leher di Tangga nada digambar untuk gitar yang dipegang terbalik</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>
     <string name="settings_vibrate_in_tune_title">Bergetar saat pas</string>
     <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah pas</string>
+    <string name="settings_string_tick_off_title">Centang senar yang sudah pas</string>
+    <string name="settings_string_tick_off_summary">Centang di tiap senar begitu pas, dan “Sudah pas. Ayo main.” jika semuanya pas</string>
+    <string name="settings_intonation_check_title">Cek fret ke-12</string>
+    <string name="settings_intonation_check_summary">Tombol di atas senar untuk mengecek intonasi</string>
     <string name="settings_show_signal_bars_title">Tampilkan bar sinyal</string>
     <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di samping nada menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
 

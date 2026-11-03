@@ -7,9 +7,10 @@
         <item quantity="many">%1$d ударів за хвилину, %2$s</item>
         <item quantity="other">%1$d удару за хвилину, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">ударів за хвилину · %1$s</string>
     <string name="metronome_slower">Повільніше</string>
     <string name="metronome_faster">Швидше</string>
-    <string name="metronome_tap">Тап-темп</string>
+    <string name="metronome_tap">Відстукай темп</string>
     <string name="metronome_start">Старт</string>
     <string name="metronome_stop">Стоп</string>
     <string name="metronome_vibrate">Вібрація в такт</string>

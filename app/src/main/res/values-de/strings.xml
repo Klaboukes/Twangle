@@ -1,5 +1,5 @@
 <resources>
-    <string name="nav_tuner">Stimmgerät</string>
+    <string name="nav_tuner">Stimmen</string>
     <string name="nav_metronome">Metronom</string>
     <string name="nav_practice">Üben</string>
     <string name="nav_settings">Einstellungen</string>

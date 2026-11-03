@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">เปิดไมโครโฟนไม่ได้ ปิดแอปอื่นที่ใช้ไมโครโฟนอยู่แล้วแตะลองอีกครั้ง หรือรีสตาร์ทอุปกรณ์</string>
     <string name="error_mic_stopped">ไมโครโฟนหยุดทำงาน อาจเป็นเพราะการโทรหรือแอปอื่น แตะลองอีกครั้งเพื่อจูนต่อ</string>
     <string name="error_retry">ลองอีกครั้ง</string>
+    <string name="tuner_any_note">โน้ตใดก็ได้</string>
+    <string name="tuner_any_note_summary">โน้ตที่ใกล้ที่สุด ไม่อิงสาย</string>
 
     <string name="tuner_show_controls">แสดงปุ่มควบคุม</string>
     <string name="tuner_focus_mode">โหมดโฟกัส</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">เล่นสักโน้ต</string>
     <string name="tuner_hint_play_locked_string">เล่นสาย %1$s</string>
     <string name="tuner_hint_playing">กำลังเล่น %1$s</string>
+    <string name="tuner_hint_all_in_tune">ตรงเสียงแล้ว เล่นได้เลย</string>
     <string name="tuner_string_lock">ล็อกไว้ที่สายนี้</string>
     <string name="tuner_string_unlock">เลือกสายอัตโนมัติ</string>
     <string name="tuner_string_locked">ล็อกอยู่</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">ล็อกอยู่ กำลังเล่น</string>
     <string name="tuner_string_tuned">จูนแล้ว</string>
     <string name="tuner_string_locked_tuned">ล็อกอยู่ จูนแล้ว</string>
+    <string name="tuner_string_locked_mark">ล็อกอยู่ %1$s</string>
     <string name="tuner_cents_zero">0 เซนต์</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">ต่ำไป %1$d เซนต์</item>
@@ -91,6 +95,13 @@
         <item quantity="other">สูงไป %1$d เซนต์</item>
     </plurals>
     <string name="tuner_in_tune">ตรงเสียง</string>
+    <string name="tuner_word_tighten">จูนขึ้น</string>
+    <string name="tuner_word_loosen">จูนลง</string>
+    <string name="tuner_word_too_low">ต่ำไป</string>
+    <string name="tuner_word_too_high">สูงไป</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d เซนต์</item>
+    </plurals>
     <string name="tuner_tip_too_soft">เล่นดังขึ้นอีกนิด</string>
     <string name="tuner_tip_too_noisy">เสียงรบกวนเยอะ วางโทรศัพท์ให้ใกล้ขึ้น</string>
     <string name="tuner_tip_too_loud">ดังเกินไป วางโทรศัพท์ให้ห่างขึ้น</string>
@@ -110,7 +121,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">เครื่องดนตรีและการตั้งสาย</string>
+    <string name="tuner_picker_title">จะจูนอะไร</string>
 
     <string name="tuner_new_tuning">การตั้งสายใหม่</string>
 
@@ -138,6 +149,10 @@
     <string name="tuner_delete_tuning_text">“%1$s” จะถูกลบไปถาวร</string>
     <string name="tuner_delete_tuning_cancel">ยกเลิก</string>
     <string name="tuner_strum_all_in_tune">ทุกสายตรงเสียง</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">ตรงเสียง %1$d จาก %2$d สาย</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">เช็กเฟรตที่ 12</string>
     <string name="tuner_intonation_step_open">สายเปล่า</string>
@@ -189,6 +204,7 @@
     <string name="tuner_chord_slash">%1$s, %2$s เป็นเสียงเบส</string>
     <string name="tuner_trail_bending_up">เบนด์ขึ้น</string>
     <string name="tuner_trail_bending_down">เบนด์ลง</string>
+    <string name="tuner_spoken_wavering">แกว่งไปมา</string>
     <string name="tuner_screen_off_soon">หน้าจอจะดับในไม่ช้า</string>
     <string name="tuner_screen_off_keep_on">แตะเพื่อให้เปิดค้างไว้</string>
 </resources>

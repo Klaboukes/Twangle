@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Asetukset</string>
     <string name="settings_back">Takaisin</string>
+    <string name="settings_group_tuning">Viritys</string>
 
     <string name="settings_group_look">Ulkoasu</string>
     <string name="settings_group_while_tuning">Viritettäessä</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Tumma</string>
     <string name="settings_dynamic_color_title">Taustakuvan värit</string>
     <string name="settings_dynamic_color_summary">Käytä taustakuvasi värejä</string>
+    <string name="settings_meter_title">Mittari</string>
+    <string name="settings_meter_trail">Sävelkäyrä</string>
+    <string name="settings_meter_light_arc">Valokaari</string>
+    <string name="settings_meter_strobe">Strobo</string>
 
     <string name="settings_left_handed_title">Vasenkätinen</string>
     <string name="settings_left_handed_summary">Sointukaaviot ja asteikkokaula piirretään toisin päin pidetylle kitaralle</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Näyttö pysyy päällä, kun virität</string>
     <string name="settings_vibrate_in_tune_title">Värinä vireessä</string>
     <string name="settings_vibrate_in_tune_summary">Lyhyt värähdys, kun sävel osuu vireeseen</string>
+    <string name="settings_string_tick_off_title">Merkitse viritetyt kielet</string>
+    <string name="settings_string_tick_off_summary">Merkki kieleen, kun se on vireessä, ja ”Vireessä. Soita.”, kun kaikki ovat</string>
+    <string name="settings_intonation_check_title">12. nauhan testi</string>
+    <string name="settings_intonation_check_summary">Painike kielten yläpuolella intonaation tarkistukseen</string>
     <string name="settings_show_signal_bars_title">Näytä signaalipalkit</string>
     <string name="settings_show_signal_bars_summary">Uteliaille: pienet palkit sävelen vieressä näyttävät, kuinka hyvin viritin kuulee sinut. Napauta niitä, niin näet luvut</string>
 

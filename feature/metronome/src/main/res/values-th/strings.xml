@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d จังหวะต่อนาที, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">จังหวะต่อนาที · %1$s</string>
     <string name="metronome_slower">ช้าลง</string>
     <string name="metronome_faster">เร็วขึ้น</string>
-    <string name="metronome_tap">แตะจังหวะ</string>
+    <string name="metronome_tap">แตะตามจังหวะ</string>
     <string name="metronome_start">เริ่ม</string>
     <string name="metronome_stop">หยุด</string>
     <string name="metronome_vibrate">สั่นตามจังหวะ</string>

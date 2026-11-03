@@ -12,6 +12,8 @@
     <plurals name="wear_spoken_cents_sharp">
         <item quantity="other">สูงไป %1$d เซนต์</item>
     </plurals>
+    <string name="wear_word_tighten">จูนขึ้น</string>
+    <string name="wear_word_loosen">จูนลง</string>
     <string name="wear_spoken_sharp">%1$s ชาร์ป</string>
     <string name="wear_mic_needed">Twangle ฟังเสียงเครื่องดนตรีของคุณผ่านไมโครโฟนของนาฬิกา</string>
     <string name="wear_allow_mic">อนุญาตไมโครโฟน</string>

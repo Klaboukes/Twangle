@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Impostazioni</string>
     <string name="settings_back">Indietro</string>
+    <string name="settings_group_tuning">Accordatura</string>
 
     <string name="settings_group_look">Aspetto</string>
     <string name="settings_group_while_tuning">Mentre accordi</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Scuro</string>
     <string name="settings_dynamic_color_title">Colori dello sfondo</string>
     <string name="settings_dynamic_color_summary">Usa i colori del tuo sfondo</string>
+    <string name="settings_meter_title">Indicatore</string>
+    <string name="settings_meter_trail">Scia</string>
+    <string name="settings_meter_light_arc">Arco di luci</string>
+    <string name="settings_meter_strobe">Stroboscopio</string>
 
     <string name="settings_left_handed_title">Mancino</string>
     <string name="settings_left_handed_summary">Schemi degli accordi e manico delle scale disegnati per una chitarra tenuta al contrario</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso durante l\'accordatura</string>
     <string name="settings_vibrate_in_tune_title">Vibra quando è intonato</string>
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
+    <string name="settings_string_tick_off_title">Spunta le corde intonate</string>
+    <string name="settings_string_tick_off_summary">Una spunta su ogni corda intonata, e «Tutto intonato. Suona!» quando lo sono tutte</string>
+    <string name="settings_intonation_check_title">Controllo al 12° tasto</string>
+    <string name="settings_intonation_check_summary">Un pulsante sopra le corde per controllare l\'intonazione</string>
     <string name="settings_show_signal_bars_title">Mostra le barre del segnale</string>
     <string name="settings_show_signal_bars_summary">Per i curiosi: piccole barre vicino alla nota mostrano quanto bene ti sente l\'accordatore. Toccale per vedere i valori</string>
 

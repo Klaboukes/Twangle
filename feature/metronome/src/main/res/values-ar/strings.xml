@@ -11,9 +11,10 @@
         <item quantity="many">%1$d نبضة في الدقيقة، %2$s</item>
         <item quantity="other">%1$d نبضة في الدقيقة، %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">نبضة في الدقيقة · %1$s</string>
     <string name="metronome_slower">أبطأ</string>
     <string name="metronome_faster">أسرع</string>
-    <string name="metronome_tap">السرعة بالنقر</string>
+    <string name="metronome_tap">انقر مع الإيقاع</string>
     <string name="metronome_start">ابدأ</string>
     <string name="metronome_stop">أوقف</string>
     <string name="metronome_vibrate">اهتزاز مع النبضة</string>

@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">कॉर्ड</string>
     <string name="practice_tool_scales">स्केल</string>
+    <string name="practice_card_chords">हर शेप, बाएँ हाथ के लिए भी</string>
+    <string name="practice_card_scales">ड्रोन के साथ बजाएँ</string>
+    <string name="practice_card_capo">मनचाहे स्केल के लिए कौन-सा फ़्रेट</string>
+    <string name="practice_card_ear_training">नोट सुनें, फिर बजाएँ</string>
+    <string name="practice_last_time">पिछली बार</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">वापस</string>
     <string name="practice_tool_ear_training">कान की ट्रेनिंग</string>
     <string name="practice_root">रूट</string>
     <string name="practice_chord_type">कॉर्ड का प्रकार</string>

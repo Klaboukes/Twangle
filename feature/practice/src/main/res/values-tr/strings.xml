@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Akorlar</string>
     <string name="practice_tool_scales">Gamlar</string>
+    <string name="practice_card_chords">Her basış, solak için de</string>
+    <string name="practice_card_scales">Dem eşliğinde çal</string>
+    <string name="practice_card_capo">İstediğin ton için hangi perde</string>
+    <string name="practice_card_ear_training">Notayı dinle, sen de çal</string>
+    <string name="practice_last_time">Geçen sefer</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Geri</string>
     <string name="practice_tool_ear_training">Kulak eğitimi</string>
     <string name="practice_root">Kök nota</string>
     <string name="practice_chord_type">Akor türü</string>

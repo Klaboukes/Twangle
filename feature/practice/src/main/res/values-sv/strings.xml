@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Ackord</string>
     <string name="practice_tool_scales">Skalor</string>
+    <string name="practice_card_chords">Alla grepp, även för vänsterhänta</string>
+    <string name="practice_card_scales">Med bordun att spela till</string>
+    <string name="practice_card_capo">Vilket band för din tonart</string>
+    <string name="practice_card_ear_training">Hör en ton, spela efter den</string>
+    <string name="practice_last_time">Senast</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Tillbaka</string>
     <string name="practice_tool_ear_training">Gehörsträning</string>
     <string name="practice_root">Grundton</string>
     <string name="practice_chord_type">Ackordtyp</string>

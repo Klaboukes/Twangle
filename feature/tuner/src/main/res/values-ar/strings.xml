@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">تعذّر فتح الميكروفون. أغلق التطبيقات الأخرى التي تستخدمه وانقر على «حاول مرة أخرى»، أو أعد تشغيل جهازك.</string>
     <string name="error_mic_stopped">توقف الميكروفون، ربما بسبب مكالمة أو تطبيق آخر. انقر على «حاول مرة أخرى» لمتابعة الضبط.</string>
     <string name="error_retry">حاول مرة أخرى</string>
+    <string name="tuner_any_note">أي نغمة</string>
+    <string name="tuner_any_note_summary">أقرب نغمة، بلا أوتار</string>
 
     <string name="tuner_show_controls">إظهار عناصر التحكم</string>
     <string name="tuner_focus_mode">وضع التركيز</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">اعزف نغمة</string>
     <string name="tuner_hint_play_locked_string">اعزف وتر %1$s</string>
     <string name="tuner_hint_playing">قيد التشغيل: %1$s</string>
+    <string name="tuner_hint_all_in_tune">مضبوط. اعزف.</string>
     <string name="tuner_string_lock">ثبّت هذا الوتر</string>
     <string name="tuner_string_unlock">اختر الأوتار تلقائيًا</string>
     <string name="tuner_string_locked">مثبّت</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">مثبّت، قيد التشغيل</string>
     <string name="tuner_string_tuned">مضبوط</string>
     <string name="tuner_string_locked_tuned">مثبّت، مضبوط</string>
+    <string name="tuner_string_locked_mark">مثبّت، %1$s</string>
     <!-- 0, 100+: سنت; 1: بسنت واحد; 2: بسنتين; 3–10: سنتات; 11–99: سنتًا. -->
     <string name="tuner_cents_zero">٠ سنت</string>
     <plurals name="tuner_cents_flat">
@@ -102,6 +106,18 @@
         <item quantity="other">أعلى بـ%1$d سنت</item>
     </plurals>
     <string name="tuner_in_tune">مضبوط</string>
+    <string name="tuner_word_tighten">شُدّ</string>
+    <string name="tuner_word_loosen">أرخِ</string>
+    <string name="tuner_word_too_low">منخفضة جدًا</string>
+    <string name="tuner_word_too_high">مرتفعة جدًا</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="zero">%1$d سنت</item>
+        <item quantity="one">سنت واحد</item>
+        <item quantity="two">سنتان</item>
+        <item quantity="few">%1$d سنتات</item>
+        <item quantity="many">%1$d سنتًا</item>
+        <item quantity="other">%1$d سنت</item>
+    </plurals>
     <string name="tuner_tip_too_soft">اعزف بصوت أعلى قليلًا</string>
     <string name="tuner_tip_too_noisy">ضجيج كثير، قرّب الهاتف</string>
     <string name="tuner_tip_too_loud">الصوت عالٍ جدًا، أبعد الهاتف</string>
@@ -121,7 +137,7 @@
     <string name="tuner_spoken_tuning">%1$s، %2$s</string>
     <string name="tuner_spoken_picker">%1$s، %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">الآلة والدوزان</string>
+    <string name="tuner_picker_title">ماذا تضبط؟</string>
 
     <string name="tuner_new_tuning">دوزان جديد</string>
 
@@ -149,6 +165,15 @@
     <string name="tuner_delete_tuning_text">سيُحذف «%1$s» نهائيًا.</string>
     <string name="tuner_delete_tuning_cancel">إلغاء</string>
     <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="zero">%1$d من %2$d مضبوطة</item>
+        <item quantity="one">%1$d من %2$d مضبوط</item>
+        <item quantity="two">%1$d من %2$d مضبوطان</item>
+        <item quantity="few">%1$d من %2$d مضبوطة</item>
+        <item quantity="many">%1$d من %2$d مضبوطة</item>
+        <item quantity="other">%1$d من %2$d مضبوطة</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">لم يُسمع</string>
     <string name="tuner_strum_spoken_string">%1$s، %2$s</string>
     <string name="tuner_intonation_check">فحص الدستان ١٢</string>
     <string name="tuner_intonation_step_open">مفتوح</string>
@@ -205,6 +230,7 @@
     <string name="tuner_chord_slash">%1$s، و%2$s في الباص</string>
     <string name="tuner_trail_bending_up">ترتفع</string>
     <string name="tuner_trail_bending_down">تنخفض</string>
+    <string name="tuner_spoken_wavering">تتذبذب</string>
     <string name="tuner_screen_off_soon">ستنطفئ الشاشة قريبًا</string>
     <string name="tuner_screen_off_keep_on">انقر لإبقائها مضاءة</string>
 </resources>

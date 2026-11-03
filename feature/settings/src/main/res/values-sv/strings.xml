@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Inställningar</string>
     <string name="settings_back">Tillbaka</string>
+    <string name="settings_group_tuning">Stämning</string>
 
     <string name="settings_group_look">Utseende</string>
     <string name="settings_group_while_tuning">Medan du stämmer</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Mörkt</string>
     <string name="settings_dynamic_color_title">Bakgrundsfärger</string>
     <string name="settings_dynamic_color_summary">Använd färgerna från din bakgrundsbild</string>
+    <string name="settings_meter_title">Mätare</string>
+    <string name="settings_meter_trail">Tonkurva</string>
+    <string name="settings_meter_light_arc">LED-båge</string>
+    <string name="settings_meter_strobe">Stroboskop</string>
 
     <string name="settings_left_handed_title">Vänsterhänt</string>
     <string name="settings_left_handed_summary">Ackordscheman och halsen i Skalor ritade för en gitarr som hålls åt andra hållet</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Skärmen hålls tänd medan du stämmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrera vid stämd ton</string>
     <string name="settings_vibrate_in_tune_summary">En kort vibration när tonen når rätt tonhöjd</string>
+    <string name="settings_string_tick_off_title">Bocka av stämda strängar</string>
+    <string name="settings_string_tick_off_summary">En bock på varje sträng när den är stämd, och ”Stämd. Spela på.” när alla är det</string>
+    <string name="settings_intonation_check_title">Test vid 12:e bandet</string>
+    <string name="settings_intonation_check_summary">En knapp ovanför strängarna för att kontrollera intonationen</string>
     <string name="settings_show_signal_bars_title">Visa signalstaplar</string>
     <string name="settings_show_signal_bars_summary">För nyfikna: små staplar vid tonen visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
 

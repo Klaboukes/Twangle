@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">الكوردات</string>
     <string name="practice_tool_scales">السلالم</string>
+    <string name="practice_card_chords">كل الأشكال، وللأعسر أيضًا</string>
+    <string name="practice_card_scales">مع نغمة مستمرة تعزف معها</string>
+    <string name="practice_card_capo">أي دستان للمقام الذي تريده</string>
+    <string name="practice_card_ear_training">اسمع نغمة، ثم اعزفها</string>
+    <string name="practice_last_time">آخر مرة</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">رجوع</string>
     <string name="practice_tool_ear_training">تدريب الأذن</string>
     <string name="practice_root">النغمة الأساسية</string>
     <string name="practice_chord_type">نوع الكورد</string>

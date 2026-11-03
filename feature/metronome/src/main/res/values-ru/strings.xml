@@ -8,9 +8,10 @@
         <item quantity="many">%1$d ударов в минуту, %2$s</item>
         <item quantity="other">%1$d удара в минуту, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">ударов в минуту · %1$s</string>
     <string name="metronome_slower">Медленнее</string>
     <string name="metronome_faster">Быстрее</string>
-    <string name="metronome_tap">Тап-темп</string>
+    <string name="metronome_tap">Отстучи темп</string>
     <string name="metronome_start">Старт</string>
     <string name="metronome_stop">Стоп</string>
     <string name="metronome_vibrate">Вибрация в такт</string>

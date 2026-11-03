@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Ajustes</string>
     <string name="settings_back">Atrás</string>
+    <string name="settings_group_tuning">Afinación</string>
 
     <string name="settings_group_look">Aspecto</string>
     <string name="settings_group_while_tuning">Al afinar</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Oscuro</string>
     <string name="settings_dynamic_color_title">Colores del fondo</string>
     <string name="settings_dynamic_color_summary">Usar los colores de tu fondo de pantalla</string>
+    <string name="settings_meter_title">Indicador</string>
+    <string name="settings_meter_trail">Estela</string>
+    <string name="settings_meter_light_arc">Arco de luces</string>
+    <string name="settings_meter_strobe">Estroboscopio</string>
 
     <string name="settings_left_handed_title">Zurdo</string>
     <string name="settings_left_handed_summary">Diagramas de acordes y mástil de las escalas dibujados para una guitarra sostenida al revés</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
     <string name="settings_vibrate_in_tune_title">Vibrar al estar afinado</string>
     <string name="settings_vibrate_in_tune_summary">Una vibración breve cuando la nota queda afinada</string>
+    <string name="settings_string_tick_off_title">Marcar las cuerdas afinadas</string>
+    <string name="settings_string_tick_off_summary">Una marca en cada cuerda afinada, y «Todo afinado. ¡A tocar!» cuando lo estén todas</string>
+    <string name="settings_intonation_check_title">Prueba del traste 12</string>
+    <string name="settings_intonation_check_summary">Un botón sobre las cuerdas para revisar la octavación</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
 

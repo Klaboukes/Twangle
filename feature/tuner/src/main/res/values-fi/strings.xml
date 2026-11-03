@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">Mikrofonia ei voitu avata. Sulje muut sitä käyttävät sovellukset ja napauta ”Yritä uudelleen”, tai käynnistä laite uudelleen.</string>
     <string name="error_mic_stopped">Mikrofoni pysähtyi, ehkä puhelun tai toisen sovelluksen takia. Jatka virittämistä napauttamalla ”Yritä uudelleen”.</string>
     <string name="error_retry">Yritä uudelleen</string>
+    <string name="tuner_any_note">Kaikki sävelet</string>
+    <string name="tuner_any_note_summary">Lähin sävel, ei kieliä</string>
 
     <string name="tuner_show_controls">Näytä säätimet</string>
     <string name="tuner_focus_mode">Keskittymistila</string>
@@ -75,6 +77,7 @@
     <string name="tuner_hint_play_note">Soita sävel</string>
     <string name="tuner_hint_play_locked_string">Soita kieli %1$s</string>
     <string name="tuner_hint_playing">Soi: %1$s</string>
+    <string name="tuner_hint_all_in_tune">Vireessä. Soita.</string>
     <string name="tuner_string_lock">Lukitse tähän kieleen</string>
     <string name="tuner_string_unlock">Valitse kielet automaattisesti</string>
     <string name="tuner_string_locked">Lukittu</string>
@@ -84,6 +87,7 @@
     <string name="tuner_string_locked_sounding">Lukittu, soi</string>
     <string name="tuner_string_tuned">Vireessä</string>
     <string name="tuner_string_locked_tuned">Lukittu, vireessä</string>
+    <string name="tuner_string_locked_mark">Lukittu, %1$s</string>
     <string name="tuner_cents_zero">0 senttiä</string>
     <!-- Luvun jälkeen partitiivi: 1 sentti, 2 senttiä. -->
     <plurals name="tuner_cents_flat">
@@ -95,6 +99,14 @@
         <item quantity="other">%1$d senttiä korkealla</item>
     </plurals>
     <string name="tuner_in_tune">vireessä</string>
+    <string name="tuner_word_tighten">Kiristä</string>
+    <string name="tuner_word_loosen">Löysää</string>
+    <string name="tuner_word_too_low">Liian matala</string>
+    <string name="tuner_word_too_high">Liian korkea</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d sentti</item>
+        <item quantity="other">%1$d senttiä</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Soita vähän kovempaa</string>
     <string name="tuner_tip_too_noisy">Liian meluisaa, tuo puhelin lähemmäs</string>
     <string name="tuner_tip_too_loud">Liian kovaa, vie puhelin kauemmas</string>
@@ -114,7 +126,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Soitin ja viritys</string>
+    <string name="tuner_picker_title">Mitä virität?</string>
 
     <string name="tuner_new_tuning">Uusi viritys</string>
 
@@ -142,6 +154,11 @@
     <string name="tuner_delete_tuning_text">”%1$s” poistetaan pysyvästi.</string>
     <string name="tuner_delete_tuning_cancel">Peruuta</string>
     <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d/%2$d vireessä</item>
+        <item quantity="other">%1$d/%2$d vireessä</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Ei kuulunut</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12. nauhan testi</string>
     <string name="tuner_intonation_step_open">Avoin</string>
@@ -195,6 +212,7 @@
     <string name="tuner_chord_slash">%1$s, bassossa %2$s</string>
     <string name="tuner_trail_bending_up">nousee</string>
     <string name="tuner_trail_bending_down">laskee</string>
+    <string name="tuner_spoken_wavering">huojuu</string>
     <string name="tuner_screen_off_soon">Näyttö sammuu pian</string>
     <string name="tuner_screen_off_keep_on">Napauta, niin se pysyy päällä</string>
 </resources>

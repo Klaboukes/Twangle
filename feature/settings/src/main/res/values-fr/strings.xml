@@ -2,6 +2,7 @@
     <!-- French typography: a no-break space (U+00A0) before ":" so the colon never starts a line. -->
     <string name="settings_title">Paramètres</string>
     <string name="settings_back">Retour</string>
+    <string name="settings_group_tuning">Accordage</string>
 
     <string name="settings_group_look">Apparence</string>
     <string name="settings_group_while_tuning">Pendant l\'accordage</string>
@@ -31,6 +32,10 @@
     <string name="settings_theme_dark">Sombre</string>
     <string name="settings_dynamic_color_title">Couleurs du fond d\'écran</string>
     <string name="settings_dynamic_color_summary">Utiliser les couleurs de votre fond d\'écran</string>
+    <string name="settings_meter_title">Affichage</string>
+    <string name="settings_meter_trail">Trace</string>
+    <string name="settings_meter_light_arc">Arc lumineux</string>
+    <string name="settings_meter_strobe">Stroboscope</string>
 
     <string name="settings_left_handed_title">Gaucher</string>
     <string name="settings_left_handed_summary">Diagrammes d\'accords et manche des gammes dessinés pour une guitare tenue dans l\'autre sens</string>
@@ -39,6 +44,10 @@
     <string name="settings_keep_screen_on_summary">L\'écran reste allumé pendant l\'accordage</string>
     <string name="settings_vibrate_in_tune_title">Vibrer quand c\'est juste</string>
     <string name="settings_vibrate_in_tune_summary">Une courte vibration quand la note est juste</string>
+    <string name="settings_string_tick_off_title">Cocher les cordes accordées</string>
+    <string name="settings_string_tick_off_summary">Une coche sur chaque corde juste, et « Tout est juste. Jouez. » quand toutes le sont</string>
+    <string name="settings_intonation_check_title">Test de la 12e case</string>
+    <string name="settings_intonation_check_summary">Un bouton au-dessus des cordes pour vérifier l\'intonation</string>
     <string name="settings_show_signal_bars_title">Afficher les barres de signal</string>
     <string name="settings_show_signal_bars_summary">Pour les curieux : de petites barres près de la note montrent si l\'accordeur vous entend bien. Touchez-les pour voir les chiffres</string>
 

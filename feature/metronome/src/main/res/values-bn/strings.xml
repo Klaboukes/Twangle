@@ -5,9 +5,10 @@
         <item quantity="one">প্রতি মিনিটে %1$d বিট, %2$s</item>
         <item quantity="other">প্রতি মিনিটে %1$d বিট, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">প্রতি মিনিটে বিট · %1$s</string>
     <string name="metronome_slower">আরও ধীরে</string>
     <string name="metronome_faster">আরও দ্রুত</string>
-    <string name="metronome_tap">ট্যাপ টেম্পো</string>
+    <string name="metronome_tap">বিটে ট্যাপ করুন</string>
     <string name="metronome_start">শুরু করুন</string>
     <string name="metronome_stop">থামান</string>
     <string name="metronome_vibrate">বিটে ভাইব্রেট করুন</string>

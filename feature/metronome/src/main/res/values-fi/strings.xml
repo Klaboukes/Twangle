@@ -6,9 +6,10 @@
         <item quantity="one">%1$d isku minuutissa, %2$s</item>
         <item quantity="other">%1$d iskua minuutissa, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">iskua minuutissa · %1$s</string>
     <string name="metronome_slower">Hitaammin</string>
     <string name="metronome_faster">Nopeammin</string>
-    <string name="metronome_tap">Napauta tempo</string>
+    <string name="metronome_tap">Napauta tahdissa</string>
     <string name="metronome_start">Käynnistä</string>
     <string name="metronome_stop">Pysäytä</string>
     <string name="metronome_vibrate">Värinä joka iskulla</string>

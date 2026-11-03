@@ -7,9 +7,10 @@
         <item quantity="many">%1$d battiti al minuto, %2$s</item>
         <item quantity="other">%1$d battiti al minuto, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">battiti al minuto · %1$s</string>
     <string name="metronome_slower">Più lento</string>
     <string name="metronome_faster">Più veloce</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Batti il tempo</string>
     <string name="metronome_start">Avvia</string>
     <string name="metronome_stop">Ferma</string>
     <string name="metronome_vibrate">Vibra a tempo</string>

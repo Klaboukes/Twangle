@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d ketukan per menit, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">ketukan per menit · %1$s</string>
     <string name="metronome_slower">Lebih lambat</string>
     <string name="metronome_faster">Lebih cepat</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Ketuk irama</string>
     <string name="metronome_start">Mulai</string>
     <string name="metronome_stop">Hentikan</string>
     <string name="metronome_vibrate">Bergetar mengikuti ketukan</string>

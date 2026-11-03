@@ -13,6 +13,8 @@
     <string name="error_mic_unavailable">মাইক্রোফোন চালু করা গেল না। যেসব অ্যাপ এটি ব্যবহার করছে সেগুলো বন্ধ করে আবার চেষ্টা করুন-এ ট্যাপ করুন, অথবা ডিভাইস রিস্টার্ট করুন।</string>
     <string name="error_mic_stopped">মাইক্রোফোন থেমে গেছে, হয়তো কোনো কল বা অন্য অ্যাপের জন্য। টিউন চালিয়ে যেতে আবার চেষ্টা করুন-এ ট্যাপ করুন।</string>
     <string name="error_retry">আবার চেষ্টা করুন</string>
+    <string name="tuner_any_note">যেকোনো নোট</string>
+    <string name="tuner_any_note_summary">সবচেয়ে কাছের নোট, তার ছাড়া</string>
     <string name="tuner_show_controls">কন্ট্রোল দেখান</string>
     <string name="tuner_focus_mode">ফোকাস মোড</string>
     <string name="tuner_exit_focus_mode">ফোকাস মোড থেকে বের হন</string>
@@ -70,6 +72,7 @@
     <string name="tuner_hint_play_note">একটি নোট বাজান</string>
     <string name="tuner_hint_play_locked_string">%1$s তারটি বাজান</string>
     <string name="tuner_hint_playing">%1$s বাজছে</string>
+    <string name="tuner_hint_all_in_tune">সুরে আছে। এবার বাজান।</string>
     <string name="tuner_string_lock">শুধু এই তারে লক করুন</string>
     <string name="tuner_string_unlock">তার স্বয়ংক্রিয়ভাবে বাছাই করুন</string>
     <string name="tuner_string_locked">লক করা</string>
@@ -79,6 +82,7 @@
     <string name="tuner_string_locked_sounding">লক করা, বাজছে</string>
     <string name="tuner_string_tuned">টিউন হয়েছে</string>
     <string name="tuner_string_locked_tuned">লক করা, টিউন হয়েছে</string>
+    <string name="tuner_string_locked_mark">লক করা, %1$s</string>
     <string name="tuner_cents_zero">০ সেন্ট</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d সেন্ট নিচে</item>
@@ -89,6 +93,14 @@
         <item quantity="other">%1$d সেন্ট উপরে</item>
     </plurals>
     <string name="tuner_in_tune">সুরে আছে</string>
+    <string name="tuner_word_tighten">টাইট করুন</string>
+    <string name="tuner_word_loosen">ঢিলা করুন</string>
+    <string name="tuner_word_too_low">খুব নিচু</string>
+    <string name="tuner_word_too_high">খুব উঁচু</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d সেন্ট</item>
+        <item quantity="other">%1$d সেন্ট</item>
+    </plurals>
     <string name="tuner_tip_too_soft">আরেকটু জোরে বাজান</string>
     <string name="tuner_tip_too_noisy">খুব শব্দ, ফোন একটু কাছে আনুন</string>
     <string name="tuner_tip_too_loud">খুব জোরে, ফোন একটু দূরে নিন</string>
@@ -107,7 +119,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">বাদ্যযন্ত্র ও টিউনিং</string>
+    <string name="tuner_picker_title">আপনি কী টিউন করছেন?</string>
     <string name="tuner_new_tuning">নতুন টিউনিং</string>
     <string name="tuning_editor_title_edit">টিউনিং এডিট করুন</string>
     <string name="tuning_editor_close">সেভ না করে বন্ধ করুন</string>
@@ -132,6 +144,11 @@
     <string name="tuner_delete_tuning_text">“%1$s” চিরতরে মুছে যাবে।</string>
     <string name="tuner_delete_tuning_cancel">বাতিল</string>
     <string name="tuner_strum_all_in_tune">সব তার সুরে আছে</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%2$dটির মধ্যে %1$dটি সুরে</item>
+        <item quantity="other">%2$dটির মধ্যে %1$dটি সুরে</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">শোনা যায়নি</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">১২তম ফ্রেট চেক</string>
     <string name="tuner_intonation_step_open">খোলা</string>
@@ -184,6 +201,7 @@
     <string name="tuner_chord_slash">%1$s, বেসে %2$s</string>
     <string name="tuner_trail_bending_up">উপরে উঠছে</string>
     <string name="tuner_trail_bending_down">নিচে নামছে</string>
+    <string name="tuner_spoken_wavering">কাঁপছে</string>
     <string name="tuner_screen_off_soon">স্ক্রিন শিগগির বন্ধ হবে</string>
     <string name="tuner_screen_off_keep_on">চালু রাখতে ট্যাপ করুন</string>
 </resources>

@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">No se pudo abrir el micrófono. Cierra otras apps que lo usen y toca Reintentar, o reinicia tu dispositivo.</string>
     <string name="error_mic_stopped">El micrófono se detuvo, quizá por una llamada u otra app. Toca Reintentar para seguir afinando.</string>
     <string name="error_retry">Reintentar</string>
+    <string name="tuner_any_note">Cualquier nota</string>
+    <string name="tuner_any_note_summary">La nota más cercana, sin cuerdas</string>
 
     <string name="tuner_show_controls">Mostrar controles</string>
     <string name="tuner_focus_mode">Modo concentración</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">Toca una nota</string>
     <string name="tuner_hint_play_locked_string">Toca la cuerda %1$s</string>
     <string name="tuner_hint_playing">Sonando %1$s</string>
+    <string name="tuner_hint_all_in_tune">Todo afinado. ¡A tocar!</string>
     <string name="tuner_string_lock">Fijar esta cuerda</string>
     <string name="tuner_string_unlock">Elegir cuerdas automáticamente</string>
     <string name="tuner_string_locked">Fijada</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">Fijada, sonando</string>
     <string name="tuner_string_tuned">Afinada</string>
     <string name="tuner_string_locked_tuned">Fijada, afinada</string>
+    <string name="tuner_string_locked_mark">Fijada, %1$s</string>
     <string name="tuner_cents_zero">0 cents</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent bajo</item>
@@ -95,6 +99,15 @@
         <item quantity="other">%1$d cents alto</item>
     </plurals>
     <string name="tuner_in_tune">afinado</string>
+    <string name="tuner_word_tighten">Tensa</string>
+    <string name="tuner_word_loosen">Afloja</string>
+    <string name="tuner_word_too_low">Demasiado bajo</string>
+    <string name="tuner_word_too_high">Demasiado alto</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d cent</item>
+        <item quantity="many">%1$d cents</item>
+        <item quantity="other">%1$d cents</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Toca un poco más fuerte</string>
     <string name="tuner_tip_too_noisy">Demasiado ruido, acerca el teléfono</string>
     <string name="tuner_tip_too_loud">Muy fuerte, aleja el teléfono</string>
@@ -114,7 +127,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrumento y afinación</string>
+    <string name="tuner_picker_title">¿Qué vas a afinar?</string>
 
     <string name="tuner_new_tuning">Nueva afinación</string>
 
@@ -142,6 +155,12 @@
     <string name="tuner_delete_tuning_text">“%1$s” desaparecerá para siempre.</string>
     <string name="tuner_delete_tuning_cancel">Cancelar</string>
     <string name="tuner_strum_all_in_tune">Todas las cuerdas afinadas</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d de %2$d afinada</item>
+        <item quantity="many">%1$d de %2$d afinadas</item>
+        <item quantity="other">%1$d de %2$d afinadas</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">No se oyó</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Prueba del traste 12</string>
     <string name="tuner_intonation_step_open">Al aire</string>
@@ -195,6 +214,7 @@
     <string name="tuner_chord_slash">%1$s, %2$s en el bajo</string>
     <string name="tuner_trail_bending_up">subiendo</string>
     <string name="tuner_trail_bending_down">bajando</string>
+    <string name="tuner_spoken_wavering">oscilando</string>
     <string name="tuner_screen_off_soon">La pantalla se apagará pronto</string>
     <string name="tuner_screen_off_keep_on">Toca para mantenerla encendida</string>
 </resources>

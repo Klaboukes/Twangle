@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Accordi</string>
     <string name="practice_tool_scales">Scale</string>
+    <string name="practice_card_chords">Ogni diteggiatura, anche per mancini</string>
+    <string name="practice_card_scales">Con un bordone per suonarci sopra</string>
+    <string name="practice_card_capo">Quale tasto per la tonalità voluta</string>
+    <string name="practice_card_ear_training">Ascolta una nota e risuonala</string>
+    <string name="practice_last_time">L\'ultima volta</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Indietro</string>
     <string name="practice_tool_ear_training">Orecchio musicale</string>
     <string name="practice_root">Fondamentale</string>
     <string name="practice_chord_type">Tipo di accordo</string>

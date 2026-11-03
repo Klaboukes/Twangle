@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Configurações</string>
     <string name="settings_back">Voltar</string>
+    <string name="settings_group_tuning">Afinação</string>
 
     <string name="settings_group_look">Aparência</string>
     <string name="settings_group_while_tuning">Ao afinar</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Escuro</string>
     <string name="settings_dynamic_color_title">Cores do papel de parede</string>
     <string name="settings_dynamic_color_summary">Usar as cores do seu papel de parede</string>
+    <string name="settings_meter_title">Indicador</string>
+    <string name="settings_meter_trail">Rastro</string>
+    <string name="settings_meter_light_arc">Arco de luzes</string>
+    <string name="settings_meter_strobe">Estroboscópio</string>
 
     <string name="settings_left_handed_title">Canhoto</string>
     <string name="settings_left_handed_summary">Diagramas de acordes e braço das escalas desenhados para um violão segurado ao contrário</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto você afina</string>
     <string name="settings_vibrate_in_tune_title">Vibrar quando afinado</string>
     <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota fica afinada</string>
+    <string name="settings_string_tick_off_title">Marcar cordas afinadas</string>
+    <string name="settings_string_tick_off_summary">Uma marca em cada corda afinada, e “Tudo afinado. Pode tocar.” quando todas estiverem</string>
+    <string name="settings_intonation_check_title">Teste da casa 12</string>
+    <string name="settings_intonation_check_summary">Um botão acima das cordas para verificar a oitavação</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de sinal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: barrinhas ao lado da nota mostram se o afinador ouve você bem. Toque nelas para ver os números</string>
 

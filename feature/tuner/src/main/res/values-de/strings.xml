@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">Das Mikrofon ließ sich nicht öffnen. Schließe andere Apps, die es nutzen, und tippe auf „Erneut versuchen“, oder starte dein Gerät neu.</string>
     <string name="error_mic_stopped">Das Mikrofon wurde gestoppt, vielleicht für einen Anruf oder eine andere App. Tippe auf „Erneut versuchen“, um weiter zu stimmen.</string>
     <string name="error_retry">Erneut versuchen</string>
+    <string name="tuner_any_note">Jeder Ton</string>
+    <string name="tuner_any_note_summary">Der nächstliegende Ton, ohne Saiten</string>
 
     <string name="tuner_show_controls">Bedienelemente zeigen</string>
     <string name="tuner_focus_mode">Fokusmodus</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">Spiel einen Ton</string>
     <string name="tuner_hint_play_locked_string">Spiel die %1$s-Saite</string>
     <string name="tuner_hint_playing">Spielt %1$s</string>
+    <string name="tuner_hint_all_in_tune">Gestimmt. Spiel los.</string>
     <string name="tuner_string_lock">Auf diese Saite festlegen</string>
     <string name="tuner_string_unlock">Saiten automatisch wählen</string>
     <string name="tuner_string_locked">Festgelegt</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">Festgelegt, spielt</string>
     <string name="tuner_string_tuned">Gestimmt</string>
     <string name="tuner_string_locked_tuned">Festgelegt, gestimmt</string>
+    <string name="tuner_string_locked_mark">Festgelegt, %1$s</string>
     <!-- Nach einer Zahl bleibt „Cent“ in der Einzahl: „12 Cent“. -->
     <string name="tuner_cents_zero">0 Cent</string>
     <plurals name="tuner_cents_flat">
@@ -94,6 +98,14 @@
         <item quantity="other">%1$d Cent zu hoch</item>
     </plurals>
     <string name="tuner_in_tune">gestimmt</string>
+    <string name="tuner_word_tighten">Spannen</string>
+    <string name="tuner_word_loosen">Lockern</string>
+    <string name="tuner_word_too_low">Zu tief</string>
+    <string name="tuner_word_too_high">Zu hoch</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d Cent</item>
+        <item quantity="other">%1$d Cent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Spiel etwas lauter</string>
     <string name="tuner_tip_too_noisy">Zu viel Lärm, Handy näher ran</string>
     <string name="tuner_tip_too_loud">Zu laut, Handy weiter weg</string>
@@ -113,7 +125,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrument und Stimmung</string>
+    <string name="tuner_picker_title">Was stimmst du?</string>
 
     <string name="tuner_new_tuning">Neue Stimmung</string>
 
@@ -141,6 +153,11 @@
     <string name="tuner_delete_tuning_text">„%1$s“ ist dann für immer weg.</string>
     <string name="tuner_delete_tuning_cancel">Abbrechen</string>
     <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d von %2$d gestimmt</item>
+        <item quantity="other">%1$d von %2$d gestimmt</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Nicht gehört</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Check am 12. Bund</string>
     <string name="tuner_intonation_step_open">Leer</string>
@@ -193,6 +210,7 @@
     <string name="tuner_chord_slash">%1$s, %2$s im Bass</string>
     <string name="tuner_trail_bending_up">zieht nach oben</string>
     <string name="tuner_trail_bending_down">zieht nach unten</string>
+    <string name="tuner_spoken_wavering">schwankend</string>
     <string name="tuner_screen_off_soon">Bildschirm geht gleich aus</string>
     <string name="tuner_screen_off_keep_on">Tippe, damit er anbleibt</string>
 </resources>

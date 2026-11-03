@@ -67,6 +67,7 @@ Goal: a strum shows which strings are off and a fretted chord shows its name, wi
 ### Phase 76 — 2.0 ready for testers
 Goal: `v2` becomes `main`, and everything around the app follows.
 - ☐ The translations of every new and reworded text (the night's `/translate` on `v2`), the store screenshots and the website's pages for the new screens, the privacy policy where a setting changed; the store texts too, which `/translate` leaves out: the second screenshot's caption (Phase 69's "Tune, keep time and practise in one app", in English and Dutch only) in the other 25 store folders, and whatever 2.0 changes in the full description; the website's pictures made again (`scripts/website-pictures.sh`), the Practice cards (store screenshot 2) added to the home page
+  - 2026-11-03: the app's texts on `v2` (phone, watch and widget, Phases 67–75) are in every language, strict check passed; the store texts, screenshots, website and privacy policy are still open
 - ☐ A fresh Baseline Profile; the overnight run clean on `v2`; `v2` merged into `main` through one PR, the `v2` branch deleted and CLAUDE.md's *The v2 branch* section with it
 - ☐ The 1.1 settings read on the first start of 2.0 as the plan says, checked with a 1.1 install updated on the Xiaomi: tunings, A4, notation and the metronome's settings kept
 

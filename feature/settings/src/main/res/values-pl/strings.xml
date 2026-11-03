@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Ustawienia</string>
     <string name="settings_back">Wstecz</string>
+    <string name="settings_group_tuning">Strój</string>
 
     <string name="settings_group_look">Wygląd</string>
     <string name="settings_group_while_tuning">Podczas strojenia</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Ciemny</string>
     <string name="settings_dynamic_color_title">Kolory tapety</string>
     <string name="settings_dynamic_color_summary">Używaj kolorów z tapety</string>
+    <string name="settings_meter_title">Wskaźnik</string>
+    <string name="settings_meter_trail">Ślad</string>
+    <string name="settings_meter_light_arc">Łuk świetlny</string>
+    <string name="settings_meter_strobe">Stroboskop</string>
 
     <string name="settings_left_handed_title">Dla leworęcznych</string>
     <string name="settings_left_handed_summary">Diagramy akordów i gryf skal rysowane dla gitary trzymanej odwrotnie</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Ekran nie gaśnie podczas strojenia</string>
     <string name="settings_vibrate_in_tune_title">Wibruj po nastrojeniu</string>
     <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
+    <string name="settings_string_tick_off_title">Odhaczaj nastrojone struny</string>
+    <string name="settings_string_tick_off_summary">Znaczek na każdej strunie, gdy jest nastrojona, i „Nastrojone. Graj.”, gdy wszystkie</string>
+    <string name="settings_intonation_check_title">Test 12. progu</string>
+    <string name="settings_intonation_check_summary">Przycisk nad strunami do sprawdzenia intonacji</string>
     <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
     <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski przy dźwięku pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
 

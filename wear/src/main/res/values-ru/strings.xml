@@ -22,6 +22,8 @@
         <item quantity="many">%1$d центов выше</item>
         <item quantity="other">%1$d цента выше</item>
     </plurals>
+    <string name="wear_word_tighten">Подтяни</string>
+    <string name="wear_word_loosen">Ослабь</string>
     <string name="wear_spoken_sharp">%1$s диез</string>
     <string name="wear_mic_needed">Twangle слушает твой инструмент через микрофон часов.</string>
     <string name="wear_allow_mic">Разрешить микрофон</string>

@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Innstillinger</string>
     <string name="settings_back">Tilbake</string>
+    <string name="settings_group_tuning">Stemming</string>
 
     <string name="settings_group_look">Utseende</string>
     <string name="settings_group_while_tuning">Mens du stemmer</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Mørkt</string>
     <string name="settings_dynamic_color_title">Bakgrunnsfarger</string>
     <string name="settings_dynamic_color_summary">Bruk farger fra bakgrunnsbildet ditt</string>
+    <string name="settings_meter_title">Måler</string>
+    <string name="settings_meter_trail">Tonespor</string>
+    <string name="settings_meter_light_arc">LED-bue</string>
+    <string name="settings_meter_strobe">Stroboskop</string>
 
     <string name="settings_left_handed_title">Venstrehendt</string>
     <string name="settings_left_handed_summary">Akkordskjemaer og skalahalsen tegnet for en gitar som holdes andre veien</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Skjermen holdes på mens du stemmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrer når tonen er stemt</string>
     <string name="settings_vibrate_in_tune_summary">En kort summing når tonen treffer riktig</string>
+    <string name="settings_string_tick_off_title">Huk av stemte strenger</string>
+    <string name="settings_string_tick_off_summary">En hake på hver streng når den er stemt, og «Stemt. Spill i vei.» når alle er det</string>
+    <string name="settings_intonation_check_title">Sjekk på 12. bånd</string>
+    <string name="settings_intonation_check_summary">En knapp over strengene for å sjekke intonasjonen</string>
     <string name="settings_show_signal_bars_title">Vis signalstolper</string>
     <string name="settings_show_signal_bars_summary">For de nysgjerrige: små stolper ved tonen viser hvor godt stemmeren hører deg. Trykk på dem for tallene</string>
 

@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">和弦</string>
     <string name="practice_tool_scales">音階</string>
+    <string name="practice_card_chords">所有按法，也支援左手</string>
+    <string name="practice_card_scales">伴著持續音彈奏</string>
+    <string name="practice_card_capo">想要的調，夾第幾格</string>
+    <string name="practice_card_ear_training">聽一個音，彈出來</string>
+    <string name="practice_last_time">上次</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">返回</string>
     <string name="practice_tool_ear_training">練耳</string>
     <string name="practice_root">根音</string>
     <string name="practice_chord_type">和弦類型</string>

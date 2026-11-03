@@ -16,6 +16,8 @@
         <item quantity="one">%1$d sent yüksek</item>
         <item quantity="other">%1$d sent yüksek</item>
     </plurals>
+    <string name="wear_word_tighten">Yükselt</string>
+    <string name="wear_word_loosen">Düşür</string>
     <string name="wear_spoken_sharp">%1$s diyez</string>
     <string name="wear_mic_needed">Twangle enstrümanını saatin mikrofonuyla dinler.</string>
     <string name="wear_allow_mic">Mikrofona izin ver</string>

@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">Mikrofon açılamadı. Onu kullanan diğer uygulamaları kapat ve Tekrar dene\'ye dokun ya da cihazını yeniden başlat.</string>
     <string name="error_mic_stopped">Mikrofon durdu, belki bir arama veya başka bir uygulama yüzünden. Akorda devam etmek için Tekrar dene\'ye dokun.</string>
     <string name="error_retry">Tekrar dene</string>
+    <string name="tuner_any_note">Her nota</string>
+    <string name="tuner_any_note_summary">En yakın nota, tel yok</string>
 
     <string name="tuner_show_controls">Kontrolleri göster</string>
     <string name="tuner_focus_mode">Odak modu</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">Bir nota çal</string>
     <string name="tuner_hint_play_locked_string">%1$s telini çal</string>
     <string name="tuner_hint_playing">%1$s çalıyor</string>
+    <string name="tuner_hint_all_in_tune">Akort tamam. Çal.</string>
     <string name="tuner_string_lock">Bu tele sabitle</string>
     <string name="tuner_string_unlock">Telleri otomatik seç</string>
     <string name="tuner_string_locked">Sabitlendi</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">Sabitlendi, çalıyor</string>
     <string name="tuner_string_tuned">Akortlandı</string>
     <string name="tuner_string_locked_tuned">Sabitlendi, akortlandı</string>
+    <string name="tuner_string_locked_mark">Sabitlendi, %1$s</string>
     <!-- Sayıdan sonra isim tekil kalır: "12 sent". -->
     <string name="tuner_cents_zero">0 sent</string>
     <plurals name="tuner_cents_flat">
@@ -94,6 +98,14 @@
         <item quantity="other">%1$d sent yüksek</item>
     </plurals>
     <string name="tuner_in_tune">akortlu</string>
+    <string name="tuner_word_tighten">Yükselt</string>
+    <string name="tuner_word_loosen">Düşür</string>
+    <string name="tuner_word_too_low">Düşük</string>
+    <string name="tuner_word_too_high">Yüksek</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d sent</item>
+        <item quantity="other">%1$d sent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Biraz daha güçlü çal</string>
     <string name="tuner_tip_too_noisy">Çok gürültülü, telefonu yaklaştır</string>
     <string name="tuner_tip_too_loud">Çok yüksek, telefonu uzaklaştır</string>
@@ -113,7 +125,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Enstrüman ve akort</string>
+    <string name="tuner_picker_title">Neyi akort ediyorsun?</string>
 
     <string name="tuner_new_tuning">Yeni akort</string>
 
@@ -141,6 +153,11 @@
     <string name="tuner_delete_tuning_text">“%1$s” kalıcı olarak silinecek.</string>
     <string name="tuner_delete_tuning_cancel">İptal</string>
     <string name="tuner_strum_all_in_tune">Tüm teller akortlu</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d / %2$d akortlu</item>
+        <item quantity="other">%1$d / %2$d akortlu</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Duyulmadı</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12. perde kontrolü</string>
     <string name="tuner_intonation_step_open">Boş</string>
@@ -193,6 +210,7 @@
     <string name="tuner_chord_slash">%1$s, basta %2$s</string>
     <string name="tuner_trail_bending_up">yükseliyor</string>
     <string name="tuner_trail_bending_down">alçalıyor</string>
+    <string name="tuner_spoken_wavering">dalgalanıyor</string>
     <string name="tuner_screen_off_soon">Ekran birazdan kapanacak</string>
     <string name="tuner_screen_off_keep_on">Açık tutmak için dokun</string>
 </resources>

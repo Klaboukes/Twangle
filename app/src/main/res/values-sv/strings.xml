@@ -1,5 +1,5 @@
 <resources>
-    <string name="nav_tuner">Stämmare</string>
+    <string name="nav_tuner">Stämma</string>
     <string name="nav_metronome">Metronom</string>
     <string name="nav_practice">Öva</string>
     <string name="nav_settings">Inställningar</string>

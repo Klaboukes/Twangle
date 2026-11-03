@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Аккорды</string>
     <string name="practice_tool_scales">Гаммы</string>
+    <string name="practice_card_chords">Все аппликатуры, и для левши</string>
+    <string name="practice_card_scales">Играй под бурдон</string>
+    <string name="practice_card_capo">Какой лад для нужной тональности</string>
+    <string name="practice_card_ear_training">Послушай ноту, сыграй её</string>
+    <string name="practice_last_time">В прошлый раз</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Назад</string>
     <string name="practice_tool_ear_training">Тренировка слуха</string>
     <string name="practice_root">Тоника</string>
     <string name="practice_chord_type">Тип аккорда</string>

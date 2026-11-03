@@ -3,7 +3,7 @@
 app nav_metronome 3634f122
 app nav_practice d3857b12
 app nav_settings 74a883a0
-app nav_tuner fc1d2038
+app nav_tuner 22c58d84
 app widget_description 6ecc978c
 app widget_name fc1d2038
 app widget_open_tuner 27616cdc
@@ -134,8 +134,9 @@ feature/metronome metronome_subdivision_sixteenths 80b881c5
 feature/metronome metronome_subdivision_sixteenths_on b83f659c
 feature/metronome metronome_subdivision_triplets d2389bf5
 feature/metronome metronome_subdivision_triplets_on a5c5c4f8
-feature/metronome metronome_tap c197fccb
+feature/metronome metronome_tap 6dbbb726
 feature/metronome metronome_tempo 214b5b84
+feature/metronome metronome_tempo_line 10ea78da
 feature/metronome metronome_tempo_value 382697eb
 feature/metronome metronome_trainer bba25c05
 feature/metronome metronome_trainer_at_goal 9103322c
@@ -158,6 +159,7 @@ feature/metronome metronome_trainer_step 8e6a6cca
 feature/metronome metronome_try_again d8b8392e
 feature/metronome metronome_use c36d819e
 feature/metronome metronome_vibrate fba90e1a
+feature/practice practice_back 76900f1b
 feature/practice practice_capo_higher 4c3e6e4c
 feature/practice practice_capo_label 936e4161
 feature/practice practice_capo_lower bc82ae98
@@ -172,6 +174,10 @@ feature/practice practice_capo_shapes_spoken 63fed21e
 feature/practice practice_capo_short_string b6fc998b
 feature/practice practice_capo_sounds_column 6f305c4b
 feature/practice practice_capo_sounds_in dabdfb36
+feature/practice practice_card_capo df09173e
+feature/practice practice_card_chords 97ac48e5
+feature/practice practice_card_ear_training f3a31e60
+feature/practice practice_card_scales faf59e67
 feature/practice practice_chart_fret 746cb283
 feature/practice practice_chord_add9 d8d8bc16
 feature/practice practice_chord_augmented fe796cbe
@@ -209,6 +215,8 @@ feature/practice practice_drone_sound_spoken 3bef2522
 feature/practice practice_drone_stop cde2cf09
 feature/practice practice_drone_tanpura c1df7180
 feature/practice practice_drone_warm_pad c323a057
+feature/practice practice_last_time 07aef1c3
+feature/practice practice_last_time_detail fed2d9b8
 feature/practice practice_root 44cb005e
 feature/practice practice_scale_blues b05786df
 feature/practice practice_scale_dorian 63705d23
@@ -284,10 +292,13 @@ feature/settings settings_back 76900f1b
 feature/settings settings_dynamic_color_summary 6cc3fe1d
 feature/settings settings_dynamic_color_title 8599705a
 feature/settings settings_group_look a0de5719
+feature/settings settings_group_tuning 2abeefba
 feature/settings settings_group_while_tuning d30f1d0c
 feature/settings settings_in_tune_precision_precise 35664437
 feature/settings settings_in_tune_precision_relaxed e2e7248f
 feature/settings settings_in_tune_precision_title 4c3fa9d5
+feature/settings settings_intonation_check_summary c59b2e22
+feature/settings settings_intonation_check_title 5471e11b
 feature/settings settings_keep_screen_on_summary 9d43b861
 feature/settings settings_keep_screen_on_title 177d4076
 feature/settings settings_language_cancel 19766ed6
@@ -295,6 +306,10 @@ feature/settings settings_language_phone 9702945f
 feature/settings settings_language_title a4fe6526
 feature/settings settings_left_handed_summary 0b2dd917
 feature/settings settings_left_handed_title e72cb958
+feature/settings settings_meter_light_arc 456d8906
+feature/settings settings_meter_strobe 3a2260e6
+feature/settings settings_meter_title 2293b30e
+feature/settings settings_meter_trail e2c8d39b
 feature/settings settings_notation_automatic 2d5700af
 feature/settings settings_notation_flats b3400ed7
 feature/settings settings_notation_german e74f3e0f
@@ -304,6 +319,8 @@ feature/settings settings_notation_solfege 86108139
 feature/settings settings_notation_title dab557ae
 feature/settings settings_show_signal_bars_summary 3c567c40
 feature/settings settings_show_signal_bars_title 76f1f602
+feature/settings settings_string_tick_off_summary f5894e6f
+feature/settings settings_string_tick_off_title be2c9e21
 feature/settings settings_theme_dark 60acc53f
 feature/settings settings_theme_light dbcd5e7b
 feature/settings settings_theme_system b0459211
@@ -338,7 +355,10 @@ feature/tuner mic_permission_settings_hint_switch 097daf39
 feature/tuner mic_permission_title bfd6639c
 feature/tuner mic_permission_without_mic e068bd72
 feature/tuner mic_permission_without_mic_metronome 53629237
+feature/tuner tuner_any_note b801333c
+feature/tuner tuner_any_note_summary 3b0d9df2
 feature/tuner tuner_cents_flat 8d383020
+feature/tuner tuner_cents_off db1f267c
 feature/tuner tuner_cents_sharp bad7d782
 feature/tuner tuner_cents_zero 9cd1fea5
 feature/tuner tuner_chord_major 9b917c8f
@@ -361,6 +381,7 @@ feature/tuner tuner_edit_tuning 464c4ffd
 feature/tuner tuner_exit_focus_mode cf1f3e58
 feature/tuner tuner_focus_mode 047cfdeb
 feature/tuner tuner_hide_controls 9adcc54f
+feature/tuner tuner_hint_all_in_tune 957801e8
 feature/tuner tuner_hint_play_locked_string db376559
 feature/tuner tuner_hint_play_note 4d452ac3
 feature/tuner tuner_hint_play_string 68542d5d
@@ -411,7 +432,7 @@ feature/tuner tuner_lowered_5 9cba84e4
 feature/tuner tuner_lowered_none dc937b59
 feature/tuner tuner_my_tunings efc0abb0
 feature/tuner tuner_new_tuning 0b4b11df
-feature/tuner tuner_picker_title 8157ae8e
+feature/tuner tuner_picker_title 71814833
 feature/tuner tuner_screen_off_keep_on f5aa7013
 feature/tuner tuner_screen_off_soon 8f7398a9
 feature/tuner tuner_show_controls e3e3f1ac
@@ -429,8 +450,10 @@ feature/tuner tuner_spoken_reading_hint 6a8c05b0
 feature/tuner tuner_spoken_separator f240463d
 feature/tuner tuner_spoken_string d2911fe6
 feature/tuner tuner_spoken_tuning 75e53fce
+feature/tuner tuner_spoken_wavering 46769cb3
 feature/tuner tuner_string_lock c0cdfc34
 feature/tuner tuner_string_locked a424e33d
+feature/tuner tuner_string_locked_mark 04d796f5
 feature/tuner tuner_string_locked_sounding ca042a92
 feature/tuner tuner_string_locked_tuned 29970a87
 feature/tuner tuner_string_play 1f512491
@@ -439,6 +462,8 @@ feature/tuner tuner_string_stop_tone 5338e77a
 feature/tuner tuner_string_tuned 443b0946
 feature/tuner tuner_string_unlock ac78bbaf
 feature/tuner tuner_strum_all_in_tune 42d1c72b
+feature/tuner tuner_strum_count fe322fd7
+feature/tuner tuner_strum_not_heard 882de4e9
 feature/tuner tuner_strum_spoken_string 75e53fce
 feature/tuner tuner_tip_too_loud e26a0e0e
 feature/tuner tuner_tip_too_noisy ddecdb56
@@ -447,6 +472,10 @@ feature/tuner tuner_trail_bending_down ee077523
 feature/tuner tuner_trail_bending_up 24f95a46
 feature/tuner tuner_tuning_name fed2d9b8
 feature/tuner tuner_tuning_options 5d1beaa1
+feature/tuner tuner_word_loosen aca993ac
+feature/tuner tuner_word_tighten 7d2a57a6
+feature/tuner tuner_word_too_high ca188d8f
+feature/tuner tuner_word_too_low bae0e650
 feature/tuner tuning_a_standard 326c79d9
 feature/tuner tuning_b_flat_standard 1dbcb8d3
 feature/tuner tuning_b_standard 0e502294
@@ -506,3 +535,5 @@ wear wear_spoken_reading_hint 6a8c05b0
 wear wear_spoken_sharp 0dc644eb
 wear wear_tile_tune 22c58d84
 wear wear_try_again d8b8392e
+wear wear_word_loosen aca993ac
+wear wear_word_tighten 7d2a57a6

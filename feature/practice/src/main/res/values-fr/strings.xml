@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Accords</string>
     <string name="practice_tool_scales">Gammes</string>
+    <string name="practice_card_chords">Tous les doigtés, pour gauchers aussi</string>
+    <string name="practice_card_scales">Avec un bourdon pour jouer dessus</string>
+    <string name="practice_card_capo">Quelle case pour la tonalité voulue</string>
+    <string name="practice_card_ear_training">Écoutez une note, rejouez-la</string>
+    <string name="practice_last_time">La dernière fois</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Retour</string>
     <string name="practice_tool_ear_training">Oreille musicale</string>
     <string name="practice_root">Fondamentale</string>
     <string name="practice_chord_type">Type d\'accord</string>

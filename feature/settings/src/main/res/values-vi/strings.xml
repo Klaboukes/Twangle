@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Cài đặt</string>
     <string name="settings_back">Quay lại</string>
+    <string name="settings_group_tuning">Lên dây</string>
 
     <string name="settings_group_look">Giao diện</string>
     <string name="settings_group_while_tuning">Khi lên dây</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Tối</string>
     <string name="settings_dynamic_color_title">Màu hình nền</string>
     <string name="settings_dynamic_color_summary">Dùng màu từ hình nền của bạn</string>
+    <string name="settings_meter_title">Đồng hồ đo</string>
+    <string name="settings_meter_trail">Đường cao độ</string>
+    <string name="settings_meter_light_arc">Cung đèn</string>
+    <string name="settings_meter_strobe">Strobe</string>
 
     <string name="settings_left_handed_title">Tay trái</string>
     <string name="settings_left_handed_summary">Sơ đồ hợp âm và cần đàn ở Âm giai được vẽ cho đàn cầm ngược chiều</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Màn hình luôn sáng khi bạn lên dây</string>
     <string name="settings_vibrate_in_tune_title">Rung khi chuẩn</string>
     <string name="settings_vibrate_in_tune_summary">Rung ngắn khi nốt đạt đúng cao độ</string>
+    <string name="settings_string_tick_off_title">Đánh dấu dây đã chuẩn</string>
+    <string name="settings_string_tick_off_summary">Dấu tích trên mỗi dây khi đã chuẩn, và “Đã chuẩn. Đàn thôi.” khi tất cả đều chuẩn</string>
+    <string name="settings_intonation_check_title">Kiểm tra phím 12</string>
+    <string name="settings_intonation_check_summary">Một nút phía trên các dây để kiểm tra độ chuẩn của ngựa đàn</string>
     <string name="settings_show_signal_bars_title">Hiện vạch tín hiệu</string>
     <string name="settings_show_signal_bars_summary">Cho người tò mò: các vạch nhỏ cạnh nốt cho thấy máy lên dây nghe bạn rõ đến đâu. Chạm vào để xem số liệu</string>
 

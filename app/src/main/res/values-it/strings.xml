@@ -1,5 +1,5 @@
 <resources>
-    <string name="nav_tuner">Accordatore</string>
+    <string name="nav_tuner">Accordare</string>
     <string name="nav_metronome">Metronomo</string>
     <string name="nav_practice">Pratica</string>
     <string name="nav_settings">Impostazioni</string>

@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">সেটিংস</string>
     <string name="settings_back">ফিরে যান</string>
+    <string name="settings_group_tuning">টিউনিং</string>
     <string name="settings_group_look">চেহারা</string>
     <string name="settings_group_while_tuning">টিউন করার সময়</string>
     <string name="settings_a4_title">রেফারেন্স পিচ (A4)</string>
@@ -25,12 +26,20 @@
     <string name="settings_theme_dark">ডার্ক</string>
     <string name="settings_dynamic_color_title">ওয়ালপেপারের রং</string>
     <string name="settings_dynamic_color_summary">আপনার ওয়ালপেপারের রং ব্যবহার করুন</string>
+    <string name="settings_meter_title">মিটার</string>
+    <string name="settings_meter_trail">সুরের রেখা</string>
+    <string name="settings_meter_light_arc">আলোর আর্ক</string>
+    <string name="settings_meter_strobe">স্ট্রোব</string>
     <string name="settings_left_handed_title">বাঁহাতি</string>
     <string name="settings_left_handed_summary">কর্ড চার্ট আর স্কেলের নেক উল্টো দিকে ধরা গিটারের জন্য আঁকা হয়</string>
     <string name="settings_keep_screen_on_title">স্ক্রিন চালু রাখুন</string>
     <string name="settings_keep_screen_on_summary">টিউন করার সময় স্ক্রিন চালু থাকে</string>
     <string name="settings_vibrate_in_tune_title">সুরে এলে ভাইব্রেট</string>
     <string name="settings_vibrate_in_tune_summary">নোট ঠিক পিচে পৌঁছালে একটি ছোট ভাইব্রেশন</string>
+    <string name="settings_string_tick_off_title">টিউন হওয়া তারে টিক দিন</string>
+    <string name="settings_string_tick_off_summary">প্রতিটি তার সুরে এলে তাতে একটি টিক, আর সব সুরে এলে “সুরে আছে। এবার বাজান।”</string>
+    <string name="settings_intonation_check_title">১২তম ফ্রেট চেক</string>
+    <string name="settings_intonation_check_summary">ইন্টোনেশন চেক করতে তারগুলোর উপরে একটি বোতাম</string>
     <string name="settings_show_signal_bars_title">সিগন্যাল বার দেখান</string>
     <string name="settings_show_signal_bars_summary">কৌতূহলীদের জন্য: নোটের পাশে ছোট বারগুলো দেখায় টিউনার আপনাকে কতটা ভালো শুনছে। সংখ্যা দেখতে সেগুলোতে ট্যাপ করুন</string>
     <string name="settings_language_title">ভাষা</string>

@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Akkorder</string>
     <string name="practice_tool_scales">Skalaer</string>
+    <string name="practice_card_chords">Alle greb, også til venstrehåndede</string>
+    <string name="practice_card_scales">Med bordun at spille til</string>
+    <string name="practice_card_capo">Hvilket bånd til din toneart</string>
+    <string name="practice_card_ear_training">Hør en tone, spil den efter</string>
+    <string name="practice_last_time">Sidst</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Tilbage</string>
     <string name="practice_tool_ear_training">Gehørtræning</string>
     <string name="practice_root">Grundtone</string>
     <string name="practice_chord_type">Akkordtype</string>

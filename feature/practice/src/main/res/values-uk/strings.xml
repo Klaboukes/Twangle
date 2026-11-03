@@ -1,6 +1,13 @@
 <resources>
     <string name="practice_tool_chords">Акорди</string>
     <string name="practice_tool_scales">Гами</string>
+    <string name="practice_card_chords">Усі аплікатури, і для шульги</string>
+    <string name="practice_card_scales">Грай під бурдон</string>
+    <string name="practice_card_capo">Який лад для потрібної тональності</string>
+    <string name="practice_card_ear_training">Послухай ноту, зіграй її</string>
+    <string name="practice_last_time">Минулого разу</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Назад</string>
     <string name="practice_tool_ear_training">Тренування слуху</string>
     <string name="practice_root">Тоніка</string>
     <string name="practice_chord_type">Тип акорду</string>

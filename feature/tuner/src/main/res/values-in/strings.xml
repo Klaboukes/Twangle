@@ -14,6 +14,8 @@
     <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka. Tutup aplikasi lain yang memakainya lalu ketuk Coba lagi, atau mulai ulang perangkat Anda.</string>
     <string name="error_mic_stopped">Mikrofon berhenti, mungkin karena panggilan atau aplikasi lain. Ketuk Coba lagi untuk terus menyetem.</string>
     <string name="error_retry">Coba lagi</string>
+    <string name="tuner_any_note">Nada apa saja</string>
+    <string name="tuner_any_note_summary">Nada terdekat, tanpa senar</string>
 
     <string name="tuner_show_controls">Tampilkan kontrol</string>
     <string name="tuner_focus_mode">Mode fokus</string>
@@ -74,6 +76,7 @@
     <string name="tuner_hint_play_note">Mainkan nada</string>
     <string name="tuner_hint_play_locked_string">Petik senar %1$s</string>
     <string name="tuner_hint_playing">Memutar %1$s</string>
+    <string name="tuner_hint_all_in_tune">Sudah pas. Ayo main.</string>
     <string name="tuner_string_lock">Kunci ke senar ini</string>
     <string name="tuner_string_unlock">Pilih senar otomatis</string>
     <string name="tuner_string_locked">Terkunci</string>
@@ -83,6 +86,7 @@
     <string name="tuner_string_locked_sounding">Terkunci, sedang diputar</string>
     <string name="tuner_string_tuned">Sudah pas</string>
     <string name="tuner_string_locked_tuned">Terkunci, sudah pas</string>
+    <string name="tuner_string_locked_mark">Terkunci, %1$s</string>
     <string name="tuner_cents_zero">0 sen</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">%1$d sen terlalu rendah</item>
@@ -91,6 +95,13 @@
         <item quantity="other">%1$d sen terlalu tinggi</item>
     </plurals>
     <string name="tuner_in_tune">pas</string>
+    <string name="tuner_word_tighten">Kencangkan</string>
+    <string name="tuner_word_loosen">Kendurkan</string>
+    <string name="tuner_word_too_low">Terlalu rendah</string>
+    <string name="tuner_word_too_high">Terlalu tinggi</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d sen</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Mainkan lebih keras</string>
     <string name="tuner_tip_too_noisy">Terlalu bising, dekatkan ponsel</string>
     <string name="tuner_tip_too_loud">Terlalu keras, jauhkan ponsel</string>
@@ -110,7 +121,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrumen dan stem</string>
+    <string name="tuner_picker_title">Apa yang Anda setem?</string>
 
     <string name="tuner_new_tuning">Stem baru</string>
 
@@ -138,6 +149,10 @@
     <string name="tuner_delete_tuning_text">“%1$s” akan hilang selamanya.</string>
     <string name="tuner_delete_tuning_cancel">Batal</string>
     <string name="tuner_strum_all_in_tune">Semua senar sudah pas</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">%1$d dari %2$d pas</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Tidak terdengar</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Cek fret ke-12</string>
     <string name="tuner_intonation_step_open">Lepas</string>
@@ -189,6 +204,7 @@
     <string name="tuner_chord_slash">%1$s, bas %2$s</string>
     <string name="tuner_trail_bending_up">naik</string>
     <string name="tuner_trail_bending_down">turun</string>
+    <string name="tuner_spoken_wavering">naik-turun</string>
     <string name="tuner_screen_off_soon">Layar akan segera mati</string>
     <string name="tuner_screen_off_keep_on">Ketuk agar tetap menyala</string>
 </resources>

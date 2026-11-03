@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Ayarlar</string>
     <string name="settings_back">Geri</string>
+    <string name="settings_group_tuning">Akort</string>
 
     <string name="settings_group_look">Görünüm</string>
     <string name="settings_group_while_tuning">Akort sırasında</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Koyu</string>
     <string name="settings_dynamic_color_title">Duvar kâğıdı renkleri</string>
     <string name="settings_dynamic_color_summary">Duvar kâğıdındaki renkleri kullan</string>
+    <string name="settings_meter_title">Gösterge</string>
+    <string name="settings_meter_trail">Ses izi</string>
+    <string name="settings_meter_light_arc">Işık yayı</string>
+    <string name="settings_meter_strobe">Stroboskop</string>
 
     <string name="settings_left_handed_title">Solak</string>
     <string name="settings_left_handed_summary">Akor şemaları ve gam klavyesi ters tutulan bir gitar için çizilir</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Akort ederken ekran kapanmaz</string>
     <string name="settings_vibrate_in_tune_title">Akortlu olunca titreş</string>
     <string name="settings_vibrate_in_tune_summary">Nota akortlu olunca kısa bir titreşim</string>
+    <string name="settings_string_tick_off_title">Akortlu telleri işaretle</string>
+    <string name="settings_string_tick_off_summary">Akortlu olan her tele bir işaret, hepsi akortluysa “Akort tamam. Çal.”</string>
+    <string name="settings_intonation_check_title">12. perde kontrolü</string>
+    <string name="settings_intonation_check_summary">Tellerin üstünde entonasyonu kontrol eden bir düğme</string>
     <string name="settings_show_signal_bars_title">Sinyal çubuklarını göster</string>
     <string name="settings_show_signal_bars_summary">Meraklısı için: notanın yanındaki küçük çubuklar, akort cihazının seni ne kadar iyi duyduğunu gösterir. Değerler için onlara dokun</string>
 

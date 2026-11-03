@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">การตั้งค่า</string>
     <string name="settings_back">กลับ</string>
+    <string name="settings_group_tuning">การจูน</string>
 
     <string name="settings_group_look">รูปลักษณ์</string>
     <string name="settings_group_while_tuning">ขณะจูน</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">มืด</string>
     <string name="settings_dynamic_color_title">สีจากวอลเปเปอร์</string>
     <string name="settings_dynamic_color_summary">ใช้สีจากวอลเปเปอร์ของคุณ</string>
+    <string name="settings_meter_title">มาตรวัด</string>
+    <string name="settings_meter_trail">เส้นระดับเสียง</string>
+    <string name="settings_meter_light_arc">ไฟโค้ง</string>
+    <string name="settings_meter_strobe">สโตรบ</string>
 
     <string name="settings_left_handed_title">ถนัดซ้าย</string>
     <string name="settings_left_handed_summary">วาดตารางคอร์ดและคอกีตาร์ของสเกลสำหรับกีตาร์ที่ถือกลับด้าน</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">หน้าจอเปิดอยู่ตลอดขณะที่คุณจูน</string>
     <string name="settings_vibrate_in_tune_title">สั่นเมื่อตรงเสียง</string>
     <string name="settings_vibrate_in_tune_summary">สั่นสั้นๆ เมื่อโน้ตตรงเสียง</string>
+    <string name="settings_string_tick_off_title">ติ๊กสายที่จูนแล้ว</string>
+    <string name="settings_string_tick_off_summary">ติ๊กที่สายแต่ละสายเมื่อตรงเสียง และขึ้น “ตรงเสียงแล้ว เล่นได้เลย” เมื่อครบทุกสาย</string>
+    <string name="settings_intonation_check_title">เช็กเฟรตที่ 12</string>
+    <string name="settings_intonation_check_summary">ปุ่มเหนือสายสำหรับเช็กอิน\u2060โท\u2060เน\u2060ชัน</string>
     <string name="settings_show_signal_bars_title">แสดงแถบสัญญาณ</string>
     <string name="settings_show_signal_bars_summary">สำหรับคนที่อยากรู้: แถบเล็กๆ ข้างโน้ตบอกว่าจูนเนอร์ได้ยินคุณชัดแค่ไหน แตะเพื่อดูตัวเลข</string>
 

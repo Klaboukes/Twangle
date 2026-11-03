@@ -13,6 +13,8 @@
     <string name="error_mic_unavailable">Не вдалося відкрити мікрофон. Закрий інші додатки, що його використовують, і торкнися «Спробувати ще раз» або перезапусти пристрій.</string>
     <string name="error_mic_stopped">Мікрофон вимкнувся, можливо, через дзвінок або інший додаток. Торкнися «Спробувати ще раз», щоб далі налаштовувати.</string>
     <string name="error_retry">Спробувати ще раз</string>
+    <string name="tuner_any_note">Будь-яка нота</string>
+    <string name="tuner_any_note_summary">Найближча нота, без струн</string>
     <string name="tuner_show_controls">Показати керування</string>
     <string name="tuner_focus_mode">Режим фокусу</string>
     <string name="tuner_exit_focus_mode">Вийти з режиму фокусу</string>
@@ -70,6 +72,7 @@
     <string name="tuner_hint_play_note">Зіграй ноту</string>
     <string name="tuner_hint_play_locked_string">Зіграй струну %1$s</string>
     <string name="tuner_hint_playing">Звучить %1$s</string>
+    <string name="tuner_hint_all_in_tune">Налаштовано. Грай.</string>
     <string name="tuner_string_lock">Закріпити цю струну</string>
     <string name="tuner_string_unlock">Вибирати струни автоматично</string>
     <string name="tuner_string_locked">Закріплена</string>
@@ -79,6 +82,7 @@
     <string name="tuner_string_locked_sounding">Закріплена, звучить</string>
     <string name="tuner_string_tuned">Налаштована</string>
     <string name="tuner_string_locked_tuned">Закріплена, налаштована</string>
+    <string name="tuner_string_locked_mark">Закріплена, %1$s</string>
     <string name="tuner_cents_zero">0 центів</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d цент нижче</item>
@@ -93,6 +97,16 @@
         <item quantity="other">%1$d цента вище</item>
     </plurals>
     <string name="tuner_in_tune">налаштовано</string>
+    <string name="tuner_word_tighten">Підтягни</string>
+    <string name="tuner_word_loosen">Послаб</string>
+    <string name="tuner_word_too_low">Низько</string>
+    <string name="tuner_word_too_high">Високо</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d цент</item>
+        <item quantity="few">%1$d центи</item>
+        <item quantity="many">%1$d центів</item>
+        <item quantity="other">%1$d цента</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Грай трохи голосніше</string>
     <string name="tuner_tip_too_noisy">Надто шумно, присунь телефон</string>
     <string name="tuner_tip_too_loud">Надто гучно, відсунь телефон</string>
@@ -111,7 +125,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Інструмент і стрій</string>
+    <string name="tuner_picker_title">Що налаштовуєш?</string>
     <string name="tuner_new_tuning">Новий стрій</string>
     <string name="tuning_editor_title_edit">Змінити стрій</string>
     <string name="tuning_editor_close">Закрити без збереження</string>
@@ -136,6 +150,13 @@
     <string name="tuner_delete_tuning_text">«%1$s» буде видалено назавжди.</string>
     <string name="tuner_delete_tuning_cancel">Скасувати</string>
     <string name="tuner_strum_all_in_tune">Усі струни налаштовано</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d з %2$d налаштована</item>
+        <item quantity="few">%1$d з %2$d налаштовані</item>
+        <item quantity="many">%1$d з %2$d налаштовані</item>
+        <item quantity="other">%1$d з %2$d налаштовані</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Не чути</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Перевірка на 12-му ладу</string>
     <string name="tuner_intonation_step_open">Відкрита</string>
@@ -190,6 +211,7 @@
     <string name="tuner_chord_slash">%1$s, у басі %2$s</string>
     <string name="tuner_trail_bending_up">іде вгору</string>
     <string name="tuner_trail_bending_down">іде вниз</string>
+    <string name="tuner_spoken_wavering">коливається</string>
     <string name="tuner_screen_off_soon">Екран скоро згасне</string>
     <string name="tuner_screen_off_keep_on">Торкнися, щоб він не згас</string>
 </resources>

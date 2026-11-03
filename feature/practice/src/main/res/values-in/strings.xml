@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Akor</string>
     <string name="practice_tool_scales">Tangga nada</string>
+    <string name="practice_card_chords">Semua bentuk, juga untuk kidal</string>
+    <string name="practice_card_scales">Main bersama drone</string>
+    <string name="practice_card_capo">Fret untuk nada dasar yang Anda mau</string>
+    <string name="practice_card_ear_training">Dengar nada, lalu tirukan</string>
+    <string name="practice_last_time">Terakhir kali</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Kembali</string>
     <string name="practice_tool_ear_training">Latihan pendengaran</string>
     <string name="practice_root">Nada dasar</string>
     <string name="practice_chord_type">Jenis akor</string>

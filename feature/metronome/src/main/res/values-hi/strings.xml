@@ -6,9 +6,10 @@
         <item quantity="one">%1$d बीट प्रति मिनट, %2$s</item>
         <item quantity="other">%1$d बीट प्रति मिनट, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">बीट प्रति मिनट · %1$s</string>
     <string name="metronome_slower">धीमा</string>
     <string name="metronome_faster">तेज़</string>
-    <string name="metronome_tap">टैप टेम्पो</string>
+    <string name="metronome_tap">बीट पर टैप करें</string>
     <string name="metronome_start">शुरू करें</string>
     <string name="metronome_stop">रोकें</string>
     <string name="metronome_vibrate">बीट पर वाइब्रेट करें</string>

@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">Acordes</string>
     <string name="practice_tool_scales">Escalas</string>
+    <string name="practice_card_chords">Todas las formas, también para zurdos</string>
+    <string name="practice_card_scales">Con bordón para tocar encima</string>
+    <string name="practice_card_capo">Qué traste para el tono que quieres</string>
+    <string name="practice_card_ear_training">Oye una nota y repítela</string>
+    <string name="practice_last_time">La última vez</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Atrás</string>
     <string name="practice_tool_ear_training">Oído musical</string>
     <string name="practice_root">Nota fundamental</string>
     <string name="practice_chord_type">Tipo de acorde</string>

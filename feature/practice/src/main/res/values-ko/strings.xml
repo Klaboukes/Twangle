@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">코드</string>
     <string name="practice_tool_scales">스케일</string>
+    <string name="practice_card_chords">모든 운지, 왼손잡이용도</string>
+    <string name="practice_card_scales">드론에 맞춰 연주해요</string>
+    <string name="practice_card_capo">원하는 키에 맞는 프렛</string>
+    <string name="practice_card_ear_training">음을 듣고 따라 쳐요</string>
+    <string name="practice_last_time">지난번</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">뒤로</string>
     <string name="practice_tool_ear_training">청음 훈련</string>
     <string name="practice_root">근음</string>
     <string name="practice_chord_type">코드 종류</string>

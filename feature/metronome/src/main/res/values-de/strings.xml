@@ -6,9 +6,10 @@
         <item quantity="one">%1$d Schlag pro Minute, %2$s</item>
         <item quantity="other">%1$d Schläge pro Minute, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">Schläge pro Minute · %1$s</string>
     <string name="metronome_slower">Langsamer</string>
     <string name="metronome_faster">Schneller</string>
-    <string name="metronome_tap">Tap-Tempo</string>
+    <string name="metronome_tap">Im Takt tippen</string>
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stopp</string>
     <string name="metronome_vibrate">Im Takt vibrieren</string>

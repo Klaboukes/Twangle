@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">設定</string>
     <string name="settings_back">戻る</string>
+    <string name="settings_group_tuning">チューニング</string>
 
     <string name="settings_group_look">外観</string>
     <string name="settings_group_while_tuning">チューニング中</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">ダーク</string>
     <string name="settings_dynamic_color_title">壁紙の色</string>
     <string name="settings_dynamic_color_summary">壁紙の色を使う</string>
+    <string name="settings_meter_title">メーター</string>
+    <string name="settings_meter_trail">軌跡</string>
+    <string name="settings_meter_light_arc">光の弧</string>
+    <string name="settings_meter_strobe">ストロボ</string>
 
     <string name="settings_left_handed_title">左利き</string>
     <string name="settings_left_handed_summary">コードダイアグラムとスケールの指板を、逆向きに構えたギター用に描きます</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">チューニング中は画面が消えません</string>
     <string name="settings_vibrate_in_tune_title">合ったら振動</string>
     <string name="settings_vibrate_in_tune_summary">音が合うと短く振動します</string>
+    <string name="settings_string_tick_off_title">合った弦にチェック</string>
+    <string name="settings_string_tick_off_summary">合った弦にチェックを付け、すべて合うと「合っています。弾きましょう。」と表示します</string>
+    <string name="settings_intonation_check_title">12フレットチェック</string>
+    <string name="settings_intonation_check_summary">弦の上にオクターブ調整を確認するボタンを表示します</string>
     <string name="settings_show_signal_bars_title">信号バーを表示</string>
     <string name="settings_show_signal_bars_summary">気になる方へ：音名の横の小さなバーで、チューナーがどれだけよく聞き取れているかがわかります。タップすると数値を表示します</string>
 

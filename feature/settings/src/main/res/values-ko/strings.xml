@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">설정</string>
     <string name="settings_back">뒤로</string>
+    <string name="settings_group_tuning">튜닝</string>
 
     <string name="settings_group_look">디자인</string>
     <string name="settings_group_while_tuning">튜닝하는 동안</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">다크</string>
     <string name="settings_dynamic_color_title">배경화면 색상</string>
     <string name="settings_dynamic_color_summary">배경화면의 색상 사용</string>
+    <string name="settings_meter_title">게이지</string>
+    <string name="settings_meter_trail">궤적</string>
+    <string name="settings_meter_light_arc">라이트 아크</string>
+    <string name="settings_meter_strobe">스트로브</string>
 
     <string name="settings_left_handed_title">왼손잡이</string>
     <string name="settings_left_handed_summary">코드표와 스케일 지판을 반대로 잡은 기타에 맞게 그려요</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">튜닝하는 동안 화면이 꺼지지 않아요</string>
     <string name="settings_vibrate_in_tune_title">음이 맞으면 진동</string>
     <string name="settings_vibrate_in_tune_summary">음이 맞으면 짧게 진동해요</string>
+    <string name="settings_string_tick_off_title">맞춘 줄 체크 표시</string>
+    <string name="settings_string_tick_off_summary">음이 맞은 줄에 체크 표시, 모두 맞으면 “음이 맞아요. 연주하세요.”</string>
+    <string name="settings_intonation_check_title">12프렛 체크</string>
+    <string name="settings_intonation_check_summary">줄 위에 인토네이션 확인 버튼을 표시해요</string>
     <string name="settings_show_signal_bars_title">신호 막대 표시</string>
     <string name="settings_show_signal_bars_summary">궁금한 분을 위해: 음이름 옆의 작은 막대가 튜너가 얼마나 잘 듣는지 보여줘요. 탭하면 수치를 볼 수 있어요</string>
 

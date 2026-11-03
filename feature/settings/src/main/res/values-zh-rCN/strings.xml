@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">设置</string>
     <string name="settings_back">返回</string>
+    <string name="settings_group_tuning">调音</string>
 
     <string name="settings_group_look">外观</string>
     <string name="settings_group_while_tuning">调音时</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">深色</string>
     <string name="settings_dynamic_color_title">壁纸配色</string>
     <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
+    <string name="settings_meter_title">仪表</string>
+    <string name="settings_meter_trail">轨迹</string>
+    <string name="settings_meter_light_arc">光弧</string>
+    <string name="settings_meter_strobe">频闪</string>
 
     <string name="settings_left_handed_title">左手持琴</string>
     <string name="settings_left_handed_summary">和弦图和音阶指板按反向持琴的吉他绘制</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">调音时屏幕保持常亮</string>
     <string name="settings_vibrate_in_tune_title">调准时振动</string>
     <string name="settings_vibrate_in_tune_summary">音准到位时短促振动一下</string>
+    <string name="settings_string_tick_off_title">为调准的弦打勾</string>
+    <string name="settings_string_tick_off_summary">每根弦调准后打勾，全部调准时显示“已调准。开弹吧。”</string>
+    <string name="settings_intonation_check_title">第12品检查</string>
+    <string name="settings_intonation_check_summary">琴弦上方的按钮，用来检查八度音准</string>
     <string name="settings_show_signal_bars_title">显示信号条</string>
     <string name="settings_show_signal_bars_summary">给好奇的你：音名旁的小信号条显示调音器听得有多清楚。点按可查看数值</string>
 

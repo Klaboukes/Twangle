@@ -6,9 +6,10 @@
         <item quantity="one">%1$d slag i minuttet, %2$s</item>
         <item quantity="other">%1$d slag i minuttet, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">slag per minutt · %1$s</string>
     <string name="metronome_slower">Saktere</string>
     <string name="metronome_faster">Raskere</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Trykk i takt</string>
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stopp</string>
     <string name="metronome_vibrate">Vibrer på slaget</string>

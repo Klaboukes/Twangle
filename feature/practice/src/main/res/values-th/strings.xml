@@ -2,6 +2,13 @@
 <resources>
     <string name="practice_tool_chords">คอร์ด</string>
     <string name="practice_tool_scales">สเกล</string>
+    <string name="practice_card_chords">ทุกฟอร์ม รวมถึงแบบถนัดซ้าย</string>
+    <string name="practice_card_scales">มีโดรนให้เล่นตาม</string>
+    <string name="practice_card_capo">เฟรตไหนได้คีย์ที่ต้องการ</string>
+    <string name="practice_card_ear_training">ฟังโน้ต แล้วเล่นตาม</string>
+    <string name="practice_last_time">ครั้งล่าสุด</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">กลับ</string>
     <string name="practice_tool_ear_training">ฝึกหู</string>
     <string name="practice_root">รูท</string>
     <string name="practice_chord_type">ชนิดคอร์ด</string>

@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">每分钟 %1$d 拍，%2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">每分钟拍数 · %1$s</string>
     <string name="metronome_slower">减慢</string>
     <string name="metronome_faster">加快</string>
-    <string name="metronome_tap">点按测速</string>
+    <string name="metronome_tap">点按节拍</string>
     <string name="metronome_start">开始</string>
     <string name="metronome_stop">停止</string>
     <string name="metronome_vibrate">随节拍振动</string>

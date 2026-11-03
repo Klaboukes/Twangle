@@ -6,9 +6,10 @@
         <item quantity="one">Dakikada %1$d vuruş, %2$s</item>
         <item quantity="other">Dakikada %1$d vuruş, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">dakikada vuruş · %1$s</string>
     <string name="metronome_slower">Daha yavaş</string>
     <string name="metronome_faster">Daha hızlı</string>
-    <string name="metronome_tap">Dokunarak tempo</string>
+    <string name="metronome_tap">Ritimle dokun</string>
     <string name="metronome_start">Başlat</string>
     <string name="metronome_stop">Durdur</string>
     <string name="metronome_vibrate">Vuruşta titreşim</string>

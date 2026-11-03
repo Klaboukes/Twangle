@@ -1,6 +1,7 @@
 <resources>
     <string name="settings_title">Настройки</string>
     <string name="settings_back">Назад</string>
+    <string name="settings_group_tuning">Строй</string>
 
     <string name="settings_group_look">Внешний вид</string>
     <string name="settings_group_while_tuning">Во время настройки</string>
@@ -30,6 +31,10 @@
     <string name="settings_theme_dark">Тёмная</string>
     <string name="settings_dynamic_color_title">Цвета обоев</string>
     <string name="settings_dynamic_color_summary">Брать цвета из обоев</string>
+    <string name="settings_meter_title">Шкала</string>
+    <string name="settings_meter_trail">График</string>
+    <string name="settings_meter_light_arc">Световая дуга</string>
+    <string name="settings_meter_strobe">Строб</string>
 
     <string name="settings_left_handed_title">Для левши</string>
     <string name="settings_left_handed_summary">Аккордовые схемы и гриф в гаммах нарисованы для гитары, которую держат наоборот</string>
@@ -38,6 +43,10 @@
     <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>
     <string name="settings_vibrate_in_tune_title">Вибрация, когда настроено</string>
     <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
+    <string name="settings_string_tick_off_title">Отмечать настроенные струны</string>
+    <string name="settings_string_tick_off_summary">Галочка на каждой струне, когда она настроена, и «Настроено. Играй.», когда все</string>
+    <string name="settings_intonation_check_title">Проверка на 12-м ладу</string>
+    <string name="settings_intonation_check_summary">Кнопка над струнами для проверки мензуры</string>
     <string name="settings_show_signal_bars_title">Индикатор сигнала</string>
     <string name="settings_show_signal_bars_summary">Для любопытных: полоски у ноты показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
 
