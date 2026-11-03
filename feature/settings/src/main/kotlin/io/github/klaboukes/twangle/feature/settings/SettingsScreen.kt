@@ -139,7 +139,7 @@ fun SettingsScreen(
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
+ * load. The settings come in four headed groups, the last ending in a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
  * [onBack] the top bar has a back arrow, as About's. The 12th-fret check's switch (its way in on the tuner screen,
@@ -311,14 +311,12 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
         }
 
 /**
- * Every setting, in five headed groups: Pitch and notes (which note it is and what counts as in
- * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
- * wallpaper colours, then light or dark; the style picker went with 1.1's six styles in Phase 67), Tuner
- * screen (the lens's look, Meter, and focus mode), While tuning (what the tuner does while
- * it listens) and App (the app's language and one row that opens the About page: version,
- * promise, privacy and licences, so those long texts don't crowd the settings). A line divides two
- * subjects; a setting that belongs to the one above stays with it. Rows, including the card grids, keep
- * 16 dp from the column's edges.
+ * Every setting, in four short headed groups (2.0, Phase 75, as the first 2.0 mock-up draws them): Tuning (which
+ * note it is and what counts as in tune), While tuning (what the tuner does while it listens), Look (light or dark
+ * with the wallpaper colours, the lens's look, and left-handed charts) and Twangle (the app's language and one
+ * row that opens the About page: version, promise, privacy and licences, so those long texts don't crowd the
+ * settings). A line divides two subjects; a setting that belongs to the one above stays with it. Rows, including
+ * the card grids, keep 16 dp from the column's edges.
  */
 @Composable
 private fun SettingsGroups(
@@ -345,7 +343,8 @@ private fun SettingsGroups(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
-        SettingsGroup(title = stringResource(R.string.settings_group_pitch)) {
+        // Which note it is and what counts as in tune ("Pitch and notes" until Phase 75).
+        SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
             Rows {
                 A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
                 HorizontalDivider()
@@ -370,46 +369,6 @@ private fun SettingsGroups(
                     selected = settings.inTunePrecision,
                     onSelect = onInTunePrecisionChange,
                 ) { stringResource(inTunePrecisionLabel(it)) }
-                HorizontalDivider()
-                // With Note names, the other setting that changes what the chord charts and the scale neck show.
-                SwitchSetting(
-                    title = stringResource(R.string.settings_left_handed_title),
-                    summary = stringResource(R.string.settings_left_handed_summary),
-                    checked = settings.leftHanded,
-                    onCheckedChange = onLeftHandedChange,
-                )
-            }
-        }
-        SettingsGroup(title = stringResource(R.string.settings_group_look)) {
-            Rows {
-                // Android 12 and later only: older phones have no wallpaper colours to take.
-                if (dynamicColorAvailable) {
-                    SwitchSetting(
-                        title = stringResource(R.string.settings_dynamic_color_title),
-                        summary = stringResource(R.string.settings_dynamic_color_summary),
-                        checked = settings.dynamicColor,
-                        onCheckedChange = onDynamicColorChange,
-                    )
-                    HorizontalDivider()
-                }
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_theme_title),
-                    options = ThemeMode.entries,
-                    selected = settings.theme,
-                    onSelect = onThemeChange,
-                ) { stringResource(themeLabel(it)) }
-            }
-        }
-        SettingsGroup(title = stringResource(R.string.settings_group_tuner_screen)) {
-            Rows {
-                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
-                MeterPicker(
-                    looks = LensLook.offered(trailLook),
-                    selected = LensLook.shown(settings.lensLook, trailLook),
-                    onSelect = onLensLookChange,
-                    precision = settings.inTunePrecision,
-                )
-                // Focus mode is the tuner's button alone since 2.0 (Phase 73), no switch here.
             }
         }
         SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
@@ -450,8 +409,44 @@ private fun SettingsGroups(
                 )
             }
         }
-        // The app itself: its language and About (until Phase 63 the only rows without a heading; "Show me around" went with the tour in Phase 68).
-        SettingsGroup(title = stringResource(R.string.settings_group_app)) {
+        // Light or dark first, short rows right under the heading, then the lens's cards, then how the charts are drawn.
+        SettingsGroup(title = stringResource(R.string.settings_group_look)) {
+            Rows {
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_theme_title),
+                    options = ThemeMode.entries,
+                    selected = settings.theme,
+                    onSelect = onThemeChange,
+                ) { stringResource(themeLabel(it)) }
+                // Android 12 and later only: older phones have no wallpaper colours to take. It goes with light or dark, no line between.
+                if (dynamicColorAvailable) {
+                    SwitchSetting(
+                        title = stringResource(R.string.settings_dynamic_color_title),
+                        summary = stringResource(R.string.settings_dynamic_color_summary),
+                        checked = settings.dynamicColor,
+                        onCheckedChange = onDynamicColorChange,
+                    )
+                }
+                HorizontalDivider()
+                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
+                MeterPicker(
+                    looks = LensLook.offered(trailLook),
+                    selected = LensLook.shown(settings.lensLook, trailLook),
+                    onSelect = onLensLookChange,
+                    precision = settings.inTunePrecision,
+                )
+                HorizontalDivider()
+                // Mirrors the chord charts and the scale neck.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_left_handed_title),
+                    summary = stringResource(R.string.settings_left_handed_summary),
+                    checked = settings.leftHanded,
+                    onCheckedChange = onLeftHandedChange,
+                )
+            }
+        }
+        // The app itself: its language and About ("App" until Phase 75).
+        SettingsGroup(title = stringResource(R.string.settings_group_twangle)) {
             Rows {
                 if (languages.isNotEmpty()) {
                     val names = remember(languages) { languages.associateWith(AppLanguages::nameOf) }

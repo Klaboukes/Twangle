@@ -2,11 +2,8 @@
     <string name="settings_title">Inställningar</string>
     <string name="settings_back">Tillbaka</string>
 
-    <string name="settings_group_pitch">Tonhöjd och tonnamn</string>
     <string name="settings_group_look">Utseende</string>
-    <string name="settings_group_tuner_screen">Stämmarskärmen</string>
     <string name="settings_group_while_tuning">Medan du stämmer</string>
-    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Stämton (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>

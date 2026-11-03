@@ -2,11 +2,8 @@
     <string name="settings_title">Configurações</string>
     <string name="settings_back">Voltar</string>
 
-    <string name="settings_group_pitch">Diapasão e notas</string>
     <string name="settings_group_look">Aparência</string>
-    <string name="settings_group_tuner_screen">Tela do afinador</string>
     <string name="settings_group_while_tuning">Ao afinar</string>
-    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Diapasão (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>

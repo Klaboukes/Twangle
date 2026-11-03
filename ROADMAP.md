@@ -67,7 +67,7 @@ Goal: a strum shows which strings are off and a fretted chord shows its name, wi
 ### Phase 75 — The other screens as drawn
 Goal: the metronome, Practice's tools, Settings, About, the widget and the watch in the one look, as the first mock-up draws them.
 - ☑ The metronome: the tempo as the screen (a big number with − and +, the tempo word, a ruler to drag), beat lights, meter and sound as segmented choices, Tap the beat and Start side by side, the speed trainer a row with a switch
-- ☐ Settings in four short groups (Tuning, While tuning, Look, Twangle), About as today
+- ☑ Settings in four short groups (Tuning, While tuning, Look, Twangle), About as today
 - ☐ Chords, Scales, Capo and Ear training in the one look, each full screen from its card
 - ☐ The watch: the top half of the phone screen (the note, a dot along an arc, the word), green and a wrist tap in tune; the widget in the one look
 

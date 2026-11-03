@@ -2,11 +2,8 @@
     <string name="settings_title">Setelan</string>
     <string name="settings_back">Kembali</string>
 
-    <string name="settings_group_pitch">Nada dan notasi</string>
     <string name="settings_group_look">Tampilan</string>
-    <string name="settings_group_tuner_screen">Layar tuner</string>
     <string name="settings_group_while_tuning">Saat menyetem</string>
-    <string name="settings_group_app">Aplikasi</string>
 
     <string name="settings_a4_title">Nada acuan (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>

@@ -2,11 +2,8 @@
     <string name="settings_title">設定</string>
     <string name="settings_back">返回</string>
 
-    <string name="settings_group_pitch">音高與音名</string>
     <string name="settings_group_look">外觀</string>
-    <string name="settings_group_tuner_screen">調音器畫面</string>
     <string name="settings_group_while_tuning">調音時</string>
-    <string name="settings_group_app">應用程式</string>
 
     <string name="settings_a4_title">基準音高 (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>

@@ -2,11 +2,8 @@
     <string name="settings_title">설정</string>
     <string name="settings_back">뒤로</string>
 
-    <string name="settings_group_pitch">음높이와 음이름</string>
     <string name="settings_group_look">디자인</string>
-    <string name="settings_group_tuner_screen">튜너 화면</string>
     <string name="settings_group_while_tuning">튜닝하는 동안</string>
-    <string name="settings_group_app">앱</string>
 
     <string name="settings_a4_title">기준음 (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>

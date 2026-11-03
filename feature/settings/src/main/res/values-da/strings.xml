@@ -2,11 +2,8 @@
     <string name="settings_title">Indstillinger</string>
     <string name="settings_back">Tilbage</string>
 
-    <string name="settings_group_pitch">Tonehøjde og tonenavne</string>
     <string name="settings_group_look">Udseende</string>
-    <string name="settings_group_tuner_screen">Tunerskærm</string>
     <string name="settings_group_while_tuning">Mens du stemmer</string>
-    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Kammertone (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>

@@ -283,10 +283,7 @@ feature/settings settings_about_website_title 24a0615d
 feature/settings settings_back 76900f1b
 feature/settings settings_dynamic_color_summary 6cc3fe1d
 feature/settings settings_dynamic_color_title 8599705a
-feature/settings settings_group_app 0d04bfeb
 feature/settings settings_group_look a0de5719
-feature/settings settings_group_pitch 1c060516
-feature/settings settings_group_tuner_screen b37f2e16
 feature/settings settings_group_while_tuning d30f1d0c
 feature/settings settings_in_tune_precision_precise 35664437
 feature/settings settings_in_tune_precision_relaxed e2e7248f

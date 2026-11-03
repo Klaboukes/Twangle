@@ -4,16 +4,15 @@
     <!-- TalkBack name of the back arrow at the top of Settings (back to the screen whose gear opened it) and of its About page (back to Settings). -->
     <string name="settings_back">Back</string>
 
-    <!-- Group headings. -->
-    <string name="settings_group_pitch">Pitch and notes</string>
-    <!-- Settings group heading over the style, light or dark, and wallpaper colours. -->
-    <string name="settings_group_look">Look</string>
-    <!-- Settings group heading over what the tuner screen shows: the meter's look, focus mode. -->
-    <string name="settings_group_tuner_screen">Tuner screen</string>
-    <!-- Settings group heading over what happens while tuning: keep screen on, vibration, the tune up/down hint, signal bars. -->
+    <!-- Group headings, in this order. -->
+    <!-- Settings group heading over the reference pitch (A4), the note names and how close counts as in tune. One short word. -->
+    <string name="settings_group_tuning">Tuning</string>
+    <!-- Settings group heading over what happens while tuning: keep screen on, vibration, the string ticks, the 12th-fret check's button, signal bars. -->
     <string name="settings_group_while_tuning">While tuning</string>
-    <!-- Settings group heading over the last rows, about the app itself: its language and About. One short word. -->
-    <string name="settings_group_app">App</string>
+    <!-- Settings group heading over light or dark, wallpaper colours, the meter's look and left-handed charts. -->
+    <string name="settings_group_look">Look</string>
+    <!-- Settings group heading over the last rows, about the app itself: its language and About. The app's name, the same in every language. -->
+    <string name="settings_group_twangle" translatable="false">Twangle</string>
 
     <!-- A4 calibration. -->
     <string name="settings_a4_title">Reference pitch (A4)</string>

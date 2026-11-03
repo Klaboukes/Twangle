@@ -2,11 +2,8 @@
     <string name="settings_title">Cài đặt</string>
     <string name="settings_back">Quay lại</string>
 
-    <string name="settings_group_pitch">Cao độ và nốt</string>
     <string name="settings_group_look">Giao diện</string>
-    <string name="settings_group_tuner_screen">Màn hình lên dây</string>
     <string name="settings_group_while_tuning">Khi lên dây</string>
-    <string name="settings_group_app">Ứng dụng</string>
 
     <string name="settings_a4_title">Cao độ tham chiếu (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>

@@ -457,23 +457,23 @@ class SettingsContentTest {
     }
 
     @Test
-    fun leftHandedSwitchShowsItIsOnInPitchAndNotesUnderTheNoteNames() {
+    fun leftHandedSwitchShowsItIsOnAtTheEndOfLook() {
         show(AppSettings(leftHanded = true))
         val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
         leftHanded.performScrollTo().assertIsOn()
-        // At the end of "Pitch and notes", under Note names and In-tune precision, before the "Look" group.
+        // At the end of "Look" (Phase 75; "Pitch and notes" until then), under Meter, before the "Twangle" group.
         val top = { text: Int -> compose.onNodeWithText(context.getString(text)).getUnclippedBoundsInRoot().top }
-        assertTrue("under In-tune precision", top(R.string.settings_left_handed_title) > top(R.string.settings_in_tune_precision_title))
-        assertTrue("under Note names", top(R.string.settings_left_handed_title) > top(R.string.settings_notation_title))
-        assertTrue("before Look", top(R.string.settings_left_handed_title) < top(R.string.settings_group_look))
+        assertTrue("under Look", top(R.string.settings_left_handed_title) > top(R.string.settings_group_look))
+        assertTrue("under Meter", top(R.string.settings_left_handed_title) > top(R.string.settings_meter_title))
+        assertTrue("before Twangle", top(R.string.settings_left_handed_title) < top(R.string.settings_group_twangle))
         leftHanded.performClick()
         assertEquals(listOf(false), leftHandedChanges)
     }
 
     /**
      * 1.1's meter look cards, Calm or Bold, "Below the note" and the wave look cards went in Phase 67 (one meter and
-     * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left. The Tuner screen group
-     * holds Meter alone: focus mode's switch went in Phase 73 (the tuner's button alone).
+     * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left. Meter stands in the Look
+     * group (Phase 75; the Tuner screen group's only row until then), under light or dark, over Left-handed charts.
      */
     @Test
     fun meterOffersTheThreeLooksAsCardsWithTheSavedOnePicked() {
@@ -484,10 +484,10 @@ class SettingsContentTest {
         }
         compose.onAllNodes(lookCards, useUnmergedTree = true).assertCountEquals(0)
         val top = { text: Int -> compose.onNodeWithText(context.getString(text)).fetchSemanticsNode().positionInRoot.y }
-        val group = top(R.string.settings_group_tuner_screen)
+        val theme = top(R.string.settings_theme_title)
         val meter = top(R.string.settings_meter_title)
-        val whileTuning = top(R.string.settings_group_while_tuning)
-        assertTrue("Meter under the Tuner screen heading, the next group under it", meter > group && whileTuning > meter)
+        val leftHanded = top(R.string.settings_left_handed_title)
+        assertTrue("Meter under Light or dark, Left-handed charts under it", meter > theme && leftHanded > meter)
         val names = mapOf(
             LensLook.TRAIL to R.string.settings_meter_trail,
             LensLook.LIGHT_ARC to R.string.settings_meter_light_arc,
@@ -504,7 +504,7 @@ class SettingsContentTest {
             val node = card.fetchSemanticsNode()
             val top = node.positionInRoot.y
             val bottom = top + node.size.height
-            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and While tuning ($whileTuning)", top > meter && bottom < whileTuning)
+            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and Left-handed charts ($leftHanded)", top > meter && bottom < leftHanded)
             node.positionInRoot.x
         }
         assertEquals("Trail · Light arc · Strobe, in one row", lefts.sorted(), lefts)
@@ -536,38 +536,41 @@ class SettingsContentTest {
     }
 
     @Test
-    fun settingsComeInFiveHeadedGroupsTheLastEndingInTheAboutLink() {
-        show(AppSettings())
+    fun settingsComeInFourHeadedGroupsTheLastEndingInTheAboutLink() {
+        show(AppSettings(), languages = listOf("de", "nl"))
         val headings = listOf(
-            R.string.settings_group_pitch,
-            R.string.settings_group_look,
-            R.string.settings_group_tuner_screen,
+            R.string.settings_group_tuning,
             R.string.settings_group_while_tuning,
-            R.string.settings_group_app,
+            R.string.settings_group_look,
+            R.string.settings_group_twangle,
         )
-        headings.forEach { compose.onNodeWithText(context.getString(it)).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)) }
+        val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+        headings.forEach { compose.onNodeWithText(context.getString(it)).assert(isHeading) }
+        // No other heading: the four groups are all there is (Phase 75; five until then).
+        compose.onAllNodes(isHeading).assertCountEquals(headings.size)
 
-        // Top to bottom: each heading, then the settings of its group.
+        // Top to bottom: each heading, then the settings of its group (2.0, Phase 75, the first mock-up's four groups).
         // Unclipped positions: most of these rows are below the fold.
         fun top(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
         val order = listOf(
-            top(context.getString(R.string.settings_group_pitch)),
+            top(context.getString(R.string.settings_group_tuning)),
             top(context.getString(R.string.settings_a4_title)),
             top(context.getString(R.string.settings_notation_title)),
             top(context.getString(R.string.settings_in_tune_precision_title)),
-            top(context.getString(R.string.settings_group_look)),
-            // The wallpaper colours first, then light or dark (the style cards above them went in Phase 67).
-            top(context.getString(R.string.settings_dynamic_color_title)),
-            top(context.getString(R.string.settings_theme_title)),
-            top(context.getString(R.string.settings_group_tuner_screen)),
-            top(context.getString(R.string.settings_meter_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),
             top(context.getString(R.string.settings_intonation_check_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
-            top(context.getString(R.string.settings_group_app)),
+            top(context.getString(R.string.settings_group_look)),
+            // Light or dark first, the wallpaper colours with it, then the lens's cards and the charts' hand.
+            top(context.getString(R.string.settings_theme_title)),
+            top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_meter_title)),
+            top(context.getString(R.string.settings_left_handed_title)),
+            top(context.getString(R.string.settings_group_twangle)),
+            top(context.getString(R.string.settings_language_title)),
             top(context.getString(R.string.about_title)),
         )
         assertEquals("tops $order", order.sorted(), order)
@@ -604,7 +607,7 @@ class SettingsContentTest {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE)
         val start = columnStart() + ROW_INSET
         val title = compose.onNodeWithText(context.getString(R.string.settings_title)).getBoundsInRoot()
-        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_pitch)).getBoundsInRoot()
+        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_tuning)).getBoundsInRoot()
         assertEquals("$size: the first heading at the column's start", start.value, heading.left.value, tolerance())
         assertEquals("$size: the title in line with the heading", heading.left.value, title.left.value, tolerance())
     }
@@ -849,7 +852,7 @@ class SettingsContentTest {
     }
 
     /**
-     * The rows phase 8 added to settings: the three group headings, the note-name choices and the
+     * The rows phase 8 added to settings, with Phase 75's four group headings: the headings, the note-name choices and the
      * About link. Each can be scrolled to and is then wholly on screen, inside the window, and its
      * text isn't cut short.
      */
@@ -857,16 +860,15 @@ class SettingsContentTest {
         show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
         val res = resourcesIn(locale)
         val texts = listOf(
-            R.string.settings_group_pitch,
+            R.string.settings_group_tuning,
             R.string.settings_notation_title,
             R.string.settings_notation_sharps,
             R.string.settings_notation_flats,
             R.string.settings_notation_solfege,
             R.string.settings_notation_german,
-            R.string.settings_group_look,
-            R.string.settings_group_tuner_screen,
             R.string.settings_group_while_tuning,
-            R.string.settings_group_app,
+            R.string.settings_group_look,
+            R.string.settings_group_twangle,
             R.string.about_title,
         ).map { res.getString(it) } + res.getString(R.string.settings_about_link_summary, VERSION)
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
