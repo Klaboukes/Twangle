@@ -18,7 +18,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +45,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
@@ -124,7 +124,8 @@ internal fun ChordNameButton(
 }
 
 /**
- * The name button's panel, [expanded] or not, a Material dropdown under the place it is put in, at
+ * The name button's panel, [expanded] or not, a [FloatingMenu] under the place it is put in (the one look's floating
+ * panel, Phase 75), at
  * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
  * ([RootPicker]), then "Chord type" over the twenty chord types four to a row ([ChordTypePicker]) or,
  * with [scales], the fourteen scales two to a row in one list, the most used first ([ScaleTypePicker]).
@@ -150,7 +151,7 @@ internal fun ChordPanel(
 ) {
     val spell = if (scales) scaleRootSpelling(scaleType, notation) else chordRootSpelling(quality, notation)
     val density = LocalDensity.current
-    DropdownMenu(
+    FloatingMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         // The menu is a window of its own: UI Automator finds its buttons by tag only when it says so too (as MainActivity's root does).

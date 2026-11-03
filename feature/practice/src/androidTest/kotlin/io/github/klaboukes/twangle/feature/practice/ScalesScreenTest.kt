@@ -602,7 +602,7 @@ class ScalesScreenTest {
         }
     }
 
-    /** The drone button at the end of the name's row: as tall as the name, after it, both halves of one size. */
+    /** The drone button at the end of the name's row: as tall as the name, after it, both halves of one size and meeting. */
     private fun assertTheDroneButtonBesideTheName(case: String) {
         val name = picker().getBoundsInRoot()
         val play = node(PracticeTestTags.DRONE_PLAY).getBoundsInRoot()
@@ -615,6 +615,8 @@ class ScalesScreenTest {
         assertEquals("$case both halves as wide", play.width.value, sound.width.value, pixel * 1.05f)
         assertEquals("$case level with the name", name.top.value, play.top.value, 0.5f)
         assertTrue("$case after the name $name, $play, $sound", name.right <= play.left && play.right <= sound.left)
+        // One pill split in two (Phase 75): the halves meet at the 1 dp line between them, no gap.
+        assertEquals("$case the halves meet $play, $sound", 1f, (sound.left - play.right).value, pixel * 1.05f)
     }
 
     /**

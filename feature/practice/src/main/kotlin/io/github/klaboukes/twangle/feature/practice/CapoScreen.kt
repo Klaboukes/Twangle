@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.practice
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +25,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,6 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -58,6 +62,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
@@ -307,7 +312,7 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
         )
         val density = LocalDensity.current
         // Under the box, from its start, the keys in words as the box writes them.
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+        FloatingMenu(expanded = open, onDismissRequest = { open = false }) {
             ScreenDensity(density) {
                 for (option in CAPO_SHAPES) {
                     val picked = option == shapes
@@ -440,9 +445,11 @@ private fun StepButton(higher: Boolean, enabled: Boolean, onClick: () -> Unit) {
 
 /**
  * The table: "Shape · Sounds" over one row per chord of the shapes' key ([capoChordsOf]), the shape
- * in the muted colour, an arrow, then the chord it sounds in the ink colour; every other row on a
- * faint band, no lines, all on a card of the surface colour. A row is one button that opens its shape in Chords ([onOpenChord]). Not [shown], it only
- * takes its room: unseen, unheard and not tapped (under the banjo's line).
+ * in the muted colour, an arrow, then the chord it sounds in the ink colour, a thin line between two rows,
+ * all on one card as the Practice cards' (Phase 75, the one look: the surface colour, a thin outline, the large
+ * corners; until then a borderless card with every other row on a faint band). A row is one button that opens
+ * its shape in Chords ([onOpenChord]). Not [shown], it only takes its room: unseen, unheard and not tapped (under
+ * the banjo's line).
  */
 @Composable
 private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSpeech, onOpenChord: (Chord) -> Unit, shown: Boolean = true) {
@@ -452,9 +459,10 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
             .widthIn(max = TABLE_MAX_WIDTH)
             .fillMaxWidth()
             .then(if (shown) Modifier else Modifier.alpha(0f).clearAndSetSemantics {})
-            // On a card of the surface colour, so the style's background art (Space Age's dots) stays behind the
-            // rows and their faint bands (Phase 65).
-            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+            // On a card as the Practice cards are, so the background's tint stays behind the rows.
+            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.large)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.large)
+            .clip(MaterialTheme.shapes.large)
             .padding(vertical = TABLE_PADDING),
     ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = ROW_PADDING).semantics(mergeDescendants = true) { heading() }) {
@@ -470,11 +478,10 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
             Text(stringResource(R.string.practice_capo_sounds_column), style = style, color = color, textAlign = TextAlign.End, maxLines = 1, softWrap = false, autoSize = autoSize, modifier = Modifier.weight(1f))
         }
         Spacer(Modifier.height(4.dp))
-        val band = MaterialTheme.colorScheme.onSurface.copy(alpha = BAND_ALPHA)
+        val line = MaterialTheme.colorScheme.outlineVariant
         // A long name at 2× text on a narrow phone ("Sol♯m") is set smaller rather than cut off, and never wrapped (as
         // the header's).
         val rowAutoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.titleMedium.fontSize, stepSize = 0.5.sp)
-        val shape = MaterialTheme.shapes.small
         capoChordsOf(plan.shapeKey).forEachIndexed { index, chord ->
             val sounding = plan.soundingOf(chord)
             val spoken = stringResource(
@@ -488,11 +495,20 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
                     .testTag(PracticeTestTags.capoRow(chord))
                     .fillMaxWidth()
                     .height(ROW_HEIGHT)
-                    .then(if (index % 2 == 0) Modifier.background(band, shape) else Modifier)
+                    .then(
+                        if (index > 0) {
+                            Modifier.drawBehind {
+                                val inset = ROW_PADDING.toPx()
+                                drawLine(line, Offset(inset, 0f), Offset(size.width - inset, 0f), strokeWidth = 1.dp.toPx())
+                            }
+                        } else {
+                            Modifier
+                        },
+                    )
                     .then(
                         if (shown) {
                             Modifier
-                                .pressFeedback(source, shape)
+                                .pressFeedback(source, RectangleShape)
                                 .clickable(interactionSource = source, indication = null, role = Role.Button, onClickLabel = openLabel) {
                                     source.pressFlash()
                                     onOpenChord(chord)
@@ -563,7 +579,6 @@ private val TABLE_MAX_WIDTH = 320.dp
 private val ROW_HEIGHT = 48.dp
 
 private val ROW_PADDING = 20.dp
-private const val BAND_ALPHA = 0.06f
 
 /** The table's card keeps this much above its heading and below its last row. */
 private val TABLE_PADDING = 4.dp

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.material3.Icon
@@ -40,9 +41,10 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Twangle's one picker face for a name (Phase 63, docs/architecture/ui.md *Shared controls*): the chord
- * on Chords, the scale on Scales, the shapes on the Capo helper. One wide box, as wide as [modifier]
- * makes it, on the see-through face of the style's pickers ([faceFill], [faceOutline] in the style's
- * `shapes.small`, as the Practice tool button above it) with Twangle's press effect, the full [name] on
+ * on Chords, the scale on Scales, the shapes on the Capo helper. One wide pill, as wide as [modifier]
+ * makes it, on the see-through face of Twangle's buttons ([faceFill], [faceOutline]) in their round shape
+ * (Phase 75: the one look's capsule, as the picker chip above it and the metronome's big buttons; until
+ * then the style's `shapes.small`, a rounded box) with Twangle's press effect, the full [name] on
  * one line ("C major ⌄"): `titleLarge`, semi-bold where the style's face has it, the ⌄ right after it,
  * the two centred. One steady height ([NAME_PICKER_HEIGHT]) whatever the name, the language and the
  * text size: a name too long for one line is set smaller (down to 7 sp), and only where even that
@@ -98,7 +100,7 @@ fun NamePickerButton(
                     if (heading) heading()
                     if (live) liveRegion = LiveRegionMode.Polite
                 }
-                .pressFeedback(source, MaterialTheme.shapes.small, fill = faceFill(picked = false), outline = faceOutline(picked = false))
+                .pressFeedback(source, CircleShape, fill = faceFill(picked = false), outline = faceOutline(picked = false))
                 .padding(horizontal = NAME_PICKER_PADDING),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -165,7 +167,9 @@ internal class NameAutoSize(
  * Phase 63, the Capo helper's 40 dp in a 48 dp touch area.
  */
 val NAME_PICKER_HEIGHT = 56.dp
-private val NAME_PICKER_PADDING = 16.dp
+
+/** The name keeps this far from the pill's ends, clear of their curve. */
+private val NAME_PICKER_PADDING = 20.dp
 private val SMALLEST_NAME = 7.sp
 private val LAST_RESORT_NAME = 5.sp
 private const val MOST_LINES = 3

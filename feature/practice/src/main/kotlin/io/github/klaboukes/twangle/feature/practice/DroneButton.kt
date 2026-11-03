@@ -3,10 +3,12 @@ package io.github.klaboukes.twangle.feature.practice
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,8 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -66,9 +68,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
+import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
+import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.faceFill
-import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
@@ -103,10 +106,13 @@ data class DroneChoice(
 internal fun droneRootHz(root: PitchClass, a4Hz: Float): Float = NoteMapper(a4Hz).frequencyOf(DroneSynth.rootNote(root))
 
 /**
- * The split button, [DRONE_BUTTON_WIDTH] wide and [height] tall (the name button's): ▶ while the drone is still, ■ on
- * the accent while it sounds ([playing]), a tap calling [onPlayStop]; then [sound]'s icon with ⌄, a tap calling
- * [onOpenPanel]. Both halves keep their size whatever plays. Each half has the style's button shape, rounded less where
- * they meet. TalkBack hears "Play the drone" or "Stop the drone", and "Drone sound: Tanpura" as a drop-down list.
+ * The split button, [DRONE_BUTTON_WIDTH] wide and [height] tall (the name button's): one pill split in two as the
+ * segmented switch is (Phase 75, the one look; until then two rounded boxes side by side), ▶ on its start half while
+ * the drone is still, ■ on the accent while it sounds ([playing]), a tap calling [onPlayStop]; then [sound]'s icon with
+ * ⌄, a tap calling [onOpenPanel]. One thin outline round the whole pill and a line where the halves meet, in the
+ * buttons' muted outline colour ([controlOutline]); each half lights on its own when pressed. Both halves keep their
+ * size whatever plays. TalkBack hears "Play the drone" or "Stop the drone", and "Drone sound: Tanpura" as a drop-down
+ * list.
  */
 @Composable
 internal fun DroneButton(
@@ -118,24 +124,22 @@ internal fun DroneButton(
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.small
-    val inner = CornerSize(SPLIT_INNER_CORNER)
+    val line = controlOutline(scheme)
     val play = remember { MutableInteractionSource() }
     val open = remember { MutableInteractionSource() }
     val playSpoken = stringResource(if (playing) R.string.practice_drone_stop else R.string.practice_drone_play)
     val soundSpoken = stringResource(R.string.practice_drone_sound_spoken, droneSoundName(sound))
-    Row(modifier.size(DRONE_BUTTON_WIDTH, height), horizontalArrangement = Arrangement.spacedBy(SPLIT_GAP)) {
+    Row(
+        modifier
+            .size(DRONE_BUTTON_WIDTH, height)
+            .border(1.dp, line, CircleShape),
+    ) {
         Row(
             Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .testTag(PracticeTestTags.DRONE_PLAY)
-                .pressFeedback(
-                    play,
-                    shape.copy(topEnd = inner, bottomEnd = inner),
-                    fill = if (playing) scheme.primary else faceFill(picked = false),
-                    outline = if (playing) BorderStroke(1.dp, scheme.primary) else faceOutline(picked = false),
-                )
+                .pressFeedback(play, START_HALF, fill = if (playing) scheme.primary else faceFill(picked = false), outline = null)
                 .clickable(interactionSource = play, indication = null, role = Role.Button) {
                     play.pressFlash()
                     onPlayStop()
@@ -148,15 +152,17 @@ internal fun DroneButton(
                 if (playing) STOP_ICON else PLAY_ICON,
                 contentDescription = null,
                 tint = if (playing) scheme.onPrimary else scheme.onBackground,
-                modifier = Modifier.size(ICON_SIZE),
+                // Nudged towards the round end, so the icon looks in the middle of its half.
+                modifier = Modifier.padding(start = ICON_NUDGE).size(ICON_SIZE),
             )
         }
+        Box(Modifier.width(1.dp).fillMaxHeight().background(line))
         Row(
             Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .testTag(PracticeTestTags.DRONE_SOUND)
-                .pressFeedback(open, shape.copy(topStart = inner, bottomStart = inner), fill = faceFill(picked = false), outline = faceOutline(picked = false))
+                .pressFeedback(open, END_HALF, fill = faceFill(picked = false), outline = null)
                 .clickable(interactionSource = open, indication = null) {
                     open.pressFlash()
                     onOpenPanel()
@@ -164,7 +170,8 @@ internal fun DroneButton(
                 .semantics {
                     role = Role.DropdownList
                     contentDescription = soundSpoken
-                },
+                }
+                .padding(end = ICON_NUDGE),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -179,8 +186,12 @@ internal fun DroneButton(
     }
 }
 
+/** The pill's two halves: round at the outer end, straight where they meet. */
+private val START_HALF = RoundedCornerShape(topStartPercent = 50, topEndPercent = 0, bottomEndPercent = 0, bottomStartPercent = 50)
+private val END_HALF = RoundedCornerShape(topStartPercent = 0, topEndPercent = 50, bottomEndPercent = 50, bottomStartPercent = 0)
+
 /**
- * The drone panel, [expanded] or not, a Material dropdown under the place it is put in, as the name button's panel:
+ * The drone panel, [expanded] or not, a [FloatingMenu] under the place it is put in, as the name button's panel:
  * "Sound" over the four sounds with their icons (tanpura, harmonium, flute organ, warm pad), "Notes" over Root,
  * + fifth and + fifth and octave, then the Lower switch; the picked ones in the container colour with an accent
  * outline and a ✓ ([ChoiceRow]). One column, at most [width] wide; [wide] (on its side, over the empty start half, 380 dp wide even where the half is narrower) in two columns, the
@@ -202,7 +213,7 @@ internal fun DronePanel(
     val context = LocalContext.current
     val resources = LocalResources.current
     val title = stringResource(R.string.practice_drone)
-    DropdownMenu(
+    FloatingMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         // A window of its own: UI Automator finds its rows by tag only when it says so too (as the name button's panel).
@@ -481,8 +492,9 @@ private const val FAINT_ALPHA = 0.55f
 
 /** The split button: as the mock-up, two halves of 59 dp with 2 dp between, rounded 4 dp where they meet. */
 internal val DRONE_BUTTON_WIDTH = 120.dp
-private val SPLIT_GAP = 2.dp
-private val SPLIT_INNER_CORNER = 4.dp
+
+/** The halves' icons sit this much towards the pill's round ends. */
+private val ICON_NUDGE = 4.dp
 private val ICON_SIZE = 24.dp
 private val CHEVRON_SIZE = 20.dp
 
