@@ -396,30 +396,6 @@
     <string name="tuner_intonation_mark_forward">move saddle forward</string>
     <!-- TalkBack, a string in the 12th-fret check not checked yet. %1$s is the string ("A 2"). -->
     <string name="tuner_intonation_spoken_not_checked">%1$s, not checked yet</string>
-    <!-- A chord's name in words, under its symbol ("Am") and as TalkBack says it. %1$s is the chord's root ("A", "B♭", "La"). -->
-    <string name="tuner_chord_major">%1$s major</string>
-    <!-- Chord name tool: a minor chord in words, under its symbol ("Am") and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
-    <string name="tuner_chord_minor">%1$s minor</string>
-    <!-- Chord name tool: a seventh chord (dominant seventh, "A7") in words. %1$s is the root. -->
-    <string name="tuner_chord_seventh">%1$s seventh</string>
-    <!-- Chord name tool: a major seventh chord ("Amaj7") in words. %1$s is the root. -->
-    <string name="tuner_chord_major_seventh">%1$s major seventh</string>
-    <!-- Chord name tool: a minor seventh chord ("Am7") in words. %1$s is the root. -->
-    <string name="tuner_chord_minor_seventh">%1$s minor seventh</string>
-    <!-- Chord name tool: a suspended second chord ("Asus2") in words. %1$s is the root. -->
-    <string name="tuner_chord_sus2">%1$s suspended second</string>
-    <!-- Chord name tool: a suspended fourth chord ("Asus4") in words. %1$s is the root. -->
-    <string name="tuner_chord_sus4">%1$s suspended fourth</string>
-    <!-- Phase 49: the power chord ("E5", root and fifth, no third), the 7♯9, m9 and maj9, as TalkBack says them. As the Chords tool. -->
-    <string name="tuner_chord_power_chord">%1$s power chord</string>
-    <!-- Chord name tool: a seven sharp nine chord ("E7♯9", the "Hendrix chord") in words, for TalkBack. %1$s is the root. -->
-    <string name="tuner_chord_seventh_sharp_nine">%1$s seven sharp nine</string>
-    <!-- Chord name tool: a minor ninth chord ("Am9") in words. %1$s is the root. -->
-    <string name="tuner_chord_minor_ninth">%1$s minor ninth</string>
-    <!-- Chord name tool: a major ninth chord ("Amaj9") in words. %1$s is the root. -->
-    <string name="tuner_chord_major_ninth">%1$s major ninth</string>
-    <!-- A slash chord ("C/E"): %1$s is the chord in words ("C major"), %2$s its bass note ("E"). -->
-    <string name="tuner_chord_slash">%1$s, %2$s in the bass</string>
     <!-- TalkBack: added after the spoken reading while the lens shows the trail ("A 2, 10 cents flat, bending up"): the note slides upwards (as when a string is bent or tuned up). -->
     <string name="tuner_trail_bending_up">bending up</string>
     <!-- TalkBack: added after the spoken reading while the lens shows the trail: the note slides downwards. -->

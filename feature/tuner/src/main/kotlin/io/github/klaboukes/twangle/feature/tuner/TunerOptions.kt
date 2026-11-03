@@ -42,11 +42,6 @@ data class TunerOptions(
      */
     val strumsHeard: Boolean = false,
     /**
-     * Whether a fretted chord is named by itself, beside the tuner. Always false since the strum check became a button
-     * (the chord name goes to Practice's Chords as Listen); its showing stays until that step.
-     */
-    val chordsHeard: Boolean = false,
-    /**
      * The strum check's button is on: the next strum is read ([strumChecking]). It turns itself off once that strum
      * has rung out (after the owner's guitar check, 2026-11-03: deciding by itself what each sound was flickered).
      */
@@ -61,10 +56,10 @@ data class TunerOptions(
     val heardStrings: FloatArray? get() = if (strumsHeard && mode == TunerMode.AUTO) stringHz else null
 
     /**
-     * What the tuner shows of a strum can show: the strum check offered ([heardStrings]) or chords named ([chordsHeard]),
-     * with the 12th-fret check off (it plucks one string, open and at the 12th fret). Otherwise it goes.
+     * What the tuner shows of a strum can show: the strum check offered ([heardStrings]), with the 12th-fret check off
+     * (it plucks one string, open and at the 12th fret). Otherwise it goes.
      */
-    val hearing: Boolean get() = (heardStrings != null || chordsHeard) && !intonationChecking
+    val hearing: Boolean get() = heardStrings != null && !intonationChecking
 
     /** The strum analysis listens now: the strum check's button is on, where it is offered. */
     val strumChecking: Boolean get() = strumCheck && heardStrings != null && !intonationChecking

@@ -1,9 +1,5 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import io.github.klaboukes.twangle.core.dsp.chord.Chord
-import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
-import io.github.klaboukes.twangle.core.dsp.chord.SettledChord
-import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -16,8 +12,8 @@ import kotlin.math.ceil
 
 /**
  * [HeardShown]: how long what the tuner heard besides one string shows, and how it sits with the tuner's own reading
- * (2.0, Phase 74): the note set aside while a strum rings, the marks following the strings tuned after it, a chord
- * giving way to a note, everything gone after a quiet spell.
+ * (2.0, Phase 74): the note set aside while a strum rings, the marks following the strings tuned after it,
+ * everything gone after a quiet spell.
  */
 class HeardShownTest {
 
@@ -34,11 +30,6 @@ class HeardShownTest {
         TunerUiState.StrumCheck(tuning, phase = phase, strings = verdicts.map { StrumString(it, cents = if (it == StrumVerdict.IN_TUNE) 0f else 20f) }),
         strum,
     )
-
-    private val cMajor = SettledChord(Chord.of(PitchClass.C, ChordQuality.MAJOR))
-
-    private fun chord(strum: Int, faded: Boolean = false, phase: ChordPhase = ChordPhase.NAMED, named: SettledChord? = cMajor) =
-        HeardStrum.FrettedChord(TunerUiState.ChordName(tuning, phase = phase, chord = named, faded = faded), strum)
 
     private fun listening(mode: TunerMode = TunerMode.AUTO) = TunerUiState.Listening(mode, tuning)
 
@@ -126,41 +117,6 @@ class HeardShownTest {
         shown.heard(open(1))
         hold(HeardShown.QUIET_SECONDS + 5f, listening())
         assertTrue(shown.shown is HeardStrum.OpenStrings)
-    }
-
-    @Test
-    fun `a chord's name sets the note aside while it rings, then gives way to a note read after it`() {
-        shown.heard(chord(1))
-        assertTrue(shown.setsAside)
-        hold(1f, note(1))
-        assertTrue(shown.shown is HeardStrum.FrettedChord)
-
-        shown.heard(chord(1, faded = true))
-        assertFalse(shown.setsAside)
-        // A moment's note is not enough; a note held a quarter of a second is.
-        hold(HeardShown.CHORD_GIVES_WAY_SECONDS / 2f, note(1))
-        shown.tuner(listening())
-        assertTrue(shown.shown is HeardStrum.FrettedChord)
-        hold(HeardShown.CHORD_GIVES_WAY_SECONDS + frame, note(1))
-        assertSame(HeardStrum.None, shown.shown)
-
-        // A pluck after it is heard of as the same strum: still gone. The next chord strummed shows.
-        shown.heard(chord(1, faded = true, phase = ChordPhase.LISTENING))
-        assertSame(HeardStrum.None, shown.shown)
-        shown.heard(chord(2))
-        assertTrue(shown.shown is HeardStrum.FrettedChord)
-    }
-
-    @Test
-    fun `a chord not named yet doesn't give way, and gives way in any-note mode too`() {
-        shown.heard(chord(1, phase = ChordPhase.LISTENING, named = null))
-        assertFalse(shown.setsAside)
-        hold(1f, note(1))
-        assertTrue(shown.shown is HeardStrum.FrettedChord)
-
-        shown.heard(chord(2, faded = true))
-        hold(1f, note(1, mode = TunerMode.CHROMATIC))
-        assertSame(HeardStrum.None, shown.shown)
     }
 
     @Test

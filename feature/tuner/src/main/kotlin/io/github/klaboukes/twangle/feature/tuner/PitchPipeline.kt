@@ -121,7 +121,7 @@ class PitchPipeline(
                     )
                 }
             }
-            // The strum and chord analysis hears the same chunk.
+            // The strum analysis hears the same chunk.
             val a4 = hearing?.a4Hz() ?: Float.NaN
             if (a4.isNaN()) {
                 if (watching) {
@@ -132,13 +132,13 @@ class PitchPipeline(
             }
             val watch = watcher ?: StrumWatcher(rate).also { watcher = it }
             val open = hearing!!.openStrings()
-            val names = hearing.namesChords()
             val heardRange = hearing.range()
             val everySound = hearing.everySoundIsAStrum()
-            val changed = heard.changed(open, a4, names, heardRange, everySound)
+            val changed = heard.changed(open, a4, heardRange, everySound)
             if (!watching || changed) {
-                heard.started(watch, open, a4, names, heardRange, everySound)
-                watch.start(open, a4, names, heardRange, everySound)
+                heard.started(watch, open, a4, heardRange, everySound)
+                // The tuner names no chords (Practice's Chords does, with Listen).
+                watch.start(open, a4, nameChords = false, range = heardRange, everySoundIsAStrum = everySound)
                 if (changed) emit(HeardReading.FRESH)
                 watching = true
             }

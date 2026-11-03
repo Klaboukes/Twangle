@@ -16,10 +16,9 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * The tuner's tools, each a mode that takes the lens's place while it is on (docs/architecture/ui-tuner.md,
- * *12th-fret check view*). Since 2.0's Phase 74 only the 12th-fret check is one, opened from the picker sheet's row
- * (Phase 71; owner, 2026-11-03): the strum check and the chord name happen by themselves (their switches are their brakes,
- * [TunerOptions.strumsHeard], [TunerOptions.chordsHeard]), and 1.1's "more tools" menu went with them.
+ * The tuner's tools, each taking the lens's place while it is on (docs/architecture/ui-tuner.md, *12th-fret check
+ * view*, *The strum check*): the 12th-fret check, opened from the picker sheet's row (Phase 71), and the strum check,
+ * from its button above the pegs (Phase 74; owner, 2026-11-03). 1.1's "more tools" menu went in 2.0.
  */
 enum class TunerTool {
     /** Phase 29: the 12th-fret check, string by string. */
@@ -28,7 +27,7 @@ enum class TunerTool {
     /** Phase 18: strum the open strings once and see which are off; since 2.0 a button above the pegs. */
     STRUM_CHECK,
 
-    // 1.1's other tools went in 2.0: the pitch trail is the lens's look (Phase 71); the chord name goes to Chords.
+    // 1.1's other tools went in 2.0: the pitch trail is the lens's look (Phase 71); the chord name is Chords' Listen (Phase 74).
 }
 
 /**

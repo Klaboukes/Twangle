@@ -239,8 +239,6 @@ class TunerViewModel(
                 intonationScaleMm = IntonationInstruments.scaleLengthMm(settings.instrument),
                 voice = settings.instrument.voice,
                 strumsHeard = tools.strumCheck && StrumInstruments.offers(settings.instrument),
-                // The tuner names no chords since the strum check became a button: the chord name goes to Chords.
-                chordsHeard = false,
                 strumCheck = tool.strum.on,
                 strumAttempt = tool.strum.attempt,
             )
@@ -605,8 +603,6 @@ class TunerViewModel(
             }
 
             override fun openStrings(): FloatArray? = (options.value ?: initial).heardStrings
-
-            override fun namesChords(): Boolean = false
 
             override fun everySoundIsAStrum(): Boolean = true
 

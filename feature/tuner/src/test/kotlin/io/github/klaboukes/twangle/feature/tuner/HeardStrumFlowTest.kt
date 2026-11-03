@@ -2,9 +2,6 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
-import io.github.klaboukes.twangle.core.dsp.chord.Chord
-import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
-import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.strum.StrumKind
@@ -33,7 +30,7 @@ import kotlin.math.abs
 import kotlin.math.pow
 
 /**
- * The strum check and the chord name without a mode (2.0, Phase 74): microphone chunks → [PitchPipeline] (the tuner
+ * The strum check beside the tuner (2.0, Phase 74): microphone chunks → [PitchPipeline] (the tuner
  * and [io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher] side by side) → [TunerViewModel.heardStrum], the
  * tuner's own readings and states untouched.
  */
@@ -62,10 +59,9 @@ class HeardStrumFlowTest {
 
     private fun midiHz(vararg midi: Int) = FloatArray(midi.size) { (440.0 * 2.0.pow((midi[it] - 69) / 12.0)).toFloat() }
 
-    private fun hearing(open: FloatArray? = standardHz, chords: Boolean = true) = object : StrumHearing {
+    private fun hearing(open: FloatArray? = standardHz) = object : StrumHearing {
         override fun a4Hz() = 440f
         override fun openStrings() = open
-        override fun namesChords() = chords
         override fun range() = PitchRange.STANDARD
     }
 
@@ -96,19 +92,15 @@ class HeardStrumFlowTest {
             val room = if (string.shadowed) 3f else 0.5f
             assertTrue("string $i off by ${string.cents - offCents[i]}", abs(string.cents - offCents[i]) < room)
         }
-        assertTrue(heard.none { it.chord != null })
     }
 
     @Test
-    fun `the pipeline names a fretted chord and takes one string for neither`() = runTest {
-        val chord = listen(cChord, hearing()).filterIsInstance<HeardReading>()
-        assertEquals(StrumKind.CHORD, chord.first { it.kind != null }.kind)
-        val named = chord.mapNotNull { it.chord }.filter { it.reading }
-        assertTrue("$named", named.count { it.chord === Chord.of(PitchClass.C, ChordQuality.MAJOR) } * 2 > named.size)
-
-        val single = listen(aString, hearing()).filterIsInstance<HeardReading>()
-        assertEquals(listOf(StrumKind.NONE), single.mapNotNull { it.kind }.distinct())
-        assertTrue(single.none { it.strum != null || it.chord != null })
+    fun `the pipeline takes a fretted chord or one string for no strum of the open strings, and names no chord`() = runTest {
+        for (signal in listOf(cChord, aString)) {
+            val heard = listen(signal, hearing()).filterIsInstance<HeardReading>()
+            assertEquals(listOf(StrumKind.NONE), heard.mapNotNull { it.kind }.distinct())
+            assertTrue(heard.none { it.strum != null })
+        }
     }
 
     @Test
@@ -116,7 +108,6 @@ class HeardStrumFlowTest {
         val everySound = object : StrumHearing {
             override fun a4Hz() = 440f
             override fun openStrings() = standardHz
-            override fun namesChords() = false
             override fun everySoundIsAStrum() = true
             override fun range() = PitchRange.STANDARD
         }
@@ -131,7 +122,6 @@ class HeardStrumFlowTest {
         val off = object : StrumHearing {
             override fun a4Hz() = Float.NaN
             override fun openStrings() = standardHz
-            override fun namesChords() = true
             override fun range() = PitchRange.STANDARD
         }
         assertTrue(listen(openStrum, off).all { it is PitchReading })
@@ -179,7 +169,7 @@ class HeardStrumFlowTest {
         // The button stays on while the strum rings.
         assertTrue(vm.strumCheck.value)
         advanceTimeBy(3_000)
-        assertTrue(states.none { it is TunerUiState.StrumCheck || it is TunerUiState.ChordName })
+        assertTrue(states.none { it is TunerUiState.StrumCheck })
         assertTrue(whileRinging.none { it is TunerUiState.Detected })
 
         // The same sound with the brake on: no button, no strum shown.
@@ -249,12 +239,7 @@ class HeardStrumFlowTest {
     }
 
     @Test
-    fun `the tuner names no chord, and in any-note mode the button turns off`() = runTest(dispatcher) {
-        val chord = checking(cChord)
-        backgroundScope.launch { chord.state.collect {} }
-        advanceTimeBy(2_000)
-        assertTrue("${chord.heardStrum.value}", chord.heardStrum.value !is HeardStrum.FrettedChord)
-
+    fun `in any-note mode the button turns off`() = runTest(dispatcher) {
         val open = checking(openStrum)
         open.setMode(TunerMode.CHROMATIC)
         assertFalse(open.strumCheck.value)

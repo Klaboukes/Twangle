@@ -51,12 +51,13 @@ class TunerOptionsTest {
     }
 
     @Test
-    fun `chords are named in any-note mode too, and the 12th-fret check stops the analysis`() {
-        val chords = TunerOptions(mode = TunerMode.CHROMATIC, chordsHeard = true)
-        assertTrue(chords.hearing)
-        assertNull(chords.heardStrings)
-        val both = TunerOptions(strumsHeard = true, chordsHeard = true)
-        assertTrue(both.hearing)
-        assertFalse(both.copy(intonationCheck = true).hearing)
+    fun `the 12th-fret check stops the analysis, and the strum check reads only while its button is on`() {
+        val offered = TunerOptions(strumsHeard = true)
+        assertTrue(offered.hearing)
+        assertFalse(offered.copy(intonationCheck = true).hearing)
+        assertFalse(offered.strumChecking)
+        assertTrue(offered.copy(strumCheck = true).strumChecking)
+        assertFalse(offered.copy(strumCheck = true, intonationCheck = true).strumChecking)
+        assertFalse(offered.copy(strumCheck = true, mode = TunerMode.CHROMATIC).strumChecking)
     }
 }

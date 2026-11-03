@@ -202,19 +202,6 @@
     <string name="tuner_intonation_mark_back">siirrä tallaa taakse</string>
     <string name="tuner_intonation_mark_forward">siirrä tallaa eteen</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ei vielä tarkistettu</string>
-    <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->
-    <string name="tuner_chord_major">%1$s-duuri</string>
-    <string name="tuner_chord_minor">%1$s-molli</string>
-    <string name="tuner_chord_seventh">%1$s-septimisointu</string>
-    <string name="tuner_chord_major_seventh">%1$s-duuriseptimisointu</string>
-    <string name="tuner_chord_minor_seventh">%1$s-molliseptimisointu</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s-voimasointu</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s-septimisointu, ylinouseva nooni</string>
-    <string name="tuner_chord_minor_ninth">%1$s-mollinoonisointu</string>
-    <string name="tuner_chord_major_ninth">%1$s-duurinoonisointu</string>
-    <string name="tuner_chord_slash">%1$s, bassossa %2$s</string>
     <string name="tuner_trail_bending_up">nousee</string>
     <string name="tuner_trail_bending_down">laskee</string>
     <string name="tuner_spoken_wavering">huojuu</string>

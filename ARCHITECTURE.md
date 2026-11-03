@@ -190,11 +190,11 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     SignalBars (+ SignalFigures),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter),
     HeardStrum (HeardReading, HeardStrumInterpreter, HeardShown: what was heard besides one string, and how long it shows),
-    IntonationCheck (+ TunerTool), ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake
+    IntonationCheck (+ TunerTool), PitchTrailFeed, PitchTrailDescription, ScreenAwake
     components/ Lens, Ruler (+ RulerGeometry), TuneWord, ReadingTone, StringSelector (the pegs, + StringRowFit),
                 InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
-                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumMark above a peg, strumCountText),
-                IntonationView, ChordView (ChordInRuler, chordWords), FocusModeButton, LiveFloat (a per-frame reading, unboxed)
+                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumCheckButton, StrumMark, strumCountText), StrumPanel,
+                IntonationView, FocusModeButton, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
 
 feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/

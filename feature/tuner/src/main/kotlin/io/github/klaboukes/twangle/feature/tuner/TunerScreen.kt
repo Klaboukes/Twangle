@@ -135,11 +135,9 @@ import io.github.klaboukes.twangle.feature.tuner.components.rulerRestMidi
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
-import io.github.klaboukes.twangle.feature.tuner.components.ChordInRuler
 import io.github.klaboukes.twangle.feature.tuner.components.MARK_GAP
 import io.github.klaboukes.twangle.feature.tuner.components.MARK_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.StrumMark
-import io.github.klaboukes.twangle.feature.tuner.components.chordWords
 import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckButton
 import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
 import io.github.klaboukes.twangle.feature.tuner.components.strumCountText
@@ -574,9 +572,6 @@ object TunerTestTags {
     const val INTONATION_AGAIN = "tuner_intonation_again"
     const val INTONATION_NEXT = "tuner_intonation_next"
 
-    /** A fretted chord's name in the ruler's place (2.0, Phase 74). */
-    const val CHORD_NAME = "tuner_chord_name"
-
     /** String [index]'s column in the 12th-fret check's summary. */
     fun intonationString(index: Int): String = "tuner_intonation_string_$index"
 
@@ -656,10 +651,9 @@ private fun KeepScreenOn() {
  * Play." while nothing is heard, in the in-tune colour. Where [tunerTools] holds the strum check and
  * [onStrumCheckChange] is given, its button stands above the pegs at their end ([StrumCheckButton], [strumCheck]
  * whether it is on; until its strum the word says "Strum all the open strings"). What the tuner [heard] besides one
- * string ([TunerViewModel.heardStrum]) shows in the plain tuner's own places: after a strum of the open strings each
- * peg's verdict above it ([StrumMark]: ↑, ↓, ✓) and, while no string is heard, "4 of 6 in tune" in the word's place
- * ([strumCountText]); a fretted chord's name in the ruler's place ([ChordInRuler]) and its words in the word's (none
- * since the strum check became a button). Where [tunerTools] holds the 12th-fret check (an instrument with frets, in a build with the check) and
+ * string ([TunerViewModel.heardStrum]), a strum of the open strings, shows in the strum check's panel in the lens's
+ * place ([StrumPanel]) and, while no string is heard, "4 of 6 in tune" in the word's place ([strumCountText]). Where
+ * [tunerTools] holds the 12th-fret check (an instrument with frets, in a build with the check) and
  * [onIntonationCheckChange] is given, the picker sheet ends in its row in guitar mode while it is off
  * (`IntonationCheckRow`, 2.0 Phase 71: the owner's pick B, 2026-11-03), which closes the sheet and turns it on
  * ([intonationCheck] is whether it is on). A [TunerUiState.IntonationCheck] shows its panel in the lens's place and
@@ -777,9 +771,8 @@ fun TunerContent(
     val tone = rememberLiveTone(needleCents, (state as? TunerUiState.Detected)?.inTune == true, inTunePrecision, animationsOff)
     ScreenTintFrom(tone)
     val ticks = tunedStrings.takeIf { stringTickOff }
-    // What the tuner heard besides one string (Phase 74): a strum's verdicts above the pegs, a chord in the ruler's place.
+    // What the tuner heard besides one string (Phase 74): a strum of the open strings.
     val strumShown = (heard as? HeardStrum.OpenStrings)?.check?.takeIf { it.strings.isNotEmpty() && it.tuning == shownTuning?.tuning && mode == TunerMode.AUTO }
-    val chordShown = (heard as? HeardStrum.FrettedChord)?.name?.takeIf { it.chord != null && shownTuning != null }
     // The strum check's panel in the lens's place (1.1's columns, the owner's pick of 2026-11-03): from the button's tap,
     // empty until the strum, then its strings, the ones played on their own after it following the tuner.
     val strumPanel = shownTuning?.takeIf { mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening) }?.let { shown ->
@@ -844,14 +837,13 @@ fun TunerContent(
         val listening = state as? TunerUiState.Listening
         // Every string ticked off (the string tick-off on): "In tune. Play." while nothing is heard.
         val allTuned = mode != TunerMode.CHROMATIC && listening != null && ticks.coversAll(listening.tuning)
-        // While no string is heard (and no reference tone says which plays) the strum's count or the chord's words
-        // stand in the word's place (Phase 74).
+        // While no string is heard (and no reference tone says which plays) the strum's count stands in the word's
+        // place (Phase 74).
         val noteSpeech = rememberNoteNameSpeech()
         // The strum check's button on and no strum read yet: what to do.
         val strumWaiting = stringResource(R.string.tuner_strum_waiting)
         val heardQuiet = listening?.takeIf { soundingString == null }?.let {
             strumShown?.let { check -> strumCountText(check)?.let { count -> HeardWords(count, count) } }
-                ?: chordShown?.chord?.let { chord -> HeardWords(chordWords(chord, chordShown.notation, null), chordWords(chord, chordShown.notation, noteSpeech)) }
                 ?: HeardWords(strumWaiting, strumWaiting).takeIf { strumCheck && mode == TunerMode.AUTO }
         }
         // Every string of the strum in tune: its line in the in-tune colour, as the tick-off's "In tune. Play." is.
@@ -864,7 +856,7 @@ fun TunerContent(
             spokenQuiet = heardQuiet?.spoken ?: listening?.let { listeningHint(mode, it, soundingString, noteSpeech, allTuned) }.orEmpty(),
             quietInTune = (allTuned && soundingString == null && heardQuiet == null) || strumAllInTune,
             // While a reference tone sounds its line says which, not a tip about the mic.
-            // Nor while a strum's count or a chord's words stand there: a strum's many notes read as noise to the tuner.
+            // Nor while a strum's count stands there: a strum's many notes read as noise to the tuner.
             tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null && heardQuiet == null },
             motion = motion,
             tone = tone,
@@ -887,11 +879,7 @@ fun TunerContent(
     // None over the strum check's panel either: it names its strings itself.
     val rulerShown = rulerFor(state, lastHeard)?.takeIf { strumPanel == null }
     val rulerWith = @Composable { bars: Boolean, edgeClear: Dp ->
-        val chord = chordShown?.chord
-        if (rulerShown != null && chord != null) {
-            // A fretted chord's name in the ruler's place (Phase 74); no signal bars beside it (a chord has no one note to hear).
-            ChordInRuler(chord, chordShown.notation, faded = chordShown.faded, animationsOff = animationsOff, edgeClear = edgeClear)
-        } else if (rulerShown != null) {
+        if (rulerShown != null) {
             Ruler(
                 pitch = rulerPitch,
                 names = rulerShown.names,

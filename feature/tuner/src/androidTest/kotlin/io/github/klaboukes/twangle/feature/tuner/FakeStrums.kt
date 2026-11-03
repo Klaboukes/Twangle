@@ -11,7 +11,7 @@ import kotlin.math.pow
 
 /**
  * The real-screen checks' sounds (2.0, Phase 74): strums through the app's own pluck synthesis, played by a fake
- * microphone in real time, for the strum marks ([StrumCheckStylesTest]) and the chord name ([ChordNameStylesTest]).
+ * microphone in real time, for the strum check ([StrumCheckStylesTest]).
  */
 internal object FakeStrums {
     const val SAMPLE_RATE = 48_000

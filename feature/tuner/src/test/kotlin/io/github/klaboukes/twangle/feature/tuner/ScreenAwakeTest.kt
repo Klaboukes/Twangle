@@ -24,7 +24,6 @@ class ScreenAwakeTest {
             inTune = true,
         )
         assertEquals(SOUNDING, soundOf(detected))
-        assertEquals(PLAYED, soundOf(TunerUiState.ChordName(tuning)))
         assertEquals(PLAYED, soundOf(TunerUiState.StrumCheck(tuning)))
         assertEquals(QUIET, soundOf(TunerUiState.Listening(TunerMode.AUTO, tuning)))
         assertEquals(QUIET, soundOf(TunerUiState.PermissionRequired))
