@@ -23,6 +23,8 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -56,7 +58,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * A strum of the open strings heard by itself (2.0, Phase 74; 1.1's strum check without its mode): each string's
+ * The strum check (2.0, Phase 74): its button above the pegs at their end (beside them on its side), then a strum of
+ * the open strings: each string's
  * mark above its peg (↑ to tighten, ↓ to loosen, ✓ in tune, – not heard), "3 of 6 in tune" in the word's place while
  * no single string is heard, nothing at all with nothing heard (a brake on, or no strum yet). Upright on a narrow
  * phone and on the owner's Xiaomi at 1.25× text, light and dark, on its side and in focus mode: each mark centred over
@@ -87,6 +90,8 @@ class StrumCheckStylesTest {
     private val shownLocale = mutableStateOf("en")
     private val shownFocus = mutableStateOf(false)
     private val shownMode = mutableStateOf(TunerMode.AUTO)
+    private val shownTools = mutableStateOf(listOf(TunerTool.INTONATION_CHECK, TunerTool.STRUM_CHECK))
+    private val shownStrumCheck = mutableStateOf(false)
 
     // The app's colours, read while composing.
     private var background = Color.Unspecified
@@ -107,9 +112,11 @@ class StrumCheckStylesTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         focusMode = shownFocus.value,
                         heard = shownHeard.value,
-                        // The 12th-fret check offered (its row is in the picker sheet since 2026-11-03): nothing over the pegs.
-                        tunerTools = listOf(TunerTool.INTONATION_CHECK),
+                        // The 12th-fret check offered too (its row is in the picker sheet since 2026-11-03).
+                        tunerTools = shownTools.value,
                         onIntonationCheckChange = {},
+                        strumCheck = shownStrumCheck.value,
+                        onStrumCheckChange = { shownStrumCheck.value = it },
                         animationsOff = true,
                     )
                 }
@@ -211,14 +218,82 @@ class StrumCheckStylesTest {
         }
     }
 
-    /** In Any note there are no pegs, so no marks (the analysis checks open strings in guitar mode only). */
+    /** In Any note there are no pegs, so no marks and no strum check's button (open strings are checked in guitar mode only). */
     @Test
     fun anyNoteHasNoMarks() {
         shownMode.value = TunerMode.CHROMATIC
         shownState.value = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD)
         show()
         compose.onAllNodesWithTag(TunerTestTags.strumMark(0), useUnmergedTree = true).assertCountEquals(0)
+        compose.onAllNodesWithTag(TunerTestTags.STRUM_BUTTON, useUnmergedTree = true).assertCountEquals(0)
     }
+
+    /**
+     * The strum check's button (after the owner's guitar check, 2026-11-03): upright above the pegs at their end, its
+     * outline ending in line with the last peg's, clear of the marks; on its side after the last peg, on the pegs' line.
+     * A tap turns it on (TalkBack: a switch), and until a strum the word says "Strum all the open strings".
+     */
+    @Test
+    fun theStrumButtonStandsAboveTheLastPeg() {
+        shownHeard.value = HeardStrum.OpenStrings(strum(StrumPhase.DONE), 1)
+        show()
+        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
+            shownSize.value = size
+            shownFontScale.value = scale
+            compose.waitForIdle()
+            val case = "${size.width} x ${size.height} at ${scale}x"
+            val button = strumButton().assertIsDisplayed().getBoundsInRoot()
+            val last = peg(5).getBoundsInRoot()
+            val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+            if (button.right > window.right + SLACK || button.left < window.left - SLACK) fail("$case: the button $button is outside the window $window")
+            if (size.width < size.height) {
+                if (button.bottom > last.top + SLACK) fail("$case: the button $button reaches into the last peg $last")
+                val buttonCentre = (button.left + button.right).value / 2f
+                val pegCentre = (last.left + last.right).value / 2f
+                if (abs(buttonCentre - pegCentre) > PEG_FACE_SLACK) fail("$case: the button $button doesn't stand over the last peg $last")
+                for (index in strings.indices) {
+                    val rect = mark(index).getBoundsInRoot()
+                    if (rect.overlaps(button)) fail("$case: the mark over ${strings[index]} $rect overlaps the button $button")
+                }
+                assertMarksAbovePegs(case)
+            } else {
+                if (button.left < last.right - SLACK) fail("$case: the button $button isn't after the last peg $last")
+                if (button.bottom < last.top || button.top > last.bottom) fail("$case: the button $button isn't on the pegs' line $last")
+            }
+        }
+        shownSize.value = PHONE_UPRIGHT
+        shownFontScale.value = 1f
+        shownHeard.value = HeardStrum.None
+        compose.waitForIdle()
+        strumButton().assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState.Off))
+        strumButton().performClick()
+        compose.waitForIdle()
+        strumButton().assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState.On))
+        assertEquals(context.getString(R.string.tuner_strum_waiting), wordText.text())
+        strumButton().performClick()
+        compose.waitForIdle()
+        assertEquals(context.getString(R.string.tuner_hint_play_string), wordText.text())
+    }
+
+    /** Without the strum check (the 12-string, a build without it) no button, and the pegs and the lens don't move. */
+    @Test
+    fun withoutTheStrumCheckNoButtonAndNothingMoves() {
+        show()
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            shownTools.value = listOf(TunerTool.INTONATION_CHECK, TunerTool.STRUM_CHECK)
+            compose.waitForIdle()
+            val parts = listOf("lens" to compose.onNodeWithTag(TunerTestTags.GAUGE), "first peg" to peg(0), "last peg" to peg(5))
+            val with = parts.map { (_, node) -> node.getBoundsInRoot() }
+            shownTools.value = listOf(TunerTool.INTONATION_CHECK)
+            compose.waitForIdle()
+            compose.onAllNodesWithTag(TunerTestTags.STRUM_BUTTON, useUnmergedTree = true).assertCountEquals(0)
+            val without = parts.map { (_, node) -> node.getBoundsInRoot() }
+            parts.forEachIndexed { i, (name, _) -> if (with[i] != without[i]) fail("$size: the $name moved, ${with[i]} with the button, ${without[i]} without") }
+        }
+    }
+
+    private fun strumButton() = compose.onNodeWithTag(TunerTestTags.STRUM_BUTTON, useUnmergedTree = true)
 
     /** TalkBack hears each peg's mark as its state: "Tighten", "Loosen", "in tune", "Not heard"; on the locked peg after "Locked". */
     @Test
@@ -280,8 +355,8 @@ class StrumCheckStylesTest {
     }
 
     /**
-     * The phone check with a synthetic strum through a fake microphone: the real screen and ViewModel, no mode to
-     * switch on, then a strum of the open strings with A2 20 cents flat and G3 15 sharp: ↑ over
+     * The phone check with a synthetic strum through a fake microphone: the real screen and ViewModel, the strum check's
+     * button tapped, then a strum of the open strings with A2 20 cents flat and G3 15 sharp: ↑ over
      * A2, ↓ over G3, ✓ over the others, and "4 of 6 in tune" once it has rung out. The verdicts stay while the screen is
      * turned and its theme changes: upright and on its side, light and dark (`-a strumScreens=true` saves pictures).
      */
@@ -310,13 +385,20 @@ class StrumCheckStylesTest {
             }
         }
         compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.PICKER_CHIP).fetchSemanticsNodes().isNotEmpty() }
+        // The button first, as the player taps it before strumming.
+        strumButton().performClick()
+        compose.waitUntil(STEP_WAIT_MS) { wordTextOrNull() == context.getString(R.string.tuner_strum_waiting) }
         picture("real-1-waiting")
         recorder.cue = true
         val expected = listOf(StrumVerdict.IN_TUNE, StrumVerdict.FLAT, StrumVerdict.IN_TUNE, StrumVerdict.SHARP, StrumVerdict.IN_TUNE, StrumVerdict.IN_TUNE)
         compose.waitUntil(STEP_WAIT_MS) { strings.indices.all { markVerdict(it) == expected[it] } }
         picture("real-2-ringing")
-        // Rung out: the count in the word's place.
+        // The count in the word's place, and once the strum has rung out the button off again.
         compose.waitUntil(STEP_WAIT_MS) { wordTextOrNull() == count(4, 6) }
+        compose.waitUntil(STEP_WAIT_MS) {
+            compose.onAllNodesWithTag(TunerTestTags.STRUM_BUTTON, useUnmergedTree = true).fetchSemanticsNodes()
+                .firstOrNull()?.config?.getOrNull(SemanticsProperties.ToggleableState) == ToggleableState.Off
+        }
         for ((name, onItsSide, dark) in listOf(
             Triple("upright-light", false, false),
             Triple("upright-dark", false, true),
@@ -430,5 +512,8 @@ class StrumCheckStylesTest {
         private val XIAOMI_ON_ITS_SIDE = DpSize(793.dp, 393.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
+
+        /** The strum check's button stands over the last peg: their centres this close (at 1.25× text the peg's face grows, the button's doesn't). */
+        private const val PEG_FACE_SLACK = 4f
     }
 }

@@ -155,6 +155,8 @@
     <string name="tuner_delete_tuning_title">Supprimer cet accordage ?</string>
     <string name="tuner_delete_tuning_text">« %1$s » sera supprimé définitivement.</string>
     <string name="tuner_delete_tuning_cancel">Annuler</string>
+    <string name="tuner_strum_check">Test en grattant</string>
+    <string name="tuner_strum_waiting">Grattez toutes les cordes à vide</string>
     <string name="tuner_strum_all_in_tune">Toutes les cordes sont justes</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d sur %2$d juste</item>

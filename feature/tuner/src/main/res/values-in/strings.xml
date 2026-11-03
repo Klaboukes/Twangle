@@ -148,6 +148,8 @@
     <string name="tuner_delete_tuning_title">Hapus stem ini?</string>
     <string name="tuner_delete_tuning_text">“%1$s” akan hilang selamanya.</string>
     <string name="tuner_delete_tuning_cancel">Batal</string>
+    <string name="tuner_strum_check">Cek genjreng</string>
+    <string name="tuner_strum_waiting">Genjreng semua senar lepas</string>
     <string name="tuner_strum_all_in_tune">Semua senar sudah pas</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%1$d dari %2$d pas</item>

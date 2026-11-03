@@ -164,6 +164,8 @@
     <string name="tuner_delete_tuning_title">حذف هذا الدوزان؟</string>
     <string name="tuner_delete_tuning_text">سيُحذف «%1$s» نهائيًا.</string>
     <string name="tuner_delete_tuning_cancel">إلغاء</string>
+    <string name="tuner_strum_check">فحص بضربة</string>
+    <string name="tuner_strum_waiting">اضرب كل الأوتار المفتوحة</string>
     <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
     <plurals name="tuner_strum_count">
         <item quantity="zero">%1$d من %2$d مضبوطة</item>

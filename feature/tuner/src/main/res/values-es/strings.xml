@@ -154,6 +154,8 @@
     <string name="tuner_delete_tuning_title">¿Eliminar esta afinación?</string>
     <string name="tuner_delete_tuning_text">“%1$s” desaparecerá para siempre.</string>
     <string name="tuner_delete_tuning_cancel">Cancelar</string>
+    <string name="tuner_strum_check">Prueba de rasgueo</string>
+    <string name="tuner_strum_waiting">Rasguea todas las cuerdas al aire</string>
     <string name="tuner_strum_all_in_tune">Todas las cuerdas afinadas</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d de %2$d afinada</item>

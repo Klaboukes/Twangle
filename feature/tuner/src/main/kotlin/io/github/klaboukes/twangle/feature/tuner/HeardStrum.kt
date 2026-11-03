@@ -59,6 +59,9 @@ interface StrumHearing {
     /** Whether fretted chords are named. */
     fun namesChords(): Boolean
 
+    /** Whether every sudden sound is a strum of the [openStrings], not decided (the strum check's button: the player said one comes). */
+    fun everySoundIsAStrum(): Boolean = false
+
     /** The range the analysis' frames are sized for (the tuner's). */
     fun range(): PitchRange
 }
@@ -152,7 +155,7 @@ class HeardStrumInterpreter {
 
 /**
  * How long the tuner shows what it heard besides one string, and how it sits with the tuner's own reading (2.0,
- * Phase 74; docs/architecture/ui-tuner.md, *Strums and chords by themselves*). Fed on the DSP thread with every
+ * Phase 74; docs/architecture/ui-tuner.md, *The strum check*). Fed on the DSP thread with every
  * [HeardStrum] the [HeardStrumInterpreter] makes ([heard]) and every state of the tuner's own ([tuner], one a hop,
  * [frameSeconds] apart), it keeps [shown]:
  * - **While a strum rings** ([rings]: a strum of the open strings being read, a named chord still ringing) the
@@ -294,23 +297,25 @@ internal class HeardSteps {
     private var strings: FloatArray? = null
     private var a4Hz = Float.NaN
     private var names = false
+    private var everySound = false
     private var range: PitchRange? = null
     private var base = 0
 
     /** Whether the analysis would listen for something else now (also before it first started). */
-    fun changed(strings: FloatArray?, a4Hz: Float, names: Boolean, range: PitchRange): Boolean {
+    fun changed(strings: FloatArray?, a4Hz: Float, names: Boolean, range: PitchRange, everySound: Boolean = false): Boolean {
         val before = this.strings
         val sameStrings = if (strings == null || before == null) strings == before else strings === before || strings.contentEquals(before)
-        return !sameStrings || a4Hz != this.a4Hz || names != this.names || range != this.range
+        return !sameStrings || a4Hz != this.a4Hz || names != this.names || range != this.range || everySound != this.everySound
     }
 
     /** [watcher] is about to start for these; its strums so far are counted on. */
-    fun started(watcher: StrumWatcher, strings: FloatArray?, a4Hz: Float, names: Boolean, range: PitchRange) {
+    fun started(watcher: StrumWatcher, strings: FloatArray?, a4Hz: Float, names: Boolean, range: PitchRange, everySound: Boolean = false) {
         base += watcher.strumCount
         this.strings = strings
         this.a4Hz = a4Hz
         this.names = names
         this.range = range
+        this.everySound = everySound
     }
 
     /** The analysis paused: the latest strum rings no longer for it (null before any strum). */

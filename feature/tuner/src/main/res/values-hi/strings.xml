@@ -151,6 +151,8 @@
     <string name="tuner_delete_tuning_title">यह ट्यूनिंग मिटाएँ?</string>
     <string name="tuner_delete_tuning_text">“%1$s” हमेशा के लिए हट जाएगी।</string>
     <string name="tuner_delete_tuning_cancel">रद्द करें</string>
+    <string name="tuner_strum_check">स्ट्रम चेक</string>
+    <string name="tuner_strum_waiting">सभी खुले तार एक साथ स्ट्रम करें</string>
     <string name="tuner_strum_all_in_tune">सभी तार सुर में हैं</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%2$d में से %1$d सुर में</item>

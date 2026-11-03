@@ -297,6 +297,10 @@
     <string name="tuner_delete_tuning_text">“%1$s” will be gone for good.</string>
     <!-- Delete dialog: the button that keeps the tuning. Short. -->
     <string name="tuner_delete_tuning_cancel">Cancel</string>
+    <!-- Strum check: strum once and every string shows flat, in tune or sharp at once (guitar mode). The name of the button above the strings (TalkBack and its tooltip). -->
+    <string name="tuner_strum_check">Strum check</string>
+    <!-- Strum check, in the word's place under the meter after its button is tapped, before the strum: strum all strings open (unfretted) at once. -->
+    <string name="tuner_strum_waiting">Strum all the open strings</string>
     <!-- After the player strums all the open strings at once, in the word's place under the meter: every string is in tune. -->
     <string name="tuner_strum_all_in_tune">All strings in tune</string>
     <!-- After the player strums all the open strings at once, in the word's place under the meter: how many strings are in tune out of how many there are, e.g. "4 of 6 in tune". %1$d strings in tune, %2$d strings in all. Short. -->

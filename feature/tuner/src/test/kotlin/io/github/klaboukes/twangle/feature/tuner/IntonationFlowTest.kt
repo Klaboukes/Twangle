@@ -136,7 +136,7 @@ class IntonationFlowTest {
         assertTrue(vm.intonationCheck.value)
         vm.setInstrument(Instruments.VIOLIN)
         advanceTimeBy(100)
-        assertEquals(emptyList<TunerTool>(), vm.tunerTools.value)
+        assertEquals(listOf(TunerTool.STRUM_CHECK), vm.tunerTools.value)
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)
         vm.setIntonationCheck(true)

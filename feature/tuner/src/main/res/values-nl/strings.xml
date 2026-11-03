@@ -160,6 +160,8 @@
     <string name="tuner_delete_tuning_title">Deze stemming verwijderen?</string>
     <string name="tuner_delete_tuning_text">“%1$s” is daarna voorgoed weg.</string>
     <string name="tuner_delete_tuning_cancel">Annuleren</string>
+    <string name="tuner_strum_check">Strumcheck</string>
+    <string name="tuner_strum_waiting">Strum alle losse snaren</string>
     <string name="tuner_strum_all_in_tune">Alle snaren zijn zuiver</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d van de %2$d zuiver</item>

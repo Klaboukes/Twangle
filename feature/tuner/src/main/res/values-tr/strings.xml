@@ -152,6 +152,8 @@
     <string name="tuner_delete_tuning_title">Bu akort silinsin mi?</string>
     <string name="tuner_delete_tuning_text">“%1$s” kalıcı olarak silinecek.</string>
     <string name="tuner_delete_tuning_cancel">İptal</string>
+    <string name="tuner_strum_check">Tel kontrolü</string>
+    <string name="tuner_strum_waiting">Tüm boş tellere birlikte vur</string>
     <string name="tuner_strum_all_in_tune">Tüm teller akortlu</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d / %2$d akortlu</item>

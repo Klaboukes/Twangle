@@ -151,6 +151,8 @@
     <string name="tuner_delete_tuning_title">Slette denne stemmingen?</string>
     <string name="tuner_delete_tuning_text">«%1$s» blir borte for godt.</string>
     <string name="tuner_delete_tuning_cancel">Avbryt</string>
+    <string name="tuner_strum_check">Strumsjekk</string>
+    <string name="tuner_strum_waiting">Slå an alle de åpne strengene</string>
     <string name="tuner_strum_all_in_tune">Alle strengene er stemt</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d av %2$d stemt</item>

@@ -148,6 +148,8 @@
     <string name="tuner_delete_tuning_title">Xóa kiểu lên dây này?</string>
     <string name="tuner_delete_tuning_text">“%1$s” sẽ bị xóa vĩnh viễn.</string>
     <string name="tuner_delete_tuning_cancel">Hủy</string>
+    <string name="tuner_strum_check">Quét kiểm tra</string>
+    <string name="tuner_strum_waiting">Quét tất cả dây buông</string>
     <string name="tuner_strum_all_in_tune">Tất cả dây đều chuẩn</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%1$d trên %2$d dây chuẩn</item>

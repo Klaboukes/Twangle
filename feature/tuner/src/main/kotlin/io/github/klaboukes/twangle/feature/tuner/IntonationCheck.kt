@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
+import io.github.klaboukes.twangle.core.dsp.strum.StrumInstruments
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -24,16 +25,20 @@ enum class TunerTool {
     /** Phase 29: the 12th-fret check, string by string. */
     INTONATION_CHECK,
 
-    // 1.1's other tools went in 2.0: the pitch trail is the lens's look (Phase 71); the strum check and the chord
-    // name need no mode (Phase 74).
+    /** Phase 18: strum the open strings once and see which are off; since 2.0 a button above the pegs. */
+    STRUM_CHECK,
+
+    // 1.1's other tools went in 2.0: the pitch trail is the lens's look (Phase 71); the chord name goes to Chords.
 }
 
 /**
  * The tools the tuner offers for [instrument] in a build with [tools] switched on: the 12th-fret check where its
- * switch is on and the instrument has frets and a saddle ([IntonationInstruments.offers]).
+ * switch is on and the instrument has frets and a saddle ([IntonationInstruments.offers]), the strum check where its
+ * switch is on and the instrument's strings can be read in one strum ([StrumInstruments.offers]: not the 12-string).
  */
 fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
     if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
+    if (tools.strumCheck && StrumInstruments.offers(instrument)) add(TunerTool.STRUM_CHECK)
 }
 
 /** Where the 12th-fret check is: see [TunerUiState.IntonationCheck]. */

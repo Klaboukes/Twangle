@@ -148,6 +148,8 @@
     <string name="tuner_delete_tuning_title">要刪除這個調音嗎？</string>
     <string name="tuner_delete_tuning_text">「%1$s」將會永久刪除。</string>
     <string name="tuner_delete_tuning_cancel">取消</string>
+    <string name="tuner_strum_check">刷弦檢查</string>
+    <string name="tuner_strum_waiting">刷一下所有空弦</string>
     <string name="tuner_strum_all_in_tune">所有弦都已調準</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%2$d 根中 %1$d 根已調準</item>

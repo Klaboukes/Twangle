@@ -152,6 +152,8 @@
     <string name="tuner_delete_tuning_title">Diese Stimmung löschen?</string>
     <string name="tuner_delete_tuning_text">„%1$s“ ist dann für immer weg.</string>
     <string name="tuner_delete_tuning_cancel">Abbrechen</string>
+    <string name="tuner_strum_check">Anschlag-Check</string>
+    <string name="tuner_strum_waiting">Schlag alle leeren Saiten an</string>
     <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d von %2$d gestimmt</item>

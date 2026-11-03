@@ -153,6 +153,8 @@
     <string name="tuner_delete_tuning_title">Poistetaanko viritys?</string>
     <string name="tuner_delete_tuning_text">”%1$s” poistetaan pysyvästi.</string>
     <string name="tuner_delete_tuning_cancel">Peruuta</string>
+    <string name="tuner_strum_check">Lyöntitesti</string>
+    <string name="tuner_strum_waiting">Soita kaikki avoimet kielet kerralla</string>
     <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d/%2$d vireessä</item>

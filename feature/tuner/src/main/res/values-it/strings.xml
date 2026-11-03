@@ -155,6 +155,8 @@
     <string name="tuner_delete_tuning_title">Eliminare questa accordatura?</string>
     <string name="tuner_delete_tuning_text">“%1$s” sparirà per sempre.</string>
     <string name="tuner_delete_tuning_cancel">Annulla</string>
+    <string name="tuner_strum_check">Controllo a pennata</string>
+    <string name="tuner_strum_waiting">Fai una pennata su tutte le corde a vuoto</string>
     <string name="tuner_strum_all_in_tune">Tutte le corde sono intonate</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d su %2$d intonata</item>

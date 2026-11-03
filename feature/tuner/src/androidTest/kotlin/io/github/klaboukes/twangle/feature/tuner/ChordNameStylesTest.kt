@@ -254,12 +254,12 @@ class ChordNameStylesTest {
     }
 
     /**
-     * The phone check with synthetic strums through a fake microphone: the real screen and ViewModel, no mode to
-     * switch on, then an A minor strum, a C over E and an E5: the ruler's place names each in turn. With
-     * `-a chordScreens=true` it saves pictures.
+     * Synthetic strums through a fake microphone on the real screen and ViewModel: an A minor strum, a C over E and an
+     * E5. Since the strum check became a button (after the owner's guitar check, 2026-11-03) the tuner names no chord by
+     * itself: the ruler stays (the chord name goes to Chords, as Listen). With `-a chordScreens=true` it saves pictures.
      */
     @Test
-    fun syntheticStrumsAreNamedOnTheRealScreen() {
+    fun syntheticStrumsAreNotNamedOnTheRealScreen() {
         val recorder = StrumOnCue(
             FakeStrums.strum(FakeStrums.midiHz(*AM_SHAPE), 3.0) + FakeStrums.strum(FakeStrums.midiHz(*C_OVER_E_SHAPE), 3.0) +
                 FakeStrums.strum(FakeStrums.midiHz(*E5_SHAPE), 3.0) + FakeStrums.quiet(3.0),
@@ -281,14 +281,13 @@ class ChordNameStylesTest {
         compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.RULER, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
         picture("real-1-waiting")
         recorder.cue = true
-        for ((symbol, name) in listOf("Am" to "real-2-am", "C/E" to "real-3-c-over-e", "E5" to "real-4-e5")) {
-            compose.waitUntil(STEP_WAIT_MS) { shownSymbol() == symbol }
-            picture(name)
+        // The three strums ring for 9 s; none is named while they do.
+        repeat(9) {
+            Thread.sleep(1_000)
+            compose.waitForIdle()
+            assertEquals("after ${it + 1} s", null, shownSymbol())
         }
-        // Rung out: faded, until a note of it read on its own takes the ruler's place back (HeardShown).
-        Thread.sleep(2_500)
-        compose.waitForIdle()
-        picture("real-5-rung-out")
+        picture("real-2-not-named")
     }
 
     /** Each chord: its symbol within the ruler's place (the ruler gone), wholly shown, its words as the word; the lens, the word and the pegs where they are without it. */

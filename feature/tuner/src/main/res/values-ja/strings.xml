@@ -148,6 +148,8 @@
     <string name="tuner_delete_tuning_title">このチューニングを削除しますか？</string>
     <string name="tuner_delete_tuning_text">「%1$s」は完全に削除されます。</string>
     <string name="tuner_delete_tuning_cancel">キャンセル</string>
+    <string name="tuner_strum_check">ストロークチェック</string>
+    <string name="tuner_strum_waiting">開放弦を全部まとめて弾いてください</string>
     <string name="tuner_strum_all_in_tune">すべての弦が合っています</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%2$d 本中 %1$d 本が合っています</item>

@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
  * [StrumWatcher]: a strum of open strings and a fretted chord are told from one string, on synthetic strums
  * and chords, and never on the real guitar's plucks (`src/test/resources/fixtures/`), alone or one after
  * another while the others ring, nor on the reference tone. docs/architecture/strum-and-metronome.md,
- * *Strums heard by themselves*.
+ * *The strum check's button*.
  */
 class StrumWatcherTest {
 
@@ -63,8 +63,9 @@ class StrumWatcherTest {
         sampleRate: Int = rate,
         chunk: Int = 1024,
         watcher: StrumWatcher = StrumWatcher(sampleRate),
+        everySound: Boolean = false,
     ): List<Heard> {
-        watcher.start(open, a4Hz, nameChords, range)
+        watcher.start(open, a4Hz, nameChords, range, everySoundIsAStrum = everySound)
         val heard = mutableListOf<Heard>()
         var start = 0
         while (start < input.size) {
@@ -75,7 +76,8 @@ class StrumWatcherTest {
                 while (true) {
                     when (watcher.next()) {
                         StrumWatcher.Event.NOTHING -> break
-                        StrumWatcher.Event.STRUM -> heard += Heard(watcher.strumCount)
+                        // With every sound a strum (the strum check's button) its kind is known at once.
+                        StrumWatcher.Event.STRUM -> heard += Heard(watcher.strumCount).also { it.kind = watcher.kind }
                         StrumWatcher.Event.DECIDED -> heard.last().kind = watcher.kind
                         StrumWatcher.Event.READING -> heard.last().apply {
                             chords += watcher.readingChord
@@ -292,16 +294,64 @@ class StrumWatcherTest {
         assertTrue("decided ${"%.2f".format(decidedAt)} s after the strum", decidedAt in 0.4..0.6)
     }
 
+    // --- The strum check's button: every sound is a strum. ---
+
+    @Test
+    fun `after the button every sound is a strum of the open strings, read from its first frame`() {
+        val hz = StrumChords.detuned(standard, floatArrayOf(0f, -20f, 0f, 15f, 0f, 0f))
+        val heard = watch(room(4.0, 0.5 to strum(hz)), nameChords = false, everySound = true)
+        assertEquals("$heard", 1, heard.size)
+        val strum = heard.single()
+        assertSame(StrumKind.OPEN_STRINGS, strum.kind)
+        for (s in 0..3) {
+            val expected = 1200f * kotlin.math.log2(hz[s] / standard[s])
+            assertTrue("string $s: ${strum.cents[0][s]} vs $expected", abs(strum.cents[0][s] - expected) < 1f)
+        }
+        // Not decided: one string is a strum too (the strum check then waits: it hears too few strings).
+        val single = PluckSynth(rate, durationSeconds = 3f).run {
+            start(standard[1])
+            FloatArray(seconds(3.0)).also { render(it, 0, it.size) }
+        }
+        val pluck = watch(room(4.0, 0.5 to single), nameChords = false, everySound = true)
+        assertSame("$pluck", StrumKind.OPEN_STRINGS, pluck.first().kind)
+        assertTrue("$pluck", pluck.first().present.isNotEmpty() && pluck.first().present[0].count { it } < 3)
+        // Without open strings there is nothing to strum: sounds are decided as before.
+        assertTrue(watch(room(4.0, 0.5 to strum(standard)), open = null, everySound = true).none { it.kind == StrumKind.OPEN_STRINGS })
+    }
+
+    @Test
+    fun `after the button a strum is read as soon as its first frame is`() {
+        val watcher = StrumWatcher(rate)
+        val input = room(3.0, 0.5 to strum(standard))
+        watcher.start(standard, 440f, nameChords = false, everySoundIsAStrum = true)
+        var readAt = Double.NaN
+        var pos = 0
+        while (pos < input.size && readAt.isNaN()) {
+            pos += watcher.push(input, pos, minOf(1024, input.size - pos))
+            while (true) {
+                val event = watcher.next()
+                if (event == StrumWatcher.Event.NOTHING) break
+                if (event == StrumWatcher.Event.READING && readAt.isNaN()) readAt = watcher.readingSeconds - 0.5
+            }
+        }
+        // As 1.1's strum check: the first reading 0.39–0.44 s after the strum, a frame's length.
+        assertTrue("read ${"%.2f".format(readAt)} s after the strum", readAt in 0.3..0.5)
+    }
+
     @Test
     fun `nothing allocates after start`() {
         val watcher = StrumWatcher(rate)
         val input = room(6.0, 0.5 to strum(standard), 3.0 to strum(ChordShapes.hz(ChordShapes.OPEN.first { it.name == "C" }.midi)))
         fun run() {
-            watcher.start(standard, 440f, nameChords = true)
-            var pos = 0
-            while (pos < input.size) {
-                pos += watcher.push(input, pos, minOf(1024, input.size - pos))
-                while (watcher.next() != StrumWatcher.Event.NOTHING) Unit
+            // Deciding, then every sound a strum (an index loop: a list would allocate).
+            for (pass in 0..1) {
+                val everySound = pass == 1
+                watcher.start(standard, 440f, nameChords = !everySound, everySoundIsAStrum = everySound)
+                var pos = 0
+                while (pos < input.size) {
+                    pos += watcher.push(input, pos, minOf(1024, input.size - pos))
+                    while (watcher.next() != StrumWatcher.Event.NOTHING) Unit
+                }
             }
         }
         repeat(3) { run() }

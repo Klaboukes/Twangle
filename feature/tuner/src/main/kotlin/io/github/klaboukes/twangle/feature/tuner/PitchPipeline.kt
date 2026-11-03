@@ -134,10 +134,11 @@ class PitchPipeline(
             val open = hearing!!.openStrings()
             val names = hearing.namesChords()
             val heardRange = hearing.range()
-            val changed = heard.changed(open, a4, names, heardRange)
+            val everySound = hearing.everySoundIsAStrum()
+            val changed = heard.changed(open, a4, names, heardRange, everySound)
             if (!watching || changed) {
-                heard.started(watch, open, a4, names, heardRange)
-                watch.start(open, a4, names, heardRange)
+                heard.started(watch, open, a4, names, heardRange, everySound)
+                watch.start(open, a4, names, heardRange, everySound)
                 if (changed) emit(HeardReading.FRESH)
                 watching = true
             }

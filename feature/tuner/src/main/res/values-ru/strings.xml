@@ -158,6 +158,8 @@
     <string name="tuner_delete_tuning_title">Удалить этот строй?</string>
     <string name="tuner_delete_tuning_text">«%1$s» будет удалён навсегда.</string>
     <string name="tuner_delete_tuning_cancel">Отмена</string>
+    <string name="tuner_strum_check">Проверка струн</string>
+    <string name="tuner_strum_waiting">Проведи по всем открытым струнам</string>
     <string name="tuner_strum_all_in_tune">Все струны настроены</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d из %2$d настроена</item>

@@ -24,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -111,6 +112,21 @@ class HeardStrumFlowTest {
     }
 
     @Test
+    fun `with every sound a strum, the pipeline reads one string as a strum too`() = runTest {
+        val everySound = object : StrumHearing {
+            override fun a4Hz() = 440f
+            override fun openStrings() = standardHz
+            override fun namesChords() = false
+            override fun everySoundIsAStrum() = true
+            override fun range() = PitchRange.STANDARD
+        }
+        val strum = listen(openStrum, everySound).filterIsInstance<HeardReading>()
+        assertTrue(strum.mapNotNull { it.strum?.strings }.size >= 10)
+        val single = listen(aString, everySound).filterIsInstance<HeardReading>()
+        assertEquals(listOf(StrumKind.OPEN_STRINGS), single.mapNotNull { it.kind }.distinct())
+    }
+
+    @Test
     fun `with nothing to listen for, the pipeline hands on the tuner's readings alone`() = runTest {
         val off = object : StrumHearing {
             override fun a4Hz() = Float.NaN
@@ -130,10 +146,17 @@ class HeardStrumFlowTest {
     private fun TestScope.viewModel(signal: FloatArray, tools: ToolSwitches = ToolSwitches.ALL_ON) =
         TunerViewModel(FakeAudioRecorder(signal), settings, tones, StandardTestDispatcher(testScheduler), tools = tools)
 
+    /** A tuner listening to [signal] with the strum check's button tapped on, as the player does before strumming. */
+    private fun TestScope.checking(signal: FloatArray, tools: ToolSwitches = ToolSwitches.ALL_ON): TunerViewModel =
+        viewModel(signal, tools).also {
+            it.setStrumCheck(true)
+            it.onPermissionChanged(true)
+        }
+
     @Test
     fun `a strum of the open strings shows each string's verdict, the tuner waiting while it rings`() = runTest(dispatcher) {
-        val vm = viewModel(openStrum)
-        vm.onPermissionChanged(true)
+        val vm = checking(openStrum)
+        assertTrue(vm.strumCheck.value)
         val states = mutableListOf<TunerUiState>()
         // Each state with whether what the tuner heard rang as it came: the strum's notes are no string's reading.
         val whileRinging = mutableListOf<TunerUiState>()
@@ -153,13 +176,15 @@ class HeardStrumFlowTest {
         )
         assertEquals(-20f, check.strings[1].cents)
         assertEquals(StrumPhase.RINGING, check.phase)
+        // The button stays on while the strum rings.
+        assertTrue(vm.strumCheck.value)
         advanceTimeBy(3_000)
         assertTrue(states.none { it is TunerUiState.StrumCheck || it is TunerUiState.ChordName })
         assertTrue(whileRinging.none { it is TunerUiState.Detected })
 
-        // The same sound with both brakes on: no strum shown.
-        val braked = viewModel(openStrum, ToolSwitches.ALL_ON.copy(strumCheck = false, chordNaming = false))
-        braked.onPermissionChanged(true)
+        // The same sound with the brake on: no button, no strum shown.
+        val braked = checking(openStrum, ToolSwitches.ALL_ON.copy(strumCheck = false))
+        assertFalse(braked.strumCheck.value)
         val brakedStates = mutableListOf<TunerUiState>()
         backgroundScope.launch { braked.state.collect { brakedStates += it } }
         advanceTimeBy(4_500)
@@ -169,58 +194,58 @@ class HeardStrumFlowTest {
     }
 
     @Test
-    fun `the A string tuned on its own after the strum takes the tuner's verdict`() = runTest(dispatcher) {
+    fun `without the button a strum shows nothing, nothing is decided by itself`() = runTest(dispatcher) {
+        for (signal in listOf(openStrum, cChord, aString)) {
+            val vm = viewModel(signal)
+            vm.onPermissionChanged(true)
+            backgroundScope.launch { vm.state.collect {} }
+            advanceTimeBy(3_300)
+            assertSame(HeardStrum.None, vm.heardStrum.value)
+        }
+    }
+
+    @Test
+    fun `the button turns itself off once the strum has rung out, and the A string tuned after it takes the tuner's verdict`() = runTest(dispatcher) {
         // The strum found the A string 20 cents flat; then it is plucked alone, in tune.
-        val vm = viewModel(openStrum + aString)
-        vm.onPermissionChanged(true)
+        val vm = checking(openStrum + aString)
         backgroundScope.launch { vm.state.collect {} }
         advanceTimeBy(2_000)
         assertEquals(StrumVerdict.FLAT, (vm.heardStrum.value as HeardStrum.OpenStrings).check.strings[1].verdict)
         advanceTimeBy(3_500)
+        assertFalse(vm.strumCheck.value)
         val after = (vm.heardStrum.value as HeardStrum.OpenStrings).check
         assertEquals(StrumVerdict.IN_TUNE, after.strings[1].verdict)
         assertEquals(StrumVerdict.SHARP, after.strings[3].verdict)
         assertEquals(StrumPhase.DONE, after.phase)
+
+        // On again: the marks of the strum before go until the next strum.
+        vm.setStrumCheck(true)
+        advanceTimeBy(100)
+        assertSame(HeardStrum.None, vm.heardStrum.value)
     }
 
     @Test
-    fun `a fretted chord shows its name`() = runTest(dispatcher) {
-        val vm = viewModel(cChord)
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(2_000)
-        val shown = vm.heardStrum.value
-        assertTrue("$shown", shown is HeardStrum.FrettedChord)
-        assertSame(Chord.of(PitchClass.C, ChordQuality.MAJOR), (shown as HeardStrum.FrettedChord).name.chord?.chord)
-    }
-
-    @Test
-    fun `one string shows nothing, and the chord name's brake stops the chord`() = runTest(dispatcher) {
-        val vm = viewModel(aString)
-        vm.onPermissionChanged(true)
+    fun `one string after the button shows nothing and the button waits on, a tap turns it off`() = runTest(dispatcher) {
+        // Quiet after it, so the microphone's sound doesn't end (that turns the button off too).
+        val vm = checking(aString + FloatArray(3 * SyntheticStrum.SAMPLE_RATE))
         backgroundScope.launch { vm.state.collect {} }
         advanceTimeBy(3_300)
         assertSame(HeardStrum.None, vm.heardStrum.value)
-
-        val braked = viewModel(cChord, ToolSwitches.ALL_ON.copy(chordNaming = false))
-        braked.onPermissionChanged(true)
-        backgroundScope.launch { braked.state.collect {} }
-        advanceTimeBy(3_300)
-        assertSame(HeardStrum.None, braked.heardStrum.value)
+        assertTrue(vm.strumCheck.value)
+        vm.setStrumCheck(false)
+        assertFalse(vm.strumCheck.value)
     }
 
     @Test
-    fun `in any-note mode a chord is named but open strings are not checked`() = runTest(dispatcher) {
-        val chord = viewModel(cChord)
-        chord.setMode(TunerMode.CHROMATIC)
-        chord.onPermissionChanged(true)
+    fun `the tuner names no chord, and in any-note mode the button turns off`() = runTest(dispatcher) {
+        val chord = checking(cChord)
         backgroundScope.launch { chord.state.collect {} }
         advanceTimeBy(2_000)
-        assertTrue("${chord.heardStrum.value}", chord.heardStrum.value is HeardStrum.FrettedChord)
+        assertTrue("${chord.heardStrum.value}", chord.heardStrum.value !is HeardStrum.FrettedChord)
 
-        val open = viewModel(openStrum)
+        val open = checking(openStrum)
         open.setMode(TunerMode.CHROMATIC)
-        open.onPermissionChanged(true)
+        assertFalse(open.strumCheck.value)
         backgroundScope.launch { open.state.collect {} }
         advanceTimeBy(2_000)
         assertSame(HeardStrum.None, open.heardStrum.value)
@@ -229,12 +254,12 @@ class HeardStrumFlowTest {
     @Test
     fun `a strum stays shown after it, the 12th-fret check clears it, and listening ends with nothing shown`() = runTest(dispatcher) {
         // The strum, then 3 s of quiet before the microphone's sound ends.
-        val vm = viewModel(openStrum + FloatArray(3 * SyntheticStrum.SAMPLE_RATE))
-        vm.onPermissionChanged(true)
+        val vm = checking(openStrum + FloatArray(3 * SyntheticStrum.SAMPLE_RATE))
         val collecting = backgroundScope.launch { vm.state.collect {} }
         advanceTimeBy(5_000)
         val done = vm.heardStrum.value as HeardStrum.OpenStrings
         assertEquals(StrumPhase.DONE, done.check.phase)
+        assertFalse(vm.strumCheck.value)
 
         vm.setIntonationCheck(true)
         advanceTimeBy(100)
@@ -247,8 +272,7 @@ class HeardStrumFlowTest {
 
     @Test
     fun `a reference tone is never analysed`() = runTest(dispatcher) {
-        val vm = viewModel(openStrum)
-        vm.onPermissionChanged(true)
+        val vm = checking(openStrum)
         backgroundScope.launch { vm.state.collect {} }
         advanceTimeBy(50)
         vm.playString(1)

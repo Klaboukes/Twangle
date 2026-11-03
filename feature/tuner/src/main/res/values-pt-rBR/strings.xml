@@ -155,6 +155,8 @@
     <string name="tuner_delete_tuning_title">Excluir esta afinação?</string>
     <string name="tuner_delete_tuning_text">“%1$s” será excluída para sempre.</string>
     <string name="tuner_delete_tuning_cancel">Cancelar</string>
+    <string name="tuner_strum_check">Teste com batida</string>
+    <string name="tuner_strum_waiting">Toque todas as cordas soltas de uma vez</string>
     <string name="tuner_strum_all_in_tune">Todas as cordas afinadas</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d de %2$d afinada</item>

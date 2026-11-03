@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Plays synthetic strums from this computer's speaker to the connected phone and shows what the tuner
-# marks for each (2.0: the strum check happens by itself, no mode to switch on): all in tune, strings
-# 10-30 cents flat or sharp, a string left out. See docs/architecture/strum-and-metronome.md,
+# marks for each (2.0: the strum check's button above the pegs is tapped before each strum, as the
+# player does): all in tune, strings 10-30 cents flat or sharp, a string left out. See docs/architecture/strum-and-metronome.md,
 # "Strum check (polyphonic)", *Phone check*.
 #
 #   scripts/strum-check.sh            guitar, standard tuning (the phone must show Guitar · Standard)
@@ -72,11 +72,25 @@ if ! grep -q "|$picker|" <<<"$screen"; then
     exit 5
 fi
 
+# Taps the strum check's button (tagged tuner_strum_button) at its centre: the next strum is read.
+tap_strum_button() {
+    local bounds
+    bounds="$(awk -F'|' '$1 == "tuner_strum_button" { print $4; exit }' <<<"$(dump)")"
+    if [ -z "$bounds" ]; then
+        echo "No strum check button above the pegs (an instrument without it, or a build with it switched off)." >&2
+        exit 7
+    fi
+    read -r x1 y1 x2 y2 <<<"$bounds"
+    "$ADB" shell input tap $(((x1 + x2) / 2)) $(((y1 + y2) / 2))
+    sleep 0.5
+}
+
 for c in "${cases[@]}"; do
     name="${c%%|*}"
     cents="${c#*|}"
     wav="$OUT/$name.wav"
     python scripts/strum-wav.py "$wav" "$notes" "$cents" || exit 6
+    tap_strum_button
     powershell.exe -NoProfile -Command "(New-Object System.Media.SoundPlayer '$(cygpath -w "$ROOT/$wav")').PlaySync()"
     # The sound stops at once at the end, which the phone may take for a sound of its own; give it
     # time to see that it isn't a strum, and the count time to take the word's place.

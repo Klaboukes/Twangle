@@ -4,7 +4,15 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -15,13 +23,19 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -131,6 +145,42 @@ fun strumCountText(check: TunerUiState.StrumCheck): String? {
         pluralStringResource(R.plurals.tuner_strum_count, inTune, inTune, total)
     }
 }
+
+/**
+ * The strum check's button (2.0, Phase 74, the owner's pick of 2026-11-03 after the guitar check: deciding by itself
+ * whether a sound was one string, a strum or a chord flickered): above the pegs at the row's end, its outline in line
+ * with the last peg's face, the app's button ([StyleButton]) with 1.1's strum icon and no word, picked (the container
+ * colour with an accent outline) while [on]. A tap turns it on: the next strum of the open strings is read and marked
+ * above the pegs, and once it has rung out the button turns itself off; a tap while on turns it off. TalkBack hears it
+ * as a switch, "Strum check, on"; a long-press shows its name in a tooltip.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StrumCheckButton(on: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    val label = stringResource(R.string.tuner_strum_check)
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(label) } },
+        state = rememberTooltipState(),
+    ) {
+        StyleButton(
+            onClick = { onChange(!on) },
+            label = label,
+            modifier = modifier,
+            face = TUNER_BUTTON_FACE,
+            picked = on,
+            role = Role.Switch,
+            faceModifier = Modifier.semantics {
+                testTag = TunerTestTags.STRUM_BUTTON
+                toggleableState = ToggleableState(on)
+            },
+        ) {
+            Icon(painterResource(R.drawable.ic_strum), contentDescription = null, modifier = Modifier.size(STRUM_ICON_SIZE))
+        }
+    }
+}
+
+private val STRUM_ICON_SIZE = 24.dp
 
 /** A strum's mark's verdict, for UI tests (TalkBack hears it on the peg). */
 val StrumMarkVerdict = SemanticsPropertyKey<StrumVerdict>("StrumMarkVerdict")
