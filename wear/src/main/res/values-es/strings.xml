@@ -18,8 +18,6 @@
         <item quantity="many">%1$d cents alto</item>
         <item quantity="other">%1$d cents alto</item>
     </plurals>
-    <string name="wear_spoken_tune_up">subir</string>
-    <string name="wear_spoken_tune_down">bajar</string>
     <string name="wear_spoken_sharp">%1$s sostenido</string>
     <string name="wear_mic_needed">Twangle escucha tu instrumento con el micrófono del reloj.</string>
     <string name="wear_allow_mic">Permitir micrófono</string>

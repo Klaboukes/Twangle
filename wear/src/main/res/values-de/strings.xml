@@ -16,8 +16,6 @@
         <item quantity="one">%1$d Cent zu hoch</item>
         <item quantity="other">%1$d Cent zu hoch</item>
     </plurals>
-    <string name="wear_spoken_tune_up">höher stimmen</string>
-    <string name="wear_spoken_tune_down">tiefer stimmen</string>
     <string name="wear_spoken_sharp">%1$s erhöht</string>
     <string name="wear_mic_needed">Twangle hört dein Instrument über das Mikrofon der Uhr.</string>
     <string name="wear_allow_mic">Mikrofon erlauben</string>

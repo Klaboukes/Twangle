@@ -16,8 +16,6 @@
         <item quantity="one">%1$d सेंट ऊपर</item>
         <item quantity="other">%1$d सेंट ऊपर</item>
     </plurals>
-    <string name="wear_spoken_tune_up">ऊपर ट्यून करें</string>
-    <string name="wear_spoken_tune_down">नीचे ट्यून करें</string>
     <string name="wear_spoken_sharp">%1$s शार्प</string>
     <string name="wear_mic_needed">Twangle घड़ी के माइक्रोफ़ोन से आपका वाद्य सुनता है।</string>
     <string name="wear_allow_mic">माइक्रोफ़ोन की अनुमति दें</string>

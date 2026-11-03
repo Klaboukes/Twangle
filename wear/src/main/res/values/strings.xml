@@ -2,31 +2,31 @@
     <string name="app_name" translatable="false">Twangle</string>
     <!-- Watch tuner: shown while no note is heard. -->
     <string name="wear_play_note">Play a note</string>
-    <!-- How far the note is off, under the note name. %1$s is the signed number, e.g. "+12" or "−3". -->
+    <!-- Watch: how far the note is off without saying which way, small under the word "In tune" (and "0 cents" right on the note). %1$s is the number, e.g. "2". Also said by TalkBack for "0 cents". -->
     <plurals name="wear_cents">
         <item quantity="one">%1$s cent</item>
         <item quantity="other">%1$s cents</item>
     </plurals>
-    <!-- What TalkBack says while the note is in tune (the ring glows), after the note: "E 2, in tune". Lower case. -->
+    <!-- Watch: what TalkBack says while the note is in tune (the arc turns green), after the note: "E 2, in tune". Lower case here; with a capital it is also the word under the note. -->
     <string name="wear_in_tune">in tune</string>
     <!-- Watch, TalkBack: the reading read aloud. %1$s is the note as said ("A sharp", in Dutch "ais"), %2$d its octave, %3$s how far off it is or "in tune", e.g. "A sharp 2, in tune". -->
     <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
-    <!-- Watch, TalkBack: the same while the note is off, with which way to turn the peg. %4$s is "tune up" or "tune down", e.g. "A sharp 2, 12 cents flat, tune up". -->
+    <!-- Watch, TalkBack: the same while the note is off, with the word under the note that says which way to turn the peg. %4$s is that word ("Tighten" or "Loosen"), e.g. "A sharp 2, 12 cents flat, Tighten". -->
     <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <!-- Watch, TalkBack: how far too low the note is, in the reading read aloud. %1$d is how many cents (hundredths of a semitone). -->
+    <!-- Watch: how far too low the note is, small under the word "Tighten", and in the reading TalkBack reads aloud. %1$d is how many cents (hundredths of a semitone). -->
     <plurals name="wear_spoken_cents_flat">
         <item quantity="one">%1$d cent flat</item>
         <item quantity="other">%1$d cents flat</item>
     </plurals>
-    <!-- Watch, TalkBack: how far too high the note is, in the reading read aloud. %1$d is how many cents. -->
+    <!-- Watch: how far too high the note is, small under the word "Loosen", and in the reading TalkBack reads aloud. %1$d is how many cents. -->
     <plurals name="wear_spoken_cents_sharp">
         <item quantity="one">%1$d cent sharp</item>
         <item quantity="other">%1$d cents sharp</item>
     </plurals>
-    <!-- Watch, TalkBack, after the reading while the note is too low: turn the peg up. Lower case. -->
-    <string name="wear_spoken_tune_up">tune up</string>
-    <!-- Watch, TalkBack, after the reading while the note is too high: turn the peg down. Lower case. -->
-    <string name="wear_spoken_tune_down">tune down</string>
+    <!-- Watch: the word under the note while the string is too low: turn its peg to tighten it (raise its pitch). One short word, imperative, starts with a capital (the phone's word under its tuner). Also said by TalkBack after the reading. -->
+    <string name="wear_word_tighten">Tighten</string>
+    <!-- Watch: the word under the note while the string is too high: turn its peg to loosen it (lower its pitch). One short word, imperative, starts with a capital. Also said by TalkBack. -->
+    <string name="wear_word_loosen">Loosen</string>
     <!-- Watch, TalkBack: a note name with a sharp read aloud, e.g. "A sharp". %1$s is the letter or syllable ("A", "La"). In languages whose letter names are said in one word (Dutch ais, German Ais) only used for Do Re Mi. -->
     <string name="wear_spoken_sharp">%1$s sharp</string>
     <!-- Microphone permission on the watch. -->

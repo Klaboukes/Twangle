@@ -19,6 +19,9 @@ object WatchColors {
     val accent = Color(0xFF5FC4FF)
     val onAccent = Color(0xFF0E1116)
     val inTune = Color(0xFF3DDC84)
+
+    /** The amber of a note far off, which the dot and the word ease from toward [inTune] ([WatchTone]). */
+    val farOff = Color(0xFFFFB648)
 }
 
 /** Wear Material 3 in [WatchColors]: buttons in the accent, text in ink and muted, on black. */

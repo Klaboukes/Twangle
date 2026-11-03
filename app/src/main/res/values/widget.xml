@@ -5,7 +5,8 @@
     <!-- The widget picker's preview colours: Ink light (values-night: dark). The placed widget is
          coloured by TuningWidget, in Ink or the wallpaper's colours. -->
     <color name="widget_background">#F6F7F9</color>
+    <color name="widget_surface">#FFFFFF</color>
+    <color name="widget_line">#E1E5EA</color>
     <color name="widget_ink">#14181D</color>
     <color name="widget_muted">#666F7C</color>
-    <color name="widget_accent">#1A6FC4</color>
 </resources>

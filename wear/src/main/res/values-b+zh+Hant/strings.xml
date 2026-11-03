@@ -12,8 +12,6 @@
     <plurals name="wear_spoken_cents_sharp">
         <item quantity="other">偏高 %1$d 音分</item>
     </plurals>
-    <string name="wear_spoken_tune_up">調高</string>
-    <string name="wear_spoken_tune_down">調低</string>
     <string name="wear_spoken_sharp">升%1$s</string>
     <string name="wear_mic_needed">Twangle 透過手錶的麥克風聆聽你的樂器。</string>
     <string name="wear_allow_mic">允許使用麥克風</string>

@@ -67,13 +67,13 @@ internal fun watchReadingKey(reading: WatchTunerState.Detected): String =
     "${reading.note.pitchClass}${reading.note.octave}/${SpokenSide.of(reading.cents, reading.inTune)}"
 
 /**
- * The reading as TalkBack says it, in words instead of "+12 cents": "A sharp 2, 12 cents flat, tune
- * up", "E 2, in tune", "E 2, 0 cents" while right on the note but not yet counted in tune. The note is
- * named as on screen (the watch's language's notation) and said as the phone says it ([NoteNameSpeech]:
- * "ais 2" in Dutch).
+ * The reading as TalkBack says it, in words as on the phone: "A sharp 2, 12 cents flat, Tighten", "E 2, in tune",
+ * "E 2, 0 cents" while right on the note but not yet counted in tune. The [word] shown under the note follows when it
+ * says which way to turn the peg (in tune is said already), so TalkBack says what the screen shows. The note is named
+ * as on screen (the watch's language's notation) and said as the phone says it ([NoteNameSpeech]: "ais 2" in Dutch).
  */
 @Composable
-internal fun spokenWatchReading(reading: WatchTunerState.Detected): String {
+internal fun spokenWatchReading(reading: WatchTunerState.Detected, word: WatchWord?): String {
     val resources = LocalResources.current
     val locale = LocalConfiguration.current.locales[0]
     val names = rememberWatchNoteNameSpeech()
@@ -85,12 +85,12 @@ internal fun spokenWatchReading(reading: WatchTunerState.Detected): String {
         SpokenSide.IN_TUNE -> stringResource(R.string.wear_in_tune)
         SpokenSide.FLAT -> resources.getQuantityString(R.plurals.wear_spoken_cents_flat, amount, amount)
         SpokenSide.SHARP -> resources.getQuantityString(R.plurals.wear_spoken_cents_sharp, amount, amount)
-        SpokenSide.ON_THE_NOTE -> resources.getQuantityString(R.plurals.wear_cents, 0, WatchNoteName.signedCents(0, locale))
+        SpokenSide.ON_THE_NOTE -> resources.getQuantityString(R.plurals.wear_cents, 0, digits(0, locale))
     }
-    val direction = when (side) {
-        SpokenSide.FLAT -> stringResource(R.string.wear_spoken_tune_up)
-        SpokenSide.SHARP -> stringResource(R.string.wear_spoken_tune_down)
-        else -> null
+    val direction = when (word) {
+        WatchWord.TIGHTEN -> stringResource(R.string.wear_word_tighten)
+        WatchWord.LOOSEN -> stringResource(R.string.wear_word_loosen)
+        WatchWord.IN_TUNE, null -> null
     }
     return if (direction == null) {
         stringResource(R.string.wear_spoken_reading, note, octave, state)

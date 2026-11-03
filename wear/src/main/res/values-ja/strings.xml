@@ -13,8 +13,6 @@
     <plurals name="wear_spoken_cents_sharp">
         <item quantity="other">%1$d セント高い</item>
     </plurals>
-    <string name="wear_spoken_tune_up">上げる</string>
-    <string name="wear_spoken_tune_down">下げる</string>
     <string name="wear_spoken_sharp">%1$sシャープ</string>
     <string name="wear_mic_needed">Twangle はウォッチのマイクで楽器の音を聞き取ります。</string>
     <string name="wear_allow_mic">マイクを許可</string>

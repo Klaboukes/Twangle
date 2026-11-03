@@ -15,8 +15,6 @@
         <item quantity="one">%1$d সেন্ট উপরে</item>
         <item quantity="other">%1$d সেন্ট উপরে</item>
     </plurals>
-    <string name="wear_spoken_tune_up">সুর চড়ান</string>
-    <string name="wear_spoken_tune_down">সুর নামান</string>
     <string name="wear_spoken_sharp">%1$s শার্প</string>
     <string name="wear_mic_needed">Twangle ঘড়ির মাইক্রোফোন দিয়ে আপনার বাদ্যযন্ত্র শোনে।</string>
     <string name="wear_allow_mic">মাইক্রোফোনের অনুমতি দিন</string>

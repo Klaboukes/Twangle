@@ -18,8 +18,6 @@
         <item quantity="many">%1$d cents acima</item>
         <item quantity="other">%1$d cents acima</item>
     </plurals>
-    <string name="wear_spoken_tune_up">subir</string>
-    <string name="wear_spoken_tune_down">baixar</string>
     <string name="wear_spoken_sharp">%1$s sustenido</string>
     <string name="wear_mic_needed">O Twangle ouve seu instrumento pelo microfone do relógio.</string>
     <string name="wear_allow_mic">Permitir microfone</string>

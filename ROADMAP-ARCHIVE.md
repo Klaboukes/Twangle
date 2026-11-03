@@ -77,6 +77,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 71 — The tuner screen](#phase-71--the-tuner-screen)
 - [Phase 72 — The Light arc and the strobe in the lens](#phase-72--the-light-arc-and-the-strobe-in-the-lens)
 - [Phase 73 — Focus mode](#phase-73--focus-mode)
+- [Phase 75 — The other screens as drawn](#phase-75--the-other-screens-as-drawn)
 
 ---
 
@@ -806,3 +807,10 @@ Goal: one button, the same screen wide.
 - ☑ The button top right (full screen), its exit twin in the same corner on its side; the Settings switch goes (a saved value is read once, then forgotten) — done 2026-11-03: the button keeps the gear's face, at the end of the chip's row upright and on its side, and its exit twin stands in the same corner of the full-screen tuner (16 dp from the side, 8 dp from the top); focus mode is the app's, not a setting (`AppContainer.focusMode`), and 1.1's saved switch is read once at the first start and removed, opening that start in focus mode if it was on (JVM-tested); the Settings row and its two texts went from every language
 - ☑ The wide layout: the ruler across the full width with more of the scale, the lens wide, the word and the string small under it, no pegs and no tabs until a tap; each of the three looks drawn wide — done 2026-11-03: any window wider than tall, focus mode or not, gets it (a phone on its side without focus mode: the chip's row on top and the pegs on the word's line, centred or at its end on a narrow phone, the tools' buttons beside them); the lens the window less 24 dp each side, about 3.4 : 1 in focus mode on a phone on its side; focus mode's ruler draws no name under the exit button; the string small at the end of the word's line ("A2"); the three looks checked wide, light and dark (`WideLayoutTest`, `LensLooksTest`); a tool's panel keeps the two panes on its side until Phase 74
 - ☑ The turning of the whole app, Back and the tap stay as they are (`FocusTurn`) — done 2026-11-03: unchanged, only what turns it on changed; checked on the Xiaomi
+
+## Phase 75 — The other screens as drawn
+Goal: the metronome, Practice's tools, Settings, About, the widget and the watch in the one look, as the first mock-up draws them.
+- ☑ The metronome: the tempo as the screen (a big number with − and +, the tempo word, a ruler to drag), beat lights, meter and sound as segmented choices, Tap the beat and Start side by side, the speed trainer a row with a switch
+- ☑ Settings in four short groups (Tuning, While tuning, Look, Twangle), About as today
+- ☑ Chords, Scales, Capo and Ear training in the one look, each full screen from its card
+- ☑ The watch: the top half of the phone screen (the note, a dot along an arc, the word), green and a wrist tap in tune; the widget in the one look — done 2026-11-03: the note large in the middle, a dot along an arc open at the bottom (±50 cents over ±135°, ♭ and ♯ inside its ends), the phone's word under it (Tighten · Loosen · In tune, held near the note as on the phone) with the cents small under it ("12 cents flat", in tune "2 cents"), the dot and the word amber easing to green, the arc green and the wrist tap in tune, "Play a note" in the word's place; TalkBack says the word ("…, Tighten"), the texts "tune up" and "tune down" gone from every language; the ribbon gone. The word's rule and the tone are small copies of the phone's (`WatchWord`, `WatchTone`, tested equal). The widget: the tuning in a chip like the picker chip, "Open the tuner" under it, the tuning fork gone. Checked on the Wear OS emulator (the Galaxy Watch 5 wasn't reachable) and on the Xiaomi's home screen, light and dark

@@ -504,7 +504,5 @@ wear wear_spoken_cents_sharp bad7d782
 wear wear_spoken_reading 6a076bf0
 wear wear_spoken_reading_hint 6a8c05b0
 wear wear_spoken_sharp 0dc644eb
-wear wear_spoken_tune_down 4222af1c
-wear wear_spoken_tune_up bc018fed
 wear wear_tile_tune 22c58d84
 wear wear_try_again d8b8392e

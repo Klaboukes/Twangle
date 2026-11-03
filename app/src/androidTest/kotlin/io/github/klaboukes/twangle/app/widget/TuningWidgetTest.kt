@@ -4,11 +4,14 @@ import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.media.AudioManager
 import android.os.SystemClock
 import android.view.View
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ActivityScenario
@@ -33,7 +36,8 @@ import org.junit.runner.RunWith
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 
 /**
- * The home-screen widget: drawn as the launcher draws it, it names the instrument and tuning in
+ * The home-screen widget (2.0's look, Phase 75): drawn as the launcher draws it, it names the
+ * instrument and tuning in a chip like the tuner's picker chip, with "Open the tuner" under it, in
  * Ink's colours, light or dark (the picker's preview too), and opens nothing by itself (the
  * microphone stays off); its tap brings the open app back to the tuner.
  *
@@ -61,8 +65,23 @@ class TuningWidgetTest {
         return view
     }
 
+    /** The colour an image of the widget is drawn in (its shape tinted by its colour filter): its middle, drawn alone. */
+    private fun View.tint(id: Int): Int {
+        val image = findViewById<ImageView>(id)
+        val bitmap = Bitmap.createBitmap(SAMPLE_WIDTH, SAMPLE_HEIGHT, Bitmap.Config.ARGB_8888)
+        instrumentation.runOnMainSync {
+            image.measure(
+                View.MeasureSpec.makeMeasureSpec(SAMPLE_WIDTH, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(SAMPLE_HEIGHT, View.MeasureSpec.EXACTLY),
+            )
+            image.layout(0, 0, SAMPLE_WIDTH, SAMPLE_HEIGHT)
+            image.draw(Canvas(bitmap))
+        }
+        return bitmap.getPixel(SAMPLE_WIDTH / 2, SAMPLE_HEIGHT / 2)
+    }
+
     @Test
-    fun namesTheInstrumentAndTuningInInksColours() {
+    fun namesTheInstrumentAndTuningInAChipInInksColours() {
         // Ink's own colours: the wallpaper's (on by default) differ from phone to phone.
         val view = drawn(AppSettings(tuning = Tunings.DROP_D, theme = ThemeMode.DARK, dynamicColor = false))
         val title = view.findViewById<TextView>(R.id.widget_title)
@@ -71,8 +90,13 @@ class TuningWidgetTest {
         assertEquals(context.getString(R.string.widget_title, guitar, dropD), title.text.toString())
         assertEquals(context.getString(TunerR.string.tuner_spoken_picker, guitar, dropD), title.contentDescription)
         val scheme = tokensFor(dark = true).scheme
-        assertEquals(scheme.onBackground.toArgb(), title.currentTextColor)
-        assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
+        assertEquals(scheme.onSurface.toArgb(), title.currentTextColor)
+        val subtitle = view.findViewById<TextView>(R.id.widget_subtitle)
+        assertEquals(context.getString(R.string.widget_open_tuner), subtitle.text.toString())
+        assertEquals(scheme.onSurfaceVariant.toArgb(), subtitle.currentTextColor)
+        assertEquals("the chip's fill", scheme.surface.toArgb(), view.tint(R.id.widget_chip))
+        assertEquals("the chip's line", scheme.outlineVariant.toArgb(), view.tint(R.id.widget_chip_line))
+        assertEquals("the tile", scheme.background.toArgb(), view.tint(R.id.widget_backdrop))
         assertTrue("the whole tile can be tapped", view.findViewById<View>(android.R.id.background).hasOnClickListeners())
     }
 
@@ -80,8 +104,11 @@ class TuningWidgetTest {
     fun inTheLightThemeItIsInkLight() {
         val view = drawn(AppSettings(theme = ThemeMode.LIGHT, dynamicColor = false))
         val scheme = tokensFor(dark = false).scheme
-        assertEquals(scheme.onBackground.toArgb(), view.findViewById<TextView>(R.id.widget_title).currentTextColor)
+        assertEquals(scheme.onSurface.toArgb(), view.findViewById<TextView>(R.id.widget_title).currentTextColor)
         assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
+        assertEquals(scheme.surface.toArgb(), view.tint(R.id.widget_chip))
+        assertEquals(scheme.outlineVariant.toArgb(), view.tint(R.id.widget_chip_line))
+        assertEquals(scheme.background.toArgb(), view.tint(R.id.widget_backdrop))
     }
 
     /** The widget picker shows the layout's own colours before the app draws it: Ink's too, light and dark. */
@@ -96,9 +123,10 @@ class TuningWidgetTest {
             val scheme = tokensFor(dark).scheme
             val case = if (dark) "dark" else "light"
             assertEquals("$case background", scheme.background.toArgb(), preview.getColor(R.color.widget_background))
-            assertEquals("$case ink", scheme.onBackground.toArgb(), preview.getColor(R.color.widget_ink))
+            assertEquals("$case chip", scheme.surface.toArgb(), preview.getColor(R.color.widget_surface))
+            assertEquals("$case chip's line", scheme.outlineVariant.toArgb(), preview.getColor(R.color.widget_line))
+            assertEquals("$case ink", scheme.onSurface.toArgb(), preview.getColor(R.color.widget_ink))
             assertEquals("$case muted", scheme.onSurfaceVariant.toArgb(), preview.getColor(R.color.widget_muted))
-            assertEquals("$case accent", scheme.primary.toArgb(), preview.getColor(R.color.widget_accent))
         }
     }
 
@@ -155,5 +183,11 @@ class TuningWidgetTest {
             SystemClock.sleep(100)
         }
         return condition()
+    }
+
+    private companion object {
+        /** The size each image is drawn at to read its colour: a small pill. */
+        const val SAMPLE_WIDTH = 120
+        const val SAMPLE_HEIGHT = 40
     }
 }

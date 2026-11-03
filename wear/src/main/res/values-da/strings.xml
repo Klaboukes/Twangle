@@ -15,8 +15,6 @@
         <item quantity="one">%1$d cent for høj</item>
         <item quantity="other">%1$d cent for høj</item>
     </plurals>
-    <string name="wear_spoken_tune_up">stem op</string>
-    <string name="wear_spoken_tune_down">stem ned</string>
     <string name="wear_spoken_sharp">%1$s med kryds</string>
     <string name="wear_mic_needed">Twangle lytter til dit instrument med urets mikrofon.</string>
     <string name="wear_allow_mic">Tillad mikrofon</string>
