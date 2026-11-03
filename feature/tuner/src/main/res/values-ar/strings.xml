@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">مثبّت، قيد التشغيل</string>
     <string name="tuner_string_tuned">مضبوط</string>
     <string name="tuner_string_locked_tuned">مثبّت، مضبوط</string>
-    <string name="tuner_frequency">%1$.1f هرتز</string>
     <!-- 0, 100+: سنت; 1: بسنت واحد; 2: بسنتين; 3–10: سنتات; 11–99: سنتًا. -->
     <string name="tuner_cents_zero">٠ سنت</string>
     <plurals name="tuner_cents_flat">

@@ -107,7 +107,6 @@ import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
-import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
 import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
 import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
@@ -123,7 +122,6 @@ import io.github.klaboukes.twangle.feature.tuner.components.rememberLiveTone
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
-import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import io.github.klaboukes.twangle.feature.tuner.components.RULER_HEIGHT
@@ -153,6 +151,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
@@ -488,7 +487,7 @@ object TunerTestTags {
     const val WORD_TEXT = "tuner_word_text"
     const val WORD_CENTS = "tuner_word_cents"
 
-    /** The optional signal bars by the ruler's heard note (in the chip row while a tool's panel takes the meter's place), and the figures panel a tap on them opens. */
+    /** The optional signal bars by the ruler's heard note (in the chip row while a tool's panel takes the lens's place), and the figures panel a tap on them opens. */
     const val SIGNAL_BARS = "tuner_signal_bars"
     const val SIGNAL_FIGURES = "tuner_signal_figures"
 
@@ -537,9 +536,6 @@ object TunerTestTags {
 
     /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */
     const val HIDE_CONTROLS = "tuner_hide_controls"
-
-    /** Focus mode's small note in the corner, beside the full-screen meter. */
-    const val FOCUS_NOTE = "tuner_focus_note"
 
     /** Strum check: its switch above the strings, its panel in the meter's place, and the line under it. */
     const val STRUM_TOGGLE = "tuner_strum_toggle"
@@ -620,14 +616,16 @@ private fun KeepScreenOn() {
  * shows ([asShown]). [reception] likewise gives how well the note is heard (NaN without one), which
  * the lens reads while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. The lens's in-tune glow
  * is lit by [meterGlow] (from [rememberInTuneGlow]; by default while the note is in tune; with [animationsOff] its
- * in-tune colour and glow switch without easing). The frequency is under the note, and under it the word (2.0,
- * Phase 71, [TuneWordLine]: Tighten · Loosen · In tune, Too low · Too high in Any note, "Play a string" while
- * nothing is heard) with the cents small under it, always there: the tuner's one item TalkBack speaks. The
+ * in-tune colour and glow switch without easing). The ruler at the top names the note (2.0, Phase 71: the big note
+ * and the hertz went), the lens under it says how far, and under the lens the word ([TuneWordLine]: Tighten ·
+ * Loosen · In tune, Too low · Too high in Any note, "Play a string" while nothing is heard) with the cents small
+ * under it, always there: the tuner's one item TalkBack speaks. The
  * reading's tone ([rememberLiveTone]) is the lens's border, the word's colour and, while the app gives a
  * [io.github.klaboukes.twangle.core.designsystem.ScreenTint], the whole screen's tint ([ScreenTintFrom]). [showSignalBars]
- * adds small signal bars at the start of the top row ([ChipRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
- * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. The app's
- * [settingsButton] (the gear, Phase 69) stands at the very start of that row, before the bars. In the
+ * adds small signal bars beside the ruler's heard note (at the start of the top row, [ChipRow], while a tool's panel
+ * stands in the ruler's and the lens's place), which open the live [signalFigures] when tapped; focus mode, with its
+ * controls hidden, leaves them out. The app's [settingsButton] (the gear, Phase 69) stands at the very start of the
+ * top row, across from focus mode's button, which [onFocusModeChange] adds at its end. In the
  * row's middle the picker chip (2.0, Phase 70: "Guitar · Drop D ▾", the player's own tuning by its
  * name, "Any note ▾" in chromatic mode) calls [onPickerOpenChange] with true. While [pickerOpen] the
  * picker sheet, "What are you tuning?", shows over the tuner ([InstrumentTuningPanel]), and
@@ -646,8 +644,8 @@ private fun KeepScreenOn() {
  * 2.0's beginner's help, off by default); once every string of the tuning shown is ticked, the word says "In tune.
  * Play." while nothing is heard, in the in-tune colour. With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
- * is whether it is on). A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
- * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
+ * is whether it is on). A [TunerUiState.StrumCheck] state shows its panel in the ruler's and the lens's place and
+ * its lines in the word's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
  * Where [tunerTools] holds the chord name too, one "more tools" button takes the switch's place and opens a menu of
  * them ([MoreToolsButton]). The 12th-fret check is no entry of that menu (2.0, Phase 71): where [tunerTools] holds it
  * (its Settings switch on) and [onIntonationCheckChange] is given, its own button stands above the pegs at their
@@ -657,15 +655,15 @@ private fun KeepScreenOn() {
  * carry each string's result. The chord
  * name is turned on and off with [onChordNameChange] ([chordName] is whether it is on); a
  * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). In the plain
- * tuner the lens ([Lens], 2.0 Phase 71) stands under the ruler in the meter's place, drawing [lensLook] (the
+ * tuner the lens ([Lens], 2.0 Phase 71) stands under the ruler, drawing [lensLook] (the
  * trail for every look until Phase 72) from [pitchHistory], the last seconds of readings (an empty one when
  * none is given); while it is given, the trail's motion ("wavering", "bending up") joins the word's spoken
  * reading ([trailMotionWords]).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
- * (a big meter beside the note, controls hidden until the screen is tapped), else two panes side by
- * side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
+ * (focus mode: the ruler, a big lens and the word, controls hidden until the screen is tapped), else two panes
+ * side by side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
  */
 @Composable
 fun TunerContent(
@@ -757,7 +755,7 @@ fun TunerContent(
         }
         ChipRow(
             chip = chip,
-            // Beside the ruler's heard note; in the row only while a tool's panel stands in the ruler's and the meter's place.
+            // Beside the ruler's heard note; in the row only while a tool's panel stands in the ruler's and the lens's place.
             bars = if (showSignalBars && barsInRow) ({ movableSignalBars() }) else null,
             button = focusButton,
             gear = settingsButton,
@@ -836,13 +834,13 @@ fun TunerContent(
             )
         }
     }
-    // Kept here, as the bars are: TalkBack's pacing carries over when the note's display is built
-    // afresh, so a note fading to "Play a string" (or a short drop-out) isn't said at once.
+    // Kept here, as the bars are: TalkBack's pacing carries over when the word is built afresh (another layout),
+    // so a note fading to "Play a string" (or a short drop-out) isn't said at once.
     val speech = rememberPacedSpeech()
     // The trail's motion, said after the reading while the lens shows the trail (the lens itself is silent).
     val motion = if (pitchHistory != null) trailMotionWords(pitchHistory) else null
     val detected = state as? TunerUiState.Detected
-    val readout = detected?.let { NoteReadout(it.noteName, it.octave, it.frequencyHz, it.cents, it.inTune, it.hint) }
+    val readout = detected?.let { NoteReadout(it.noteName, it.octave, it.cents, it.inTune, it.hint) }
     // The word under the lens (Phase 71), the tuner's one speaking item: what to do, the cents under it, or what to play.
     val word = @Composable { compact: Boolean ->
         val listening = state as? TunerUiState.Listening
@@ -863,49 +861,41 @@ fun TunerContent(
             speech = speech,
         )
     }
-    val noteFor = @Composable { compact: Boolean, maxHeight: Dp ->
+    // Under the lens the word; under a tool's panel the tool's own lines.
+    val status = @Composable { compact: Boolean ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state, compact = compact)
             is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString, compact = compact)
             is TunerUiState.ChordName -> ChordStatus(state, compact = compact)
             // One call for a note, the wait for one and the start, so the word keeps what it showed as a note comes.
-            else -> NoteDisplay(
-                readout = readout,
-                compact = compact,
-                maxHeight = maxHeight,
-                // The ruler above names the note: on a short screen the big one makes room for it (Phase 71).
-                noteMayGo = state is TunerUiState.Detected || state is TunerUiState.Listening,
-                word = { word(compact) },
-            )
+            else -> word(compact)
         }
     }
-    // Focus mode's note: small in the corner, above the full-screen lens; the word under the lens.
-    val focusNote = @Composable { FocusNote(readout) }
-    val focusWord = @Composable { word(true) }
-    val note = @Composable { compact: Boolean, maxHeight: Dp -> noteFor(compact, maxHeight) }
-    // The ruler over the meter (2.0, Phase 71) while the tuner reads a note or waits for one; a tool's
-    // panel in the meter's place has none. Focus mode's full-screen meter has none until Phase 73 lays it out wide.
+    // The ruler over the lens (2.0, Phase 71) while the tuner reads a note or waits for one: it names the note
+    // (the big note went in the phase's last step). A tool's panel in the lens's place has none.
     val lastHeard = remember { LastHeardNote() }
-    val ruler = rulerFor(state, lastHeard)?.let { shown ->
-        @Composable {
+    val rulerShown = rulerFor(state, lastHeard)
+    val rulerWith = @Composable { bars: Boolean ->
+        if (rulerShown != null) {
             Ruler(
                 pitch = rulerPitch,
-                names = shown.names,
-                rest = shown.rest,
-                heard = shown.heard,
+                names = rulerShown.names,
+                rest = rulerShown.rest,
+                heard = rulerShown.heard,
                 cents = needleCents,
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 precision = inTunePrecision,
                 animationsOff = animationsOff,
-                bars = if (showSignalBars) ({ movableSignalBars() }) else null,
+                bars = if (showSignalBars && bars) ({ movableSignalBars() }) else null,
             )
         }
     }
+    val ruler = rulerShown?.let { @Composable { rulerWith(true) } }
     val rulerAndGauge = @Composable {
         if (ruler == null) {
             gauge()
         } else {
-            // Under its neighbours, as the meter is on its own: the meter's glow reaches past its box, behind them.
+            // Under its neighbours, as the lens is on its own: the lens's glow reaches past its box, behind them.
             Column(Modifier.zIndex(-1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 ruler()
                 Spacer(Modifier.height(RULER_METER_GAP))
@@ -918,20 +908,16 @@ fun TunerContent(
     val plainMeter = state is TunerUiState.Detected || state is TunerUiState.Listening
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
-        // On its side the readout pane holds the ruler only where it is tall enough for the ruler, the meter
-        // and the note (a tablet; not a phone, whose ruler waits for Phase 73's wide layout without the big note).
-        val rulerBesideControls = ruler.takeIf { maxHeight >= TWO_PANE_RULER_MIN_HEIGHT }
         val twoPane = @Composable {
             TwoPaneLayout(
                 error = error,
                 onRetry = onRetry,
-                header = { header(rulerBesideControls == null) },
+                // The signal bars beside the ruler's heard note; in the chip's row only while a tool's panel stands in their place.
+                header = { header(ruler == null) },
                 guitarSlot = guitarSlot,
                 gauge = gauge,
-                note = { compact -> note(compact, Dp.Unspecified) },
-                // The word's two lines make the readout taller: on a phone on its side it fits with a smaller note.
-                compactNote = true,
-                ruler = rulerBesideControls,
+                status = status,
+                ruler = ruler,
             )
         }
         val singleColumn = @Composable {
@@ -944,8 +930,8 @@ fun TunerContent(
                     onRetry = onRetry,
                     header = { header(ruler == null) },
                     gauge = rulerAndGauge,
-                    note = { maxHeight -> note(false, maxHeight) },
-                    noteShrinks = plainMeter,
+                    status = { status(false) },
+                    lensGivesWay = plainMeter,
                     guitarSlot = guitarSlot,
                     overLens = if (ruler != null) RULER_HEIGHT + RULER_METER_GAP else 0.dp,
                 )
@@ -999,11 +985,12 @@ fun TunerContent(
                             error = error,
                             onRetry = onRetry,
                             gauge = gauge,
-                            note = { note(false, Dp.Unspecified) },
-                            below = { CompactExtraFor(state, mode, tone) },
-                            // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
-                            focusNote = if (plainMeter) focusNote else null,
-                            focusWord = focusWord,
+                            status = { status(false) },
+                            below = { CompactPegsFor(state) },
+                            // The plain tuner: the ruler, the lens and the word over the whole screen (no signal bars there:
+                            // they open a panel, a control). A tool keeps its panel beside its own lines and buttons.
+                            focusRuler = if (plainMeter && rulerShown != null) ({ rulerWith(false) }) else null,
+                            focusWord = { word(true) },
                             // The strum check's columns are buttons: each keeps a 48 dp touch width.
                             gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
                             onShowControls = { controlsShown = true },
@@ -1076,23 +1063,20 @@ private fun rulerFor(state: TunerUiState, lastHeard: LastHeardNote): RulerShown?
 }
 
 /**
- * The upright layout, as on the approved mock-up (docs/design/theme-styles-preview.html): the mode
- * switch centred at the top, the meter as wide
- * as the screen less [METER_MARGIN] at each side, the note under it, and the strings (with the strum
- * check's switch above them) at the bottom. The free [height] is shared out one to two above the meter and above the
- * strings, so the meter sits a little high and the gaps look balanced. Everything but the meter keeps
- * the [COLUMN_PADDING] text margin. Where the screen is too short for all that (a narrow phone with
- * navigation buttons), the gaps close up to [SECTION_SPACING] and, with [noteShrinks] (the plain
- * tuner), the note gets smaller (given its room as [note]'s maxHeight) while the meter keeps its full
- * width (owner, 2026-10-21: shrink the note, never the meter). With a tool on, its panel in the
- * meter's place shrinks instead (keeping its shape, down to [GAUGE_MIN_WIDTH]), so the tool's text
- * under it keeps its size. Only with a very large system font is it still taller than the screen,
- * and then it scrolls. The scroll area fills the screen, so
- * the meter's glow fades out on the screen rather than at the column's edge.
+ * The upright layout (2.0, Phase 71, the tuner mock-up's combination, docs/design/v2-tuner-screens-preview.html):
+ * the header row (the gear, the picker chip and focus mode's button) at the top, the ruler and the lens under it
+ * ([gauge]: the lens as wide as the screen less 20 dp each side), the word under the lens ([status]) and the pegs
+ * (with the tools' buttons above them) at the bottom. The free [height] is shared out one to two above the lens and
+ * above the pegs, so the lens sits a little high and the gaps look balanced. Everything but the lens keeps the
+ * [COLUMN_PADDING] text margin.
  *
- * The plain tuner's [gauge] is the ruler over the lens (2.0, Phase 71; [overLens] is the ruler's height and the gap
- * under it): the lens and the note share what the rest leave ([LensOverNote]), the lens's height giving way first,
- * down to half its width, and only then the note.
+ * With [lensGivesWay] (the plain tuner) the ruler and the lens take what the rest leave ([LensOverWord]): the lens
+ * 0.85 times as high as wide where there is room, its height giving way on a short screen down to half its width;
+ * its width never does (owner: shrink the note, never the meter; the note went, so the lens keeps its width). With a
+ * tool on, its panel in the lens's place shrinks instead (keeping its 2:1 shape, down to [GAUGE_MIN_WIDTH]), so the
+ * tool's lines under it keep their size. Only with a very large system font is it still taller than the screen, and
+ * then it scrolls. The scroll area fills the screen, so the lens's glow fades out on the screen rather than at the
+ * column's edge. [overLens] is the ruler's height and the gap under it.
  */
 @Composable
 private fun SingleColumnLayout(
@@ -1101,8 +1085,8 @@ private fun SingleColumnLayout(
     onRetry: () -> Unit,
     header: @Composable () -> Unit,
     gauge: @Composable () -> Unit,
-    note: @Composable (maxHeight: Dp) -> Unit,
-    noteShrinks: Boolean,
+    status: @Composable () -> Unit,
+    lensGivesWay: Boolean,
     guitarSlot: @Composable () -> Unit,
     overLens: Dp = 0.dp,
 ) {
@@ -1123,13 +1107,13 @@ private fun SingleColumnLayout(
             }
             Spacer(Modifier.gap(1f))
         } else {
-            // On a short screen (a phone with navigation buttons) the note, or a tool's panel, shrinks, so the strings stay in view.
-            if (noteShrinks) {
-                Shrinking { room -> LensOverNote(room, gauge, overLens) { noteRoom -> Box(textMargin) { note(noteRoom) } } }
+            // On a short screen (a phone with navigation buttons) the lens's height, or a tool's panel, gives way, so the pegs stay in view.
+            if (lensGivesWay) {
+                Shrinking { room -> LensOverWord(room, gauge, overLens) { Box(textMargin) { status() } } }
             } else {
                 Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
                 Spacer(Modifier.height(SECTION_SPACING))
-                Box(textMargin) { note(Dp.Unspecified) }
+                Box(textMargin) { status() }
             }
             Spacer(Modifier.height(SECTION_SPACING))
             Spacer(Modifier.gap(1f))
@@ -1140,37 +1124,34 @@ private fun SingleColumnLayout(
 }
 
 /**
- * The ruler and the lens ([gauge], [overLens] of it above the lens) over the [note], [SECTION_SPACING] apart, in a
- * [room] that high (2.0, Phase 71; docs/architecture/v2-plan.md, *The lens*, Size). The lens takes the height the
- * note leaves it, from 0.85 down to half its width ([Lens]); only where even half doesn't leave the note its full
- * size is the note told to fit in what remains (it shrinks, and may go: the ruler names the note). The lens's
- * width never gives way (owner: shrink the note, never the meter).
+ * The ruler and the lens ([gauge], [overLens] of it above the lens) over the [word], [SECTION_SPACING] apart, in a
+ * [room] that high (2.0, Phase 71; docs/architecture/v2-plan.md, *The lens*, Size). The word keeps its height; the
+ * lens takes the rest, from 0.85 down to half its width ([Lens]), and at half it stays, the column then scrolling.
  */
 @Composable
-private fun LensOverNote(room: Dp, gauge: @Composable () -> Unit, overLens: Dp, note: @Composable (maxHeight: Dp) -> Unit) {
-    BoxWithConstraints {
-        val lensWidth = (min(maxWidth, COLUMN_MAX_WIDTH) - LENS_INSET * 2).coerceAtLeast(0.dp)
-        val noteRoom = (room - overLens - lensWidth * LENS_SHORT - SECTION_SPACING).coerceAtLeast(0.dp)
-        Layout(contents = listOf(gauge, { note(noteRoom) })) { (gaugeMeasurables, noteMeasurables), constraints ->
-            val across = Constraints(maxWidth = min(constraints.maxWidth, COLUMN_MAX_WIDTH.roundToPx()))
-            val notePlaceable = noteMeasurables.single().measure(across)
-            val spacing = SECTION_SPACING.roundToPx()
-            val leastGauge = (overLens + lensWidth * LENS_SHORT).roundToPx()
-            val gaugeHeight = (room.roundToPx() - notePlaceable.height - spacing).coerceAtLeast(leastGauge)
-            val gaugePlaceable = gaugeMeasurables.single().measure(across.copy(maxHeight = gaugeHeight))
-            val width = maxOf(gaugePlaceable.width, notePlaceable.width)
-            layout(width, gaugePlaceable.height + spacing + notePlaceable.height) {
-                gaugePlaceable.placeRelative((width - gaugePlaceable.width) / 2, 0)
-                notePlaceable.placeRelative((width - notePlaceable.width) / 2, gaugePlaceable.height + spacing)
-            }
+private fun LensOverWord(room: Dp, gauge: @Composable () -> Unit, overLens: Dp, word: @Composable () -> Unit) {
+    Layout(contents = listOf(gauge, word)) { (gaugeMeasurables, wordMeasurables), constraints ->
+        val across = Constraints(maxWidth = min(constraints.maxWidth, COLUMN_MAX_WIDTH.roundToPx()))
+        val wordPlaceable = wordMeasurables.single().measure(across)
+        val spacing = SECTION_SPACING.roundToPx()
+        val lensWidth = (across.maxWidth - (LENS_INSET * 2).roundToPx()).coerceAtLeast(0)
+        val leastGauge = overLens.roundToPx() + (lensWidth * LENS_SHORT).roundToInt()
+        val gaugeHeight = (room.roundToPx() - wordPlaceable.height - spacing).coerceAtLeast(leastGauge)
+        val gaugePlaceable = gaugeMeasurables.single().measure(across.copy(maxHeight = gaugeHeight))
+        val width = maxOf(gaugePlaceable.width, wordPlaceable.width)
+        layout(width, gaugePlaceable.height + spacing + wordPlaceable.height) {
+            gaugePlaceable.placeRelative((width - gaugePlaceable.width) / 2, 0)
+            wordPlaceable.placeRelative((width - wordPlaceable.width) / 2, gaugePlaceable.height + spacing)
         }
     }
 }
 
 /**
- * Readout pane beside the controls pane: landscape and wide screens, and the [TunerLayout.COMPACT]
- * layout while its controls show. [compactNote] (the wave view, or the tune hint's line)
- * makes the readout taller; on a phone on its side it only fits with a smaller note.
+ * The readout pane beside the controls pane: a window wider than tall (a phone or a tablet on its side), and the
+ * [TunerLayout.COMPACT] layout while its controls show. The readout pane holds the [ruler] (the plain tuner's), the
+ * [gauge] (the lens, or a tool's panel) and the [status] under it (the word, or the tool's lines; set a little
+ * smaller in a pane shorter than [COMPACT_PANE_HEIGHT]); the gauge shrinks, keeping its 2:1 shape, so they fit the
+ * pane's height. The controls pane holds the [header] over the [guitarSlot]. Phase 73 lays this out wide.
  */
 @Composable
 private fun TwoPaneLayout(
@@ -1179,19 +1160,18 @@ private fun TwoPaneLayout(
     header: @Composable () -> Unit,
     guitarSlot: @Composable () -> Unit,
     gauge: @Composable () -> Unit,
-    note: @Composable (compact: Boolean) -> Unit,
-    compactNote: Boolean,
+    status: @Composable (compact: Boolean) -> Unit,
     ruler: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING),
     ) {
-        // Readout side. The gauge shrinks to fit the height, so the note stays in view.
+        // Readout side. The gauge shrinks to fit the height, so the word stays in view.
         BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             val paneHeight = maxHeight
             Column(
-                // At least the pane's height, so the meter's glow fades out on the screen, not at the scroll area's edge.
+                // At least the pane's height, so the lens's glow fades out on the screen, not at the scroll area's edge.
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .heightIn(min = paneHeight)
@@ -1202,12 +1182,12 @@ private fun TwoPaneLayout(
                 if (error != null) {
                     TunerErrorMessage(error, onRetry)
                 } else {
-                    val compact = compactNote && paneHeight < COMPACT_PANE_HEIGHT
-                    // The ruler across the whole pane, not only as wide as the meter that shrinks under it.
+                    val compact = paneHeight < COMPACT_PANE_HEIGHT
+                    // The ruler across the whole pane, not only as wide as the lens that shrinks under it.
                     if (ruler != null) Box(Modifier.zIndex(1f)) { ruler() }
                     val rulerRoom = if (ruler != null) RULER_HEIGHT + SECTION_SPACING else 0.dp
                     // Room above and below for the lens's glow, which the scrolling pane would cut off flat.
-                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight - rulerRoom - LENS_GLOW_ROOM * 2)
+                    GaugeAboveStatus(gauge = gauge, status = { status(compact) }, targetHeight = paneHeight - rulerRoom - LENS_GLOW_ROOM * 2)
                 }
             }
         }
@@ -1225,7 +1205,6 @@ private fun TwoPaneLayout(
         }
     }
 }
-
 /**
  * The controls pane's [header] (the picker chip, focus mode's button and the signal bars) over the
  * [guitarSlot], [SECTION_SPACING] apart, the header as wide as the string buttons' faces
@@ -1271,29 +1250,26 @@ private class StringFacesSpan {
 private val LocalStringFacesSpan = staticCompositionLocalOf<StringFacesSpan?> { null }
 
 /**
- * The compact landscape layout (focus mode). With a [focusNote] (the plain tuner) the [gauge] fills
- * the screen, the small note in its top start corner ([FocusMeter]). Otherwise (a tool on) the gauge
- * is as big as the space allows beside the [note] with [below] under it (the small string row or the
- * chromatic numbers). No picker chip, strum check switch or string buttons. A tap anywhere, or
- * TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls]. Focus
- * mode's exit button ([onExitFocus]) sits in the top end corner, where every meter look leaves room
- * (owner, 2026-10-19: in place of a "Tap to show the controls" line, as the way out). An [error]
- * shows its message and retry instead.
+ * The compact landscape layout (focus mode). With a [focusRuler] (the plain tuner) the ruler, the [gauge] (the lens)
+ * and the [focusWord] fill the screen ([FocusMeter]). Otherwise (a tool on) the gauge is as big as the space allows
+ * beside the [status] with [below] under it (the small pegs of the 12th-fret check). No picker chip, tools' buttons
+ * or pegs. A tap anywhere, or TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls].
+ * Focus mode's exit button ([onExitFocus]) sits in the top end corner (owner, 2026-10-19: in place of a "Tap to show
+ * the controls" line, as the way out). An [error] shows its message and retry instead.
  */
 @Composable
 private fun CompactLayout(
     error: TunerError?,
     onRetry: () -> Unit,
     gauge: @Composable () -> Unit,
-    note: @Composable () -> Unit,
+    status: @Composable () -> Unit,
     below: @Composable () -> Unit,
     gaugeMinWidth: Dp,
     onShowControls: () -> Unit,
     onExitFocus: (() -> Unit)?,
-    focusNote: (@Composable () -> Unit)? = null,
+    focusRuler: (@Composable () -> Unit)? = null,
     focusWord: @Composable () -> Unit = {},
 ) {
-    val fullMeter = focusNote != null && error == null
     val showControls = stringResource(R.string.tuner_show_controls)
     val currentOnShowControls by rememberUpdatedState(onShowControls)
     Box(
@@ -1310,10 +1286,10 @@ private fun CompactLayout(
                 }
             },
     ) {
-        if (fullMeter && focusNote != null) {
-            FocusMeter(gauge, focusNote, focusWord)
+        if (focusRuler != null && error == null) {
+            FocusMeter(focusRuler, gauge, focusWord)
         } else {
-            CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
+            CompactRow(error, onRetry, gauge, status, below, gaugeMinWidth)
         }
         if (onExitFocus != null) {
             // In a box of its own: the button's tooltip wrapper doesn't pass the alignment on.
@@ -1335,8 +1311,8 @@ private fun CompactLayout(
  *
  * The app's [gear] (Settings, Phase 69) stands at the very start, its outline in line with the text
  * margin as the button's is at the end, and the bars right after it; with both, the two end slots
- * grow to [GEAR_AND_BARS_SLOT], so the chip stays centred (until Phase 71 puts the bars beside the
- * ruler's heard note).
+ * grow to [GEAR_AND_BARS_SLOT], so the chip stays centred. The bars stand here only while a tool's panel
+ * takes the ruler's place; in the plain tuner they are beside the ruler's heard note (Phase 71).
  */
 @Composable
 private fun ChipRow(
@@ -1383,49 +1359,47 @@ private fun ChipRow(
 }
 
 /**
- * Focus mode's plain tuner: the [gauge] as big as the screen under its top row allows (keeping its 2:1
- * shape, so on a phone on its side its height decides), with [note] small in the top start corner of
- * that row, which is as high as focus mode's exit button in the other corner at least, and the [word] (Phase 71)
- * in the row's middle, so it costs the lens no height. The lens's box fills its corners, so nothing stands over
- * it (until Phase 73 lays focus mode out wide, the word under the lens).
+ * Focus mode's plain tuner (2.0, Phase 71, until Phase 73 lays it out wide): the [ruler] at the top, between focus
+ * mode's exit button and the other corner, the [gauge] (the lens) as big as the screen under it allows (keeping its
+ * 2:1 shape, so on a phone on its side its height decides) and the [word] under it. The ruler names the note (the
+ * small note in the corner went with the big one).
  */
 @Composable
-private fun FocusMeter(gauge: @Composable () -> Unit, note: @Composable () -> Unit, word: @Composable () -> Unit) {
-    Column(Modifier.fillMaxSize()) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = FOCUS_EDGE_TOP + FOCUS_BUTTON_SLOT)
-                .padding(top = FOCUS_EDGE_TOP),
-        ) {
-            Box(Modifier.align(Alignment.TopStart).padding(start = FOCUS_EDGE_SIDE)) { note() }
-            // Clear of the note's corner and the exit button's.
-            Box(Modifier.align(Alignment.TopCenter).padding(horizontal = FOCUS_WORD_CLEARANCE)) { word() }
-        }
-        Box(Modifier.fillMaxWidth().weight(1f).padding(FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
+private fun FocusMeter(ruler: @Composable () -> Unit, gauge: @Composable () -> Unit, word: @Composable () -> Unit) {
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        // Clear of the exit button in the top end corner, and as far from the other side, so the pointer stays centred.
+        Box(Modifier.fillMaxWidth().padding(top = FOCUS_EDGE_TOP, start = FOCUS_RULER_CLEARANCE, end = FOCUS_RULER_CLEARANCE)) { ruler() }
+        Spacer(Modifier.height(RULER_METER_GAP))
+        Box(Modifier.fillMaxWidth().weight(1f).padding(horizontal = FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
             FitGauge(gauge, maxWidth = FOCUS_GAUGE_MAX_WIDTH)
         }
+        Spacer(Modifier.height(FOCUS_WORD_GAP))
+        Box(Modifier.padding(horizontal = FOCUS_EDGE_SIDE)) { word() }
+        Spacer(Modifier.height(FOCUS_EDGE_TOP))
     }
 }
 
-/** Focus mode's word keeps this far from the screen's sides, where the small note and the exit button stand. */
-private val FOCUS_WORD_CLEARANCE = 160.dp
+/** Focus mode's ruler keeps this far from the screen's sides: the exit button's 48 dp, 16 dp from the edge, and 8 dp. */
+private val FOCUS_RULER_CLEARANCE = 72.dp
 
-/** The compact layout's meter, at least [gaugeMinWidth] wide, beside the note column, or the [error]. */
+/** Between focus mode's lens and the word under it: room for the lens's glow. */
+private val FOCUS_WORD_GAP = 16.dp
+
+/** The compact layout's gauge, at least [gaugeMinWidth] wide, beside the tool's lines ([status]), or the [error]. */
 @Composable
 private fun CompactRow(
     error: TunerError?,
     onRetry: () -> Unit,
     gauge: @Composable () -> Unit,
-    note: @Composable () -> Unit,
+    status: @Composable () -> Unit,
     below: @Composable () -> Unit,
     gaugeMinWidth: Dp,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-        // The note column never takes the meter's last [gaugeMinWidth]: long lines in a wide face at 2× text
-        // (Space Age's 12th-fret check in Dutch) would otherwise leave the meter no width at all, and the
-        // strum check's columns, which are buttons, too little (Futuristic and Space Age beside the rail).
-        val noteMaxWidth = (maxWidth - SECTION_SPACING - gaugeMinWidth).coerceAtLeast(0.dp)
+        // The lines' column never takes the gauge's last [gaugeMinWidth]: long lines at 2× text (the 12th-fret check
+        // in Dutch) would otherwise leave the panel no width at all, and the strum check's columns, which are buttons,
+        // too little.
+        val statusMaxWidth = (maxWidth - SECTION_SPACING - gaugeMinWidth).coerceAtLeast(0.dp)
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
@@ -1436,21 +1410,21 @@ private fun CompactRow(
                     TunerErrorMessage(error, onRetry)
                 }
             } else {
-                // The note column is measured first; the meter takes all the room that is left.
+                // The lines' column is measured first; the gauge takes all the room that is left.
                 Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                     FitGauge(gauge, maxWidth = COMPACT_GAUGE_MAX_WIDTH)
                 }
                 Column(
-                    // With a very large system font the note column can be taller than the screen; then it scrolls,
+                    // With a very large system font the column can be taller than the screen; then it scrolls,
                     // clear of focus mode's exit button in the top end corner (and as far from the bottom).
                     modifier = Modifier
-                        .widthIn(max = noteMaxWidth)
+                        .widthIn(max = statusMaxWidth)
                         .padding(vertical = COMPACT_CORNER_CLEARANCE)
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(COMPACT_NOTE_SPACING),
                 ) {
-                    note()
+                    status()
                     below()
                 }
             }
@@ -1459,36 +1433,15 @@ private fun CompactRow(
 }
 
 /**
- * Under the note in the compact layout: in guitar mode a small row of pegs with the target (or
- * locked) string ringed in the reading's [tone] and the locked one's padlock; nothing in chromatic mode, where the
- * cents and frequency are under the note.
+ * Under a tool's lines in the compact layout: the 12th-fret check's small pegs, the string being checked ringed;
+ * nothing under the strum check's and the chord name's. (The plain tuner's focus mode shows no pegs.)
  */
 @Composable
-private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, tone: LiveTone) {
-    when {
-        mode == TunerMode.CHROMATIC -> Unit
-        state is TunerUiState.Detected -> StringSelector(
-            state.tuning,
-            state.targetString,
-            notation = state.notation,
-            inTune = state.inTune,
-            lockedString = state.lockedString,
-            small = true,
-            tone = tone,
-        )
-        // A locked string is the target before anything is played, so it stays ringed.
-        state is TunerUiState.Listening -> StringSelector(
-            state.tuning,
-            state.lockedString,
-            notation = state.notation,
-            lockedString = state.lockedString,
-            small = true,
-            tone = tone,
-        )
-        state is TunerUiState.IntonationCheck -> StringSelector(state.tuning, state.string, notation = state.notation, small = true)
+private fun CompactPegsFor(state: TunerUiState) {
+    if (state is TunerUiState.IntonationCheck) {
+        StringSelector(state.tuning, state.string, notation = state.notation, small = true)
     }
 }
-
 /**
  * The gauge as wide as the space allows (at most [maxWidth]), shrinking (keeping its shape, down to
  * [GAUGE_MIN_WIDTH]) when it would be taller than the space, or than [maxHeight] where that is given.
@@ -1521,41 +1474,41 @@ private fun Modifier.onEveryTouch(onTouch: () -> Unit): Modifier = pointerInput(
 }
 
 /**
- * [gauge] above [note], for the two-pane layout. The note keeps its natural size and the gauge
- * shrinks (keeping its shape, down to [GAUGE_MIN_WIDTH]) so both fit in [targetHeight]: a phone on
- * its side is too short for the full-width gauge. Taller than [targetHeight] only with a very large
- * font, where the pane scrolls.
+ * [gauge] above [status] (the word, or a tool's lines), for the two-pane layout. The status keeps its natural size
+ * and the gauge shrinks (keeping its 2:1 shape, down to [GAUGE_MIN_WIDTH]) so both fit in [targetHeight]: a phone on
+ * its side is too short for the full-width gauge. Taller than [targetHeight] only with a very large font, where the
+ * pane scrolls.
  */
 @Composable
-private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -> Unit, targetHeight: Dp) {
-    Layout(contents = listOf(gauge, note)) { (gaugeMeasurables, noteMeasurables), constraints ->
+private fun GaugeAboveStatus(gauge: @Composable () -> Unit, status: @Composable () -> Unit, targetHeight: Dp) {
+    Layout(contents = listOf(gauge, status)) { (gaugeMeasurables, statusMeasurables), constraints ->
         val maxWidth = constraints.maxWidth
-        val notePlaceable = noteMeasurables.single().measure(Constraints(maxWidth = maxWidth))
+        val statusPlaceable = statusMeasurables.single().measure(Constraints(maxWidth = maxWidth))
         val gaugeMeasurable = gaugeMeasurables.single()
         val spacing = GAUGE_NOTE_SPACING.roundToPx()
 
-        val available = targetHeight.roundToPx() - notePlaceable.height - spacing
+        val available = targetHeight.roundToPx() - statusPlaceable.height - spacing
         val fullHeight = gaugeMeasurable.minIntrinsicHeight(maxWidth)
         val gaugeWidth = if (fullHeight <= available) {
             maxWidth
         } else {
-            // The dial is twice as wide as it is tall (anything the gauge adds under it keeps its height).
+            // The gauge is twice as wide as it is tall (anything it adds under it keeps its height).
             val labels = fullHeight - maxWidth / 2
             ((available - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), maxWidth), maxWidth)
         }
         val gaugePlaceable = gaugeMeasurable.measure(Constraints.fixedWidth(gaugeWidth))
 
-        val width = max(gaugePlaceable.width, notePlaceable.width)
-        layout(width, gaugePlaceable.height + spacing + notePlaceable.height) {
+        val width = max(gaugePlaceable.width, statusPlaceable.width)
+        layout(width, gaugePlaceable.height + spacing + statusPlaceable.height) {
             gaugePlaceable.placeRelative((width - gaugePlaceable.width) / 2, 0)
-            notePlaceable.placeRelative((width - notePlaceable.width) / 2, gaugePlaceable.height + spacing)
+            statusPlaceable.placeRelative((width - statusPlaceable.width) / 2, gaugePlaceable.height + spacing)
         }
     }
 }
 
 /**
- * The [ModeSlot] for each [TunerUiState]: the string row (with the strum check's switch, and the 12th-fret check's
- * button [wayIn]) for guitar mode. The cents and frequency are under the note, so chromatic mode leaves the slot empty.
+ * The [PegsSlot] for each [TunerUiState]: the pegs (with the strum check's switch, and the 12th-fret check's
+ * button [wayIn]) in guitar mode; chromatic mode (Any note) leaves the slot empty, at the same height.
  */
 @Composable
 private fun GuitarSlotFor(
@@ -1611,7 +1564,7 @@ private fun GuitarSlotFor(
     } else {
         null
     }
-    ModeSlot(mode, guitar = guitar, chromatic = null)
+    PegsSlot(shown = mode == TunerMode.AUTO, pegs = guitar)
 }
 
 /** What [GuitarControls] shows for the current [TunerUiState]. */
@@ -1769,53 +1722,30 @@ private fun GuitarControls(
 }
 
 /**
- * The space under the readout that changes with the mode: [guitar] in guitar mode, [chromatic] (or
- * nothing) in chromatic mode, at the bottom of the slot. Both are measured all the time and the slot
- * takes the taller one's height (at least [GUITAR_SLOT_HEIGHT]), so switching modes never moves
- * anything, also with a large system font, where the strings grow. The other mode's content
- * isn't placed, so it is neither drawn nor tappable, and its semantics are cleared, so TalkBack and
- * UI tests don't find it either.
+ * The space under the word for the [pegs]: placed while [shown] (guitar mode), at the bottom of the slot, and still
+ * measured in Any note, where they are not placed, so the slot keeps their height (at least [GUITAR_SLOT_HEIGHT]) and
+ * switching modes never moves anything, also with a large system font, where the pegs grow. While not shown they are
+ * neither drawn nor tappable, and their semantics are cleared, so TalkBack and UI tests don't find them either.
+ * (Until Phase 71's last step this was the mode slot, which could also hold something for chromatic mode.)
  */
 @Composable
-private fun ModeSlot(
-    mode: TunerMode,
-    guitar: (@Composable () -> Unit)?,
-    chromatic: (@Composable () -> Unit)?,
-) {
-    val guitarShown = mode == TunerMode.AUTO
-    val guitarPart = @Composable { if (guitar != null) SlotPart(shown = guitarShown, content = guitar) }
-    val chromaticPart = @Composable { if (chromatic != null) SlotPart(shown = !guitarShown, content = chromatic) }
-    Layout(
-        contents = listOf(guitarPart, chromaticPart),
-        modifier = Modifier.heightIn(min = GUITAR_SLOT_HEIGHT),
-    ) { (guitarMeasurables, chromaticMeasurables), constraints ->
-        val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-        val guitarPlaceable = guitarMeasurables.firstOrNull()?.measure(partConstraints)
-        val chromaticPlaceable = chromaticMeasurables.firstOrNull()?.measure(partConstraints)
-        val parts = listOfNotNull(guitarPlaceable, chromaticPlaceable)
-        val width = (parts.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = (parts.maxOfOrNull { it.height } ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
-        // Both parts are measured in either mode, so the guitar controls tell the header over the slot on
-        // its side the faces' width in chromatic mode too ([StringFacesSpan]), and its edges stay put.
+private fun PegsSlot(shown: Boolean, pegs: (@Composable () -> Unit)?) {
+    val part = @Composable { if (pegs != null) Box(if (shown) Modifier else Modifier.clearAndSetSemantics {}) { pegs() } }
+    Layout(content = part, modifier = Modifier.heightIn(min = GUITAR_SLOT_HEIGHT)) { measurables, constraints ->
+        val placeable = measurables.firstOrNull()?.measure(constraints.copy(minWidth = 0, minHeight = 0))
+        val width = (placeable?.width ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = (placeable?.height ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
+        // Measured in either mode, so the pegs tell the header over the slot on its side the faces' width in Any note
+        // too ([StringFacesSpan]), and its edges stay put.
         layout(width, height) {
-            val shown = if (guitarShown) guitarPlaceable else chromaticPlaceable
-            shown?.placeRelative((width - shown.width) / 2, height - shown.height)
+            if (shown) placeable?.placeRelative((width - placeable.width) / 2, height - placeable.height)
         }
     }
 }
 
-/** One mode's content in the [ModeSlot]; while not [shown] TalkBack and UI tests don't see it. */
-@Composable
-private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
-    Box(if (shown) Modifier else Modifier.clearAndSetSemantics {}) { content() }
-}
-
 private val SECTION_SPACING = 24.dp
 
-/** The least height of the two-pane layout that shows the ruler over the meter and the note: a tablet on its side, not a phone. */
-private val TWO_PANE_RULER_MIN_HEIGHT = 480.dp
-
-/** Between the ruler and the meter under it. */
+/** Between the ruler and the lens under it. */
 private val RULER_METER_GAP = 12.dp
 
 /** Between the strum check's switch and the string row under it. */
@@ -1828,16 +1758,16 @@ private val SIGNAL_BARS_SLOT = 48.dp
 /** The single column's text margin at each side. */
 private val COLUMN_PADDING = 16.dp
 
-/** The upright meter's margin at each side of the screen (the approved mock-up's 8 dp). */
+/** The upright gauge's margin at each side of the screen (the approved 1.1 mock-up's 8 dp; a tool's panel spans it). */
 private val METER_MARGIN = 8.dp
 
-/** The lens's sides, this far in from the meter's margin: 20 dp from the screen's edges (*The lens*, Size). */
+/** The lens's sides, this far in from the gauge's margin: 20 dp from the screen's edges (*The lens*, Size). */
 private val LENS_INSET = 12.dp
 
-/** On its side the readout pane leaves this much above and below the lens and the note, for the lens's glow. */
+/** On its side the readout pane leaves this much above and below the lens and the word, for the lens's glow. */
 private val LENS_GLOW_ROOM = 24.dp
 
-/** The free height above the meter, against 1 above the strings (the mock-up's `.grow.top`). */
+/** The free height above the lens, against 1 above the pegs (the mock-up's `.grow.top`). */
 private const val TOP_GAP_WEIGHT = 0.5f
 
 /** The single column, and the controls pane, never get wider than this. */
@@ -1849,15 +1779,13 @@ private val READOUT_PANE_MAX_WIDTH = 560.dp
 /** A phone on its side shrinks the gauge to fit, but not below this. */
 private val GAUGE_MIN_WIDTH = 160.dp
 
-/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view or the hint. */
+/** Readout panes shorter than this (a phone on its side) set the word, or a tool's lines, a little smaller. */
 private val COMPACT_PANE_HEIGHT = 420.dp
 
-/** The compact layout's "Tap to show the controls" fades in and out this gently. */
-
-/** In the compact layout the meter grows with the screen, up to this. */
+/** In the compact layout a tool's panel grows with the screen, up to this. */
 private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 
-/** Focus mode's full-screen meter: the margin round it, and how wide it may grow (a tablet on its side). */
+/** Focus mode's full-screen lens: the margin round it, and how wide it may grow (a tablet on its side). */
 private val FOCUS_METER_MARGIN = 8.dp
 private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
 
@@ -1870,17 +1798,17 @@ private val GEAR_AND_BARS_SLOT = 92.dp
 /** The gear's 48 dp touch area reaches this far past its 44 dp outline at each side. */
 private val GEAR_OUTLINE_INSET = 2.dp
 
-/** What sits in the compact layout's top corners (the note, focus mode's exit button) keeps this far from the screen's edges. */
+/** Focus mode's exit button keeps this far from the screen's top end corner, the word from its sides. */
 private val FOCUS_EDGE_SIDE = 16.dp
 private val FOCUS_EDGE_TOP = 8.dp
 
-/** Above and below the compact layout's note column: focus mode's exit button (48 dp at 8 dp from the top) stays clear. */
+/** Above and below the compact layout's column of a tool's lines: focus mode's exit button (48 dp at 8 dp from the top) stays clear. */
 private val COMPACT_CORNER_CLEARANCE = 56.dp
 
-/** Between the note and what's under it in the compact layout. */
+/** Between a tool's lines and what's under them in the compact layout. */
 private val COMPACT_NOTE_SPACING = 12.dp
 
-/** Between gauge and note in the two-pane layout, where height is scarce. */
+/** Between the gauge and the word in the two-pane layout, where height is scarce. */
 private val GAUGE_NOTE_SPACING = 8.dp
 
 /** The upright column keeps this far from the top and bottom of its space. */

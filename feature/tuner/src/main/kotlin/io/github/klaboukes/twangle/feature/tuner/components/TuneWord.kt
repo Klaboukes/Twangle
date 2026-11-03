@@ -53,9 +53,23 @@ import io.github.klaboukes.twangle.feature.tuner.TuneWord
 import io.github.klaboukes.twangle.feature.tuner.TunerHint
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.tuneWordFor
+import io.github.klaboukes.twangle.feature.tuner.tunerHintFor
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
+/**
+ * A heard note as the word says it ([TuneWordLine]): its name and octave (spoken, "E 2"; the ruler shows it), its
+ * cents and whether the tuner holds it in tune. (Until Phase 71's last step the big note and the hertz showed it too.)
+ */
+data class NoteReadout(
+    val noteName: String,
+    val octave: Int,
+    val cents: Float,
+    val inTune: Boolean = false,
+    /** The tuner's cue, held steady by the tuner; by default the plain one for [cents]. */
+    val hint: TunerHint? = tunerHintFor(cents, inTune),
+)
 
 /**
  * The word under the lens (2.0, Phase 71; docs/architecture/v2-plan.md, *The lens*): one word that says what to do

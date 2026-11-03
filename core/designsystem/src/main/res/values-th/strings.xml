@@ -2,7 +2,5 @@
     <string name="spoken_sharp">%1$s ชาร์ป</string>
     <string name="spoken_flat">%1$s แฟลต</string>
 
-    <string name="meter_cents_label">เซนต์</string>
-
     <string name="instrument_button_action">เปลี่ยนเครื่องดนตรีหรือการตั้งสาย</string>
 </resources>

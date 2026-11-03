@@ -2,7 +2,5 @@
     <string name="spoken_sharp">%1$sシャープ</string>
     <string name="spoken_flat">%1$sフラット</string>
 
-    <string name="meter_cents_label">セント</string>
-
     <string name="instrument_button_action">楽器またはチューニングを変更</string>
 </resources>

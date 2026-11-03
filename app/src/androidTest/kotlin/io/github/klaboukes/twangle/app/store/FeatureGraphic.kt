@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.app.store
 
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.LocaleList
 import android.text.TextUtils
 import androidx.compose.foundation.Image
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +32,6 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.text.intl.LocaleList as TextLocaleList
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
@@ -46,13 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.designsystem.meter.ClassicMeterArt
-import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
-import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.ui.graphics.GraphicsLayerScope
+import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
+import io.github.klaboukes.twangle.core.settings.LensLook
+import io.github.klaboukes.twangle.feature.tuner.components.Lens
 import java.util.Locale
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 
 /**
  * The Play Store's feature graphic (docs/store-listing.md, *Icon and feature graphic*), one for each
@@ -60,9 +54,9 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
  * the start side the store [icon] beside the name "Twangle" in the app's display face (1.1 set it in
  * Retro's), and under them [line], what sets Twangle apart
  * in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set as the app sets
- * that language (its fonts, right to left for Arabic). On the end side three of Ink's meters fanned
- * out ([FAN]), dark, light and dark (1.1 showed three of its six styles), holding a note in tune with
- * its glow. The meters' small unit label ("CENTS") is left out, as are note names, so the line is
+ * that language (its fonts, right to left for Arabic). On the end side three of the tuner's lenses fanned
+ * out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), each with the trail
+ * of a string brought into tune and held there, in tune's green with its glow. No note names, so the line is
  * the one text to translate. Everything important keeps clear of the edges, which Play may crop.
  */
 @Composable
@@ -143,7 +137,7 @@ private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
     }
 }
 
-/** Three meters fanned out, the middle one in front. */
+/** Three lenses fanned out, the middle one in front. */
 @Composable
 private fun Fan() {
     Box(Modifier.size(FAN_WIDTH, FAN_HEIGHT), contentAlignment = Alignment.Center) {
@@ -161,7 +155,10 @@ private fun Fan() {
     }
 }
 
-/** The meter on a card of the app's background, light or dark, holding a note in tune. */
+/**
+ * The tuner's lens ([Lens], 2.0 Phase 71, with the trail) on a card of the app's background, light or dark: a string
+ * tuned up into the in-tune zone and held there, the border and the glow green. (Until Phase 71 1.1's Classic needle.)
+ */
 @Composable
 private fun MeterCard(card: FanCard, modifier: Modifier) {
     TwangleTheme(darkTheme = card.dark, animate = false) {
@@ -174,43 +171,37 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
                 .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center,
         ) {
-            WithoutMeterLabel {
-                // 1.1's Classic needle, as the tuner's MeterFrame drew it until the lens took its place (Phase 71);
-                // Phase 76 draws the graphic afresh.
-                Box(Modifier.width(CARD_WIDTH - CARD_PADDING * 2).aspectRatio(METER_ASPECT_RATIO)) { ClassicMeterArt(HeldInTune) }
-            }
+            val history = remember { tunedInTrail() }
+            Lens(
+                look = LensLook.TRAIL,
+                cents = { 0f },
+                history = history,
+                inTune = true,
+                glow = true,
+                animationsOff = true,
+                modifier = Modifier.size(CARD_WIDTH - CARD_PADDING * 2, CARD_HEIGHT - CARD_PADDING * 2),
+            )
         }
     }
 }
 
-/** A note held in tune, the glow lit: the fan's meters stand still. */
-private object HeldInTune : MeterReading {
-    override val cents: Float = 0f
-    override val presence: Float = 1f
-    override val tuned: Float = 1f
-    override val glow: Float = 1f
-
-    override fun applyMarkerLook(layer: GraphicsLayerScope) = Unit
+/**
+ * The trail the lenses draw, still: the last [TRAIL_SECONDS] of a string tuned up from [TRAIL_START_CENTS] flat into
+ * the zone, easing in as a tuning peg is turned, then held in tune (green) for its last [IN_TUNE_SECONDS].
+ */
+private fun tunedInTrail(): PitchHistory = PitchHistory().apply {
+    val readings = (TRAIL_SECONDS / PitchHistory.DEFAULT_FRAME_SECONDS).toInt()
+    for (i in 0..readings) {
+        val t = i * PitchHistory.DEFAULT_FRAME_SECONDS
+        val left = 1f - (t / (TRAIL_SECONDS - IN_TUNE_SECONDS)).coerceAtMost(1f)
+        val cents = TRAIL_START_CENTS * left * left
+        push(t, TRAIL_TARGET_MIDI, cents, inTune = t >= TRAIL_SECONDS - IN_TUNE_SECONDS)
+    }
 }
 
 /** One card of the fan: light or dark. */
 private data class FanCard(val dark: Boolean)
 
-/**
- * [content] with the meter's unit label ("CENTS", "CENT", "سنت" …) as an empty text, so the meters
- * have no words to translate.
- */
-@Composable
-private fun WithoutMeterLabel(content: @Composable () -> Unit) {
-    val resources = LocalResources.current
-    val unlabelled = remember(resources) {
-        @Suppress("DEPRECATION")
-        object : Resources(resources.assets, resources.displayMetrics, resources.configuration) {
-            override fun getString(id: Int): String = if (id == DesignR.string.meter_cents_label) "" else resources.getString(id)
-        }
-    }
-    CompositionLocalProvider(LocalResources provides unlabelled, content = content)
-}
 
 /** Play's feature graphic, exactly. */
 const val FEATURE_WIDTH = 1024
@@ -252,3 +243,9 @@ private val CARD_SHADOW = 10.dp
 private val CARD_SPREAD = 50.dp
 private val CARD_DROP = 7.dp
 private const val CARD_TILT = 9f
+
+/** The fan's trail: a string (A2) tuned up from this many cents flat over the seconds the lens shows, the last of them in tune. */
+private const val TRAIL_TARGET_MIDI = 45
+private const val TRAIL_START_CENTS = -30f
+private const val TRAIL_SECONDS = 0.4f
+private const val IN_TUNE_SECONDS = 0.12f

@@ -22,7 +22,7 @@ Topic files:
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
-  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Lens · Under the note
+  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Lens · Under the lens
   - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Strobe · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
@@ -189,10 +189,10 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     SignalBars (+ SignalFigures),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
     IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake
-    components/ MeterFrame, NoteDisplay, StringSelector (+ StringRowFit),
+    components/ Lens, Ruler (+ RulerGeometry), TuneWord, ReadingTone, StringSelector (the pegs, + StringRowFit),
                 InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
-                IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint, LiveFloat (a per-frame reading, unboxed)
+                IntonationView, ChordView, FocusModeButton, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
 
 feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/

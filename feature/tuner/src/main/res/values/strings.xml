@@ -1,5 +1,4 @@
 <resources>
-    <string name="tuner_placeholder_note" translatable="false">♪</string>
 
     <!-- Microphone permission screen (in the tuner's place before the permission is given): its title. -->
     <string name="mic_permission_title">Twangle needs your microphone</string>
@@ -175,8 +174,6 @@
     <string name="tuner_string_tuned">Tuned</string>
     <!-- TalkBack: the state of the locked string button when that string has also been in tune since the tuner opened. -->
     <string name="tuner_string_locked_tuned">Locked, tuned</string>
-    <!-- Tuner: the note's frequency in small type under the note. %1$.1f is the frequency in hertz with one decimal, e.g. "110.0". -->
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Tuner: the cents, small under the word, when the note is exactly on pitch. -->
     <string name="tuner_cents_zero">0 cents</string>
     <!-- Tuner: the cents, small under the word (and TalkBack), when the note is low. %1$d is how many cents (hundredths of a semitone) too low. -->

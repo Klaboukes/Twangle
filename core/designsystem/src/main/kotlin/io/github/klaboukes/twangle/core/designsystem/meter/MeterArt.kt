@@ -19,10 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
@@ -35,27 +33,23 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.font.FontFamily
-import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.MusicSignsFont
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import java.util.Locale
-import kotlin.math.PI
-import kotlin.math.hypot
-import kotlin.math.min
 
 /*
  * The shared art of the meter looks, "as if by the same artist" (docs/architecture/ui-meter-and-styles.md,
  * Meter art language; the approved mock-ups docs/design/meter-looks-preview.html and, for the open face,
  * docs/design/theme-styles-preview.html are the reference, and the names here match their helpers).
  * The meter has no plate or frame: it sits straight on the screen's background, with a calm field
- * (FieldArt) under its scale. Every look is built from these pieces: the same marks and numbers
- * (ScaleMarks), the same soft marker shadow (markerShadowPaint) and the same glow (GlowArt), in the
- * same colour roles (MeterRoles). Since Phase 67 (one look) the needle, its hub and the scale's arc are
- * 1.1's Contemporary ones, the plain finish; the glass and the other styles' finishes went with the
- * meter looks that drew them. All lengths are in u = box width / 340 (about
+ * (FieldArt) under its scale. Every look is built from these pieces: the same soft marker shadow
+ * (markerShadowPaint) and the same glow (GlowArt), in the same colour roles (MeterRoles). Since Phase 67
+ * (one look) the needle is 1.1's Contemporary one, the plain finish; the glass and the other styles' finishes
+ * went with the meter looks that drew them, and Classic's scale, hub and arc (ScaleMarks, HubArt, TrackArt)
+ * went with it in Phase 71: the lens draws the tuner's reading now. All lengths are in u = box width / 340 (about
  * 1 dp on a phone). The field and the glow reach past the box and fade out there: the art is never
  * clipped to its box, so whatever holds the meter leaves room around it (the tuner draws it behind
  * its other controls).
@@ -222,111 +216,6 @@ private const val FIELD_CENTRE_UNITS = 47f
 internal const val MINOR_TICK_INK = 0.5f
 internal const val SCALE_NUMBER_INK = 0.8f
 
-/** Where a look's scale mark for some cents starts: the base point (x, y) and the unit direction (dx, dy) it runs in. */
-internal fun interface MarkPlace {
-    /** Writes x, y, dx and dy for [cents] into [out]. */
-    fun place(cents: Float, out: FloatArray)
-}
-
-/**
- * The scale every look shares (the mock-up's `scale`): a tick every 5 cents, none at 0. Major ticks
- * (every 10) are [MAJOR_TICK_UNITS] long and [MAJOR_TICK_WIDTH] wide, in ink; minor ones
- * [MINOR_TICK_UNITS] and [MINOR_TICK_WIDTH], ink at 50 %; with round caps. Numbers 10 to 50 without a
- * sign, [NUMBER_SIZE_UNITS] (times [MeterRoles.numberScale]) in the style's number face, ink at 80 %,
- * centred [NUMBER_OUT_UNITS] from the tick's base. [place] puts each tick on the look's own scale.
- * Where a look's numbers sit close (a flat scale in a wide face) they are set a
- * little smaller, so neighbours keep apart ([numberFit]).
- */
-internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, density: Density, place: MarkPlace) {
-    /** Each tick's ends and width: x1, y1, x2, y2, width. */
-    private val ticks = FloatArray(TICK_COUNT * 5)
-    private val major = BooleanArray(TICK_COUNT)
-    private val cap = StrokeCap.Round
-    private val ink = roles.ink
-    private val minorInk = roles.ink.copy(alpha = MINOR_TICK_INK)
-    private val numberInk = roles.ink.copy(alpha = SCALE_NUMBER_INK)
-    private val numbers = arrayOfNulls<TextLayoutResult>(MARK_COUNT)
-    private val numberAt = FloatArray(MARK_COUNT * 2)
-
-    init {
-        val at = FloatArray(4)
-        // Each number's centre, out from its major tick.
-        val centres = FloatArray(MARK_COUNT * 2)
-        var k = 0
-        var t = 0
-        var cents = -METER_RANGE_CENTS
-        while (cents <= METER_RANGE_CENTS) {
-            if (cents != 0f) {
-                place.place(cents, at)
-                val isMajor = cents.toInt() % 10 == 0
-                val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u
-                val width = (if (isMajor) MAJOR_TICK_WIDTH else MINOR_TICK_WIDTH) * u
-                val dx = at[2]
-                val dy = at[3]
-                ticks[t * 5] = at[0]
-                ticks[t * 5 + 1] = at[1]
-                ticks[t * 5 + 2] = at[0] + dx * length
-                ticks[t * 5 + 3] = at[1] + dy * length
-                ticks[t * 5 + 4] = width
-                major[t] = isMajor
-                t++
-                if (isMajor) {
-                    centres[k * 2] = at[0] + at[2] * NUMBER_OUT_UNITS * u
-                    centres[k * 2 + 1] = at[1] + at[3] * NUMBER_OUT_UNITS * u
-                    k++
-                }
-            }
-            cents += 5f
-        }
-        // The nearest two neighbours on one side (10 to 50 and back; the two tens across 0 sit far apart).
-        var nearest = Float.MAX_VALUE
-        for (i in 0 until MARK_COUNT - 1) {
-            if (i == MARK_COUNT / 2 - 1) continue
-            nearest = min(nearest, hypot(centres[i * 2 + 2] - centres[i * 2], centres[i * 2 + 3] - centres[i * 2 + 1]))
-        }
-        val size = NUMBER_SIZE_UNITS * roles.numberScale * u
-        var texts = measureNumbers(measurer, roles, density, size)
-        val fit = numberFit(nearest, texts.maxOf { it.size.width }.toFloat(), u)
-        if (fit < 1f) texts = measureNumbers(measurer, roles, density, size * fit)
-        for (i in 0 until MARK_COUNT) {
-            val tens = if (i < MARK_COUNT / 2) MARK_COUNT / 2 - i else i - MARK_COUNT / 2 + 1
-            val text = texts[tens - 1]
-            numbers[i] = text
-            numberAt[i * 2] = centres[i * 2] - text.size.width / 2f
-            numberAt[i * 2 + 1] = centres[i * 2 + 1] - text.size.height / 2f
-        }
-    }
-
-    private fun measureNumbers(measurer: TextMeasurer, roles: MeterRoles, density: Density, size: Float): List<TextLayoutResult> {
-        val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { size.toSp() }, fontFeatureSettings = LINING_FIGURES)
-        return (1..5).map { measurer.measure(roles.digits(it * 10), style) }
-    }
-
-    fun draw(scope: DrawScope) = with(scope) {
-        for (t in 0 until TICK_COUNT) {
-            drawLine(
-                if (major[t]) ink else minorInk,
-                Offset(ticks[t * 5], ticks[t * 5 + 1]),
-                Offset(ticks[t * 5 + 2], ticks[t * 5 + 3]),
-                ticks[t * 5 + 4],
-                cap,
-            )
-        }
-        for (k in numbers.indices) {
-            val text = numbers[k] ?: continue
-            drawText(text, color = numberInk, topLeft = Offset(numberAt[k * 2], numberAt[k * 2 + 1]))
-        }
-    }
-
-    private companion object {
-        /** Ten numbered marks: 50, 40, … 10 and 10, 20, … 50. */
-        const val MARK_COUNT = 10
-
-        /** Twenty ticks: every 5 cents from −50 to 50, none at 0. */
-        const val TICK_COUNT = 20
-    }
-}
-
 /** A major tick is this many units long and wide (the mock-up's larger open-face scale). */
 internal const val MAJOR_TICK_UNITS = 13f
 internal const val MAJOR_TICK_WIDTH = 2.1f
@@ -335,29 +224,8 @@ internal const val MAJOR_TICK_WIDTH = 2.1f
 internal const val MINOR_TICK_UNITS = 7f
 internal const val MINOR_TICK_WIDTH = 1.3f
 
-/** The scale's numbers are this many units high (times [MeterRoles.numberScale]) … */
+/** The scale's numbers are this many units high (times [MeterRoles.numberScale]). */
 internal const val NUMBER_SIZE_UNITS = 12.5f
-
-/** … centred this many units from their tick's base. */
-internal const val NUMBER_OUT_UNITS = 27f
-
-/**
- * How much smaller than usual a scale's numbers are set (1 = not at all) so that the [widest] number
- * leaves at least [MIN_NUMBER_GAP_UNITS] of [u] free between two neighbours whose centres are
- * [nearest] apart, but never below [MIN_NUMBER_FIT]. Classic's dial (the only scale since Phase 25)
- * leaves room enough; a flatter scale (the old spirit level's) needed about 80 %, 70 % in the wide faces.
- */
-internal fun numberFit(nearest: Float, widest: Float, u: Float): Float {
-    if (widest <= 0f) return 1f
-    val room = nearest - MIN_NUMBER_GAP_UNITS * u
-    return (room / widest).coerceIn(MIN_NUMBER_FIT, 1f)
-}
-
-/** Neighbouring numbers keep at least this many units apart. */
-internal const val MIN_NUMBER_GAP_UNITS = 8f
-
-/** Numbers are set at least this share of their usual size. */
-internal const val MIN_NUMBER_FIT = 0.7f
 
 /**
  * The paint of every marker's small soft shadow (3u blur): drawn under the marker, 1.5u right and
@@ -377,7 +245,8 @@ internal const val MARKER_SHADOW_Y = 2.5f
 /**
  * The needle (the mock-up's `needle`, 1.1's Contemporary bar), pointing straight up from ([pivotX], [pivotY]) over
  * [length]: a plain rounded bar 2.6u wide. The needle's layer turns it; [drawShadow] draws its silhouette for the
- * shadow layer under it. Its hub is drawn apart ([HubArt]), so it doesn't turn with it.
+ * shadow layer under it. Since Phase 71 only the metronome's tempo dial draws it (until Phase 75); the tuner's
+ * Classic meter, with its hub, arc and scale, went when the lens took its place.
  */
 internal class NeedleArt(pivotX: Float, pivotY: Float, length: Float, u: Float, roles: MeterRoles) {
     private val body: Path = Path().apply {
@@ -393,49 +262,6 @@ internal class NeedleArt(pivotX: Float, pivotY: Float, length: Float, u: Float, 
 
     fun drawShadow(scope: DrawScope) = with(scope) {
         drawIntoCanvas { it.nativeCanvas.drawPath(nativeBody, shadow) }
-    }
-}
-
-/**
- * The cap over a needle's pivot (the mock-up's `hub`, 1.1's Contemporary dot) at ([x], [y]): a plain ink dot of 5u,
- * drawn over the needle and not turned with it, with the shared marker shadow.
- */
-internal class HubArt(private val x: Float, private val y: Float, private val u: Float, private val roles: MeterRoles) {
-    private val shadow = markerShadowPaint(u, roles)
-    private val dx = MARKER_SHADOW_X * u
-    private val dy = MARKER_SHADOW_Y * u
-    private val centre = Offset(x, y)
-
-    /** Draws the hub. */
-    fun draw(scope: DrawScope) = with(scope) {
-        drawIntoCanvas { it.nativeCanvas.drawCircle(x + dx, y + dy, HUB_UNITS * u, shadow) }
-        drawCircle(roles.ink, HUB_UNITS * u, centre)
-    }
-
-    private companion object {
-        const val HUB_UNITS = 5f
-    }
-}
-
-/**
- * The scale's arc (the mock-up's `dialTrack`, 1.1's Contemporary line): a thin line (1.8u) in the track colour of
- * [radius] round ([cx], [cy]) from −50 to +50 cents, [angle] giving each reading's angle (radians, clockwise from
- * straight up). Decoration only: the ticks carry the scale.
- */
-internal class TrackArt(cx: Float, cy: Float, private val radius: Float, u: Float, roles: MeterRoles, angle: (Float) -> Float) {
-    private val start = -90f + angle(-METER_RANGE_CENTS) * DEGREES
-    private val sweep = (angle(METER_RANGE_CENTS) - angle(-METER_RANGE_CENTS)) * DEGREES
-    private val topLeft = Offset(cx - radius, cy - radius)
-    private val arcSize = Size(radius * 2f, radius * 2f)
-    private val stroke = Stroke(1.8f * u)
-    private val color = roles.track
-
-    fun draw(scope: DrawScope) = with(scope) {
-        drawArc(color, start, sweep, false, topLeft, arcSize, style = stroke)
-    }
-
-    private companion object {
-        const val DEGREES = (180.0 / PI).toFloat()
     }
 }
 

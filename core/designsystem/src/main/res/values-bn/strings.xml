@@ -2,7 +2,5 @@
     <string name="spoken_sharp">%1$s শার্প</string>
     <string name="spoken_flat">%1$s ফ্ল্যাট</string>
 
-    <string name="meter_cents_label">সেন্ট</string>
-
     <string name="instrument_button_action">বাদ্যযন্ত্র বা টিউনিং বদলান</string>
 </resources>

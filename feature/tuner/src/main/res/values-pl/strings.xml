@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Zablokowana, brzmi</string>
     <string name="tuner_string_tuned">Nastrojona</string>
     <string name="tuner_string_locked_tuned">Zablokowana, nastrojona</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- 1 cent; 2–4, 22–24 … centy (ale 12–14 centów); 0, 5–21, 25 … centów. -->
     <string name="tuner_cents_zero">0 centów</string>
     <plurals name="tuner_cents_flat">

@@ -84,7 +84,6 @@
     <string name="tuner_string_locked_sounding">Travada, tocando</string>
     <string name="tuner_string_tuned">Afinada</string>
     <string name="tuner_string_locked_tuned">Travada, afinada</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cents</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent abaixo</item>

@@ -10,7 +10,6 @@ app widget_open_tuner 27616cdc
 app widget_preview_title d998eb86
 app widget_title fed2d9b8
 core/designsystem instrument_button_action f416e2a5
-core/designsystem meter_cents_label 7add8439
 core/designsystem spoken_flat f1c390f9
 core/designsystem spoken_sharp 0dc644eb
 feature/eartraining ear_answer_was 3f397516
@@ -378,7 +377,6 @@ feature/tuner tuner_delete_tuning_title d34dcad6
 feature/tuner tuner_edit_tuning 464c4ffd
 feature/tuner tuner_exit_focus_mode cf1f3e58
 feature/tuner tuner_focus_mode 047cfdeb
-feature/tuner tuner_frequency 9023f6cb
 feature/tuner tuner_hide_controls 9adcc54f
 feature/tuner tuner_hint_play_locked_string db376559
 feature/tuner tuner_hint_play_note 4d452ac3

@@ -84,7 +84,6 @@
     <string name="tuner_string_locked_sounding">Verrouillée, son en cours</string>
     <string name="tuner_string_tuned">Accordée</string>
     <string name="tuner_string_locked_tuned">Verrouillée, accordée</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent trop bas</item>

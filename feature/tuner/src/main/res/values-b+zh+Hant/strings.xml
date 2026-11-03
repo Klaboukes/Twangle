@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">已鎖定，正在播放</string>
     <string name="tuner_string_tuned">已調準</string>
     <string name="tuner_string_locked_tuned">已鎖定，已調準</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 音分</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">偏低 %1$d 音分</item>

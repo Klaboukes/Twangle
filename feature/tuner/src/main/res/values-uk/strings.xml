@@ -79,7 +79,6 @@
     <string name="tuner_string_locked_sounding">Закріплена, звучить</string>
     <string name="tuner_string_tuned">Налаштована</string>
     <string name="tuner_string_locked_tuned">Закріплена, налаштована</string>
-    <string name="tuner_frequency">%1$.1f Гц</string>
     <string name="tuner_cents_zero">0 центів</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d цент нижче</item>

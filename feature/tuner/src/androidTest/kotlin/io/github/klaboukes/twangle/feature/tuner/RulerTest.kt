@@ -41,9 +41,9 @@ import kotlin.math.abs
 /**
  * The ruler at the top of the tuner (2.0, Phase 71): the heard note under its pointer in the notation
  * setting's names (a string in its tuning's spelling, a string tuned far off as the note it sounds), the
- * quiet state (resting on the last note, a locked string or the first string, muted), above the meter
- * upright and on its side, not spoken, the signal bars beside the heard note, none with a tool's panel,
- * and the scale sliding with the reading.
+ * quiet state (resting on the last note, a locked string or the first string, muted), above the lens
+ * upright, on its side and in focus mode (since the big note went, Phase 71's last step), not spoken, the signal
+ * bars beside the heard note (none in focus mode), none with a tool's panel, and the scale sliding with the reading.
  */
 @RunWith(AndroidJUnit4::class)
 class RulerTest {
@@ -59,7 +59,7 @@ class RulerTest {
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
 
-    private fun show(state: TunerUiState, size: DpSize = PHONE_UPRIGHT, signalBars: Boolean = false) {
+    private fun show(state: TunerUiState, size: DpSize = PHONE_UPRIGHT, signalBars: Boolean = false, focus: Boolean = false) {
         shownState.value = state
         shownSize.value = size
         compose.setContent {
@@ -75,8 +75,8 @@ class RulerTest {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showSignalBars = signalBars,
-                        // On its side the two panes, not focus mode's full-screen meter (which has no ruler until Phase 73).
-                        compactLandscape = false,
+                        // On its side the two panes, or focus mode's full-screen ruler and lens.
+                        compactLandscape = focus,
                         onStrumCheckChange = {},
                         onFocusModeChange = {},
                     )
@@ -177,7 +177,7 @@ class RulerTest {
         assertRulerShows("La", quiet = true)
     }
 
-    /** The reading is spoken by the note's live region; the ruler is a drawing TalkBack passes over. */
+    /** The reading is spoken by the word's live region; the ruler is a drawing TalkBack passes over. */
     @Test
     fun theRulerIsNotSpoken() {
         show(string(-12.3f))
@@ -185,13 +185,13 @@ class RulerTest {
         assertFalse(node.config.contains(SemanticsProperties.ContentDescription))
         assertFalse(node.config.contains(SemanticsProperties.Text))
         assertTrue(node.children.isEmpty())
-        compose.onNode(hasContentDescription("E 2, 12 cents flat")).assertExists()
+        compose.onNode(hasContentDescription("E 2, 12 cents flat", substring = true)).assertExists()
     }
 
     @Test
-    fun theRulerSitsUnderTheChipAndOverTheMeterUprightAndOnATabletsSide() {
+    fun theRulerSitsUnderTheChipAndOverTheMeterUprightAndOnItsSide() {
         show(string(-12.3f))
-        for (size in listOf(PHONE_UPRIGHT, TABLET_ON_ITS_SIDE, TABLET_UPRIGHT)) {
+        for (size in listOf(PHONE_UPRIGHT, PHONE_ON_ITS_SIDE, TABLET_ON_ITS_SIDE, TABLET_UPRIGHT)) {
             shownSize.value = size
             compose.waitForIdle()
             val box = ruler.assertIsDisplayed().getBoundsInRoot()
@@ -213,16 +213,37 @@ class RulerTest {
     }
 
     /**
-     * A phone on its side has no room for the ruler over the meter beside the big note (330 dp high): none
-     * there until Phase 73 lays the tuner out wide, and the signal bars stay in the chip's row.
+     * With the big note gone (Phase 71's last step) a phone on its side has room for the ruler over the lens and the
+     * word (until then it had none, and its signal bars stood in the chip's row): the bars stand beside its heard note.
      */
     @Test
-    fun aPhoneOnItsSideHasNoRulerYetAndKeepsTheBarsInTheChipsRow() {
+    fun aPhoneOnItsSideHasTheRulerWithTheBarsBesideTheHeardNote() {
         show(string(-12.3f), size = PHONE_ON_ITS_SIDE, signalBars = true)
-        ruler.assertDoesNotExist()
+        val box = ruler.assertIsDisplayed().getBoundsInRoot()
+        assertRulerShows("E")
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        assertTrue("bars $bars not in the chip's row $chip", bars.top < chip.bottom && bars.bottom > chip.top)
+        assertTrue("bars $bars not in the ruler $box", bars.top >= box.top && bars.bottom <= box.bottom && bars.left > box.left && bars.right < box.right)
+        val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        assertTrue("word $word below the window $window", word.bottom <= window.bottom)
+    }
+
+    /**
+     * Focus mode (until Phase 73 lays it out wide): the ruler across the top names the note (focus mode's small note
+     * went with the big one), clear of the exit button in the top end corner, over the lens; no signal bars.
+     */
+    @Test
+    fun focusModeShowsTheRulerOverTheLensClearOfTheExitButton() {
+        show(string(-12.3f), size = PHONE_ON_ITS_SIDE, signalBars = true, focus = true)
+        val box = ruler.assertIsDisplayed().getBoundsInRoot()
+        assertRulerShows("E")
+        val exit = compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("ruler $box runs under the exit button $exit", box.right <= exit.left)
+        val meter = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
+        assertTrue("ruler $box not over the lens $meter", box.bottom <= meter.top)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        assertTrue("ruler $box not centred in $window", abs((box.left - window.left - (window.right - box.right)).value) < 1f)
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertDoesNotExist()
     }
 
     @Test

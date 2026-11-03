@@ -2,7 +2,5 @@
     <string name="spoken_sharp">%1$s kryss</string>
     <string name="spoken_flat">%1$s b</string>
 
-    <string name="meter_cents_label">CENT</string>
-
     <string name="instrument_button_action">Bytt instrument eller stemming</string>
 </resources>

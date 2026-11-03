@@ -2,8 +2,5 @@
     <string name="spoken_sharp">%1$s diesis</string>
     <string name="spoken_flat">%1$s bemolle</string>
 
-    <!-- "cent" è invariabile ("12 cent"), anche sulla scala. -->
-    <string name="meter_cents_label">CENT</string>
-
     <string name="instrument_button_action">Cambiare strumento o accordatura</string>
 </resources>

@@ -1,6 +1,5 @@
 <resources>
     <string name="spoken_sharp">%1$s дієз</string>
     <string name="spoken_flat">%1$s бемоль</string>
-    <string name="meter_cents_label">ЦЕНТИ</string>
     <string name="instrument_button_action">Змінити інструмент або стрій</string>
 </resources>

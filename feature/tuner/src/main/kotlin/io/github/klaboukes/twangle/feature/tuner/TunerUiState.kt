@@ -147,14 +147,15 @@ sealed interface TunerUiState {
 
 /**
  * This state as the screen's text shows it: in [TunerUiState.Detected] the cents rounded to whole
- * cents and the frequency to 0.1 Hz, the precision `NoteDisplay` writes them with. Two readings whose
- * text looks the same then compare equal, so the screen recomposes only when the text changes. The
- * needle needs the exact cents and reads them from the unrounded state, and the [TunerUiState.Detected.reception]
- * isn't text at all: it is set to 1 here, and the needle and the wave read it from the unrounded state
- * while drawing. Other states are returned as they are.
+ * cents, the precision the word writes them with. Two readings whose text looks the same then compare
+ * equal, so the screen recomposes only when the text changes. The frequency isn't shown (2.0, Phase 71:
+ * the hertz went with the big note), so it is 0 here. The lens and the ruler need the exact cents and
+ * read them from the unrounded state, and the [TunerUiState.Detected.reception] isn't text at all: it is
+ * set to 1 here, and the lens reads it from the unrounded state while drawing. Other states are
+ * returned as they are.
  */
 fun TunerUiState.asShown(): TunerUiState = when (this) {
-    is TunerUiState.Detected -> copy(cents = shownCents(cents), frequencyHz = shownHz(frequencyHz), reception = 1f)
+    is TunerUiState.Detected -> copy(cents = shownCents(cents), frequencyHz = 0f, reception = 1f)
     else -> this
 }
 
@@ -167,7 +168,7 @@ fun TunerUiState.asShown(): TunerUiState = when (this) {
  */
 internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
     if (this !is TunerUiState.Detected || other !is TunerUiState.Detected) return this == other
-    // Every field of Detected except cents and frequencyHz; TunerUiStateShownTest notices a new one.
+    // Every field of Detected except cents and frequencyHz (not shown); TunerUiStateShownTest notices a new one.
     return mode == other.mode &&
         tuning == other.tuning &&
         a4Hz == other.a4Hz &&
@@ -181,7 +182,6 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         tip == other.tip &&
         targetMidi == other.targetMidi &&
         shownCents(cents) == shownCents(other.cents) &&
-        shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
         abs(meterCents(cents) - meterCents(other.cents)) < NEEDLE_STEP_CENTS &&
         abs(reception - other.reception) < RECEPTION_STEP
 }
@@ -217,6 +217,3 @@ internal fun targetMidiOf(noteName: String, octave: Int, notation: Notation, fre
 
 private const val A4_MIDI = 69
 private const val CENTS_PER_SEMITONE = 100f
-
-/** The frequency is shown to 0.1 Hz (`tuner_frequency`). */
-private fun shownHz(frequencyHz: Float): Float = (frequencyHz * 10f).roundToInt() / 10f

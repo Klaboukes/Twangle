@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Terkunci, sedang diputar</string>
     <string name="tuner_string_tuned">Sudah pas</string>
     <string name="tuner_string_locked_tuned">Terkunci, sudah pas</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 sen</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">%1$d sen terlalu rendah</item>

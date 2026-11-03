@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Đã khóa, đang phát</string>
     <string name="tuner_string_tuned">Đã chuẩn</string>
     <string name="tuner_string_locked_tuned">Đã khóa, đã chuẩn</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">Thấp %1$d cent</item>

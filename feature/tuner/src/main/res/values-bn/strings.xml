@@ -79,7 +79,6 @@
     <string name="tuner_string_locked_sounding">লক করা, বাজছে</string>
     <string name="tuner_string_tuned">টিউন হয়েছে</string>
     <string name="tuner_string_locked_tuned">লক করা, টিউন হয়েছে</string>
-    <string name="tuner_frequency">%1$.1f হার্জ</string>
     <string name="tuner_cents_zero">০ সেন্ট</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d সেন্ট নিচে</item>

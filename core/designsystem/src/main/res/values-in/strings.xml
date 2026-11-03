@@ -3,7 +3,5 @@
     <string name="spoken_sharp">%1$s kres</string>
     <string name="spoken_flat">%1$s mol</string>
 
-    <string name="meter_cents_label">SEN</string>
-
     <string name="instrument_button_action">Ganti instrumen atau stem</string>
 </resources>

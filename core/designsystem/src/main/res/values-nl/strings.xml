@@ -3,8 +3,5 @@
     <string name="spoken_sharp">%1$s kruis</string>
     <string name="spoken_flat">%1$s mol</string>
 
-    <!-- Na een getal blijft "cent" enkelvoud ("12 cent"), dus ook op de meter. -->
-    <string name="meter_cents_label">CENT</string>
-
     <string name="instrument_button_action">Instrument of stemming wijzigen</string>
 </resources>

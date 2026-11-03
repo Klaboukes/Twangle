@@ -122,13 +122,10 @@ class TunerStylesTest {
     /** Every part of the screen, by name. (1.1's wave view, which took the cents' and frequency's place, went in Phase 67.) */
     private fun parts(): List<Pair<String, SemanticsNodeInteraction>> = buildList {
         add("picker chip" to pickerChip)
-        // On a phone on its side there is no ruler yet (Phase 73 lays the tuner out wide).
-        if (compose.onAllNodesWithTag(TunerTestTags.RULER).fetchSemanticsNodes().isNotEmpty()) add("ruler" to compose.onNodeWithTag(TunerTestTags.RULER))
+        // The ruler names the note, upright and on its side (the big note, its octave and the hertz went in Phase 71).
+        add("ruler" to compose.onNodeWithTag(TunerTestTags.RULER))
         add("meter" to gauge)
-        // On a short phone the big note makes room for the ruler above, which names it (Phase 71).
-        if (compose.onAllNodesWithText("A").fetchSemanticsNodes().isNotEmpty()) add("note" to compose.onNodeWithText("A"))
         add("cents" to compose.onNodeWithText(twelveCentsFlat))
-        add("frequency" to compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f)))
         add("word" to compose.onNodeWithText(context.getString(R.string.tuner_word_tighten)))
         add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON))
         add("strum check switch" to compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE))
@@ -143,9 +140,9 @@ class TunerStylesTest {
     }
 
     /**
-     * On a short phone the note shrinks, never the meter (owner, 2026-10-21: on the Galaxy S26 it was
-     * at its 160 dp minimum): the meter keeps the screen's width less 8 dp at each side, light and
-     * dark, and everything stays in view.
+     * On a short phone the lens's height gives way, never its width (owner, 2026-10-21: shrink the note, never the
+     * meter; on the Galaxy S26 it was at its 160 dp minimum): the lens keeps the screen's width less 20 dp at each
+     * side, light and dark, and everything stays in view.
      */
     @Test
     fun uprightOnAShortPhoneTheMeterKeepsItsFullWidth() {
@@ -175,10 +172,10 @@ class TunerStylesTest {
         show()
         forEachCase(PHONE_LANDSCAPE, 1f) { case ->
             assertAllInView(case)
-            val note = compose.onNodeWithText("A").getBoundsInRoot()
+            val lens = gauge.getBoundsInRoot()
             for (label in strings) {
                 val chip = compose.onNodeWithText(label).getBoundsInRoot()
-                if (chip.left < note.right) fail("$case: string $label should be right of the note")
+                if (chip.left < lens.right) fail("$case: string $label should be right of the lens")
             }
         }
     }

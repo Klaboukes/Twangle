@@ -74,6 +74,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 68 — No tour](#phase-68--no-tour)
 - [Phase 69 — Navigation](#phase-69--navigation)
 - [Phase 70 — The one picker](#phase-70--the-one-picker)
+- [Phase 71 — The tuner screen](#phase-71--the-tuner-screen)
 
 ---
 
@@ -780,3 +781,14 @@ Goal: Tune · Metronome · Practice, Settings behind the gear, Practice as four 
 Goal: instrument, tuning and Any note in one sheet from a chip at the top.
 - ☑ The chip "Guitar · Standard ▾" at the top centre of the tuner; the "What are you tuning?" sheet: instrument pills, the tunings with their strings, Edit tunings (the tuning editor), Any note as a switch; the mode switch goes (`TunerMode` set from the sheet)
 - ☑ In Any note the chip reads "Any note" and the pegs go; the Practice tools take their instrument and tuning from the same sheet (`InstrumentTuningPanel` becomes it) — done 2026-11-02: the tuner already read "Any note" with the strings gone (a test says so now); Chords, Scales, Capo and Ear training show the same chip beside their back arrow, opening the same sheet without its Any note switch (the charts need an instrument); the headstock button (`InstrumentButton.kt`) went, with its text "Instrument" from every language and the record
+
+## Phase 71 — The tuner screen
+Goal: the ruler, the lens with the trail, the colour, the word and the pegs.
+- ☑ A rough mock-up (Contemporary/Ink only, the bare core idea) of the 12th-fret check's way in from the tuner screen, behind its Settings switch, for the owner to pick
+- ☑ The ruler: the chromatic scale sliding under a fixed pointer, the heard note big, its neighbours small, in the notation setting's names; the signal bars beside the heard note, behind their switch as today (their exact place checked on the phone)
+- ☑ The lens with the pitch trail inside (the newest reading at the top, the last seconds falling under it, ±50 cents across, the in-tune zone of ±5 cents or ±2 with Precise, ♭ and ♯ in the corners), its border in the reading's colour; the pitch trail tool goes as a tool of its own (its view becomes the look), its switch kept as the trail look's brake (v2-plan.md, *The two tools*)
+- ☑ The whole screen's soft tint, amber far off to green in tune, in light and dark; no red anywhere
+- ☑ One word at the bottom (Tighten · Loosen · In tune; Too low · Too high in Any note) with the cents small under it; "Play a string" while nothing is heard
+- ☑ The pegs: a plain row in the tuning's order, the one heard ringed, tap to lock (the lock shown on the peg), hold to hear; the string tick-off and "In tune. Play." behind their toggle, off by default
+- ☑ The 12th-fret check opened from the tuner screen the way the owner picked, behind its new Settings switch (the `intonationCheck` build switch stays as the brake that hides both); its panel redrawn with the pegs (built: option A of `docs/design/v2-intonation-way-in-preview.html`, a button above the first peg, the switch off by default; the owner's pick of the way in and the default still to come)
+- ☑ The big note, the cents pill, the hertz, the wave view, the strings backdrop and the "Tune up / Tune down" switch go; what Phase 60's precision work taught (the stretched scale, thin edges, the in-tune window shown) carries into the lens — done 2026-11-03: the big note, its octave, the hertz and focus mode's corner note went (the ruler names the note, the word says it), so the lens has its full 0.85 height upright on the Xiaomi; the ruler shows on a phone on its side and across the top in focus mode; the store's feature graphic draws three lenses, and 1.1's Classic meter went with it (the pill, the wave view and the switch had gone in earlier steps; the strings backdrop was only ever in the first mock-up); the lens's trail keeps the stretched scale, the thin hairline and ticks and the in-tune band (checked on the phone)

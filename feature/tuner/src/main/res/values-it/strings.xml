@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Bloccata, in riproduzione</string>
     <string name="tuner_string_tuned">Intonata</string>
     <string name="tuner_string_locked_tuned">Bloccata, intonata</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- "cent" è invariabile: "12 cent". -->
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">

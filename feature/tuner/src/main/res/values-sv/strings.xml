@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Låst, spelar</string>
     <string name="tuner_string_tuned">Stämd</string>
     <string name="tuner_string_locked_tuned">Låst, stämd</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent för lågt</item>

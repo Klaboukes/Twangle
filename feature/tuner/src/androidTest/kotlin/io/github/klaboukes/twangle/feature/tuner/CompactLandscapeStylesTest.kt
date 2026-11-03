@@ -47,10 +47,9 @@ import kotlin.math.abs
 
 /**
  * The compact landscape layout (focus mode) in Ink. On a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the
- * meter fills the screen with the small note in its top start corner; with 2× font the note and a tip
- * are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. The meter (Classic, the one meter
- * since Phase 67), at its biggest here, is clearly drawn inside its box, light and dark, and skipped by
- * TalkBack, also at 2× font.
+ * ruler names the note across the top, clear of the exit button, and the lens fills the screen under it with the
+ * word under the lens (Phase 71, until Phase 73 lays it out wide); with 2× font the word and a tip are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. The lens (2.0, Phase 71),
+ * at its biggest here, is clearly drawn inside its box, light and dark, and skipped by TalkBack, also at 2× font.
  * [TunerContentTest] covers the layout itself.
  */
 @RunWith(AndroidJUnit4::class)
@@ -108,17 +107,16 @@ class CompactLandscapeStylesTest {
         inTune = false,
     )
 
-    private val note get() = compose.onNodeWithTag(TunerTestTags.FOCUS_NOTE)
+    private val ruler get() = compose.onNodeWithTag(TunerTestTags.RULER)
     private val gauge get() = compose.onNodeWithTag(TunerTestTags.GAUGE)
     private val cents get() = compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12))
-    private val frequency get() = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f))
     private val targetString get() = compose.onNodeWithText("A2")
     private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON)
     private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
 
     /**
-     * Guitar mode, then chromatic mode: the meter fills the screen, the
-     * note in its corner, and nothing else shows (no cents, frequency, strings or signal bars).
+     * Guitar mode, then chromatic mode: the ruler across the top, the lens filling the screen under it, the word
+     * under the lens, and nothing else shows (no strings or signal bars).
      */
     @Test
     fun onItsSideTheMeterFillsTheScreen() {
@@ -157,44 +155,38 @@ class CompactLandscapeStylesTest {
     }
 
     /**
-     * The meter is as big as the window allows (as tall as the window under the note's row less its margins, or
-     * [METER_SHARE] of its width), the note in its top start corner, clear of the lens (whose box fills its
-     * corners, Phase 71), within the window, and nothing else of the tuner shows.
+     * The lens is as big as the window allows (as tall as the window between the ruler and the word less their gaps,
+     * or [METER_SHARE] of its width), the ruler over it at the top, the word with the cents under it, all within the
+     * window, and nothing else of the tuner shows.
      */
     private fun assertMeterFillsTheScreen(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val meter = gauge.assertIsDisplayed().getBoundsInRoot()
-        val corner = note.assertIsDisplayed().getBoundsInRoot()
+        val top = ruler.assertIsDisplayed().getBoundsInRoot()
+        val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
         assertTrue(
-            "$case: meter ${meter.width} x ${meter.height} in ${window.width} x ${window.height}, under the note's row ending at ${corner.bottom}",
-            meter.height >= window.bottom - corner.bottom - FULL_HEIGHT_MARGINS - 1.dp || meter.width >= window.width * METER_SHARE,
+            "$case: meter ${meter.width} x ${meter.height} in ${window.width} x ${window.height}, between the ruler $top and the word $word",
+            meter.height >= word.top - top.bottom - FULL_HEIGHT_MARGINS - 1.dp || meter.width >= window.width * METER_SHARE,
         )
         assertInside(window, "meter", meter, case)
-        assertInside(window, "note", corner, case)
-        assertTrue(
-            "$case: note $corner not in the top start corner",
-            corner.right <= window.left + window.width * CORNER_SHARE && corner.bottom <= window.top + window.height * CORNER_SHARE,
-        )
-        assertTrue("$case: note $corner over the lens $meter", corner.bottom <= meter.top + 0.5.dp)
-        // The word with the cents under it in the top row's middle, over the lens (Phase 71); nothing else.
-        val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("$case: word $word over the lens $meter", word.bottom <= meter.top + 0.5.dp)
-        assertTrue("$case: word $word beside the note $corner", word.left >= corner.right)
+        assertInside(window, "ruler", top, case)
+        assertInside(window, "word", word, case)
+        assertTrue("$case: ruler $top over the lens $meter", top.bottom <= meter.top + 0.5.dp)
+        assertTrue("$case: word $word under the lens $meter", word.top >= meter.bottom - 0.5.dp)
         cents.assertIsDisplayed()
-        frequency.assertDoesNotExist()
         targetString.assertDoesNotExist()
         signalBars.assertDoesNotExist()
     }
 
     @Test
-    fun withTheLargestFontTheNoteAndATipAreWhollyShown() {
+    fun withTheLargestFontTheWordAndATipAreWhollyShown() {
         shownFontScale.value = 2f
         show()
         forEachLook { case ->
             shownState.value = detected()
             compose.waitForIdle()
-            assertWhollyShown(compose.onNodeWithText("A"), "$case note", scroll = false)
-            // The longest tip, in its line under the note.
+            assertWhollyShown(compose.onNodeWithTag(TunerTestTags.WORD_TEXT), "$case word", scroll = false)
+            // The longest tip, in its line under the word.
             shownState.value = detected().copy(tip = ReceptionTip.TOO_LOUD)
             compose.waitForIdle()
             assertWhollyShown(compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)), "$case tip", scroll = false)
@@ -224,7 +216,7 @@ class CompactLandscapeStylesTest {
         pickerChip.assertIsDisplayed()
     }
 
-    /** Focus mode's exit button in the top end corner, wholly shown, clear of the note, also at 2× font. */
+    /** Focus mode's exit button in the top end corner, wholly shown, clear of the ruler, also at 2× font. */
     @Test
     fun theExitButtonSitsInTheTopEndCorner() {
         show()
@@ -237,15 +229,15 @@ class CompactLandscapeStylesTest {
                 val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
                 val place = button.getBoundsInRoot()
                 assertTrue("$case ${scale}x exit button at $place", place.right >= window.right - 24.dp && place.top <= window.top + 16.dp)
-                val noteAt = note.getBoundsInRoot()
-                assertTrue("$case ${scale}x exit button at $place, note at $noteAt", place.left > noteAt.right)
+                val rulerAt = ruler.getBoundsInRoot()
+                assertTrue("$case ${scale}x exit button at $place, ruler at $rulerAt", place.left >= rulerAt.right)
             }
             shownFontScale.value = 1f
         }
     }
 
     /**
-     * The meter (1.1's Classic, the one meter since Phase 67) on a phone (light) and a tablet (dark) on their side.
+     * The lens (the trail, the one look until Phase 72) on a phone (light) and a tablet (dark) on their side.
      * With the test below, each size is seen in both themes.
      */
     @Test
@@ -364,11 +356,8 @@ class CompactLandscapeStylesTest {
         private val PHONE_LANDSCAPE = DpSize(780.dp, 360.dp)
         private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
 
-        /** The full-screen meter's margins above and below it (8 dp each), and half a dp for rounding. */
-        private val FULL_HEIGHT_MARGINS = 16.5.dp
-
-        /** The note stays within this share of the window's width and height from its top start corner. */
-        private const val CORNER_SHARE = 0.25f
+        /** The gaps above and below the full-screen lens (12 dp under the ruler, 16 dp over the word), and half a dp for rounding. */
+        private val FULL_HEIGHT_MARGINS = 28.5.dp
 
         private val SLACK = 0.5.dp
 

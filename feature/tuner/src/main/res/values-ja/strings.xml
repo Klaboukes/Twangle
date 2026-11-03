@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">固定中、再生中</string>
     <string name="tuner_string_tuned">チューニング済み</string>
     <string name="tuner_string_locked_tuned">固定中、チューニング済み</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 セント</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">%1$d セント低い</item>

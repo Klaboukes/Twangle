@@ -2,7 +2,5 @@
     <string name="spoken_sharp">%1$s med kors</string>
     <string name="spoken_flat">%1$s med b</string>
 
-    <string name="meter_cents_label">CENT</string>
-
     <string name="instrument_button_action">Byta instrument eller stämning</string>
 </resources>

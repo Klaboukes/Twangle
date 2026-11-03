@@ -2,8 +2,5 @@
     <string name="spoken_sharp">%1$s erhöht</string>
     <string name="spoken_flat">%1$s erniedrigt</string>
 
-    <!-- Nach einer Zahl bleibt „Cent“ in der Einzahl („12 Cent“), also auch auf der Skala. -->
-    <string name="meter_cents_label">CENT</string>
-
     <string name="instrument_button_action">Instrument oder Stimmung ändern</string>
 </resources>

@@ -6,9 +6,6 @@
     <!-- A note name with a flat, read aloud by TalkBack (e.g. "B flat"). %1$s is the letter or syllable, e.g. "B", "Si". -->
     <string name="spoken_flat">%1$s flat</string>
 
-    <!-- The unit printed on the Classic meter's dial, above the needle's pivot (in capitals, as on a real meter). -->
-    <string name="meter_cents_label">CENTS</string>
-
     <!-- TalkBack: what double-tapping the picker chip does (the pill naming the instrument and tuning, e.g.
          "Guitar · Standard", at the top of the tuner and the Practice tools; "Double-tap to …" is added by Android). -->
     <string name="instrument_button_action">Change instrument or tuning</string>

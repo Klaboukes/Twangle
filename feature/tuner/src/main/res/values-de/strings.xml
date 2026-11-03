@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Festgelegt, spielt</string>
     <string name="tuner_string_tuned">Gestimmt</string>
     <string name="tuner_string_locked_tuned">Festgelegt, gestimmt</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Nach einer Zahl bleibt „Cent“ in der Einzahl: „12 Cent“. -->
     <string name="tuner_cents_zero">0 Cent</string>
     <plurals name="tuner_cents_flat">

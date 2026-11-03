@@ -24,13 +24,11 @@ data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
 }
 
 /**
- * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`). Classic's is
- * kept for the store's feature graphic until Phase 76; the lens's looks take theirs from [meterFeel].
+ * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`); the lens's
+ * looks take theirs from [meterFeel]. (1.1's Classic, which swung a little past a new string like a mechanical
+ * needle, went in Phase 71 with the last thing that drew it, the store's feature graphic.)
  */
 object MeterFeels {
-    /** Classic swings a little past a new string, like a mechanical needle. */
-    val CLASSIC = MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
-
     /** Light arc follows almost without swinging. */
     val LIGHT_ARC = MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
 }

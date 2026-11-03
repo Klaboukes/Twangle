@@ -30,9 +30,10 @@ class TunerUiStateShownTest {
     }
 
     @Test
-    fun `a change in whole cents or tenths of a hertz is visible`() {
+    fun `a change in whole cents is visible, the hertz not at all`() {
         assertNotEquals(detected(-12.4f).asShown(), detected(-12.6f).asShown())
-        assertNotEquals(detected(3f, 110.04f).asShown(), detected(3f, 110.06f).asShown())
+        // 2.0 shows no hertz (Phase 71): a frequency that moves alone changes nothing on screen.
+        assertEquals(detected(3f, 110.04f).asShown(), detected(3f, 110.36f).asShown())
         assertNotEquals(detected(3f, inTune = false).asShown(), detected(3f, inTune = true).asShown())
     }
 
@@ -40,7 +41,7 @@ class TunerUiStateShownTest {
     fun `shown values are rounded the way the readout writes them`() {
         val shown = detected(-11.6f, 81.84f).asShown() as TunerUiState.Detected
         assertEquals(-12f, shown.cents)
-        assertEquals(81.8f, shown.frequencyHz)
+        assertEquals("the hertz isn't shown", 0f, shown.frequencyHz)
         // Guitar mode can be far off the string; that is still shown in whole cents.
         assertEquals(-230f, (detected(-230.3f).asShown() as TunerUiState.Detected).cents)
     }

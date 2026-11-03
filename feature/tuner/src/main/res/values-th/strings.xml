@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">ล็อกอยู่ กำลังเล่น</string>
     <string name="tuner_string_tuned">จูนแล้ว</string>
     <string name="tuner_string_locked_tuned">ล็อกอยู่ จูนแล้ว</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 เซนต์</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">ต่ำไป %1$d เซนต์</item>

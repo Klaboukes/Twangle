@@ -84,7 +84,6 @@
     <string name="tuner_string_locked_sounding">Lukittu, soi</string>
     <string name="tuner_string_tuned">Vireessä</string>
     <string name="tuner_string_locked_tuned">Lukittu, vireessä</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 senttiä</string>
     <!-- Luvun jälkeen partitiivi: 1 sentti, 2 senttiä. -->
     <plurals name="tuner_cents_flat">

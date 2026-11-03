@@ -2,7 +2,5 @@
     <string name="spoken_sharp">%1$s dièse</string>
     <string name="spoken_flat">%1$s bémol</string>
 
-    <string name="meter_cents_label">CENTS</string>
-
     <string name="instrument_button_action">Changer d\'instrument ou d\'accordage</string>
 </resources>

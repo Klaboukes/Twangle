@@ -2,7 +2,5 @@
     <string name="spoken_sharp">升%1$s</string>
     <string name="spoken_flat">降%1$s</string>
 
-    <string name="meter_cents_label">音分</string>
-
     <string name="instrument_button_action">更換樂器或調音</string>
 </resources>

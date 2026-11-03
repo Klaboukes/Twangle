@@ -83,7 +83,6 @@
     <string name="tuner_string_locked_sounding">Sabitlendi, çalıyor</string>
     <string name="tuner_string_tuned">Akortlandı</string>
     <string name="tuner_string_locked_tuned">Sabitlendi, akortlandı</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Sayıdan sonra isim tekil kalır: "12 sent". -->
     <string name="tuner_cents_zero">0 sent</string>
     <plurals name="tuner_cents_flat">
