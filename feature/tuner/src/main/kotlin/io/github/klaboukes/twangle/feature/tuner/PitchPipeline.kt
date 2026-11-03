@@ -12,6 +12,7 @@ import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.pitch.SustainCheck
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
+import io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +51,9 @@ data class PitchReading(
  * Microphone → [FrameAssembler] (in the low range through the [MainsHumCanceller]) → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
  * clarity ([Clarity]). That chain is `:core:dsp`'s [PitchChain], the one the watch runs too; this class
- * adds the microphone, the strum check and the chord name. See docs/architecture/signal-pipeline.md.
+ * adds the microphone, the strum check and the chord name: since 2.0 (Phase 74) beside the tuner on every chunk
+ * ([StrumWatcher], told what to listen for by a [StrumHearing]), and as 1.1's tools, which take the microphone
+ * while they are on. See docs/architecture/signal-pipeline.md.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
  * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside
@@ -86,10 +89,17 @@ class PitchPipeline(
      * (not NaN) the chunks go to the chord name: a [ChordReading] when it starts, when a strum is heard
      * or stops ringing, with each reading of a strum named at that A4, and about every 0.1 s between.
      * [strumStrings], [chordA4Hz] and [range] are asked for every chunk and must not allocate.
+     *
+     * Otherwise the tuner hears the chunks and, while [hearing] says so, so does the strum and chord analysis beside
+     * it ([StrumWatcher]): a [HeardReading] when it starts afresh ([HeardReading.strumCount] 0: what it listens for
+     * changed), when a sudden sound is heard, decided or stops ringing, and with each reading of a strum of open
+     * strings or a chord. Paused (a tone, a tool) it says the latest strum no longer rings; it picks up again
+     * without starting afresh, the strums counted on.
      */
     fun listen(
         range: () -> PitchRange = { PitchRange.STANDARD },
         chordA4Hz: () -> Float = { Float.NaN },
+        hearing: StrumHearing? = null,
         strumStrings: () -> FloatArray?,
     ): Flow<PipelineReading> = flow {
         var tuner = PitchChain(supportedRate())
@@ -99,6 +109,10 @@ class PitchPipeline(
         // Made the first time the chord name starts: its buffers are large too.
         var chords: ChordAnalysis? = null
         var naming = false
+        // Made the first time the analysis beside the tuner starts: its buffers are large.
+        var watcher: StrumWatcher? = null
+        var watching = false
+        val heard = HeardSteps()
         var first = true
 
         recorder.chunks().collect { chunk ->
@@ -118,6 +132,7 @@ class PitchPipeline(
                     naming = true
                 }
                 strumming = false
+                watching = false
                 var pos = 0
                 while (pos < chunk.size) {
                     pos += analysis.push(chunk, pos, chunk.size - pos)
@@ -127,6 +142,7 @@ class PitchPipeline(
             }
             if (strings != null) {
                 naming = false
+                watching = false
                 val analysis = strum ?: StrumAnalysis(rate).also { strum = it }
                 val expected = analysis.expected
                 if (!strumming || (strings !== expected && !strings.contentEquals(expected))) {
@@ -159,6 +175,35 @@ class PitchPipeline(
                             tuner.noiseFloorDbfs, tuner.snrDb, Clarity.of(pitch.confidence), tuner.peakDbfs, tuner.sustained,
                         ),
                     )
+                }
+            }
+            // The strum and chord analysis hears the same chunk.
+            val a4 = hearing?.a4Hz() ?: Float.NaN
+            if (a4.isNaN()) {
+                if (watching) {
+                    watching = false
+                    watcher?.let { heard.paused(it) }?.let { emit(it) }
+                }
+                return@collect
+            }
+            val watch = watcher ?: StrumWatcher(rate).also { watcher = it }
+            val open = hearing!!.openStrings()
+            val names = hearing.namesChords()
+            val heardRange = hearing.range()
+            val changed = heard.changed(open, a4, names, heardRange)
+            if (!watching || changed) {
+                heard.started(watch, open, a4, names, heardRange)
+                watch.start(open, a4, names, heardRange)
+                if (changed) emit(HeardReading.FRESH)
+                watching = true
+            }
+            var at = 0
+            while (at < chunk.size) {
+                at += watch.push(chunk, at, chunk.size - at)
+                while (true) {
+                    val event = watch.next()
+                    if (event == StrumWatcher.Event.NOTHING) break
+                    emit(heard.step(watch, event))
                 }
             }
         }

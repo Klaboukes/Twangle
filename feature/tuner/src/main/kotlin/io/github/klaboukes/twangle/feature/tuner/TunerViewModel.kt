@@ -11,6 +11,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumInstruments
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
@@ -35,6 +36,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -243,6 +245,8 @@ class TunerViewModel(
                 intonationScaleMm = IntonationInstruments.scaleLengthMm(settings.instrument),
                 chordName = tool.chord && tools.chordNaming && ChordInstruments.offers(settings.instrument),
                 voice = settings.instrument.voice,
+                strumsHeard = tools.strumCheck && StrumInstruments.offers(settings.instrument),
+                chordsHeard = tools.chordNaming && ChordInstruments.offers(settings.instrument),
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -292,6 +296,17 @@ class TunerViewModel(
 
     /** The wait for the strings to fall quiet after the last one came in tune; touched only on the DSP thread. */
     private var ratingWait: Job? = null
+
+    private val heardNow = MutableStateFlow<HeardStrum>(HeardStrum.None)
+
+    /**
+     * What the tuner heard besides one string (2.0, Phase 74): a strum of the open strings with each string's verdict,
+     * or a fretted chord's name, decided by the analysis beside the tuner ([PitchPipeline.listen], [StrumHearing]) with
+     * no mode to switch on. Its brakes are [ToolSwitches.strumCheck] and [ToolSwitches.chordNaming]; open strings only
+     * in guitar mode, and nothing while one of 1.1's tools is on or a reference tone sounds. Written on the DSP thread,
+     * [HeardStrum.None] again when the tuning, the A4 or the mode changes and when listening stops.
+     */
+    val heardStrum: StateFlow<HeardStrum> = heardNow
 
     /** The string whose tone was played last, while its tone may still sound. */
     private val playedString = MutableStateFlow<Int?>(null)
@@ -565,6 +580,11 @@ class TunerViewModel(
         }
     }
 
+    /** Publishes what the analysis beside the tuner shows, only when it changed (at most ten times a second while a strum rings). */
+    private fun publishHeard(shown: HeardStrum) {
+        if (heardNow.value != shown) heardNow.value = shown
+    }
+
     /** Opens the microphone again after an error. */
     fun retry() {
         attempt.value++
@@ -586,6 +606,7 @@ class TunerViewModel(
         val strumInterpreter = StrumCheckInterpreter()
         val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val chordInterpreter = ChordNameInterpreter()
+        val heardInterpreter = HeardStrumInterpreter()
         // This session's strings in tune: ticked off on their buttons, and Google's rating window (Phase 50) once the set is complete.
         val allInTune = AllStringsInTune(pipeline.frameSeconds)
         var ratingArmed = false
@@ -607,6 +628,19 @@ class TunerViewModel(
         var elsewhere = false
         val frameSeconds = pipeline.frameSeconds
         if (tools.pitchTrail) trailFeed.start()
+        // The strum and chord analysis beside the tuner hears what the tuner hears, unless the app's own tone (or its echo) would be heard.
+        val hearing = object : StrumHearing {
+            override fun a4Hz(): Float {
+                val current = options.value ?: initial
+                return if (current.hearing && ignoredFrames == 0 && !tonePlayer.isPlaying.value) current.a4Hz else Float.NaN
+            }
+
+            override fun openStrings(): FloatArray? = (options.value ?: initial).heardStrings
+
+            override fun namesChords(): Boolean = (options.value ?: initial).chordsHeard
+
+            override fun range(): PitchRange = (options.value ?: initial).pitchRange
+        }
         emitAll(
             pipeline.listen(
                 // The window follows the tuning's lowest string (bass notes need the longer one).
@@ -621,7 +655,17 @@ class TunerViewModel(
                     val current = options.value ?: initial
                     if (current.strumChecking && ignoredFrames == 0 && !tonePlayer.isPlaying.value) current.stringHz else null
                 },
-            ).map { reading ->
+                hearing = hearing,
+            ).filter { reading ->
+                // The analysis beside the tuner has a flow of its own; the tuner's state goes on as it was.
+                val current = options.value ?: initial
+                if (reading is HeardReading) {
+                    publishHeard(heardInterpreter.interpret(reading, current))
+                    return@filter false
+                }
+                if (!current.hearing && heardInterpreter.shown != HeardStrum.None) publishHeard(heardInterpreter.reset(current))
+                true
+            }.map { reading ->
                 val current = options.value ?: initial
                 if (reading is StrumReading) {
                     elsewhere = true
@@ -693,6 +737,7 @@ class TunerViewModel(
             ratingWait?.cancel()
             ratingWait = null
             tunedNow.value = null
+            heardNow.value = HeardStrum.None
         }
         // Most frames look the same on screen as the last state sent: an equal Listening state in
         // silence, or a note whose readout and needle moved less than the screen shows. Dropping

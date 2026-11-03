@@ -199,6 +199,7 @@ class ChordDetector(
             chosen[best] = true
             result.noteMidi[result.noteCount] = best
             result.noteStrength[result.noteCount] = (bestSalience / first).toFloat()
+            result.noteSalience[result.noteCount] = bestSalience.toFloat()
             result.noteCount++
             salience(midiHz(best, a4)) // Fills partialPeak / partialResidual for the note found.
             cancel(best, a4)
@@ -374,6 +375,12 @@ class ChordDetector(
         private val HARMONIC_INTERVALS = BooleanArray(4 * 12 + 1) { d ->
             (2..LEFTOVER_HARMONICS).any { k -> kotlin.math.abs(12 * log2(k.toDouble()) - d) * 100 <= LEFTOVER_CENTS }
         }
+
+        /**
+         * Whether some harmonic 2..[LEFTOVER_HARMONICS] of a note lies within [LEFTOVER_CENTS] of the note
+         * [semitones] above it (12, 19, 24, 28, 31, 34, 36 …): a note there may be the lower one's partial.
+         */
+        fun isHarmonicInterval(semitones: Int): Boolean = semitones in HARMONIC_INTERVALS.indices && HARMONIC_INTERVALS[semitones]
 
         private const val MAX_PEAKS = 512
         private const val MAX_UNSURE = 3

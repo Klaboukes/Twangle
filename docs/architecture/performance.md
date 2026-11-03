@@ -7,6 +7,7 @@ Part of §4 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [Measured on the Galaxy S26](#measured-on-the-galaxy-s26)
 - [Low-note window on the Xiaomi 12X](#low-note-window-on-the-xiaomi-12x)
 - [Watch CPU and the native detector](#watch-cpu-and-the-native-detector)
+- [Strums heard beside the tuner](#strums-heard-beside-the-tuner)
 - [Drone on the Xiaomi 12X](#drone-on-the-xiaomi-12x)
 - [Meter looks](#meter-looks)
 - [Baseline Profile](#baseline-profile)
@@ -58,10 +59,25 @@ A C++ (NDK) YIN was planned (Phase 21) only if the Kotlin one proved too slow, f
 | Watch chain, 48 kHz (4096 window, 1024 hop) | 0.33 ms (1.6 %) | 2.2 ms (10.5 %) |
 | Phone: gate + detector + smoother, standard / low notes | 0.33 / 0.75 ms (1.5 / 3.5 %) | 2.3 / 5.2 ms (11 / 24 %) |
 | Strum check, standard / low notes, every 0.1 s | 2.6 / 5.2 ms (≈ 3 / 5 %) | 16 / 32 ms (16 / 32 %) |
+| Chord name, standard / low notes, every 0.1 s (2026-11-03) | 1.7 / 3.9 ms (≈ 2 / 4 %) | 12 ms (12 %) / – |
 
 The ×2 upsampling makes 16 kHz a little dearer than 48 kHz. Allowing for a slower watch core (up to ≈ 1.5×) the watch tuner takes about 15–20 % of one of its cores, with a reading ready in a few ms of each 21 ms hop and nothing else heavy running (the screen is the watch's real battery cost). On the phone the tuner runs on a big core at under 4 %.
 
 **Decision: no native detector.** Nothing comes near the budget: the dearest case, the low-note strum check pinned to a little core, still finishes in a third of its 0.1 s, and the phone's scheduler gives it a big core. A C++ YIN would at best halve these numbers while adding the NDK to the build, JNI, and a second detector to keep within ±1 cent. Look again only if a real watch drops readings or warms up, or a new feature runs YIN many times per frame; `scripts/dsp-phone-benchmark.sh` repeats these numbers in about a minute.
+
+## Strums heard beside the tuner
+2.0, Phase 74: `StrumWatcher` hears every chunk beside the tuner's `PitchChain` ([Strum check and metronome](strum-and-metronome.md), *Strums heard by themselves*), where 1.1 ran the strum check and the chord name only while their tool was on, and instead of the tuner. **Budget** (set with this step): on a big core, no more on average than the tuner's own chain while single strings are tuned, no more than 1.1's strum check (≈ 3 % of a core) while a strum rings, and no hop over a quarter of the hop (5.3 ms), so a reading is never late. A cheaper schedule was not needed: a sound decided as one string is not read further, and only a frame that may be open strings pays for `StrumDetector` as well.
+
+`scripts/dsp-phone-benchmark.sh` on the Xiaomi 12X, 2026-11-03, before (on `v2` as it was) and after. Before, the tuner ran its chain alone: **0.37 ms a hop** (`PitchChain 48 kHz STANDARD hop`, 1.7 % of a core), the strum detector 2.6 ms and a chord detection (new in the benchmark) 1.7 ms a frame, both unchanged after. After, the watcher's own cost per hop over 12 s of a quiet room with the sound named (PluckSynth strings, a 1024-sample hop, on top of the tuner's 0.37 ms):
+
+| Per hop (21.3 ms) | Big core: mean / p95 / worst hop | Little cores (`TASKSET=0f`): mean / worst hop |
+|---|---|---|
+| Room only | 0.007 / 0.009 / 0.02 ms | 0.03 / 0.23 ms |
+| A string every 2 s | **0.07** / 0.09 / 1.8 ms | 0.45 / 12 ms |
+| An open strum every 3 s (read every 0.1 s while it rings) | **0.49** / 2.8 / 4.5 ms | 2.9 / 29 ms |
+| A C chord every 3 s | 0.31 / 1.8 / 1.9 ms | 2.0 / 17 ms |
+
+So tuning string by string adds a fifth of the tuner's own cost (0.37 → 0.44 ms a hop, 2 % of a core), and a ringing strum 0.49 ms (0.86 ms, 4 %), the strum check's 2.6 ms every 0.1 s as in 1.1. The dearest hop, a strum's first frames, which run `ChordDetector` and `StrumDetector` (4.5 ms with the tuner's 0.37), stays inside the budget on a big core. Pinned to the little cores that hop takes 29 ms, more than one hop: the recorder's buffer holds several hops, so a reading is a few ms late once per strum, and the scheduler gives the busy DSP thread a big core anyway. On the JVM (`StrumDetectorBenchmark`, after) a strum detection takes 2.3 ms (341 ms frame) and 4.5 ms (683 ms); the detectors themselves are unchanged but for `ChordDetector` keeping each note's salience and `StrumListener` copying the frame before a strum once per sound.
 
 ## Drone on the Xiaomi 12X
 `scripts/dsp-phone-benchmark.sh` also times the drone (`DroneSynth`, [Notes, tunings and audio](notes-and-audio.md), *Drone*): one 10 ms chunk (480 samples at 48 kHz, what a player writes at a time) of each sound in its dearest case, root, fifth and octave an octave down (the pad then turns 870 phasors a sample), after the tanpura's six plucks are all ringing. Measured 2026-10-26.

@@ -46,6 +46,7 @@ class StrumListener(
     private val assembler = FrameAssembler(hopSize, hopSize, capacity = frameLength)
     private val hop = FloatArray(hopSize)
     private val frame = FloatArray(frameLength)
+    private val beforeStrum = FloatArray(frameLength)
 
     private val firstReadingAt = (ATTACK_SECONDS * sampleRate).roundToInt() + frameLength
     private val rereadSamples = (REREAD_SECONDS * sampleRate).roundToInt()
@@ -122,6 +123,16 @@ class StrumListener(
         readingsSinceStrum++
     }
 
+    /**
+     * Copies the [frameLength] samples that ended with the hop the latest strum was noticed in (oldest
+     * first; silence before the first strum or where less had been heard) into [out]: what rang just
+     * before it, so a string struck by the strum can be told from one already ringing.
+     */
+    fun readBeforeStrum(out: FloatArray) {
+        require(out.size >= frameLength) { "Output must hold $frameLength samples, was ${out.size}" }
+        System.arraycopy(beforeStrum, 0, out, 0, frameLength)
+    }
+
     /** Forgets all audio and strums, e.g. after the microphone restarts. */
     fun reset() {
         assembler.reset()
@@ -135,6 +146,7 @@ class StrumListener(
         readingsSinceStrum = 0
         strumCount = 0
         isFrameReady = false
+        beforeStrum.fill(0f)
     }
 
     private fun onHop() {
@@ -160,6 +172,8 @@ class StrumListener(
             // least ATTACK_SECONDS after the strum.
             samplesSinceStrum = 0L
             strumCount++
+            // The onset hop sits at the very end, where the window a detector puts over the frame is near 0.
+            assembler.copyLatest(beforeStrum, frameLength)
             readingsSinceStrum = 0
             nextReadingAt = firstReadingAt.toLong()
             isRinging = true

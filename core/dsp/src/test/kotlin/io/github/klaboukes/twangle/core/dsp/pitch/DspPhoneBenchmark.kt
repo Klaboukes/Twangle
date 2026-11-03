@@ -8,8 +8,12 @@ import io.github.klaboukes.twangle.core.dsp.metronome.OnsetTempoDetector
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
+import io.github.klaboukes.twangle.core.dsp.chord.ChordDetector
+import io.github.klaboukes.twangle.core.dsp.chord.ChordResult
 import io.github.klaboukes.twangle.core.dsp.strum.StrumDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumResult
+import io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher
+import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import java.io.File
 
@@ -18,7 +22,8 @@ import java.io.File
  * (8192-sample) windows at 48 kHz, of the strum detector (16 384 / 32 768 samples), of the
  * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz, of the frame chain every listener shares
  * (`PitchChain`) per hop, of one microphone chunk into the tempo
- * detector, and of a 10 ms chunk of each drone sound. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this class and runs it with
+ * detector, of a 10 ms chunk of each drone sound, of the chord detector, and of the strum and chord analysis
+ * beside the tuner ([StrumWatcher], 2.0) per hop of plucks, strums and chords as a player gives them. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this class and runs it with
  * `dalvikvm` on the connected phone: the same ART runtime and JIT as the app, without a debuggable
  * build's slowdown. Plain `main`, so it also runs on the JVM.
  *
@@ -189,7 +194,58 @@ object DspPhoneBenchmark {
                     result.present[0]
                 },
             )
+            val chords = ChordDetector(48_000, n)
+            val chordResult = ChordResult()
+            report("$range chord detect ($n)", time(STRUM_WARM_UP, STRUM_MEASURED) { _ -> chords.detect(strum, chordResult) == null })
         }
+
+        // The strum and chord analysis beside the tuner (2.0, Phase 74): per hop of a stream, so the CPU figure is
+        // the average a hop costs and p95 / the worst hop show a detection's hop. Each stream is 12 s, looped.
+        val guitar = floatArrayOf(82.41f, 110f, 146.83f, 196f, 246.94f, 329.63f)
+        val cMajor = floatArrayOf(130.81f, 164.81f, 196f, 261.63f, 329.63f)
+        val streams = listOf(
+            "room only" to stream(emptyList()),
+            "a string every 2 s" to stream(guitar.indices.map { 0.5 + 2.0 * it to floatArrayOf(guitar[it]) }),
+            "an open strum every 3 s" to stream((0 until 4).map { 0.5 + 3.0 * it to guitar }),
+            "a C chord every 3 s" to stream((0 until 4).map { 0.5 + 3.0 * it to cMajor }),
+        )
+        for ((name, input) in streams) {
+            val watcher = StrumWatcher(48_000)
+            watcher.start(guitar, 440f, nameChords = true)
+            val hops = input.size / 1024
+            var worst = 0L
+            val stats = time(hops, 2 * hops) { i ->
+                val start = System.nanoTime()
+                val from = (i % hops) * 1024
+                var pos = 0
+                var events = 0
+                while (pos < 1024) {
+                    pos += watcher.push(input, from + pos, 1024 - pos)
+                    while (watcher.next() != StrumWatcher.Event.NOTHING) events++
+                }
+                if (i >= hops) worst = maxOf(worst, System.nanoTime() - start)
+                events > 0
+            }
+            report("watcher hop, $name", stats)
+            println("BENCHMARK %-30s worst hop %.3f ms".format("watcher hop, $name", worst / 1e6))
+        }
+    }
+
+    // 12 s of quiet room (≈ −70 dBFS) with strums of [sounds]' strings (15 ms apart) starting at their seconds.
+    private fun stream(sounds: List<Pair<Double, FloatArray>>): FloatArray {
+        val out = TestSignals.noise(12 * 48_000, rms = 3e-4f, seed = 3L)
+        val synth = PluckSynth(48_000, durationSeconds = 3f)
+        val tone = FloatArray(3 * 48_000)
+        for ((at, strings) in sounds) {
+            for ((i, hz) in strings.withIndex()) {
+                tone.fill(0f)
+                synth.start(hz)
+                synth.render(tone)
+                val from = ((at + 0.015 * i) * 48_000).toInt()
+                for (n in tone.indices) if (from + n < out.size) out[from + n] += 0.15f * tone[n]
+            }
+        }
+        return out
     }
 
     private class Stats(val medianMs: Double, val p95Ms: Double, val cpuMsPerFrame: Double)

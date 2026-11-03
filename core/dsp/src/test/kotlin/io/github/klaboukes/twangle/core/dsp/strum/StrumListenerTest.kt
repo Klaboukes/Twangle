@@ -169,6 +169,21 @@ class StrumListenerTest {
         (20 * log10(sqrt(frame.sumOf { it.toDouble() * it } / frame.size))).toFloat()
 
     @Test
+    fun `the frame before a strum is what rang before it`() {
+        val before = FloatArray(frameLength)
+        listener.readBeforeStrum(before)
+        assertTrue("silence before any strum", before.all { it == 0f })
+        listen(take(2.5, 1.0 to standard))
+        listener.readBeforeStrum(before)
+        // The room (≈ −70 dBFS) and the strum's first hop at the very end; without that hop, the room alone.
+        assertEquals(-70.5f, levelDbfs(before.copyOf(frameLength - hop)), 1f)
+        assertTrue(levelDbfs(before.copyOfRange(frameLength - hop, frameLength)) > -45f)
+        listener.reset()
+        listener.readBeforeStrum(before)
+        assertTrue("silence after a reset", before.all { it == 0f })
+    }
+
+    @Test
     fun `chunk size changes nothing`() {
         val input = take(2.5, 0.5 to standard)
         val byHop = listen(input).map { it.readyAt }

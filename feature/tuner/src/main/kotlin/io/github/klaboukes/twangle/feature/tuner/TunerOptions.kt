@@ -40,6 +40,13 @@ data class TunerOptions(
     val chordName: Boolean = false,
     /** How the picked instrument's strings sound when a reference tone is played. */
     val voice: StringVoice = StringVoices.DEFAULT,
+    /**
+     * Whether a strum of the open strings is checked by itself, beside the tuner (2.0, Phase 74): the strum check's
+     * switch (`ToolSwitches.strumCheck`, its brake) on an instrument it is offered for; only in guitar mode ([heardStrings]).
+     */
+    val strumsHeard: Boolean = false,
+    /** Whether a fretted chord is named by itself, beside the tuner: the chord name's switch (its brake) on an instrument it is offered for. */
+    val chordsHeard: Boolean = false,
 ) {
     /** Strum check runs: switched on, and in guitar mode, where there are strings to check. */
     val strumChecking: Boolean get() = strumCheck && mode == TunerMode.AUTO
@@ -49,6 +56,15 @@ data class TunerOptions(
 
     /** The chord name runs: switched on, and in guitar mode. */
     val chordNaming: Boolean get() = chordName && mode == TunerMode.AUTO
+
+    /** The open strings a strum is checked against beside the tuner: [stringHz] in guitar mode while [strumsHeard], else null. */
+    val heardStrings: FloatArray? get() = if (strumsHeard && mode == TunerMode.AUTO) stringHz else null
+
+    /**
+     * The strum and chord analysis runs beside the tuner: something to listen for ([heardStrings], [chordsHeard]) and
+     * none of 1.1's tools on (strum check and the chord name take the microphone; the 12th-fret check plucks one string).
+     */
+    val hearing: Boolean get() = (heardStrings != null || chordsHeard) && !strumChecking && !chordNaming && !intonationChecking
 
     /**
      * The open strings' frequencies at [a4Hz], in the tuning's order: what the strum check listens
