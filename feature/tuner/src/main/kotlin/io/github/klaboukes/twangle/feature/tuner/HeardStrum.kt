@@ -253,8 +253,11 @@ class HeardShown(private val frameSeconds: Float) {
             state.hint == TunerHint.TUNE_DOWN -> StrumVerdict.SHARP
             else -> return
         }
-        if (own[string]?.verdict == verdict) return
-        own[string] = StrumString(verdict, cents = state.cents.roundToInt().toFloat())
+        // The panel's column moves with the string as it is tuned: a new verdict or a new whole cent.
+        val cents = state.cents.roundToInt().toFloat()
+        val before = own[string]
+        if (before != null && before.verdict == verdict && before.cents == cents) return
+        own[string] = StrumString(verdict, cents = cents)
         show()
     }
 

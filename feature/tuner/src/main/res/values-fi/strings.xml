@@ -155,6 +155,9 @@
     <string name="tuner_delete_tuning_cancel">Peruuta</string>
     <string name="tuner_strum_check">Lyöntitesti</string>
     <string name="tuner_strum_waiting">Soita kaikki avoimet kielet kerralla</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, ei vielä soitettu</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, epävarmempi</string>
     <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d/%2$d vireessä</item>

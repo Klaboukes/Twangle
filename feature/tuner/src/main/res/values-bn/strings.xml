@@ -145,6 +145,9 @@
     <string name="tuner_delete_tuning_cancel">বাতিল</string>
     <string name="tuner_strum_check">স্ট্রাম চেক</string>
     <string name="tuner_strum_waiting">সব খোলা তার একসাথে স্ট্রাম করুন</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, এখনো স্ট্রাম হয়নি</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, শোনা যায়নি</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, কম নিশ্চিত</string>
     <string name="tuner_strum_all_in_tune">সব তার সুরে আছে</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%2$dটির মধ্যে %1$dটি সুরে</item>

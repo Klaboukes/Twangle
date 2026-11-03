@@ -150,6 +150,9 @@
     <string name="tuner_delete_tuning_cancel">取消</string>
     <string name="tuner_strum_check">扫弦检查</string>
     <string name="tuner_strum_waiting">扫一下所有空弦</string>
+    <string name="tuner_strum_spoken_waiting">%1$s，还没扫弦</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s，没听到</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s，不太确定</string>
     <string name="tuner_strum_all_in_tune">所有弦都已调准</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%2$d 根中 %1$d 根已调准</item>

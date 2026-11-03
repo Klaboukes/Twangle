@@ -153,6 +153,9 @@
     <string name="tuner_delete_tuning_cancel">Avbryt</string>
     <string name="tuner_strum_check">Strumsjekk</string>
     <string name="tuner_strum_waiting">Slå an alle de åpne strengene</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, ikke slått an ennå</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, ikke hørt</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, mindre sikker</string>
     <string name="tuner_strum_all_in_tune">Alle strengene er stemt</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d av %2$d stemt</item>

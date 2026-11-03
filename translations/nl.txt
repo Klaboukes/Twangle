@@ -461,9 +461,13 @@ feature/tuner tuner_string_tuned 443b0946
 feature/tuner tuner_string_unlock ac78bbaf
 feature/tuner tuner_strum_all_in_tune 42d1c72b
 feature/tuner tuner_strum_check 3def8cd5
+feature/tuner tuner_strum_close a6c45ff7
 feature/tuner tuner_strum_count fe322fd7
 feature/tuner tuner_strum_not_heard 882de4e9
+feature/tuner tuner_strum_spoken_less_sure e604de2d
+feature/tuner tuner_strum_spoken_not_heard d80d4133
 feature/tuner tuner_strum_spoken_string 75e53fce
+feature/tuner tuner_strum_spoken_waiting c1ce716d
 feature/tuner tuner_strum_waiting 603241b9
 feature/tuner tuner_tip_too_loud e26a0e0e
 feature/tuner tuner_tip_too_noisy ddecdb56

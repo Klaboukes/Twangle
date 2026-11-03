@@ -151,6 +151,9 @@
     <string name="tuner_delete_tuning_cancel">Скасувати</string>
     <string name="tuner_strum_check">Перевірка струн</string>
     <string name="tuner_strum_waiting">Проведи по всіх відкритих струнах</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, ще не звучала</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, не чути</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, менш певно</string>
     <string name="tuner_strum_all_in_tune">Усі струни налаштовано</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d з %2$d налаштована</item>

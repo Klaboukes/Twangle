@@ -414,6 +414,13 @@ class TunerViewModel(
         strumOn.value = on
     }
 
+    /** The strum check's panel closed (its × or Back): the button off and the strum shown gone, the tuner's own lens back. */
+    fun closeStrumCheck() {
+        strumOn.value = false
+        // The next listening step sees a new turn and clears what the strum showed.
+        strumAttempt.update { it + 1 }
+    }
+
     /** The last [closeToolsOnRequest] count acted on. */
     private var closedToolsRequest = 0
 

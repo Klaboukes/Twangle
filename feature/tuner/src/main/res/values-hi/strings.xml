@@ -153,6 +153,9 @@
     <string name="tuner_delete_tuning_cancel">रद्द करें</string>
     <string name="tuner_strum_check">स्ट्रम चेक</string>
     <string name="tuner_strum_waiting">सभी खुले तार एक साथ स्ट्रम करें</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, अभी स्ट्रम नहीं हुआ</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, सुनाई नहीं दिया</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, कम पक्का</string>
     <string name="tuner_strum_all_in_tune">सभी तार सुर में हैं</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%2$d में से %1$d सुर में</item>

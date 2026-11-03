@@ -156,6 +156,9 @@
     <string name="tuner_delete_tuning_cancel">Cancelar</string>
     <string name="tuner_strum_check">Prueba de rasgueo</string>
     <string name="tuner_strum_waiting">Rasguea todas las cuerdas al aire</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, aún sin rasguear</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, no se oyó</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, menos seguro</string>
     <string name="tuner_strum_all_in_tune">Todas las cuerdas afinadas</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d de %2$d afinada</item>

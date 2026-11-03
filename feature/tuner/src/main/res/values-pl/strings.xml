@@ -160,6 +160,9 @@
     <string name="tuner_delete_tuning_cancel">Anuluj</string>
     <string name="tuner_strum_check">Test strun</string>
     <string name="tuner_strum_waiting">Uderz we wszystkie puste struny</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, jeszcze nie zagrana</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, odczyt niepewny</string>
     <string name="tuner_strum_all_in_tune">Wszystkie struny nastrojone</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">Nastrojona: %1$d z %2$d</item>

@@ -150,6 +150,9 @@
     <string name="tuner_delete_tuning_cancel">キャンセル</string>
     <string name="tuner_strum_check">ストロークチェック</string>
     <string name="tuner_strum_waiting">開放弦を全部まとめて弾いてください</string>
+    <string name="tuner_strum_spoken_waiting">%1$s、まだ弾いていません</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s、聞き取れず</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s、やや不確か</string>
     <string name="tuner_strum_all_in_tune">すべての弦が合っています</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%2$d 本中 %1$d 本が合っています</item>

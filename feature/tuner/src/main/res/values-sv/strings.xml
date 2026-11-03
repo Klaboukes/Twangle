@@ -153,6 +153,9 @@
     <string name="tuner_delete_tuning_cancel">Avbryt</string>
     <string name="tuner_strum_check">Anslagstest</string>
     <string name="tuner_strum_waiting">Slå an alla lösa strängar</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, inte anslagen än</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, hördes inte</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, mindre säker</string>
     <string name="tuner_strum_all_in_tune">Alla strängar är stämda</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d av %2$d stämd</item>

@@ -660,11 +660,16 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
  * The 12th-fret check's way out (2.0, Phase 71; owner, 2026-11-03): a small × in the panel's top end corner, the
  * style's button ([StyleButton]) with a [CLOSE_FACE] outline in a 48 dp touch target. A tap ends the check and the
  * tuner is back; Back does the same. TalkBack hears "Close the 12th-fret check"; a long-press shows it in a tooltip.
+ * The strum check's panel has the same × with its own [label] and [tag].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun IntonationCloseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val label = stringResource(R.string.tuner_intonation_close)
+internal fun IntonationCloseButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    label: String = stringResource(R.string.tuner_intonation_close),
+    tag: String = TunerTestTags.INTONATION_CLOSE,
+) {
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below),
         tooltip = { PlainTooltip { Text(label) } },
@@ -675,7 +680,7 @@ internal fun IntonationCloseButton(onClick: () -> Unit, modifier: Modifier = Mod
             onClick = onClick,
             label = label,
             face = CLOSE_FACE,
-            faceModifier = Modifier.testTag(TunerTestTags.INTONATION_CLOSE),
+            faceModifier = Modifier.testTag(tag),
         ) {
             Icon(painterResource(R.drawable.ic_close), contentDescription = null, modifier = Modifier.size(CLOSE_ICON_SIZE))
         }

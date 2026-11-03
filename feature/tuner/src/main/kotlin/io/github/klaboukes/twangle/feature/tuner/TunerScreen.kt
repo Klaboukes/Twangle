@@ -141,6 +141,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.MARK_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.StrumMark
 import io.github.klaboukes.twangle.feature.tuner.components.chordWords
 import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckButton
+import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
 import io.github.klaboukes.twangle.feature.tuner.components.strumCountText
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationPanel
@@ -329,6 +330,7 @@ fun TunerScreen(
                     onIntonationCheckChange = viewModel::setIntonationCheck,
                     strumCheck = strumCheck,
                     onStrumCheckChange = viewModel::setStrumCheck,
+                    onStrumCheckClose = viewModel::closeStrumCheck,
                     onCheckAgain = viewModel::checkIntonationAgain,
                     onNextString = viewModel::checkNextString,
                     lensLook = lensLook,
@@ -555,6 +557,11 @@ object TunerTestTags {
     /** The strum check's button above the pegs, at their end (2.0, Phase 74, after the owner's guitar check). */
     const val STRUM_BUTTON = "tuner_strum_button"
 
+    /** The strum check's panel in the lens's place, its × and string [index]'s column (1.1's panel, the owner's pick of 2026-11-03). */
+    const val STRUM_PANEL = "tuner_strum_panel"
+    const val STRUM_CLOSE = "tuner_strum_close"
+    fun strumString(index: Int): String = "tuner_strum_string_$index"
+
     /** The 12th-fret check's way in (2.0, Phase 71): the picker sheet's last row in guitar mode. */
     const val INTONATION_ROW = "tuner_intonation_row"
 
@@ -708,6 +715,7 @@ fun TunerContent(
     onIntonationCheckChange: ((Boolean) -> Unit)? = null,
     strumCheck: Boolean = false,
     onStrumCheckChange: ((Boolean) -> Unit)? = null,
+    onStrumCheckClose: (() -> Unit)? = null,
     onCheckAgain: () -> Unit = {},
     onNextString: () -> Unit = {},
     lensLook: LensLook = LensLook.DEFAULT,
@@ -772,9 +780,21 @@ fun TunerContent(
     // What the tuner heard besides one string (Phase 74): a strum's verdicts above the pegs, a chord in the ruler's place.
     val strumShown = (heard as? HeardStrum.OpenStrings)?.check?.takeIf { it.strings.isNotEmpty() && it.tuning == shownTuning?.tuning && mode == TunerMode.AUTO }
     val chordShown = (heard as? HeardStrum.FrettedChord)?.name?.takeIf { it.chord != null && shownTuning != null }
+    // The strum check's panel in the lens's place (1.1's columns, the owner's pick of 2026-11-03): from the button's tap,
+    // empty until the strum, then its strings, the ones played on their own after it following the tuner.
+    val strumPanel = shownTuning?.takeIf { mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening) }?.let { shown ->
+        strumShown ?: TunerUiState.StrumCheck(
+            tuning = shown.tuning,
+            notation = shown.notation,
+            phase = StrumPhase.WAITING,
+            strings = emptyList(),
+            toleranceCents = StrumCheckInterpreter.toleranceFor(inTunePrecision),
+        ).takeIf { strumCheck }
+    }
     // wide: the pegs in the wide layout's one row (Phase 73).
     val guitarSlotWith = @Composable { wide: Boolean ->
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, strumShown?.strings)
+        // No marks over the pegs: the panel's columns show the strum (the marks stay for the other layouts' tests).
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, null)
         // The strum check's button above the pegs at their end (beside them, after the last, on its side).
         // Not in Any note, where the pegs are measured but not shown (the row keeps its height without it).
         val strumButton = onStrumCheckChange?.takeIf { TunerTool.STRUM_CHECK in tunerTools && mode == TunerMode.AUTO }?.let { onStrum ->
@@ -791,6 +811,9 @@ fun TunerContent(
         if (state is TunerUiState.IntonationCheck) {
             // The pegs below pick the string; the panel's one control is its ×, which ends the check.
             IntonationPanel(state, Modifier.zIndex(-1f), onClose = onIntonationCheckChange?.let { { it(false) } })
+        } else if (strumPanel != null) {
+            // The strum check takes the lens's place; its × closes it, as the 12th-fret check's does.
+            StrumPanel(strumPanel, Modifier.zIndex(-1f), onClose = onStrumCheckClose)
         } else {
             Lens(
                 look = lensLook,
@@ -861,7 +884,8 @@ fun TunerContent(
     // The ruler over the lens (2.0, Phase 71) while the tuner reads a note or waits for one: it names the note
     // (the big note went in the phase's last step). A tool's panel in the lens's place has none.
     val lastHeard = remember { LastHeardNote() }
-    val rulerShown = rulerFor(state, lastHeard)
+    // None over the strum check's panel either: it names its strings itself.
+    val rulerShown = rulerFor(state, lastHeard)?.takeIf { strumPanel == null }
     val rulerWith = @Composable { bars: Boolean, edgeClear: Dp ->
         val chord = chordShown?.chord
         if (rulerShown != null && chord != null) {
@@ -897,7 +921,7 @@ fun TunerContent(
     }
     val error = (state as? TunerUiState.Error)?.reason
     // The plain tuner's lens; with a tool on, its panel takes the lens's place.
-    val plainMeter = state is TunerUiState.Detected || state is TunerUiState.Listening
+    val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) && strumPanel == null
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
         val twoPane = @Composable {
@@ -945,8 +969,8 @@ fun TunerContent(
                 string = if (focus) ({ FocusString(state) }) else null,
             )
         }
-        // The 12th-fret check's panel is laid out as in 1.1 on its side.
-        val toolPanel = state is TunerUiState.IntonationCheck
+        // The 12th-fret check's and the strum check's panels are laid out as in 1.1 on its side.
+        val toolPanel = state is TunerUiState.IntonationCheck || strumPanel != null
         val controls = @Composable {
             when (tunerLayoutFor(maxWidth.value, maxHeight.value, focusMode = false, toolPanel = toolPanel)) {
                 TunerLayout.WIDE -> wide(false)
@@ -1020,6 +1044,8 @@ fun TunerContent(
     }
     // Back ends the 12th-fret check, as its × does, before it leaves the app (composed last, so it is asked first).
     if (intonationCheck && onIntonationCheckChange != null) BackHandler { onIntonationCheckChange(false) }
+    // Back closes the strum check's panel too, as its × does.
+    if (strumPanel != null && onStrumCheckClose != null) BackHandler { onStrumCheckClose() }
     // Only over the tuner itself, not over an error (it closes then) or the moment before the microphone is heard.
     if (pickerOpen && state is TunerUiState.Error) LaunchedEffect(Unit) { onPickerOpenChange(false) }
     if (pickerOpen && shownTuning != null) {

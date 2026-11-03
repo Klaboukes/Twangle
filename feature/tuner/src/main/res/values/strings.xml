@@ -301,6 +301,14 @@
     <string name="tuner_strum_check">Strum check</string>
     <!-- Strum check, in the word's place under the meter after its button is tapped, before the strum: strum all strings open (unfretted) at once. -->
     <string name="tuner_strum_waiting">Strum all the open strings</string>
+    <!-- TalkBack, one string of the strum check that the strum didn't let the tuner hear. %1$s is the string ("A 2"). -->
+    <string name="tuner_strum_spoken_not_heard">%1$s, not heard</string>
+    <!-- TalkBack, one string of the strum check before any strum. %1$s is the string ("A 2"). -->
+    <string name="tuner_strum_spoken_waiting">%1$s, not strummed yet</string>
+    <!-- A string read from sounds that overlap another string's, so the reading is less certain. -->
+    <string name="tuner_strum_spoken_less_sure">%1$s, less sure</string>
+    <!-- TalkBack and the tooltip of the small × in the strum check's panel's corner: closes the panel, the tuner's own meter comes back. -->
+    <string name="tuner_strum_close">Close the strum check</string>
     <!-- After the player strums all the open strings at once, in the word's place under the meter: every string is in tune. -->
     <string name="tuner_strum_all_in_tune">All strings in tune</string>
     <!-- After the player strums all the open strings at once, in the word's place under the meter: how many strings are in tune out of how many there are, e.g. "4 of 6 in tune". %1$d strings in tune, %2$d strings in all. Short. -->

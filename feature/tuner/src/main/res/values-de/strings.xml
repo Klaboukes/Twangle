@@ -154,6 +154,9 @@
     <string name="tuner_delete_tuning_cancel">Abbrechen</string>
     <string name="tuner_strum_check">Anschlag-Check</string>
     <string name="tuner_strum_waiting">Schlag alle leeren Saiten an</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, noch nicht angeschlagen</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, nicht gehört</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, weniger sicher</string>
     <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d von %2$d gestimmt</item>

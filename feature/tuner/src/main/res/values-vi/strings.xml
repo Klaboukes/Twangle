@@ -150,6 +150,9 @@
     <string name="tuner_delete_tuning_cancel">Hủy</string>
     <string name="tuner_strum_check">Quét kiểm tra</string>
     <string name="tuner_strum_waiting">Quét tất cả dây buông</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, chưa quét</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, chưa nghe được</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, chưa chắc lắm</string>
     <string name="tuner_strum_all_in_tune">Tất cả dây đều chuẩn</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%1$d trên %2$d dây chuẩn</item>

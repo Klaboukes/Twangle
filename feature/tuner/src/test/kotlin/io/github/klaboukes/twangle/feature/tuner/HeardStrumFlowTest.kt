@@ -225,6 +225,18 @@ class HeardStrumFlowTest {
     }
 
     @Test
+    fun `the panel's close turns the button off and clears the strum shown`() = runTest(dispatcher) {
+        val vm = checking(openStrum + FloatArray(3 * SyntheticStrum.SAMPLE_RATE))
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(1_500)
+        assertTrue(vm.heardStrum.value is HeardStrum.OpenStrings)
+        vm.closeStrumCheck()
+        assertFalse(vm.strumCheck.value)
+        advanceTimeBy(100)
+        assertSame(HeardStrum.None, vm.heardStrum.value)
+    }
+
+    @Test
     fun `one string after the button shows nothing and the button waits on, a tap turns it off`() = runTest(dispatcher) {
         // Quiet after it, so the microphone's sound doesn't end (that turns the button off too).
         val vm = checking(aString + FloatArray(3 * SyntheticStrum.SAMPLE_RATE))

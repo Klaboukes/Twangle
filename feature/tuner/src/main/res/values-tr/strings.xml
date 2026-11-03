@@ -154,6 +154,9 @@
     <string name="tuner_delete_tuning_cancel">İptal</string>
     <string name="tuner_strum_check">Tel kontrolü</string>
     <string name="tuner_strum_waiting">Tüm boş tellere birlikte vur</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, henüz çalınmadı</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, duyulmadı</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, daha az kesin</string>
     <string name="tuner_strum_all_in_tune">Tüm teller akortlu</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d / %2$d akortlu</item>

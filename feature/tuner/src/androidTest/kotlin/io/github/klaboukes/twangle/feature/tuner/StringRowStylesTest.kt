@@ -391,12 +391,12 @@ class StringRowStylesTest {
     }
 
     /**
-     * After a strum of the open strings (2.0, Phase 74) each string's mark stands centred over its peg, wholly shown in
-     * the window, upright and on its side (the wide layout), for the rows that differ (4 to 8 strings, the banjo's short
-     * string apart), at normal and at 2x text; it never reaches into its peg.
+     * After a strum of the open strings (2.0, Phase 74; the strum check's panel since the owner's pick of 2026-11-03)
+     * the panel in the lens's place has a column per peg, in the pegs' order, each wholly shown, upright and on its
+     * side, for the rows that differ (4 to 8 strings, the banjo's short string apart), at normal and at 2x text.
      */
     @Test
-    fun theStrumMarksStandOverEveryInstrumentsPegs() {
+    fun theStrumPanelHasAColumnForEveryInstrumentsPeg() {
         show(listening = true, focusButton = true)
         val verdicts = listOf(StrumVerdict.FLAT, StrumVerdict.IN_TUNE, StrumVerdict.SHARP, StrumVerdict.NOT_HEARD)
         for (scale in listOf(1f, 2f)) {
@@ -412,16 +412,13 @@ class StringRowStylesTest {
                     compose.waitForIdle()
                     val case = "$layout ${tuning.id} at ${scale}x"
                     val labels = labels(tuning, Notation.SHARPS)
+                    var before = Float.NEGATIVE_INFINITY
                     labels.forEachIndexed { index, label ->
-                        val mark = compose.onNodeWithTag(TunerTestTags.strumMark(index), useUnmergedTree = true)
-                        assertWhollyShown(mark, "$case: the mark over $label", scroll = true)
-                        val markNode = mark.fetchSemanticsNode()
-                        val peg = compose.onNodeWithText(label).fetchSemanticsNode()
-                        val markMiddle = markNode.positionInRoot.x + markNode.size.width / 2f
-                        val pegMiddle = peg.positionInRoot.x + peg.size.width / 2f
-                        assertEquals("$case: the mark over $label centred", pegMiddle, markMiddle, 2f)
-                        val markBottom = markNode.positionInRoot.y + markNode.size.height
-                        if (markBottom > peg.positionInRoot.y + 1f) fail("$case: the mark over $label ends at $markBottom px, its peg starts at ${peg.positionInRoot.y}")
+                        val column = compose.onNodeWithTag(TunerTestTags.strumString(index), useUnmergedTree = true)
+                        assertWhollyShown(column, "$case: the column of $label", scroll = true)
+                        val middle = column.fetchSemanticsNode().let { it.positionInRoot.x + it.size.width / 2f }
+                        if (middle <= before) fail("$case: the column of $label isn't after the one before")
+                        before = middle
                     }
                 }
             }

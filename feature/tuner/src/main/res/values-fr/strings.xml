@@ -157,6 +157,9 @@
     <string name="tuner_delete_tuning_cancel">Annuler</string>
     <string name="tuner_strum_check">Test en grattant</string>
     <string name="tuner_strum_waiting">Grattez toutes les cordes à vide</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, pas encore grattée</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, pas entendue</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, moins fiable</string>
     <string name="tuner_strum_all_in_tune">Toutes les cordes sont justes</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d sur %2$d juste</item>
