@@ -56,8 +56,11 @@ object StoreSounds {
         depth * VIBRATO_CENTS * sin(2.0 * PI * VIBRATO_HZ * (t - steadySeconds))
     }
 
-    /** A downstroke over [midi] (low to high), strings 15 ms apart, [seconds] long, through the app's own pluck synthesis. */
-    fun strum(midi: IntArray, seconds: Double): FloatArray {
+    /**
+     * A downstroke over [midi] (low to high), strings 15 ms apart, [seconds] long, through the app's own pluck synthesis,
+     * each string [cents] off its note (none by default).
+     */
+    fun strum(midi: IntArray, seconds: Double, cents: DoubleArray = DoubleArray(midi.size)): FloatArray {
         val length = (seconds * SAMPLE_RATE).toInt()
         val out = FloatArray(length)
         val tone = FloatArray(length)
@@ -65,7 +68,7 @@ object StoreSounds {
         midi.forEachIndexed { i, m ->
             val delay = (i * STRUM_SPREAD_SECONDS * SAMPLE_RATE).toInt()
             tone.fill(0f)
-            synth.start(hz(m).toFloat())
+            synth.start(hz(m, cents[i]).toFloat())
             synth.render(tone, delay, length - delay)
             for (n in 0 until length) out[n] += tone[n]
         }
@@ -78,6 +81,12 @@ object StoreSounds {
     val C_MAJOR = intArrayOf(48, 52, 55, 60, 64)
     val G_MAJOR = intArrayOf(43, 47, 50, 55, 59, 67)
     val A_MINOR = intArrayOf(45, 52, 57, 60, 64)
+
+    /** The guitar's open strings in standard tuning, E2 A2 D3 G3 B3 E4, as MIDI notes low to high. */
+    val OPEN_STRINGS = intArrayOf(40, 45, 50, 55, 59, 64)
+
+    /** How far off each open string is, in cents, in the strum's picture: the A 15 flat, the G 14 sharp, the rest in tune. */
+    val OPEN_STRINGS_OFF = doubleArrayOf(0.0, -15.0, 0.0, 14.0, 0.0, 0.0)
 
     /** MIDI notes: the low E string, the A string, and the A above middle C. */
     const val LOW_E = 40

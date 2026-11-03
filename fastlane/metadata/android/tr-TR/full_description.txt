@@ -21,7 +21,7 @@ PRATİK
 • Klavye üzerinde gamlar: majör, minör, pentatonik ve blues, her notanın adıyla
 • Kapo: şarkının tonunu ve sevdiğin basışları seç, kaponun nereye takılacağını gör
 • Kulak eğitimi: Duyduğunu çal (duyduğun notaları kendi enstrümanında çal), Aralıklar ve Akor türü
-• Metronom: yuvarlak tempo kadranında dakikada 30 ile 250 vuruş, dokunarak tempo ile
+• Metronom: kaydırdığın tempo cetvelinde dakikada 30 ile 250 vuruş, dokunarak tempo ile
 • 2/4, 3/4, 4/4, 5/4, 6/8 ve 7/8, ilk vuruşta vurgu ve takip etmek için ışıklar
 • Kendi müziğinin ya da altyapının üzerinden duyulur ve vuruşta titreşebilir
 • Vuruşlar arası: sekizlik, üçleme veya on altılık ek klikler
@@ -36,7 +36,8 @@ HERKES İÇİN
 
 SANA GÖRE
 • Açık, koyu ya da telefonuna göre; Android 12 ve sonrasında duvar kâğıdının renkleriyle
-• Odak modu: yana çevrilmiş telefonda tek büyük gösterge, uzaktan kolayca okunur
+• Seçebileceğin üç gösterge: ses izi, ışık yayı ya da stroboskop
+• Odak modu: yana çevrilmiş telefonda tam ekran akort aleti, uzaktan kolayca okunur
 
 AYRICA
 • Akort ekranını tek dokunuşla açan bir ana ekran widget'ı

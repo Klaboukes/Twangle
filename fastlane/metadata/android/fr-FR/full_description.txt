@@ -1,6 +1,6 @@
 Twangle est un accordeur de guitare, aussi pour la basse, le ukulélé, le violon et bien plus, et toutes ses fonctions sont gratuites. Pas de pub, pas de compte, pas d'achats intégrés, pas de pistage. Twangle n'a même pas l'autorisation d'accéder à Internet : le son de votre micro est analysé en direct sur votre téléphone, jamais enregistré ni envoyé.
 
-Twangle est simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Plus haut » ou « Plus bas » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo, entraîne votre oreille et garde le tempo.
+Twangle est simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Tendez » ou « Détendez » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo, entraîne votre oreille et garde le tempo.
 
 ACCORDEZ TOUS VOS INSTRUMENTS
 • Guitare (6, 7, 8 ou 12 cordes), basse (4 ou 5 cordes), ukulélé (baryton aussi), violon, alto, violoncelle, mandoline et banjo 5 cordes
@@ -21,14 +21,14 @@ PRATIQUE
 • Gammes sur le manche : majeure, mineure, pentatonique et blues, chaque note nommée
 • Capo : choisissez la tonalité du morceau et les doigtés que vous aimez, et voyez où placer le capo
 • Oreille musicale : Rejouer (jouez sur votre instrument les notes entendues), Intervalles et Type d'accord
-• Métronome : de 30 à 250 battements par minute sur un cadran de tempo rond, avec tap tempo
+• Métronome : de 30 à 250 battements par minute sur une règle de tempo à faire glisser, avec tap tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 et 7/8, avec un accent sur le premier temps et des voyants pour suivre
 • S'entend par-dessus votre musique ou votre backing track, et peut vibrer sur le temps
 • Entre les temps : des clics en croches, triolets ou doubles croches
 • Entraîneur de tempo : le tempo monte pas à pas jusqu'à votre objectif
 
 POUR TOUT LE MONDE
-• Fonctionne avec TalkBack : Twangle dit la note et son écart (« Mi 2, 12 cents trop bas, plus haut »), lit les diagrammes d'accords et les gammes corde par corde, chaque bouton a un nom clair, et il ne vous submerge jamais de paroles
+• Fonctionne avec TalkBack : Twangle dit la note et son écart (« Mi 2, 12 cents trop bas, tendez »), lit les diagrammes d'accords et les gammes corde par corde, chaque bouton a un nom clair, et il ne vous submerge jamais de paroles
 • Chaque écran fonctionne avec un texte agrandi, jusqu'à deux fois la taille normale
 • Une courte vibration quand une corde est juste, pour la sentir aussi
 • En 25 langues : français, allemand, anglais, arabe, bengali, chinois (simplifié et traditionnel), coréen, danois, espagnol, finnois, hindi, indonésien, italien, japonais, néerlandais, norvégien, polonais, portugais, russe, suédois, thaï, turc, ukrainien et vietnamien
@@ -36,7 +36,8 @@ POUR TOUT LE MONDE
 
 À VOTRE GOÛT
 • Clair, sombre ou selon le téléphone, avec les couleurs de votre fond d'écran sur Android 12 et plus
-• Mode concentration : un seul grand cadran sur le téléphone à l'horizontale, facile à lire de loin
+• Trois affichages au choix : la trace, l'arc lumineux ou le stroboscope
+• Mode concentration : l'accordeur en plein écran sur le téléphone à l'horizontale, facile à lire de loin
 
 AUSSI
 • Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une seule touche

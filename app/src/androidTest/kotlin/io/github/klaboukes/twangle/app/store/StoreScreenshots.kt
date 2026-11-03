@@ -85,7 +85,7 @@ class StoreScreenshots(private val shot: Shot) {
      * screens fit whole).
      */
     enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
-        /** The meter, the note and "In tune". */
+        /** The chip, the ruler's A, the lens's green trail and "In tune" (the pegs left out). */
         IN_TUNE(dark = false, focus = 0f..0.62f),
 
         /**
@@ -95,17 +95,20 @@ class StoreScreenshots(private val shot: Shot) {
          */
         PRACTICE(dark = true),
 
-        /** The meter, the note, its pill and "Tune up". */
+        /** The ruler's E, the lens's amber trail left of the zone, "Tighten" and the cents. */
         TUNE_UP(dark = true, focus = 0f..0.68f),
 
-        /** The panel's instruments and the first tunings. */
+        /** The sheet "What are you tuning?": its instrument pills and the first tunings. */
         INSTRUMENTS(dark = false, focus = 0.24f..0.80f),
 
-        /** The chord's name, its notes and the last chords. */
-        CHORD_NAME(dark = true, focus = 0f..0.56f),
+        /**
+         * Two phones side by side, each whole (2.0, Phase 74: nothing to switch on): a strum of the open strings, each
+         * peg's mark above it and the count in the word's place; and a strummed chord's name in the ruler's place.
+         */
+        STRUM_AND_CHORD(dark = true),
         CHORDS_AND_CAPO(dark = false),
 
-        /** At twice the text size: the meter, the note, its pill and "Tune up". */
+        /** At twice the text size: the ruler, the lens, "Tighten" and the cents. */
         TALKBACK(dark = true, focus = 0.065f..0.71f),
         PITCH_TRAIL(dark = false),
         ;
@@ -223,14 +226,23 @@ class StoreScreenshots(private val shot: Shot) {
                 }
                 save(screen, bubble = spoken ?: error("TalkBack's reading of the note wasn't found"))
             }
-            // The chord's name in the ruler's place, by itself (2.0, Phase 74: no mode to switch on). The picture is made again in Phase 76.
-            Shot.CHORD_NAME -> tuner {
-                recorder.play(
-                    StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
-                        StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +
-                        StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS),
-                )
-                settle((2 * STRUM_SECONDS * 1000).toLong() + LAST_STRUM_SETTLE_MS)
+            // The tuner hears both by itself (2.0, Phase 74): no mode to switch on.
+            Shot.STRUM_AND_CHORD -> {
+                // The open strings strummed, two of them off: each peg's mark above it and "4 of 6 in tune".
+                val strings = capture(name = "${shot.number}a") {
+                    recorder.play(StoreSounds.strum(StoreSounds.OPEN_STRINGS, STRUM_SECONDS, StoreSounds.OPEN_STRINGS_OFF))
+                    settle(OPEN_STRUM_SETTLE_MS)
+                }
+                // A fretted chord's name in the ruler's place: C, G, then A minor, pictured while the last rings.
+                val chord = capture(name = "${shot.number}b") {
+                    recorder.play(
+                        StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
+                            StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +
+                            StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS),
+                    )
+                    settle((2 * STRUM_SECONDS * 1000).toLong() + LAST_STRUM_SETTLE_MS)
+                }
+                compose(listOf(listOf(strings, chord).map { Window(it.asImageBitmap()) }), staggered = true)
             }
             Shot.CHORDS_AND_CAPO -> {
                 runBlocking {
@@ -542,6 +554,9 @@ class StoreScreenshots(private val shot: Shot) {
         /** Each chord rings this long before the next; the last is pictured this long after it starts, bright and named. */
         private const val STRUM_SECONDS = 3.0
         private const val LAST_STRUM_SETTLE_MS = 1_800L
+
+        /** The open strings' strum is pictured this long after it starts: its marks stand (after about half a second) while it rings. */
+        private const val OPEN_STRUM_SETTLE_MS = 1_800L
 
         private const val CAPO_FRET = 2
 

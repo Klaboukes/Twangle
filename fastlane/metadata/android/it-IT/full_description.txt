@@ -1,6 +1,6 @@
 Twangle è un accordatore per chitarra, ma anche per basso, ukulele, violino e altro, e ogni funzione è gratis. Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Twangle non ha nemmeno il permesso di usare internet: il suono del microfono viene analizzato dal vivo sul telefono e mai registrato o inviato.
 
-Twangle è semplice da usare e preciso al cent. Suona una corda e Twangle mostra la nota e quanto è lontana dall'intonazione giusta, su un indicatore grande e chiaro. «Alza» o «Abbassa» ti dice in che verso girare la meccanica. Una volta accordato, Twangle ti aiuta a suonare: riconosce gli accordi che suoni, mostra diagrammi degli accordi e scale, calcola dove va il capotasto, allena il tuo orecchio e tiene il tempo.
+Twangle è semplice da usare e preciso al cent. Suona una corda e Twangle mostra la nota e quanto è lontana dall'intonazione giusta, su un indicatore grande e chiaro. «Tendi» o «Allenta» ti dice in che verso girare la meccanica. Una volta accordato, Twangle ti aiuta a suonare: riconosce gli accordi che suoni, mostra diagrammi degli accordi e scale, calcola dove va il capotasto, allena il tuo orecchio e tiene il tempo.
 
 ACCORDA OGNI STRUMENTO
 • Chitarra (6, 7, 8 o 12 corde), basso (4 o 5 corde), ukulele (anche baritono), violino, viola, violoncello, mandolino e banjo a 5 corde
@@ -21,14 +21,14 @@ PRATICA
 • Scale sulla tastiera: maggiore, minore, pentatonica e blues, con il nome di ogni nota
 • Capotasto: scegli la tonalità del brano e le diteggiature che preferisci, e vedi dove va il capotasto
 • Orecchio musicale: Risuonala (suona sul tuo strumento le note che senti), Intervalli e Tipo di accordo
-• Metronomo: da 30 a 250 battiti al minuto su una manopola del tempo rotonda, con tap tempo
+• Metronomo: da 30 a 250 battiti al minuto su un righello del tempo da far scorrere, con tap tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 e 7/8, con l'accento sul primo battito e luci da seguire
 • Si sente sopra la tua musica o la tua base, e può vibrare a tempo
 • Tra i battiti: clic in ottavi, terzine o sedicesimi
 • Allenatore di tempo: il tempo sale passo dopo passo fino al tuo obiettivo
 
 PER TUTTI
-• Funziona con TalkBack: Twangle dice la nota e quanto è lontana («Mi 2, 12 cent calante, alza»), legge diagrammi degli accordi e scale corda per corda, ogni pulsante ha un nome chiaro e non ti sommerge mai di parole
+• Funziona con TalkBack: Twangle dice la nota e quanto è lontana («Mi 2, 12 cent calante, tendi»), legge diagrammi degli accordi e scale corda per corda, ogni pulsante ha un nome chiaro e non ti sommerge mai di parole
 • Ogni schermata funziona con il testo grande, fino al doppio della dimensione normale
 • Una breve vibrazione quando una corda è intonata, per sentirlo anche al tatto
 • In 25 lingue: italiano, arabo, bengalese, cinese semplificato, cinese tradizionale, coreano, danese, finlandese, francese, giapponese, hindi, indonesiano, inglese, norvegese, olandese, polacco, portoghese, russo, spagnolo, svedese, tailandese, tedesco, turco, ucraino e vietnamita
@@ -36,7 +36,8 @@ PER TUTTI
 
 A MODO TUO
 • Chiaro, scuro o come il telefono, con i colori dello sfondo da Android 12 in poi
-• Modalità concentrazione: un unico grande indicatore con il telefono in orizzontale, facile da leggere a distanza
+• Tre indicatori tra cui scegliere: la scia, l'arco di luci o lo stroboscopio
+• Modalità concentrazione: l'accordatore a schermo intero con il telefono in orizzontale, facile da leggere a distanza
 
 INOLTRE
 • Un widget per la schermata Home che apre l'accordatore con un tocco

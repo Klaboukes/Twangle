@@ -1,31 +1,32 @@
 <!--
 title: The tuner · Twangle
-description: How to tune with Twangle: play a string, turn the peg until the needle stands in the middle. Strings or any note, cents, the reference pitch A4, and reference tones to tune by ear.
+description: How to tune with Twangle: play a string, turn the peg the way the word says until it reads In tune. Strings or any note, cents, the reference pitch A4, and reference tones to tune by ear.
 nav: tools
 -->
   <div class="crumb"><a href="./#tools">Tools</a> · Tuning</div>
   <div class="tool">
     <div>
       <h1>The tuner</h1>
-      <p class="lead">Play one string. Twangle shows its note, and the meter shows how far it is from being in tune.</p>
+      <p class="lead">Play one string. The row of note names at the top shows its note, and the lens under it how far it is from being in tune.</p>
 
       <h2>Tune a string</h2>
       <ol class="steps">
         <li>Tap the name at the top, <i>Guitar · Standard</i>, and pick your instrument and tuning in <i>What are you tuning?</i>.</li>
         <li>Play one string and let it ring.</li>
-        <li>Turn the peg the way Twangle says, <i>Tune up</i> or <i>Tune down</i>, until the needle stands in the middle and the note shows <i>in tune</i>.</li>
+        <li>Turn the peg the way the word under the lens says, <i>Tighten</i> or <i>Loosen</i>, until the line stands in the band down the middle and the word says <i>In tune</i>.</li>
       </ol>
-      <p>Your strings sit in a row along the bottom, and the one Twangle hears has a ring round it, in the same colour as the meter. Twangle finds the string by itself. To stay on one string, tap it: it gets a small lock, Twangle says <i>Play the A2 string</i> and listens only for that one. Tap it again to let Twangle choose.</p>
+      <p>The lens draws your note as a line: the newest moment at the top, the last seconds falling under it, flat to the left and sharp to the right (see <a href="pitch-trail.html">Pitch trail</a>). Its edge, the word and the whole screen go a soft amber while the string is far off, ease towards green as it comes close, and turn green once it is in tune.</p>
+      <p>Your strings sit in a row along the bottom, and the one Twangle hears has a ring round it, in the same colour as the lens. Twangle finds the string by itself. To stay on one string, tap it: it gets a small lock, Twangle says <i>Play the A2 string</i> and listens only for that one. Tap it again to let Twangle choose.</p>
 
       <h2>How far off: cents</h2>
-      <p>A cent is a hundredth of a semitone, the step from one fret to the next. Under the note Twangle shows how many cents it is off, for example <i>12 cents flat</i> (too low) or <i>8 cents sharp</i> (too high).</p>
+      <p>A cent is a hundredth of a semitone, the step from one fret to the next. Under the word Twangle shows how many cents it is off, for example <i>12 cents flat</i> (too low) or <i>8 cents sharp</i> (too high).</p>
       <p>A note counts as in tune within 5 cents. For a tighter check, set <i>Settings → In-tune precision</i> (Settings is the gear at the top left) to <i>Precise: within 2 cents</i>. In Settings you can also have the phone give a short buzz when a note reaches pitch. New to tuning? Turn on <i>Settings → Tick off tuned strings</i>: each string gets a check mark once it's in tune, and <i>In tune. Play.</i> shows when they all have one.</p>
 
       <h2>Strings or any note</h2>
       <p><i>What are you tuning?</i> also picks how Twangle listens. With an instrument and tuning picked, Twangle compares what you play with the strings of your tuning, and shows them along the bottom; with <i>Tick off tuned strings</i> on, each string you've brought in tune since opening the tuner keeps a small check mark, so you can see which are done, until you play it clearly out of tune again. <b>Any note</b>, the switch at its bottom, names any note, for an instrument Twangle doesn't list, or for your voice; the name at the top then says <i>Any note</i>.</p>
 
       <h2>Your tuning</h2>
-      <p>The instrument and tuning panel lists the common tunings of each instrument: for the guitar Standard, Drop D, DADGAD, open tunings and more. <i>Lower by</i>, at the bottom of the panel, takes any tuning down by up to 2½ steps. <i>New tuning</i>, at the end of the list, makes a tuning of your own.</p>
+      <p><i>What are you tuning?</i> lists the common tunings of each instrument: for the guitar Standard, Drop D, DADGAD, open tunings and more. <i>Lower by</i>, near its bottom, takes any tuning down by up to 2½ steps. <i>New tuning</i>, at the end of the list, makes a tuning of your own.</p>
 
       <h2>Tune by ear</h2>
       <p>Hold a string's button to hear its note, in your instrument's own sound: a plucked string for the guitar, a bowed one for the violin. It sounds for about four seconds; tap any string to stop it sooner. The phone's volume keys set how loud it is. While the note sounds, the tuner doesn't listen, so it never tunes to itself.</p>
@@ -34,12 +35,12 @@ nav: tools
       <p>Most music tunes the A above middle C, called A4, to 440 Hz. Orchestras often tune to 442 Hz, baroque ensembles to 415 Hz. Set it in <i>Settings → Reference pitch (A4)</i>, anywhere from 415 to 466 Hz. Everything follows it: the tuner, the reference tones and the other tools.</p>
 
       <h2>When it can't hear you well</h2>
-      <p>The tuner says so under the note: <i>Play a bit louder</i>, <i>Too noisy, move the phone closer</i>, or <i>Too loud, move the phone back</i>. Hold the phone near your instrument, away from other sounds, and let the string ring rather than plucking it again and again.</p>
+      <p>The tuner says so under the lens: <i>Play a bit louder</i>, <i>Too noisy, move the phone closer</i>, or <i>Too loud, move the phone back</i>. Hold the phone near your instrument, away from other sounds, and let the string ring rather than plucking it again and again.</p>
 
       <details class="curious">
         <summary>For the curious: how Twangle hears a note</summary>
         <p>A plucked string repeats the same wave many times a second. About 47 times a second, Twangle takes the latest sound from the microphone (the last 85 milliseconds, twice that for low strings such as a bass's) and looks for how long it takes the wave to repeat, with the YIN method of Alain de Cheveigné and Hideki Kawahara (2002). That time gives the frequency, and the frequency gives the note and how many cents it is off. Twangle's own tests hold it to within one cent on test tones.</p>
-        <p>A new note shows once a few readings agree, and the needle is smoothed so it doesn't jitter, without lagging behind your peg.</p>
+        <p>A new note shows once a few readings agree, and the reading is smoothed so it doesn't jitter, without lagging behind your peg.</p>
       </details>
       <details class="curious">
         <summary>For the curious: why Twangle asks for the unprocessed microphone</summary>

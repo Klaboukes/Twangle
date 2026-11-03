@@ -1,6 +1,6 @@
 Twangle ist ein Gitarrenstimmgerät, auch für Bass, Ukulele, Geige und mehr, und jede Funktion ist kostenlos. Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Twangle hat nicht einmal die Berechtigung, das Internet zu nutzen: Der Ton deines Mikrofons wird live auf deinem Handy analysiert und nie aufgenommen oder irgendwohin gesendet.
 
-Twangle ist einfach zu bedienen und stimmt auf den Cent genau. Spiel eine Saite, und Twangle zeigt auf einer großen, klaren Anzeige den Ton und wie weit er von der richtigen Stimmung entfernt ist. „Höher stimmen“ oder „Tiefer stimmen“ sagt dir, in welche Richtung du den Wirbel drehst. Ist alles gestimmt, hilft dir Twangle beim Spielen: Es erkennt die Akkorde, die du anschlägst, zeigt Akkordgriffe und Tonleitern, rechnet den Kapo aus, schult dein Gehör und hält den Takt.
+Twangle ist einfach zu bedienen und stimmt auf den Cent genau. Spiel eine Saite, und Twangle zeigt auf einer großen, klaren Anzeige den Ton und wie weit er von der richtigen Stimmung entfernt ist. „Spannen“ oder „Lockern“ sagt dir, in welche Richtung du den Wirbel drehst. Ist alles gestimmt, hilft dir Twangle beim Spielen: Es erkennt die Akkorde, die du anschlägst, zeigt Akkordgriffe und Tonleitern, rechnet den Kapo aus, schult dein Gehör und hält den Takt.
 
 JEDES INSTRUMENT STIMMEN
 • Gitarre (6, 7, 8 oder 12 Saiten), Bass (4 oder 5 Saiten), Ukulele (auch Bariton), Geige, Bratsche, Cello, Mandoline und 5-saitiges Banjo
@@ -21,14 +21,14 @@ WERKZEUGE, DIE MITHÖREN
 • Tonleitern auf dem Griffbrett: Dur, Moll, Pentatonik und Blues, jeder Ton mit Namen
 • Kapo: Wähl die Tonart des Songs und die Griffe, die du magst, und sieh, wohin der Kapo kommt
 • Gehörbildung: Nachspielen (spiel gehörte Töne auf deinem Instrument), Intervalle und Akkordart
-• Metronom: 30 bis 250 Schläge pro Minute auf einem runden Tempo-Rad, mit Tap-Tempo
+• Metronom: 30 bis 250 Schläge pro Minute auf einem Tempo-Lineal zum Verschieben, mit Tap-Tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 und 7/8, mit Betonung auf dem ersten Schlag und Lichtern zum Mitverfolgen
 • Gut hörbar über deiner Musik oder deinem Backing-Track, und kann im Takt vibrieren
 • Zwischen den Schlägen: Klicks in Achteln, Triolen oder Sechzehnteln
 • Tempotrainer: Das Tempo steigt schrittweise bis zu deinem Ziel
 
 FÜR ALLE GEMACHT
-• Funktioniert mit TalkBack: Twangle sagt den Ton und wie weit er danebenliegt („E 2, 12 Cent zu tief, höher stimmen“), liest Akkordgriffe und Tonleitern Saite für Saite vor, jede Schaltfläche hat einen klaren Namen, und es überflutet dich nie mit Sprache
+• Funktioniert mit TalkBack: Twangle sagt den Ton und wie weit er danebenliegt („E 2, 12 Cent zu tief, spannen“), liest Akkordgriffe und Tonleitern Saite für Saite vor, jede Schaltfläche hat einen klaren Namen, und es überflutet dich nie mit Sprache
 • Jeder Bildschirm funktioniert mit großer Schrift, bis zur doppelten Größe
 • Eine kurze Vibration, wenn eine Saite gestimmt ist, damit du es auch spürst
 • In 25 Sprachen: Deutsch, Arabisch, Bengalisch, Chinesisch (vereinfacht und traditionell), Dänisch, Englisch, Finnisch, Französisch, Hindi, Indonesisch, Italienisch, Japanisch, Koreanisch, Niederländisch, Norwegisch, Polnisch, Portugiesisch, Russisch, Schwedisch, Spanisch, Thai, Türkisch, Ukrainisch und Vietnamesisch
@@ -36,7 +36,8 @@ FÜR ALLE GEMACHT
 
 GANZ NACH DEINEM GESCHMACK
 • Hell, dunkel oder wie dein Handy, ab Android 12 mit den Farben deines Hintergrundbilds
-• Fokusmodus: eine große Anzeige auf einem quer gehaltenen Handy, gut aus der Ferne lesbar
+• Drei Anzeigen zur Wahl: der Tonverlauf, der LED-Bogen oder das Stroboskop
+• Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy, gut aus der Ferne lesbar
 
 AUSSERDEM
 • Ein Widget für den Startbildschirm, das das Stimmgerät mit einem Tippen öffnet

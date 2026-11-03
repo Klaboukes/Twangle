@@ -1,8 +1,8 @@
 Soita kieli. Näe se vireessä.
-Kuusi tyyliä, vaalea tai tumma
+Viritä, pidä tahti ja harjoittele samassa sovelluksessa
 Sentin tarkkuudella
 Kitara, basso, ukulele, viulu ja muita
-Soita sointu. Näe sen nimi.
+Soita kerran: tarkista jokainen kieli tai näe, mikä sointu se on
 Sointukaaviot ja kapo valmiiksi laskettuina
 Puhuu TalkBackilla. Toimii suurella tekstillä.
 Näe jokainen venytys ja vibrato. Äänesi ei koskaan poistu puhelimesta.
