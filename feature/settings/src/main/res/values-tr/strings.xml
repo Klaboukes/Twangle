@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Duvar kâğıdı renkleri</string>
     <string name="settings_dynamic_color_summary">Duvar kâğıdındaki renkleri kullan</string>
 
-    <string name="settings_focus_mode_title">Odak modu</string>
-    <string name="settings_focus_mode_summary">Twangle\'ı tek büyük göstergeyle yana çevirir, uzaktan kolayca okunur</string>
     <string name="settings_left_handed_title">Solak</string>
     <string name="settings_left_handed_summary">Akor şemaları ve gam klavyesi ters tutulan bir gitar için çizilir</string>
 

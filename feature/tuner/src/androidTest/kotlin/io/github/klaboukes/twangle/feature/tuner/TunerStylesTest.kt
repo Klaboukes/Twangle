@@ -95,7 +95,7 @@ class TunerStylesTest {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showSignalBars = true,
-                        compactLandscape = false,
+                        focusMode = false,
                         onStrumCheckChange = {},
                     )
                 }
@@ -165,7 +165,7 @@ class TunerStylesTest {
         forEachCase(XIAOMI_UPRIGHT, OWNER_FONT_SCALE) { case -> assertAllInView(case) }
     }
 
-    /** The full layout on a phone on its side: the readout beside the controls, all in view. */
+    /** The wide layout on a phone on its side (2.0, Phase 73): the ruler, the lens and the pegs under it, all in view. */
     @Test
     fun onItsSideEverythingFitsWithoutScrolling() {
         shownSize.value = PHONE_LANDSCAPE
@@ -175,7 +175,7 @@ class TunerStylesTest {
             val lens = gauge.getBoundsInRoot()
             for (label in strings) {
                 val chip = compose.onNodeWithText(label).getBoundsInRoot()
-                if (chip.left < lens.right) fail("$case: string $label should be right of the lens")
+                if (chip.top < lens.bottom) fail("$case: string $label should be under the lens")
             }
         }
     }

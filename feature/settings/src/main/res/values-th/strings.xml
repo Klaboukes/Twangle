@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">สีจากวอลเปเปอร์</string>
     <string name="settings_dynamic_color_summary">ใช้สีจากวอลเปเปอร์ของคุณ</string>
 
-    <string name="settings_focus_mode_title">โหมดโฟกัส</string>
-    <string name="settings_focus_mode_summary">หมุน Twangle เป็นแนวนอนพร้อมมาตรวัดใหญ่หนึ่งอัน อ่านง่ายจากระยะไกล</string>
     <string name="settings_left_handed_title">ถนัดซ้าย</string>
     <string name="settings_left_handed_summary">วาดตารางคอร์ดและคอกีตาร์ของสเกลสำหรับกีตาร์ที่ถือกลับด้าน</string>
 

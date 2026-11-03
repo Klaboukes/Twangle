@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">壁纸配色</string>
     <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
 
-    <string name="settings_focus_mode_title">专注模式</string>
-    <string name="settings_focus_mode_summary">将 Twangle 横过来，只显示一个大表盘，远处也能看清</string>
     <string name="settings_left_handed_title">左手持琴</string>
     <string name="settings_left_handed_summary">和弦图和音阶指板按反向持琴的吉他绘制</string>
 

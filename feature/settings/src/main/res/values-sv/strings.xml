@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Bakgrundsfärger</string>
     <string name="settings_dynamic_color_summary">Använd färgerna från din bakgrundsbild</string>
 
-    <string name="settings_focus_mode_title">Fokusläge</string>
-    <string name="settings_focus_mode_summary">Vänder Twangle på sidan med en stor mätare, lätt att läsa på avstånd</string>
     <string name="settings_left_handed_title">Vänsterhänt</string>
     <string name="settings_left_handed_summary">Ackordscheman och halsen i Skalor ritade för en gitarr som hålls åt andra hållet</string>
 

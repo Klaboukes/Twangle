@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">ألوان الخلفية</string>
     <string name="settings_dynamic_color_summary">استخدم ألوانًا من خلفية شاشتك</string>
 
-    <string name="settings_focus_mode_title">وضع التركيز</string>
-    <string name="settings_focus_mode_summary">يُدير Twangle أفقيًا مع مقياس واحد كبير، تسهل قراءته من بعيد</string>
     <string name="settings_left_handed_title">وضع الأعسر</string>
     <string name="settings_left_handed_summary">مخططات الكوردات وزند السلالم مرسومة لجيتار يُمسك بالاتجاه المعاكس</string>
 

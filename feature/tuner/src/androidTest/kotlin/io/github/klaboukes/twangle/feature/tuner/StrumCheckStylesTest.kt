@@ -104,7 +104,7 @@ class StrumCheckStylesTest {
                         onStringClick = { stringClicks += it },
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        compactLandscape = shownCompact.value,
+                        focusMode = shownCompact.value,
                         soundingString = shownSounding.value,
                         strumCheck = true,
                         onStrumCheckChange = { switched += it },

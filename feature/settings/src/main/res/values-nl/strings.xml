@@ -44,8 +44,6 @@
     <string name="settings_meter_light_arc">Lichtboog</string>
     <string name="settings_meter_strobe">Stroboscoop</string>
 
-    <string name="settings_focus_mode_title">Focusmodus</string>
-    <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen op afstand</string>
     <string name="settings_left_handed_title">Linkshandig</string>
     <string name="settings_left_handed_summary">Akkoordschema\'s en de hals bij Toonladders getekend voor een gitaar die andersom wordt vastgehouden</string>
 

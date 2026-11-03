@@ -91,6 +91,17 @@ class RulerGeometryTest {
     }
 
     @Test
+    fun `focus mode keeps the ends clear, then the names fade in`() {
+        assertEquals("under the exit button", 0f, rulerEdgeFade(740f, 800f, 32f, clear = 64f), 0f)
+        assertEquals("at the clear zone's edge", 0f, rulerEdgeFade(64f, 800f, 32f, clear = 64f), 0f)
+        assertEquals(0.5f, rulerEdgeFade(80f, 800f, 32f, clear = 64f), 1e-6f)
+        assertEquals(0.5f, rulerEdgeFade(720f, 800f, 32f, clear = 64f), 1e-6f)
+        assertEquals(1f, rulerEdgeFade(400f, 800f, 32f, clear = 64f), 0f)
+        assertEquals("no fade, a hard edge", 1f, rulerEdgeFade(70f, 800f, 0f, clear = 64f), 0f)
+        assertEquals(0f, rulerEdgeFade(60f, 800f, 0f, clear = 64f), 0f)
+    }
+
+    @Test
     fun `the names follow the notation setting`() {
         val standard = Tunings.STANDARD
         assertEquals(listOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"), rulerNames(Notation.SHARPS, standard, guitar = true))

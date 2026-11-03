@@ -52,6 +52,7 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -113,7 +114,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the 12th-fret check's way in is off on a fresh install", false, settings.showIntonationCheck)
         assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
-        assertEquals(false, settings.focusMode)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
@@ -153,7 +153,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setShowIntonationCheck(true)
         repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
-        repo.setFocusMode(true)
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
@@ -193,7 +192,6 @@ class DataStoreSettingsRepositoryTest {
             showIntonationCheck = true,
             showSignalBars = true,
             lensLook = LensLook.STROBE,
-            focusMode = true,
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
@@ -240,7 +238,6 @@ class DataStoreSettingsRepositoryTest {
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
             setInTunePrecision(InTunePrecision.PRECISE)
-            setFocusMode(true)
             setLensLook(LensLook.LIGHT_ARC)
             setMetronomeBpm(72)
             setMetronomeMeter(Meter.SIX_EIGHT)
@@ -275,7 +272,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.FLATS, settings.notationChoice)
         assertEquals("a picked notation wins over the language", Notation.FLATS, settings.notationFor("fr"))
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
-        assertEquals("the focus mode choice is kept", true, settings.focusMode)
         assertEquals("the lens look is kept", LensLook.LIGHT_ARC, settings.lensLook)
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
@@ -713,6 +709,37 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("1.1's display is removed", null, saved[stringPreferencesKey("tuner_display")])
         assertEquals("the old wave-view switch is removed", null, saved[booleanPreferencesKey("show_waves")])
         assertEquals("1.1's wave look is removed", null, saved[stringPreferencesKey("wave_look")])
+    }
+
+    @Test
+    fun `1_1's focus mode on is taken once, removed, and false ever after`() = runTest {
+        dataStore().edit { it[booleanPreferencesKey("focus_mode")] = true }
+        close()
+        val store = dataStore()
+        val repo = repository(store)
+        assertTrue("the first start opens in focus mode", repo.takeOldFocusMode())
+        assertEquals("the switch is removed", null, store.data.first()[booleanPreferencesKey("focus_mode")])
+        assertFalse("never again", repo.takeOldFocusMode())
+        close()
+        assertFalse("nor after a restart", repository().takeOldFocusMode())
+    }
+
+    @Test
+    fun `1_1's focus mode off is removed too, and the tuner opens as usual`() = runTest {
+        dataStore().edit { it[booleanPreferencesKey("focus_mode")] = false }
+        close()
+        val store = dataStore()
+        assertFalse(repository(store).takeOldFocusMode())
+        assertEquals("the switch is removed", null, store.data.first()[booleanPreferencesKey("focus_mode")])
+    }
+
+    @Test
+    fun `without 1_1's focus mode nothing is written`() = runTest {
+        val store = dataStore()
+        store.edit { it[floatPreferencesKey("a4_hz")] = 442f }
+        val before = store.data.first()
+        assertFalse(repository(store).takeOldFocusMode())
+        assertEquals("the file is as it was", before, store.data.first())
     }
 
     @Test
@@ -1154,6 +1181,7 @@ class DataStoreSettingsRepositoryTest {
         val kept = DataStoreSettingsRepository(real)
         kept.addCustomTuning("Mine", Instruments.GUITAR, dropC, pick = true)!!
         kept.setInTunePrecision(InTunePrecision.PRECISE)
+        real.edit { it[booleanPreferencesKey("focus_mode")] = true }
         val before = kept.settings.first()
         val logged = mutableListOf<IOException>()
         val repo = DataStoreSettingsRepository(FullDataStore(real), logWriteError = { logged += it })
@@ -1179,7 +1207,8 @@ class DataStoreSettingsRepositoryTest {
             "setShowIntonationCheck" to { repo.setShowIntonationCheck(!before.showIntonationCheck) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
-            "setFocusMode" to { repo.setFocusMode(!before.focusMode) },
+            // 1.1's focus mode switch is there (below), so the read once tries to remove it.
+            "takeOldFocusMode" to { assertTrue("it was on", repo.takeOldFocusMode()) },
             "setMicRefused" to { repo.setMicRefused(!before.micRefused) },
             // The first-use notes run at every start (MainActivity.onCreate): a full phone must not stop the app.
             "noteFirstUseOnce" to { repo.noteFirstUseOnce(1_000L) },

@@ -107,8 +107,12 @@ interface SettingsRepository {
      */
     suspend fun setLensLook(look: LensLook)
 
-    /** Focus mode: true shows the compact layout (one big meter) on its side; false (the default) the full one. */
-    suspend fun setFocusMode(enabled: Boolean)
+    /**
+     * 1.1's focus mode switch, read once (2.0, Phase 73: focus mode is the tuner's button alone, not saved): removes
+     * the saved choice and says whether it was on, so the tuner opens in focus mode that first time; false ever after,
+     * and on an install that never had it (docs/architecture/v2-plan.md, *Settings from 1.1*).
+     */
+    suspend fun takeOldFocusMode(): Boolean
 
     /** Remembers that the player refused the microphone in Android's dialog ([AppSettings.micRefused]). */
     suspend fun setMicRefused(refused: Boolean)

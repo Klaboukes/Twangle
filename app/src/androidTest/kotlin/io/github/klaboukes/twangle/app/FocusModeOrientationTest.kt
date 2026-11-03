@@ -19,8 +19,6 @@ import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -33,9 +31,10 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 
 /**
- * Focus mode (Phase 36) asks Android to keep the whole app on its side, either way round, also with
- * auto-rotate off, and the request holds on every tab. The tuner takes the whole screen (Phase 40): no
- * rail and no status bar until a tap brings back its controls and the rail; other tabs show both, and
+ * Focus mode (Phase 36; 2.0, Phase 73: the tuner's button alone, held by the app, not saved) asks Android to keep the
+ * whole app on its side, either way round, also with auto-rotate off, and the request holds on every tab. The tuner
+ * takes the whole screen (Phase 40), its wide layout without the pegs: no rail and no status bar until a tap brings
+ * back its controls (the pegs) and the rail; other tabs show both, and
  * Settings, opened from the gear at the rail's top, the status bar. Switched off, it is turned back upright (with auto-rotate off) and the request is let
  * go, so the screen follows the phone again; a large screen is let go at once. On the
  * phone or tablet this really turns the screen. Afterwards nothing lies over the status bar: the app
@@ -48,24 +47,20 @@ class FocusModeOrientationTest {
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
 
-    private val settings = ApplicationProvider.getApplicationContext<TwangleApplication>().container.settingsRepository
+    private val focusMode = ApplicationProvider.getApplicationContext<TwangleApplication>().container.focusMode
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-    private var focusModeBefore: Boolean? = null
     private val resolver = InstrumentationRegistry.getInstrumentation().targetContext.contentResolver
     private val autoRotateBefore = Settings.System.getInt(resolver, Settings.System.ACCELEROMETER_ROTATION, 0)
     private val lockBefore = Settings.System.getInt(resolver, Settings.System.USER_ROTATION, 0)
 
     @Before
     fun setUp() {
-        runBlocking {
-            focusModeBefore = settings.settings.first().focusMode
-            settings.setFocusMode(false)
-        }
+        focusMode.value = false
     }
 
     @After
     fun tearDown() {
-        focusModeBefore?.let { runBlocking { settings.setFocusMode(it) } }
+        focusMode.value = false
         // The phone's rotation as it was (the large screen test moves the lock).
         device.executeShellCommand("settings put system user_rotation $lockBefore")
         device.executeShellCommand("settings put system accelerometer_rotation $autoRotateBefore")
@@ -125,15 +120,16 @@ class FocusModeOrientationTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertTrue("no side asked for at first", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })
 
-            runBlocking { settings.setFocusMode(true) }
+            focusMode.value = true
             assertTrue("focus mode asks for either side", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE })
             assertTrue("and the screen turns", waitFor { scenario.onItsSide() })
-            assertTrue("the compact tuner shows", shown(TunerTestTags.COMPACT))
+            assertTrue("the full-screen tuner shows", shown(TunerTestTags.COMPACT))
+            assertTrue("in the wide layout", shown(TunerTestTags.WIDE))
             assertTrue("over the whole screen: no rail", device.wait(Until.gone(By.res(NavigationTestTags.RAIL)), WAIT_MS))
             assertTrue("and no status bar", waitFor { !scenario.statusBarShown() })
 
             // A tap brings back the controls and the rail, so the other tabs are one tap away.
-            (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no compact tuner")).click()
+            (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no full-screen tuner")).click()
             assertTrue("the rail comes back", shown(NavigationTestTags.RAIL))
             assertTrue("and the status bar", waitFor { scenario.statusBarShown() })
 
@@ -154,7 +150,7 @@ class FocusModeOrientationTest {
             assertTrue("Settings still on its side", scenario.onItsSide())
             assertTrue("and the status bar", scenario.statusBarShown())
 
-            runBlocking { settings.setFocusMode(false) }
+            focusMode.value = false
             assertTrue("off, the request is let go", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })
             // With auto-rotate off (as the test run holds the phone) it is first turned back upright, as it was.
             if (!autoRotate()) assertTrue("back upright", waitFor { !scenario.onItsSide() })
@@ -173,11 +169,11 @@ class FocusModeOrientationTest {
     fun aLargeScreenIsLetGoAtOnceWithNothingOverTheStatusBar() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assumeTrue("a large screen", scenario.largeScreen())
-            runBlocking { settings.setFocusMode(true) }
+            focusMode.value = true
             assertTrue("focus mode turns it on its side", waitFor { scenario.onItsSide() })
             device.freezeRotation()
 
-            runBlocking { settings.setFocusMode(false) }
+            focusMode.value = false
             var askedUpright = false
             assertTrue("off, the request is let go", waitFor {
                 if (scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) askedUpright = true
@@ -198,23 +194,23 @@ class FocusModeOrientationTest {
     fun theTunersButtonsAndBackTurnFocusModeOnAndOff() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             (device.wait(Until.findObject(By.res(TunerTestTags.ENTER_FOCUS)), WAIT_MS) ?: error("no full-screen button")).click()
-            assertTrue("the button switches focus mode on", waitFor { runBlocking { settings.settings.first().focusMode } })
+            assertTrue("the button switches focus mode on", waitFor { focusMode.value })
             assertTrue("and the screen turns", waitFor { scenario.onItsSide() })
-            assertTrue("the compact tuner shows", shown(TunerTestTags.COMPACT))
+            assertTrue("the full-screen tuner shows", shown(TunerTestTags.COMPACT))
             // A tap brings the controls; their button takes them away again, still in focus mode.
-            (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no compact tuner")).click()
+            (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no full-screen tuner")).click()
             (device.wait(Until.findObject(By.res(TunerTestTags.HIDE_CONTROLS)), WAIT_MS) ?: error("no full-screen button among the controls")).click()
             assertTrue("the controls go", device.wait(Until.gone(By.res(TunerTestTags.HIDE_CONTROLS)), WAIT_MS))
-            assertTrue("still in focus mode", runBlocking { settings.settings.first().focusMode })
+            assertTrue("still in focus mode", focusMode.value)
             // The exit button in the full-screen tuner's corner.
             (device.wait(Until.findObject(By.res(TunerTestTags.EXIT_FOCUS)), WAIT_MS) ?: error("no exit button")).click()
-            assertTrue("the button switches focus mode off", waitFor { !runBlocking { settings.settings.first().focusMode } })
+            assertTrue("the button switches focus mode off", waitFor { !focusMode.value })
             assertTrue("off, the request is let go", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })
 
-            runBlocking { settings.setFocusMode(true) }
-            assertTrue("the compact tuner shows again", shown(TunerTestTags.COMPACT))
+            focusMode.value = true
+            assertTrue("the full-screen tuner shows again", shown(TunerTestTags.COMPACT))
             device.pressBack()
-            assertTrue("Back switches focus mode off", waitFor { !runBlocking { settings.settings.first().focusMode } })
+            assertTrue("Back switches focus mode off", waitFor { !focusMode.value })
             assertTrue("and the app stays open", shown(NavigationTestTags.RAIL) || shown(NavigationTestTags.BAR))
         }
     }

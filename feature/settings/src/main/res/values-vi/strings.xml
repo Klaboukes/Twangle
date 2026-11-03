@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Màu hình nền</string>
     <string name="settings_dynamic_color_summary">Dùng màu từ hình nền của bạn</string>
 
-    <string name="settings_focus_mode_title">Chế độ tập trung</string>
-    <string name="settings_focus_mode_summary">Xoay ngang Twangle với một đồng hồ đo lớn, dễ đọc từ xa</string>
     <string name="settings_left_handed_title">Tay trái</string>
     <string name="settings_left_handed_summary">Sơ đồ hợp âm và cần đàn ở Âm giai được vẽ cho đàn cầm ngược chiều</string>
 

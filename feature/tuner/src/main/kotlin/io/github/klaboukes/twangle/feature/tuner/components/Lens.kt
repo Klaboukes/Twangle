@@ -68,8 +68,9 @@ import kotlin.math.roundToInt
  * ([LensLookArt], clipped to the box). Everything about the box is fixed, so a look changes nothing around it:
  *
  * - its size: as wide as it is given; upright 0.85 times as high as wide ([LENS_TALL]) where the height it is
- *   given allows, giving way down to half its width ([LENS_SHORT]); [wide] (a window wider than tall), or
- *   without a height to fit in, half its width;
+ *   given allows, giving way down to half its width ([LENS_SHORT]); [wide] (a window wider than tall, Phase 73) as
+ *   high as the height it is given, at most half its width (about 3.4 : 1 on a phone on its side); without a height
+ *   to fit in, half its width;
  * - one reading ([LensReading], here [TunerLensReading]): the marker springs to each reading with the look's
  *   feel ([meterFeel]), pinned at ±50, resting in the middle without a note ([cents] gives NaN); the
  *   last seconds ([history]) for the trail; the in-tune window of [precision] ([meterInTuneWindow]); "in tune"
@@ -193,14 +194,19 @@ fun Lens(
 
 /**
  * The lens's size ([Lens]): as wide as it may be; upright as high as the height it is given, between
- * [LENS_SHORT] and [LENS_TALL] of its width, and [LENS_SHORT] of it [wide] or with no height to fit in.
- * Asked for its intrinsic height (the layouts that fit a gauge to the room), it gives the short one.
+ * [LENS_SHORT] and [LENS_TALL] of its width; [wide] as high as the height it is given, up to [LENS_SHORT] of its
+ * width (the wide layout gives it the room under the ruler and over the word); [LENS_SHORT] of it with no height to
+ * fit in. Asked for its intrinsic height (the layouts that fit a gauge to the room), it gives the short one.
  */
 private fun Modifier.lensSize(wide: Boolean): Modifier = layout { measurable, constraints ->
     val width = if (constraints.hasBoundedWidth) constraints.maxWidth else constraints.minWidth
     val short = (width * LENS_SHORT).roundToInt()
-    val tall = if (wide) short else (width * LENS_TALL).roundToInt()
-    val height = if (constraints.hasBoundedHeight) constraints.maxHeight.coerceIn(short, tall) else short
+    val tall = (width * LENS_TALL).roundToInt()
+    val height = when {
+        !constraints.hasBoundedHeight -> short
+        wide -> constraints.maxHeight.coerceAtMost(short)
+        else -> constraints.maxHeight.coerceIn(short, tall)
+    }
     val placeable = measurable.measure(Constraints.fixed(width, height))
     layout(width, height) { placeable.placeRelative(0, 0) }
 }

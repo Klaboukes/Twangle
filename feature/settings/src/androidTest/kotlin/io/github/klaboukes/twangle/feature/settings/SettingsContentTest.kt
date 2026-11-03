@@ -92,7 +92,6 @@ class SettingsContentTest {
     private val tickOffChanges = mutableListOf<Boolean>()
     private val intonationCheckChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
-    private val focusModeChanges = mutableListOf<Boolean>()
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private var backs = 0
@@ -155,7 +154,6 @@ class SettingsContentTest {
                         onStringTickOffChange = { tickOffChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
                         onLensLookChange = { lensLookChanges += it },
-                        onFocusModeChange = { focusModeChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         onShowIntonationCheckChange = if (intonationCheck) ({ intonationCheckChanges += it }) else null,
@@ -451,22 +449,6 @@ class SettingsContentTest {
     }
 
     @Test
-    fun focusModeSwitchIsOffByDefaultAndToggles() {
-        show(AppSettings())
-        val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
-        focusMode.performScrollTo().assertIsOff().performClick()
-        assertEquals(listOf(true), focusModeChanges)
-    }
-
-    @Test
-    fun focusModeSwitchShowsItIsOn() {
-        show(AppSettings(focusMode = true))
-        val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
-        focusMode.performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), focusModeChanges)
-    }
-
-    @Test
     fun leftHandedSwitchIsOffByDefaultAndToggles() {
         show(AppSettings())
         val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
@@ -490,8 +472,8 @@ class SettingsContentTest {
 
     /**
      * 1.1's meter look cards, Calm or Bold, "Below the note" and the wave look cards went in Phase 67 (one meter and
-     * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left, and the Tuner screen
-     * group holds focus mode alone.
+     * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left. The Tuner screen group
+     * holds Meter alone: focus mode's switch went in Phase 73 (the tuner's button alone).
      */
     @Test
     fun meterOffersTheThreeLooksAsCardsWithTheSavedOnePicked() {
@@ -504,8 +486,8 @@ class SettingsContentTest {
         val top = { text: Int -> compose.onNodeWithText(context.getString(text)).fetchSemanticsNode().positionInRoot.y }
         val group = top(R.string.settings_group_tuner_screen)
         val meter = top(R.string.settings_meter_title)
-        val focus = top(R.string.settings_focus_mode_title)
-        assertTrue("Meter under the Tuner screen heading, focus mode under it", meter > group && focus > meter)
+        val whileTuning = top(R.string.settings_group_while_tuning)
+        assertTrue("Meter under the Tuner screen heading, the next group under it", meter > group && whileTuning > meter)
         val names = mapOf(
             LensLook.TRAIL to R.string.settings_meter_trail,
             LensLook.LIGHT_ARC to R.string.settings_meter_light_arc,
@@ -522,7 +504,7 @@ class SettingsContentTest {
             val node = card.fetchSemanticsNode()
             val top = node.positionInRoot.y
             val bottom = top + node.size.height
-            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and focus mode ($focus)", top > meter && bottom < focus)
+            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and While tuning ($whileTuning)", top > meter && bottom < whileTuning)
             node.positionInRoot.x
         }
         assertEquals("Trail · Light arc · Strobe, in one row", lefts.sorted(), lefts)
@@ -578,7 +560,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_dynamic_color_title)),
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_group_tuner_screen)),
-            top(context.getString(R.string.settings_focus_mode_title)),
+            top(context.getString(R.string.settings_meter_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),

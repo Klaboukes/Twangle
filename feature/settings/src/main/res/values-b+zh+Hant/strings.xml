@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">桌布配色</string>
     <string name="settings_dynamic_color_summary">使用桌布中的顏色</string>
 
-    <string name="settings_focus_mode_title">專注模式</string>
-    <string name="settings_focus_mode_summary">將 Twangle 轉為橫向，只顯示一個大儀表，遠處也看得清楚</string>
     <string name="settings_left_handed_title">左撇子模式</string>
     <string name="settings_left_handed_summary">和弦圖和音階指板按反方向持琴的吉他繪製</string>
 

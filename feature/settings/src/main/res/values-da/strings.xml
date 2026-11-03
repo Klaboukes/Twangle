@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Farver fra baggrund</string>
     <string name="settings_dynamic_color_summary">Brug farverne fra din baggrund</string>
 
-    <string name="settings_focus_mode_title">Fokustilstand</string>
-    <string name="settings_focus_mode_summary">Vender Twangle på siden med én stor måler, der er let at aflæse på afstand</string>
     <string name="settings_left_handed_title">Venstrehåndet</string>
     <string name="settings_left_handed_summary">Akkorddiagrammer og skalahalsen tegnet til en guitar, der holdes omvendt</string>
 

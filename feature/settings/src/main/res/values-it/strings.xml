@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Colori dello sfondo</string>
     <string name="settings_dynamic_color_summary">Usa i colori del tuo sfondo</string>
 
-    <string name="settings_focus_mode_title">Modalità concentrazione</string>
-    <string name="settings_focus_mode_summary">Mette Twangle in orizzontale con un grande indicatore, facile da leggere a distanza</string>
     <string name="settings_left_handed_title">Mancino</string>
     <string name="settings_left_handed_summary">Schemi degli accordi e manico delle scale disegnati per una chitarra tenuta al contrario</string>
 

@@ -37,6 +37,7 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithText
@@ -140,7 +141,7 @@ class TunerContentTest {
     /** The mode [show] passes on; set it to switch modes while the tuner is shown. */
     private val shownMode = mutableStateOf(TunerMode.AUTO)
 
-    /** Whether [show] asks for the compact landscape layout; set it to switch layouts while the tuner is shown. */
+    /** Whether [show] says focus mode is on; set it to switch while the tuner is shown. */
     private val shownCompact = mutableStateOf(false)
 
     private val shownSignalBars = mutableStateOf(false)
@@ -167,8 +168,8 @@ class TunerContentTest {
      * Shows [state] in the test window with a [fontScale] (1 unless given, whatever the phone's own
      * text size, so tests behave the same on every phone), as if the window were [size] ([PHONE] unless
      * given, whatever the phone's own screen; [PhoneScreen] draws a larger one smaller to fit) or in
-     * another language ([locale], e.g. "nl"). The area inside the bars: TunerScreen keeps TunerContent clear of them. Landscape shows the two-pane layout unless
-     * [compactLandscape] asks for the compact one.
+     * another language ([locale], e.g. "nl"). The area inside the bars: TunerScreen keeps TunerContent clear of them. On its side
+     * the wide layout shows, with the pegs, or with [focusMode] without them until a tap.
      */
     private fun show(
         state: TunerUiState,
@@ -177,13 +178,13 @@ class TunerContentTest {
         size: DpSize? = null,
         stringTickOff: Boolean = false,
         locale: String? = null,
-        compactLandscape: Boolean = false,
+        focusMode: Boolean = false,
         signalBars: Boolean = false,
         signalFigures: Flow<SignalFigures?> = emptyFlow(),
     ) {
         shownMode.value = mode
         shownState.value = state
-        shownCompact.value = compactLandscape
+        shownCompact.value = focusMode
         shownSignalBars.value = signalBars
         shownSounding.value = null
         shownTuned.value = null
@@ -216,7 +217,7 @@ class TunerContentTest {
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         stringTickOff = stringTickOff,
-                        compactLandscape = shownCompact.value,
+                        focusMode = shownCompact.value,
                         showSignalBars = shownSignalBars.value,
                         signalFigures = signalFigures,
                         onStrumCheckChange = {},
@@ -1167,22 +1168,24 @@ class TunerContentTest {
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).performScrollTo().assertIsDisplayed()
     }
 
+    // A phone on its side (2.0, Phase 73): the wide layout, the ruler, the lens and the word with the pegs under them.
     @Test
-    fun phoneOnItsSideShowsTheReadoutBesideTheControls() {
+    fun phoneOnItsSideShowsTheWideLayoutWithThePegsUnderTheLens() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         val ruler = compose.onNodeWithTag(TunerTestTags.RULER).assertIsDisplayed().getBoundsInRoot()
         val lens = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).assertIsDisplayed()
         pickerChip.assertIsDisplayed()
-        // The whole readout fits: the lens shrinks so the word and the cents under it aren't cut off.
+        // The whole readout fits: the lens takes the height the rest leave, so the word and the cents aren't cut off.
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val cents = wordCents.getBoundsInRoot()
         assertTrue("the cents end at ${cents.bottom}, window at ${window.bottom}", cents.bottom <= window.bottom)
         assertTrue("ruler $ruler over the lens $lens", ruler.bottom <= lens.top)
-        // Everything is in view without scrolling, with the strings to the right of the readout.
+        // Everything is in view without scrolling, the pegs under the lens.
         for (label in listOf("E2", "A2", "D3", "G3", "B3", "E4")) {
             val chip = stringChip(label).assertIsDisplayed().getBoundsInRoot()
-            assertTrue("$label should be right of the lens", chip.left >= lens.right)
+            assertTrue("$label should be under the lens", chip.top >= lens.bottom)
+            assertTrue("$label in the window", chip.bottom <= window.bottom)
         }
     }
 
@@ -1205,12 +1208,14 @@ class TunerContentTest {
     }
 
     @Test
-    fun tabletInLandscapeShowsEverythingSideBySide() {
+    fun tabletOnItsSideShowsTheWideLayout() {
         show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val lens = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
+        assertEquals("the lens 24 dp in from each side", (window.width - 48.dp).value, lens.width.value, 2f)
         word.assertIsDisplayed()
         val chip = stringChip("A2").assertIsDisplayed().getBoundsInRoot()
-        assertTrue(chip.left >= lens.right)
+        assertTrue(chip.top >= lens.bottom)
     }
 
     /** The word under the lens (2.0, Phase 71): a flat string is tightened, the cents small under it. */
@@ -1980,71 +1985,87 @@ class TunerContentTest {
         }
     }
 
-    // Compact landscape layout ([TunerContent] with compactLandscape, focus mode): the ruler, the lens and the word
-    // over the whole screen (until Phase 73 lays it out wide); a tap brings back the controls for a few seconds.
+    // Focus mode (2.0, Phase 73): the wide layout with nothing but the ruler, the lens and the word, the string small
+    // beside the word; a tap brings back the pegs and the controls for a few seconds. WideLayoutTest has its shape.
 
     @Test
     fun focusFillsThePhoneWithTheRulerTheLensAndTheWord() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         val ruler = compose.onNodeWithTag(TunerTestTags.RULER).assertIsDisplayed()
             .assert(SemanticsMatcher.expectValue(RulerNote, "E")).getBoundsInRoot()
-        // On a phone on its side the lens is as tall as the screen between the ruler and the word allows (its 2:1
-        // box, until Phase 73), so it takes most of the width.
-        assertTrue("gauge is ${gauge.height} high in ${window.height}", gauge.height >= window.height - 190.dp)
-        assertTrue("gauge is ${gauge.width} wide in ${window.width}", gauge.width >= window.width * 0.45f)
+        // The ruler across the full width, the lens wide under it: the window less 24 dp each side, as high as the
+        // ruler and the word leave (*The lens*, Size wide).
+        assertEquals("ruler across the window", window.width.value, ruler.width.value, 2f)
+        assertEquals("lens 24 dp in from each side", (window.width - 48.dp).value, gauge.width.value, 2f)
+        assertTrue("gauge is ${gauge.height} high in ${window.height}", gauge.height >= window.height - 170.dp)
         assertTrue("ruler $ruler over the lens $gauge", ruler.bottom <= gauge.top + 0.5.dp)
-        // The word under the lens, in the middle, with the cents under it, all in view.
+        // The word under the lens at its start, with the cents under it, all in view.
         val said = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
         word.assertTextEquals(tuneUp)
         wordCents.assertTextEquals(twelveCentsFlat)
         assertTrue("word $said under the lens $gauge", said.top >= gauge.bottom - 0.5.dp)
         assertTrue("word ends at ${said.bottom}, window at ${window.bottom}", said.bottom <= window.bottom)
-        assertEquals("the word in the middle", ((window.left + window.right) / 2).value, ((said.left + said.right) / 2).value, 1f)
+        assertEquals("the word at the start", (window.left + 24.dp).value, said.left.value, 2f)
         pickerChip.assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
     }
 
     @Test
-    fun compactMeterIsBiggerThanInTheTwoPaneLayout() {
+    fun focusLensIsTallerThanWithThePegs() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
-        val twoPane = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot().width
+        val withPegs = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
         shownCompact.value = true
-        val compact = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot().width
-        // Since Phase 71's last step the ruler and the word share focus mode's height with the lens (Phase 73 lays it out wide).
-        assertTrue("compact gauge $compact, two-pane $twoPane", compact > twoPane * 1.2f)
+        val focus = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
+        // As wide in both; without the chip's row and the pegs the lens gains their height.
+        assertEquals(withPegs.width.value, focus.width.value, 1f)
+        assertTrue("focus lens ${focus.height}, with the pegs ${withPegs.height}", focus.height >= withPegs.height + 40.dp)
     }
 
     @Test
-    fun focusLeavesOutTheStrings() {
-        show(detected(3f, targetString = 1, noteName = "A"), size = PHONE_FULL_SCREEN, compactLandscape = true)
+    fun focusLeavesOutTheStringsButNamesTheOneHeardSmall() {
+        show(detected(3f, targetString = 1, noteName = "A"), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.onNodeWithTag(TunerTestTags.RULER).assert(SemanticsMatcher.expectValue(RulerNote, "A"))
-        stringChip("A2").assertDoesNotExist()
-        stringChip("E2").assertDoesNotExist()
+        compose.onNode(hasText("A2") and hasClickAction()).assertDoesNotExist()
+        compose.onNode(hasText("E2") and hasClickAction()).assertDoesNotExist()
+        // The string small at the end of the word's line, level with the word, silent for TalkBack.
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val string = compose.onNodeWithTag(TunerTestTags.FOCUS_STRING, useUnmergedTree = true).assertTextEquals("A2")
+        val place = string.getBoundsInRoot()
+        val said = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
+        assertEquals("at the end", (window.right - 24.dp).value, place.right.value, 2f)
+        assertTrue("level with the word $said: $place", place.top >= said.top && place.bottom <= said.bottom)
+        assertTrue("hidden from TalkBack", string.fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
+        // Any note has no string.
         shownMode.value = TunerMode.CHROMATIC
         shownState.value = chromatic(-12.3f)
         compose.onNodeWithTag(TunerTestTags.RULER).assert(SemanticsMatcher.expectValue(RulerNote, "E"))
         word.assertTextEquals(spokenTooLow)
+        compose.onNodeWithTag(TunerTestTags.FOCUS_STRING, useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
     fun focusSaysWhichStringToPlayWhileListening() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 2), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 2), size = PHONE_FULL_SCREEN, focusMode = true)
         val hint = compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "D3")).assertIsDisplayed().getBoundsInRoot()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         // The word under the lens, in view (Phase 71).
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
         assertTrue("hint at ${hint.left}, ${hint.top}", hint.top >= gauge.bottom - 0.5.dp && hint.bottom <= window.bottom)
-        stringChip("D3").assertDoesNotExist()
+        compose.onNode(hasText("D3") and hasClickAction()).assertDoesNotExist()
+        // The locked string small beside it.
+        compose.onNodeWithTag(TunerTestTags.FOCUS_STRING, useUnmergedTree = true).assertTextEquals("D3")
     }
 
     @Test
     fun focusTabletShowsTheLensBigUnderTheRuler() {
-        show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE, compactLandscape = true)
+        show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE, focusMode = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("gauge is ${gauge.width} wide in ${window.width}", gauge.width >= window.width * 0.7f)
+        assertEquals("gauge is ${gauge.width} wide in ${window.width}", (window.width - 48.dp).value, gauge.width.value, 2f)
+        // At most half as high as wide: on a tablet's side the room is taller than that.
+        assertTrue("gauge ${gauge.width} × ${gauge.height}", gauge.height <= gauge.width / 2 + 1.dp)
         val ruler = compose.onNodeWithTag(TunerTestTags.RULER).assertIsDisplayed().getBoundsInRoot()
         assertTrue("ruler $ruler over the lens $gauge", ruler.bottom <= gauge.top + 0.5.dp)
         word.assertIsDisplayed()
@@ -2053,25 +2074,26 @@ class TunerContentTest {
 
     @Test
     fun focusWithTheLargestFontShowsTheWordAndTipWhole() {
-        show(detected(-12.3f, targetString = 1).copy(tip = ReceptionTip.TOO_LOUD), fontScale = 2f, size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f, targetString = 1).copy(tip = ReceptionTip.TOO_LOUD), fontScale = 2f, size = PHONE_FULL_SCREEN, focusMode = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         assertWhollyShown(word, "word", scroll = false)
         val tipNode = compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud))
         assertWhollyShown(tipNode, "tip", scroll = false)
         val tip = tipNode.getBoundsInRoot()
         assertTrue("tip ends at ${tip.bottom}, window at ${window.bottom}", tip.bottom <= window.bottom)
-        // Under the word, clear of the ruler, the lens and the exit button.
+        // Under the word, clear of the ruler, the lens and the exit button (which stands over the ruler's end, where it
+        // draws no name).
         assertNoOverlap(
             "tip" to tipNode,
             "ruler" to compose.onNodeWithTag(TunerTestTags.RULER),
             "lens" to compose.onNodeWithTag(TunerTestTags.GAUGE),
-            "exit" to compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS),
         )
+        assertNoOverlap("tip" to tipNode, "exit" to compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS))
     }
 
     @Test
     fun focusSaysWhenTheTunerTakesTheWholeScreen() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.mainClock.autoAdvance = false
         compose.mainClock.advanceTimeBy(FRAME_MS)
         assertEquals("full screen at first", true, fullScreenReports.lastOrNull())
@@ -2088,13 +2110,13 @@ class TunerContentTest {
 
     @Test
     fun focusTheExitButtonSitsInTheTopEndCornerAndBackLeavesToo() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
-        // In the top end corner, clear of the ruler (owner, 2026-10-19: the way out, in place of a tap hint).
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
+        // In the top end corner (owner, 2026-10-19: the way out, in place of a tap hint), over the ruler's end, where
+        // the ruler draws no name (RulerGeometryTest).
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val place = exitButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
-        assertTrue("exit button at $place", place.right >= window.right - 24.dp && place.top <= window.top + 16.dp)
-        val ruler = compose.onNodeWithTag(TunerTestTags.RULER).getBoundsInRoot()
-        assertTrue("exit button at $place, ruler at $ruler", place.left >= ruler.right)
+        assertEquals("its outline ends 16 dp from the side", (window.right - 16.dp).value, place.right.value, 2f)
+        assertTrue("exit button at $place", place.top <= window.top + 12.dp)
         exitButton.performClick()
         assertEquals(listOf(false), focusChanges)
         // Back leaves focus mode too, with the controls shown or not.
@@ -2104,7 +2126,7 @@ class TunerContentTest {
 
     @Test
     fun focusTheControlsButtonGoesBackToFullScreen() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         // With the controls up the button at the chip's row doesn't leave focus mode (it looked as if a tap
         // had already left it): it takes the controls away again, at once.
@@ -2129,6 +2151,24 @@ class TunerContentTest {
         // Back is the app's again: it doesn't touch focus mode.
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         assertEquals(listOf(true), focusChanges)
+    }
+
+    // The button top right and its exit twin in the same corner on its side (2.0, Phase 73).
+    @Test
+    fun onItsSideTheButtonAndItsExitTwinShareTheCorner() {
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN)
+        val enter = enterButton.assertIsDisplayed().getBoundsInRoot()
+        shownCompact.value = true
+        val exit = exitButton.assertIsDisplayed().getBoundsInRoot()
+        assertEquals("the same end", enter.right.value, exit.right.value, 2f)
+        assertEquals("the same top", enter.top.value, exit.top.value, 2f)
+        // And upright, the same corner too.
+        shownCompact.value = false
+        shownSize.value = PHONE
+        val upright = enterButton.assertIsDisplayed().getBoundsInRoot()
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        assertEquals("16 dp from the side upright too", (window.right - 16.dp).value, upright.right.value, 2f)
+        assertEquals("as far from the top", enter.top.value, upright.top.value, 2f)
     }
 
     // Owner, 2026-10-25 (idea A1): the button in the top end corner in both modes, never moving when the mode changes.
@@ -2185,7 +2225,7 @@ class TunerContentTest {
 
     @Test
     fun compactShowsAnErrorWithRetry() {
-        show(TunerUiState.Error(TunerError.MIC_BUSY), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(TunerUiState.Error(TunerError.MIC_BUSY), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.onNodeWithText(context.getString(R.string.error_mic_busy)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.error_retry)).performClick()
         assertEquals(1, retries)
@@ -2193,14 +2233,14 @@ class TunerContentTest {
 
     @Test
     fun uprightPhoneIgnoresCompactLandscape() {
-        show(detected(-12.3f), compactLandscape = true)
+        show(detected(-12.3f), focusMode = true)
         pickerChip.assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
     }
 
     @Test
     fun tappingTheCompactScreenBringsBackTheControlsForAFewSeconds() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
@@ -2216,7 +2256,7 @@ class TunerContentTest {
 
     @Test
     fun touchingTheShownControlsKeepsThemLonger() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS - 1_000)
@@ -2231,7 +2271,7 @@ class TunerContentTest {
 
     @Test
     fun anOpenPanelKeepsTheControls() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
@@ -2253,7 +2293,7 @@ class TunerContentTest {
 
     @Test
     fun talkBackCanShowTheControlsInTheCompactLayout() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true)
         // The reading is still one sentence, and the screen is a "Show controls" button.
         compose.onNode(hasContentDescription("E 2, 12 cents flat, Tighten")).assertExists()
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
@@ -2264,7 +2304,7 @@ class TunerContentTest {
 
     @Test
     fun dutchTalkBackHearsShowControlsInDutch() {
-        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true, locale = "nl")
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true, locale = "nl")
         compose.onNode(hasContentDescription("Bediening tonen")).assertExists()
         val cents = dutch.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
         compose.onNode(hasContentDescription("e 2, $cents, Strakker")).assertExists()

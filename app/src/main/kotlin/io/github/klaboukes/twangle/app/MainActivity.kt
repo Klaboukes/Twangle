@@ -104,6 +104,10 @@ class MainActivity : AppCompatActivity() {
         val container = (application as TwangleApplication).container
         // The first use is noted once: Google's rating window never comes on the first day.
         lifecycleScope.launch { container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis()) }
+        // 1.1's focus mode switch, read once (2.0, Phase 73): on, the first start of 2.0 opens in focus mode.
+        if (savedInstanceState == null) {
+            lifecycleScope.launch { if (container.settingsRepository.takeOldFocusMode()) container.focusMode.value = true }
+        }
         takeLensLook(intent)
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
@@ -176,14 +180,16 @@ class MainActivity : AppCompatActivity() {
 
         // Focus mode keeps the whole app on its side, every tab (Phase 36); off, the screen follows the
         // phone again, turned back upright first where auto-rotate is off (see FocusTurn), except on a
-        // large screen, which goes back to its rotation lock.
+        // large screen, which goes back to its rotation lock. Since 2.0 (Phase 73) the tuner's button alone
+        // turns it on, and nothing saves it: the app holds it ([AppContainer.focusMode]).
+        val focusMode by container.focusMode.collectAsStateWithLifecycle()
         val configuration = LocalConfiguration.current
         val upright = configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
         val largeScreen = configuration.smallestScreenWidthDp >= LARGE_SCREEN_DP
         var focusTurn by rememberSaveable(stateSaver = FocusTurn.Saver) {
-            mutableStateOf(FocusTurn(focusMode = settings.focusMode, uprightBefore = upright))
+            mutableStateOf(FocusTurn(focusMode = focusMode, uprightBefore = upright))
         }
-        val nextTurn = focusTurn.next(settings.focusMode, upright, largeScreen, autoRotate = ::autoRotateOn)
+        val nextTurn = focusTurn.next(focusMode, upright, largeScreen, autoRotate = ::autoRotateOn)
         SideEffect { if (nextTurn != focusTurn) focusTurn = nextTurn }
         val orientation = nextTurn.orientation
         DisposableEffect(orientation) {
@@ -318,6 +324,8 @@ class MainActivity : AppCompatActivity() {
                                         onFullScreenChange = { tunerFullScreen = it },
                                         ratingWindow = container.ratingWindow,
                                         settingsButton = gear,
+                                        focusMode = focusMode,
+                                        onFocusModeChange = { container.focusMode.value = it },
                                     )
                                 }
                                 Screen.METRONOME -> MetronomeTab(container, settings, tools, gear)

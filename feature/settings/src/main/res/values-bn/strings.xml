@@ -28,8 +28,6 @@
     <string name="settings_theme_dark">ডার্ক</string>
     <string name="settings_dynamic_color_title">ওয়ালপেপারের রং</string>
     <string name="settings_dynamic_color_summary">আপনার ওয়ালপেপারের রং ব্যবহার করুন</string>
-    <string name="settings_focus_mode_title">ফোকাস মোড</string>
-    <string name="settings_focus_mode_summary">Twangle-কে আড়াআড়ি করে একটি বড় মিটার দেখায়, দূর থেকেও সহজে পড়া যায়</string>
     <string name="settings_left_handed_title">বাঁহাতি</string>
     <string name="settings_left_handed_summary">কর্ড চার্ট আর স্কেলের নেক উল্টো দিকে ধরা গিটারের জন্য আঁকা হয়</string>
     <string name="settings_keep_screen_on_title">স্ক্রিন চালু রাখুন</string>

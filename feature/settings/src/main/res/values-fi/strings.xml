@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Taustakuvan värit</string>
     <string name="settings_dynamic_color_summary">Käytä taustakuvasi värejä</string>
 
-    <string name="settings_focus_mode_title">Keskittymistila</string>
-    <string name="settings_focus_mode_summary">Kääntää näkymän kyljelleen: yksi iso mittari, helppo lukea kaukaa</string>
     <string name="settings_left_handed_title">Vasenkätinen</string>
     <string name="settings_left_handed_summary">Sointukaaviot ja asteikkokaula piirretään toisin päin pidetylle kitaralle</string>
 

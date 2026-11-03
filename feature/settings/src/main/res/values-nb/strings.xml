@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Bakgrunnsfarger</string>
     <string name="settings_dynamic_color_summary">Bruk farger fra bakgrunnsbildet ditt</string>
 
-    <string name="settings_focus_mode_title">Fokusmodus</string>
-    <string name="settings_focus_mode_summary">Legger Twangle på siden med én stor måler, lett å lese på avstand</string>
     <string name="settings_left_handed_title">Venstrehendt</string>
     <string name="settings_left_handed_summary">Akkordskjemaer og skalahalsen tegnet for en gitar som holdes andre veien</string>
 

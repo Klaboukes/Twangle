@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
@@ -46,11 +47,13 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The compact landscape layout (focus mode) in Ink. On a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the
- * ruler names the note across the top, clear of the exit button, and the lens fills the screen under it with the
- * word under the lens (Phase 71, until Phase 73 lays it out wide); with 2× font the word and a tip are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. The lens (2.0, Phase 71),
- * at its biggest here, is clearly drawn inside its box, light and dark, and skipped by TalkBack, also at 2× font.
- * [TunerContentTest] covers the layout itself.
+ * Focus mode on its side (2.0, Phase 73: the wide layout with nothing but the ruler, the lens and the word) in Ink. On
+ * a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the ruler names the note across
+ * the full width, the exit button over its end in the top end corner, and the lens wide under it (the window less
+ * 24 dp each side, as high as the ruler and the word leave, at most half as high as wide) with the word at the start
+ * of the line under it and the string small at its end; with 2× font the word and a tip are wholly shown; a tap
+ * (light) or TalkBack (dark) brings back the controls. The lens, at its biggest here, is clearly drawn inside its box,
+ * light and dark, and skipped by TalkBack, also at 2× font. [TunerContentTest] and [WideLayoutTest] cover the layout itself.
  */
 @RunWith(AndroidJUnit4::class)
 class CompactLandscapeStylesTest {
@@ -87,7 +90,7 @@ class CompactLandscapeStylesTest {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().background(BACKGROUND).testTag(WINDOW),
                         showSignalBars = true,
-                        compactLandscape = shownCompact.value,
+                        focusMode = shownCompact.value,
                         onStrumCheckChange = {},
                         onFocusModeChange = {},
                     )
@@ -110,13 +113,13 @@ class CompactLandscapeStylesTest {
     private val ruler get() = compose.onNodeWithTag(TunerTestTags.RULER)
     private val gauge get() = compose.onNodeWithTag(TunerTestTags.GAUGE)
     private val cents get() = compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12))
-    private val targetString get() = compose.onNodeWithText("A2")
+    private val focusString get() = compose.onNodeWithTag(TunerTestTags.FOCUS_STRING, useUnmergedTree = true)
     private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON)
     private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
 
     /**
-     * Guitar mode, then chromatic mode: the ruler across the top, the lens filling the screen under it, the word
-     * under the lens, and nothing else shows (no strings or signal bars).
+     * Guitar mode, then chromatic mode: the ruler across the top, the lens wide under it, the word under the lens,
+     * the string small at the end of its line in guitar mode, and nothing else shows (no pegs, chip or signal bars).
      */
     @Test
     fun onItsSideTheMeterFillsTheScreen() {
@@ -126,10 +129,12 @@ class CompactLandscapeStylesTest {
             shownMode.value = TunerMode.AUTO
             compose.waitForIdle()
             assertMeterFillsTheScreen("$case guitar")
+            focusString.assertTextEquals("A2")
             shownState.value = detected(TunerMode.CHROMATIC)
             shownMode.value = TunerMode.CHROMATIC
             compose.waitForIdle()
             assertMeterFillsTheScreen("$case chromatic")
+            focusString.assertDoesNotExist()
         }
     }
 
@@ -155,26 +160,32 @@ class CompactLandscapeStylesTest {
     }
 
     /**
-     * The lens is as big as the window allows (as tall as the window between the ruler and the word less their gaps,
-     * or [METER_SHARE] of its width), the ruler over it at the top, the word with the cents under it, all within the
-     * window, and nothing else of the tuner shows.
+     * The lens is wide (the window less 24 dp each side) and as tall as the window between the ruler and the word
+     * allows less their gaps, or half its width where that is less (a tablet), the ruler across the window over it
+     * at the top, the word with the cents under it at the start, all within the window, and nothing else of the
+     * tuner shows.
      */
     private fun assertMeterFillsTheScreen(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val meter = gauge.assertIsDisplayed().getBoundsInRoot()
         val top = ruler.assertIsDisplayed().getBoundsInRoot()
         val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("$case: meter ${meter.width} wide in ${window.width}", abs((window.width - 48.dp - meter.width).value) < 2f)
+        assertTrue("$case: ruler ${top.width} wide in ${window.width}", abs((window.width - top.width).value) < 2f)
         assertTrue(
             "$case: meter ${meter.width} x ${meter.height} in ${window.width} x ${window.height}, between the ruler $top and the word $word",
-            meter.height >= word.top - top.bottom - FULL_HEIGHT_MARGINS - 1.dp || meter.width >= window.width * METER_SHARE,
+            meter.height >= word.top - top.bottom - FULL_HEIGHT_MARGINS - 1.dp || abs((meter.height - meter.width / 2).value) < 2f,
         )
+        assertTrue("$case: at most half as high as wide", meter.height <= meter.width / 2 + 1.dp)
+        assertTrue("$case: word $word at the start", abs((word.left - window.left - 24.dp).value) < 2f)
         assertInside(window, "meter", meter, case)
         assertInside(window, "ruler", top, case)
         assertInside(window, "word", word, case)
         assertTrue("$case: ruler $top over the lens $meter", top.bottom <= meter.top + 0.5.dp)
         assertTrue("$case: word $word under the lens $meter", word.top >= meter.bottom - 0.5.dp)
         cents.assertIsDisplayed()
-        targetString.assertDoesNotExist()
+        pickerChip.assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
         signalBars.assertDoesNotExist()
     }
 
@@ -216,7 +227,7 @@ class CompactLandscapeStylesTest {
         pickerChip.assertIsDisplayed()
     }
 
-    /** Focus mode's exit button in the top end corner, wholly shown, clear of the ruler, also at 2× font. */
+    /** Focus mode's exit button in the top end corner, over the ruler's end (where it draws no name), wholly shown, also at 2× font. */
     @Test
     fun theExitButtonSitsInTheTopEndCorner() {
         show()
@@ -228,17 +239,17 @@ class CompactLandscapeStylesTest {
                 assertWhollyShown(button, "$case ${scale}x exit button", scroll = false)
                 val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
                 val place = button.getBoundsInRoot()
-                assertTrue("$case ${scale}x exit button at $place", place.right >= window.right - 24.dp && place.top <= window.top + 16.dp)
+                assertTrue("$case ${scale}x exit button at $place", abs((window.right - 16.dp - place.right).value) < 2f && place.top <= window.top + 12.dp)
                 val rulerAt = ruler.getBoundsInRoot()
-                assertTrue("$case ${scale}x exit button at $place, ruler at $rulerAt", place.left >= rulerAt.right)
+                assertTrue("$case ${scale}x exit button at $place, over the ruler's end $rulerAt", place.right <= rulerAt.right && place.top >= rulerAt.top)
             }
             shownFontScale.value = 1f
         }
     }
 
     /**
-     * The lens (the trail, the one look until Phase 72) on a phone (light) and a tablet (dark) on their side.
-     * With the test below, each size is seen in both themes.
+     * The lens (the trail, the default look; `LensLooksTest` and `WideLayoutTest` draw the others wide) on a phone
+     * (light) and a tablet (dark) on their side. With the test below, each size is seen in both themes.
      */
     @Test
     fun onItsSideTheMeterCoversItsBox() {
@@ -255,7 +266,7 @@ class CompactLandscapeStylesTest {
     }
 
     /**
-     * The meter's 2:1 box is covered by the meter, with clear marks on it, and TalkBack finds nothing in it. (1.1 also
+     * The lens's wide box is covered by the lens, with clear marks on it, and TalkBack finds nothing in it. (1.1 also
      * checked each other meter look against Classic here; they went in Phase 67, and the lens's looks get `LensLooksTest`.)
      */
     private fun assertMeterCoversItsBox(case: String) {
@@ -264,11 +275,11 @@ class CompactLandscapeStylesTest {
         val pixels = compose.onNodeWithTag(WINDOW).captureToImage().toPixelMap()
         val meter = gauge.getBoundsInRoot()
         val scale = pixels.width / window.width.value
-        // The 2:1 box, one pixel larger for antialiasing, in the window's pixels.
+        // The box, one pixel larger for antialiasing, in the window's pixels.
         val boxLeft = ((meter.left - window.left).value * scale).toInt() - 1
         val boxTop = ((meter.top - window.top).value * scale).toInt() - 1
         val boxRight = ((meter.right - window.left).value * scale).toInt() + 1
-        val boxBottom = ((meter.top - window.top + meter.width / 2).value * scale).toInt() + 1
+        val boxBottom = ((meter.bottom - window.top).value * scale).toInt() + 1
         val node = gauge.fetchSemanticsNode()
         assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
         assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
@@ -312,7 +323,7 @@ class CompactLandscapeStylesTest {
 
     /**
      * The signal bars stand out from what is behind them in the app's colours, light and dark, in the
-     * full layout on its side (focus mode leaves them out).
+     * wide layout with its controls (focus mode leaves them out).
      */
     @Test
     fun theSignalBarsAreDrawn() {
@@ -356,13 +367,10 @@ class CompactLandscapeStylesTest {
         private val PHONE_LANDSCAPE = DpSize(780.dp, 360.dp)
         private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
 
-        /** The gaps above and below the full-screen lens (12 dp under the ruler, 16 dp over the word), and half a dp for rounding. */
-        private val FULL_HEIGHT_MARGINS = 28.5.dp
+        /** The gaps above and below the wide lens (12 dp under the ruler, 12 dp over the word's line), and half a dp for rounding. */
+        private val FULL_HEIGHT_MARGINS = 24.5.dp
 
         private val SLACK = 0.5.dp
-
-        /** The meter's least share of the window's width where the width, not the height, limits it (a tablet). */
-        private const val METER_SHARE = 0.85f
 
         /** Long enough for the compact layout's cross-fade to finish. */
         private const val FADE_MS = 1_000L

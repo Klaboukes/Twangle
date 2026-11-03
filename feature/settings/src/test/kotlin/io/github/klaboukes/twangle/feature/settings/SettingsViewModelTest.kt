@@ -83,7 +83,6 @@ class SettingsViewModelTest {
         vm.setVibrateInTune(false)
         vm.setStringTickOff(true)
         vm.setShowSignalBars(true)
-        vm.setFocusMode(true)
         vm.setLeftHanded(true)
         runCurrent()
 
@@ -93,7 +92,6 @@ class SettingsViewModelTest {
         assertEquals(false, repository.current.vibrateInTune)
         assertEquals(true, repository.current.stringTickOff)
         assertEquals(true, repository.current.showSignalBars)
-        assertEquals(true, repository.current.focusMode)
         assertEquals(true, repository.current.leftHanded)
     }
 

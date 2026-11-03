@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Kolory tapety</string>
     <string name="settings_dynamic_color_summary">Używaj kolorów z tapety</string>
 
-    <string name="settings_focus_mode_title">Tryb skupienia</string>
-    <string name="settings_focus_mode_summary">Obraca Twangle poziomo z jednym dużym wskaźnikiem, łatwym do odczytania z daleka</string>
     <string name="settings_left_handed_title">Dla leworęcznych</string>
     <string name="settings_left_handed_summary">Diagramy akordów i gryf skal rysowane dla gitary trzymanej odwrotnie</string>
 

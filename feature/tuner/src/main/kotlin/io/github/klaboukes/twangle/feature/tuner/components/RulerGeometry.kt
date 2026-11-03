@@ -45,9 +45,14 @@ fun rulerEmphasis(midi: Int, position: Float): Float {
     return 1f - t * t * (3f - 2f * t)
 }
 
-/** How much of a name at [x] shows on a ruler [width] wide: it fades out over the last [fade] at each end. */
-fun rulerEdgeFade(x: Float, width: Float, fade: Float): Float =
-    if (fade <= 0f) 1f else (minOf(x, width - x) / fade).coerceIn(0f, 1f)
+/**
+ * How much of a name at [x] shows on a ruler [width] wide: none within [clear] of either end (focus mode keeps its
+ * exit button's corner clear, Phase 73), then fading in over [fade].
+ */
+fun rulerEdgeFade(x: Float, width: Float, fade: Float, clear: Float = 0f): Float {
+    val fromEnd = minOf(x, width - x) - clear
+    return if (fade <= 0f) (if (fromEnd >= 0f) 1f else 0f) else (fromEnd / fade).coerceIn(0f, 1f)
+}
 
 /**
  * The 12 names the ruler writes, by [PitchClass.ordinal], in the notation setting's names: a string of

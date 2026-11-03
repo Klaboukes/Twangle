@@ -58,7 +58,8 @@ import kotlin.math.sin
 /**
  * The lens and its look (2.0, Phase 71: the trail; the Light arc and the strobe join in Phase 72; v2-plan.md,
  * *The lens* and *Tests*), light and dark, upright and on its side: the box's size (as wide as the screen less
- * 20 dp each side, 0.85 times as high where there is room, half on a short screen, half on its side), the
+ * 20 dp each side, 0.85 times as high where there is room, half on a short screen; on its side 24 dp in and as high
+ * as the room left, Phase 73), the
  * direction (a flat reading's dot left of the middle, a sharp one's right, on the stretched scale), the in-tune
  * zone (the tuner's window, Relaxed and Precise), the quiet state (the border at rest, nothing moving), the
  * border in the reading's tone and green in tune, nothing red, and the lens as one silent item, the trail's
@@ -111,7 +112,7 @@ class LensLooksTest {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         inTunePrecision = shownPrecision.value,
-                        compactLandscape = shownCompact.value,
+                        focusMode = shownCompact.value,
                         onStrumCheckChange = {},
                         onFocusModeChange = {},
                         lensLook = shownLook.value,
@@ -166,17 +167,26 @@ class LensLooksTest {
         assertTrue("short screen: ${lens.getBoundsInRoot()}", lens.getBoundsInRoot().height / lens.getBoundsInRoot().width < LENS_TALL - 0.05f)
     }
 
+    /**
+     * On its side the lens is wide (2.0, Phase 73, *The lens*, Size wide): the window less 24 dp each side, as high as
+     * the ruler and the word's line leave, so about 3.4 : 1 in focus mode on a phone, flatter with the chip's row and
+     * the pegs.
+     */
     @Test
-    fun onItsSideTheLensIsHalfAsHighAsWide() {
+    fun onItsSideTheLensIsWideAndTakesTheHeightLeft() {
         shownState.value = detected(-12f)
         shownSize.value = PHONE_LANDSCAPE
         show()
-        for (compact in listOf(false, true)) {
+        val shapes = listOf(false, true).associateWith { compact ->
             shownCompact.value = compact
             compose.waitForIdle()
             val box = lens.assertIsDisplayed().getBoundsInRoot()
-            assertEquals("focus $compact: 2:1", LENS_SHORT, box.height / box.width, 0.01f)
+            assertEquals("focus $compact: as wide as the window less 24 dp each side", (PHONE_LANDSCAPE.width - 48.dp).value, box.width.value, 2f)
+            box.width / box.height
         }
+        val focus = shapes.getValue(true)
+        assertTrue("focus mode's lens $focus : 1", focus in 3f..4.2f)
+        assertTrue("with the pegs ${shapes.getValue(false)} : 1, flatter than focus mode's", shapes.getValue(false) > focus)
     }
 
     // ---- The look: the trail ----

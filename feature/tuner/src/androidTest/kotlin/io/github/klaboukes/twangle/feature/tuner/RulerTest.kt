@@ -29,6 +29,7 @@ import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.tuner.components.RulerNote
 import io.github.klaboukes.twangle.feature.tuner.components.RulerQuiet
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -76,7 +77,7 @@ class RulerTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showSignalBars = signalBars,
                         // On its side the two panes, or focus mode's full-screen ruler and lens.
-                        compactLandscape = focus,
+                        focusMode = focus,
                         onStrumCheckChange = {},
                         onFocusModeChange = {},
                     )
@@ -229,20 +230,21 @@ class RulerTest {
     }
 
     /**
-     * Focus mode (until Phase 73 lays it out wide): the ruler across the top names the note (focus mode's small note
-     * went with the big one), clear of the exit button in the top end corner, over the lens; no signal bars.
+     * Focus mode (2.0, Phase 73, the wide layout): the ruler across the full width names the note, more of the scale
+     * shown than upright, over the lens; the exit button in the top end corner stands over its end, where it draws
+     * no name ([rulerEdgeFade]'s clear zone); no signal bars.
      */
     @Test
-    fun focusModeShowsTheRulerOverTheLensClearOfTheExitButton() {
+    fun focusModeShowsTheRulerAcrossTheWidthOverTheLens() {
         show(string(-12.3f), size = PHONE_ON_ITS_SIDE, signalBars = true, focus = true)
         val box = ruler.assertIsDisplayed().getBoundsInRoot()
         assertRulerShows("E")
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        assertEquals("ruler $box across $window", window.width.value, box.width.value, 1f)
         val exit = compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("ruler $box runs under the exit button $exit", box.right <= exit.left)
+        assertTrue("the exit button $exit over the ruler's end $box", exit.right <= box.right && exit.top >= box.top)
         val meter = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
         assertTrue("ruler $box not over the lens $meter", box.bottom <= meter.top)
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        assertTrue("ruler $box not centred in $window", abs((box.left - window.left - (window.right - box.right)).value) < 1f)
         compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertDoesNotExist()
     }
 

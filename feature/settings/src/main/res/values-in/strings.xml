@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Warna wallpaper</string>
     <string name="settings_dynamic_color_summary">Gunakan warna dari wallpaper Anda</string>
 
-    <string name="settings_focus_mode_title">Mode fokus</string>
-    <string name="settings_focus_mode_summary">Memutar Twangle ke samping dengan satu meter besar, mudah dibaca dari jauh</string>
     <string name="settings_left_handed_title">Kidal</string>
     <string name="settings_left_handed_summary">Diagram akor dan leher di Tangga nada digambar untuk gitar yang dipegang terbalik</string>
 

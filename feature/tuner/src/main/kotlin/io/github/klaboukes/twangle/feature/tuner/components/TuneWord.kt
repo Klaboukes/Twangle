@@ -91,6 +91,7 @@ data class NoteReadout(
  * then the trail's [motion]: "…, Tighten, wavering"), or [spokenQuiet] without a note, paced by [speech] so it
  * doesn't talk over itself (pass the screen's one [PacedSpeech]). Each line keeps its height whatever it says, and
  * keeps to one line, set smaller where it doesn't fit, so nothing under it moves. [compact] sets both smaller.
+ * [start] sets both lines at the start, not centred (the wide layout's word in its bottom start corner, Phase 73).
  */
 @Composable
 fun TuneWordLine(
@@ -105,9 +106,11 @@ fun TuneWordLine(
     tone: LiveTone? = null,
     quietInTune: Boolean = false,
     compact: Boolean = false,
+    start: Boolean = false,
     speech: PacedSpeech = rememberPacedSpeech(),
 ) {
     val held = remember { HeldWord() }
+    val textAlign = if (start) TextAlign.Start else TextAlign.Center
     val word = tuneWordFor(heard = readout != null, hint = hint, chromatic = chromatic, previous = held.word)
     // While a heard note's word hasn't settled, "Play a string" stays as it was said, not an empty line.
     val quietShown = if (readout == null) quiet else held.quiet
@@ -152,7 +155,7 @@ fun TuneWordLine(
         if (allInTune) ColorProducer { mixColour(green, ink, inkShare) } else ColorProducer { mixColour(tone?.colour ?: muted, ink, inkShare) }
     }
     val big = if (compact) COMPACT_WORD_SIZE else WORD_SIZE
-    val wordStyle = MaterialTheme.typography.headlineSmall.copy(fontSize = big, lineHeight = WORD_LINE_HEIGHT, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+    val wordStyle = MaterialTheme.typography.headlineSmall.copy(fontSize = big, lineHeight = WORD_LINE_HEIGHT, fontWeight = FontWeight.Bold, textAlign = textAlign)
     val quietStyle = wordStyle.copy(fontSize = if (compact) COMPACT_QUIET_SIZE else QUIET_SIZE, fontWeight = FontWeight.SemiBold)
     val shownStyle = if (word == TuneWord.PLAY) quietStyle else wordStyle
     val smallStyle = MaterialTheme.typography.bodyMedium.let { if (tipText == null && readout != null) it.copy(fontFamily = NumberFont) else it }
@@ -161,7 +164,7 @@ fun TuneWordLine(
     val density = LocalDensity.current
     // The texts are hidden from TalkBack; this layer under them speaks for both, so nothing changing inside can
     // make TalkBack read it again early.
-    Box(modifier.testTag(TunerTestTags.WORD), contentAlignment = Alignment.Center, propagateMinConstraints = true) {
+    Box(modifier.testTag(TunerTestTags.WORD), contentAlignment = if (start) Alignment.CenterStart else Alignment.Center, propagateMinConstraints = true) {
         Box(
             Modifier
                 .matchParentSize()
@@ -171,7 +174,10 @@ fun TuneWordLine(
                     if (speech.announced) liveRegion = LiveRegionMode.Polite
                 },
         )
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(WORD_SPACING)) {
+        Column(
+            horizontalAlignment = if (start) Alignment.Start else Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(WORD_SPACING),
+        ) {
             BasicText(
                 text = musicText(wordText),
                 style = shownStyle,
@@ -193,7 +199,7 @@ fun TuneWordLine(
                 text = small,
                 style = smallStyle,
                 color = if (tipText != null) colors.primary else quietInk,
-                textAlign = TextAlign.Center,
+                textAlign = textAlign,
                 maxLines = 1,
                 softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = SMALL_MIN_SIZE, maxFontSize = smallStyle.fontSize, stepSize = 1.sp),

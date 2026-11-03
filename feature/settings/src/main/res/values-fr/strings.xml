@@ -35,8 +35,6 @@
     <string name="settings_dynamic_color_title">Couleurs du fond d\'écran</string>
     <string name="settings_dynamic_color_summary">Utiliser les couleurs de votre fond d\'écran</string>
 
-    <string name="settings_focus_mode_title">Mode concentration</string>
-    <string name="settings_focus_mode_summary">Met Twangle à l\'horizontale avec un grand cadran, facile à lire de loin</string>
     <string name="settings_left_handed_title">Gaucher</string>
     <string name="settings_left_handed_summary">Diagrammes d\'accords et manche des gammes dessinés pour une guitare tenue dans l\'autre sens</string>
 

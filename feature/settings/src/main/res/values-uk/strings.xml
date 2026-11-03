@@ -28,8 +28,6 @@
     <string name="settings_theme_dark">Темна</string>
     <string name="settings_dynamic_color_title">Кольори шпалер</string>
     <string name="settings_dynamic_color_summary">Брати кольори зі шпалер</string>
-    <string name="settings_focus_mode_title">Режим фокусу</string>
-    <string name="settings_focus_mode_summary">Повертає Twangle горизонтально з одним великим індикатором, який легко читати здалеку</string>
     <string name="settings_left_handed_title">Для шульги</string>
     <string name="settings_left_handed_summary">Схеми акордів і гриф у гамах намальовано для гітари, яку тримають навпаки</string>
     <string name="settings_keep_screen_on_title">Не вимикати екран</string>

@@ -173,11 +173,6 @@ data class AppSettings(
      */
     val lensLook: LensLook = LensLook.DEFAULT,
     /**
-     * Focus mode: on its side the tuner shows the compact layout, one big meter that fills the
-     * screen. Off (the default), it keeps the full two-pane layout (tuner beside its controls).
-     */
-    val focusMode: Boolean = false,
-    /**
      * The player has refused the microphone in Android's own dialog at least once on this install.
      * Android doesn't say whether it will show that dialog again, so the tuner uses this to tell a
      * dialog that was only dismissed (ask again) from one Android no longer shows (only Settings helps).

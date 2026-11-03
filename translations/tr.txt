@@ -284,8 +284,6 @@ feature/settings settings_about_website_title 24a0615d
 feature/settings settings_back 76900f1b
 feature/settings settings_dynamic_color_summary 6cc3fe1d
 feature/settings settings_dynamic_color_title 8599705a
-feature/settings settings_focus_mode_summary 54eab105
-feature/settings settings_focus_mode_title 047cfdeb
 feature/settings settings_group_app 0d04bfeb
 feature/settings settings_group_look a0de5719
 feature/settings settings_group_pitch 1c060516

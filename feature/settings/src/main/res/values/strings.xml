@@ -73,10 +73,6 @@
     <!-- Meter look, the name under its card: bands of stripes that drift while out of tune and stand still in tune, as on a strobe tuner. Shown on one line. -->
     <string name="settings_meter_strobe">Strobe</string>
 
-    <!-- Switch title: focus mode, the tuner sideways full screen with one big meter. -->
-    <string name="settings_focus_mode_title">Focus mode</string>
-    <!-- The line under the Focus mode switch. -->
-    <string name="settings_focus_mode_summary">Turns Twangle on its side with one big meter, easy to read from a distance</string>
     <!-- Switch title: draw charts for left-handed players. -->
     <string name="settings_left_handed_title">Left-handed</string>
     <!-- The line under the Left-handed switch: Practice's chord charts and scale neck are mirrored. -->

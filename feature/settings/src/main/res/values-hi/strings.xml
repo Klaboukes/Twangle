@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">वॉलपेपर के रंग</string>
     <string name="settings_dynamic_color_summary">अपने वॉलपेपर के रंग इस्तेमाल करें</string>
 
-    <string name="settings_focus_mode_title">फ़ोकस मोड</string>
-    <string name="settings_focus_mode_summary">Twangle को आड़ा करके एक बड़ा मीटर दिखाता है, जिसे दूर से भी आसानी से पढ़ सकें</string>
     <string name="settings_left_handed_title">बाएँ हाथ वाले</string>
     <string name="settings_left_handed_summary">कॉर्ड चार्ट और स्केल का फ़िंगरबोर्ड उलटी तरफ़ पकड़े गिटार के लिए बनते हैं</string>
 

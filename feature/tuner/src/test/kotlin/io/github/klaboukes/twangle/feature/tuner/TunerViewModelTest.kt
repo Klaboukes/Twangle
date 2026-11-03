@@ -501,28 +501,6 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `focusMode starts from the saved value and follows the setting`() = runTest(dispatcher) {
-        settings.current = AppSettings(focusMode = true)
-        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), saved = AppSettings(focusMode = true))
-        assertTrue("before the settings arrive", vm.focusMode.value)
-        backgroundScope.launch { vm.focusMode.collect {} }
-        runCurrent()
-        assertTrue(vm.focusMode.value)
-
-        settings.setFocusMode(false)
-        runCurrent()
-        assertFalse("back to the full layout", vm.focusMode.value)
-    }
-
-    @Test
-    fun `focusMode is off by default`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.focusMode.collect {} }
-        runCurrent()
-        assertFalse(vm.focusMode.value)
-    }
-
-    @Test
     fun `keepScreenOn follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         backgroundScope.launch { vm.keepScreenOn.collect {} }

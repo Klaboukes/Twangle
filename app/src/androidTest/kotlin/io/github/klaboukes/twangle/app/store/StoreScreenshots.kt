@@ -144,7 +144,7 @@ class StoreScreenshots(private val shot: Shot) {
         // Play's Norwegian folder is no-NO, but Android finds the texts (values-nb) only for nb.
         showLanguage(if (locale == "no-NO") "nb-NO" else locale)
         runBlocking {
-            settings.setFocusMode(false)
+            container.focusMode.value = false
             settings.setTheme(if (shot.dark) ThemeMode.DARK else ThemeMode.LIGHT)
             // Ink's own colours, not the wallpaper's.
             settings.setDynamicColor(false)
@@ -170,7 +170,7 @@ class StoreScreenshots(private val shot: Shot) {
     fun tearDown() {
         container.testAudioRecorder = null
         container.testMetronomePlayer = null
-        runBlocking { settings.setFocusMode(false) }
+        container.focusMode.value = false
     }
 
     @Test
@@ -265,7 +265,7 @@ class StoreScreenshots(private val shot: Shot) {
                 val screen = capture(
                     after = { scenario ->
                         // Upright again before the activity goes, as focus mode off does with auto-rotate off.
-                        runBlocking { settings.setFocusMode(false) }
+                        container.focusMode.value = false
                         waitUntil { !scenario.landscape() }
                     },
                 ) { scenario ->
@@ -274,7 +274,7 @@ class StoreScreenshots(private val shot: Shot) {
                     // before each step, up to its time-out.
                     runBlocking { settings.setMode(TunerMode.CHROMATIC) }
                     // Focus mode turns the phone on its side, the lens in the big meter's place.
-                    runBlocking { settings.setFocusMode(true) }
+                    container.focusMode.value = true
                     check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }
                     // Without its controls the tuner takes the whole screen: no rail and no status bar to cut off.
                     check(waitUntil { scenario.barsHidden() }) { "focus mode didn't go full screen" }

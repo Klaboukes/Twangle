@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.lens.meterInTuneExit
 import io.github.klaboukes.twangle.core.designsystem.lens.readingToneAmount
@@ -74,7 +75,9 @@ import kotlinx.coroutines.launch
  * [heard] is the heard note as the screen's text has it (null while quiet), only for the ruler's semantics:
  * TalkBack skips the ruler (the reading is spoken elsewhere), and UI tests read the note it shows
  * ([RulerNote], [RulerQuiet]). The signal [bars], when given, stand beside the heard note, above its
- * right-hand neighbour's name, where no name ever reaches.
+ * right-hand neighbour's name, where no name ever reaches. No name or mark is drawn within [edgeClear] of either
+ * end (focus mode's ruler across the full width keeps its exit button's corner clear, Phase 73), as far from both
+ * so the pointer stays in the middle.
  *
  * Its height is fixed ([RULER_HEIGHT]) and its names do not grow with the font size: the ruler is a
  * drawing, like the meter's scale. Nothing here allocates while drawing: the names are measured once.
@@ -91,6 +94,7 @@ fun Ruler(
     precision: InTunePrecision = InTunePrecision.DEFAULT,
     animationsOff: Boolean = false,
     bars: (@Composable () -> Unit)? = null,
+    edgeClear: Dp = 0.dp,
 ) {
     val currentPitch by rememberUpdatedState(pitch)
     val currentCents by rememberUpdatedState(cents)
@@ -162,6 +166,7 @@ fun Ruler(
                     val line = LINE_WIDTH.toPx()
                     val inset = LINE_INSET.toPx()
                     val fade = EDGE_FADE.toPx()
+                    val clear = edgeClear.toPx()
                     val bigBaseline = BIG_BASELINE.toPx()
                     val smallBaseline = SMALL_BASELINE.toPx()
                     val bigPx = BIG_NAME_SIZE.toPx()
@@ -181,7 +186,7 @@ fun Ruler(
                         val last = rulerLastMidi(position, size.width, step)
                         for (midi in first..last) {
                             val x = rulerNoteX(midi, position, pointerX, step)
-                            val edge = rulerEdgeFade(x, size.width, fade)
+                            val edge = rulerEdgeFade(x, size.width, fade, clear)
                             if (edge <= 0f) continue
                             drawLine(muted.copy(alpha = TICK_ALPHA * edge), Offset(x, tickTop), Offset(x, baseY), line)
                             val emphasis = rulerEmphasis(midi, position)

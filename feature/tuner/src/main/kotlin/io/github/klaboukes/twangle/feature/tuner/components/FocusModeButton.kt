@@ -32,10 +32,11 @@ internal enum class FocusAction {
 }
 
 /**
- * Focus mode's button: the style's button ([StyleButton], Phase 63), the same face and size as the "more tools"
- * button, so it stands out on every style's background (owner, 2026-10-19: the bare icon in the top corner was
- * hardly visible, in Space Age least of all). No word, only the icon for its [action]; TalkBack and the long-press
- * tooltip say its name.
+ * Focus mode's button (2.0, Phase 73: one button, no switch in Settings): "full screen" in the top right corner of the
+ * tuner, upright and on its side, and its exit twin in the same corner of the full-screen tuner, so the way out is
+ * where the way in was. The app's button ([StyleButton]), the same face and size as the gear across from it in the
+ * top start corner (owner, 2026-10-19: a bare icon in a corner was hardly visible). No word, only the icon for its
+ * [action]; TalkBack and the long-press tooltip say its name.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

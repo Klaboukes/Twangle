@@ -120,7 +120,6 @@ fun SettingsScreen(
         onStringTickOffChange = viewModel::setStringTickOff,
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onLensLookChange = viewModel::setLensLook,
-        onFocusModeChange = viewModel::setFocusMode,
         onLeftHandedChange = viewModel::setLeftHanded,
         onShowIntonationCheckChange = if (intonationCheck) viewModel::setShowIntonationCheck else null,
         trailLook = trailLook,
@@ -162,7 +161,6 @@ fun SettingsContent(
     onStringTickOffChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
-    onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onShowIntonationCheckChange: ((Boolean) -> Unit)? = null,
@@ -192,7 +190,6 @@ fun SettingsContent(
                 onStringTickOffChange = onStringTickOffChange,
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onLensLookChange = onLensLookChange,
-                onFocusModeChange = onFocusModeChange,
                 onLeftHandedChange = onLeftHandedChange,
                 onShowIntonationCheckChange = onShowIntonationCheckChange,
                 trailLook = trailLook,
@@ -341,7 +338,6 @@ private fun SettingsGroups(
     onStringTickOffChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
-    onFocusModeChange: (Boolean) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     onShowIntonationCheckChange: ((Boolean) -> Unit)?,
     trailLook: Boolean,
@@ -413,13 +409,7 @@ private fun SettingsGroups(
                     onSelect = onLensLookChange,
                     precision = settings.inTunePrecision,
                 )
-                HorizontalDivider()
-                SwitchSetting(
-                    title = stringResource(R.string.settings_focus_mode_title),
-                    summary = stringResource(R.string.settings_focus_mode_summary),
-                    checked = settings.focusMode,
-                    onCheckedChange = onFocusModeChange,
-                )
+                // Focus mode is the tuner's button alone since 2.0 (Phase 73), no switch here.
             }
         }
         SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
@@ -576,7 +566,6 @@ private fun SettingsContentPreview() {
             onStringTickOffChange = {},
             onShowSignalBarsChange = {},
             onLensLookChange = {},
-            onFocusModeChange = {},
             onLeftHandedChange = {},
         )
     }

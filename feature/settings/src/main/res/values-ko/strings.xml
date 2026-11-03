@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">배경화면 색상</string>
     <string name="settings_dynamic_color_summary">배경화면의 색상 사용</string>
 
-    <string name="settings_focus_mode_title">집중 모드</string>
-    <string name="settings_focus_mode_summary">Twangle을 가로로 돌려 큰 미터 하나만 보여줘요. 멀리서도 읽기 쉬워요</string>
     <string name="settings_left_handed_title">왼손잡이</string>
     <string name="settings_left_handed_summary">코드표와 스케일 지판을 반대로 잡은 기타에 맞게 그려요</string>
 

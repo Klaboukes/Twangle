@@ -172,15 +172,6 @@ class TunerViewModel(
         .map { it.inTunePrecision }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.inTunePrecision)
 
-    /**
-     * Whether focus mode is on, so a phone on its side shows the compact layout instead of the
-     * two-pane one (a saved setting). Starts from the saved value, so a turned phone doesn't switch
-     * layout a moment after opening.
-     */
-    val focusMode: StateFlow<Boolean> = settingsRepository.settings
-        .map { it.focusMode }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.focusMode)
-
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)
 
@@ -352,11 +343,6 @@ class TunerViewModel(
     /** The app's language changed (e.g. to "fr"): note names follow its habit unless the player picked a notation. */
     fun setLanguage(language: String) {
         appLanguage.value = language
-    }
-
-    /** Switches focus mode on or off, as its switch in Settings does: the tuner's full-screen button and Back. */
-    fun setFocusMode(enabled: Boolean) {
-        viewModelScope.launch { settingsRepository.setFocusMode(enabled) }
     }
 
     /** Switches to [mode] straight away and saves it, so the next start opens in it too. */

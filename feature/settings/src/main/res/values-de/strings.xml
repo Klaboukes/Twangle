@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Hintergrundfarben</string>
     <string name="settings_dynamic_color_summary">Farben deines Hintergrundbilds verwenden</string>
 
-    <string name="settings_focus_mode_title">Fokusmodus</string>
-    <string name="settings_focus_mode_summary">Dreht Twangle ins Querformat mit einer großen Anzeige, gut aus der Ferne lesbar</string>
     <string name="settings_left_handed_title">Linkshänder</string>
     <string name="settings_left_handed_summary">Akkordbilder und das Griffbrett der Tonleitern für eine andersherum gehaltene Gitarre gezeichnet</string>
 

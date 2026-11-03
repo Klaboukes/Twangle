@@ -34,8 +34,6 @@
     <string name="settings_dynamic_color_title">Cores do papel de parede</string>
     <string name="settings_dynamic_color_summary">Usar as cores do seu papel de parede</string>
 
-    <string name="settings_focus_mode_title">Modo foco</string>
-    <string name="settings_focus_mode_summary">Deixa o Twangle na horizontal com um medidor grande, fácil de ler de longe</string>
     <string name="settings_left_handed_title">Canhoto</string>
     <string name="settings_left_handed_summary">Diagramas de acordes e braço das escalas desenhados para um violão segurado ao contrário</string>
 

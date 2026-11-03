@@ -126,7 +126,7 @@ class IntonationCheckStylesTest {
                         onChordNameChange = { toolChanges += "chord" to it },
                         onCheckAgain = { clicks += "again" },
                         onNextString = { clicks += "next" },
-                        compactLandscape = shownCompact.value,
+                        focusMode = shownCompact.value,
                     )
                 }
             }

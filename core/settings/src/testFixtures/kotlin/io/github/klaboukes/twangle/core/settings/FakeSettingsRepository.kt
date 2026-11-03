@@ -136,8 +136,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setLensLook(look: LensLook) = write { it.copy(lensLook = look) }
 
-    override suspend fun setFocusMode(enabled: Boolean) =
-        write { it.copy(focusMode = enabled) }
+    /** 1.1's saved focus mode switch, null without one; [takeOldFocusMode] hands it over once. */
+    var oldFocusMode: Boolean? = null
+
+    override suspend fun takeOldFocusMode(): Boolean = (oldFocusMode ?: false).also { oldFocusMode = null }
 
     override suspend fun setMicRefused(refused: Boolean) = write { it.copy(micRefused = refused) }
 

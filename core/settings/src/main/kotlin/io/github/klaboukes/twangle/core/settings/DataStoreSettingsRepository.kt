@@ -50,6 +50,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
@@ -264,8 +265,11 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
-    override suspend fun setFocusMode(enabled: Boolean) {
-        save { it[FOCUS_MODE] = enabled }
+    override suspend fun takeOldFocusMode(): Boolean {
+        // Read first, so a start without the key (every start after the first) writes nothing.
+        val wasOn = readable(dataStore).first()[OLD_FOCUS_MODE] ?: return false
+        save { it.remove(OLD_FOCUS_MODE) }
+        return wasOn
     }
 
     override suspend fun setMicRefused(refused: Boolean) {
@@ -410,7 +414,6 @@ class DataStoreSettingsRepository internal constructor(
             showIntonationCheck = prefs[SHOW_INTONATION_CHECK] ?: defaults.showIntonationCheck,
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
-            focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
             micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
             firstUseMillis = prefs[FIRST_USE_MILLIS] ?: defaults.firstUseMillis,
             ratingAsked = prefs[RATING_ASKED] ?: defaults.ratingAsked,
@@ -492,7 +495,8 @@ class DataStoreSettingsRepository internal constructor(
         /** When the app was first used ([AppSettings.firstUseMillis]), and whether Google's rating window was asked for. */
         private val FIRST_USE_MILLIS = longPreferencesKey("first_use_millis")
         private val RATING_ASKED = booleanPreferencesKey("rating_asked")
-        private val FOCUS_MODE = booleanPreferencesKey("focus_mode")
+        /** 1.1's focus mode switch: read once and removed ([takeOldFocusMode]). */
+        private val OLD_FOCUS_MODE = booleanPreferencesKey("focus_mode")
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 
         /** The metronome's [Meter], by its name. */

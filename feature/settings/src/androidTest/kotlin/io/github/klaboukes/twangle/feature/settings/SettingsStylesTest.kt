@@ -93,7 +93,6 @@ class SettingsStylesTest {
                             onStringTickOffChange = {},
                             onShowSignalBarsChange = {},
                             onLensLookChange = {},
-                            onFocusModeChange = {},
                             onLeftHandedChange = {},
                             modifier = Modifier.testTag(WINDOW),
                             dynamicColorAvailable = true,
@@ -171,7 +170,6 @@ class SettingsStylesTest {
             R.string.settings_vibrate_in_tune_title,
             R.string.settings_string_tick_off_title,
             R.string.settings_show_signal_bars_title,
-            R.string.settings_focus_mode_title,
             R.string.settings_group_app,
             R.string.about_title,
         ).map { context.getString(it) } +

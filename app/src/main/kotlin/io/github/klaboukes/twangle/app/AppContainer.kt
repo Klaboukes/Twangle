@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.eartraining.PitchListener
 import io.github.klaboukes.twangle.feature.tuner.RatingWindow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Manual dependency injection: the only place where concrete implementations are created and wired together.
@@ -116,6 +117,14 @@ class AppContainer(private val appContext: Context) {
     /** A test's stand-in for Google's rating window, or null for the real one (see [testAudioRecorder]). */
     @VisibleForTesting
     var testRatingWindow: RatingWindow? = null
+
+    /**
+     * Focus mode (Phase 36; 2.0, Phase 73: the tuner's button alone turns it on, and nothing saves it): on, the whole
+     * app keeps on its side and the tuner shows the wide layout with nothing but the ruler, the lens and the word.
+     * Held here, once per process, so it outlasts the activity turning; a new start opens without it (but the first
+     * start of 2.0 after 1.1's switch was on, `SettingsRepository.takeOldFocusMode`).
+     */
+    val focusMode = MutableStateFlow(false)
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

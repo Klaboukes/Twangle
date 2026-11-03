@@ -115,7 +115,7 @@ class StringRowStylesTest {
                         onStringClick = { clicked += it },
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        compactLandscape = false,
+                        focusMode = false,
                         // As in the app: the strum check's switch above the strings.
                         onStrumCheckChange = {},
                         tunedStrings = shownTuned.value,
@@ -163,7 +163,8 @@ class StringRowStylesTest {
 
     /**
      * On the most strings, upright and in the full layout on its side: every button can be tapped,
-     * a tap just beside a button (between two) still reaches one of them, and TalkBack names each.
+     * a tap just beside a button (between two) still reaches one of them where the row is squeezed (upright; on its side
+     * the wide layout has room for the eight spread out, 8 dp apart like the upright six-string's), and TalkBack names each.
      */
     @Test
     fun everyStringCanBeTappedAndHeard() {
@@ -182,6 +183,8 @@ class StringRowStylesTest {
                 chip.performClick()
                 assertEquals("$layout: tapping $label", listOf(index), clicked)
             }
+            // On its side (the wide layout, Phase 73) the eight have room: spread out, not squeezed.
+            if (layout == Layout.FULL_ON_ITS_SIDE) continue
             for (index in 0 until labels.size - 1) {
                 // In the root's pixels (PhoneScreen's window, at its top left): a forced size larger than the phone gets a smaller density.
                 val left = compose.onNodeWithText(labels[index]).fetchSemanticsNode().boundsInRoot
@@ -387,12 +390,11 @@ class StringRowStylesTest {
     }
 
     /**
-     * The strum check's switch sits above the strings at their end, in the window, for every instrument
-     * (4 to 8 strings), upright and on its side, at normal and at 2x text; on its side focus mode's
-     * button above it ends where it does.
+     * The strum check's switch sits above the strings at their end upright, and beside them after the last one on its
+     * side (the wide layout, Phase 73), in the window, for every instrument (4 to 8 strings), at normal and at 2x text.
      */
     @Test
-    fun theStrumSwitchSitsAboveTheStringsAtTheirEnd() {
+    fun theStrumSwitchSitsAtTheStringsEnd() {
         show(listening = true, focusButton = true)
         for (scale in listOf(1f, 2f)) {
             shownFontScale.value = scale
@@ -413,16 +415,17 @@ class StringRowStylesTest {
                     val first = compose.onNodeWithText(labels.first()).fetchSemanticsNode()
                     val last = compose.onNodeWithText(labels.last()).fetchSemanticsNode()
                     val switchBottom = switchNode.positionInRoot.y + switchNode.size.height
-                    if (switchBottom > first.positionInRoot.y + 1f) fail("$case: the switch ends at $switchBottom px, the strings start at ${first.positionInRoot.y}")
                     val switchEnd = switchNode.positionInRoot.x + switchNode.size.width
                     val stringsEnd = last.positionInRoot.x + last.size.width
-                    assertTrue("$case: the switch ends at $switchEnd px, the strings at $stringsEnd", switchEnd <= stringsEnd + 1f)
                     if (layout == Layout.FULL_ON_ITS_SIDE) {
-                        // On its side the header over the strings is as wide as their faces: focus mode's
-                        // button ends where the switch does (Phase 65).
-                        val focus = compose.onNodeWithTag(TunerTestTags.ENTER_FOCUS).fetchSemanticsNode()
-                        val focusEnd = focus.positionInRoot.x + focus.size.width
-                        assertEquals("$case: focus mode's button ends where the switch does", switchEnd, focusEnd, 1.5f)
+                        // Beside the last string, level with the strings.
+                        assertTrue("$case: the switch starts at ${switchNode.positionInRoot.x} px, the strings end at $stringsEnd", switchNode.positionInRoot.x >= stringsEnd - 1f)
+                        val switchMiddle = switchNode.positionInRoot.y + switchNode.size.height / 2f
+                        val stringsMiddle = last.positionInRoot.y + last.size.height / 2f
+                        assertEquals("$case: the switch level with the strings", stringsMiddle, switchMiddle, 2f)
+                    } else {
+                        if (switchBottom > first.positionInRoot.y + 1f) fail("$case: the switch ends at $switchBottom px, the strings start at ${first.positionInRoot.y}")
+                        assertTrue("$case: the switch ends at $switchEnd px, the strings at $stringsEnd", switchEnd <= stringsEnd + 1f)
                     }
                 }
             }
