@@ -31,6 +31,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -40,9 +41,12 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(testFixtures(project(":core:audio")))
+    testImplementation(testFixtures(project(":core:dsp")))
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(project(":core:testing"))
     androidTestImplementation(testFixtures(project(":core:audio")))
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

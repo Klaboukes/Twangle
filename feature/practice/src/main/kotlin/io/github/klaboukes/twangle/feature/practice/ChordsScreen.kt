@@ -65,6 +65,7 @@ import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShape
@@ -73,6 +74,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleFinder
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
@@ -121,6 +123,11 @@ import kotlinx.coroutines.withContext
  * With [leftHanded] (Phase 57, a setting) the chart and the neck are drawn mirrored ([ChordChart], [ScaleNeck]) for a
  * guitar held the other way round; nothing else moves and TalkBack hears the same words.
  *
+ * On Chords with a [chordListener] (2.0, Phase 74: the chord name, moved here from the tuner) the name shares its row
+ * with Listen ([ChordsListenButton]): a tap listens through the microphone (asked for as the metronome's Listen asks,
+ * [micRefused] and [onMicRefused] as the tuner's), each chord strummed becomes the chord picked, named and charted (and
+ * saved as a pick is), heard in [listenRange] at [a4Hz]; a tap again stops it, and so does leaving Chords.
+ *
  * On Scales with a [drone] player (Phase 48) the name shares its row with the drone button ([DroneButton]): play
  * sounds the scale's root ([droneRootHz], following [a4Hz]) as [savedDrone] says, stop stops it; the drone follows a
  * new root at once (a crossfade) and stops when Scales goes (another tool, another tab, the app or the screen off),
@@ -149,6 +156,10 @@ fun ChordsScreen(
     savedDrone: DroneChoice = DroneChoice(),
     onDroneChange: (DroneChoice) -> Unit = {},
     leftHanded: Boolean = false,
+    chordListener: ChordListener? = null,
+    listenRange: PitchRange = PitchRange.STANDARD,
+    micRefused: Boolean = false,
+    onMicRefused: () -> Unit = {},
 ) {
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
@@ -165,6 +176,8 @@ fun ChordsScreen(
 
     // The drone: only on Scales, and only while it shows.
     val droning = scales && drone != null
+    // Listen: only on Chords, where the build and the instrument have the chord name.
+    val listens = !scales && chordListener != null
     var droneChoice by rememberSaveable(stateSaver = DroneChoice.Saver) { mutableStateOf(savedDrone) }
     var dronePanelOpen by remember { mutableStateOf(false) }
     val dronePlaying = if (drone != null) drone.isPlaying.collectAsStateWithLifecycle().value else false
@@ -243,8 +256,30 @@ fun ChordsScreen(
                 panel(rowWidth)
                 if (droning) dronePanel(false, rowWidth)
             },
-            endWidth = DRONE_BUTTON_WIDTH,
-            end = if (droning && drone != null) {
+            endWidth = if (listens) NAME_PICKER_HEIGHT else DRONE_BUTTON_WIDTH,
+            end = if (listens && chordListener != null) {
+                { height, _ ->
+                    ChordsListenButton(
+                        listener = chordListener,
+                        a4Hz = a4Hz,
+                        range = listenRange,
+                        micRefused = micRefused,
+                        onMicRefused = onMicRefused,
+                        // The chord heard is the one picked: its name and chart show, and it is saved as a pick is.
+                        onChord = { heard ->
+                            if (heard.root != root) {
+                                root = heard.root
+                                onRootChange(heard.root)
+                            }
+                            if (heard.quality != quality) {
+                                quality = heard.quality
+                                onQualityChange(heard.quality)
+                            }
+                        },
+                        height = height,
+                    )
+                }
+            } else if (droning && drone != null) {
                 { height, _ ->
                     DroneButton(
                         playing = dronePlaying,

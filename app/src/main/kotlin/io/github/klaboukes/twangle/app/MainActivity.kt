@@ -56,8 +56,11 @@ import io.github.klaboukes.twangle.core.designsystem.ScreenTint
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
+import io.github.klaboukes.twangle.core.dsp.chord.ChordInstruments
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
+import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.PracticeTool
@@ -473,6 +476,11 @@ class MainActivity : AppCompatActivity() {
                         }
                     },
                     leftHanded = settings.leftHanded,
+                    // Listen (2.0, Phase 74): the chord name, behind its switch, for the instruments it reads.
+                    chordListener = container.chordListener.takeIf { container.toolSwitches.chordNaming && ChordInstruments.offers(settings.instrument) },
+                    listenRange = PitchRange.forLowestNote(NoteMapper(settings.a4Hz).frequencyOf(settings.tuning.lowestNote)),
+                    micRefused = settings.micRefused,
+                    onMicRefused = { if (!settings.micRefused) lifecycleScope.launch { container.settingsRepository.setMicRefused(true) } },
                 )
             }
             PracticeTool.CAPO -> CapoScreen(

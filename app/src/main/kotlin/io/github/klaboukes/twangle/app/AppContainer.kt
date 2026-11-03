@@ -14,6 +14,7 @@ import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.eartraining.PitchListener
+import io.github.klaboukes.twangle.feature.practice.ChordListener
 import io.github.klaboukes.twangle.feature.tuner.RatingWindow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -71,6 +72,18 @@ class AppContainer(private val appContext: Context) {
     /** Ear training's ears: the tuner's pipeline on [earTrainingRecorder] (each screen's ViewModel takes one when it is made). */
     val earTrainingListener: PitchListener
         get() = TunerPitchListener(earTrainingRecorder)
+
+    /**
+     * The microphone for Listen in Chords (2.0, Phase 74), open only while it listens. Its own recorder, as the
+     * metronome's Listen's: the tuner's keeps the microphone 5 s after the tuner leaves, and one recorder reads on a
+     * single thread.
+     */
+    private val chordsRecorder: AudioRecorder by lazy {
+        if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
+    }
+
+    /** Listen in Chords: each strummed chord named from [chordsRecorder]. */
+    val chordListener: ChordListener by lazy { ChordListener(chordsRecorder) }
 
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
     val tonePlayer: TonePlayer

@@ -51,7 +51,8 @@ enum class StrumKind {
  * **The strum check's button** (2.0, Phase 74, after the owner's guitar check: deciding by itself flickered between a
  * string, a strum and a chord). Started with `everySoundIsAStrum`, nothing is decided: every sudden sound is a strum
  * of the open strings and read from its first frame, as 1.1's strum check read it, because the player said a strum
- * comes next. A rise before the strum's first frame still counts with it.
+ * comes next. A rise before the strum's first frame still counts with it. Chords' Listen does the same for chords
+ * (`everySoundIsAChord`, with chords named and no open strings): every sudden sound is a chord, named every frame.
  *
  * Use like [StrumListener]: [push] stops when a frame is ready, so call [next] after each push until it gives
  * [Event.NOTHING]. Nothing allocates after [start] (only a new [PitchRange] makes new buffers). Not thread-safe.
@@ -105,6 +106,18 @@ class StrumWatcher(val sampleRate: Int) {
     var everySoundIsAStrum: Boolean = false
         private set
 
+    /** Every sudden sound is a fretted chord, not decided (Listen in Chords). */
+    var everySoundIsAChord: Boolean = false
+        private set
+
+    // What every sudden sound is, when the player said so; null: each one is decided.
+    private val everySound: StrumKind?
+        get() = when {
+            everySoundIsAStrum -> StrumKind.OPEN_STRINGS
+            everySoundIsAChord -> StrumKind.CHORD
+            else -> null
+        }
+
     // The salience of each note (by MIDI number) in the frame before the latest strum.
     private val beforeSalience = FloatArray(MIDI_NOTES)
 
@@ -157,7 +170,8 @@ class StrumWatcher(val sampleRate: Int) {
     /**
      * Starts listening afresh: for strums of the open strings at [openStringsHz] (Hz, the tuning's order; null:
      * not looked for), chords named when [nameChords], notes on the grid at [a4Hz], frames sized for [range].
-     * With [everySoundIsAStrum] (and open strings given) every sudden sound is a strum of them, nothing decided.
+     * With [everySoundIsAStrum] (and open strings given) every sudden sound is a strum of them, nothing decided; with
+     * [everySoundIsAChord] (and chords named, no strum asked for) every one is a chord.
      * Whatever already rings is where the next strum must rise from.
      */
     fun start(
@@ -166,6 +180,7 @@ class StrumWatcher(val sampleRate: Int) {
         nameChords: Boolean,
         range: PitchRange = PitchRange.STANDARD,
         everySoundIsAStrum: Boolean = false,
+        everySoundIsAChord: Boolean = false,
     ) {
         require(a4Hz > 0f) { "a4Hz must be positive, was $a4Hz" }
         if (range != this.range) {
@@ -185,6 +200,7 @@ class StrumWatcher(val sampleRate: Int) {
             openMidi[i] = (A4_MIDI + SEMITONES_PER_OCTAVE * ln(openHz[i] / a4Hz.toDouble()) / LN2).roundToInt()
         }
         this.everySoundIsAStrum = everySoundIsAStrum && stringCount > 0
+        this.everySoundIsAChord = everySoundIsAChord && nameChords && !this.everySoundIsAStrum
         samples = 0L
         lastStrumCount = 0
         lastRinging = false
@@ -211,11 +227,11 @@ class StrumWatcher(val sampleRate: Int) {
             lastRinging = listener.isRinging
             // A rise before the strum's first frame is part of it (a slow strum, a quick arpeggio, low strings
             // beating): it is decided against what rang before its start.
-            if (strumCount > 0 && readingsSinceStrum == 0 && (everySoundIsAStrum || kind == null && candidateCount == 0)) return next()
+            if (strumCount > 0 && readingsSinceStrum == 0 && (everySound != null || kind == null && candidateCount == 0)) return next()
             strumCount++
             onStrum()
-            // The strum check's button: the player said a strum comes, so it is one, read from its first frame.
-            if (everySoundIsAStrum) kind = StrumKind.OPEN_STRINGS
+            // The strum check's button or Chords' Listen: the player said what comes, so it is that, read from its first frame.
+            everySound?.let { kind = it }
             return Event.STRUM
         }
         if (listener.isFrameReady) {

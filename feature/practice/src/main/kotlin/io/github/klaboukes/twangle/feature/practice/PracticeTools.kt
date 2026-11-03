@@ -51,6 +51,9 @@ object PracticeTestTags {
     /** The Chords tool's screen. */
     const val CHORDS = "practice_chords"
 
+    /** Listen in Chords (2.0, Phase 74): the round button at the end of the chord name's row. */
+    const val CHORDS_LISTEN = "practice_chords_listen"
+
     /** The Scales tool's screen. */
     const val SCALES = "practice_scales"
 

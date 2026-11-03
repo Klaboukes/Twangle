@@ -190,6 +190,10 @@
     <string name="practice_capo_open_chord">open in Chords</string>
     <!-- The drone under Scales (Phase 48), a steady low note on the scale's root: TalkBack's name for its panel. -->
     <string name="practice_drone">Drone</string>
+    <!-- Chords: TalkBack's name for the round microphone button beside the chord's name; a tap listens, and each chord the player strums is named and charted. -->
+    <string name="practice_chords_listen">Listen</string>
+    <!-- TalkBack, the state of that Listen button while it listens to the chords strummed. -->
+    <string name="practice_chords_listening">Listening</string>
     <!-- TalkBack, the ▶ / ■ half of the drone button. -->
     <string name="practice_drone_play">Play the drone</string>
     <!-- TalkBack, the ■ half of the drone button while the drone plays: stops it. -->

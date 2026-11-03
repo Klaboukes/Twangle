@@ -201,6 +201,8 @@ feature/practice practice_chord_sixth a8cf51bc
 feature/practice practice_chord_sus2 23bc6d0b
 feature/practice practice_chord_sus4 8e34623e
 feature/practice practice_chord_type 8a2b23f5
+feature/practice practice_chords_listen 225d29f6
+feature/practice practice_chords_listening 49c46058
 feature/practice practice_drone ca5929f5
 feature/practice practice_drone_fifth 8000a3fe
 feature/practice practice_drone_fifth_octave 8d2d1e36

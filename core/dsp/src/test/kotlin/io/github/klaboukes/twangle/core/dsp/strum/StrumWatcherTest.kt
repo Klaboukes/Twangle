@@ -64,8 +64,9 @@ class StrumWatcherTest {
         chunk: Int = 1024,
         watcher: StrumWatcher = StrumWatcher(sampleRate),
         everySound: Boolean = false,
+        everyChord: Boolean = false,
     ): List<Heard> {
-        watcher.start(open, a4Hz, nameChords, range, everySoundIsAStrum = everySound)
+        watcher.start(open, a4Hz, nameChords, range, everySoundIsAStrum = everySound, everySoundIsAChord = everyChord)
         val heard = mutableListOf<Heard>()
         var start = 0
         while (start < input.size) {
@@ -317,6 +318,26 @@ class StrumWatcherTest {
         assertTrue("$pluck", pluck.first().present.isNotEmpty() && pluck.first().present[0].count { it } < 3)
         // Without open strings there is nothing to strum: sounds are decided as before.
         assertTrue(watch(room(4.0, 0.5 to strum(standard)), open = null, everySound = true).none { it.kind == StrumKind.OPEN_STRINGS })
+    }
+
+    @Test
+    fun `with Listen in Chords every sound is a chord, named from its first frame`() {
+        for (shape in ChordShapes.OPEN + ChordShapes.BARRE + ChordShapes.POWER) {
+            val heard = watch(room(4.0, 0.5 to strum(ChordShapes.hz(shape.midi))), open = null, everyChord = true)
+            assertEquals("$shape: $heard", 1, heard.size)
+            val chord = heard.single()
+            assertSame("$shape", StrumKind.CHORD, chord.kind)
+            assertTrue("$shape named ${chord.chords}", chord.chords.count { it === shape.chord } * 2 > chord.chords.size)
+        }
+        // A string alone is read as a chord too, and names none (ChordDetector wants a chord's notes).
+        val single = PluckSynth(rate, durationSeconds = 3f).run {
+            start(standard[1])
+            FloatArray(seconds(3.0)).also { render(it, 0, it.size) }
+        }
+        val pluck = watch(room(4.0, 0.5 to single), open = null, everyChord = true).single()
+        assertSame(StrumKind.CHORD, pluck.kind)
+        // Chord names off, nothing is a chord.
+        assertTrue(watch(room(4.0, 0.5 to strum(standard)), open = null, nameChords = false, everyChord = true).none { it.kind == StrumKind.CHORD })
     }
 
     @Test
