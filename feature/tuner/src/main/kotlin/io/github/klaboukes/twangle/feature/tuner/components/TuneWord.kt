@@ -79,8 +79,9 @@ data class NoteReadout(
  * string", "Playing D3") in a quieter face, the line under it empty. The tuner's [hint] is already held steady
  * ([SteadyHint], so the word never flickers); while a heard note's hint hasn't settled the word stays what it was.
  *
- * Its colour is the reading's [tone] (the [LiveTone] the lens and the screen's tint share: muted at rest, amber far
- * off easing toward green, green in tune), read while drawing, so a reading recolours it without recomposing; on a
+ * Its colour is the reading's [tone] (the [LiveTone] the lens and the screen's tint share: amber far off easing toward
+ * green, green in tune; at rest nearly the ink, [REST_WORD_INK], not the muted colour, which read too faint on a
+ * dimmed screen, the owner's review of 2026-11-03), read while drawing, so a reading recolours it without recomposing; on a
  * light background it is taken a little toward the ink, as much as the amber needs to read ([wordInkShare]). A
  * [tip] about the sound ("Play a bit louder") takes the small line's place, in the accent colour. With [quietInTune]
  * (every string ticked off, the string tick-off's "In tune. Play.") the [quiet] text is in the in-tune colour,
@@ -151,8 +152,14 @@ fun TuneWordLine(
     }
     val green = tokens.inTune
     val allInTune = word == TuneWord.PLAY && quietInTuneShown
-    val wordColour = remember(tone, ink, inkShare, muted, green, allInTune) {
-        if (allInTune) ColorProducer { mixColour(green, ink, inkShare) } else ColorProducer { mixColour(tone?.colour ?: muted, ink, inkShare) }
+    // "Play a string" in nearly the ink: the reading's tone comes in over it as a note does.
+    val restWord = mixColour(muted, ink, REST_WORD_INK)
+    val wordColour = remember(tone, ink, inkShare, restWord, green, allInTune) {
+        when {
+            allInTune -> ColorProducer { mixColour(green, ink, inkShare) }
+            tone == null -> ColorProducer { restWord }
+            else -> ColorProducer { mixColour(mixColour(restWord, tone.heard, tone.presence), ink, inkShare) }
+        }
     }
     val big = if (compact) COMPACT_WORD_SIZE else WORD_SIZE
     val wordStyle = MaterialTheme.typography.headlineSmall.copy(fontSize = big, lineHeight = WORD_LINE_HEIGHT, fontWeight = FontWeight.Bold, textAlign = textAlign)
@@ -300,6 +307,10 @@ internal fun WaitingLine(text: String, compact: Boolean, modifier: Modifier = Mo
 }
 
 /** The tool views' waiting line: in the display face, at a reading size that grows with the system's text size. */
+
+/** How far toward the ink the resting word ("Play a string") is from the muted colour. */
+internal const val REST_WORD_INK = 0.75f
+
 private val HINT_SIZE = 32.sp
 private val COMPACT_HINT_SIZE = 24.sp
 private val HINT_LINE_HEIGHT = 1.2.em

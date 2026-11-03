@@ -80,7 +80,7 @@ class WidgetStateTest {
         val base = WidgetState.from(AppSettings())
         // A4, the meter's look and the metronome don't change the widget.
         assertEquals(base, WidgetState.from(AppSettings(a4Hz = 442f, metronomeBpm = 90)))
-        assertNotEquals(base, WidgetState.from(AppSettings(dynamicColor = false)))
+        assertNotEquals(base, WidgetState.from(AppSettings(dynamicColor = true)))
         assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.DROP_D)))
         assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.STANDARD.lowered(2))))
     }

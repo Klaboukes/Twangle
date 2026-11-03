@@ -115,12 +115,20 @@ internal fun contrast(a: Color, b: Color): Float {
 /** WCAG AA for body text. */
 internal const val AA_TEXT = 4.5f
 
+/**
+ * The muted text's own floor (WCAG AAA's 7:1) on the background and the surface: the owner's review of 2026-11-03
+ * found "Play a string" and Settings' small lines hard to read on a dimmed screen at AA's 4.5:1 (light) and 6.3:1
+ * (dark), so Ink's muted went from #666F7C to #4D5560 (light) and #8D96A3 to #A8B0BC (dark), and a wallpaper's is
+ * taken toward its ink as far as it needs ([withReadableMuted]).
+ */
+internal const val MUTED_TEXT = 7f
+
 // Ink: a calm stage, one blue accent, amber far off and green in tune.
 private val InkLight = Palette(
     background = Color(0xFFF6F7F9),
     surface = Color(0xFFFFFFFF),
     ink = Color(0xFF14181D),
-    muted = Color(0xFF666F7C),
+    muted = Color(0xFF4D5560),
     track = Color(0xFFE1E5EA),
     accent = Color(0xFF1A6FC4),
     onAccent = Color(0xFFFFFFFF),
@@ -135,7 +143,7 @@ private val InkDark = Palette(
     background = Color(0xFF0E1116),
     surface = Color(0xFF171B22),
     ink = Color(0xFFEEF1F5),
-    muted = Color(0xFF8D96A3),
+    muted = Color(0xFFA8B0BC),
     track = Color(0xFF262C35),
     accent = Color(0xFF5FC4FF),
     onAccent = Color(0xFF0E1116),

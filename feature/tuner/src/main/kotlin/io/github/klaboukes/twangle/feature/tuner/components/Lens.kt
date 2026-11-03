@@ -302,8 +302,8 @@ private const val GLOW_ALPHA_IN_TUNE = 0.3f
 private const val GLOW_RINGS = 12
 
 /** ♭ and ♯: their middles this far in from the bottom corners, this big. */
-private val SIGN_INSET = 14.dp
-private val SIGN_SIZE = 12.dp
+private val SIGN_INSET = 16.dp
+private val SIGN_SIZE = 18.dp
 
 /** The frame rate the moving look asks for: the S26's full rate. Phones without it pick the nearest they have. */
 private const val LENS_FRAME_RATE = 120f

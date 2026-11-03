@@ -29,6 +29,12 @@ class StylePaletteTest {
     }
 
     @Test
+    fun `muted text reads at 7 to 1 on the background and the surface, also on a dimmed screen`() = forEach { name, p, _ ->
+        assertContrast("$name muted on background", p.muted, p.background, MUTED_TEXT)
+        assertContrast("$name muted on surface", p.muted, p.surface, MUTED_TEXT)
+    }
+
+    @Test
     fun `text on filled buttons and selected containers is readable`() = forEach { name, p, dark ->
         val scheme = p.toColorScheme(dark)
         assertContrast("$name onAccent on accent", p.onAccent, p.accent, AA_TEXT)
@@ -65,7 +71,7 @@ class StylePaletteTest {
         assertEquals(Color(0xFF0E1116), dark.background)
         assertEquals(Color(0xFF171B22), dark.surface)
         assertEquals(Color(0xFFEEF1F5), dark.ink)
-        assertEquals(Color(0xFF8D96A3), dark.muted)
+        assertEquals(Color(0xFFA8B0BC), dark.muted)
         assertEquals(Color(0xFF262C35), dark.track)
         assertEquals(Color(0xFF5FC4FF), dark.accent)
         assertEquals(Color(0xFFFFB648), dark.farOff)
@@ -74,7 +80,7 @@ class StylePaletteTest {
         assertEquals(Color(0xFFF6F7F9), light.background)
         assertEquals(Color(0xFFFFFFFF), light.surface)
         assertEquals(Color(0xFF14181D), light.ink)
-        assertEquals(Color(0xFF666F7C), light.muted)
+        assertEquals(Color(0xFF4D5560), light.muted)
         assertEquals(Color(0xFFE1E5EA), light.track)
         assertEquals(Color(0xFF1A6FC4), light.accent)
         assertEquals(Color(0xFFD98400), light.farOff)

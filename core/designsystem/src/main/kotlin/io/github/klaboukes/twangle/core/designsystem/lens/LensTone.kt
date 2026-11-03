@@ -7,8 +7,10 @@ import kotlin.math.abs
 /**
  * How far the reading's tone has eased from amber (far off, 0) toward green (in tune, 1) for a note [cents]
  * off with the in-tune [window] (docs/architecture/v2-plan.md, *The lens*, the reading's tone):
- * `0.7 · clamp(1 − (|cents| − window) / 14)`, so amber from about 19 cents out and never quite green until
- * the tuner says in tune, which then takes it the rest of the way ([readingToneShare]). NaN (no note) gives 0.
+ * `0.35 · clamp(1 − (|cents| − window) / 5)`, so amber from 10 cents out (Relaxed), at most a third of the way just
+ * outside the zone, and green only once the tuner says in tune, which takes it the rest of the way
+ * ([readingToneShare]). Until the owner's review of 2026-11-03 it was `0.7 · … / 14`: 10 cents flat already read lime,
+ * nearly the in-tune green. NaN (no note) gives 0.
  */
 fun readingToneAmount(cents: Float, window: Float): Float {
     if (cents.isNaN()) return 0f
@@ -25,7 +27,7 @@ fun readingToneAmount(cents: Float, window: Float): Float {
  * share also lets go with the reading: whole up to the tuner's own release, [exit] cents out (7 Relaxed, 3
  * Precise, [meterInTuneExit], so it never pales while the tuner still says in tune), gone [TUNED_LET_GO_CENTS]
  * further out, whatever the fade's clock says. A reading that far out is shown as the cents call for: about a
- * third of the way from amber at 13 cents with Relaxed. NaN (the note died away) keeps [tuned] as it fades.
+ * amber at 13 cents with Relaxed. NaN (the note died away) keeps [tuned] as it fades.
  */
 fun readingToneShare(cents: Float, window: Float, exit: Float, tuned: Float): Float {
     val near = readingToneAmount(cents, window)
@@ -43,7 +45,7 @@ fun meterInTuneExit(precision: InTunePrecision): Float = when (precision) {
 }
 
 /** The most of the way to green a note gets before it is in tune. */
-private const val TONE_NEAR_SHARE = 0.7f
+private const val TONE_NEAR_SHARE = 0.35f
 
 /** Over how many cents outside the window the tone eases from amber. */
-private const val TONE_EASE_CENTS = 14f
+private const val TONE_EASE_CENTS = 5f

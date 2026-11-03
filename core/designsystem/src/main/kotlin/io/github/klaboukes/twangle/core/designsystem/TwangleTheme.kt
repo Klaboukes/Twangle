@@ -78,10 +78,26 @@ fun usesWallpaperColors(dynamicColor: Boolean): Boolean =
 fun colorSchemeFor(context: Context, dark: Boolean, dynamicColor: Boolean): ColorScheme =
     if (usesWallpaperColors(dynamicColor)) {
         val wallpaper = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        wallpaper.keepingInTuneApart(dark)
+        wallpaper.keepingInTuneApart(dark).withReadableMuted()
     } else {
         tokensFor(dark).scheme
     }
+
+/**
+ * This wallpaper scheme with its muted text ([ColorScheme.onSurfaceVariant]) taken toward its ink ([ColorScheme.onSurface])
+ * just far enough to read at [MUTED_TEXT] on its background and surface, as Ink's own muted does. Already there, it is left alone.
+ */
+internal fun ColorScheme.withReadableMuted(): ColorScheme {
+    var share = 0f
+    var muted = onSurfaceVariant
+    while (share < 1f && minOf(contrast(muted, background), contrast(muted, surface)) < MUTED_TEXT) {
+        share = (share + MUTED_STEP).coerceAtMost(1f)
+        muted = lerp(onSurfaceVariant, onSurface, share)
+    }
+    return if (muted == onSurfaceVariant) this else copy(onSurfaceVariant = muted)
+}
+
+private const val MUTED_STEP = 0.05f
 
 /**
  * How near, in degrees of perceptual hue ([hueOf]), the wallpaper's accent may come to the "in tune" green before it gives

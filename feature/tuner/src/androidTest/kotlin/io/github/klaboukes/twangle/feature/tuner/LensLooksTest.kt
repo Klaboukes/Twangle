@@ -50,6 +50,7 @@ import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.util.concurrent.TimeUnit
 import kotlin.math.PI
+import io.github.klaboukes.twangle.core.designsystem.lens.readingToneAmount
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -561,7 +562,8 @@ class LensLooksTest {
 
     /** The tone of a reading [cents] off, not in tune: amber eased toward green near the zone (`readingToneAmount`). */
     private fun tone(cents: Float): Color {
-        val t = 0.7f * (1f - (abs(cents) - 5f) / 14f).coerceIn(0f, 1f)
+        // The reading's own tone (Relaxed's 5-cent window), so this test follows the rule ([readingToneAmount]).
+        val t = readingToneAmount(cents, 5f)
         val a = colours.farOff
         val b = colours.green
         return Color(a.red + (b.red - a.red) * t, a.green + (b.green - a.green) * t, a.blue + (b.blue - a.blue) * t)

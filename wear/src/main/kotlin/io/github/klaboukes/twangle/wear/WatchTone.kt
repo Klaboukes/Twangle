@@ -28,10 +28,10 @@ object WatchTone {
     const val EXIT = InTuneDetector.DEFAULT_EXIT_CENTS
 
     /** The most of the way to green a note gets before it is in tune. */
-    const val NEAR_SHARE = 0.7f
+    const val NEAR_SHARE = 0.35f
 
     /** Over how many cents outside the window the tone eases from amber. */
-    const val EASE_CENTS = 14f
+    const val EASE_CENTS = 5f
 
     /** How far past the release the in-tune green has gone. */
     const val LET_GO_CENTS = 4f

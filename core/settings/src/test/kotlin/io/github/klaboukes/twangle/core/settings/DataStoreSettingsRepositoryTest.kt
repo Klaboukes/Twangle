@@ -107,7 +107,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.GERMAN, settings.notationFor("de"))
         assertEquals(InTunePrecision.RELAXED, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals(true, settings.dynamicColor)
+        assertEquals("Ink, not the wallpaper's colours (2026-11-03)", false, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
@@ -750,7 +750,7 @@ class DataStoreSettingsRepositoryTest {
         assertFalse("1.1's Show tuning help on gives no tick-off", settings.stringTickOff)
         // Look: Retro, Bold and the Loupe go; the strobe wave under the Loupe makes the lens the strobe
         assertEquals(ThemeMode.DARK, settings.theme)
-        assertTrue(settings.dynamicColor)
+        assertFalse("1.1's default, never switched, gives Ink (2026-11-03)", settings.dynamicColor)
         assertTrue(settings.showSignalBars)
         assertEquals(LensLook.STROBE, settings.lensLook)
         // Metronome

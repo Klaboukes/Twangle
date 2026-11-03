@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
+import androidx.compose.ui.graphics.Color
 import io.github.klaboukes.twangle.core.designsystem.paletteFor
 import io.github.klaboukes.twangle.core.designsystem.tintedBackground
 import org.junit.Assert.assertEquals
@@ -19,8 +20,11 @@ class WordColourTest {
     fun `the cents keep their muted colour where it reads`() {
         val p = paletteFor(dark = true)
         assertEquals(0f, mutedInkShare(p.muted, p.ink, p.background, p.farOff, p.inTune), 0f)
+        // Light too since its muted went to 7:1 (2026-11-03): it reads on the tinted screen by itself.
         val light = paletteFor(dark = false)
-        assertTrue(mutedInkShare(light.muted, light.ink, light.background, light.farOff, light.inTune) in 0.01f..0.5f)
+        assertEquals(0f, mutedInkShare(light.muted, light.ink, light.background, light.farOff, light.inTune), 0f)
+        // A fainter muted, as the wallpaper's may be, is still taken toward the ink.
+        assertTrue(mutedInkShare(Color(0xFF8A929E), light.ink, light.background, light.farOff, light.inTune) in 0.01f..0.8f)
     }
 
     @Test

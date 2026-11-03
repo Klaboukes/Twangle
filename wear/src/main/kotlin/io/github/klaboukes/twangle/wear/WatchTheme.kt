@@ -14,7 +14,7 @@ import androidx.wear.compose.material3.MaterialTheme
 object WatchColors {
     val background = Color.Black
     val ink = Color(0xFFEEF1F5)
-    val muted = Color(0xFF8D96A3)
+    val muted = Color(0xFFA8B0BC)
     val track = Color(0xFF262C35)
     val accent = Color(0xFF5FC4FF)
     val onAccent = Color(0xFF0E1116)

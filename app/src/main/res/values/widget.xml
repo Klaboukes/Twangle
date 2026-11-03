@@ -8,5 +8,5 @@
     <color name="widget_surface">#FFFFFF</color>
     <color name="widget_line">#E1E5EA</color>
     <color name="widget_ink">#14181D</color>
-    <color name="widget_muted">#666F7C</color>
+    <color name="widget_muted">#4D5560</color>
 </resources>

@@ -392,9 +392,18 @@ private fun SettingsGroups(
                 )
             }
         }
-        // Light or dark first, short rows right under the heading, then the lens's cards, then how the charts are drawn.
+        // The lens's cards first, the one look a player picks (the owner's review, 2026-11-03), then light or dark, then
+        // how the charts are drawn.
         SettingsGroup(title = stringResource(R.string.settings_group_look)) {
             Rows {
+                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
+                MeterPicker(
+                    looks = LensLook.offered(trailLook),
+                    selected = LensLook.shown(settings.lensLook, trailLook),
+                    onSelect = onLensLookChange,
+                    precision = settings.inTunePrecision,
+                )
+                HorizontalDivider()
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_theme_title),
                     options = ThemeMode.entries,
@@ -410,14 +419,6 @@ private fun SettingsGroups(
                         onCheckedChange = onDynamicColorChange,
                     )
                 }
-                HorizontalDivider()
-                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
-                MeterPicker(
-                    looks = LensLook.offered(trailLook),
-                    selected = LensLook.shown(settings.lensLook, trailLook),
-                    onSelect = onLensLookChange,
-                    precision = settings.inTunePrecision,
-                )
                 HorizontalDivider()
                 // Mirrors the chord charts and the scale neck.
                 SwitchSetting(

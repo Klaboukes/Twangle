@@ -448,7 +448,8 @@ class SettingsContentTest {
     /**
      * 1.1's meter look cards, Calm or Bold, "Below the note" and the wave look cards went in Phase 67 (one meter and
      * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left. Meter stands in the Look
-     * group (Phase 75; the Tuner screen group's only row until then), under light or dark, over Left-handed charts.
+     * group (Phase 75; the Tuner screen group's only row until then), first, over light or dark and Left-handed charts
+     * (the owner's review, 2026-11-03).
      */
     @Test
     fun meterOffersTheThreeLooksAsCardsWithTheSavedOnePicked() {
@@ -462,7 +463,7 @@ class SettingsContentTest {
         val theme = top(R.string.settings_theme_title)
         val meter = top(R.string.settings_meter_title)
         val leftHanded = top(R.string.settings_left_handed_title)
-        assertTrue("Meter under Light or dark, Left-handed charts under it", meter > theme && leftHanded > meter)
+        assertTrue("Meter over Light or dark, Left-handed charts under both", theme > meter && leftHanded > theme)
         val names = mapOf(
             LensLook.TRAIL to R.string.settings_meter_trail,
             LensLook.LIGHT_ARC to R.string.settings_meter_light_arc,
@@ -479,7 +480,7 @@ class SettingsContentTest {
             val node = card.fetchSemanticsNode()
             val top = node.positionInRoot.y
             val bottom = top + node.size.height
-            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and Left-handed charts ($leftHanded)", top > meter && bottom < leftHanded)
+            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and Light or dark ($theme)", top > meter && bottom < theme)
             node.positionInRoot.x
         }
         assertEquals("Trail · Light arc · Strobe, in one row", lefts.sorted(), lefts)
@@ -538,10 +539,11 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_string_tick_off_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.settings_group_look)),
-            // Light or dark first, the wallpaper colours with it, then the lens's cards and the charts' hand.
+            // The lens's cards first (the owner's review, 2026-11-03), then light or dark with the wallpaper colours, then
+            // the charts' hand.
+            top(context.getString(R.string.settings_meter_title)),
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_dynamic_color_title)),
-            top(context.getString(R.string.settings_meter_title)),
             top(context.getString(R.string.settings_left_handed_title)),
             top(context.getString(R.string.settings_group_twangle)),
             top(context.getString(R.string.settings_language_title)),

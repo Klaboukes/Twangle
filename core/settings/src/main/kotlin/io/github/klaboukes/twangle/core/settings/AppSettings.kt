@@ -146,9 +146,11 @@ data class AppSettings(
     /**
      * Colours from the wallpaper (Android 12+) for the background, surfaces, text and accent; the in-tune green and the
      * far-off amber stay the app's own. Ignored on older phones. (1.1's styles, saved as `visual_style`, are no longer
-     * read: every one shows as the one look, Ink.)
+     * read: every one shows as the one look, Ink.) Off unless switched on (the owner's review of 2026-11-03: on by
+     * default, most players never saw Ink, and a green wallpaper took from the in-tune green); a 1.1 player who
+     * switched it on keeps it, one who left it at 1.1's default gets Ink.
      */
-    val dynamicColor: Boolean = true,
+    val dynamicColor: Boolean = false,
     /** Stop the screen from dimming while the tuner is open and hears playing (it lets go after a quiet spell). */
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */

@@ -83,7 +83,7 @@ class FanGeometryTest {
                 val y = fan.lights[i * 3 + 1]
                 val r = fan.lights[i * 3 + 2] * 1.08f
                 assertTrue("$case light $i at ($x, $y)", x - r >= 0f && x + r <= width && y - r >= 0f && y + r <= height)
-                // The lens's ♭ and ♯: 12 dp signs, their middles 14 dp in from the bottom corners.
+                // The lens's ♭ and ♯: 18 dp signs, their middles 16 dp in from the bottom corners.
                 for (signX in listOf(SIGN_INSET * dp, width - SIGN_INSET * dp)) {
                     val near = abs(x - signX) < (SIGN_HALF + 2f) * dp + r && abs(y - (height - SIGN_INSET * dp)) < (SIGN_HALF + 2f) * dp + r
                     assertTrue("$case light $i over a sign", !near)
@@ -123,7 +123,7 @@ class FanGeometryTest {
     }
 
     private companion object {
-        const val SIGN_INSET = 14f
-        const val SIGN_HALF = 6f
+        const val SIGN_INSET = 16f
+        const val SIGN_HALF = 9f
     }
 }
