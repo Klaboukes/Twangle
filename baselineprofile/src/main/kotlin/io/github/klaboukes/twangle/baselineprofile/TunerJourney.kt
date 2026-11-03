@@ -10,19 +10,32 @@ import androidx.test.uiautomator.Until
 const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
 
 // Test tags from :app (`NavigationTestTags`), :feature:tuner (`TunerTestTags`), :feature:metronome
-// (`MetronomeTestTags`), :feature:practice (`PracticeTestTags`) and :feature:settings. UI Automator
-// sees them as resource ids, which stay the same in every app language.
+// (`MetronomeTestTags`), :feature:practice (`PracticeTestTags`), :feature:eartraining (`EarTrainingTestTags`) and
+// :feature:settings. UI Automator sees them as resource ids, which stay the same in every app language.
+private const val TUNER_TAB_TAG = "nav_tuner"
 private const val METRONOME_TAB_TAG = "nav_metronome"
 private const val PRACTICE_TAB_TAG = "nav_practice"
 // The gear that opens Settings (Phase 69; the Settings tab until then, with the same id).
 private const val SETTINGS_GEAR_TAG = "nav_settings"
 private const val PICKER_CHIP_TAG = "tuner_picker_chip"
+// Focus mode (2.0, Phase 73): the button at the end of the chip's row, the full-screen tuner, its exit button in the
+// same corner, and among the controls a tap brings up there, the button back to full screen.
+private const val ENTER_FOCUS_TAG = "tuner_enter_focus"
+private const val EXIT_FOCUS_TAG = "tuner_exit_focus"
+private const val HIDE_CONTROLS_TAG = "tuner_hide_controls"
+private const val FOCUS_FULL_SCREEN_TAG = "tuner_compact"
 
 private const val PRACTICE_CARDS_TAG = "practice_cards"
 private const val PRACTICE_BACK_TAG = "practice_back"
 private const val PRACTICE_CHORDS_TAG = "practice_card_chords"
 private const val PRACTICE_SCALES_TAG = "practice_card_scales"
 private const val PRACTICE_CAPO_TAG = "practice_card_capo"
+private const val PRACTICE_EAR_TRAINING_TAG = "practice_card_ear_training"
+private const val EAR_TRAINING_TAG = "ear_training"
+private const val EAR_INTERVALS_TAG = "ear_exercise_intervals"
+private const val EAR_CHORD_TYPE_TAG = "ear_exercise_chord_type"
+private const val EAR_REPLAY_TAG = "ear_replay"
+private const val METRONOME_RULER_TAG = "metronome_ruler"
 private const val METRONOME_START_TAG = "metronome_start"
 private const val METRONOME_FASTER_TAG = "metronome_faster"
 private const val METRONOME_SLOWER_TAG = "metronome_slower"
@@ -75,7 +88,9 @@ fun MacrobenchmarkScope.waitForTuner() {
 
 /**
  * What a user does after the tuner opens: listens, opens the picker sheet and turns Any note (chromatic
- * mode) on, then off again the same way, back to the lens (whose trail draws while the tuner listens). The tuner
+ * mode) on, then off again the same way, back to the lens (whose trail draws while the tuner listens), then focus
+ * mode: on (the app turns on its side, the tuner full screen), a tap for its controls and back to full screen, and
+ * off again with its exit button. The tuner
  * has no tools menu since 2.0's Phase 74 (the strum check and the chord name happen by themselves, beside the
  * tuner; the 12th-fret check's button shows only after its Settings switch is turned on, which a fresh install
  * hasn't). A short tone burst near the phone during the run also covers the "note detected" readout; the profile
@@ -89,12 +104,36 @@ fun MacrobenchmarkScope.useTuner() {
     Thread.sleep(LISTEN_MS)
     toggleAnyNote()
     Thread.sleep(LISTEN_MS)
+
+    useFocusMode()
 }
 
 /**
- * The Metronome tab (a few clicks, faster, slower, tap tempo, stopped again), then the Practice tab:
- * Chords (a chord and its next shape), Scales (a scale on the neck) and the Capo helper. Each tool is
- * picked on the tool button's list, so it works whichever tool the tab opens on (the one used last).
+ * Focus mode on, its full-screen tuner a while, its controls brought up with a tap and put away with their button,
+ * then off with the exit button in the top end corner. Focus mode turns the app on its side even with auto-rotate
+ * off; turned off it asks for upright again, and the phone is then held upright (UI Automator's rotation lock, as the
+ * generator's run expects, docs/architecture/performance.md), so what follows starts upright.
+ */
+private fun MacrobenchmarkScope.useFocusMode() {
+    clickTag(ENTER_FOCUS_TAG)
+    val fullScreen = device.wait(Until.findObject(By.res(FOCUS_FULL_SCREEN_TAG)), TIMEOUT_MS) ?: error("Focus mode didn't open")
+    Thread.sleep(LISTEN_MS)
+    fullScreen.click() // Its controls.
+    clickTag(HIDE_CONTROLS_TAG)
+    check(device.wait(Until.hasObject(By.res(EXIT_FOCUS_TAG)), TIMEOUT_MS)) { "Focus mode's full screen didn't come back" }
+    Thread.sleep(SHOW_MS)
+    clickTag(EXIT_FOCUS_TAG)
+    check(device.wait(Until.gone(By.res(FOCUS_FULL_SCREEN_TAG)), TIMEOUT_MS)) { "Focus mode didn't end" }
+    device.setOrientationNatural()
+    waitForTuner()
+    Thread.sleep(SHOW_MS)
+}
+
+/**
+ * The Metronome tab (a few clicks, the ruler swiped and tapped, faster, slower, tap tempo, stopped again), then the
+ * Practice tab's cards: Chords (a chord and its next shape), Scales (a scale on the neck), the Capo helper and Ear
+ * training (its first question, then the other two exercises, each question sounded again), each opened from its
+ * card, then the Tune tab.
  */
 fun MacrobenchmarkScope.usePractice() {
     waitForTuner()
@@ -102,6 +141,7 @@ fun MacrobenchmarkScope.usePractice() {
     check(device.wait(Until.hasObject(By.res(METRONOME_START_TAG)), TIMEOUT_MS)) { "The metronome didn't open" }
     clickTag(METRONOME_START_TAG)
     Thread.sleep(METRONOME_MS / 2)
+    swipeRuler()
     clickTag(METRONOME_FASTER_TAG)
     clickTag(METRONOME_SLOWER_TAG)
     Thread.sleep(METRONOME_MS / 2)
@@ -129,11 +169,35 @@ fun MacrobenchmarkScope.usePractice() {
     clickTag(CAPO_LOWER_TAG)
     Thread.sleep(SHOW_MS)
 
+    pickTool(PRACTICE_EAR_TRAINING_TAG)
+    check(device.wait(Until.hasObject(By.res(EAR_TRAINING_TAG)), TIMEOUT_MS)) { "Ear training didn't open" }
+    Thread.sleep(SHOW_MS) // Its first question (Play it back listens: the tuner's pitch pipeline runs).
+    for (exercise in listOf(EAR_INTERVALS_TAG, EAR_CHORD_TYPE_TAG)) {
+        clickTag(exercise)
+        clickTag(EAR_REPLAY_TAG)
+        Thread.sleep(SHOW_MS)
+    }
+
     device.pressBack() // To the cards.
     check(device.wait(Until.hasObject(By.res(PRACTICE_CARDS_TAG)), TIMEOUT_MS)) { "Back didn't lead to the cards" }
-    device.pressBack()
+    clickTag(TUNER_TAB_TAG)
     waitForTuner()
 }
+
+/** Swipes the metronome's tempo ruler both ways (a flick that glides and settles) and taps it beside its middle. */
+private fun MacrobenchmarkScope.swipeRuler() {
+    val ruler = device.wait(Until.findObject(By.res(METRONOME_RULER_TAG)), TIMEOUT_MS) ?: error("No tempo ruler")
+    ruler.swipe(Direction.LEFT, RULER_SWIPE)
+    Thread.sleep(SHOW_MS)
+    ruler.swipe(Direction.RIGHT, RULER_SWIPE)
+    Thread.sleep(SHOW_MS)
+    val bounds = ruler.visibleBounds
+    device.click(bounds.centerX() + bounds.width() / 8, bounds.centerY())
+    Thread.sleep(TAP_SETTLE_MS)
+}
+
+/** How much of the ruler's width a swipe covers. */
+private const val RULER_SWIPE = 0.4f
 
 /**
  * Opens the picker sheet from its chip and taps its Any note switch, which closes the sheet. The sheet

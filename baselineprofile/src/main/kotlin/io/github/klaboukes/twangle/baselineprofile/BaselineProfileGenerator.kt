@@ -8,12 +8,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Records which classes and methods the app uses at startup, on the tuner screen with its tools, in
- * the Practice tab and in the settings and About, so Android can compile them ahead of time on
- * install instead of interpreting them on first use.
+ * Records which classes and methods the app uses at startup and on 2.0's screens (the tuner with its
+ * picker sheet and focus mode, the Metronome tab, the Practice cards and their tools, Settings and
+ * About), so Android can compile them ahead of time on install instead of interpreting them on first use.
  *
- * Run on demand with a phone connected: `./gradlew :app:generateBaselineProfile`. The result is
- * written to `app/src/release/generated/baselineProfiles/` and committed.
+ * Run on demand with a phone connected and held upright (docs/architecture/performance.md, *Baseline
+ * Profile*): `./gradlew :app:generateBaselineProfile` with the class filter. The result is written to
+ * `app/src/release/generated/baselineProfiles/` and committed.
  */
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {
@@ -30,21 +31,21 @@ class BaselineProfileGenerator {
         waitForTuner()
     }
 
-    /** Listening, switching modes and trying each of the tuner's tools. */
+    /** Listening, Any note on and off through the picker sheet, and focus mode on and off. */
     @Test
     fun tunerJourney() = rule.collect(packageName = TARGET_PACKAGE) {
         startAtTuner()
         useTuner()
     }
 
-    /** The Practice tab: the metronome, Chords (chords and scales) and the Capo helper. */
+    /** The Metronome tab (its ruler, Start, tap tempo), then the Practice cards: Chords, Scales, Capo and Ear training. */
     @Test
     fun practiceJourney() = rule.collect(packageName = TARGET_PACKAGE) {
         startAtTuner()
         usePractice()
     }
 
-    /** The settings, scrolled through, and About. */
+    /** The gear to Settings, scrolled through, and About. */
     @Test
     fun settingsJourney() = rule.collect(packageName = TARGET_PACKAGE) {
         startAtTuner()
