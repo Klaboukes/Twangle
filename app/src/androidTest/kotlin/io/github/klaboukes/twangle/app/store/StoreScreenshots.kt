@@ -102,8 +102,8 @@ class StoreScreenshots(private val shot: Shot) {
         INSTRUMENTS(dark = false, focus = 0.24f..0.80f),
 
         /**
-         * Two phones side by side, each whole (2.0, Phase 74: nothing to switch on): a strum of the open strings, each
-         * peg's mark above it and the count in the word's place; and a strummed chord's name in the ruler's place.
+         * Two phones side by side, each whole (2.0, Phase 74): the strum check, its button tapped and the open strings
+         * strummed, each string's column and the count; and Chords with Listen on, a strummed chord named and charted.
          */
         STRUM_AND_CHORD(dark = true),
         CHORDS_AND_CAPO(dark = false),
@@ -226,15 +226,22 @@ class StoreScreenshots(private val shot: Shot) {
                 }
                 save(screen, bubble = spoken ?: error("TalkBack's reading of the note wasn't found"))
             }
-            // The tuner hears both by itself (2.0, Phase 74): no mode to switch on.
+            // The strum check's button, then Listen in Chords (2.0, Phase 74, after the owner's guitar check).
             Shot.STRUM_AND_CHORD -> {
-                // The open strings strummed, two of them off: each peg's mark above it and "4 of 6 in tune".
+                // The button tapped, then the open strings strummed, two of them off: each string's column and "4 of 6 in tune".
                 val strings = capture(name = "${shot.number}a") {
+                    click(TunerTestTags.STRUM_BUTTON)
+                    waitFor(TunerTestTags.STRUM_PANEL)
                     recorder.play(StoreSounds.strum(StoreSounds.OPEN_STRINGS, STRUM_SECONDS, StoreSounds.OPEN_STRINGS_OFF))
                     settle(OPEN_STRUM_SETTLE_MS)
                 }
-                // A fretted chord's name in the ruler's place: C, G, then A minor, pictured while the last rings.
+                // Listen in Chords: C, G, then A minor, pictured while the last rings (Listen settles a strum behind, so on
+                // the Xiaomi it shows G major, named and charted).
                 val chord = capture(name = "${shot.number}b") {
+                    click(NavigationTestTags.tab(Destination.PRACTICE))
+                    click(PracticeTestTags.card(PracticeTool.CHORDS))
+                    waitFor(PracticeTestTags.CHORDS)
+                    click(PracticeTestTags.CHORDS_LISTEN)
                     recorder.play(
                         StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
                             StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +

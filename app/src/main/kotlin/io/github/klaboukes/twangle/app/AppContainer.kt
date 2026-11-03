@@ -82,8 +82,11 @@ class AppContainer(private val appContext: Context) {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
 
-    /** Listen in Chords: each strummed chord named from [chordsRecorder]. */
-    val chordListener: ChordListener by lazy { ChordListener(chordsRecorder) }
+    /** Listen in Chords: each strummed chord named from [chordsRecorder], or from a test's [testAudioRecorder]. */
+    val chordListener: ChordListener
+        get() = testAudioRecorder?.let { ChordListener(it) } ?: micChordListener
+
+    private val micChordListener: ChordListener by lazy { ChordListener(chordsRecorder) }
 
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
     val tonePlayer: TonePlayer

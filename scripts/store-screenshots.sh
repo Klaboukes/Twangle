@@ -139,6 +139,15 @@ for locale in "${locales[@]}"; do
     fi
 done
 [ $status = 0 ] && [ $# -eq 0 ] && echo "$made_at" > "build/$kind-screenshots.made-at"
-# Every picture made: share the set with the owner's other PC.
-[ $status = 0 ] && scripts/share-store-screenshots.sh push $kind
+# Every picture made: share the set with the owner's other PC, but only pictures of what is on main: the shared
+# set is the store's, and a 2.0 branch's pictures in it would go out with 1.1's listing (2026-11-03, a v2 check of
+# one language replaced the shared English pictures).
+if [ $status = 0 ]; then
+    git fetch -q origin main 2>/dev/null
+    if git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
+        scripts/share-store-screenshots.sh push $kind
+    else
+        echo "Not shared on GitHub: this commit isn't on main (the shared set is the store's)."
+    fi
+fi
 exit $status

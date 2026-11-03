@@ -294,14 +294,12 @@ class TunerViewModel(
     private val heardNow = MutableStateFlow<HeardStrum>(HeardStrum.None)
 
     /**
-     * What the tuner shows of what it heard besides one string (2.0, Phase 74): a strum of the open strings with each
-     * string's verdict (the marks above the pegs, "4 of 6 in tune" in the word's place), or a fretted chord's name (in
-     * the ruler's place), decided by the analysis beside the tuner ([PitchPipeline.listen], [StrumHearing]) with no
-     * mode to switch on, and kept as [HeardShown] says: while it rings the tuner's own note is set aside ([state]
-     * then waits), the strings tuned one by one after a strum take the tuner's verdicts, a chord gives way to a note
-     * read after it, and all goes after [HeardShown.QUIET_SECONDS] without a sound. Its brakes are
-     * [ToolSwitches.strumCheck] and [ToolSwitches.chordNaming]; open strings only in guitar mode (chords in Any note
-     * too), and nothing while the 12th-fret check is on or a reference tone sounds. Written on the DSP thread,
+     * The strum check's strum (2.0, Phase 74): after a tap on its button, the next strum of the open strings with each
+     * string's verdict (its column in the lens's place, "4 of 6 in tune" in the word's place), heard by the analysis
+     * beside the tuner ([PitchPipeline.listen], [StrumHearing]) and kept as [HeardShown] says: while it rings the
+     * tuner's own note is set aside ([state] then waits), and the strings tuned one by one after it take the tuner's
+     * verdicts. Its brake is [ToolSwitches.strumCheck]; only in guitar mode, and nothing while the 12th-fret check is
+     * on or a reference tone sounds. Written on the DSP thread,
      * [HeardStrum.None] again when the tuning, the A4 or the mode changes and when listening stops.
      */
     val heardStrum: StateFlow<HeardStrum> = heardNow

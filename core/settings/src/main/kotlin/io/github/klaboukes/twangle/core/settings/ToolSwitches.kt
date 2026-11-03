@@ -17,15 +17,15 @@ package io.github.klaboukes.twangle.core.settings
  */
 data class ToolSwitches(
     /**
-     * Phase 18: the strum check, a mode in the tuner until 2.0's Phase 74; since then the brake of the strum marks:
-     * off, a strum of the open strings shows no marks above the pegs and no count, and isn't listened for.
+     * Phase 18: the strum check, the tuner's button above the pegs (2.0, Phase 74): off, the button isn't there and
+     * no strum is listened for.
      */
     val strumCheck: Boolean,
     /** Phase 29: the intonation check, a mode in the tuner. */
     val intonationCheck: Boolean,
     /**
-     * Phase 30: "What chord is this?", a mode in the tuner until 2.0's Phase 74; since then the brake of the chord name
-     * in the ruler's place: off, no chord is named.
+     * Phase 30: "What chord is this?", a mode in the tuner until 2.0's Phase 74; since then Listen in Practice's
+     * Chords: off, Chords has no Listen button.
      */
     val chordNaming: Boolean,
     /**
@@ -34,7 +34,7 @@ data class ToolSwitches(
      * or defaulted trail shows as the Light arc ([lensLooks], [shownLensLook]).
      */
     val pitchTrail: Boolean,
-    /** Phase 32: the Metronome tab becomes Practice, with chord and scale charts. Off: the plain Metronome tab. */
+    /** Phase 32: the Practice tab, with its tools' cards (2.0: beside the Metronome tab). Off: no Practice tab. */
     val practiceTab: Boolean,
     /** Phase 32: Chords, in Practice, so only with [practiceTab]. */
     val chords: Boolean,
