@@ -602,8 +602,6 @@ class TunerViewModel(
 
             override fun openStrings(): FloatArray? = (options.value ?: initial).heardStrings
 
-            override fun everySoundIsAStrum(): Boolean = true
-
             override fun range(): PitchRange = (options.value ?: initial).pitchRange
         }
         // The button's turn whose strum is shown: a new one clears the marks of the strum before.

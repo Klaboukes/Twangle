@@ -12,6 +12,7 @@ import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.pitch.SustainCheck
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
+import io.github.klaboukes.twangle.core.dsp.strum.StrumKind
 import io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -123,7 +124,8 @@ class PitchPipeline(
             }
             // The strum analysis hears the same chunk.
             val a4 = hearing?.a4Hz() ?: Float.NaN
-            if (a4.isNaN()) {
+            val open = hearing?.openStrings()
+            if (a4.isNaN() || open == null) {
                 if (watching) {
                     watching = false
                     watcher?.let { heard.paused(it) }?.let { emit(it) }
@@ -131,14 +133,13 @@ class PitchPipeline(
                 return@collect
             }
             val watch = watcher ?: StrumWatcher(rate).also { watcher = it }
-            val open = hearing!!.openStrings()
-            val heardRange = hearing.range()
-            val everySound = hearing.everySoundIsAStrum()
-            val changed = heard.changed(open, a4, heardRange, everySound)
+            val heardRange = hearing!!.range()
+            val changed = heard.changed(open, a4, heardRange)
             if (!watching || changed) {
-                heard.started(watch, open, a4, heardRange, everySound)
-                // The tuner names no chords (Practice's Chords does, with Listen).
-                watch.start(open, a4, nameChords = false, range = heardRange, everySoundIsAStrum = everySound)
+                heard.started(watch, open, a4, heardRange)
+                // Every sound a strum of the open strings: the button said one comes. The tuner names no chords
+                // (Practice's Chords does, with Listen).
+                watch.start(open, a4, StrumKind.OPEN_STRINGS, heardRange)
                 if (changed) emit(HeardReading.FRESH)
                 watching = true
             }

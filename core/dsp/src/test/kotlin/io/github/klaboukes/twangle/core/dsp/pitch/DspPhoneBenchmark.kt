@@ -11,6 +11,7 @@ import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.dsp.chord.ChordDetector
 import io.github.klaboukes.twangle.core.dsp.chord.ChordResult
 import io.github.klaboukes.twangle.core.dsp.strum.StrumDetector
+import io.github.klaboukes.twangle.core.dsp.strum.StrumKind
 import io.github.klaboukes.twangle.core.dsp.strum.StrumResult
 import io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
@@ -211,7 +212,7 @@ object DspPhoneBenchmark {
         )
         for ((name, input) in streams) {
             val watcher = StrumWatcher(48_000)
-            watcher.start(guitar, 440f, nameChords = true)
+            watcher.start(guitar, 440f, StrumKind.OPEN_STRINGS)
             val hops = input.size / 1024
             var worst = 0L
             val stats = time(hops, 2 * hops) { i ->

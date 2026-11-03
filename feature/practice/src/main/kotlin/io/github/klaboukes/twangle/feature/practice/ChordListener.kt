@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordSettler
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
+import io.github.klaboukes.twangle.core.dsp.strum.StrumKind
 import io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,7 @@ class ChordListener(
     /** The chords strummed, at concert pitch [a4Hz], heard in [range] (the low range for a bass). */
     fun chords(a4Hz: Float, range: PitchRange = PitchRange.STANDARD): Flow<Chord> = flow {
         val watcher = StrumWatcher(recorder.config.sampleRate)
-        watcher.start(openStringsHz = null, a4Hz = a4Hz, nameChords = true, range = range, everySoundIsAChord = true)
+        watcher.start(openStringsHz = null, a4Hz = a4Hz, every = StrumKind.CHORD, range = range)
         val settler = ChordSettler()
         var last: Chord? = null
         recorder.chunks().collect { chunk ->

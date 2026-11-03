@@ -95,26 +95,17 @@ class HeardStrumFlowTest {
     }
 
     @Test
-    fun `the pipeline takes a fretted chord or one string for no strum of the open strings, and names no chord`() = runTest {
-        for (signal in listOf(cChord, aString)) {
+    fun `after the button every sound is a strum, one string and a chord too, and no chord is named`() = runTest {
+        for (signal in listOf(aString, cChord)) {
             val heard = listen(signal, hearing()).filterIsInstance<HeardReading>()
-            assertEquals(listOf(StrumKind.NONE), heard.mapNotNull { it.kind }.distinct())
-            assertTrue(heard.none { it.strum != null })
+            assertEquals(listOf(StrumKind.OPEN_STRINGS), heard.mapNotNull { it.kind }.distinct())
         }
     }
 
     @Test
-    fun `with every sound a strum, the pipeline reads one string as a strum too`() = runTest {
-        val everySound = object : StrumHearing {
-            override fun a4Hz() = 440f
-            override fun openStrings() = standardHz
-            override fun everySoundIsAStrum() = true
-            override fun range() = PitchRange.STANDARD
-        }
-        val strum = listen(openStrum, everySound).filterIsInstance<HeardReading>()
-        assertTrue(strum.mapNotNull { it.strum?.strings }.size >= 10)
-        val single = listen(aString, everySound).filterIsInstance<HeardReading>()
-        assertEquals(listOf(StrumKind.OPEN_STRINGS), single.mapNotNull { it.kind }.distinct())
+    fun `without open strings the pipeline listens for no strum`() = runTest {
+        val heard = listen(openStrum, hearing(open = null))
+        assertTrue(heard.none { it is HeardReading })
     }
 
     @Test
