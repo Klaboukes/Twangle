@@ -9,7 +9,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.strum.StrumKind
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
-import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -125,7 +124,7 @@ class HeardStrumFlowTest {
     // --- The ViewModel ---
 
     // The 12th-fret check's way in is on (its Settings switch, off on a fresh install), for the test that turns it on.
-    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
+    private val settings = FakeSettingsRepository()
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel(signal: FloatArray, tools: ToolSwitches = ToolSwitches.ALL_ON) =

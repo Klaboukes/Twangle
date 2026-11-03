@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
     <string name="settings_string_tick_off_title">Odhaczaj nastrojone struny</string>
     <string name="settings_string_tick_off_summary">Znaczek na każdej strunie, gdy jest nastrojona, i „Nastrojone. Graj.”, gdy wszystkie</string>
-    <string name="settings_intonation_check_title">Test 12. progu</string>
-    <string name="settings_intonation_check_summary">Przycisk nad strunami do sprawdzenia intonacji</string>
     <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
     <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski przy dźwięku pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
 

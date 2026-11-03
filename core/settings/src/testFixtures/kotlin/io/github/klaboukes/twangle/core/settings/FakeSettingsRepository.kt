@@ -130,8 +130,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setStringTickOff(enabled: Boolean) = write { it.copy(stringTickOff = enabled) }
 
-    override suspend fun setShowIntonationCheck(enabled: Boolean) = write { it.copy(showIntonationCheck = enabled) }
-
     override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
 
     override suspend fun setLensLook(look: LensLook) = write { it.copy(lensLook = look) }
@@ -140,6 +138,9 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     var oldFocusMode: Boolean? = null
 
     override suspend fun takeOldFocusMode(): Boolean = (oldFocusMode ?: false).also { oldFocusMode = null }
+
+    /** Nothing is left to forget in memory. */
+    override suspend fun forgetDroppedSettings() = Unit
 
     override suspend fun setMicRefused(refused: Boolean) = write { it.copy(micRefused = refused) }
 

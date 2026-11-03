@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
@@ -107,7 +108,10 @@ import kotlinx.coroutines.launch
  * row keeps it so, another row picks that tuning as written. With [onAnyNoteChange] (the tuner's, not
  * the Practice tools'), the sheet ends in the Any note switch ([AnyNoteRow]), on while [anyNote]: the
  * tuner's chromatic mode (`TunerMode.CHROMATIC`), set here since the mode switch went; a tap on it
- * calls [onAnyNoteChange] and closes the sheet, as a pick does.
+ * calls [onAnyNoteChange] and closes the sheet, as a pick does. With [onIntonationCheck] (the tuner's in guitar mode,
+ * for an instrument the 12th-fret check is offered for, in a build with the check; 2.0, Phase 71, the owner's pick B of
+ * docs/design/v2-intonation-way-in-preview.html, 2026-11-03) the sheet's last row is the 12th-fret check
+ * ([IntonationCheckRow]): a tap closes the sheet and calls it, which starts the check on the tuner.
  */
 @Composable
 fun InstrumentTuningPanel(
@@ -124,6 +128,7 @@ fun InstrumentTuningPanel(
     onLoweredByChange: ((Int) -> Unit)? = null,
     anyNote: Boolean = false,
     onAnyNoteChange: ((Boolean) -> Unit)? = null,
+    onIntonationCheck: (() -> Unit)? = null,
 ) {
     PickerPanel(
         instrument,
@@ -136,6 +141,7 @@ fun InstrumentTuningPanel(
         onLoweredByChange = onLoweredByChange,
         anyNote = anyNote,
         onAnyNoteChange = onAnyNoteChange,
+        onIntonationCheck = onIntonationCheck,
     )
 }
 
@@ -145,8 +151,8 @@ fun InstrumentTuningPanel(
  * three or four rows wrapped, so they scroll as before rather than wrap as the mock-up's five did), then
  * [instrument]'s tunings with their strings ([tuning] ticked): the presets, then the player's own
  * ([mine]). The list scrolls when it is taller than the room, and opens scrolled to the ticked tuning.
- * "Lower by" and Any note stay under it, always in view; in a short window (a phone on its side) side by
- * side, so the list keeps its rows.
+ * "Lower by", Any note and the 12th-fret check stay under it, always in view; in a short window (a phone on its
+ * side) the first two side by side and the check at the list's end, so the list keeps its rows.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,6 +167,7 @@ private fun PickerPanel(
     onLoweredByChange: ((Int) -> Unit)?,
     anyNote: Boolean,
     onAnyNoteChange: ((Boolean) -> Unit)?,
+    onIntonationCheck: (() -> Unit)?,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -209,6 +216,11 @@ private fun PickerPanel(
             withFrameNanos { }
             ticked.bringIntoView()
         }
+        // Last, as the check is used now and then, by those who set up their own guitar (owner, 2026-11-03); in a short
+        // window at the list's end, since a row of its own under the list left a tuning and a half in view there.
+        val intonationRow = onIntonationCheck?.let { start ->
+            @Composable { inList: Boolean -> IntonationCheckRow(onClick = { close(start) }, inList = inList) }
+        }
         Column(Modifier.heightIn(max = maxHeight)) {
             val titleStyle = MaterialTheme.typography.titleLarge
             val title = @Composable { modifier: Modifier ->
@@ -255,6 +267,10 @@ private fun PickerPanel(
                 mine.onNew?.let { onNew -> NewTuningRow(onClick = { close { onNew(instrument) } }) }
                 // What the tuner can't do for this instrument, so nobody looks for it (the 12-string's strum check).
                 instrumentNoteRes(instrument.id)?.let { InstrumentNote(stringResource(it)) }
+                if (short && intonationRow != null) {
+                    HorizontalDivider(Modifier.padding(top = 10.dp), color = scheme.outlineVariant)
+                    intonationRow(true)
+                }
             }
             // The tuning as written can go this far down; the row is left out where it can't go at all
             // (a five-string bass's B0) and while another instrument's tunings are shown.
@@ -272,6 +288,7 @@ private fun PickerPanel(
                     })
                 }
             }
+            val lastRow = intonationRow?.takeIf { !short }?.let { row -> @Composable { row(false) } }
             if (short && lowerBy != null && anyNoteRow != null) {
                 // A short window (a phone on its side): the two side by side, so the list keeps its rows
                 // (one above the other they left a tuning and a half in view).
@@ -281,7 +298,7 @@ private fun PickerPanel(
                     Box(Modifier.weight(1f)) { anyNoteRow() }
                 }
             } else {
-                for (row in listOfNotNull(lowerBy, anyNoteRow)) {
+                for (row in listOfNotNull(lowerBy, anyNoteRow, lastRow)) {
                     HorizontalDivider(color = scheme.outlineVariant)
                     row()
                 }
@@ -402,6 +419,49 @@ internal fun AnyNoteRow(on: Boolean, onChange: (Boolean) -> Unit) {
         }
         // The row handles the tap, so the switch itself doesn't.
         Switch(checked = on, onCheckedChange = null)
+    }
+}
+
+/**
+ * The sheet's last row in guitar mode: "12th-fret check" over "Is the saddle in the right place?", and a chevron at its
+ * end (pointing the way the text reads), as the row opens something rather than switching. The whole row is one button
+ * ([onClick]); TalkBack hears both lines. [inList]: at the end of the tunings' list (a short window), its text in line
+ * with theirs.
+ */
+@Composable
+internal fun IntonationCheckRow(onClick: () -> Unit, inList: Boolean = false) {
+    val scheme = MaterialTheme.colorScheme
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = ROW_HEIGHT)
+            .clickable(role = Role.Button, onClick = onClick)
+            .testTag(TunerTestTags.INTONATION_ROW)
+            .padding(horizontal = if (inList) TUNING_TEXT_INSET else PANEL_PADDING)
+            .padding(top = 6.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(R.string.tuner_intonation_check),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = scheme.onSurface,
+            )
+            Text(
+                stringResource(R.string.tuner_intonation_check_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+        // The ▾ icon turned to point along the line: › in left-to-right languages, ‹ in right-to-left ones.
+        Icon(
+            painterResource(DesignR.drawable.ic_expand_more),
+            contentDescription = null,
+            tint = scheme.onSurfaceVariant,
+            modifier = Modifier.size(CHECK_SIZE).rotate(if (rtl) 90f else -90f),
+        )
     }
 }
 

@@ -311,6 +311,10 @@
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <!-- The 12th-fret check (intonation): a string played open, then pressed at the 12th fret, says whether its saddle should move. -->
     <string name="tuner_intonation_check">12th-fret check</string>
+    <!-- The line under "12th-fret check" in the last row of the "What are you tuning?" sheet, which starts the check: whether each string's saddle (where it rests on the bridge) is in the right place. A short question. -->
+    <string name="tuner_intonation_check_summary">Is the saddle in the right place?</string>
+    <!-- TalkBack name of the small close (X) button in the corner of the 12th-fret check's panel: ends the check and goes back to the plain tuner. -->
+    <string name="tuner_intonation_close">Close the 12th-fret check</string>
     <!-- The check's two steps, at the top of its panel: the open string, then the 12th fret. -->
     <string name="tuner_intonation_step_open">Open</string>
     <!-- 12th-fret check, the second step's label at the top of its panel: the string pressed at the 12th fret. Short. -->

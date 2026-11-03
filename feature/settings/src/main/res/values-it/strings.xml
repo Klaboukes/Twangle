@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
     <string name="settings_string_tick_off_title">Spunta le corde intonate</string>
     <string name="settings_string_tick_off_summary">Una spunta su ogni corda intonata, e «Tutto intonato. Suona!» quando lo sono tutte</string>
-    <string name="settings_intonation_check_title">Controllo al 12° tasto</string>
-    <string name="settings_intonation_check_summary">Un pulsante sopra le corde per controllare l\'intonazione</string>
     <string name="settings_show_signal_bars_title">Mostra le barre del segnale</string>
     <string name="settings_show_signal_bars_summary">Per i curiosi: piccole barre vicino alla nota mostrano quanto bene ti sente l\'accordatore. Toccale per vedere i valori</string>
 

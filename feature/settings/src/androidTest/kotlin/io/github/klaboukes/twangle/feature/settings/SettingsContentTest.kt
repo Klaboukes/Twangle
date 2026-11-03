@@ -90,7 +90,6 @@ class SettingsContentTest {
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tickOffChanges = mutableListOf<Boolean>()
-    private val intonationCheckChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
@@ -124,7 +123,6 @@ class SettingsContentTest {
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
         settingsBack: Boolean = false,
-        intonationCheck: Boolean = true,
         trailLook: Boolean = true,
     ) {
         shownArea = size ?: PHONE
@@ -156,7 +154,6 @@ class SettingsContentTest {
                         onLensLookChange = { lensLookChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
-                        onShowIntonationCheckChange = if (intonationCheck) ({ intonationCheckChanges += it }) else null,
                         trailLook = trailLook,
                         dynamicColorAvailable = dynamicColorAvailable,
                         languages = languages,
@@ -403,41 +400,19 @@ class SettingsContentTest {
     }
 
     /**
-     * The 12th-fret check's switch (2.0, Phase 71) in While tuning, after the tick-off: off by default, its words in
-     * English and Dutch, a tap turns it on; on, it shows so and turns off. A build without the check has no switch.
+     * While tuning has no switch for the 12th-fret check (2.0, Phase 71): the check is opened from the tuner's picker
+     * sheet since the owner picked that way in (2026-11-03). Its name is no Settings text, in English or Dutch.
      */
     @Test
-    fun theTwelfthFretCheckSwitchIsOffByDefaultAndToggles() = assertIntonationCheckSwitch("en", "12th-fret check")
+    fun whileTuningHasNoSwitchForTheTwelfthFretCheck() = assertNoIntonationCheckSwitch("en", "12th-fret")
 
     @Test
-    fun dutchTwelfthFretCheckSwitchIsOffByDefaultAndToggles() = assertIntonationCheckSwitch("nl", "12e-fretcheck")
+    fun dutchWhileTuningHasNoSwitchForTheTwelfthFretCheck() = assertNoIntonationCheckSwitch("nl", "12e-fret")
 
-    private fun assertIntonationCheckSwitch(locale: String, title: String) {
+    private fun assertNoIntonationCheckSwitch(locale: String, name: String) {
         show(AppSettings(), locale = locale)
-        val res = resourcesIn(locale)
-        assertEquals(title, res.getString(R.string.settings_intonation_check_title))
-        val switch = compose.onNodeWithText(title)
-        switch.performScrollTo().assertIsOff()
-        compose.onNodeWithText(res.getString(R.string.settings_intonation_check_summary)).assertIsDisplayed()
-        switch.performClick()
-        assertEquals(listOf(true), intonationCheckChanges)
-    }
-
-    @Test
-    fun theTwelfthFretCheckSwitchShowsItIsOnAndTurnsOff() {
-        show(AppSettings(showIntonationCheck = true))
-        compose.onNodeWithText(context.getString(R.string.settings_intonation_check_title)).performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), intonationCheckChanges)
-    }
-
-    @Test
-    fun aBuildWithoutTheTwelfthFretCheckHasNoSwitchForIt() {
-        show(AppSettings(showIntonationCheck = true), intonationCheck = false)
-        compose.onAllNodesWithText(context.getString(R.string.settings_intonation_check_title)).assertCountEquals(0)
-        compose.onAllNodesWithText(context.getString(R.string.settings_intonation_check_summary)).assertCountEquals(0)
-        // The rest of While tuning is all there.
-        compose.onNodeWithText(context.getString(R.string.settings_string_tick_off_title)).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.settings_show_signal_bars_title)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(resourcesIn(locale).getString(R.string.settings_string_tick_off_title)).performScrollTo().assertIsDisplayed()
+        compose.onAllNodes(hasText(name, substring = true)).assertCountEquals(0)
     }
 
     @Test
@@ -561,7 +536,6 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),
-            top(context.getString(R.string.settings_intonation_check_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.settings_group_look)),
             // Light or dark first, the wallpaper colours with it, then the lens's cards and the charts' hand.

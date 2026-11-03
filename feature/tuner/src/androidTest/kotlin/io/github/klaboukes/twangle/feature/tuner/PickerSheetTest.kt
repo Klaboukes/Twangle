@@ -51,6 +51,7 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.tuner.components.AnyNoteRow
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
+import io.github.klaboukes.twangle.feature.tuner.components.IntonationCheckRow
 import io.github.klaboukes.twangle.feature.tuner.components.LowerByRow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -66,7 +67,9 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 /**
  * The picker sheet, "What are you tuning?" (Phase 70), and the chip that opens it, as wide as on a
  * 360 dp phone. The sheet: its title, the instrument picked as a pill, and the Any note switch, which
- * the tuner's sheet has and the Practice tools' hasn't. Its rows on their own: Any note's switch (the
+ * the tuner's sheet has and the Practice tools' hasn't, and the 12th-fret check's row under it (2.0, Phase 71), which
+ * the tuner gives in guitar mode for an instrument with the check: a tap closes the sheet, then starts it. Its rows on
+ * their own: Any note's switch (the
  * whole row toggles it, TalkBack hears one switch), and "Lower by" (the − and + step a half step at a
  * time and stop at the ends, − on the left in every language, keep their place whatever the amount).
  * The chip: TalkBack hears what is tuned and what a tap does, and a long name stays on one line. At 2×
@@ -90,6 +93,7 @@ class PickerSheetTest {
     private val loweredBy = mutableIntStateOf(0)
     private val anyNote = mutableStateOf(false)
     private val anyNoteChanges = mutableStateListOf<Boolean>()
+    private val events = mutableStateListOf<String>()
 
     private fun show(fontScale: Float = 1f, content: @Composable () -> Unit) {
         compose.setContent {
@@ -109,16 +113,20 @@ class PickerSheetTest {
         AnyNoteRow(anyNote.value, onChange = { anyNote.value = it })
     }
 
-    /** The whole sheet over an empty window, the Any note switch with it while [withAnyNote] (the tuner's, not Practice's). */
-    private fun showSheet(instrument: Instrument = Instruments.GUITAR, withAnyNote: Boolean = true) = show {
+    /**
+     * The whole sheet over an empty window, the Any note switch with it while [withAnyNote] (the tuner's, not
+     * Practice's), and the 12th-fret check's row while [withIntonation].
+     */
+    private fun showSheet(instrument: Instrument = Instruments.GUITAR, withAnyNote: Boolean = true, withIntonation: Boolean = false) = show {
         InstrumentTuningPanel(
             instrument = instrument,
             tuning = instrument.defaultTuning,
             onInstrumentChange = {},
             onTuningChange = {},
-            onDismiss = {},
+            onDismiss = { events += "closed" },
             anyNote = anyNote.value,
             onAnyNoteChange = if (withAnyNote) ({ anyNoteChanges += it }) else null,
+            onIntonationCheck = if (withIntonation) ({ events += "12th-fret check" }) else null,
         )
     }
 
@@ -127,6 +135,7 @@ class PickerSheetTest {
     private val down get() = compose.onNodeWithTag(TunerTestTags.LOWER_MORE)
     private val anyNoteRow get() = compose.onNodeWithTag(TunerTestTags.ANY_NOTE)
     private val chip get() = compose.onNodeWithTag(CHIP)
+    private val intonationRow get() = compose.onNodeWithTag(TunerTestTags.INTONATION_ROW)
 
     @Test
     fun theSheetAsksWhatYouAreTuningWithTheInstrumentPickedAsAPill() {
@@ -145,12 +154,33 @@ class PickerSheetTest {
         compose.runOnIdle { assertEquals(listOf(true), anyNoteChanges.toList()) }
     }
 
-    /** The Practice tools need an instrument: their sheet has no Any note. */
+    /** The Practice tools need an instrument: their sheet has no Any note, nor the 12th-fret check. */
     @Test
     fun withoutItsLambdaTheSheetHasNoAnyNote() {
         showSheet(withAnyNote = false)
         compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
         anyNoteRow.assertDoesNotExist()
+        intonationRow.assertDoesNotExist()
+    }
+
+    /** The tuner's sheet in guitar mode ends in the 12th-fret check: one button under Any note, which closes the sheet first. */
+    @Test
+    fun theTunersSheetEndsInTheTwelfthFretCheckWhichClosesItThenStartsIt() {
+        showSheet(withIntonation = true)
+        intonationRow.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+        compose.onNodeWithText(context.getString(R.string.tuner_intonation_check)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.tuner_intonation_check_summary)).assertExists()
+        assertTrue("under Any note", intonationRow.getBoundsInRoot().top >= anyNoteRow.getBoundsInRoot().bottom - 0.5.dp)
+        intonationRow.performClick()
+        compose.waitUntil(WAIT_MS) { events.size == 2 }
+        assertEquals(listOf("closed", "12th-fret check"), events.toList())
+    }
+
+    @Test
+    fun theTwelfthFretRowFitsAtTwiceTheTextSizeInDutch() {
+        shownLocale.value = "nl"
+        show(fontScale = 2f) { IntonationCheckRow(onClick = {}) }
+        compose.assertEveryTextWhollyShown("nl at 2x:")
     }
 
     @Test
@@ -263,6 +293,7 @@ class PickerSheetTest {
         show(fontScale = 2f) {
             LowerByRow(loweredBy.intValue, Tuning.MAX_LOWERED_BY, onChange = { loweredBy.intValue = it })
             AnyNoteRow(on = true, onChange = {})
+            IntonationCheckRow(onClick = {})
         }
         for (language in checkedLanguages) {
             shownLocale.value = language
@@ -276,6 +307,9 @@ class PickerSheetTest {
 
         /** The chip's tag in this test's own window. */
         const val CHIP = "test_picker_chip"
+
+        /** Long enough for the sheet to slide away. */
+        const val WAIT_MS = 5_000L
 
         /** Every language at 2x takes a few seconds; one alone well under one. */
         const val TEST_TIMEOUT_SECONDS = 30L

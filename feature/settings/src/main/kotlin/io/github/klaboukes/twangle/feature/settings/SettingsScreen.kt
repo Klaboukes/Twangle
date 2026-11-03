@@ -84,9 +84,7 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
  * Android 8–12 AppCompat keeps it. The app's screens are then recreated in it; [onLanguageChange]
  * follows, for what lives outside them (the home-screen widget).
  *
- * [intonationCheck] is the build's switch for the 12th-fret check (`ToolSwitches.intonationCheck`): off, the
- * While tuning group has no switch for its way in on the tuner screen. [trailLook] is the trail look's
- * (`ToolSwitches.pitchTrail`): off, Meter offers the Light arc and the strobe only, a saved trail showing as the Light arc.
+ * [trailLook] is the build's switch for the trail look (`ToolSwitches.pitchTrail`): off, Meter offers the Light arc and the strobe only, a saved trail showing as the Light arc.
  */
 @Composable
 fun SettingsScreen(
@@ -97,7 +95,6 @@ fun SettingsScreen(
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
     onBack: (() -> Unit)? = null,
-    intonationCheck: Boolean = true,
     trailLook: Boolean = true,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
@@ -121,7 +118,6 @@ fun SettingsScreen(
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onLensLookChange = viewModel::setLensLook,
         onLeftHandedChange = viewModel::setLeftHanded,
-        onShowIntonationCheckChange = if (intonationCheck) viewModel::setShowIntonationCheck else null,
         trailLook = trailLook,
         modifier = modifier,
         onBack = onBack,
@@ -142,8 +138,7 @@ fun SettingsScreen(
  * load. The settings come in four headed groups, the last ending in a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
- * [onBack] the top bar has a back arrow, as About's. The 12th-fret check's switch (its way in on the tuner screen,
- * 2.0 Phase 71) shows only with [onShowIntonationCheckChange], which a build without the check leaves out. Meter's
+ * [onBack] the top bar has a back arrow, as About's. Meter's
  * cards (2.0 Phase 72) are the trail, the Light arc and the strobe, or the last two in a build without [trailLook].
  */
 @Composable
@@ -163,7 +158,6 @@ fun SettingsContent(
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    onShowIntonationCheckChange: ((Boolean) -> Unit)? = null,
     trailLook: Boolean = true,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     languages: List<String> = emptyList(),
@@ -191,7 +185,6 @@ fun SettingsContent(
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onLensLookChange = onLensLookChange,
                 onLeftHandedChange = onLeftHandedChange,
-                onShowIntonationCheckChange = onShowIntonationCheckChange,
                 trailLook = trailLook,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
@@ -337,7 +330,6 @@ private fun SettingsGroups(
     onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
-    onShowIntonationCheckChange: ((Boolean) -> Unit)?,
     trailLook: Boolean,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
@@ -392,15 +384,6 @@ private fun SettingsGroups(
                     checked = settings.stringTickOff,
                     onCheckedChange = onStringTickOffChange,
                 )
-                // The 12th-fret check's way in on the tuner screen (2.0, Phase 71), off by default; none in a build without the check.
-                if (onShowIntonationCheckChange != null) {
-                    SwitchSetting(
-                        title = stringResource(R.string.settings_intonation_check_title),
-                        summary = stringResource(R.string.settings_intonation_check_summary),
-                        checked = settings.showIntonationCheck,
-                        onCheckedChange = onShowIntonationCheckChange,
-                    )
-                }
                 SwitchSetting(
                     title = stringResource(R.string.settings_show_signal_bars_title),
                     summary = stringResource(R.string.settings_show_signal_bars_summary),

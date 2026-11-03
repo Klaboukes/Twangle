@@ -4,8 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.stringChipFill
-import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,7 +55,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -131,16 +128,20 @@ fun spokenMark(mark: StringMark): String = stringResource(
  * - choosing: the two steps and an empty ring (the line under it asks for a string), or once a string has a result, every
  *   string as a small peg in the pegs' order (2.0, Phase 71): its name in a round face ringed in its result's colour,
  *   its mark on the face's corner as on the peg below, its cents under it. The pegs below the panel pick the string
- *   (a tap on one checks it, again), so the panel itself has nothing to tap;
+ *   (a tap on one checks it, again), so the panel itself has nothing else to tap;
  * - the open string and the 12th fret: a ring that fills while the steady note is taken, round the
  *   note asked for (A₂, then A₃);
  * - the verdict: the string from the neck to its saddle, an arrow for the move (a check mark when
  *   fine), and how far the 12th fret is from the octave ("8 cents sharp").
+ *
+ * With [onClose], a small × in its top end corner ends the check ([IntonationCloseButton]; 2.0, Phase 71: the check is
+ * opened from the picker sheet, so the panel carries its own way out, as Back does).
  */
 @Composable
 fun IntonationPanel(
     state: TunerUiState.IntonationCheck,
     modifier: Modifier = Modifier,
+    onClose: (() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
@@ -179,6 +180,8 @@ fun IntonationPanel(
         } else {
             IntonationStepView(state, colours)
         }
+        // In a box of its own: the tooltip's wrapper doesn't hand the alignment on.
+        if (onClose != null) Box(Modifier.align(Alignment.TopEnd)) { IntonationCloseButton(onClose) }
     }
 }
 
@@ -654,34 +657,27 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 }
 
 /**
- * The 12th-fret check's way in on the tuner screen (2.0, Phase 71; until then an entry of the "more tools" menu): a
- * small button above the pegs at the row's start, its outline in line with the first peg's face, the style's button
- * ([StyleButton]) with the 12th-fret icon and no word, picked (the container colour with a 2 dp accent outline) while
- * the check is [on]. A tap turns the check on, or off again. It shows only while the player's Settings switch is on
- * (`AppSettings.showIntonationCheck`) and the build has the check (`ToolSwitches.intonationCheck`). TalkBack hears it
- * as a switch, "12th-fret check, on"; a long-press shows its name in a tooltip.
+ * The 12th-fret check's way out (2.0, Phase 71; owner, 2026-11-03): a small × in the panel's top end corner, the
+ * style's button ([StyleButton]) with a [CLOSE_FACE] outline in a 48 dp touch target. A tap ends the check and the
+ * tuner is back; Back does the same. TalkBack hears "Close the 12th-fret check"; a long-press shows it in a tooltip.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IntonationCheckButton(on: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
-    val label = stringResource(R.string.tuner_intonation_check)
+internal fun IntonationCloseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val label = stringResource(R.string.tuner_intonation_close)
     TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below),
         tooltip = { PlainTooltip { Text(label) } },
         state = rememberTooltipState(),
+        modifier = modifier,
     ) {
         StyleButton(
-            onClick = { onChange(!on) },
+            onClick = onClick,
             label = label,
-            modifier = modifier,
-            face = TUNER_BUTTON_FACE,
-            picked = on,
-            role = Role.Switch,
-            faceModifier = Modifier
-                .testTag(TunerTestTags.INTONATION_BUTTON)
-                .semantics { toggleableState = ToggleableState(on) },
+            face = CLOSE_FACE,
+            faceModifier = Modifier.testTag(TunerTestTags.INTONATION_CLOSE),
         ) {
-            Icon(painterResource(R.drawable.ic_twelfth_fret), contentDescription = null, modifier = Modifier.size(BUTTON_ICON_SIZE))
+            Icon(painterResource(R.drawable.ic_close), contentDescription = null, modifier = Modifier.size(CLOSE_ICON_SIZE))
         }
     }
 }
@@ -782,10 +778,13 @@ private const val NOT_CHECKED_MARK = "–"
 private val BUTTON_WIDTH = 148.dp
 private val BUTTON_GAP = 12.dp
 private val BUTTON_ROW_TOP_GAP = 6.dp
-private val BUTTON_ICON_SIZE = 24.dp
+
+/** The close button's outline in the panel's corner, smaller than the tuner's round buttons, and its ×. */
+private val CLOSE_FACE = 36.dp
+private val CLOSE_ICON_SIZE = 20.dp
 private val BADGE_RADIUS = 8.dp
 
-/** The tuner's round buttons' outline (the 12th-fret check's, focus mode's): 44 dp like the style's buttons, in a 48 dp touch target. */
+/** The tuner's round buttons' outline (focus mode's): 44 dp like the style's buttons, in a 48 dp touch target. */
 internal val TUNER_BUTTON_FACE = 44.dp
 
 /**

@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">音准到位时短促振动一下</string>
     <string name="settings_string_tick_off_title">为调准的弦打勾</string>
     <string name="settings_string_tick_off_summary">每根弦调准后打勾，全部调准时显示“已调准。开弹吧。”</string>
-    <string name="settings_intonation_check_title">第12品检查</string>
-    <string name="settings_intonation_check_summary">琴弦上方的按钮，用来检查八度音准</string>
     <string name="settings_show_signal_bars_title">显示信号条</string>
     <string name="settings_show_signal_bars_summary">给好奇的你：音名旁的小信号条显示调音器听得有多清楚。点按可查看数值</string>
 

@@ -108,6 +108,8 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             lifecycleScope.launch { if (container.settingsRepository.takeOldFocusMode()) container.focusMode.value = true }
         }
+        // What a 2.0 test build saved for a setting that went before release (the 12th-fret check's switch).
+        lifecycleScope.launch { container.settingsRepository.forgetDroppedSettings() }
         takeLensLook(intent)
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
@@ -358,8 +360,6 @@ class MainActivity : AppCompatActivity() {
                                     // Android 13+ redraws the widget itself on the new configuration.
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
                                     onBack = { picked = settingsOpener.screen },
-                                    // Without the check in this build, no switch for its way in either.
-                                    intonationCheck = tools.intonationCheck,
                                     // Without the trail in this build, Meter offers the Light arc and the strobe.
                                     trailLook = tools.pitchTrail,
                                 )

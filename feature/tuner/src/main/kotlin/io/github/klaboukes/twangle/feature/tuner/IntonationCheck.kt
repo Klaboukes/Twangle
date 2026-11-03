@@ -16,8 +16,8 @@ import kotlin.math.roundToInt
 
 /**
  * The tuner's tools, each a mode that takes the lens's place while it is on (docs/architecture/ui-tuner.md,
- * *12th-fret check view*). Since 2.0's Phase 74 only the 12th-fret check is one, with its own button above the
- * pegs (Phase 71): the strum check and the chord name happen by themselves (their switches are their brakes,
+ * *12th-fret check view*). Since 2.0's Phase 74 only the 12th-fret check is one, opened from the picker sheet's row
+ * (Phase 71; owner, 2026-11-03): the strum check and the chord name happen by themselves (their switches are their brakes,
  * [TunerOptions.strumsHeard], [TunerOptions.chordsHeard]), and 1.1's "more tools" menu went with them.
  */
 enum class TunerTool {
@@ -30,12 +30,10 @@ enum class TunerTool {
 
 /**
  * The tools the tuner offers for [instrument] in a build with [tools] switched on: the 12th-fret check where its
- * switch is on, the player's Settings switch shows its way in ([showIntonationCheck],
- * `AppSettings.showIntonationCheck`; 2.0, Phase 71) and the instrument has frets and a saddle
- * ([IntonationInstruments.offers]).
+ * switch is on and the instrument has frets and a saddle ([IntonationInstruments.offers]).
  */
-fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument, showIntonationCheck: Boolean = true): List<TunerTool> = buildList {
-    if (tools.intonationCheck && showIntonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
+fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
+    if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
 }
 
 /** Where the 12th-fret check is: see [TunerUiState.IntonationCheck]. */

@@ -168,6 +168,8 @@
     <string name="tuner_strum_not_heard">Niet gehoord</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12e-fretcheck</string>
+    <string name="tuner_intonation_check_summary">Staat het zadel op de goede plek?</string>
+    <string name="tuner_intonation_close">12e-fretcheck sluiten</string>
     <string name="tuner_intonation_step_open">Los</string>
     <string name="tuner_intonation_step_fret">12e fret</string>
     <string name="tuner_intonation_choose_string">Kies een snaar</string>

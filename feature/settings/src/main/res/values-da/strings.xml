@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">En kort vibration, når tonen rammer rent</string>
     <string name="settings_string_tick_off_title">Afkryds stemte strenge</string>
     <string name="settings_string_tick_off_summary">Et flueben ved hver streng, når den er stemt, og »Stemt. Spil løs.«, når alle er det</string>
-    <string name="settings_intonation_check_title">Tjek ved 12. bånd</string>
-    <string name="settings_intonation_check_summary">En knap over strengene til at tjekke intonationen</string>
     <string name="settings_show_signal_bars_title">Vis signalbjælker</string>
     <string name="settings_show_signal_bars_summary">For de nysgerrige: Små bjælker ved tonen viser, hvor godt tuneren hører dig. Tryk på dem for at se tallene</string>
 

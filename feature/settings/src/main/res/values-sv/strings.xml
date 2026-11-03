@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">En kort vibration när tonen når rätt tonhöjd</string>
     <string name="settings_string_tick_off_title">Bocka av stämda strängar</string>
     <string name="settings_string_tick_off_summary">En bock på varje sträng när den är stämd, och ”Stämd. Spela på.” när alla är det</string>
-    <string name="settings_intonation_check_title">Test vid 12:e bandet</string>
-    <string name="settings_intonation_check_summary">En knapp ovanför strängarna för att kontrollera intonationen</string>
     <string name="settings_show_signal_bars_title">Visa signalstaplar</string>
     <string name="settings_show_signal_bars_summary">För nyfikna: små staplar vid tonen visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
 

@@ -193,14 +193,14 @@ class TunerViewModel(
     private val intonationResults = IntonationResults()
 
     /**
-     * The tools the tuner offers for the picked instrument ([tunerToolsFor]): the 12th-fret check's button while its
-     * Settings switch is on (the strum check and the chord name are no tools since 2.0's Phase 74: they happen by
-     * themselves, [heardStrum]). Turning the Settings switch off turns a check that is on off too.
+     * The tools the tuner offers for the picked instrument ([tunerToolsFor]): the 12th-fret check, whose row the picker
+     * sheet shows in guitar mode (the strum check and the chord name are no tools since 2.0's Phase 74: they happen by
+     * themselves, [heardStrum]). Picking an instrument without it turns a check that is on off too.
      */
     val tunerTools: StateFlow<List<TunerTool>> = settingsRepository.settings
-        .map { tunerToolsFor(tools, it.instrument, it.showIntonationCheck) }
+        .map { tunerToolsFor(tools, it.instrument) }
         .distinctUntilChanged()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, tunerToolsFor(tools, saved.instrument, saved.showIntonationCheck))
+        .stateIn(viewModelScope, SharingStarted.Eagerly, tunerToolsFor(tools, saved.instrument))
 
     /** The 12th-fret check and its string in one flow, so the options combine stays small. */
     private val toolChoice = combine(intonationOn, intonationChoice) { intonation, choice -> ToolChoice(intonation, choice) }
@@ -312,7 +312,7 @@ class TunerViewModel(
                 stopTone()
             }
         }
-        // An instrument without frets has no 12th-fret check (nor has the tuner with its Settings switch off): it turns off.
+        // An instrument without frets has no 12th-fret check: it turns off.
         viewModelScope.launch {
             tunerTools.collect { if (TunerTool.INTONATION_CHECK !in it) intonationOn.value = false }
         }

@@ -247,10 +247,6 @@ class DataStoreSettingsRepository internal constructor(
         save { it[STRING_TICK_OFF] = enabled }
     }
 
-    override suspend fun setShowIntonationCheck(enabled: Boolean) {
-        save { it[SHOW_INTONATION_CHECK] = enabled }
-    }
-
     override suspend fun setShowSignalBars(enabled: Boolean) {
         save { it[SHOW_SIGNAL_BARS] = enabled }
     }
@@ -270,6 +266,13 @@ class DataStoreSettingsRepository internal constructor(
         val wasOn = readable(dataStore).first()[OLD_FOCUS_MODE] ?: return false
         save { it.remove(OLD_FOCUS_MODE) }
         return wasOn
+    }
+
+    override suspend fun forgetDroppedSettings() {
+        // Read first, so a start without them (every start after the first) writes nothing.
+        val saved = readable(dataStore).first()
+        if (DROPPED_KEYS.none { it in saved }) return
+        save { prefs -> DROPPED_KEYS.forEach { prefs.remove(it) } }
     }
 
     override suspend fun setMicRefused(refused: Boolean) {
@@ -411,7 +414,6 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
-            showIntonationCheck = prefs[SHOW_INTONATION_CHECK] ?: defaults.showIntonationCheck,
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
             micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
@@ -471,8 +473,6 @@ class DataStoreSettingsRepository internal constructor(
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
         /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") is no longer read. */
         private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
-        /** The 12th-fret check's way in on the tuner screen (2.0); in 1.1 the check was in the "more tools" menu, unsaved. */
-        private val SHOW_INTONATION_CHECK = booleanPreferencesKey("show_intonation_check")
         private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
         /** The lens's look ([LensLook]), under 1.1's meter look's key, where 1.1's Light arc keeps its name. */
         private val METER_LOOK = stringPreferencesKey("meter_look")
@@ -497,6 +497,12 @@ class DataStoreSettingsRepository internal constructor(
         private val RATING_ASKED = booleanPreferencesKey("rating_asked")
         /** 1.1's focus mode switch: read once and removed ([takeOldFocusMode]). */
         private val OLD_FOCUS_MODE = booleanPreferencesKey("focus_mode")
+
+        /**
+         * Settings that went before 2.0 reached players, removed at start ([forgetDroppedSettings]): Phase 71's switch
+         * for the 12th-fret check's way in on the tuner screen (the check is opened from the picker sheet since).
+         */
+        private val DROPPED_KEYS = listOf(booleanPreferencesKey("show_intonation_check"))
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 
         /** The metronome's [Meter], by its name. */

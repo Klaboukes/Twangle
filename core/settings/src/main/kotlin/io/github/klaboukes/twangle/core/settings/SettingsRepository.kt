@@ -97,8 +97,6 @@ interface SettingsRepository {
 
     suspend fun setStringTickOff(enabled: Boolean)
 
-    suspend fun setShowIntonationCheck(enabled: Boolean)
-
     suspend fun setShowSignalBars(enabled: Boolean)
 
     /**
@@ -113,6 +111,14 @@ interface SettingsRepository {
      * and on an install that never had it (docs/architecture/v2-plan.md, *Settings from 1.1*).
      */
     suspend fun takeOldFocusMode(): Boolean
+
+    /**
+     * Removes what is left of settings that went before 2.0 reached players: `show_intonation_check`, Phase 71's
+     * switch for the 12th-fret check's way in, which went when the owner put the check in the picker sheet
+     * (2026-11-03). Called at every start; writes nothing where none is left (docs/architecture/v2-plan.md, *Settings
+     * from 1.1*).
+     */
+    suspend fun forgetDroppedSettings()
 
     /** Remembers that the player refused the microphone in Android's dialog ([AppSettings.micRefused]). */
     suspend fun setMicRefused(refused: Boolean)

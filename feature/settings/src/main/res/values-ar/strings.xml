@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
     <string name="settings_string_tick_off_title">وضع علامة على الأوتار المضبوطة</string>
     <string name="settings_string_tick_off_summary">علامة على كل وتر حين يُضبط، و«مضبوط. اعزف.» حين تُضبط كلها</string>
-    <string name="settings_intonation_check_title">فحص الدستان ١٢</string>
-    <string name="settings_intonation_check_summary">زر فوق الأوتار لفحص دقة التنغيم</string>
     <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
     <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة بجانب النغمة تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
 

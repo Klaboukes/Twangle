@@ -60,7 +60,7 @@ import kotlin.math.abs
  * mark above its peg (↑ to tighten, ↓ to loosen, ✓ in tune, – not heard), "3 of 6 in tune" in the word's place while
  * no single string is heard, nothing at all with nothing heard (a brake on, or no strum yet). Upright on a narrow
  * phone and on the owner's Xiaomi at 1.25× text, light and dark, on its side and in focus mode: each mark centred over
- * its peg, clear of the 12th-fret check's button above the first peg and of everything else, inside the window; the
+ * its peg, clear of the word above the pegs and of everything else, inside the window; the
  * pegs, the lens and the word don't move when the marks come and go. TalkBack hears each peg's mark as its state and
  * the count through the word. At 2× text in Dutch the count line is wholly shown.
  */
@@ -107,7 +107,7 @@ class StrumCheckStylesTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         focusMode = shownFocus.value,
                         heard = shownHeard.value,
-                        // The 12th-fret check's button above the first peg, which the first mark keeps clear of.
+                        // The 12th-fret check offered (its row is in the picker sheet since 2026-11-03): nothing over the pegs.
                         tunerTools = listOf(TunerTool.INTONATION_CHECK),
                         onIntonationCheckChange = {},
                         animationsOff = true,
@@ -122,9 +122,9 @@ class StrumCheckStylesTest {
     private fun peg(index: Int) = compose.onNodeWithText(strings[index])
     private val wordText get() = compose.onNodeWithTag(TunerTestTags.WORD_TEXT, useUnmergedTree = true)
 
-    /** Upright, light and dark, at normal text and the owner's 1.25×: each mark is the string's verdict, centred over its peg, clear of the 12th-fret button. */
+    /** Upright, light and dark, at normal text and the owner's 1.25×: each mark is the string's verdict, centred over its peg, clear of the word. */
     @Test
-    fun uprightEachMarkStandsAboveItsPegClearOfTheTwelfthFretButton() {
+    fun uprightEachMarkStandsAboveItsPegClearOfTheWord() {
         show()
         for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE)) {
             shownSize.value = size
@@ -192,7 +192,6 @@ class StrumCheckStylesTest {
             "word" to compose.onNodeWithTag(TunerTestTags.WORD),
             "first peg" to peg(0),
             "last peg" to peg(5),
-            "12th-fret button" to compose.onNodeWithTag(TunerTestTags.INTONATION_BUTTON),
         )
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
@@ -281,8 +280,8 @@ class StrumCheckStylesTest {
     }
 
     /**
-     * The phone check with a synthetic strum through a fake microphone: the real screen and ViewModel with the 12th-fret
-     * button shown, no mode to switch on, then a strum of the open strings with A2 20 cents flat and G3 15 sharp: ↑ over
+     * The phone check with a synthetic strum through a fake microphone: the real screen and ViewModel, no mode to
+     * switch on, then a strum of the open strings with A2 20 cents flat and G3 15 sharp: ↑ over
      * A2, ↓ over G3, ✓ over the others, and "4 of 6 in tune" once it has rung out. The verdicts stay while the screen is
      * turned and its theme changes: upright and on its side, light and dark (`-a strumScreens=true` saves pictures).
      */
@@ -291,7 +290,7 @@ class StrumCheckStylesTest {
         val standard = TunerOptions(tuning = Tunings.STANDARD).stringHz
         val off = floatArrayOf(0f, -20f, 0f, 15f, 0f, 0f)
         val recorder = StrumOnCue(FakeStrums.strum(FakeStrums.detuned(standard, off), 3.0) + FakeStrums.quiet(1.0))
-        val saved = AppSettings(showIntonationCheck = true)
+        val saved = AppSettings()
         val settings = FakeSettingsRepository(saved)
         val side = mutableStateOf(false)
         compose.mainClock.autoAdvance = true
@@ -310,7 +309,7 @@ class StrumCheckStylesTest {
                 }
             }
         }
-        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_BUTTON).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.PICKER_CHIP).fetchSemanticsNodes().isNotEmpty() }
         picture("real-1-waiting")
         recorder.cue = true
         val expected = listOf(StrumVerdict.IN_TUNE, StrumVerdict.FLAT, StrumVerdict.IN_TUNE, StrumVerdict.SHARP, StrumVerdict.IN_TUNE, StrumVerdict.IN_TUNE)
@@ -349,10 +348,10 @@ class StrumCheckStylesTest {
         File(File(dir).apply { mkdirs() }, "strum-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    /** Each mark the string's verdict, centred over its peg and above its face, clear of the 12th-fret button and of each other, inside the window. */
+    /** Each mark the string's verdict, centred over its peg and above its face, clear of the word and of each other, inside the window. */
     private fun assertMarksAbovePegs(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val button = compose.onNodeWithTag(TunerTestTags.INTONATION_BUTTON).assertIsDisplayed().getBoundsInRoot()
+        val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
         val verdicts = strum(StrumPhase.DONE).strings.map { it.verdict }
         val marks = strings.indices.map { index ->
             val node = mark(index).assert(verdict(verdicts[index]))
@@ -361,7 +360,7 @@ class StrumCheckStylesTest {
             val name = "$case: the mark over ${strings[index]} $rect"
             if (abs((rect.left + rect.right).value / 2f - (pegRect.left + pegRect.right).value / 2f) > 1f) fail("$name isn't centred over its peg $pegRect")
             if (rect.bottom > pegRect.top + SLACK) fail("$name reaches into its peg $pegRect")
-            if (rect.overlaps(button)) fail("$name overlaps the 12th-fret button $button")
+            if (rect.overlaps(word)) fail("$name overlaps the word $word")
             if (rect.left < window.left - SLACK || rect.right > window.right + SLACK || rect.top < window.top - SLACK) fail("$name is outside the window $window")
             rect
         }

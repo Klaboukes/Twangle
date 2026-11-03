@@ -5,7 +5,6 @@ import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationVerdict
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
-import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -40,7 +39,7 @@ class IntonationFlowTest {
     fun tearDown() = Dispatchers.resetMain()
 
     // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
-    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
+    private val settings = FakeSettingsRepository()
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
@@ -158,8 +157,8 @@ class IntonationFlowTest {
     }
 
     @Test
-    fun `with its Settings switch off the check is not offered, and turning the switch off turns it off`() = runTest(dispatcher) {
-        settings.setShowIntonationCheck(false)
+    fun `an instrument without the check is not offered it, and picking one turns a check that is on off`() = runTest(dispatcher) {
+        settings.setInstrument(Instruments.VIOLIN)
         val vm = viewModel(FakeAudioRecorder.silence())
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
@@ -170,14 +169,14 @@ class IntonationFlowTest {
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)
 
-        settings.setShowIntonationCheck(true)
+        settings.setInstrument(Instruments.GUITAR)
         advanceTimeBy(100)
         assertTrue(TunerTool.INTONATION_CHECK in vm.tunerTools.value)
         vm.setIntonationCheck(true)
         advanceTimeBy(100)
         assertTrue(vm.state.value is TunerUiState.IntonationCheck)
 
-        settings.setShowIntonationCheck(false)
+        settings.setInstrument(Instruments.VIOLIN)
         advanceTimeBy(100)
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)

@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">Nota akortlu olunca kısa bir titreşim</string>
     <string name="settings_string_tick_off_title">Akortlu telleri işaretle</string>
     <string name="settings_string_tick_off_summary">Akortlu olan her tele bir işaret, hepsi akortluysa “Akort tamam. Çal.”</string>
-    <string name="settings_intonation_check_title">12. perde kontrolü</string>
-    <string name="settings_intonation_check_summary">Tellerin üstünde entonasyonu kontrol eden bir düğme</string>
     <string name="settings_show_signal_bars_title">Sinyal çubuklarını göster</string>
     <string name="settings_show_signal_bars_summary">Meraklısı için: notanın yanındaki küçük çubuklar, akort cihazının seni ne kadar iyi duyduğunu gösterir. Değerler için onlara dokun</string>
 

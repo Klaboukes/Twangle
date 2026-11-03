@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">Una vibración breve cuando la nota queda afinada</string>
     <string name="settings_string_tick_off_title">Marcar las cuerdas afinadas</string>
     <string name="settings_string_tick_off_summary">Una marca en cada cuerda afinada, y «Todo afinado. ¡A tocar!» cuando lo estén todas</string>
-    <string name="settings_intonation_check_title">Prueba del traste 12</string>
-    <string name="settings_intonation_check_summary">Un botón sobre las cuerdas para revisar la octavación</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
 

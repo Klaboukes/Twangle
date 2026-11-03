@@ -2,7 +2,6 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
-import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -35,7 +34,7 @@ class CloseToolsTest {
     fun tearDown() = Dispatchers.resetMain()
 
     // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
-    private val settings = FakeSettingsRepository(AppSettings(showIntonationCheck = true))
+    private val settings = FakeSettingsRepository()
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel() =

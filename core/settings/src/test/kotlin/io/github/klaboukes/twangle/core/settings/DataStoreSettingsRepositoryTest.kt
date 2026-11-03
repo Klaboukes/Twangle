@@ -111,7 +111,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
-        assertEquals("the 12th-fret check's way in is off on a fresh install", false, settings.showIntonationCheck)
         assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
@@ -150,7 +149,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setStringTickOff(true)
-        repo.setShowIntonationCheck(true)
         repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
         repo.setMetronomeBpm(96)
@@ -189,7 +187,6 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             stringTickOff = true,
-            showIntonationCheck = true,
             showSignalBars = true,
             lensLook = LensLook.STROBE,
             metronomeBpm = 96,
@@ -751,7 +748,6 @@ class DataStoreSettingsRepositoryTest {
         assertFalse(settings.keepScreenOn)
         assertFalse(settings.vibrateInTune)
         assertFalse("1.1's Show tuning help on gives no tick-off", settings.stringTickOff)
-        assertFalse(settings.showIntonationCheck)
         // Look: Retro, Bold and the Loupe go; the strobe wave under the Loupe makes the lens the strobe
         assertEquals(ThemeMode.DARK, settings.theme)
         assertTrue(settings.dynamicColor)
@@ -968,14 +964,28 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `the 12th-fret check's way in is saved under show_intonation_check and survives a restart`() = runTest {
+    fun `the 12th-fret check's old switch from a 2_0 test build is removed at start, changing nothing else`() = runTest {
         val store = dataStore()
-        assertEquals("off when missing, so a 1_1 player starts without it", false, repository(store).settings.first().showIntonationCheck)
-        repository(store).setShowIntonationCheck(true)
-        assertEquals(true, store.data.first()[booleanPreferencesKey("show_intonation_check")])
-        assertEquals(true, repository(store).settings.first().showIntonationCheck)
-        repository(store).setShowIntonationCheck(false)
-        assertEquals(false, repository(store).settings.first().showIntonationCheck)
+        store.edit {
+            it[booleanPreferencesKey("show_intonation_check")] = true
+            it[floatPreferencesKey("a4_hz")] = 442f
+        }
+        val repo = repository(store)
+        val before = repo.settings.first()
+        repo.forgetDroppedSettings()
+        val saved = store.data.first()
+        assertEquals("the switch is removed", null, saved[booleanPreferencesKey("show_intonation_check")])
+        assertEquals("the rest stays", 442f, saved[floatPreferencesKey("a4_hz")])
+        assertEquals("it was never read", before, repo.settings.first())
+    }
+
+    @Test
+    fun `without a dropped setting nothing is written at start`() = runTest {
+        val store = dataStore()
+        store.edit { it[floatPreferencesKey("a4_hz")] = 442f }
+        val before = store.data.first()
+        repository(store).forgetDroppedSettings()
+        assertEquals("the file is as it was", before, store.data.first())
     }
 
     @Test
@@ -1248,7 +1258,10 @@ class DataStoreSettingsRepositoryTest {
         val kept = DataStoreSettingsRepository(real)
         kept.addCustomTuning("Mine", Instruments.GUITAR, dropC, pick = true)!!
         kept.setInTunePrecision(InTunePrecision.PRECISE)
-        real.edit { it[booleanPreferencesKey("focus_mode")] = true }
+        real.edit {
+            it[booleanPreferencesKey("focus_mode")] = true
+            it[booleanPreferencesKey("show_intonation_check")] = true
+        }
         val before = kept.settings.first()
         val logged = mutableListOf<IOException>()
         val repo = DataStoreSettingsRepository(FullDataStore(real), logWriteError = { logged += it })
@@ -1271,11 +1284,12 @@ class DataStoreSettingsRepositoryTest {
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
-            "setShowIntonationCheck" to { repo.setShowIntonationCheck(!before.showIntonationCheck) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             // 1.1's focus mode switch is there (below), so the read once tries to remove it.
             "takeOldFocusMode" to { assertTrue("it was on", repo.takeOldFocusMode()) },
+            // The 12th-fret check's old switch is there (below) too, so the start's clean-up tries to remove it.
+            "forgetDroppedSettings" to { repo.forgetDroppedSettings() },
             "setMicRefused" to { repo.setMicRefused(!before.micRefused) },
             // The first-use notes run at every start (MainActivity.onCreate): a full phone must not stop the app.
             "noteFirstUseOnce" to { repo.noteFirstUseOnce(1_000L) },

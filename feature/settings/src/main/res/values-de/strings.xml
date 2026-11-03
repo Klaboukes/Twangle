@@ -45,8 +45,6 @@
     <string name="settings_vibrate_in_tune_summary">Kurzes Vibrieren, sobald der Ton stimmt</string>
     <string name="settings_string_tick_off_title">Gestimmte Saiten abhaken</string>
     <string name="settings_string_tick_off_summary">Ein Haken an jeder Saite, sobald sie gestimmt ist, und „Gestimmt. Spiel los.“, wenn alle stimmen</string>
-    <string name="settings_intonation_check_title">Check am 12. Bund</string>
-    <string name="settings_intonation_check_summary">Ein Knopf über den Saiten, um die Intonation zu prüfen</string>
     <string name="settings_show_signal_bars_title">Signalbalken zeigen</string>
     <string name="settings_show_signal_bars_summary">Für Neugierige: kleine Balken neben der Note zeigen, wie gut dich das Stimmgerät hört. Tippe darauf für die Werte</string>
 

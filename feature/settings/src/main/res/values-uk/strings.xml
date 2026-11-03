@@ -38,8 +38,6 @@
     <string name="settings_vibrate_in_tune_summary">Коротка вібрація, коли нота досягає потрібної висоти</string>
     <string name="settings_string_tick_off_title">Позначати налаштовані струни</string>
     <string name="settings_string_tick_off_summary">Позначка на кожній струні, щойно вона налаштована, і «Налаштовано. Грай.», коли всі</string>
-    <string name="settings_intonation_check_title">Перевірка на 12-му ладу</string>
-    <string name="settings_intonation_check_summary">Кнопка над струнами для перевірки мензури</string>
     <string name="settings_show_signal_bars_title">Смужки сигналу</string>
     <string name="settings_show_signal_bars_summary">Для допитливих: смужки біля ноти показують, як добре тюнер тебе чує. Торкнися їх, щоб побачити цифри</string>
     <string name="settings_language_title">Мова</string>

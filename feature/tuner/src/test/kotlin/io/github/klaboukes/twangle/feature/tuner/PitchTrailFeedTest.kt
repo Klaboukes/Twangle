@@ -152,10 +152,10 @@ class PitchTrailFeedTest {
     fun `the 12th-fret check on draws no note in the trail`() = runTest(dispatcher) {
         val vm = TunerViewModel(
             FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true),
-            FakeSettingsRepository(AppSettings(showIntonationCheck = true)),
+            FakeSettingsRepository(AppSettings()),
             FakeTonePlayer(),
             StandardTestDispatcher(testScheduler),
-            saved = AppSettings(showIntonationCheck = true),
+            saved = AppSettings(),
         )
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
