@@ -827,6 +827,8 @@ fun TunerContent(
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 glow = meterGlow,
                 animationsOff = animationsOff,
+                // A window wider than tall gets the lens's wide shape and its looks drawn wide.
+                wide = LocalLensWide.current,
                 // Drawn under its neighbours, with room at its sides for its glow, which reaches past its box.
                 modifier = Modifier.zIndex(-1f).padding(horizontal = LENS_INSET).testTag(TunerTestTags.GAUGE),
                 reception = reception,
@@ -939,63 +941,65 @@ fun TunerContent(
         }
         val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
         val twoPanesFit = maxWidth.value >= TWO_PANE_MIN_WIDTH_DP
-        when (layout) {
-            TunerLayout.SINGLE_COLUMN -> singleColumn()
-            TunerLayout.TWO_PANE -> twoPane()
-            TunerLayout.COMPACT -> {
-                var controlsShown by remember { mutableStateOf(false) }
-                // Every touch while the controls show, and an open instrument and tuning panel, keep them a while longer.
-                var touches by remember { mutableIntStateOf(0) }
-                val accessibility = LocalAccessibilityManager.current
-                val shownMillis = remember(accessibility) {
-                    // Longer when the user asked Android for more time to act ("Time to take action").
-                    accessibility?.calculateRecommendedTimeoutMillis(
-                        COMPACT_CONTROLS_SHOWN_MS,
-                        containsIcons = true,
-                        containsText = true,
-                        containsControls = true,
-                    ) ?: COMPACT_CONTROLS_SHOWN_MS
-                }
-                val showing = controlsShown
-                DisposableEffect(Unit) {
-                    hideControls = { controlsShown = false }
-                    onDispose { hideControls = null }
-                }
-                LaunchedEffect(controlsShown, touches, pickerOpen) {
-                    if (controlsShown && !pickerOpen) {
-                        delay(shownMillis)
-                        controlsShown = false
+        CompositionLocalProvider(LocalLensWide provides (maxWidth > maxHeight)) {
+            when (layout) {
+                TunerLayout.SINGLE_COLUMN -> singleColumn()
+                TunerLayout.TWO_PANE -> twoPane()
+                TunerLayout.COMPACT -> {
+                    var controlsShown by remember { mutableStateOf(false) }
+                    // Every touch while the controls show, and an open instrument and tuning panel, keep them a while longer.
+                    var touches by remember { mutableIntStateOf(0) }
+                    val accessibility = LocalAccessibilityManager.current
+                    val shownMillis = remember(accessibility) {
+                        // Longer when the user asked Android for more time to act ("Time to take action").
+                        accessibility?.calculateRecommendedTimeoutMillis(
+                            COMPACT_CONTROLS_SHOWN_MS,
+                            containsIcons = true,
+                            containsText = true,
+                            containsControls = true,
+                        ) ?: COMPACT_CONTROLS_SHOWN_MS
                     }
-                }
-                // Without the controls the tuner takes the whole screen: the app hides the rail and the system bars.
-                val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
-                LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
-                DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
-                // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app.
-                if (onFocusModeChange != null) BackHandler { onFocusModeChange(false) }
-                Crossfade(targetState = showing, label = "compactControls") { shown ->
-                    if (shown) {
-                        Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
-                            // Beside the rail and the phone's navigation buttons a phone on its side may be
-                            // too narrow for two panes (578 dp on a Galaxy S26): the controls in one column then.
-                            if (twoPanesFit) twoPane() else singleColumn()
+                    val showing = controlsShown
+                    DisposableEffect(Unit) {
+                        hideControls = { controlsShown = false }
+                        onDispose { hideControls = null }
+                    }
+                    LaunchedEffect(controlsShown, touches, pickerOpen) {
+                        if (controlsShown && !pickerOpen) {
+                            delay(shownMillis)
+                            controlsShown = false
                         }
-                    } else {
-                        CompactLayout(
-                            error = error,
-                            onRetry = onRetry,
-                            gauge = gauge,
-                            status = { status(false) },
-                            below = { CompactPegsFor(state) },
-                            // The plain tuner: the ruler, the lens and the word over the whole screen (no signal bars there:
-                            // they open a panel, a control). A tool keeps its panel beside its own lines and buttons.
-                            focusRuler = if (plainMeter && rulerShown != null) ({ rulerWith(false) }) else null,
-                            focusWord = { word(true) },
-                            // The strum check's columns are buttons: each keeps a 48 dp touch width.
-                            gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
-                            onShowControls = { controlsShown = true },
-                            onExitFocus = onFocusModeChange?.let { { it(false) } },
-                        )
+                    }
+                    // Without the controls the tuner takes the whole screen: the app hides the rail and the system bars.
+                    val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
+                    LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
+                    DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
+                    // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app.
+                    if (onFocusModeChange != null) BackHandler { onFocusModeChange(false) }
+                    Crossfade(targetState = showing, label = "compactControls") { shown ->
+                        if (shown) {
+                            Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
+                                // Beside the rail and the phone's navigation buttons a phone on its side may be
+                                // too narrow for two panes (578 dp on a Galaxy S26): the controls in one column then.
+                                if (twoPanesFit) twoPane() else singleColumn()
+                            }
+                        } else {
+                            CompactLayout(
+                                error = error,
+                                onRetry = onRetry,
+                                gauge = gauge,
+                                status = { status(false) },
+                                below = { CompactPegsFor(state) },
+                                // The plain tuner: the ruler, the lens and the word over the whole screen (no signal bars there:
+                                // they open a panel, a control). A tool keeps its panel beside its own lines and buttons.
+                                focusRuler = if (plainMeter && rulerShown != null) ({ rulerWith(false) }) else null,
+                                focusWord = { word(true) },
+                                // The strum check's columns are buttons: each keeps a 48 dp touch width.
+                                gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
+                                onShowControls = { controlsShown = true },
+                                onExitFocus = onFocusModeChange?.let { { it(false) } },
+                            )
+                        }
                     }
                 }
             }
@@ -1248,6 +1252,9 @@ private class StringFacesSpan {
 
 /** The [StringFacesSpan] of the header over the strings on its side; none where nothing reads it. */
 private val LocalStringFacesSpan = staticCompositionLocalOf<StringFacesSpan?> { null }
+
+/** Whether the tuner's window is wider than tall: the lens then has its wide shape and draws its look wide (Phase 72). */
+private val LocalLensWide = staticCompositionLocalOf { false }
 
 /**
  * The compact landscape layout (focus mode). With a [focusRuler] (the plain tuner) the ruler, the [gauge] (the lens)

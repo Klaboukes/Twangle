@@ -55,8 +55,9 @@ import java.util.Locale
  * Retro's), and under them [line], what sets Twangle apart
  * in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set as the app sets
  * that language (its fonts, right to left for Arabic). On the end side three of the tuner's lenses fanned
- * out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), each with the trail
- * of a string brought into tune and held there, in tune's green with its glow. No note names, so the line is
+ * out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in each of the
+ * lens's looks (since Phase 72: the Light arc, the trail in front, the strobe), each with a string brought into
+ * tune and held there, in tune's green with its glow. No note names, so the line is
  * the one text to translate. Everything important keeps clear of the edges, which Play may crop.
  */
 @Composable
@@ -156,8 +157,9 @@ private fun Fan() {
 }
 
 /**
- * The tuner's lens ([Lens], 2.0 Phase 71, with the trail) on a card of the app's background, light or dark: a string
- * tuned up into the in-tune zone and held there, the border and the glow green. (Until Phase 71 1.1's Classic needle.)
+ * The tuner's lens ([Lens], 2.0 Phase 71) in the card's look on a card of the app's background, light or dark: a
+ * string tuned up into the in-tune zone and held there, the border and the glow green. (Until Phase 71 1.1's Classic
+ * needle.)
  */
 @Composable
 private fun MeterCard(card: FanCard, modifier: Modifier) {
@@ -173,7 +175,7 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
         ) {
             val history = remember { tunedInTrail() }
             Lens(
-                look = LensLook.TRAIL,
+                look = card.look,
                 cents = { 0f },
                 history = history,
                 inTune = true,
@@ -199,19 +201,19 @@ private fun tunedInTrail(): PitchHistory = PitchHistory().apply {
     }
 }
 
-/** One card of the fan: light or dark. */
-private data class FanCard(val dark: Boolean)
+/** One card of the fan: light or dark, and the lens's look on it. */
+private data class FanCard(val dark: Boolean, val look: LensLook)
 
 
 /** Play's feature graphic, exactly. */
 const val FEATURE_WIDTH = 1024
 const val FEATURE_HEIGHT = 500
 
-/** Left to right: the middle one in front, light between two darks. */
+/** Left to right: the middle one in front, light between two darks; the trail, the default look, in front. */
 private val FAN = listOf(
-    FanCard(dark = true),
-    FanCard(dark = false),
-    FanCard(dark = true),
+    FanCard(dark = true, look = LensLook.LIGHT_ARC),
+    FanCard(dark = false, look = LensLook.TRAIL),
+    FanCard(dark = true, look = LensLook.STROBE),
 )
 
 /** The name is the app's own, the same in every language. */

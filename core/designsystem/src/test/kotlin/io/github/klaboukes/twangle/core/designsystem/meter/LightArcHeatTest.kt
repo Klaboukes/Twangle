@@ -116,7 +116,7 @@ class LightArcHeatTest {
     @Test
     fun `the marks sit just past the outer lights, inside the box`() {
         val size = Size(884f, 442f)
-        val fan = FanGeometry(size)
+        val fan = FanGeometry(size, wide = false, dp = 2.6f)
         for (out in 1..3) for (side in listOf(-1, 1)) {
             val ray = LIGHT_ARC_CENTRE_RAY + side * out
             val outer = ray * LIGHT_ARC_DOTS + LIGHT_ARC_DOTS - 1

@@ -13,11 +13,9 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -27,13 +25,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.font.FontFamily
-import io.github.klaboukes.twangle.core.designsystem.MusicSignsFont
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
@@ -88,12 +80,12 @@ internal data class MeterRoles(
     fun digits(value: Int): String = localDigits(value, locale)
 
     /**
-     * The centre mark's colour, [tuned] (0..1) of the way to "in tune". With [presence] (0 without a
-     * note, [MeterReading.presence]) below 1 it fades toward the muted text colour, so a meter at
-     * rest has no colour in its middle: in some styles, and with wallpaper colours, the accent is
-     * green, and a resting meter must never look in tune.
+     * The Light arc's centre mark's colour, [tuned] (0..1) of the way to "in tune": muted off the note, so it
+     * has no colour of its own (since Phase 72, the lens: the lens shows only muted, the reading's tone and the
+     * in-tune green; 1.1's meter took the accent while a note was heard, and with wallpaper colours the accent
+     * may be green, which must never mean anything but in tune).
      */
-    fun centre(tuned: Float, presence: Float = 1f): Color = mix(mix(muted, accent, presence), inTune, tuned)
+    fun centre(tuned: Float): Color = mix(muted, inTune, tuned)
 
     /** The marker's colour, [tuned] (0..1) of the way to "in tune". */
     fun marker(tuned: Float): Color = mix(ink, inTune, tuned * 0.9f)
@@ -132,7 +124,7 @@ internal fun meterRoles(): MeterRoles {
 }
 
 /**
- * Whether the meter's looks draw their calm field ([meterField]): yes on the screen, where it quiets the
+ * Whether the calm field ([FieldArt]) is drawn (since Phase 72 only the metronome's dial has one): yes on the screen, where it quiets the
  * style's background art round the numbers. The meter picker's cards in Settings provide false (Phase 65):
  * a card is its own quiet ground, solid in one colour, and the field, clipped to the picture's box, showed
  * there as a darker plate inside the card.
@@ -198,18 +190,6 @@ internal class FieldArt(private val x: Float, private val y: Float, private val 
 private const val FIELD_ALPHA = 0.75f
 
 /**
- * The meter's calm field, the same under every look (the mock-up's dial field): 190u wide and 150u
- * high each way, round a point 47u above the box's bottom middle (30u above the dial's pivot). Being
- * the same, it changes nothing round the box when another look is picked.
- */
-internal fun meterField(size: Size, roles: MeterRoles): FieldArt {
-    val u = meterUnit(size.width)
-    return FieldArt(size.width / 2f, size.height - FIELD_CENTRE_UNITS * u, 190f * u, 150f * u, roles)
-}
-
-private const val FIELD_CENTRE_UNITS = 47f
-
-/**
  * How strong the scale's minor ticks and numbers are, as ink over the background: the mock-up's 50 %
  * and 80 %, so the numbers read at 4.5:1 and the minor ticks at 3:1 in every style (StylePaletteTest).
  */
@@ -266,58 +246,6 @@ internal class NeedleArt(pivotX: Float, pivotY: Float, length: Float, u: Float, 
 }
 
 /**
- * The ♭ and ♯ inside the meter's box (the mock-up's `signs`): 20u in the music-sign face (whose
- * signs are smaller in their em than the mock-up's symbol face, so they read as large), muted,
- * centred on ([flatX], [y]) at the flat end and ([sharpX], [y]) at the sharp end of the look's scale,
- * and set smaller where they must fit in [maxHeight] (the dial's, between its end ticks and the
- * box's bottom).
- */
-internal class SignsArt(
-    measurer: TextMeasurer,
-    density: Density,
-    u: Float,
-    roles: MeterRoles,
-    flatX: Float,
-    sharpX: Float,
-    y: Float,
-    maxHeight: Float = Float.MAX_VALUE,
-) {
-    private val flat: TextLayoutResult
-    private val sharp: TextLayoutResult
-
-    init {
-        var size = SIGN_SIZE_UNITS * u
-        var style = TextStyle(fontFamily = MusicSignsFont, fontSize = with(density) { size.toSp() })
-        var f = measurer.measure(FLAT_SIGN, style)
-        var s = measurer.measure(SHARP_SIGN, style)
-        val tallest = maxOf(f.size.height, s.size.height).toFloat()
-        if (tallest > maxHeight) {
-            size *= maxHeight / tallest
-            style = style.copy(fontSize = with(density) { size.toSp() })
-            f = measurer.measure(FLAT_SIGN, style)
-            s = measurer.measure(SHARP_SIGN, style)
-        }
-        flat = f
-        sharp = s
-    }
-
-    private val flatAt = Offset(flatX - flat.size.width / 2f, y - flat.size.height / 2f)
-    private val sharpAt = Offset(sharpX - sharp.size.width / 2f, y - sharp.size.height / 2f)
-    private val color = roles.muted
-
-    fun draw(scope: DrawScope) = with(scope) {
-        drawText(flat, color = color, topLeft = flatAt)
-        drawText(sharp, color = color, topLeft = sharpAt)
-    }
-
-    private companion object {
-        const val SIGN_SIZE_UNITS = 20f
-        const val FLAT_SIGN = "♭"
-        const val SHARP_SIGN = "♯"
-    }
-}
-
-/**
  * A soft radial glow of [color] and [radius]: full at its middle, 40 % by 45 % of the way out, gone
  * at the edge. Made once and moved by translating, so drawing it anywhere allocates nothing.
  */
@@ -343,31 +271,21 @@ internal class GlowArt(private val radius: Float, color: Color) {
 }
 
 /**
- * The in-tune moment's glow, the same in every look (the mock-up's `tuneGlow`): a [GlowArt] of
- * [radiusUnits] in the style's "in tune" colour
- * around [centre], at [MeterRoles.tuneGlowAlpha] when fully lit. It is never clipped: it fades out
- * past the meter's box (the tuner leaves room around the meter for it). It is drawn once, in a layer
- * of its own under the look's marker; [MeterReading.glow] only sets that layer's opacity (and [move],
- * if given, carries it with a moving marker), so easing it in and out redraws nothing and allocates
- * nothing.
+ * The in-tune moment's glow (the mock-up's `tuneGlow`): a [GlowArt] in the style's "in tune" colour, its
+ * middle and radius in px from [place] (made once per size), at [MeterRoles.tuneGlowAlpha] when fully lit. It
+ * is drawn once, in a layer of its own under the look's marker; [MeterReading.glow] only sets that layer's
+ * opacity, so easing it in and out redraws nothing and allocates nothing. In the lens it is clipped to the box.
  */
 @Composable
-internal fun BoxScope.TuneGlow(
-    roles: MeterRoles,
-    reading: MeterReading,
-    radiusUnits: Float,
-    centre: (Size) -> Offset,
-    move: (GraphicsLayerScope.() -> Unit)? = null,
-) {
+internal fun BoxScope.TuneGlow(roles: MeterRoles, reading: MeterReading, place: CacheDrawScope.() -> Pair<Offset, Float>) {
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
             alpha = reading.glow.coerceIn(0f, 1f)
-            // One soft circle: fading it needs no offscreen buffer, so it may reach past the layer's bounds.
+            // One soft circle: fading it needs no offscreen buffer.
             compositingStrategy = CompositingStrategy.ModulateAlpha
-            move?.invoke(this)
         }.drawWithCache {
-            val glow = GlowArt(radiusUnits * meterUnit(size.width), roles.inTune)
-            val at = centre(size)
+            val (at, radius) = place()
+            val glow = GlowArt(radius, roles.inTune)
             val peak = roles.tuneGlowAlpha
             onDrawBehind { glow.draw(this, at.x, at.y, peak) }
         },

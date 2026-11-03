@@ -59,6 +59,7 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -103,6 +104,7 @@ class MainActivity : AppCompatActivity() {
         val container = (application as TwangleApplication).container
         // The first use is noted once: Google's rating window never comes on the first day.
         lifecycleScope.launch { container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis()) }
+        takeLensLook(intent)
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
             // never flashes the wrong theme. The opening screen covers that gap.
@@ -118,6 +120,21 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == TuningWidget.ACTION_OPEN_TUNER) openTunerRequests++
+        takeLensLook(intent)
+    }
+
+    /**
+     * In a debug build and the frame-time build (`scripts/meter-frames.sh`) only: saves the lens's look named by
+     * the launch's [EXTRA_LENS_LOOK] (`adb shell am start -S --activity-clear-task -n …/.app.MainActivity --es
+     * lensLook STROBE`; without a new task the old task's first launch comes back, with its look), for
+     * checks on the phone and the frame-time runs. Every other build ignores it (both flags false, so R8 drops it).
+     */
+    private fun takeLensLook(intent: Intent?) {
+        if (!BuildConfig.DEBUG && !BuildConfig.SYNTHETIC_AUDIO) return
+        val name = intent?.getStringExtra(EXTRA_LENS_LOOK) ?: return
+        val look = runCatching { LensLook.valueOf(name) }.getOrNull() ?: return
+        val settings = (application as TwangleApplication).container.settingsRepository
+        lifecycleScope.launch { settings.setLensLook(look) }
     }
 
     /**
@@ -562,5 +579,8 @@ class MainActivity : AppCompatActivity() {
 
         // The saved UI state Chords and Scales share (one screen, one root for both).
         val CHORDS_STATE = Screen.PRACTICE_CHORDS.name
+
+        /** The launch extra a debug or frame-time build takes the lens's look from ([takeLensLook]). */
+        const val EXTRA_LENS_LOOK = "lensLook"
     }
 }

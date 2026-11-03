@@ -19,10 +19,11 @@ import java.util.regex.Pattern
 /**
  * Frame times and main-thread work of the tuner's lens in chromatic mode, with the reading moving
  * all the time. The `benchmarkRelease` app hears a synthetic tone that sweeps across about ±30
- * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 71
- * (2.0) the lens draws the trail, the one look until Phase 72; Phase 76 measures one per lens look.
+ * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 72
+ * (2.0) it measures each of the lens's three looks: for each it starts the app afresh with the look
+ * in the launch (`--es lensLook TRAIL`, which only this build and debug builds take, `MainActivity`).
  *
- * It switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
+ * For each look it switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
  * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in docs/architecture/performance.md.
  * No tracing runs meanwhile, so the numbers compare with the S26 table there.
@@ -30,7 +31,7 @@ import java.util.regex.Pattern
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.
  * Instrumentation arguments: `meterLooks` (names separated by colons, as Gradle cuts arguments at
- * commas: `TRAIL`, or `CURRENT`, the look the app shows), `runs`, `seconds`.
+ * commas: `TRAIL`, `LIGHT_ARC`, `STROBE`, or `CURRENT`, the look the app shows), `runs`, `seconds`.
  */
 @RunWith(AndroidJUnit4::class)
 class MeterFramesBenchmark {
@@ -49,15 +50,19 @@ class MeterFramesBenchmark {
         check(device.isNaturalOrientation) { "Hold the phone upright (portrait) for the measurement" }
         shell("input keyevent KEYCODE_WAKEUP")
         shell("pm grant $TARGET_PACKAGE android.permission.RECORD_AUDIO")
-        shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-        waitFor(By.res(PICKER_CHIP_TAG), "Tuner screen")
-        looks.forEach { check(it in KNOWN_LOOKS) { "No lens look $it until Phase 72: ${KNOWN_LOOKS.joinToString(":")}" } }
+        looks.forEach { check(it in KNOWN_LOOKS) { "No lens look $it: ${KNOWN_LOOKS.joinToString(":")}" } }
 
-        val pid = pidOfApp()
-        val renderTid = renderThreadOf(pid)
         val rows = mutableListOf<Window>()
-        log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()} pid=$pid renderThread=$renderTid")
+        log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()}")
         for (look in looks) {
+            // Afresh (-S) with the look in the launch, so each look is measured from the same start. A new task: a
+            // stopped app started into its old task gets that task's first launch again, with the look it had.
+            val extra = if (look == CURRENT) "" else " --es $LENS_LOOK_EXTRA $look"
+            shell("am start -S -W --activity-clear-task -n $TARGET_PACKAGE/$ACTIVITY$extra")
+            waitFor(By.res(PICKER_CHIP_TAG), "Tuner screen")
+            val pid = pidOfApp()
+            val renderTid = renderThreadOf(pid)
+            log("$look: pid=$pid renderThread=$renderTid")
             setAnyNote(true)
             SystemClock.sleep(SETTLE_MS)
             repeat(runs) { run -> rows += measure(look, run + 1, pid, renderTid).also { log(it.row()) } }
@@ -151,21 +156,26 @@ class MeterFramesBenchmark {
     /**
      * Turns the picker sheet's Any note switch (chromatic mode) [on] or off: the chip opens the sheet,
      * a tap on the switch closes it, and Back closes it when the switch is already right. The sheet is a
-     * window of its own, whose parts UI Automator can't find by tag, so the switch is found as the one
-     * switch there. A tap while the opening screen still covers the tuner is lost: it taps again.
+     * window of its own, whose parts UI Automator can't find by tag, so the switch is found as its last
+     * row (the lowest checkable item: the instrument pills and the tunings are above it; Compose shows the
+     * row as a checkable View, not an android.widget.Switch). A tap while the opening screen still covers
+     * the tuner is lost: it taps again.
      */
     private fun setAnyNote(on: Boolean) {
         var switch: UiObject2? = null
         repeat(TAP_TRIES) {
             if (switch == null) {
-                click(waitFor(By.res(PICKER_CHIP_TAG), "Picker chip"))
-                switch = device.wait(Until.findObject(By.clazz(SWITCH_CLASS)), SETTLE_MS)
+                device.findObject(By.res(PICKER_CHIP_TAG))?.let(::click)
+                switch = device.wait(Until.findObjects(By.checkable(true)), SETTLE_MS)
+                    ?.takeIf { it.size > 1 }
+                    ?.maxByOrNull { it.visibleBounds.bottom }
             }
         }
         val found = switch ?: error("The picker sheet's Any note switch didn't appear")
         if (found.isChecked != on) click(found) else device.pressBack()
-        check(device.wait(Until.gone(By.clazz(SWITCH_CLASS)), TIMEOUT_MS)) { "The picker sheet didn't close" }
-        SystemClock.sleep(TAP_SETTLE_MS)
+        // In Any note the tuner screen has nothing checkable (no pegs): the sheet's rows going means it closed.
+        check(device.wait(Until.gone(By.checkable(true)), TIMEOUT_MS)) { "The picker sheet didn't close" }
+        SystemClock.sleep(SETTLE_MS)
     }
 
     private fun shell(command: String): String = device.executeShellCommand(command)
@@ -208,13 +218,15 @@ class MeterFramesBenchmark {
         const val TAG = "MeterFrames"
         const val ACTIVITY = "io.github.klaboukes.twangle.app.MainActivity"
         const val PICKER_CHIP_TAG = "tuner_picker_chip"
-        const val SWITCH_CLASS = "android.widget.Switch"
         const val CURRENT = "CURRENT"
-        const val TRAIL = "TRAIL"
-        const val ALL_LOOKS = TRAIL
 
-        /** The lens's one look until Phase 72 (the trail, which [CURRENT] also measures). */
-        val KNOWN_LOOKS = setOf(TRAIL, CURRENT)
+        /** The lens's looks (`LensLook`'s names), measured in this order by default. */
+        val LENS_LOOKS = listOf("TRAIL", "LIGHT_ARC", "STROBE")
+        val ALL_LOOKS = LENS_LOOKS.joinToString(":")
+        val KNOWN_LOOKS = LENS_LOOKS.toSet() + CURRENT
+
+        /** The launch extra the frame-time build takes the lens's look from (`MainActivity.EXTRA_LENS_LOOK`). */
+        const val LENS_LOOK_EXTRA = "lensLook"
 
         const val SUMMARY_HEADER = "look\tfps\tjanky\tdeadlineMissed\tworst p50/p90/p95/p99 ms\tmain%\tmainMs/frame\trender%\tapp%"
 

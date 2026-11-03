@@ -98,7 +98,7 @@ Dependencies ("→" = depends on):
 :feature:practice  → :core:audio (only DronePlayer, playback: no microphone), :core:settings, :core:designsystem, :core:dsp
 :feature:eartraining → :core:audio (TonePlayer, MicPermissionRules; the microphone through PitchListener, which :app
                      backs with the tuner's PitchPipeline), :core:settings, :core:designsystem, :core:dsp
-:core:designsystem → :core:settings (ThemeMode), :core:dsp (StrobeMotion, for the strobe kept for Phase 72)
+:core:designsystem → :core:settings (ThemeMode), :core:dsp (StrobeMotion, for the lens's strobe; PitchHistory, for its trail)
 :core:settings     → :core:dsp
 :core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's,
                      DroneSynth the drone's;
@@ -173,9 +173,10 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
     SegmentedSwitch, PickerChip, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
-    dial/       DialGeometry, Strobe (kept for the lens, Phase 72)
-    meter/      MeterReading, MeterLooks (Classic), MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat
-                (Light arc, kept for the lens, Phase 72)
+    dial/       DialGeometry, Strobe (drawStrobeBand, the lens's strobe's stripes)
+    lens/       LensReading, LensLookArt, TrailLook, StrobeLook (the lens's looks, Phases 71 and 72)
+    meter/      MeterReading, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat
+                (LightArcLook: the lens's Light arc, FanGeometry fitted to the lens, Phase 72)
     metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/

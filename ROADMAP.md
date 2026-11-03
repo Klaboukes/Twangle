@@ -60,8 +60,8 @@ Decided on 2026-11-02, from the from-scratch design of 2026-11-01 ([IDEAS.md](ID
 
 ### Phase 72 — The Light arc and the strobe in the lens
 Goal: the two other looks, chosen in Settings, drawn inside the same lens.
-- ☐ The Light arc inside the lens (today's 17 rays of 5 lights, the stretched scale, the marks at 5 and 10 cents, the wedge lit from the centre to the reading), fitting the lens's shape upright and wide
-- ☐ The strobe inside the lens (three bands, the finer ones faster, drifting flat or sharp, still in tune), driven by the cents reading as the wave look is today
+- ☑ The Light arc inside the lens (today's 17 rays of 5 lights, the stretched scale, the marks at 5 and 10 cents, the wedge lit from the centre to the reading), fitting the lens's shape upright and wide
+- ☑ The strobe inside the lens (three bands, the finer ones faster, drifting flat or sharp, still in tune), driven by the cents reading as the wave look is today
 - ☐ "Meter" in Settings: Trail · Light arc · Strobe, with a small picture of each; the lens contract's tests run for all three (direction, the in-tune state, the quiet state, every language); the trail look's brake: with `pitchTrail` off in a build, Meter offers Light arc and Strobe, the Light arc is the default and a saved trail shows as the Light arc
 
 ### Phase 73 — Focus mode

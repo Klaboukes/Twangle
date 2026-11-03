@@ -76,7 +76,17 @@ The ×2 upsampling makes 16 kHz a little dearer than 48 kHz. Allowing for a slow
 A crossfade (0.4 s) runs two drones, so twice that for a moment; the default (tanpura with its fifth, not lower) costs less. There was no budget yet for sound made in the app; this keeps the dearest drone, even crossfading on a little core, inside two thirds of real time, and the tuner's microphone isn't running meanwhile (Scales doesn't listen). `PartialBank` renders a block partial by partial, four at a time, rather than all partials a sample: the four rotations and levels stay in registers and only the block's 64 output samples are read and written. That made the pad 2.8× faster on the little cores than the first version (9.4 ms, where a crossfade could not have kept up) and 1.3× on the big one; folding the levels into the phasors (to save the ramp's multiply) gained nothing measurable and was dropped. On the JVM (`DroneSynthBenchmark`) every sound is under 1 ms a chunk.
 
 ## Meter looks
-Since Phase 67 (2.0, one look) the tuner's meter is 1.1's Classic alone until the lens (Phases 71 and 72): `scripts/meter-frames.sh` measures it (`CLASSIC`, or `CURRENT`, the same) and the pitch trail (`PITCH_TRAIL`), and Phase 76 makes it one run per lens look ([2.0 plan](v2-plan.md)). The tables below are 1.1's, every look's, kept as the record to compare the lens's looks with (the Light arc returns in the lens).
+Since Phase 72 (2.0) `scripts/meter-frames.sh` measures the lens's three looks, `TRAIL`, `LIGHT_ARC` and `STROBE` (or one of them, or `CURRENT`), each from a fresh start of the app with the look in the launch (`am start -S --activity-clear-task … --es lensLook`, taken only by debug builds and this build: without a new task a stopped app gets its old task's first launch again, with the look it had), Any note turned on through the picker sheet's last row (a checkable View, not an `android.widget.Switch`, since Phase 70's sheet; `TunerJourney` still looks for the old class). The tables after this one are 1.1's, every look's, kept as the record.
+
+**The lens's looks** (Phase 72; Xiaomi 12X at 120 Hz, 2026-11-03, Ink, light, upright, Any note, 3 windows of 7 s each; the S26's 1.1 tables below are another phone):
+
+| Look | fps | Janky | Worst p50/p90/p95/p99 ms | Main thread % | Main ms/frame | RenderThread % | App % |
+|---|---|---|---|---|---|---|---|
+| Trail | 122 | 32 | 9/15/17/20 | 49.0 | 4.03 | 40.3 | 111.1 |
+| Light arc | 122 | 15 | 9/14/17/19 | 47.2 | 3.87 | 41.8 | 110.3 |
+| Strobe | 119 | 32 | 9/14/16/17 | 51.0 | 4.28 | 33.9 | 98.9 |
+
+All three hold the screen's 120 Hz with the same few late frames; none costs more than another worth a change.
 Measured on the S26 (Android 16, portrait) with `scripts/meter-frames.sh`, which runs `MeterFramesBenchmark` against the minified `benchmarkRelease` build (~4 min, phone unlocked and upright).
 - **Input:** that build hears `SyntheticAudioRecorder` (`:app`, behind `BuildConfig.SYNTHETIC_AUDIO`, a constant `false` elsewhere, so R8 removes it from release): A4 sweeping 30·sin³ over 8 s plus a 2-cent wobble (`SweepTone`), noise 20 dB below. The marker never stands still and reaches in tune twice per sweep.
 - **Method:** per look, chromatic mode, the cents under the note, 3 windows of 7 s; frames from `dumpsys gfxinfo`, CPU from `/proc`. The old needle row is commit 4826b6e with the same input and frame-rate request.

@@ -2,7 +2,6 @@ package io.github.klaboukes.twangle.core.designsystem
 
 import io.github.klaboukes.twangle.core.designsystem.dial.strobeFade
 import io.github.klaboukes.twangle.core.designsystem.dial.stripeOffset
-import io.github.klaboukes.twangle.core.designsystem.dial.STRIPE_PERIOD
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -48,12 +47,5 @@ class StrobeTest {
             assertTrue("fade at ${i / 200f}", fade >= last && fade - last < 0.05f)
             last = fade
         }
-    }
-
-    @Test
-    fun `plenty of stripes fit the smallest strobe view`() {
-        val period = STRIPE_PERIOD.value
-        // The view is about 170 dp wide or more: nine stripes or more, each wide enough to see.
-        assertTrue("period $period dp", period in 6f..18f)
     }
 }
