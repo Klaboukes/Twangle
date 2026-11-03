@@ -218,7 +218,7 @@ class PracticeTabTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
             assertTrue("a card for every tool", PracticeTool.entries.all { shown(PracticeTestTags.card(it)) })
-            assertFalse("no metronome in Practice", device.hasObject(By.res(MetronomeTestTags.DIAL)) || device.hasObject(By.res(METRONOME_CARD_TAG)))
+            assertFalse("no metronome in Practice", device.hasObject(By.res(MetronomeTestTags.RULER)) || device.hasObject(By.res(METRONOME_CARD_TAG)))
             assertFalse("no tool opens by itself", device.hasObject(By.res(PracticeTestTags.CHORDS)))
             assertFalse("nothing used yet: no last time row", device.hasObject(By.res(PracticeTestTags.LAST_TIME)))
             assertEquals("nothing saved until a tool is opened", null, savedTool())
@@ -300,20 +300,20 @@ class PracticeTabTest {
                 device.findObject(By.res(tab)).hasObject(By.text(context.getString(R.string.nav_metronome))),
             )
             click(tab)
-            assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
+            assertTrue("the metronome shows", shown(MetronomeTestTags.RULER))
             assertFalse("with no Practice cards", device.hasObject(By.res(PracticeTestTags.CARDS)))
             click(MetronomeTestTags.START)
             assertTrue("Start clicks", waitFor { metronome.isPlaying.value })
 
             click(NavigationTestTags.tab(Destination.PRACTICE))
             assertTrue("Practice shows", shown(PracticeTestTags.CARDS))
-            assertTrue("the metronome has gone", gone(MetronomeTestTags.DIAL))
+            assertTrue("the metronome has gone", gone(MetronomeTestTags.RULER))
             assertTrue("and stopped", waitFor { !metronome.isPlaying.value })
             assertEquals("the metronome is no Practice tool", null, savedTool())
 
             device.pressBack()
             assertTrue("Back from Practice leads to the tuner", gone(PracticeTestTags.CARDS))
-            assertFalse("not to the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
+            assertFalse("not to the metronome", device.hasObject(By.res(MetronomeTestTags.RULER)))
         }
     }
 

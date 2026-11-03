@@ -88,7 +88,7 @@ class TunerTabTest {
             // From another tab: the metronome's, then Practice's.
             turnTheCheckOn()
             tab(Destination.METRONOME)
-            assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
+            assertTrue("the metronome shows", shown(MetronomeTestTags.RULER))
             tab(Destination.PRACTICE)
             assertTrue("Practice shows", shown(PracticeTestTags.CARDS))
             tab(Destination.TUNER)
@@ -118,7 +118,7 @@ class TunerTabTest {
             assertTrue("the tuner shows", shown(TunerTestTags.PICKER_CHIP))
             for ((destination, landmark) in listOf(
                 Destination.TUNER to TunerTestTags.PICKER_CHIP,
-                Destination.METRONOME to MetronomeTestTags.DIAL,
+                Destination.METRONOME to MetronomeTestTags.RULER,
                 Destination.PRACTICE to PracticeTestTags.CARDS,
             )) {
                 for (arrow in listOf(false, true)) {

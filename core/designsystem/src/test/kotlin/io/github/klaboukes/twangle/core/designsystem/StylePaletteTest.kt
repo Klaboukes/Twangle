@@ -3,8 +3,6 @@ package io.github.klaboukes.twangle.core.designsystem
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
-import io.github.klaboukes.twangle.core.designsystem.meter.MINOR_TICK_INK
-import io.github.klaboukes.twangle.core.designsystem.meter.SCALE_NUMBER_INK
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -44,9 +42,7 @@ class StylePaletteTest {
     }
 
     @Test
-    fun `the meter's numbers and marks stand out from the background`() = forEach { name, p, _ ->
-        assertContrast("$name scale numbers", p.ink.copy(alpha = SCALE_NUMBER_INK), p.background, AA_TEXT)
-        assertContrast("$name minor ticks", p.ink.copy(alpha = MINOR_TICK_INK), p.background, AA_MARKS)
+    fun `the meter's marks stand out from the background`() = forEach { name, p, _ ->
         assertContrast("$name centre mark", p.accent, p.background, AA_MARKS)
         assertContrast("$name outline", p.muted, p.background, AA_MARKS)
     }

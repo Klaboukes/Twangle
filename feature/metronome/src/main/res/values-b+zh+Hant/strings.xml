@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">拍間加入十六分音符</string>
     <string name="metronome_options">選項</string>
     <string name="metronome_trainer">速度訓練</string>
-    <string name="metronome_trainer_back">返回選項</string>
     <string name="metronome_trainer_start">起始速度</string>
     <string name="metronome_trainer_goal">目標</string>
     <string name="metronome_trainer_start_slower">降低起始速度</string>

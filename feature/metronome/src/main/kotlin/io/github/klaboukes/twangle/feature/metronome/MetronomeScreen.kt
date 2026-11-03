@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,11 +30,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,21 +43,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -69,6 +68,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
+import io.github.klaboukes.twangle.core.designsystem.OptionsButton
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.designsystem.metronome.BeatLightsArt
@@ -81,22 +81,23 @@ import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
+import io.github.klaboukes.twangle.feature.metronome.components.BigButtons
+import io.github.klaboukes.twangle.feature.metronome.components.FloatingPanel
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
 import io.github.klaboukes.twangle.feature.metronome.components.ListenLine
 import io.github.klaboukes.twangle.feature.metronome.components.ListenRow
-import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
-import io.github.klaboukes.twangle.feature.metronome.components.OptionsPanel
+import io.github.klaboukes.twangle.feature.metronome.components.MeterChoice
 import io.github.klaboukes.twangle.feature.metronome.components.SoundChoice
 import io.github.klaboukes.twangle.feature.metronome.components.StatusMark
 import io.github.klaboukes.twangle.feature.metronome.components.SubdivisionChoice
-import io.github.klaboukes.twangle.feature.metronome.components.subdivisionIcon
-import io.github.klaboukes.twangle.feature.metronome.components.subdivisionMarkName
-import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
-import io.github.klaboukes.twangle.feature.metronome.components.TempoRow
+import io.github.klaboukes.twangle.feature.metronome.components.TempoHeading
+import io.github.klaboukes.twangle.feature.metronome.components.TempoRuler
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerRow
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerSettings
-import io.github.klaboukes.twangle.feature.metronome.components.trainerStatus
 import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
+import io.github.klaboukes.twangle.feature.metronome.components.subdivisionIcon
+import io.github.klaboukes.twangle.feature.metronome.components.subdivisionMarkName
+import io.github.klaboukes.twangle.feature.metronome.components.trainerStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
@@ -104,8 +105,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * The metronome screen (Phase 19), as on the approved mock-ups (docs/design/metronome-nav-preview.html,
- * docs/design/metronome-listen-preview.html). It opens stopped, at the tempo, meter, vibration, click
+ * The metronome screen (Phase 19; drawn anew in 2.0's Phase 75, [MetronomeContent]). It opens stopped, at the tempo, meter, vibration, click
  * sound and clicks between the beats saved last ([savedBpm], [savedMeter], [savedVibrate], [savedSound],
  * [savedSubdivision], from the settings
  * already read, so the first frame and the first beat are right), and plays through [player]. The clicks stop when it leaves the screen: another
@@ -122,6 +122,8 @@ import kotlin.math.roundToInt
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
  * [ToolSwitches.ALL_OFF] this is the metronome alone. [header] is the app's gear that opens Settings
  * (2.0, Phase 69; the Practice tab's tool button until then), at the top start ([MetronomeContent]).
+ * Since Phase 75 the tempo is the screen (docs/design/fresh-start-preview.html); 1.1's round tempo dial
+ * is history (docs/architecture/history.md).
  */
 @Composable
 fun MetronomeScreen(
@@ -229,10 +231,10 @@ fun MetronomeScreen(
 data class TrainerUi(val plan: SpeedTrainer, val on: Boolean, val saved: Boolean = true, val bar: Long = -1L)
 
 /**
- * The metronome's last beat and the frame clock, for the beat lights and the glow behind the tempo:
- * the beat that sounded lights up at once and eases to a resting glow until the next one, and each
- * click between the beats lights its small mark and fades back (Phase 62); the glow
- * behind the tempo fades out after each beat, brighter on a downbeat. While Listen listens, the
+ * The metronome's last beat and the frame clock, for the beat lights and the ruler's cursor: the beat
+ * that sounded lights up at once and eases to a resting glow until the next one, and each click between
+ * the beats lights its small dot and fades back (Phase 62); the cursor's glow fades out after each beat,
+ * brighter on a downbeat. While Listen listens, the
  * beats it hears light the lights more softly instead ([followHeard]), with no glow. Read in the
  * draw phase only.
  */
@@ -277,7 +279,7 @@ class BeatClock {
         return betweenClickLevel(millisSinceBeat(beat), beat.bpm, beat.clicksPerBeat)
     }
 
-    /** The glow behind the tempo: fading out over a 220 ms decay, at full only after a downbeat. */
+    /** The ruler cursor's glow: fading out over a 220 ms decay, at full only after a downbeat. */
     fun glow(): Float {
         val beat = beat ?: return 0f
         val strength = when (beat.accent) {
@@ -320,39 +322,38 @@ class BeatClock {
 }
 
 /**
- * The metronome's controls for [bpm], [meter], [playing], [vibrate] and [sound], stateless: the meter
- * picker at the top, the beat lights, the status line, the tempo dial (as large as the screen leaves
- * room for, holding only the tempo) and one row of icon buttons under it: Tap tempo · − · Start · + ·
- * options (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html). The options
- * button opens a panel over the screen ([OptionsPanel]) with the four sounds ([onSoundPick]: while
- * stopped one bar of the sound plays, while playing it is heard from the next beat), the clicks between
- * the beats ([subdivision], [onSubdivisionPick], the same way), "Vibrate on the beat"
- * ([onVibrateChange]) and Listen ([onListen], which closes the panel); Back or a tap beside it closes
- * it. What is on in it shows as small icons on the status line ([StatusMark]: the note value playing
- * between the beats, then vibration).
+ * The metronome's screen for [bpm], [meter], [playing], [vibrate] and [sound], stateless (2.0, Phase 75;
+ * the first 2.0 mock-up, docs/design/fresh-start-preview.html): the tempo is the screen. Upright, top to
+ * bottom: the [header] (the app's gear, Phase 69) at the top start and the options button at the top
+ * end; the tempo big with − and + either side and "beats per minute · Andante" under it ([TempoHeading],
+ * as large as the room the rest leave); the ruler that sets it by dragging ([TempoRuler]); the beat
+ * lights and Listen's status line; the meter and the click sound as segmented choices ([MeterChoice],
+ * [SoundChoice]); Tap the beat and Start side by side ([BigButtons]); and the speed trainer's row with
+ * its switch ([TrainerRow]; [trainer] null without its tool switch, and then nothing of it shows). The
+ * gaps share the height that is left; with very large text the column scrolls.
  *
- * The speed trainer (Phase 62; [trainer] null without its switch, and then nothing of it shows): a row
- * under Listen in the panel with its switch ([onTrainerOn]); the row opens its settings in place of the
- * panel's rows, with a back arrow ([TrainerSettings], [onTrainerPlan]), and turning it on the first time
- * goes straight there, already filled in. While it is on the status line shows its icon and where it
- * stands ("95 → 120 · +5 in 2 bars"), a tap there opens its settings, and a small ring on the dial
- * marks its goal.
- * Upright the beat lights stand right over the dial and grow with the height a tall screen has to
- * spare (Phase 43). Upright they stand in one column; on a wide screen on its side the dial is at the
- * start and the rest in a column beside it. With a very large font the column scrolls. Only the beat
- * lights and the dial's glow move, and only while playing or listening. [listen] says where Listen
- * stands (its status line has Stop while it listens, [onListen] again); a found tempo shows in a
- * balloon over the screen, pointing at the options button ([onUse], [onNotNow]; Back is Not now).
+ * On a wide screen on its side the tempo, the ruler, the beat lights and the status line stand in the
+ * start half, the [header] over them, and the choices, the two big buttons and the trainer's row in the
+ * end half under the options button.
  *
- * A [header] (the app's gear, Phase 69; the Practice tab's tool button from Phase 47 until then) stands at the very top at the start, 8 dp
- * down as the tuner's mode switch, with the meter picker under it; on its side it stands at the top
- * of the dial's half, which the dial shrinks to leave room for, so the controls' column keeps its height.
+ * The options button opens a panel ([FloatingPanel]) under it with the clicks between the beats
+ * ([subdivision], [onSubdivisionPick]), "Vibrate on the beat" ([onVibrateChange]) and Listen ([onListen],
+ * which closes the panel); what is on in it shows as small icons on the status line ([StatusMark]). A
+ * sound picked ([onSoundPick]) plays one bar while stopped, and is heard from the next beat while
+ * playing. The trainer's row opens its settings ([TrainerSettings], [onTrainerPlan]) in a panel over the
+ * row, and turning it on the first time goes straight there, already filled in ([onTrainerOn]); while it
+ * is on its row says where it stands ("95 → 120 · +5 in 2 bars") and a dot under the ruler marks its
+ * goal. Back or a tap beside a panel closes it.
+ *
+ * [listen] says where Listen stands (its status line has Stop while it listens, [onListen] again); a
+ * found tempo shows in a balloon pointing at the options button ([onUse], [onNotNow]; Back is Not now),
+ * and the tempo glides to it when used. Only the beat lights and the ruler's cursor move on the beat,
+ * and only while playing or listening.
  *
  * On a large upright window (a tablet held upright, Phase 52) the column is laid out as on a phone and
- * drawn bigger, by the tuner's rule ([columnScaleFor], [ScaledUp]): the meter picker, the beat lights,
- * the dial, the row of buttons and the gaps grow together, and the options panel and the
- * suggestion with them. The [header] keeps its own size there, at the start of a phone's column, as
- * over the other Practice tools. On a phone, and on its side, nothing changes.
+ * drawn bigger, by the tuner's rule ([columnScaleFor], [ScaledUp]), and the panels and the suggestion
+ * with it. The [header] keeps its own size there, over the column's start. On a phone, and on its side,
+ * nothing changes.
  */
 @Composable
 fun MetronomeContent(
@@ -400,20 +401,19 @@ fun MetronomeContent(
             }
         }
     }
-    val dial = rememberDialMotion(bpm, listen)
+    val motion = rememberTempoMotion(bpm, listen)
     val animationsOff = rememberAnimationsOff()
     val use: (TempoPick) -> Unit = { pick ->
-        dial.glideNext = true
+        motion.glideNext = true
         onUse(pick, if (animationsOff) 0L else MetronomeViewModel.USE_GLIDE_MILLIS)
     }
     BackHandler(enabled = listen.phase == ListenPhase.FOUND, onBack = onNotNow)
     var optionsBounds by remember { mutableStateOf<Rect?>(null) }
+    var trainerBounds by remember { mutableStateOf<Rect?>(null) }
     // Kept when the phone turns: the panel opens again in its place for the new layout.
     var optionsOpen by rememberSaveable { mutableStateOf(false) }
-    // The panel shows the speed trainer's settings in place of its rows.
-    var trainerPage by rememberSaveable { mutableStateOf(false) }
+    var trainerOpen by rememberSaveable { mutableStateOf(false) }
     val trainerOn = trainer?.on == true
-    val trainerLine = if (trainer != null && trainerOn) trainerStatus(trainer.plan, bpm, trainer.bar, playing) else null
     val vibrateName = stringResource(R.string.metronome_vibrate)
     // What is on in the options panel, on the status line (Phase 62), in the panel's order. The note
     // value is the one playing in this meter: none (no mark) where the meter doesn't offer the choice.
@@ -435,105 +435,125 @@ fun MetronomeContent(
             val height = maxHeight
             val wide = width >= WIDE_MIN_WIDTH && width > height
             // On a tablet held upright the column and the panels over it are drawn bigger, by the tuner's
-            // rule (1 on every phone, and on its side); the Practice tab's tool button keeps its own size
-            // and place there, as over Chords and Scales, so it doesn't move when the tool changes.
+            // rule (1 on every phone, and on its side); the gear keeps its own size and place there.
             val scale = if (wide) 1f else columnScaleFor(width.value, height.value)
             val headerAbove = header != null && scale > 1f
-            val lights: @Composable (Dp) -> Unit = { height ->
-                BeatLightsArt(
-                    meter = meter,
-                    litBeat = clock::litBeat,
-                    litLevel = clock::litLevel,
-                    // A small mark for each click between the beats, shown stopped too.
-                    clicksPerBeat = between.clicksPerBeat,
-                    litBetween = clock::litBetween,
-                    litBetweenLevel = clock::litBetweenLevel,
-                    modifier = Modifier
-                        .widthIn(max = LIGHTS_MAX_WIDTH)
-                        .fillMaxWidth()
-                        .height(height)
-                        .testTag(MetronomeTestTags.LIGHTS)
-                        .clearAndSetSemantics {},
-                )
+            val topRow: @Composable (withHeader: Boolean, withOptions: Boolean) -> Unit = { withHeader, withOptions ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    if (withHeader) header?.invoke()
+                    Spacer(Modifier.weight(1f))
+                    if (withOptions) {
+                        // The shared options button; TalkBack hears "Options" as a drop-down list.
+                        OptionsButton(
+                            open = optionsOpen,
+                            onClick = { optionsOpen = true },
+                            label = stringResource(R.string.metronome_options),
+                            role = Role.DropdownList,
+                            modifier = Modifier.testTag(MetronomeTestTags.OPTIONS).onGloballyPositioned { optionsBounds = it.boundsInRoot() },
+                        )
+                    }
+                }
             }
-            val line: @Composable () -> Unit = {
-                ListenLine(
-                    listen,
-                    onTryAgain = onTryAgain,
-                    onOpenSettings = onOpenSettings,
-                    modifier = Modifier.padding(top = 2.dp),
-                    marks = marks,
-                    onStopListening = onListen,
-                    trainer = trainerLine,
-                    onTrainer = {
-                        trainerPage = true
-                        optionsOpen = true
-                    },
-                )
+            val heading: @Composable (Dp) -> Unit = { room ->
+                TempoHeading(bpm = motion.shownBpm, onStep = onStep, room = room, glow = motion::foundGlow)
             }
-            val tempoDial: @Composable (Dp) -> Unit = { size ->
-                TempoDial(
+            val ruler: @Composable () -> Unit = {
+                TempoRuler(
                     bpm = bpm,
                     onBpmChange = onBpmChange,
                     onBpmChangeFinished = onBpmChangeFinished,
+                    shown = motion::shown,
                     beatGlow = clock::glow,
-                    size = size,
-                    shown = dial::shown,
-                    shownBpm = dial.shownBpm,
-                    ringBpm = dial::ringBpm,
-                    ringAlpha = dial::ringAlpha,
-                    foundGlow = dial::foundGlow,
+                    ringBpm = motion::ringBpm,
+                    ringAlpha = motion::ringAlpha,
                     goalBpm = if (trainerOn) trainer.plan.goalBpm else 0,
+                    animationsOff = animationsOff,
                 )
             }
-            val row: @Composable () -> Unit = {
-                TempoRow(
-                    onTap = onTap,
-                    onStep = onStep,
-                    playing = playing || (listening && listen.wasPlaying),
-                    onToggle = onToggle,
-                    startResting = listening,
-                    optionsOpen = optionsOpen,
-                    onOptions = {
-                        trainerPage = false
-                        optionsOpen = true
-                    },
-                    onOptionsPlaced = { optionsBounds = it },
-                )
+            val lightsAndLine: @Composable () -> Unit = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    BeatLightsArt(
+                        meter = meter,
+                        litBeat = clock::litBeat,
+                        litLevel = clock::litLevel,
+                        // A small dot for each click between the beats, shown stopped too.
+                        clicksPerBeat = between.clicksPerBeat,
+                        litBetween = clock::litBetween,
+                        litBetweenLevel = clock::litBetweenLevel,
+                        modifier = Modifier
+                            .widthIn(max = LIGHTS_MAX_WIDTH)
+                            .fillMaxWidth()
+                            .height(LIGHTS_HEIGHT)
+                            .testTag(MetronomeTestTags.LIGHTS)
+                            .clearAndSetSemantics {},
+                    )
+                    ListenLine(
+                        listen,
+                        onTryAgain = onTryAgain,
+                        onOpenSettings = onOpenSettings,
+                        marks = marks,
+                        onStopListening = onListen,
+                    )
+                }
+            }
+            val choices: @Composable () -> Unit = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    MeterChoice(meter, onMeterChange)
+                    Spacer(Modifier.height(CHOICE_GAP))
+                    SoundChoice(sound, onSoundPick)
+                }
+            }
+            val buttons: @Composable () -> Unit = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    BigButtons(
+                        onTap = onTap,
+                        playing = playing || (listening && listen.wasPlaying),
+                        onToggle = onToggle,
+                        startResting = listening,
+                    )
+                    if (trainer != null) {
+                        Spacer(Modifier.height(TRAINER_GAP))
+                        TrainerRow(
+                            on = trainer.on,
+                            status = trainerStatus(trainer.plan, bpm, trainer.bar, playing && trainer.on),
+                            onOnChange = { on ->
+                                onTrainerOn(on)
+                                // The first time straight to its settings, already filled in.
+                                if (on && !trainer.saved) trainerOpen = true
+                            },
+                            onOpen = { trainerOpen = true },
+                            onPlaced = { trainerBounds = it },
+                        )
+                    }
+                }
             }
             if (wide) {
-                // The halves 16 dp apart, as the other Practice tools: the meter buttons kept clear of the tool button.
                 Row(
                     Modifier.fillMaxSize().padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (header != null) {
-                            Spacer(Modifier.height(HEADER_TOP))
-                            // At the start, as on the other Practice tools (Phase 47).
-                            Box(Modifier.fillMaxWidth()) { header() }
-                        }
-                        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            tempoDial(minOf(DIAL_LARGEST, maxWidth, maxHeight))
-                        }
+                    FitColumn(
+                        height = height - 16.dp,
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+                    ) {
+                        if (header != null) topRow(true, false)
+                        Spacer(Modifier.gap(1f))
+                        Shrinking { room -> heading(room) }
+                        Spacer(Modifier.height(RULER_GAP))
+                        ruler()
+                        lightsAndLine()
+                        Spacer(Modifier.gap(1f))
                     }
                     FitColumn(
                         height = height - 16.dp,
-                        modifier = Modifier
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
-                            .padding(vertical = 8.dp),
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
                     ) {
+                        topRow(false, true)
                         Spacer(Modifier.gap(1f))
-                        MeterPicker(meter, onMeterChange)
-                        Spacer(Modifier.height(8.dp))
-                        // A short window (a phone's status bar above) gets lower beat lights, so the rest stays in
-                        // view; a tall one (a tablet) larger ones.
-                        Shrinking { room -> lights(wideLightsHeight(room)) }
-                        line()
-                        Spacer(Modifier.height(12.dp))
-                        row()
+                        choices()
+                        Spacer(Modifier.height(BUTTONS_GAP))
+                        buttons()
                         Spacer(Modifier.gap(1f))
                     }
                 }
@@ -541,7 +561,7 @@ fun MetronomeContent(
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     if (headerAbove) {
                         Spacer(Modifier.height(HEADER_TOP))
-                        // At the start of a phone's column, as on the other Practice tools on a tablet.
+                        // At the start of a phone's column, as on the other screens on a tablet.
                         Box(Modifier.widthIn(max = COLUMN_MAX_WIDTH).fillMaxWidth().padding(horizontal = 16.dp)) { header?.invoke() }
                     }
                     BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -555,68 +575,44 @@ fun MetronomeContent(
                                     .widthIn(max = COLUMN_MAX_WIDTH)
                                     .padding(horizontal = 16.dp),
                             ) {
-                                if (header != null && !headerAbove) {
-                                    Spacer(Modifier.height(HEADER_TOP))
-                                    // At the start, as on the other Practice tools (Phase 47).
-                                    Box(Modifier.fillMaxWidth()) { header() }
-                                }
-                                Spacer(Modifier.height(12.dp))
-                                MeterPicker(meter, onMeterChange)
-                                Spacer(Modifier.height(8.dp))
+                                Spacer(Modifier.height(HEADER_TOP))
+                                topRow(header != null && !headerAbove, true)
                                 Spacer(Modifier.gap(1f))
-                                // The beat lights stand right over the dial, which takes all the height the rest leave,
-                                // up to the width; the lights grow with what a tall screen has left (the gaps share the
-                                // rest). Below the dial's smallest (very large text) the column scrolls.
-                                Shrinking { room ->
-                                    LightsOverDial(room = room, widest = minOf(DIAL_LARGEST, width / scale - 32.dp), lights = lights, line = line, dial = tempoDial)
-                                }
+                                Shrinking { space -> heading(space) }
+                                Spacer(Modifier.height(RULER_GAP))
+                                ruler()
+                                lightsAndLine()
                                 Spacer(Modifier.gap(1f))
-                                row()
+                                choices()
                                 Spacer(Modifier.gap(1f))
-                                Spacer(Modifier.height(12.dp))
+                                buttons()
+                                Spacer(Modifier.height(BOTTOM_GAP))
                             }
                         }
                     }
                 }
             }
-            // The suggestion and the options panel float on their own layer over the screen, both from
-            // the options button. The layer is always there, so its place is known before either shows
-            // (one that isn't showing has no place of its own). On an upright tablet they are drawn as
-            // big as the column, so they open from its button at its size.
+            // The suggestion and the panels float on their own layer over the screen. The layer is always
+            // there, so its place is known before any shows (one that isn't showing has no place of its
+            // own). On an upright tablet they are drawn as big as the column.
             ScaledUp(scale) {
                 Box(Modifier.fillMaxSize().onGloballyPositioned { layerOrigin = it.positionInRoot() }) {
-                    val anchor = optionsBounds?.translate(-layerOrigin)
+                    val options = optionsBounds?.translate(-layerOrigin)
                     ListenBalloon(
                         listen = listen,
-                        anchor = anchor,
+                        anchor = options,
                         onUse = use,
                         onNotNow = onNotNow,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    // Its rows, top to bottom, the speed trainer's last; its settings in their place.
-                    OptionsPanel(
+                    FloatingPanel(
                         open = optionsOpen,
-                        anchor = anchor,
-                        wide = wide,
+                        anchor = options,
+                        title = stringResource(R.string.metronome_options),
                         onDismiss = { optionsOpen = false },
                         modifier = Modifier.fillMaxSize(),
-                        trainerPage = trainerPage && trainer != null,
-                        pageTitle = stringResource(R.string.metronome_trainer),
-                        onPageBack = { trainerPage = false },
-                        page = trainer?.let { shown ->
-                            {
-                                TrainerSettings(
-                                    plan = shown.plan,
-                                    on = shown.on,
-                                    onOnChange = onTrainerOn,
-                                    onPlan = onTrainerPlan,
-                                    onBack = { trainerPage = false },
-                                )
-                            }
-                        },
                     ) {
-                        SoundChoice(sound, onSoundPick)
-                        SubdivisionChoice(subdivision, meter, onSubdivisionPick, Modifier.padding(top = 4.dp))
+                        SubdivisionChoice(subdivision, meter, onSubdivisionPick)
                         VibrateSwitch(vibrate, onVibrateChange, Modifier.padding(top = 4.dp))
                         ListenRow(
                             listening = listening,
@@ -625,16 +621,17 @@ fun MetronomeContent(
                                 onListen()
                             },
                         )
-                        if (trainer != null) {
-                            TrainerRow(
-                                on = trainer.on,
-                                onOnChange = { on ->
-                                    onTrainerOn(on)
-                                    // The first time straight to its settings, already filled in.
-                                    if (on && !trainer.saved) trainerPage = true
-                                },
-                                onOpen = { trainerPage = true },
-                            )
+                    }
+                    if (trainer != null) {
+                        FloatingPanel(
+                            open = trainerOpen,
+                            anchor = trainerBounds?.translate(-layerOrigin),
+                            title = stringResource(R.string.metronome_trainer),
+                            onDismiss = { trainerOpen = false },
+                            modifier = Modifier.fillMaxSize(),
+                            tag = MetronomeTestTags.TRAINER_PANEL,
+                        ) {
+                            TrainerSettings(plan = trainer.plan, on = trainer.on, onOnChange = onTrainerOn, onPlan = onTrainerPlan)
                         }
                     }
                 }
@@ -644,55 +641,12 @@ fun MetronomeContent(
 }
 
 /**
- * Upright: the beat lights, Listen's status line and the dial in [room]. The dial is as large as the
- * room leaves after the line and the lights at their [LIGHTS_HEIGHT], up to [widest], down to
- * [DIAL_SMALLEST]; the lights take [LIGHTS_SHARE] of what is still left, up to [LIGHTS_LARGEST]. The
- * heights depend only on the room and the line's steady height, so nothing moves while the lights flash.
- */
-@Composable
-private fun LightsOverDial(
-    room: Dp,
-    widest: Dp,
-    lights: @Composable (Dp) -> Unit,
-    line: @Composable () -> Unit,
-    dial: @Composable (Dp) -> Unit,
-) {
-    SubcomposeLayout { constraints ->
-        val across = Constraints(maxWidth = constraints.maxWidth)
-        val lineParts = subcompose("line", line).map { it.measure(across) }
-        val rest = room - lineParts.sumOf { it.height }.toDp() - DIAL_MARGIN * 2 - LIGHTS_HEIGHT
-        val dialSize = minOf(widest, maxOf(rest, DIAL_SMALLEST))
-        val spare = (rest - dialSize).coerceAtLeast(0.dp)
-        val lightsHeight = LIGHTS_HEIGHT + minOf(spare * LIGHTS_SHARE, LIGHTS_LARGEST - LIGHTS_HEIGHT)
-        val lightParts = subcompose("lights") { lights(lightsHeight) }.map { it.measure(across) }
-        val dialParts = subcompose("dial") { Box(Modifier.padding(vertical = DIAL_MARGIN)) { dial(dialSize) } }.map { it.measure(across) }
-        val parts = lightParts + lineParts + dialParts
-        val partsWidth = parts.maxOfOrNull { it.width } ?: 0
-        layout(partsWidth, parts.sumOf { it.height }) {
-            var y = 0
-            for (part in parts) {
-                part.placeRelative((partsWidth - part.width) / 2, y)
-                y += part.height
-            }
-        }
-    }
-}
-
-/** On its side the beat lights take what the column leaves: down to 40 dp on a short window, past 56 dp on a tall one. */
-private fun wideLightsHeight(room: Dp): Dp =
-    if (room <= LIGHTS_HEIGHT_WIDE) {
-        room.coerceAtLeast(LIGHTS_HEIGHT_WIDE_SMALLEST)
-    } else {
-        minOf(LIGHTS_LARGEST, LIGHTS_HEIGHT_WIDE + (room - LIGHTS_HEIGHT_WIDE) * LIGHTS_SHARE)
-    }
-
-/**
- * The dial's motion for Listen: the tempo shown (gliding to a used one in 700 ms, [glideNext]), the
- * listening ring (fading in over 400 ms at the tempo it settles on, gliding 500 ms to a new one) and
- * the found tempo's glow (in over 300 ms, held 400 ms, out over 900 ms).
+ * The tempo's motion for Listen: the tempo shown (gliding to a used one in 700 ms, [glideNext]), the
+ * listening ring on the ruler (fading in over 400 ms at the tempo it settles on, gliding 500 ms to a new
+ * one) and the found tempo's glow behind the figures (in over 300 ms, held 400 ms, out over 900 ms).
  */
 @Stable
-private class DialMotion(bpm: Int) {
+private class TempoMotion(bpm: Int) {
     val shownAnim = Animatable(bpm.toFloat())
     val ringBpmAnim = Animatable(0f)
     val ringAlphaAnim = Animatable(0f)
@@ -709,8 +663,8 @@ private class DialMotion(bpm: Int) {
 }
 
 @Composable
-private fun rememberDialMotion(bpm: Int, listen: ListenUi): DialMotion {
-    val motion = remember { DialMotion(bpm) }
+private fun rememberTempoMotion(bpm: Int, listen: ListenUi): TempoMotion {
+    val motion = remember { TempoMotion(bpm) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(bpm) {
         if (!motion.glideNext) {
@@ -758,15 +712,17 @@ private const val RING_GLIDE_MILLIS = 500
 
 /** Test tags for UI tests; they don't change with the app's language. */
 object MetronomeTestTags {
-    const val DIAL = "metronome_dial"
+    /** The ruler (TalkBack's tempo slider), the tempo's figures and the words under them. */
+    const val RULER = "metronome_ruler"
     const val BPM = "metronome_bpm"
+    const val TEMPO_WORDS = "metronome_tempo_words"
     const val LIGHTS = "metronome_lights"
     const val SLOWER = "metronome_slower"
     const val FASTER = "metronome_faster"
     const val TAP = "metronome_tap"
     const val START = "metronome_start"
 
-    /** The options button at the row's end, and its panel. */
+    /** The options button in the top end corner, and its panel. */
     const val OPTIONS = "metronome_options"
     const val OPTIONS_PANEL = "metronome_options_panel"
 
@@ -775,18 +731,18 @@ object MetronomeTestTags {
     const val LISTEN = "metronome_listen"
 
     /**
-     * The speed trainer (Phase 62): its row in the options panel, the row's switch, its settings with
-     * their back arrow, start and goal tempos (with "_slower" and "_faster" for their − and +), and
-     * its icon and words on the status line.
+     * The speed trainer (Phase 62, its row since Phase 75): its row (the part that opens its settings),
+     * the row's switch, its words on the row, the panel its settings open in, the settings, and their
+     * start and goal tempos (with "_slower" and "_faster" for their − and +).
      */
     const val TRAINER = "metronome_trainer"
     const val TRAINER_SWITCH = "metronome_trainer_switch"
+    const val TRAINER_SETTINGS_SWITCH = "metronome_trainer_settings_switch"
+    const val TRAINER_TEXT = "metronome_trainer_text"
+    const val TRAINER_PANEL = "metronome_trainer_panel"
     const val TRAINER_SETTINGS = "metronome_trainer_settings"
-    const val TRAINER_BACK = "metronome_trainer_back"
     const val TRAINER_START = "metronome_trainer_start"
     const val TRAINER_GOAL = "metronome_trainer_goal"
-    const val TRAINER_MARK = "metronome_mark_trainer"
-    const val TRAINER_TEXT = "metronome_trainer_text"
 
     /** The trainer's step choice of [bpm], e.g. "metronome_trainer_step_5". */
     fun trainerStep(bpm: Int): String = "metronome_trainer_step_$bpm"
@@ -808,44 +764,36 @@ object MetronomeTestTags {
     /** The suggestion's ½× 1× 2× chip for [pick], e.g. "metronome_listen_pick_double". */
     fun pick(pick: TempoPick): String = "metronome_listen_pick_" + pick.name.lowercase()
 
-    /** The options panel's button for [sound], e.g. "metronome_sound_cowbell". */
+    /** The sound choice's segment for [sound], e.g. "metronome_sound_cowbell". */
     fun sound(sound: ClickSound): String = "metronome_sound_" + sound.name.lowercase()
 
     /** The options panel's button for [subdivision] between the beats, e.g. "metronome_subdivision_three". */
     fun subdivision(subdivision: Subdivision): String = "metronome_subdivision_" + subdivision.name.lowercase()
 
-    /** The meter picker's button for [meter], e.g. "metronome_meter_six_eight". */
+    /** The meter choice's segment for [meter], e.g. "metronome_meter_six_eight". */
     fun meter(meter: Meter): String = "metronome_meter_" + meter.name.lowercase()
 }
 
 /** Side by side from this width, when wider than tall. */
 private val WIDE_MIN_WIDTH = 600.dp
 
-/** A [MetronomeContent] header stands this far down from the top, as the tuner's mode switch. */
+/** The top row stands this far down from the top, as the tuner's header row. */
 private val HEADER_TOP = 8.dp
 
 /** The column keeps to this width on a large screen. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
-/** The dial is as large as the room it has, up to this (a tablet); it fills a phone's width upright. */
-private val DIAL_LARGEST = 440.dp
+/** Between the tempo's words and the ruler, the meter and sound choices, the big buttons and the trainer's row, and under the column. */
+private val RULER_GAP = 8.dp
+private val CHOICE_GAP = 8.dp
+private val TRAINER_GAP = 12.dp
+private val BOTTOM_GAP = 12.dp
 
-/** Upright the dial shrinks to fit a short screen, down to this; below it (very large text) the column scrolls. */
-private val DIAL_SMALLEST = 200.dp
+/** On its side, between the choices and the big buttons. */
+private val BUTTONS_GAP = 16.dp
 
-/** Room kept above and below the dial upright. */
-private val DIAL_MARGIN = 8.dp
-
-/**
- * The beat lights' row: at least 48 dp upright, 56 dp on its side (down to 40 on a short window), at
- * most 360 dp wide. Where the screen has height to spare they take [LIGHTS_SHARE] of it, up to
- * [LIGHTS_LARGEST], and their marks grow with them (Phase 43: a beat that reads from a music stand).
- */
+/** The beat lights' row: 48 dp high, at most 360 dp wide (the lights keep together on a wide screen). */
 private val LIGHTS_HEIGHT = 48.dp
-private val LIGHTS_LARGEST = 80.dp
-private const val LIGHTS_SHARE = 0.5f
-private val LIGHTS_HEIGHT_WIDE = 56.dp
-private val LIGHTS_HEIGHT_WIDE_SMALLEST = 40.dp
 private val LIGHTS_MAX_WIDTH = 360.dp
 
 /**

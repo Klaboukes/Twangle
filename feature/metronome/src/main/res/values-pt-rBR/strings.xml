@@ -28,7 +28,6 @@
     <string name="metronome_subdivision_sixteenths_on">Semicolcheias entre os tempos</string>
     <string name="metronome_options">Opções</string>
     <string name="metronome_trainer">Treino de andamento</string>
-    <string name="metronome_trainer_back">Voltar às opções</string>
     <string name="metronome_trainer_start">Andamento inicial</string>
     <string name="metronome_trainer_goal">Meta</string>
     <string name="metronome_trainer_start_slower">Andamento inicial mais baixo</string>

@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -12,9 +11,9 @@ import org.junit.Test
 class RestingCentreTest {
 
     private val roles = MeterRoles(
-        background = Color.Black, ink = Color.White, muted = Color.Gray, track = Color.Gray,
+        ink = Color.White, muted = Color.Gray, track = Color.Gray,
         // A green accent, as some wallpaper colours have.
-        accent = Color(0xFF5F6E0E), inTune = Color.Green, dark = true, numbers = FontFamily.Default, numberScale = 1f,
+        accent = Color(0xFF5F6E0E), inTune = Color.Green, dark = true,
     )
 
     @Test

@@ -40,7 +40,7 @@ From the tools button above the strings, one at a time:
 - **Pitch trail:** a line of your pitch over the last few seconds, to see bends, vibrato and how steady a note is.
 
 ### Practice
-- **Metronome:** 30 to 250 beats per minute on a round tempo dial, with − and + buttons and tap tempo. 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on beat 1 and beat lights to follow along.
+- **Metronome:** 30 to 250 beats per minute, the tempo big on the screen with − and + beside it and a ruler to drag, and Tap the beat. 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on beat 1 and beat lights to follow along.
 - **Listen:** play for a few seconds and the metronome suggests your tempo.
 - Clicks over your own music or backing track, and can vibrate on the beat. It stops by itself for a phone call or when headphones are unplugged.
 - **Chord charts:** 20 chord types on any root, the power chord and 9ths included, drawn as in a songbook with fingers and barres, several shapes for each chord, for the tuning you picked, your own tunings included.

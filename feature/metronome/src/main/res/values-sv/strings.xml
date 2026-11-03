@@ -27,7 +27,6 @@
     <string name="metronome_subdivision_sixteenths_on">Sextondelar mellan slagen</string>
     <string name="metronome_options">Alternativ</string>
     <string name="metronome_trainer">Tempotränare</string>
-    <string name="metronome_trainer_back">Tillbaka till alternativen</string>
     <string name="metronome_trainer_start">Starttempo</string>
     <string name="metronome_trainer_goal">Mål</string>
     <string name="metronome_trainer_start_slower">Sänk starttempot</string>

@@ -29,7 +29,6 @@
     <string name="metronome_subdivision_sixteenths_on">Szesnastki między uderzeniami</string>
     <string name="metronome_options">Opcje</string>
     <string name="metronome_trainer">Trener tempa</string>
-    <string name="metronome_trainer_back">Wróć do opcji</string>
     <string name="metronome_trainer_start">Tempo startowe</string>
     <string name="metronome_trainer_goal">Cel</string>
     <string name="metronome_trainer_start_slower">Niższe tempo startowe</string>

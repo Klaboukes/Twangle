@@ -27,7 +27,6 @@
     <string name="metronome_subdivision_sixteenths_on">Kuudestoistaosat iskujen välissä</string>
     <string name="metronome_options">Valinnat</string>
     <string name="metronome_trainer">Tempovalmentaja</string>
-    <string name="metronome_trainer_back">Takaisin valintoihin</string>
     <string name="metronome_trainer_start">Alkutempo</string>
     <string name="metronome_trainer_goal">Tavoite</string>
     <string name="metronome_trainer_start_slower">Hitaampi alkutempo</string>

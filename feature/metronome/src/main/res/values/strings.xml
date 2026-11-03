@@ -2,35 +2,37 @@
 <resources>
     <!-- The meter picker at the top: one button per time signature. -->
     <string name="metronome_beats_in_bar">Beats in a bar</string>
-    <!-- The tempo dial, for TalkBack: its name only (TalkBack itself says how to change it, and says the value from metronome_tempo_value). -->
+    <!-- The tempo ruler under the big tempo number (a scale of marks you drag sideways to set the tempo), for TalkBack: its name only (TalkBack itself says how to change it, and says the value from metronome_tempo_value). -->
     <string name="metronome_tempo">Tempo</string>
-    <!-- TalkBack: the tempo dial's value. %1$d is the number of beats per minute, %2$s the Italian tempo marking (e.g. "Andante", not translated). -->
+    <!-- TalkBack: the tempo ruler's value. %1$d is the number of beats per minute, %2$s the Italian tempo marking (e.g. "Andante", not translated). -->
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d beat per minute, %2$s</item>
         <item quantity="other">%1$d beats per minute, %2$s</item>
     </plurals>
     <string name="metronome_bpm" translatable="false">BPM</string>
-    <!-- TalkBack name of the − button under the tempo dial, left of Start: one beat per minute slower. -->
+    <!-- Under the big tempo number at the top of the metronome: what the number counts, then the Italian tempo marking (%1$s, e.g. "Allegro", not translated). A label for the number, so it needn't agree with it grammatically. Example: "beats per minute · Allegro". -->
+    <string name="metronome_tempo_line">beats per minute · %1$s</string>
+    <!-- TalkBack name of the round − button left of the big tempo number: one beat per minute slower. -->
     <string name="metronome_slower">Slower</string>
-    <!-- TalkBack name of the + button under the tempo dial, right of Start: one beat per minute faster. -->
+    <!-- TalkBack name of the round + button right of the big tempo number: one beat per minute faster. -->
     <string name="metronome_faster">Faster</string>
-    <!-- TalkBack name of the button at the start of the row under the tempo dial (a fingertip icon, no word shown): tap it in time and the tempo follows your taps. -->
-    <string name="metronome_tap">Tap tempo</string>
-    <!-- TalkBack name of the big play button that starts the clicks (an icon, no word shown). -->
+    <!-- The big button beside Start (a fingertip icon and these words): tap it in time with the music and the tempo follows your taps. Short: it shares a row with Start on a small phone. -->
+    <string name="metronome_tap">Tap the beat</string>
+    <!-- The big accent button (a play icon and this word) that starts the clicks. -->
     <string name="metronome_start">Start</string>
-    <!-- TalkBack name of the big button while the clicks play: stops them (an icon, no word shown). -->
+    <!-- The big accent button while the clicks play (a stop icon and this word): stops them. -->
     <string name="metronome_stop">Stop</string>
     <!-- Switch in the options panel: the phone vibrates on every beat as well. Also TalkBack's name for its small icon on the status line under the beat lights while it is on. -->
     <string name="metronome_vibrate">Vibrate on the beat</string>
-    <!-- The options panel: the small heading over the four click sounds (icons), and TalkBack's name for that group. -->
+    <!-- TalkBack's name for the row of four click sounds (icons, no words shown) under the time signatures. -->
     <string name="metronome_sound">Sound</string>
-    <!-- The four click sounds, icons in the options panel: each instrument's common name, for TalkBack. -->
+    <!-- The four click sounds, icons in a row on the metronome screen: each instrument's common name, for TalkBack. -->
     <string name="metronome_sound_wood_block">Wood block</string>
-    <!-- Click sound in the options panel (TalkBack): the cowbell (percussion instrument). -->
+    <!-- Click sound (TalkBack): the cowbell (percussion instrument). -->
     <string name="metronome_sound_cowbell">Cowbell</string>
-    <!-- Click sound in the options panel (TalkBack): claves (two wooden sticks struck together). -->
+    <!-- Click sound (TalkBack): claves (two wooden sticks struck together). -->
     <string name="metronome_sound_claves">Claves</string>
-    <!-- Click sound in the options panel (TalkBack): a rim click (a drumstick laid on the snare drum, its rim struck). -->
+    <!-- Click sound (TalkBack): a rim click (a drumstick laid on the snare drum, its rim struck). -->
     <string name="metronome_sound_rim_click">Rim click</string>
     <!-- The options panel: the small heading over the four choices of soft clicks the metronome plays between its beats (note-value icons: none, eighths, triplets, sixteenths), and TalkBack's name for that group. "Beat" as in counting the beats of a bar. -->
     <string name="metronome_subdivision">Between the beats</string>
@@ -48,13 +50,11 @@
     <string name="metronome_subdivision_triplets_on">Triplets between the beats</string>
     <!-- TalkBack name of the small note icon on the status line under the beat lights while sixteenths click between the beats. -->
     <string name="metronome_subdivision_sixteenths_on">Sixteenths between the beats</string>
-    <!-- TalkBack name of the button at the end of the row under the tempo dial (a three-sliders icon, no word shown): opens the panel with the click sounds, Vibrate on the beat, Listen and the speed trainer. Also the panel's name. -->
+    <!-- TalkBack name of the button in the metronome's top right corner (a three-sliders icon, no word shown): opens the panel with the clicks between the beats, Vibrate on the beat and Listen. Also the panel's name. -->
     <string name="metronome_options">Options</string>
 
-    <!-- The speed trainer (Phase 62): the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the options panel (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
+    <!-- The speed trainer: the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row at the foot of the metronome screen (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
     <string name="metronome_trainer">Speed trainer</string>
-    <!-- TalkBack name of the back arrow at the top of the speed trainer's settings: back to the options panel's list. -->
-    <string name="metronome_trainer_back">Back to the options</string>
     <!-- Speed trainer settings: the label of the tempo it starts at (a number with − and + beside it). -->
     <string name="metronome_trainer_start">Start tempo</string>
     <!-- Speed trainer settings: the label of the tempo it climbs to and then holds (a number with − and + beside it). -->
@@ -78,25 +78,25 @@
         <item quantity="one">%1$s bar</item>
         <item quantity="other">%1$s bars</item>
     </plurals>
-    <!-- The status line under the beat lights while the speed trainer is on: the tempo now, an arrow, the goal tempo, then what comes next. %1$s the tempo now, %2$s the goal, %3$s one of the texts below (e.g. "+5 in 2 bars"). Example: "95 → 120 · +5 in 2 bars". -->
+    <!-- Under "Speed trainer" on its row: the tempo it starts at or plays now, an arrow, the goal tempo, then what comes next. %1$s the tempo now, %2$s the goal, %3$s one of the texts below (e.g. "+5 in 2 bars"). Example: "95 → 120 · +5 in 2 bars". -->
     <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
-    <!-- The end of the speed trainer's status line while it climbs: the next step and in how many bars it comes. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
+    <!-- The end of the speed trainer's line while it climbs: the next step and in how many bars it comes. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
     <plurals name="metronome_trainer_next">
         <item quantity="one">%1$s in %2$s bar</item>
         <item quantity="other">%1$s in %2$s bars</item>
     </plurals>
-    <!-- The end of the speed trainer's status line while the metronome is stopped: its step and how often. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
+    <!-- The end of the speed trainer's line while the metronome is stopped: its step and how often. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
     <plurals name="metronome_trainer_every">
         <item quantity="one">%1$s every bar</item>
         <item quantity="other">%1$s every %2$s bars</item>
     </plurals>
-    <!-- The status line once the speed trainer reached its goal tempo and holds it. %1$s is the tempo. -->
+    <!-- The speed trainer's line once it reached its goal tempo and holds it. %1$s is the tempo. -->
     <string name="metronome_trainer_at_goal">At the goal · %1$s BPM</string>
-    <!-- TalkBack: the speed trainer's status line while it climbs. %1$s the tempo now, %2$s the goal tempo, %3$s the next step (e.g. "+5 in 2 bars"). -->
+    <!-- TalkBack: the speed trainer's row while it climbs. %1$s the tempo now, %2$s the goal tempo, %3$s the next step (e.g. "+5 in 2 bars"). -->
     <string name="metronome_trainer_spoken_climbing">Speed trainer, %1$s BPM, climbing to %2$s, %3$s</string>
-    <!-- TalkBack: the speed trainer's status line while the metronome is stopped. %1$s the start tempo, %2$s the goal tempo, %3$s the step and how often (e.g. "+5 every 4 bars"). -->
+    <!-- TalkBack: the speed trainer's row while the metronome is stopped. %1$s the start tempo, %2$s the goal tempo, %3$s the step and how often (e.g. "+5 every 4 bars"). -->
     <string name="metronome_trainer_spoken_set">Speed trainer, from %1$s to %2$s BPM, %3$s</string>
-    <!-- TalkBack: the speed trainer's status line once it reached its goal. %1$s is the tempo. -->
+    <!-- TalkBack: the speed trainer's row once it reached its goal. %1$s is the tempo. -->
     <string name="metronome_trainer_spoken_goal">Speed trainer, at the goal, %1$s BPM</string>
 
     <!-- The time signatures (drawn from their numbers, see meterLabel) as TalkBack says them (it would read "3/4" as a date or a fraction). -->
@@ -112,7 +112,7 @@
     <!-- TalkBack: the 7/8 time signature, as a musician says it. -->
     <string name="metronome_meter_7_8_spoken">Seven-eight time</string>
 
-    <!-- Italian tempo markings under the tempo: the same in every language. -->
+    <!-- Italian tempo markings under the big tempo number: the same in every language. -->
     <string name="metronome_marking_grave" translatable="false">Grave</string>
     <string name="metronome_marking_largo" translatable="false">Largo</string>
     <string name="metronome_marking_larghetto" translatable="false">Larghetto</string>

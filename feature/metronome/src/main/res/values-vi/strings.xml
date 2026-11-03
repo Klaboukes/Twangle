@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">Móc kép giữa các phách</string>
     <string name="metronome_options">Tùy chọn</string>
     <string name="metronome_trainer">Luyện tốc độ</string>
-    <string name="metronome_trainer_back">Quay lại tùy chọn</string>
     <string name="metronome_trainer_start">Nhịp độ đầu</string>
     <string name="metronome_trainer_goal">Mục tiêu</string>
     <string name="metronome_trainer_start_slower">Nhịp độ đầu thấp hơn</string>

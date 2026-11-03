@@ -33,9 +33,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -48,7 +48,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.paneTitle
@@ -63,7 +62,6 @@ import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -71,22 +69,12 @@ import io.github.klaboukes.twangle.feature.metronome.R
 import kotlin.math.roundToInt
 
 /*
- * The options panel (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html): what is
- * set less often than the tempo, behind the one button at the end of the row under the dial. Its rows,
- * top to bottom: the four click sounds (Phase 45, before Phase 62 behind a Sound button of their own),
- * the clicks between the beats ("Between the beats", Phase 62), Vibrate on the beat, and Listen
- * (Phase 27, before Phase 62 a button in the row), then the speed trainer's row (Phase 62, with its
- * tool switch). The panel takes its rows as content ([OptionsPanel]); the trainer's row opens the
- * trainer's settings in place of them, same size and spot, with a back arrow ([TrainerSettings]).
+ * The options panel (Phase 62; since Phase 75 behind the options button in the screen's top end corner):
+ * what is set less often than the tempo. Its rows, top to bottom: the clicks between the beats ("Between
+ * the beats", Phase 62), Vibrate on the beat, and Listen (Phase 27). The click sounds left it for the
+ * screen in Phase 75 ([SoundChoice]), and the speed trainer for a row of its own ([TrainerRow]), whose
+ * settings open in a panel of the same kind ([FloatingPanel]) from that row.
  */
-
-/** [sound]'s line icon (wood block A3, claves A5, cowbell and rim click as on the mock-up). */
-internal fun soundIcon(sound: ClickSound): Int = when (sound) {
-    ClickSound.WOOD_BLOCK -> R.drawable.ic_sound_wood_block
-    ClickSound.COWBELL -> R.drawable.ic_sound_cowbell
-    ClickSound.CLAVES -> R.drawable.ic_sound_claves
-    ClickSound.RIM_CLICK -> R.drawable.ic_sound_rim_click
-}
 
 /**
  * [subdivision]'s note-value icon in [meter]: a single note for none, then two, three (with its 3) and
@@ -128,52 +116,31 @@ internal fun subdivisionMarkName(subdivision: Subdivision, meter: Meter): String
 /** Whether a click in [meter] is an eighth (6/8, 7/8), so two to a beat are sixteenths: those meters offer only none and two. */
 private fun inEighths(meter: Meter): Boolean = !Subdivision.THREE.isOfferedIn(meter)
 
-/** [sound]'s name, the instrument's common name in the app's language. */
-@Composable
-internal fun soundName(sound: ClickSound): String = stringResource(
-    when (sound) {
-        ClickSound.WOOD_BLOCK -> R.string.metronome_sound_wood_block
-        ClickSound.COWBELL -> R.string.metronome_sound_cowbell
-        ClickSound.CLAVES -> R.string.metronome_sound_claves
-        ClickSound.RIM_CLICK -> R.string.metronome_sound_rim_click
-    },
-)
-
 /**
- * The options panel while [open], on its own layer over the screen, holding its rows ([content], one
- * under the other: [SoundChoice], [VibrateSwitch], [ListenRow]) on the raised surface colour
- * (`surfaceContainerHigh`, as the tuner's pill: plain `surface` is the background's own colour in some
- * schemes) with a soft lift and no border, as the mock-up; [PANEL_WIDTH] wide (less on a narrow window),
- * as tall as its rows. [anchor] is the options button, in this layer's coordinates. Upright the panel
- * opens above the row, its end edge in line with the button's; on a wide screen on its side ([wide])
- * there is no room above, so it opens beside the button, towards the dial, its bottom level with the
- * button. Where the room is short (very large text) it scrolls.
+ * A floating panel while [open], on its own layer over the screen, holding [content] (one row under the
+ * other) on the raised surface colour (`surfaceContainerHigh`, as the tuner's pill: plain `surface` is
+ * the background's own colour in some schemes) with a soft lift and no border, as the 1.1 mock-up;
+ * [PANEL_WIDTH] wide (less on a narrow window), as tall as its rows. [anchor] is what opened it (the
+ * options button, the speed trainer's row), in this layer's coordinates: the panel opens under it when
+ * it is in the top half of the layer, over it otherwise, its end edge in line with the anchor's. Where
+ * the room there is short (on its side, very large text) it slides along to stay inside the window, over
+ * its anchor if it must; where the window is too short it scrolls.
  *
  * Back or a tap beside it calls [onDismiss], and the tap does nothing else. TalkBack hears the panel by
- * name ("Options").
- *
- * With [page] ([trainerPage], Phase 62) the panel shows that page in place of its rows: the same size
- * (as tall as the rows, taller only if the page needs it, as at very large text) in the same spot; the
- * rows stay measured but aren't placed, drawn or heard. Back there calls [onPageBack], and TalkBack
- * hears the page by its name ([pageTitle]).
+ * its [title]. [tag] is its test tag.
  */
 @Composable
-fun OptionsPanel(
+fun FloatingPanel(
     open: Boolean,
     anchor: Rect?,
-    wide: Boolean,
+    title: String,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    trainerPage: Boolean = false,
-    pageTitle: String = "",
-    onPageBack: () -> Unit = {},
-    page: (@Composable ColumnScope.() -> Unit)? = null,
+    tag: String = MetronomeTestTags.OPTIONS_PANEL,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val showing = open && anchor != null
     BackHandler(enabled = showing, onBack = onDismiss)
-    // Composed after the panel's own, so it comes first while the page shows.
-    BackHandler(enabled = showing && trainerPage && page != null, onBack = onPageBack)
     // Where it was opened from stays while the panel fades out.
     var place by remember { mutableStateOf(Rect.Zero) }
     if (anchor != null && open) place = anchor
@@ -196,7 +163,7 @@ fun OptionsPanel(
                             }
                         },
                 )
-                Panel(if (page != null && trainerPage) pageTitle else null, page, content)
+                Panel(title, tag, content)
             },
             modifier = Modifier.fillMaxSize(),
         ) { measurables, constraints ->
@@ -207,20 +174,13 @@ fun OptionsPanel(
             val rtl = layoutDirection == LayoutDirection.Rtl
             val scrim = measurables[0].measure(Constraints.fixed(width, height))
             val panelWidth = minOf(PANEL_WIDTH.roundToPx(), (width - 2 * margin).coerceAtLeast(0))
-            // Upright the room above the button; on its side the whole height.
-            val room = if (wide) height - 2 * margin else place.top.roundToInt() - gap - margin
-            val panel = measurables[1].measure(Constraints(minWidth = panelWidth, maxWidth = panelWidth, maxHeight = room.coerceAtLeast(0)))
-            val x: Int
-            val y: Int
-            if (wide) {
-                // Beside the button, towards the dial (the start side), its bottom level with the button.
-                x = if (rtl) place.right.roundToInt() + gap else place.left.roundToInt() - gap - panel.width
-                y = place.bottom.roundToInt() - panel.height
-            } else {
-                // Above the row, its end edge in line with the button's.
-                x = if (rtl) place.left.roundToInt() else place.right.roundToInt() - panel.width
-                y = place.top.roundToInt() - gap - panel.height
-            }
+            val panel = measurables[1].measure(
+                Constraints(minWidth = panelWidth, maxWidth = panelWidth, maxHeight = (height - 2 * margin).coerceAtLeast(0)),
+            )
+            val below = place.center.y < height / 2f
+            // Its end edge in line with the anchor's.
+            val x = if (rtl) place.left.roundToInt() else place.right.roundToInt() - panel.width
+            val y = if (below) place.bottom.roundToInt() + gap else place.top.roundToInt() - gap - panel.height
             layout(width, height) {
                 scrim.place(0, 0)
                 panel.place(
@@ -232,21 +192,15 @@ fun OptionsPanel(
     }
 }
 
-/**
- * The panel's surface holding its rows, or [page] in their place while [pageTitle] is set: the page
- * gets the rows' size (or more, if it needs it); the side not shown is measured but not placed, so it
- * is neither drawn, touched nor heard.
- */
+/** The panel's surface holding its rows. */
 @Composable
-private fun Panel(pageTitle: String?, page: (@Composable ColumnScope.() -> Unit)?, content: @Composable ColumnScope.() -> Unit) {
+private fun Panel(title: String, tag: String, content: @Composable ColumnScope.() -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     val shape = MaterialTheme.shapes.large
-    val title = pageTitle ?: stringResource(R.string.metronome_options)
-    val onPage = pageTitle != null
-    Box(
+    Column(
         Modifier
-            .testTag(MetronomeTestTags.OPTIONS_PANEL)
+            .testTag(tag)
             .semantics { paneTitle = title }
             .shadow(
                 PANEL_LIFT,
@@ -257,57 +211,12 @@ private fun Panel(pageTitle: String?, page: (@Composable ColumnScope.() -> Unit)
             .background(scheme.surfaceContainerHigh, shape)
             .verticalScroll(rememberScrollState())
             .padding(PANEL_PADDING),
-    ) {
-        Layout(
-            content = {
-                Column(if (onPage) Modifier.clearAndSetSemantics {} else Modifier, content = content)
-                if (page != null) Column(if (onPage) Modifier else Modifier.clearAndSetSemantics {}, content = page)
-            },
-        ) { measurables, constraints ->
-            val rows = measurables[0].measure(constraints)
-            val other = measurables.getOrNull(1)?.measure(
-                constraints.copy(minWidth = rows.width, maxWidth = rows.width, minHeight = rows.height),
-            )
-            val shown = if (onPage && other != null) other else rows
-            layout(shown.width, shown.height) { shown.place(0, 0) }
-        }
-    }
+        content = content,
+    )
 }
 
 /**
- * The panel's first row: "Sound" over the four click sounds as icons side by side, the one picked
- * ([sound]) in the container colour with an accent outline. A tap calls [onPick] and leaves the panel
- * open for another try. TalkBack hears a radio group "Sound" and each sound by its name; the word over
- * them is hidden from it, as the group says it.
- */
-@Composable
-internal fun SoundChoice(sound: ClickSound, onPick: (ClickSound) -> Unit, modifier: Modifier = Modifier) {
-    val title = stringResource(R.string.metronome_sound)
-    Column(modifier) {
-        PanelHeading(title)
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .selectableGroup()
-                .semantics { contentDescription = title },
-            horizontalArrangement = Arrangement.spacedBy(SEGMENT_GAP),
-        ) {
-            for (option in ClickSound.entries) {
-                IconSegment(
-                    icon = soundIcon(option),
-                    name = soundName(option),
-                    tag = MetronomeTestTags.sound(option),
-                    picked = option == sound,
-                    onPick = { onPick(option) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-    }
-}
-
-/**
- * The panel's second row (Phase 62): "Between the beats" over its four note values as icons side by
+ * The panel's first row (Phase 62): "Between the beats" over its four note values as icons side by
  * side, as the sounds: none, eighths, triplets, sixteenths. [subdivision] is the choice saved; the
  * one marked picked is what plays in [meter] ([Subdivision.within]). 6/8 and 7/8 offer only none and
  * two to a beat (sixteenths there, drawn and named so), so triplets and sixteenths stay in their
@@ -488,7 +397,6 @@ private const val DARK_SHADOW = 0.6f
 internal val ROW_HEIGHT = 48.dp
 private val SWITCH_ROW_HEIGHT = 56.dp
 internal val ROW_PADDING = 14.dp
-internal val MIN_NAME_SIZE = 8.dp
 
 /** The faces of a row ([ChoiceFace]: 40 dp tall as the meter picker's buttons, in a 48 dp touch area) stand 4 dp apart. */
 internal val SEGMENT_GAP = CHOICE_FACE_GAP

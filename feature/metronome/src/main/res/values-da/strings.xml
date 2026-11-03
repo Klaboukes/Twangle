@@ -27,7 +27,6 @@
     <string name="metronome_subdivision_sixteenths_on">Sekstendedele mellem slagene</string>
     <string name="metronome_options">Valgmuligheder</string>
     <string name="metronome_trainer">Tempotræner</string>
-    <string name="metronome_trainer_back">Tilbage til valgmulighederne</string>
     <string name="metronome_trainer_start">Starttempo</string>
     <string name="metronome_trainer_goal">Mål</string>
     <string name="metronome_trainer_start_slower">Sænk starttempoet</string>

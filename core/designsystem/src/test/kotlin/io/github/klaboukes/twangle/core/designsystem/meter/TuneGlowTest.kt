@@ -4,7 +4,6 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -53,7 +52,7 @@ class TuneGlowTest {
     }
 
     private fun roles(dark: Boolean) = MeterRoles(
-        background = Color.Black, ink = Color.White, muted = Color.Gray, track = Color.Gray,
-        accent = Color.Blue, inTune = Color.Green, dark = dark, numbers = FontFamily.Default, numberScale = 1f,
+        ink = Color.White, muted = Color.Gray, track = Color.Gray,
+        accent = Color.Blue, inTune = Color.Green, dark = dark,
     )
 }

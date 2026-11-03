@@ -38,7 +38,7 @@ Then write the language's translation record and glossary line (docs/architectur
 - **Fonts:** 2.0's one look, Ink, sets every text in the phone's own font, which covers every script the phone shows (docs/architecture/ui-meter-and-styles.md, *Visual styles*, **Lettering**); the one bundled face, `music_signs.ttf`, holds only ♯ ♭ ♮ ♩ ♪. So there is no face to check; look at the language's script on the phone in step 6.
 - **Upper and lower case:** every `uppercase()`/`lowercase()` on shown text must use the app's locale (Turkish dotted İ). Grep for new ones.
 - **Right to left** (Arabic, Persian, Hebrew, Urdu): both manifests already set `supportsRtl`. Keep to the rule in docs/architecture/languages.md (*Right to left*). The layout mirrors, but the gauges stay low-left, high-right: meter, strum check, string row, tempo dial with −/+, beat lights, A4 slider, the tuning editor's note group. Rows of note names get an LTR wrap. Look at every screen in step 6.
-- **Digits the app draws** (meter scales, tempo dial, beat numbers, time signatures, the watch's cents) go through `localDigits` / `MeterRoles.digits`, so a language with its own digits needs no code. Check it on the screenshots.
+- **Digits the app draws** (the metronome's tempo and ruler, time signatures, the watch's cents) go through `localDigits`, so a language with its own digits needs no code. Check it on the screenshots.
 
 ## 6. Verify
 1. `./gradlew test lint assembleDebug --console=plain`, which must pass with no new lint warnings, and `python -I scripts/translations.py status <code>`, which must say "up to date" (every text translated and recorded; the other languages may lag until the night).

@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.feature.metronome.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -21,9 +23,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -49,60 +56,98 @@ import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
- * The speed trainer in the options panel (Phase 62, the owner's pick II of
- * docs/design/metronome-layout-preview.html; its settings as round 1's panel,
- * docs/design/metronome-practice-preview.html): a row under Listen with its switch, and its settings,
- * which open in the panel in place of the rows, with a back arrow.
+ * The speed trainer (Phase 62; since Phase 75 a row of its own at the foot of the screen, the first 2.0
+ * mock-up's `.trainer`, docs/design/fresh-start-preview.html): its name, what it does in words and its
+ * switch; the row opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
+ * floating panel over the row ([FloatingPanel]). Until Phase 75 it was a row in the options panel and its
+ * words stood on the status line.
  */
 
 /**
- * The speed trainer's row: its rising-line icon (in the accent while [on]), its name, its switch and a
- * › to its settings. A tap on the row opens the settings ([onOpen]); the switch turns it on or off
- * ([onOnChange]). TalkBack hears a button "Speed trainer" and a switch of the same name.
+ * The speed trainer in words (Phase 62): [text] ("95 → 120 · +5 in 2 bars") under its name on its row;
+ * TalkBack hears [spoken].
+ */
+@Immutable
+data class TrainerStatus(val text: String, val spoken: String)
+
+/**
+ * The speed trainer's row (Phase 75): its rising-line icon (in the accent while [on]), its name over
+ * [status]'s words in the muted colour (its plan while stopped, where it stands while it climbs), and
+ * its switch at the end ([onOnChange]). A tap on the row opens its settings ([onOpen]); [onPlaced] gives
+ * the row's place, for them to open from. On a raised card with a thin outline, as the mock-up, at least
+ * [TRAINER_ROW_HEIGHT] tall; the words shrink to one line each rather than wrap. TalkBack hears a button
+ * with [TrainerStatus.spoken] and a switch "Speed trainer".
  */
 @Composable
-internal fun TrainerRow(on: Boolean, onOnChange: (Boolean) -> Unit, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+internal fun TrainerRow(
+    on: Boolean,
+    status: TrainerStatus,
+    onOnChange: (Boolean) -> Unit,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+    onPlaced: (Rect) -> Unit = {},
+) {
     val scheme = MaterialTheme.colorScheme
     val source = remember { MutableInteractionSource() }
     val name = stringResource(R.string.metronome_trainer)
+    val shape = MaterialTheme.shapes.large
     Row(
         modifier
-            .testTag(MetronomeTestTags.TRAINER)
+            .widthIn(max = TRAINER_ROW_WIDEST)
             .fillMaxWidth()
-            .heightIn(min = ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium)
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onOpen()
-            }
-            .padding(start = ROW_PADDING),
+            .onGloballyPositioned { onPlaced(it.boundsInRoot()) }
+            .heightIn(min = TRAINER_ROW_HEIGHT)
+            .background(scheme.surface.copy(alpha = CARD_ALPHA), shape)
+            .border(1.dp, scheme.outlineVariant, shape)
+            .pressFeedback(source, shape)
+            .padding(start = ROW_PADDING, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            painterResource(R.drawable.ic_trainer),
-            contentDescription = null,
-            tint = if (on) scheme.primary else scheme.onSurface,
-            modifier = Modifier.size(ROW_ICON),
-        )
-        Spacer(Modifier.width(ROW_PADDING))
-        RowName(name, Modifier.weight(1f))
+        Row(
+            Modifier
+                .weight(1f)
+                .testTag(MetronomeTestTags.TRAINER)
+                .heightIn(min = TRAINER_ROW_HEIGHT)
+                .clickable(interactionSource = source, indication = null, role = Role.Button) {
+                    source.pressFlash()
+                    onOpen()
+                }
+                .semantics(mergeDescendants = true) { contentDescription = status.spoken },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painterResource(R.drawable.ic_trainer),
+                contentDescription = null,
+                tint = if (on) scheme.primary else scheme.onSurfaceVariant,
+                modifier = Modifier.size(ROW_ICON),
+            )
+            Spacer(Modifier.width(ROW_PADDING))
+            Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
+                RowName(name, bold = true)
+                val style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, fontFeatureSettings = "$LINING_FIGURES, tnum")
+                val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
+                Text(
+                    status.text,
+                    style = style,
+                    color = scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    softWrap = false,
+                    autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+                    modifier = Modifier.testTag(MetronomeTestTags.TRAINER_TEXT),
+                )
+            }
+        }
         Spacer(Modifier.width(8.dp))
         TrainerSwitch(on, name, onOnChange)
-        Icon(
-            painterResource(R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = scheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 2.dp).size(20.dp),
-        )
     }
 }
 
 /** The trainer's switch, its own touch target (48 dp), heard as "Speed trainer, switch". */
 @Composable
-private fun TrainerSwitch(on: Boolean, name: String, onOnChange: (Boolean) -> Unit) {
+private fun TrainerSwitch(on: Boolean, name: String, onOnChange: (Boolean) -> Unit, tag: String = MetronomeTestTags.TRAINER_SWITCH) {
     Box(
         Modifier
-            .testTag(MetronomeTestTags.TRAINER_SWITCH)
+            .testTag(tag)
             .heightIn(min = ROW_HEIGHT)
             .toggleable(value = on, role = Role.Switch, onValueChange = onOnChange)
             .semantics { contentDescription = name },
@@ -112,10 +157,10 @@ private fun TrainerSwitch(on: Boolean, name: String, onOnChange: (Boolean) -> Un
     }
 }
 
-/** A row's name: one line, set smaller where a language or very large text needs it, never cut. */
+/** A row's name: one line, set smaller where a language or very large text needs it, never cut; [bold] on the trainer's row. */
 @Composable
-private fun RowName(text: String, modifier: Modifier = Modifier) {
-    val style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp)
+private fun RowName(text: String, modifier: Modifier = Modifier, bold: Boolean = false) {
+    val style = MaterialTheme.typography.bodyLarge.copy(fontSize = if (bold) 16.sp else 15.sp, fontWeight = if (bold) FontWeight.Bold else null)
     val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
     Text(
         text,
@@ -129,8 +174,8 @@ private fun RowName(text: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * The speed trainer's settings, in the options panel in place of its rows: at the top a back arrow
- * ([onBack]), its name and its switch ([on], [onOnChange]); then the start and goal tempos, each with −
+ * The speed trainer's settings, in a floating panel opened from its row: at the top its name and its
+ * switch ([on], [onOnChange]); then the start and goal tempos, each with −
  * and + a [SpeedTrainer.TEMPO_STEP] apart (the goal always at least that far above the start: a − or +
  * that would pass it is dimmed); then the step and the bars, each four choices as the sounds are.
  * Every change calls [onPlan] with the new [plan]. TalkBack hears each tempo with its name ("Start, 80
@@ -142,16 +187,14 @@ internal fun TrainerSettings(
     on: Boolean,
     onOnChange: (Boolean) -> Unit,
     onPlan: (SpeedTrainer) -> Unit,
-    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val name = stringResource(R.string.metronome_trainer)
     Column(modifier.testTag(MetronomeTestTags.TRAINER_SETTINGS)) {
         Row(Modifier.fillMaxWidth().heightIn(min = ROW_HEIGHT), verticalAlignment = Alignment.CenterVertically) {
-            BackArrow(onBack)
-            RowName(name, Modifier.weight(1f).padding(start = 4.dp))
+            RowName(name, Modifier.weight(1f).padding(start = ROW_PADDING), bold = true)
             Spacer(Modifier.width(8.dp))
-            TrainerSwitch(on, name, onOnChange)
+            TrainerSwitch(on, name, onOnChange, MetronomeTestTags.TRAINER_SETTINGS_SWITCH)
             Spacer(Modifier.width(6.dp))
         }
         val step = SpeedTrainer.TEMPO_STEP
@@ -205,27 +248,6 @@ internal fun TrainerSettings(
                 )
             }
         }
-    }
-}
-
-/** ‹ back to the panel's rows: a 48 dp touch area, heard as "Back to the options". */
-@Composable
-private fun BackArrow(onBack: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    val name = stringResource(R.string.metronome_trainer_back)
-    Box(
-        Modifier
-            .testTag(MetronomeTestTags.TRAINER_BACK)
-            .size(ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium)
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onBack()
-            }
-            .semantics { contentDescription = name },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(painterResource(R.drawable.ic_chevron_left), contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(ROW_ICON))
     }
 }
 
@@ -302,10 +324,10 @@ private fun TrainerStepper(faster: Boolean, name: String, enabled: Boolean, tag:
 }
 
 /**
- * What the status line says of the speed trainer [plan] while it is on: stopped, from where to where
- * and how it climbs ("80 → 120 · +5 every 4 bars"); playing, the tempo now ([bpm], the dial's), the goal
- * and the next step ("95 → 120 · +5 in 2 bars", [bar] being the bar it plays in, −1 before the first
- * downbeat); at the goal "At the goal · 120 BPM".
+ * What the trainer's row says of its [plan]: stopped (or off), from where to where and how it climbs
+ * ("80 → 120 · +5 every 4 bars"); playing, the tempo now ([bpm]), the goal and the next step ("95 → 120 ·
+ * +5 in 2 bars", [bar] being the bar it plays in, −1 before the first downbeat); at the goal "At the goal ·
+ * 120 BPM".
  */
 @Composable
 internal fun trainerStatus(plan: SpeedTrainer, bpm: Int, bar: Long, playing: Boolean): TrainerStatus {
@@ -349,3 +371,10 @@ internal fun trainerStatus(plan: SpeedTrainer, bpm: Int, bar: Long, playing: Boo
 
 /** The trainer tempo's number between − and +: room for three figures. */
 private val NUMBER_WIDTH = 52.dp
+
+/** The trainer's row: the mock-up's card, at least this tall, reaching no wider than this. */
+private val TRAINER_ROW_HEIGHT = 56.dp
+private val TRAINER_ROW_WIDEST = 400.dp
+
+/** The card's backing: the surface, a little see-through, as the buttons'. */
+private const val CARD_ALPHA = 0.6f

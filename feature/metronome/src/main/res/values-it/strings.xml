@@ -28,7 +28,6 @@
     <string name="metronome_subdivision_sixteenths_on">Sedicesimi tra i battiti</string>
     <string name="metronome_options">Opzioni</string>
     <string name="metronome_trainer">Allenatore di tempo</string>
-    <string name="metronome_trainer_back">Torna alle opzioni</string>
     <string name="metronome_trainer_start">Tempo iniziale</string>
     <string name="metronome_trainer_goal">Obiettivo</string>
     <string name="metronome_trainer_start_slower">Tempo iniziale più basso</string>

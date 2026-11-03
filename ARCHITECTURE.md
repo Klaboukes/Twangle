@@ -177,7 +177,7 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     lens/       LensReading, LensLookArt, TrailLook, StrobeLook (the lens's looks, Phases 71 and 72)
     meter/      MeterReading, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat
                 (LightArcLook: the lens's Light arc, FanGeometry fitted to the lens, Phase 72)
-    metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
+    metronome/  BeatLightsArt (round beat lights, + beatSpacing)
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
     SharedActivityComposeRule, SharedActivityTestRunner, Thorough, EveryLanguage, WhollyShown,
@@ -198,11 +198,12 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
 
 feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
-    MetronomeScreen (+ MetronomeContent, BeatClock), MetronomeViewModel
-    ListenPermission (rememberListenPermission)
-    components/ TempoDial (with − / + in its corners), MetronomeControls (MeterPicker, StepButton, TempoRow with
-    Sound, Tap tempo and Listen, StartStopButton), SoundParts (SoundButton, SoundPanel with the vibrate switch),
-    ListenParts (ListenLine, ListenBalloon)
+    MetronomeScreen (+ MetronomeContent, BeatClock, TempoMotion), MetronomeViewModel
+    ListenPermission (rememberListenPermission), BetweenLights
+    components/ TempoParts (TempoHeading: − tempo + and its words, markingName), TempoRuler (the ruler to drag),
+    MetronomeControls (MeterChoice, SoundChoice, BigButtons: Tap the beat and Start),
+    OptionsParts (FloatingPanel, SubdivisionChoice, VibrateSwitch, ListenRow),
+    TrainerParts (TrainerRow, TrainerSettings, trainerStatus), ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
     PracticeTools (practiceToolsFor, lastTimeTool, PracticeTestTags), PracticeCards (the cards, the last time row),

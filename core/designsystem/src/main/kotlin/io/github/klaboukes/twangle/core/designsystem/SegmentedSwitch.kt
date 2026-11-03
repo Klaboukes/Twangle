@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.core.designsystem
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -12,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -44,6 +47,8 @@ import androidx.compose.ui.unit.sp
  * segment shows [label] on one line, all of them shrinking to one size where the widest must, and carries the test tag [tag].
  * TalkBack hears the segments as radio buttons by their labels, the picked one selected, or by [spoken]
  * where a short word stands for a longer name (Ear training's exercises: "Play back" for "Play it back").
+ * With [icon] each segment shows its icon in place of the label (the metronome's click sounds, Phase 75),
+ * [ICON_SIZE] across, and TalkBack hears the label as its name.
  */
 @Composable
 fun <T> SegmentedSwitch(
@@ -54,6 +59,7 @@ fun <T> SegmentedSwitch(
     tag: (T) -> String,
     modifier: Modifier = Modifier,
     spoken: (@Composable (T) -> String)? = null,
+    icon: (@Composable (T) -> Painter)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val crowded = options.size >= CROWDED_SEGMENTS
@@ -68,7 +74,7 @@ fun <T> SegmentedSwitch(
             options.forEachIndexed { index, option ->
                 val shape = SegmentedButtonDefaults.itemShape(index, options.size, base)
                 val press = remember { MutableInteractionSource() }
-                val name = spoken?.invoke(option)
+                val name = spoken?.invoke(option) ?: if (icon != null) label(option) else null
                 SegmentedButton(
                     selected = option == selected,
                     onClick = {
@@ -100,6 +106,10 @@ fun <T> SegmentedSwitch(
                         .pressFeedback(press, shape, above = true)
                         .then(if (name != null) Modifier.semantics { contentDescription = name } else Modifier),
                 ) {
+                    if (icon != null) {
+                        Icon(icon(option), contentDescription = null, modifier = Modifier.size(ICON_SIZE))
+                        return@SegmentedButton
+                    }
                     // One line, its whole width counted as its minimum ([segmentLabel]): the row sizes every
                     // segment by the largest minimum width, and Chinese, Japanese and Korean text may break
                     // between any two characters, so otherwise "クロマチック" stood one character wide, three
@@ -216,6 +226,9 @@ private fun lastResortLabelSize(density: Density): TextUnit =
     with(density) { if (LAST_RESORT_LABEL_DP.toSp().value < LAST_RESORT_LABEL_SIZE.value) LAST_RESORT_LABEL_DP.toSp() else LAST_RESORT_LABEL_SIZE }
 
 private val LAST_RESORT_LABEL_DP = 5.dp
+
+/** A segment's icon ([SegmentedSwitch]'s `icon`), as the buttons' icons. */
+private val ICON_SIZE = 24.dp
 
 /** From this many segments, each keeps [CROWDED_PADDING] at its sides instead of Material's 12 dp. */
 private const val CROWDED_SEGMENTS = 3

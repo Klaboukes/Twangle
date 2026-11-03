@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">박 사이에 16분음표</string>
     <string name="metronome_options">옵션</string>
     <string name="metronome_trainer">속도 트레이너</string>
-    <string name="metronome_trainer_back">옵션으로 돌아가기</string>
     <string name="metronome_trainer_start">시작 속도</string>
     <string name="metronome_trainer_goal">목표</string>
     <string name="metronome_trainer_start_slower">시작 속도 낮추기</string>

@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">বিটের মাঝে সিক্সটিন্থ নোট</string>
     <string name="metronome_options">বিকল্প</string>
     <string name="metronome_trainer">স্পিড ট্রেনার</string>
-    <string name="metronome_trainer_back">বিকল্পে ফিরে যান</string>
     <string name="metronome_trainer_start">শুরুর টেম্পো</string>
     <string name="metronome_trainer_goal">লক্ষ্য</string>
     <string name="metronome_trainer_start_slower">শুরুর টেম্পো কমান</string>

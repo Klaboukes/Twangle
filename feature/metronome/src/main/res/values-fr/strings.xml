@@ -28,7 +28,6 @@
     <string name="metronome_subdivision_sixteenths_on">Doubles croches entre les temps</string>
     <string name="metronome_options">Options</string>
     <string name="metronome_trainer">Entraîneur de tempo</string>
-    <string name="metronome_trainer_back">Retour aux options</string>
     <string name="metronome_trainer_start">Tempo de départ</string>
     <string name="metronome_trainer_goal">Objectif</string>
     <string name="metronome_trainer_start_slower">Tempo de départ plus bas</string>

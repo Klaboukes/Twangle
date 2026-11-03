@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">拍の間に16分音符</string>
     <string name="metronome_options">オプション</string>
     <string name="metronome_trainer">スピードトレーナー</string>
-    <string name="metronome_trainer_back">オプションに戻る</string>
     <string name="metronome_trainer_start">開始テンポ</string>
     <string name="metronome_trainer_goal">目標</string>
     <string name="metronome_trainer_start_slower">開始テンポを下げる</string>

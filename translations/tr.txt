@@ -139,7 +139,6 @@ feature/metronome metronome_tempo 214b5b84
 feature/metronome metronome_tempo_value 382697eb
 feature/metronome metronome_trainer bba25c05
 feature/metronome metronome_trainer_at_goal 9103322c
-feature/metronome metronome_trainer_back 1e1b34cf
 feature/metronome metronome_trainer_bars f2c35269
 feature/metronome metronome_trainer_bars_value e72316a5
 feature/metronome metronome_trainer_every d70be2a7

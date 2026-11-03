@@ -8,7 +8,8 @@
     </plurals>
     <string name="metronome_slower">Langzamer</string>
     <string name="metronome_faster">Sneller</string>
-    <string name="metronome_tap">Tempo tikken</string>
+    <string name="metronome_tap">Tik de tel</string>
+    <string name="metronome_tempo_line">slagen per minuut · %1$s</string>
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Trillen op de tel</string>
@@ -27,7 +28,6 @@
     <string name="metronome_subdivision_sixteenths_on">Zestienden tussen de tellen</string>
     <string name="metronome_options">Opties</string>
     <string name="metronome_trainer">Tempotrainer</string>
-    <string name="metronome_trainer_back">Terug naar de opties</string>
     <string name="metronome_trainer_start">Begintempo</string>
     <string name="metronome_trainer_goal">Doel</string>
     <string name="metronome_trainer_start_slower">Lager begintempo</string>

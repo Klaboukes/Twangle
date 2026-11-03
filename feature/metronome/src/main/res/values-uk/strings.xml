@@ -28,7 +28,6 @@
     <string name="metronome_subdivision_sixteenths_on">Шістнадцяті між долями</string>
     <string name="metronome_options">Параметри</string>
     <string name="metronome_trainer">Тренажер темпу</string>
-    <string name="metronome_trainer_back">Назад до параметрів</string>
     <string name="metronome_trainer_start">Початковий темп</string>
     <string name="metronome_trainer_goal">Ціль</string>
     <string name="metronome_trainer_start_slower">Знизити початковий темп</string>

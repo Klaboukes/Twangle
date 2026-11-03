@@ -27,19 +27,18 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -112,17 +111,10 @@ import kotlin.math.roundToInt
  * Something on in the options panel that changes how the metronome sounds or feels, shown on the
  * status line as a small [icon] while Listen has nothing to say (Phase 62); TalkBack hears [spoken].
  * [tag] is its test tag: the note value between the beats (none has no mark) and "Vibrate on the
- * beat"; the speed trainer has its own, with words ([TrainerStatus]).
+ * beat". The speed trainer's words stand on its own row since Phase 75 ([TrainerRow]).
  */
 @Immutable
 data class StatusMark(@param:DrawableRes val icon: Int, val spoken: String, val tag: String)
-
-/**
- * The speed trainer on the status line while it is on (Phase 62): its rising-line icon in the accent,
- * then [text] ("95 → 120 · +5 in 2 bars"); TalkBack hears [spoken].
- */
-@Immutable
-data class TrainerStatus(val text: String, val spoken: String)
 
 /** What the status line says. */
 private sealed interface LineText {
@@ -158,10 +150,8 @@ private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
  *
  * While Listen has nothing to say the line shows [marks], small icons of what is on in the options
  * panel, in the muted colour; they are outside the live region (switching one on is heard from its
- * switch), and TalkBack hears them by name. After them comes the speed trainer's [trainer] while it is
- * on: its icon and words, set smaller where they don't fit (large text); a tap on the line then opens
- * the trainer's settings ([onTrainer]). Its words change with every step and bar, so they are outside
- * the live region too: TalkBack reads them when the line is touched, and never talks over the clicks.
+ * switch), and TalkBack hears them by name. (From Phase 62 to 75 the speed trainer's words followed
+ * them; they stand on the trainer's own row now, [TrainerRow].)
  */
 @Composable
 fun ListenLine(
@@ -171,8 +161,6 @@ fun ListenLine(
     modifier: Modifier = Modifier,
     marks: List<StatusMark> = emptyList(),
     onStopListening: () -> Unit = {},
-    trainer: TrainerStatus? = null,
-    onTrainer: () -> Unit = {},
 ) {
     val text = TextStyle(fontSize = 14.sp, lineHeight = 1.2.em)
     val body = MaterialTheme.typography.bodyMedium.merge(text)
@@ -185,47 +173,26 @@ fun ListenLine(
     Box(modifier.fillMaxWidth().heightIn(min = LINE_HEIGHT), contentAlignment = Alignment.Center) {
         ListenWords(shown, spokenTempo, body, onTryAgain, onOpenSettings, onStopListening)
         // The last marks stay drawn while they fade out.
-        val any = marks.isNotEmpty() || trainer != null
+        val any = marks.isNotEmpty()
         var shownMarks by remember { mutableStateOf(marks) }
-        var shownTrainer by remember { mutableStateOf(trainer) }
-        if (any) {
-            shownMarks = marks
-            shownTrainer = trainer
-        }
+        if (any) shownMarks = marks
         AnimatedVisibility(
             visible = shown == LineText.Nothing && any,
             enter = fadeIn(tween(LINE_FADE_MILLIS, delayMillis = LINE_FADE_MILLIS)),
             exit = fadeOut(tween(LINE_FADE_MILLIS)),
         ) {
-            StatusMarks(shownMarks, shownTrainer, body, onTrainer)
+            StatusMarks(shownMarks)
         }
     }
 }
 
-/**
- * The marks side by side, [MARK_SIZE] each, [MARK_GAP] apart, then the trainer's icon and words, as
- * one node TalkBack hears by their names; with the trainer on, a button that opens its settings.
- */
+/** The marks side by side, [MARK_SIZE] each, [MARK_GAP] apart, as one node TalkBack hears by their names. */
 @Composable
-private fun StatusMarks(marks: List<StatusMark>, trainer: TrainerStatus?, body: TextStyle, onTrainer: () -> Unit) {
-    val spoken = (marks.map { it.spoken } + listOfNotNull(trainer?.spoken)).joinToString(", ")
-    val source = remember { MutableInteractionSource() }
-    val tap = if (trainer != null) {
-        Modifier
-            .heightIn(min = LINE_HEIGHT)
-            .pressFeedback(source, PILL, lightInset = 0.dp)
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onTrainer()
-            }
-            .padding(horizontal = ACTION_PADDING)
-    } else {
-        Modifier
-    }
+private fun StatusMarks(marks: List<StatusMark>) {
+    val spoken = marks.joinToString(", ") { it.spoken }
     Row(
         Modifier
             .testTag(MetronomeTestTags.MARKS)
-            .then(tap)
             .semantics(mergeDescendants = true) { contentDescription = spoken },
         horizontalArrangement = Arrangement.spacedBy(MARK_GAP),
         verticalAlignment = Alignment.CenterVertically,
@@ -237,30 +204,6 @@ private fun StatusMarks(marks: List<StatusMark>, trainer: TrainerStatus?, body: 
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(MARK_SIZE).testTag(mark.tag),
             )
-        }
-        if (trainer != null) {
-            Row(
-                Modifier.weight(1f, fill = false).testTag(MetronomeTestTags.TRAINER_MARK),
-                horizontalArrangement = Arrangement.spacedBy(TRAINER_GAP),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_trainer),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(MARK_SIZE),
-                )
-                val smallest = MIN_LINE_TEXT
-                Text(
-                    trainer.text,
-                    style = body.copy(fontFeatureSettings = "$LINING_FIGURES, tnum"),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    softWrap = false,
-                    autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = body.fontSize, stepSize = 0.5.sp),
-                    modifier = Modifier.testTag(MetronomeTestTags.TRAINER_TEXT),
-                )
-            }
         }
     }
 }
@@ -452,9 +395,6 @@ private const val LINE_FADE_MILLIS = 160
 private val MARK_SIZE = 18.dp
 private val MARK_GAP = 8.dp
 
-/** Between the trainer's icon and its words. */
-private val TRAINER_GAP = 6.dp
-
 /**
  * The suggestion: a balloon on its own layer over the screen, pointing at the options button, where
  * Listen is ([anchor], in this layer's coordinates), in the accent with on-accent text, no outline, a
@@ -509,7 +449,7 @@ fun ListenBalloon(
                     pointer.side = if (above) BalloonSide.ABOVE else BalloonSide.BELOW
                     pointer.at = (place.center.x - left).coerceIn(end, (w - end).coerceAtLeast(end))
                 }
-                // Beside it on the side with more room (a phone on its side), over the dial.
+                // Beside it on the side with more room (a phone on its side), over the tempo.
                 else -> {
                     val toLeft = place.left >= width - place.right
                     left = if (toLeft) (place.left - gap - w).coerceAtLeast(side) else (place.right + gap).coerceAtMost(width - side - w)

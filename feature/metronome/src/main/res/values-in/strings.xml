@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">Not seperenam belas di antara ketukan</string>
     <string name="metronome_options">Opsi</string>
     <string name="metronome_trainer">Pelatih tempo</string>
-    <string name="metronome_trainer_back">Kembali ke opsi</string>
     <string name="metronome_trainer_start">Tempo awal</string>
     <string name="metronome_trainer_goal">Target</string>
     <string name="metronome_trainer_start_slower">Tempo awal lebih rendah</string>

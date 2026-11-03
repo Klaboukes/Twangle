@@ -32,7 +32,6 @@
     <string name="metronome_subdivision_sixteenths_on">أجزاء الستة عشر بين النبضات</string>
     <string name="metronome_options">الخيارات</string>
     <string name="metronome_trainer">مدرّب السرعة</string>
-    <string name="metronome_trainer_back">العودة إلى الخيارات</string>
     <string name="metronome_trainer_start">سرعة البداية</string>
     <string name="metronome_trainer_goal">الهدف</string>
     <string name="metronome_trainer_start_slower">سرعة بداية أدنى</string>

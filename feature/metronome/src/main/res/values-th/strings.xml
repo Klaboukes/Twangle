@@ -26,7 +26,6 @@
     <string name="metronome_subdivision_sixteenths_on">เขบ็ต 2 ชั้นระหว่างจังหวะ</string>
     <string name="metronome_options">ตัวเลือก</string>
     <string name="metronome_trainer">ฝึกเร่งความเร็ว</string>
-    <string name="metronome_trainer_back">กลับไปที่ตัวเลือก</string>
     <string name="metronome_trainer_start">เทมโปเริ่มต้น</string>
     <string name="metronome_trainer_goal">เป้าหมาย</string>
     <string name="metronome_trainer_start_slower">ลดเทมโปเริ่มต้น</string>

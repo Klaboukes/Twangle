@@ -27,7 +27,6 @@
     <string name="metronome_subdivision_sixteenths_on">Vuruşlar arası on altılıklar</string>
     <string name="metronome_options">Seçenekler</string>
     <string name="metronome_trainer">Tempo antrenörü</string>
-    <string name="metronome_trainer_back">Seçeneklere dön</string>
     <string name="metronome_trainer_start">Başlangıç temposu</string>
     <string name="metronome_trainer_goal">Hedef</string>
     <string name="metronome_trainer_start_slower">Daha düşük başlangıç temposu</string>

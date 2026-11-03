@@ -28,7 +28,6 @@
     <string name="metronome_subdivision_sixteenths_on">Semicorcheas entre los tiempos</string>
     <string name="metronome_options">Opciones</string>
     <string name="metronome_trainer">Entrenador de tempo</string>
-    <string name="metronome_trainer_back">Volver a las opciones</string>
     <string name="metronome_trainer_start">Tempo inicial</string>
     <string name="metronome_trainer_goal">Objetivo</string>
     <string name="metronome_trainer_start_slower">Tempo inicial más bajo</string>
