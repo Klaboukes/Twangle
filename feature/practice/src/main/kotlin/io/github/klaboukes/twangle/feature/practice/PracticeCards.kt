@@ -128,11 +128,7 @@ fun PracticeCards(
                                     tool,
                                     // One to a row, a card is as tall as its contents, not as its width.
                                     minHeight = if (columns == 1) 0.dp else cardWidth * if (side) SIDE_RATIO else UPRIGHT_RATIO,
-                                    picture = when {
-                                        short -> SHORT_PICTURE
-                                        cardWidth < SMALL_CARD -> SMALL_PICTURE
-                                        else -> PICTURE
-                                    },
+                                    picture = if (short) SHORT_PICTURE else (cardWidth * PICTURE_SHARE).coerceIn(MIN_PICTURE, MAX_PICTURE),
                                     padding = padding,
                                     onClick = { onOpen(tool) },
                                     modifier = Modifier.width(cardWidth),
@@ -316,10 +312,14 @@ private val CARD_GAP = 14.dp
 private val CARD_CORNER = 22.dp
 private val CARD_PADDING = 16.dp
 
-/** The picture's size on a card, on a card narrower than [SMALL_CARD], and on a phone on its side. */
-private val PICTURE = 88.dp
-private val SMALL_PICTURE = 64.dp
-private val SMALL_CARD = 190.dp
+/**
+ * The picture's size on a card: a share of the card's width, within its smallest and largest size (owner,
+ * 2026-11-03: bigger; until then 88 dp, and 64 dp on a card under 190 dp wide, which is most phones), and on
+ * a phone on its side, where the height is short, [SHORT_PICTURE].
+ */
+private const val PICTURE_SHARE = 0.5f
+private val MIN_PICTURE = 64.dp
+private val MAX_PICTURE = 120.dp
 private val SHORT_PICTURE = 56.dp
 
 /** On a phone on its side: the gaps between the cards and inside them. */
