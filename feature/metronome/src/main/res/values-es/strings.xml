@@ -24,9 +24,6 @@
     <string name="metronome_subdivision_eighths">Corcheas</string>
     <string name="metronome_subdivision_triplets">Tresillos</string>
     <string name="metronome_subdivision_sixteenths">Semicorcheas</string>
-    <string name="metronome_subdivision_eighths_on">Corcheas entre los tiempos</string>
-    <string name="metronome_subdivision_triplets_on">Tresillos entre los tiempos</string>
-    <string name="metronome_subdivision_sixteenths_on">Semicorcheas entre los tiempos</string>
     <string name="metronome_options">Opciones</string>
     <string name="metronome_trainer">Entrenador de tempo</string>
     <string name="metronome_trainer_start">Tempo inicial</string>
@@ -68,7 +65,6 @@
     <string name="metronome_listen">Escuchar</string>
     <string name="metronome_listen_stop_spoken">Dejar de escuchar</string>
     <string name="metronome_listening">Escuchando…</string>
-    <string name="metronome_listen_line_stop">Detener</string>
     <string name="metronome_heard">Detectado</string>
     <string name="metronome_use">Usar</string>
     <string name="metronome_not_now">Ahora no</string>

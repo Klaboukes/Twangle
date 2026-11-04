@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -21,13 +22,17 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 
 /*
  * Twangle's one button for an icon (Phase 63, docs/architecture/ui.md *Shared controls*): a round,
@@ -103,7 +108,8 @@ fun Modifier.styleButtonFace(
  * Twangle's button: [content] (an icon, which takes its colour from [LocalContentColor]) on a round
  * [face] across ([ButtonLook.buttonShape]), see-through with a muted outline, or [picked] (the container colour, a 2 dp accent outline), or
  * [main] (filled in the accent: a screen's main action, the metronome's Start). Its touch area is at
- * least 48 dp each way round the face; the face keeps its size whatever the language or font size.
+ * least 48 dp each way round the face, or [touch] where a larger one helps (the metronome's − and +,
+ * tapped many times in a row); the face keeps its size whatever the language or font size.
  *
  * TalkBack hears [label] as a button ([role]), with [state] after it when given and [onClickLabel]
  * as the double-tap action. Not [enabled]: the face at 38 % and no taps (the first or last page, Start
@@ -125,37 +131,57 @@ fun StyleButton(
     onClickLabel: String? = null,
     faceModifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource? = null,
+    touch: Dp = Dp.Unspecified,
     content: @Composable () -> Unit,
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val look = buttonLook()
-    Box(
-        modifier
-            .minimumInteractiveComponentSize()
-            .size(face)
-            .then(faceModifier)
-            .alpha(if (enabled) 1f else DISABLED_ALPHA)
-            .styleButtonFace(source, look, picked = picked, main = main)
-            .clickable(interactionSource = source, indication = null, enabled = enabled, onClickLabel = onClickLabel, role = role) {
-                source.pressFlash()
-                onClick()
-            }
-            .semantics {
-                contentDescription = label
-                if (state != null) stateDescription = state
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        CompositionLocalProvider(LocalContentColor provides look.content(main)) { content() }
+    TouchArea(touch) {
+        Box(
+            modifier
+                .minimumInteractiveComponentSize()
+                .size(face)
+                .then(faceModifier)
+                .alpha(if (enabled) 1f else DISABLED_ALPHA)
+                .styleButtonFace(source, look, picked = picked, main = main)
+                .clickable(interactionSource = source, indication = null, enabled = enabled, onClickLabel = onClickLabel, role = role) {
+                    source.pressFlash()
+                    onClick()
+                }
+                .semantics {
+                    contentDescription = label
+                    if (state != null) stateDescription = state
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            CompositionLocalProvider(LocalContentColor provides look.content(main)) { content() }
+        }
     }
+}
+
+/**
+ * [content] with every button in it taking touches [touch] across round its face where given (Material's
+ * room round a small control, [minimumInteractiveComponentSize], and the touches Compose lets reach it
+ * from round its face, [ViewConfiguration.minimumTouchTargetSize]); otherwise the theme's 48 dp.
+ */
+@Composable
+private fun TouchArea(touch: Dp, content: @Composable () -> Unit) {
+    if (!touch.isSpecified) return content()
+    val view = LocalViewConfiguration.current
+    val larger = remember(view, touch) {
+        object : ViewConfiguration by view {
+            override val minimumTouchTargetSize: DpSize = DpSize(touch, touch)
+        }
+    }
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides touch, LocalViewConfiguration provides larger, content = content)
 }
 
 /**
  * Twangle's one stepper button (ui.md *Shared controls*): − or + ([more]) where it changes a number by
  * one step, on a [face] [StyleButton] ([STEPPER_FACE] by default, as the speed trainer's, in a 48 dp
- * touch area; the metronome's tempo a larger face), [icon] across. Lower on the left, higher on the
- * right in every language: the caller lays its row out left to right. Not [enabled] at the end of the
- * range. TalkBack hears [label].
+ * touch area; the metronome's tempo the top row's face in a larger [touch] area), [icon] across. Lower
+ * on the left, higher on the right in every language: the caller lays its row out left to right. Not
+ * [enabled] at the end of the range. TalkBack hears [label]; [faceModifier] goes on the face (a test tag).
  */
 @Composable
 fun StepperButton(
@@ -166,8 +192,10 @@ fun StepperButton(
     enabled: Boolean = true,
     face: Dp = STEPPER_FACE,
     icon: Dp = STEPPER_ICON,
+    touch: Dp = Dp.Unspecified,
+    faceModifier: Modifier = Modifier,
 ) {
-    StyleButton(onClick = onClick, label = label, modifier = modifier, face = face, enabled = enabled) {
+    StyleButton(onClick = onClick, label = label, modifier = modifier, face = face, enabled = enabled, faceModifier = faceModifier, touch = touch) {
         Icon(painterResource(if (more) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = null, modifier = Modifier.size(icon))
     }
 }

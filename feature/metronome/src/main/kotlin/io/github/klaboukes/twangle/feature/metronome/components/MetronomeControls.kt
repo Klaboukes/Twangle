@@ -60,8 +60,8 @@ import io.github.klaboukes.twangle.feature.metronome.R
  * The metronome's controls under the tempo (2.0, Phase 75; the first 2.0 mock-up,
  * docs/design/fresh-start-preview.html, `.segrow` and `.bigrow`): the meter as a segmented choice (the
  * tuner's [SegmentedSwitch]; the click sound beside it went to the options panel on 2026-11-04,
- * [SoundChoice]), then Tap the beat and Start side by side, Start
- * the larger, in the accent. Every one shows Twangle's press effect instead of Material's ripple; Tap
+ * [SoundChoice]), then Tap the beat and Start side by side, the same width (Start the larger until
+ * 2026-11-04), Start in the accent. Every one shows Twangle's press effect instead of Material's ripple; Tap
  * the beat its own crisp flash.
  */
 
@@ -130,9 +130,8 @@ internal fun MeterChoice(meter: Meter, onMeterChange: (Meter) -> Unit, modifier:
 private val CHOICE_WIDEST = 400.dp
 
 /**
- * Tap the beat and Start side by side across the column, [BIG_HEIGHT] tall whatever the language or
- * font size, Start the wider ([START_SHARE]). Their words shrink to one line where they must; the
- * buttons never change size. [playing], [onToggle] and [startResting] are Start / Stop's.
+ * Tap the beat and Start side by side across the column, the same width, [BIG_HEIGHT] tall whatever the
+ * language or font size. Their words shrink to one line where they must; the buttons never change size. [playing], [onToggle] and [startResting] are Start / Stop's.
  */
 @Composable
 internal fun BigButtons(
@@ -148,7 +147,7 @@ internal fun BigButtons(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TapTheBeatButton(onTap, Modifier.weight(1f))
-        StartStopButton(playing, onToggle, Modifier.weight(START_SHARE), resting = startResting)
+        StartStopButton(playing, onToggle, Modifier.weight(1f), resting = startResting)
     }
 }
 
@@ -247,16 +246,13 @@ private val BIG_HEIGHT = 64.dp
 private val BIG_ICON = 24.dp
 private val BIG_GAP = 12.dp
 
-/** Start takes this much more room than Tap the beat (the mock-up's 1.3). */
-private const val START_SHARE = 1.3f
-
 /** The row reaches no wider than this. */
 private val BIG_ROW_WIDEST = 400.dp
 
 /** Start while Listen listens, as a disabled button. */
 private const val RESTING_ALPHA = 0.38f
 
-/** Icons in a row of the options panel and on the status line. */
+/** Icons in a row of the options panel. */
 internal val ROW_ICON = 24.dp
 
 /** A text button's press light (Listen's status line): a pill with 12 dp corners, 8 dp in from the top and bottom of its 48 dp. */

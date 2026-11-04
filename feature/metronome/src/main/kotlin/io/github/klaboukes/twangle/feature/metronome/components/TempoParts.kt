@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,8 @@ import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.StepperButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_FACE
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_ICON
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
@@ -91,7 +94,7 @@ internal fun TempoHeading(
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             // The figures' room across: the row less − and + and the gaps beside them.
-            val across = maxWidth - (STEP_FACE + STEP_GAP) * 2
+            val across = maxWidth - (STEP_TOUCH + STEP_GAP) * 2
             val wordsHeight = WORDS_SIZE * WORDS_LINE * density.fontScale.coerceAtMost(MAX_WORDS_SCALE)
             val down = (room - wordsHeight - WORDS_GAP).coerceIn(FIGURES_SMALLEST, FIGURES_LARGEST)
             val figures = remember(widest, across, down, density) {
@@ -164,22 +167,30 @@ private fun TempoWords(marking: String) {
     }
 }
 
-/** − or + beside the figures: the shared stepper ([StepperButton]), [STEP_FACE] across. */
+/**
+ * − or + beside the figures: the shared stepper ([StepperButton]) on the gear's face, as every round
+ * button on the metronome ([TOP_BAR_FACE]; the mock-up's 56 dp until 2026-11-04, larger than the rest),
+ * in a [STEP_TOUCH] touch area, since it is tapped many times in a row. Its face's outer side stands
+ * at the column's margin, under the gear's and the ⋯'s (the touch area reaches past it; the row is laid
+ * out left to right, so − moves left and + right).
+ */
 @Composable
 private fun StepButton(faster: Boolean, onClick: () -> Unit) {
+    val outward = (STEP_TOUCH - TOP_BAR_FACE) / 2
     StepperButton(
         more = faster,
         label = stringResource(if (faster) R.string.metronome_faster else R.string.metronome_slower),
         onClick = onClick,
-        modifier = Modifier.testTag(if (faster) MetronomeTestTags.FASTER else MetronomeTestTags.SLOWER),
-        face = STEP_FACE,
-        icon = STEP_ICON,
+        modifier = Modifier.offset(x = if (faster) outward else -outward),
+        faceModifier = Modifier.testTag(if (faster) MetronomeTestTags.FASTER else MetronomeTestTags.SLOWER),
+        face = TOP_BAR_FACE,
+        icon = TOP_BAR_ICON,
+        touch = STEP_TOUCH,
     )
 }
 
-/** − and + : the mock-up's 56 dp faces, their icons half that. */
-private val STEP_FACE = 56.dp
-private val STEP_ICON = 28.dp
+/** − and +'s touch areas: the mock-up's 56 dp faces' size. */
+private val STEP_TOUCH = 56.dp
 
 /** Between − or + and the figures' room. */
 private val STEP_GAP = 8.dp

@@ -22,9 +22,6 @@
     <string name="metronome_subdivision_eighths">八分音符</string>
     <string name="metronome_subdivision_triplets">三連音</string>
     <string name="metronome_subdivision_sixteenths">十六分音符</string>
-    <string name="metronome_subdivision_eighths_on">拍間加入八分音符</string>
-    <string name="metronome_subdivision_triplets_on">拍間加入三連音</string>
-    <string name="metronome_subdivision_sixteenths_on">拍間加入十六分音符</string>
     <string name="metronome_options">選項</string>
     <string name="metronome_trainer">速度訓練</string>
     <string name="metronome_trainer_start">起始速度</string>
@@ -61,7 +58,6 @@
     <string name="metronome_listen">聆聽</string>
     <string name="metronome_listen_stop_spoken">停止聆聽</string>
     <string name="metronome_listening">正在聆聽…</string>
-    <string name="metronome_listen_line_stop">停止</string>
     <string name="metronome_heard">聽到</string>
     <string name="metronome_use">使用</string>
     <string name="metronome_not_now">以後再說</string>

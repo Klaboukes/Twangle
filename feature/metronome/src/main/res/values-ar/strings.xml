@@ -28,9 +28,6 @@
     <string name="metronome_subdivision_eighths">الأثمان</string>
     <string name="metronome_subdivision_triplets">الثلاثيات</string>
     <string name="metronome_subdivision_sixteenths">أجزاء الستة عشر</string>
-    <string name="metronome_subdivision_eighths_on">الأثمان بين النبضات</string>
-    <string name="metronome_subdivision_triplets_on">الثلاثيات بين النبضات</string>
-    <string name="metronome_subdivision_sixteenths_on">أجزاء الستة عشر بين النبضات</string>
     <string name="metronome_options">الخيارات</string>
     <string name="metronome_trainer">مدرّب السرعة</string>
     <string name="metronome_trainer_start">سرعة البداية</string>
@@ -81,7 +78,6 @@
     <string name="metronome_listen">استمع</string>
     <string name="metronome_listen_stop_spoken">أوقف الاستماع</string>
     <string name="metronome_listening">جارٍ الاستماع…</string>
-    <string name="metronome_listen_line_stop">أوقف</string>
     <string name="metronome_heard">ما سُمع</string>
     <string name="metronome_use">استخدم</string>
     <string name="metronome_not_now">ليس الآن</string>

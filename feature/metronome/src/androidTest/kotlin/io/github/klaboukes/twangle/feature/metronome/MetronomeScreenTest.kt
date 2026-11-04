@@ -23,6 +23,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -67,10 +68,10 @@ import java.util.concurrent.TimeUnit
 /**
  * The metronome screen (2.0, Phase 75: the tempo is the screen) with a fake player and settings: it opens
  * stopped at the saved tempo and meter; Start / Stop, − and +, the ruler (a drag, a flick, a tap on a
- * mark, and TalkBack's slider), the meter as a segmented choice, Tap the beat, the options panel under
- * its button in the top end corner (the sounds, one bar playing while stopped; the clicks between the
- * beats and their mark, the vibration switch and its mark on the status line, the speed trainer's row,
- * Listen), and the speed trainer's switch, words, settings and card (only while on) work and are saved, and the clicks stop
+ * mark, and TalkBack's slider), the meter as a segmented choice, Tap the beat, the Vibrate and Listen
+ * buttons under the beat bars, the options panel under its button in the top end corner (the sounds,
+ * one bar playing while stopped; the clicks between the beats, the speed trainer's row), and the speed
+ * trainer's switch, words, settings and card (only while on) work and are saved, and the clicks stop
  * when the screen leaves the composition. TalkBack hears every control by name. [MetronomeStylesTest]
  * covers the layout light and dark.
  */
@@ -143,13 +144,14 @@ class MetronomeScreenTest {
         panel.assertIsDisplayed()
     }
 
-    /** Opens the panel and starts listening from its Listen row, which closes it. */
+    private val listenButton get() = compose.onNodeWithTag(MetronomeTestTags.LISTEN)
+    private val vibrateButton get() = compose.onNodeWithTag(MetronomeTestTags.VIBRATE)
+
+    /** Starts listening from the Listen button under the beat bars. */
     private fun listen() {
-        openPanel()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
+        listenButton.performScrollTo().performClick()
         compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
         compose.waitForIdle()
-        panel.assertDoesNotExist()
     }
 
     /** Opens the speed trainer's settings from its row in the options panel, which they take the place of. */
@@ -305,6 +307,12 @@ class MetronomeScreenTest {
         // Heard by name, not as "6/8" (which TalkBack can read as a date).
         compose.onNodeWithTag(MetronomeTestTags.meter(Meter.SIX_EIGHT)).assertContentDescriptionEquals("Six-eight time")
         compose.onNodeWithTag(MetronomeTestTags.LIGHTS).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
+        vibrateButton.assertContentDescriptionEquals("Vibrate on the beat")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+            .assertIsOff()
+        listenButton.assertContentDescriptionEquals("Listen")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assertHasClickAction()
         // The sounds, in the options panel.
         compose.onNodeWithContentDescription("Sound").assertDoesNotExist()
         openPanel()
@@ -327,6 +335,9 @@ class MetronomeScreenTest {
         val faster = bounds(MetronomeTestTags.FASTER)
         val ruler = bounds(MetronomeTestTags.RULER)
         val lights = bounds(MetronomeTestTags.LIGHTS)
+        val vibrate = bounds(MetronomeTestTags.VIBRATE)
+        val line = bounds(MetronomeTestTags.LINE)
+        val listen = bounds(MetronomeTestTags.LISTEN)
         val meter = bounds(MetronomeTestTags.meter(Meter.FOUR_FOUR))
         val tap = bounds(MetronomeTestTags.TAP)
         val start = bounds(MetronomeTestTags.START)
@@ -339,6 +350,20 @@ class MetronomeScreenTest {
         assertTrue("the tempo $number under the options button $options", number.top >= options.bottom)
         assertTrue("the ruler $ruler under the tempo", ruler.top >= number.bottom)
         assertTrue("the lights $lights under the ruler", lights.top >= ruler.bottom)
+        // Under the bars one row: Vibrate at the start, Listen's line, Listen at the end, all level.
+        for ((name, rect) in listOf("Vibrate" to vibrate, "the line" to line, "Listen" to listen)) {
+            assertTrue("$name $rect under the lights $lights", rect.top >= lights.bottom)
+            assertTrue("the meter $meter under $name $rect", meter.top >= rect.bottom)
+        }
+        val row = (vibrate.top + vibrate.bottom) / 2
+        assertEquals("Listen level with Vibrate", row.value, ((listen.top + listen.bottom) / 2).value, 1f)
+        assertEquals("the line level with Vibrate", row.value, ((line.top + line.bottom) / 2).value, 1f)
+        assertTrue("Vibrate $vibrate, the line $line, Listen $listen", vibrate.right <= line.left && line.right <= listen.left)
+        // The buttons' outlines in line with the top row's ⋯ (and the gear, at the margin).
+        assertEquals("Listen's end in line with the ⋯'s", options.right.value, listen.right.value, 1f)
+        assertEquals("Vibrate at the margin, as the gear", 16f, vibrate.left.value, 1f)
+        assertEquals("− at the margin, as the gear", 16f, slower.left.value, 1f)
+        assertEquals("+'s end in line with the ⋯'s", options.right.value, faster.right.value, 1f)
         assertTrue("the meter $meter under the lights", meter.top >= lights.bottom)
         assertTrue("Tap the beat $tap under the meter", tap.top >= meter.bottom)
         // The meter right over the big buttons; the spare room goes to the beat bars, never over the buttons.
@@ -346,39 +371,36 @@ class MetronomeScreenTest {
         assertTrue("the beat bars $lights at least 72 dp tall", lights.height >= 71.5.dp)
         assertTrue("Tap the beat $tap beside Start $start", tap.right <= start.left)
         assertEquals("Tap the beat level with Start", tap.top.value, start.top.value, 0.5f)
-        assertTrue("Start the wider", start.width > tap.width)
+        assertEquals("Tap the beat and Start the same width", tap.width.value, start.width.value, 0.5f)
+        // Every round button has the ⋯'s face: −, +, Vibrate and Listen.
+        for ((name, rect) in listOf("−" to slower, "+" to faster, "Vibrate" to vibrate, "Listen" to listen)) {
+            assertEquals("$name's face as wide as the ⋯'s", options.width.value, rect.width.value, 0.5f)
+            assertEquals("$name's face as tall as the ⋯'s", options.height.value, rect.height.value, 0.5f)
+        }
         // The sound and the trainer are behind the options button; the trainer's card shows only while it is on.
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.COWBELL)).assertDoesNotExist()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
     }
 
     @Test
-    fun theVibrationSwitchIsInTheOptionsPanelAndItsMarkOnTheStatusLine() {
+    fun theVibrateButtonUnderTheBarsTogglesVibrationAndIsSaved() {
         show()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
-        openPanel()
-        val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE)
-        vibrate.assert(hasText("Vibrate on the beat"))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
-            .assertIsOff()
-        vibrate.performClick()
+        vibrateButton.assertIsOff()
+        vibrateButton.performClick()
         compose.waitForIdle()
-        vibrate.assertIsOn()
+        vibrateButton.assertIsOn()
         assertTrue(settings.current.metronomeVibrate)
-        // The panel stays open; the status line now shows the vibration mark, heard by its name.
-        panel.assertIsDisplayed()
-        back()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertIsDisplayed().assertContentDescriptionEquals("Vibrate on the beat")
-        compose.onNodeWithTag(MetronomeTestTags.VIBRATE_MARK, useUnmergedTree = true).assertExists()
-        // Off again, the mark goes.
-        openPanel()
-        vibrate.performClick()
-        back()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
+        // Nothing else changed for it: no panel opened, and the line under the bars says nothing.
+        panel.assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.LINE).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
+        vibrateButton.performClick()
+        compose.waitForIdle()
+        vibrateButton.assertIsOff()
+        assertFalse(settings.current.metronomeVibrate)
     }
 
     @Test
-    fun theOptionsButtonOpensThePanelUnderItWithTheNoteValuesVibrationAndListen() {
+    fun theOptionsButtonOpensThePanelUnderItWithItsThreeRows() {
         show()
         panel.assertDoesNotExist()
         openPanel()
@@ -396,19 +418,21 @@ class MetronomeScreenTest {
                 .assertIsDisplayed()
         }
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertIsSelected()
-        // The sound, Between the beats, Vibrate on the beat, the speed trainer, then Listen, one under the
-        // other; the panel under its button.
+        // The sound, Between the beats and the speed trainer, one under the other, ending the panel; the
+        // panel under its button.
         val sound = compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.WOOD_BLOCK)).assertIsDisplayed().getBoundsInRoot()
         val between = compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).getBoundsInRoot()
-        val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE).getBoundsInRoot()
         val trainer = compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION).assert(hasText("Speed trainer")).assertIsDisplayed().getBoundsInRoot()
-        val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Listen")).assertHasClickAction().getBoundsInRoot()
         assertTrue("the sounds $sound over the note values $between", sound.bottom <= between.top)
-        assertTrue("the note values $between over the switch $vibrate", between.bottom <= vibrate.top)
-        assertTrue("the switch $vibrate over the trainer $trainer", vibrate.bottom <= trainer.top)
-        assertTrue("the trainer $trainer over Listen $listen", trainer.bottom <= listen.top)
+        assertTrue("the note values $between over the trainer $trainer", between.bottom <= trainer.top)
         val button = optionsButton.getBoundsInRoot()
         val shownPanel = panel.getBoundsInRoot()
+        assertTrue("the trainer $trainer the panel's last row $shownPanel", shownPanel.bottom - trainer.bottom <= 24.dp)
+        // Vibrate and Listen are not in it: they are the buttons under the beat bars.
+        for (tag in listOf(MetronomeTestTags.VIBRATE, MetronomeTestTags.LISTEN)) {
+            compose.onNode(hasTestTag(tag) and hasAnyAncestor(hasTestTag(MetronomeTestTags.OPTIONS_PANEL))).assertDoesNotExist()
+            compose.onNodeWithTag(tag).assertExists()
+        }
         assertTrue("the panel $shownPanel under the button $button", shownPanel.top >= button.bottom)
         assertEquals("its end in line with the button's", button.right.value, shownPanel.right.value, 1f)
         // The trainer's settings are not open in it.
@@ -416,9 +440,8 @@ class MetronomeScreenTest {
     }
 
     @Test
-    fun stoppedANoteValuePlaysOneBarIsSavedAndShowsOnTheStatusLine() {
+    fun stoppedANoteValuePlaysOneBarAndIsSaved() {
         show()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
         openPanel()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.THREE)).performClick()
         compose.waitForIdle()
@@ -429,24 +452,19 @@ class MetronomeScreenTest {
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.THREE)).assertIsSelected()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertIsNotSelected()
         panel.assertIsDisplayed()
-        back()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertIsDisplayed().assertContentDescriptionEquals("Triplets between the beats")
-        compose.onNodeWithTag(MetronomeTestTags.SUBDIVISION_MARK, useUnmergedTree = true).assertExists()
-        // None again: the mark goes.
-        openPanel()
+        // None again.
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).performClick()
+        compose.waitForIdle()
         back()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
         assertEquals(Subdivision.NONE, settings.current.metronomeSubdivision)
     }
 
     @Test
-    fun playingANoteValueIsHeardFromTheNextBeatAndItsMarkComesBeforeVibration() {
+    fun playingANoteValueIsHeardFromTheNextBeat() {
         show()
         start.performClick()
         compose.waitForIdle()
         openPanel()
-        compose.onNodeWithTag(MetronomeTestTags.VIBRATE).performClick()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.FOUR)).performClick()
         compose.waitForIdle()
         assertEquals("no bar of its own while playing", 0, player.previewCount)
@@ -454,10 +472,6 @@ class MetronomeScreenTest {
         assertTrue(player.isPlaying.value)
         assertEquals(1, player.startCount)
         back()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Sixteenths between the beats, Vibrate on the beat")
-        val note = compose.onNodeWithTag(MetronomeTestTags.SUBDIVISION_MARK, useUnmergedTree = true).getBoundsInRoot()
-        val buzz = compose.onNodeWithTag(MetronomeTestTags.VIBRATE_MARK, useUnmergedTree = true).getBoundsInRoot()
-        assertTrue("the note value $note before vibration $buzz", note.right <= buzz.left)
         start.performClick()
     }
 
@@ -465,11 +479,9 @@ class MetronomeScreenTest {
     fun sixEightDimsTripletsAndSixteenthsAndKeepsTheChoiceForFourFour() {
         runBlocking { settings.setMetronomeSubdivision(Subdivision.THREE) }
         show(subdivision = Subdivision.THREE)
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Triplets between the beats")
         compose.onNodeWithTag(MetronomeTestTags.meter(Meter.SIX_EIGHT)).performClick()
         compose.waitForIdle()
-        // 6/8 plays triplets as none: no mark, none shown picked, triplets and sixteenths dimmed in place.
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
+        // 6/8 plays triplets as none: none shown picked, triplets and sixteenths dimmed in place.
         openPanel()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertIsSelected().assertIsEnabled()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.TWO)).assertIsEnabled()
@@ -485,7 +497,6 @@ class MetronomeScreenTest {
         // Back in 4/4 the triplets come back.
         compose.onNodeWithTag(MetronomeTestTags.meter(Meter.FOUR_FOUR)).performClick()
         compose.waitForIdle()
-        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Triplets between the beats")
         openPanel()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.THREE)).assertIsSelected().assertIsEnabled()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.TWO)).assertContentDescriptionEquals("Eighths")
@@ -583,7 +594,7 @@ class MetronomeScreenTest {
 
     /** The screen's controls, each by its Dutch TalkBack name or its own words, wholly shown (scrolled to). */
     private fun assertDutchWhollyShown(case: String) {
-        for (name in listOf("Tik de tel", "Langzamer", "Start", "Sneller", "Opties")) {
+        for (name in listOf("Tik de tel", "Langzamer", "Start", "Sneller", "Opties", "Trillen op de tel", "Luisteren")) {
             assertWhollyShown(compose.onNodeWithContentDescription(name).performScrollTo(), "$case $name")
         }
         for (tag in listOf(MetronomeTestTags.RULER, MetronomeTestTags.BPM, MetronomeTestTags.TEMPO_WORDS)) {
@@ -600,8 +611,8 @@ class MetronomeScreenTest {
 
     /**
      * The options panel and the speed trainer's in Dutch at 2x text on a phone of [size]: their headings,
-     * every sound and note value, the switch, the trainer's row, Listen and every trainer control wholly
-     * shown (scrolled to, where the panel scrolls).
+     * every sound and note value, the trainer's row and every trainer control wholly shown (scrolled to,
+     * where the panel scrolls).
      */
     private fun assertDutchPanels(size: DpSize) {
         show(locale = "nl", fontScale = 2f, size = size)
@@ -622,11 +633,9 @@ class MetronomeScreenTest {
             segment.assertContentDescriptionEquals(name)
             assertWhollyShown(segment, "$case $name")
         }
-        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE).performScrollTo().assert(hasText("Trillen op de tel")), "$case Trillen op de tel")
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION).performScrollTo().assert(hasText("Tempotrainer")), "$case Tempotrainer")
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION_SWITCH).performScrollTo(), "$case the trainer's switch")
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION_TEXT, useUnmergedTree = true).performScrollTo(), "$case the trainer's words")
-        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN).performScrollTo().assert(hasText("Luisteren")), "$case Luisteren")
         back()
         panel.assertDoesNotExist()
         // The trainer's settings, from its row, every control wholly shown.
@@ -793,7 +802,10 @@ class MetronomeScreenTest {
     @Test
     fun turningTheTrainerOnOrOffMovesNothing() {
         show(trainer = SpeedTrainer(96, 116, 5, 4))
-        val tags = listOf(MetronomeTestTags.BPM, MetronomeTestTags.RULER, MetronomeTestTags.LIGHTS, MetronomeTestTags.meter(Meter.FOUR_FOUR), MetronomeTestTags.TAP, MetronomeTestTags.START)
+        val tags = listOf(
+            MetronomeTestTags.BPM, MetronomeTestTags.RULER, MetronomeTestTags.LIGHTS, MetronomeTestTags.VIBRATE, MetronomeTestTags.LINE,
+            MetronomeTestTags.LISTEN, MetronomeTestTags.meter(Meter.FOUR_FOUR), MetronomeTestTags.TAP, MetronomeTestTags.START,
+        )
         fun places() = tags.map { compose.onNodeWithTag(it, useUnmergedTree = it == MetronomeTestTags.BPM).getBoundsInRoot() }
         val off = places()
         openPanel()
@@ -817,7 +829,7 @@ class MetronomeScreenTest {
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).assertDoesNotExist()
         compose.onNodeWithText("Speed trainer", useUnmergedTree = true).assertDoesNotExist()
         openPanel()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertExists()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertExists()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION).assertDoesNotExist()
     }
 
@@ -833,6 +845,17 @@ class MetronomeScreenTest {
         figures.assert(hasText("95"))
         assertEquals(95, settings.current.metronomeBpm)
         ruler.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "95 beats per minute, Andante"))
+    }
+
+    @Test
+    fun theStepButtonsTakeTapsBesideTheirSmallerFaces() {
+        show()
+        // 5 dp past the 44 dp face's outer side: outside a 48 dp touch area, inside the 56 dp one.
+        compose.onNodeWithTag(MetronomeTestTags.SLOWER).performTouchInput { click(Offset(-5.dp.toPx(), centerY)) }
+        compose.onNodeWithTag(MetronomeTestTags.FASTER).performTouchInput { click(Offset(width + 5.dp.toPx(), centerY)) }
+        compose.onNodeWithTag(MetronomeTestTags.FASTER).performTouchInput { click(Offset(width + 5.dp.toPx(), centerY)) }
+        compose.waitForIdle()
+        figures.assert(hasText("97"))
     }
 
     @Test
@@ -859,20 +882,15 @@ class MetronomeScreenTest {
         assertFalse("the clicks pause while listening", player.isPlaying.value)
         start.assertIsNotEnabled()
         lineSaysSoon("Listening…")
-        // Stop on the status line, heard as "Stop listening".
-        val stop = compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION)
-        stop.assert(hasText("Stop")).assertContentDescriptionEquals("Stop listening")
-        // The panel's Listen row says so too while it listens.
-        openPanel()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Stop listening"))
-        back()
+        // The Listen button is Stop while it listens; the line has no Stop of its own.
+        listenButton.assertContentDescriptionEquals("Stop listening")
+        compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assertDoesNotExist()
 
-        stop.performClick()
+        listenButton.performClick()
         compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
         start.assertIsEnabled()
         assertTrue("the clicks come back", player.isPlaying.value)
-        openPanel()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Listen"))
+        listenButton.assertContentDescriptionEquals("Listen")
     }
 
     @Test
@@ -913,8 +931,11 @@ class MetronomeScreenTest {
             }
         }
         val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Heard"))
-        // Under the options button in the top end corner, pointing at it.
-        assertTrue("the balloon under the options button", balloon.getBoundsInRoot().top >= optionsButton.getBoundsInRoot().bottom)
+        // Over the Listen button under the beat bars, pointing at it, its end over the button.
+        val shownBalloon = balloon.getBoundsInRoot()
+        val button = listenButton.getBoundsInRoot()
+        assertTrue("the balloon $shownBalloon over the Listen button $button", shownBalloon.bottom <= button.top && button.top - shownBalloon.bottom <= 16.dp)
+        assertTrue("the balloon $shownBalloon reaching over the button $button", shownBalloon.left <= button.left && shownBalloon.right >= button.right - 1.dp)
         compose.onNodeWithTag(MetronomeTestTags.BALLOON_BPM).assert(hasText("84", substring = true)).assert(hasText("Andante", substring = true))
         figures.assert(hasText("96"))
         val asHeard = compose.onNodeWithTag(MetronomeTestTags.pick(TempoPick.AS_HEARD))
@@ -970,7 +991,8 @@ class MetronomeScreenTest {
         line.assert(hasContentDescription("Listening… 96 BPM"))
         listen.value = listen.value.copy(estimate = 98)
         lineSaysSoon("Listening… 98 BPM")
-        compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assert(hasText("Stop")).performClick()
+        compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertContentDescriptionEquals("Stop listening").performClick()
         assertEquals(1, stops)
         listen.value = ListenUi(ListenPhase.NO_BEAT)
         compose.waitForIdle()

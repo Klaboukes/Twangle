@@ -22,9 +22,6 @@
     <string name="metronome_subdivision_eighths">8분음표</string>
     <string name="metronome_subdivision_triplets">셋잇단음표</string>
     <string name="metronome_subdivision_sixteenths">16분음표</string>
-    <string name="metronome_subdivision_eighths_on">박 사이에 8분음표</string>
-    <string name="metronome_subdivision_triplets_on">박 사이에 셋잇단음표</string>
-    <string name="metronome_subdivision_sixteenths_on">박 사이에 16분음표</string>
     <string name="metronome_options">옵션</string>
     <string name="metronome_trainer">속도 트레이너</string>
     <string name="metronome_trainer_start">시작 속도</string>
@@ -60,7 +57,6 @@
     <string name="metronome_listen">듣기</string>
     <string name="metronome_listen_stop_spoken">듣기 중지</string>
     <string name="metronome_listening">듣는 중…</string>
-    <string name="metronome_listen_line_stop">중지</string>
     <string name="metronome_heard">들은 템포</string>
     <string name="metronome_use">사용</string>
     <string name="metronome_not_now">나중에</string>

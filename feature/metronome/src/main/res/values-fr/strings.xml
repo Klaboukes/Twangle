@@ -24,9 +24,6 @@
     <string name="metronome_subdivision_eighths">Croches</string>
     <string name="metronome_subdivision_triplets">Triolets</string>
     <string name="metronome_subdivision_sixteenths">Doubles croches</string>
-    <string name="metronome_subdivision_eighths_on">Croches entre les temps</string>
-    <string name="metronome_subdivision_triplets_on">Triolets entre les temps</string>
-    <string name="metronome_subdivision_sixteenths_on">Doubles croches entre les temps</string>
     <string name="metronome_options">Options</string>
     <string name="metronome_trainer">Entraîneur de tempo</string>
     <string name="metronome_trainer_start">Tempo de départ</string>
@@ -68,7 +65,6 @@
     <string name="metronome_listen">Écouter</string>
     <string name="metronome_listen_stop_spoken">Arrêter l\'écoute</string>
     <string name="metronome_listening">À l\'écoute…</string>
-    <string name="metronome_listen_line_stop">Arrêter</string>
     <string name="metronome_heard">Entendu</string>
     <string name="metronome_use">Utiliser</string>
     <string name="metronome_not_now">Plus tard</string>

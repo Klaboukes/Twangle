@@ -23,9 +23,6 @@
     <string name="metronome_subdivision_eighths">आठवें नोट</string>
     <string name="metronome_subdivision_triplets">ट्रिप्लेट</string>
     <string name="metronome_subdivision_sixteenths">सोलहवें नोट</string>
-    <string name="metronome_subdivision_eighths_on">बीटों के बीच आठवें नोट</string>
-    <string name="metronome_subdivision_triplets_on">बीटों के बीच ट्रिप्लेट</string>
-    <string name="metronome_subdivision_sixteenths_on">बीटों के बीच सोलहवें नोट</string>
     <string name="metronome_options">विकल्प</string>
     <string name="metronome_trainer">स्पीड ट्रेनर</string>
     <string name="metronome_trainer_start">शुरुआती टेम्पो</string>
@@ -65,7 +62,6 @@
     <string name="metronome_listen">सुनें</string>
     <string name="metronome_listen_stop_spoken">सुनना बंद करें</string>
     <string name="metronome_listening">सुन रहा है…</string>
-    <string name="metronome_listen_line_stop">रोकें</string>
     <string name="metronome_heard">सुना गया</string>
     <string name="metronome_use">इस्तेमाल करें</string>
     <string name="metronome_not_now">अभी नहीं</string>

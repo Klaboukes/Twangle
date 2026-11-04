@@ -20,21 +20,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.annotation.DrawableRes
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +52,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -103,18 +98,10 @@ import kotlin.math.roundToInt
 
 /*
  * Listen's status line and its suggestion balloon (Phase 27, docs/design/metronome-listen-preview.html,
- * "Line" and "Found"). Since Phase 62 the line also shows, as small icons, what is on in the options
- * panel while Listen has nothing to say ([StatusMark]).
+ * "Line" and "Found"). Since 2026-11-04 the line stands between the Vibrate and Listen buttons under the
+ * beat bars ([UnderBarsRow]); from Phase 62 until then it showed small icons of what was on in the
+ * options panel while Listen had nothing to say.
  */
-
-/**
- * Something on in the options panel that changes how the metronome sounds or feels, shown on the
- * status line as a small [icon] while Listen has nothing to say (Phase 62); TalkBack hears [spoken].
- * [tag] is its test tag: the note value between the beats (none has no mark) and "Vibrate on the
- * beat". The speed trainer's words stand on its own row since Phase 75 ([TrainerRow]).
- */
-@Immutable
-data class StatusMark(@param:DrawableRes val icon: Int, val spoken: String, val tag: String)
 
 /** What the status line says. */
 private sealed interface LineText {
@@ -139,19 +126,15 @@ private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
 }
 
 /**
- * The status line under the beat lights: 24 dp whose room is always kept (one line of its text at
- * larger fonts), so nothing moves when it shows or hides. 14 sp in the muted colour, centred; a
- * change crossfades (160 ms out, 160 ms in). "Listening…", then "Listening… 96 BPM" with the number
- * in ink, each with Stop after it ([onStopListening]; Listen itself is in the options panel since
- * Phase 62); "No steady beat heard  Try again"; "Microphone is busy  Try again"; "Microphone is off" (with "Open settings" when only
- * Settings can allow it). TalkBack hears it as a polite live region; the tempo, which can change many
- * times a second while Listen settles, is passed on paced ([pacedSpeech]: at most every 2 s), and a
- * new number takes the old one's place without the crossfade.
- *
- * While Listen has nothing to say the line shows [marks], small icons of what is on in the options
- * panel, in the muted colour; they are outside the live region (switching one on is heard from its
- * switch), and TalkBack hears them by name. (From Phase 62 to 75 the speed trainer's words followed
- * them; they stand on the trainer's own row now, [TrainerRow].)
+ * Listen's status line, between the Vibrate and Listen buttons under the beat lights ([UnderBarsRow]):
+ * 24 dp whose room is always kept (one line of its text at larger fonts), so nothing moves when it
+ * shows or hides. 14 sp in the muted colour, centred; a change crossfades (160 ms out, 160 ms in).
+ * "Listening…", then "Listening… 96 BPM" with the number in ink (the Listen button beside it is Stop
+ * then; until 2026-11-04 the line had a Stop of its own after the words); "No steady beat heard  Try
+ * again"; "Microphone is busy  Try again"; "Microphone is off" (with "Open settings" when only Settings
+ * can allow it). TalkBack hears it as a polite live region; the tempo, which can change many times a
+ * second while Listen settles, is passed on paced ([pacedSpeech]: at most every 2 s), and a new number
+ * takes the old one's place without the crossfade. While Listen has nothing to say it is empty.
  */
 @Composable
 fun ListenLine(
@@ -159,8 +142,6 @@ fun ListenLine(
     onTryAgain: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    marks: List<StatusMark> = emptyList(),
-    onStopListening: () -> Unit = {},
 ) {
     val text = TextStyle(fontSize = 14.sp, lineHeight = 1.2.em)
     val body = MaterialTheme.typography.bodyMedium.merge(text)
@@ -171,40 +152,7 @@ fun ListenLine(
         pacedSpeech(listeningText(line.estimate), key = line.estimate > 0, speech = speech)
     }
     Box(modifier.fillMaxWidth().heightIn(min = LINE_HEIGHT), contentAlignment = Alignment.Center) {
-        ListenWords(shown, spokenTempo, body, onTryAgain, onOpenSettings, onStopListening)
-        // The last marks stay drawn while they fade out.
-        val any = marks.isNotEmpty()
-        var shownMarks by remember { mutableStateOf(marks) }
-        if (any) shownMarks = marks
-        AnimatedVisibility(
-            visible = shown == LineText.Nothing && any,
-            enter = fadeIn(tween(LINE_FADE_MILLIS, delayMillis = LINE_FADE_MILLIS)),
-            exit = fadeOut(tween(LINE_FADE_MILLIS)),
-        ) {
-            StatusMarks(shownMarks)
-        }
-    }
-}
-
-/** The marks side by side, [MARK_SIZE] each, [MARK_GAP] apart, as one node TalkBack hears by their names. */
-@Composable
-private fun StatusMarks(marks: List<StatusMark>) {
-    val spoken = marks.joinToString(", ") { it.spoken }
-    Row(
-        Modifier
-            .testTag(MetronomeTestTags.MARKS)
-            .semantics(mergeDescendants = true) { contentDescription = spoken },
-        horizontalArrangement = Arrangement.spacedBy(MARK_GAP),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        for (mark in marks) {
-            Icon(
-                painterResource(mark.icon),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(MARK_SIZE).testTag(mark.tag),
-            )
-        }
+        ListenWords(shown, spokenTempo, body, onTryAgain, onOpenSettings)
     }
 }
 
@@ -216,7 +164,6 @@ private fun ListenWords(
     body: TextStyle,
     onTryAgain: () -> Unit,
     onOpenSettings: () -> Unit,
-    onStopListening: () -> Unit,
 ) {
     Box(
         Modifier
@@ -244,7 +191,7 @@ private fun ListenWords(
         ) { line ->
             // The words fading out are not heard again.
             val semantics = if (line != shown) Modifier.clearAndSetSemantics {} else Modifier
-            Box(semantics) { LineContent(line, body, onTryAgain, onOpenSettings, onStopListening) }
+            Box(semantics) { LineContent(line, body, onTryAgain, onOpenSettings) }
         }
     }
 }
@@ -258,7 +205,7 @@ private fun listeningText(estimate: Int): String {
 }
 
 @Composable
-private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit, onOpenSettings: () -> Unit, onStopListening: () -> Unit) {
+private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit, onOpenSettings: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     when (line) {
         LineText.Nothing -> Unit
@@ -279,15 +226,8 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
                 }
             }
             // The tempo shown is left to the line's paced words; hidden, not cleared, so the language
-            // checks still find it. Stop is heard as "Stop listening".
-            LineWithAction(
-                words,
-                stringResource(R.string.metronome_listen_line_stop),
-                body,
-                onStopListening,
-                textHidden = true,
-                actionSpoken = stringResource(R.string.metronome_listen_stop_spoken),
-            )
+            // checks still find it.
+            LineWithAction(words, action = null, body, onAction = {}, textHidden = true)
         }
         LineText.NoBeat -> LineWithAction(AnnotatedString(stringResource(R.string.metronome_no_beat)), stringResource(R.string.metronome_try_again), body, onTryAgain)
         LineText.MicBusy -> LineWithAction(AnnotatedString(stringResource(R.string.metronome_mic_busy)), stringResource(R.string.metronome_try_again), body, onTryAgain)
@@ -304,8 +244,7 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
  * The line's words and, after them, an action in the accent with a 48 dp touch area. Both keep their
  * size while they fit side by side; where they don't (large text, long languages) both are set
  * smaller by the same factor, measured from their full widths, to stay on one line. [textHidden]
- * hides the words from TalkBack (the line says them its own way); [actionSpoken] is the action's
- * TalkBack name where its word alone is too short.
+ * hides the words from TalkBack (the line says them its own way).
  */
 @Composable
 private fun LineWithAction(
@@ -314,7 +253,6 @@ private fun LineWithAction(
     body: TextStyle,
     onAction: () -> Unit,
     textHidden: Boolean = false,
-    actionSpoken: String? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val actionStyle = body.copy(fontWeight = FontWeight.Medium)
@@ -329,8 +267,11 @@ private fun LineWithAction(
                 (action?.let { measurer.measure(it, actionStyle, maxLines = 1, softWrap = false).size.width } ?: 0)
         }
         // A little smaller than the widths say, and smaller again while either still runs over (text
-        // doesn't scale exactly); no smaller than MIN_LINE_TEXT.
-        val smallest = MIN_LINE_TEXT.value / body.fontSize.value
+        // doesn't scale exactly); no smaller than any word that shrinks to one line on the screen
+        // (MIN_NAME_SIZE, 8 dp at any font size; 6 sp until 2026-11-04, 12 dp at 2× text, which Dutch's
+        // "Geen duidelijk ritme gehoord  Opnieuw" ran past at 2× on a 360 dp phone once the Vibrate and
+        // Listen buttons stood beside the line).
+        val smallest = with(density) { MIN_NAME_SIZE.toSp() }.value / body.fontSize.value
         var tighter by remember(text, action, room, full) { mutableFloatStateOf(1f) }
         val scale = if (full <= room && tighter == 1f) 1f else max(min(1f, room * FIT_MARGIN / full) * tighter, smallest)
         val fit: (TextLayoutResult) -> Unit = { if (it.didOverflowWidth && scale > smallest) tighter *= TIGHTER_STEP }
@@ -358,7 +299,6 @@ private fun LineWithAction(
                             source.pressFlash()
                             onAction()
                         }
-                        .then(if (actionSpoken != null) Modifier.semantics { contentDescription = actionSpoken } else Modifier)
                         .padding(horizontal = ACTION_PADDING),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -383,21 +323,12 @@ private val ACTION_GAP = 4.dp
 
 private val LINE_HEIGHT = 24.dp
 
-/**
- * The line's words are set no smaller than this: at 2× text that is 12 sp's size, which Dutch
- * ("Geen duidelijk ritme gehoord" beside "Opnieuw") needs on a 360 dp phone.
- */
-private val MIN_LINE_TEXT = 6.sp
 private val PILL_HEIGHT = 32.dp
 private const val LINE_FADE_MILLIS = 160
 
-/** The marks of what is on: small, beside each other, as the mock-up. */
-private val MARK_SIZE = 18.dp
-private val MARK_GAP = 8.dp
-
 /**
- * The suggestion: a balloon on its own layer over the screen, pointing at the options button, where
- * Listen is ([anchor], in this layer's coordinates), in the accent with on-accent text, no outline, a
+ * The suggestion: a balloon on its own layer over the screen, pointing at the Listen button under the
+ * beat bars ([anchor], in this layer's coordinates; until 2026-11-04 the options button, where Listen was), in the accent with on-accent text, no outline, a
  * soft lift (as 1.1's first-start tour drew its balloon). Inside: the navigation bar's mark and "Heard", the
  * tempo big in the number face with "BPM" and its marking, ½× 1× 2× (only those within 30–250), then
  * Not now and Use. It fades in and out; nothing changes until Use.
@@ -636,7 +567,7 @@ private val CHIP_SHAPE: Shape = RoundedCornerShape(16.dp)
 /** Use's shape: 20 dp corners. */
 private val USE_SHAPE: Shape = RoundedCornerShape(20.dp)
 
-/** Where the balloon stands from the options button. */
+/** Where the balloon stands from the Listen button. */
 private enum class BalloonSide { ABOVE, BELOW, LEFT_OF, RIGHT_OF }
 
 /** The balloon's pointer: on which side, and where along it (px from its top or left). Set in layout, read in draw. */
@@ -710,7 +641,7 @@ private const val BALLOON_OUT_MILLIS = 150
 private val BALLOON_MAX_WIDTH = 260.dp
 private val BALLOON_SIDE_MARGIN = 16.dp
 
-/** The balloon's pointer tip stands this far above the options button. */
+/** The balloon's pointer tip stands this far above the Listen button. */
 private val BALLOON_GAP = 11.dp
 private val POINTER_WIDTH = 14.dp
 private val POINTER_HEIGHT = 9.dp

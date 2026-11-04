@@ -96,7 +96,6 @@ feature/metronome metronome_beats_in_bar 618dff12
 feature/metronome metronome_faster 8d0160c0
 feature/metronome metronome_heard 868a3a32
 feature/metronome metronome_listen 225d29f6
-feature/metronome metronome_listen_line_stop cae7d57b
 feature/metronome metronome_listen_speed c372fee9
 feature/metronome metronome_listen_stop_spoken 94fa9b23
 feature/metronome metronome_listening bbb4106e
@@ -125,12 +124,9 @@ feature/metronome metronome_start e4bb9f1e
 feature/metronome metronome_stop cae7d57b
 feature/metronome metronome_subdivision 137921bf
 feature/metronome metronome_subdivision_eighths 6b281941
-feature/metronome metronome_subdivision_eighths_on c0f1352f
 feature/metronome metronome_subdivision_none dc937b59
 feature/metronome metronome_subdivision_sixteenths 80b881c5
-feature/metronome metronome_subdivision_sixteenths_on b83f659c
 feature/metronome metronome_subdivision_triplets d2389bf5
-feature/metronome metronome_subdivision_triplets_on a5c5c4f8
 feature/metronome metronome_tap 6dbbb726
 feature/metronome metronome_tempo 214b5b84
 feature/metronome metronome_tempo_line 10ea78da

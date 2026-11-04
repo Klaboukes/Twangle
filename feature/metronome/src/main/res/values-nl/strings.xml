@@ -23,9 +23,6 @@
     <string name="metronome_subdivision_eighths">Achtsten</string>
     <string name="metronome_subdivision_triplets">Triolen</string>
     <string name="metronome_subdivision_sixteenths">Zestienden</string>
-    <string name="metronome_subdivision_eighths_on">Achtsten tussen de tellen</string>
-    <string name="metronome_subdivision_triplets_on">Triolen tussen de tellen</string>
-    <string name="metronome_subdivision_sixteenths_on">Zestienden tussen de tellen</string>
     <string name="metronome_options">Opties</string>
     <string name="metronome_trainer">Tempotrainer</string>
     <string name="metronome_trainer_start">Begintempo</string>
@@ -63,7 +60,6 @@
 
     <string name="metronome_listen">Luisteren</string>
     <string name="metronome_listen_stop_spoken">Stop met luisteren</string>
-    <string name="metronome_listen_line_stop">Stop</string>
     <string name="metronome_listening">Luisteren…</string>
     <string name="metronome_heard">Gehoord</string>
     <string name="metronome_use">Gebruiken</string>

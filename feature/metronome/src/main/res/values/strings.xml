@@ -22,7 +22,7 @@
     <string name="metronome_start">Start</string>
     <!-- The big accent button while the clicks play (a stop icon and this word): stops them. -->
     <string name="metronome_stop">Stop</string>
-    <!-- Switch in the options panel: the phone vibrates on every beat as well. Also TalkBack's name for its small icon on the status line under the beat lights while it is on. -->
+    <!-- TalkBack name of the round switch button with a vibrating-phone icon (no word shown) under the metronome's beat lights, at the start of the row: while it is on, the phone vibrates on every beat as well. -->
     <string name="metronome_vibrate">Vibrate on the beat</string>
     <!-- The heading over the row of four click sounds (icons, no words) at the top of the metronome's options panel, and TalkBack's name for that row. -->
     <string name="metronome_sound">Sound</string>
@@ -44,13 +44,7 @@
     <string name="metronome_subdivision_triplets">Triplets</string>
     <!-- Between the beats (TalkBack name of an icon of beamed notes with two beams): sixteenth notes (semiquavers), four clicks per beat; in 6/8 and 7/8 two per beat, which there are sixteenths too. -->
     <string name="metronome_subdivision_sixteenths">Sixteenths</string>
-    <!-- TalkBack name of the small note icon on the status line under the beat lights while eighths click between the beats. -->
-    <string name="metronome_subdivision_eighths_on">Eighths between the beats</string>
-    <!-- TalkBack name of the small note icon on the status line under the beat lights while triplets click between the beats. -->
-    <string name="metronome_subdivision_triplets_on">Triplets between the beats</string>
-    <!-- TalkBack name of the small note icon on the status line under the beat lights while sixteenths click between the beats. -->
-    <string name="metronome_subdivision_sixteenths_on">Sixteenths between the beats</string>
-    <!-- TalkBack name of the button in the metronome's top right corner (a ⋯ icon, no word shown): opens the panel with the click sound, the clicks between the beats, Vibrate on the beat, the speed trainer and Listen. Also the panel's name. -->
+    <!-- TalkBack name of the button in the metronome's top right corner (a ⋯ icon, no word shown): opens the panel with the click sound, the clicks between the beats and the speed trainer. Also the panel's name. -->
     <string name="metronome_options">Options</string>
 
     <!-- The speed trainer: the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the metronome's options panel and, while it is on, on a card above the time signatures on the metronome screen (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
@@ -123,14 +117,12 @@
     <string name="metronome_marking_presto" translatable="false">Presto</string>
     <string name="metronome_marking_prestissimo" translatable="false">Prestissimo</string>
 
-    <!-- Listen (Phase 27): the row in the options panel, beside a microphone icon, that listens to music nearby and suggests its tempo. -->
+    <!-- Listen (Phase 27): TalkBack name of the round button with a microphone icon (no word shown) under the metronome's beat lights, at the end of the row: listens to music nearby and suggests its tempo. -->
     <string name="metronome_listen">Listen</string>
-    <!-- The options panel's Listen row while it listens (a tap stops it); also TalkBack's name for Stop on the status line. -->
+    <!-- TalkBack name of the round Listen button under the beat lights while it listens (it shows a stop square): a tap stops listening. -->
     <string name="metronome_listen_stop_spoken">Stop listening</string>
     <!-- The status line while listening; the tempo it is settling on may follow ("Listening… 96 BPM"). -->
     <string name="metronome_listening">Listening…</string>
-    <!-- Action after "Listening… 96 BPM" on the same status line: stops listening. Short, one word if it can. -->
-    <string name="metronome_listen_line_stop">Stop</string>
     <!-- The suggestion balloon's heading over the tempo heard; also its TalkBack title. -->
     <string name="metronome_heard">Heard</string>
     <!-- The balloon's button that sets the suggested tempo. -->

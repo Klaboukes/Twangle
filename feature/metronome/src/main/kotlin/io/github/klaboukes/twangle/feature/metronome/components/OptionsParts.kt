@@ -1,42 +1,26 @@
 package io.github.klaboukes.twangle.feature.metronome.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_FACE_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.PANEL_ROW_INSET
 import io.github.klaboukes.twangle.core.designsystem.PanelLabel
-import io.github.klaboukes.twangle.core.designsystem.SwitchRow
 import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
@@ -45,12 +29,13 @@ import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
  * The options panel (Phase 62; since Phase 75 behind the options button in the screen's top end corner):
- * what is set less often than the tempo. Its rows, top to bottom: the click sound ([SoundChoice]), the
- * clicks between the beats ("Between the beats", Phase 62), Vibrate on the beat, the speed trainer
- * ([TrainerRow] without its card, whose settings open in a panel of the same kind, the shared
- * [FloatingPanel], in this one's place) and Listen (Phase 27). From Phase 75 to 2026-11-04 the sound
- * and the trainer stood on the screen (the owner: set once and left, not worth a row there); the
- * trainer's card still shows there while it is on.
+ * what is set less often than the tempo. Its three rows, top to bottom: the click sound ([SoundChoice]),
+ * the clicks between the beats ("Between the beats", Phase 62) and the speed trainer ([TrainerRow]
+ * without its card, whose settings open in a panel of the same kind, the shared [FloatingPanel], in this
+ * one's place). From Phase 75 to 2026-11-04 the sound and the trainer stood on the screen (the owner: set
+ * once and left, not worth a row there); the trainer's card still shows there while it is on. Vibrate on
+ * the beat and Listen (Phase 27) were rows here too until later that day, when they became buttons under
+ * the beat bars ([UnderBarsRow]; the owner: the panel looked messy, and Listen was tucked away).
  */
 
 /**
@@ -106,20 +91,6 @@ internal fun subdivisionName(subdivision: Subdivision, meter: Meter): String = s
         Subdivision.FOUR -> R.string.metronome_subdivision_sixteenths
     },
 )
-
-/**
- * What the status line's mark says for [subdivision] in [meter] ("Eighths between the beats"), or null
- * for none, which has no mark.
- */
-@Composable
-internal fun subdivisionMarkName(subdivision: Subdivision, meter: Meter): String? = when (subdivision) {
-    Subdivision.NONE -> null
-    Subdivision.TWO -> stringResource(
-        if (inEighths(meter)) R.string.metronome_subdivision_sixteenths_on else R.string.metronome_subdivision_eighths_on,
-    )
-    Subdivision.THREE -> stringResource(R.string.metronome_subdivision_triplets_on)
-    Subdivision.FOUR -> stringResource(R.string.metronome_subdivision_sixteenths_on)
-}
 
 /** Whether a click in [meter] is an eighth (6/8, 7/8), so two to a beat are sixteenths: those meters offer only none and two. */
 private fun inEighths(meter: Meter): Boolean = !Subdivision.THREE.isOfferedIn(meter)
@@ -197,53 +168,7 @@ internal fun TextSegment(
     modifier: Modifier = Modifier,
 ) = TextChoiceFace(text, name, picked, onPick, modifier.testTag(tag))
 
-/** "Vibrate on the beat" on the shared [SwitchRow]; the whole row toggles it. */
-@Composable
-internal fun VibrateSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) =
-    SwitchRow(stringResource(R.string.metronome_vibrate), checked, onCheckedChange, modifier.testTag(MetronomeTestTags.VIBRATE))
-
-/**
- * Listen: the microphone and its name on a 48 dp row; a tap ([onClick]) closes the panel and starts
- * listening. While [listening] it shows the stop square in the accent and "Stop listening", and a tap
- * stops it (the status line's Stop does the same).
- */
-@Composable
-internal fun ListenRow(listening: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
-    val text = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp)
-    val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
-    Row(
-        modifier
-            .testTag(MetronomeTestTags.LISTEN)
-            .fillMaxWidth()
-            .heightIn(min = ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium)
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            }
-            .padding(horizontal = ROW_PADDING),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            painterResource(if (listening) R.drawable.ic_listen_stop else R.drawable.ic_listen),
-            contentDescription = null,
-            tint = if (listening) scheme.primary else scheme.onSurface,
-            modifier = Modifier.size(ROW_ICON),
-        )
-        Spacer(Modifier.width(ROW_PADDING))
-        Text(
-            stringResource(if (listening) R.string.metronome_listen_stop_spoken else R.string.metronome_listen),
-            style = text,
-            color = scheme.onSurface,
-            maxLines = 1,
-            softWrap = false,
-            autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = text.fontSize, stepSize = 0.5.sp),
-        )
-    }
-}
-
+/** A row's least height: a touch area (the panel's rows, the trainer's switch, the row under the beat bars). */
 internal val ROW_HEIGHT = 48.dp
 /** A row's text stands this far in, as in every panel ([PANEL_ROW_INSET]; 14 dp until Phase 77). */
 internal val ROW_PADDING = PANEL_ROW_INSET

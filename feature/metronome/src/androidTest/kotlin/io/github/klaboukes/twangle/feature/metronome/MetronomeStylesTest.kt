@@ -54,7 +54,7 @@ import kotlin.math.abs
  * Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window, and nothing
  * overlaps; at 2× text, upright and on its side, every control can be scrolled to and is then wholly
  * shown. Playing, in 7/8 (every light's size) with eighths between the beats, the cowbell picked,
- * vibration on (its mark on the status line) and the speed trainer climbing. The tempo's figures keep
+ * vibration on (its button under the beat bars filled) and the speed trainer climbing. The tempo's figures keep
  * one size whatever the tempo. The options panel opens under its button, the trainer's settings over
  * its row, wholly shown at 1x, 2x and in Dutch at 2x. With the app's gear at the top start (a stand-in as
  * large), as the app shows it upright, and without, as on its side (the gear is on the rail there).
@@ -105,7 +105,7 @@ class MetronomeStylesTest {
                         onToggle = {},
                         onVibrateChange = {},
                         sound = ClickSound.COWBELL,
-                        // Two to a beat, in 7/8 sixteenths: their mark beside vibration's, triplets and sixteenths dimmed.
+                        // Two to a beat, in 7/8 sixteenths: triplets and sixteenths dimmed in the panel.
                         subdivision = Subdivision.TWO,
                         clock = clock,
                         listen = shownListen.value,
@@ -131,7 +131,9 @@ class MetronomeStylesTest {
             "tempo words" to compose.onNodeWithTag(MetronomeTestTags.TEMPO_WORDS, useUnmergedTree = true),
             "ruler" to compose.onNodeWithTag(MetronomeTestTags.RULER),
             "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
+            "vibrate" to compose.onNodeWithTag(MetronomeTestTags.VIBRATE),
             "status line" to compose.onNodeWithTag(MetronomeTestTags.LINE),
+            "listen" to compose.onNodeWithTag(MetronomeTestTags.LISTEN),
         ) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
             "tap the beat" to compose.onNodeWithTag(MetronomeTestTags.TAP),
             "start" to compose.onNodeWithTag(MetronomeTestTags.START),
@@ -248,7 +250,7 @@ class MetronomeStylesTest {
     }
 
     @Test
-    fun theSuggestionIsWhollyShownUnderTheOptionsButton() {
+    fun theSuggestionIsWhollyShownByTheListenButton() {
         show()
         shownListen.value = ListenUi(ListenPhase.FOUND, wasPlaying = true, found = 84, half = 42, double = 168)
         for ((size, dark) in listOf(PHONE_UPRIGHT to false, XIAOMI_UPRIGHT to true, PHONE_LANDSCAPE to false)) {
@@ -257,9 +259,11 @@ class MetronomeStylesTest {
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
             val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertIsDisplayed().getBoundsInRoot()
-            val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
+            val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
             val window = bars().safeArea(size)
-            assertTrue("$case balloon $balloon under the options button $options", balloon.top >= options.bottom)
+            // Over the Listen button (beside it where the window is too short), never over it.
+            assertTrue("$case balloon $balloon beside the Listen button $listen", !balloon.overlaps(listen))
+            if (size.height > size.width) assertTrue("$case balloon $balloon over the Listen button $listen", balloon.bottom <= listen.top)
             assertTrue("$case balloon $balloon inside the window $window", balloon.left >= window.left && balloon.right <= window.right && balloon.bottom <= window.bottom + SLACK)
             assertTrue("$case at most 260 dp wide", balloon.width <= 260.5.dp)
             for (tag in listOf(MetronomeTestTags.USE, MetronomeTestTags.NOT_NOW, MetronomeTestTags.BALLOON_BPM) + TempoPick.entries.map { MetronomeTestTags.pick(it) }) {
@@ -285,15 +289,15 @@ class MetronomeStylesTest {
             val panel = compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertIsDisplayed().getBoundsInRoot()
             val window = bars().safeArea(size)
             assertInside(name, panel, window)
-            // Under the button, its end edge in line with the button's (where the window leaves room).
-            if (panel.top > window.top + 8.dp + SLACK) assertTrue("$name panel $panel under the options button $options", panel.top >= options.bottom - SLACK)
+            // Under the button, its end edge in line with the button's (where the window leaves room; where it
+            // doesn't, slid up to stay inside it, or at its top and scrolling).
+            val slidUp = panel.bottom >= window.bottom - 16.dp
+            if (panel.top > window.top + 8.dp + SLACK && !slidUp) assertTrue("$name panel $panel under the options button $options", panel.top >= options.bottom - SLACK)
             if (options.right - panel.width >= window.left + 8.dp) assertEquals("$name panel's end in line with the button's", options.right.value, panel.right.value, 1f)
             for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$name $option")
             for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$name $option")
-            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE), "$name vibrate switch")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION), "$name trainer")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION_SWITCH), "$name trainer's switch")
-            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$name listen")
             if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the panel open")
             back()
             compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertDoesNotExist()
@@ -354,17 +358,52 @@ class MetronomeStylesTest {
     )
 
     @Test
-    fun theMarksStandOnTheStatusLine() {
+    fun underTheBarsVibrateTheLineAndListenStandInOneRow() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
+            // As the app shows it: on its side the gear is on the rail.
+            shownHeader.value = size.height > size.width
             compose.waitForIdle()
+            val case = "${size.width} x ${size.height}"
+            val lights = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
+            val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE).assertIsDisplayed().getBoundsInRoot()
             val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
-            for (tag in listOf(MetronomeTestTags.SUBDIVISION_MARK, MetronomeTestTags.VIBRATE_MARK)) {
-                val mark = compose.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed().getBoundsInRoot()
-                assertTrue("${size.width} x ${size.height} $tag $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
+            val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertIsDisplayed().getBoundsInRoot()
+            assertTrue("$case Vibrate $vibrate, the line $line, Listen $listen in that order", vibrate.right <= line.left && line.right <= listen.left)
+            for ((name, rect) in listOf("Vibrate" to vibrate, "the line" to line, "Listen" to listen)) {
+                assertTrue("$case $name $rect under the bars $lights", rect.top >= lights.bottom - SLACK)
+                assertEquals("$case $name level with the row", ((vibrate.top + vibrate.bottom) / 2).value, ((rect.top + rect.bottom) / 2).value, 1f)
+            }
+            // The buttons at the ends of the bars' column.
+            assertTrue("$case Vibrate $vibrate at the start of the bars' room $lights", vibrate.left <= lights.left + 24.dp)
+            assertTrue("$case Listen $listen at the end of the bars' room $lights", listen.right >= lights.right - 24.dp)
+        }
+        shownHeader.value = true
+        shownSize.value = PHONE_UPRIGHT
+    }
+
+    @Test
+    fun listensWordsChangingMoveNothing() {
+        show()
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            shownListen.value = ListenUi()
+            compose.waitForIdle()
+            val before = parts().map { (name, node) -> name to node.getBoundsInRoot() }
+            for (listen in listOf(
+                ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L),
+                ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96),
+                ListenUi(ListenPhase.NO_BEAT),
+                ListenUi(ListenPhase.MIC_OFF_SETTINGS),
+            )) {
+                shownListen.value = listen
+                compose.waitForIdle()
+                val after = parts().map { (name, node) -> name to node.getBoundsInRoot() }
+                assertEquals("${size.width} x ${size.height} ${listen.phase}", before, after)
             }
         }
+        shownListen.value = ListenUi()
         shownSize.value = PHONE_UPRIGHT
     }
 
@@ -435,7 +474,7 @@ class MetronomeStylesTest {
         assertEquals("$case panel's end in line with the button's", options.right.value, panel.right.value, 1f)
         assertTrue("$case panel $panel inside the window", panel.left >= 0.dp && panel.right <= TABLET_UPRIGHT.width && panel.bottom <= TABLET_UPRIGHT.height)
         for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$case $option", scroll = false)
-        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$case listen", scroll = false)
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION), "$case trainer", scroll = false)
         back()
         compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertDoesNotExist()
         shownNoBars.value = false

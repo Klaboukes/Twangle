@@ -24,9 +24,6 @@
     <string name="metronome_subdivision_eighths">Восьмі</string>
     <string name="metronome_subdivision_triplets">Тріолі</string>
     <string name="metronome_subdivision_sixteenths">Шістнадцяті</string>
-    <string name="metronome_subdivision_eighths_on">Восьмі між долями</string>
-    <string name="metronome_subdivision_triplets_on">Тріолі між долями</string>
-    <string name="metronome_subdivision_sixteenths_on">Шістнадцяті між долями</string>
     <string name="metronome_options">Параметри</string>
     <string name="metronome_trainer">Тренажер темпу</string>
     <string name="metronome_trainer_start">Початковий темп</string>
@@ -70,7 +67,6 @@
     <string name="metronome_listen">Слухати</string>
     <string name="metronome_listen_stop_spoken">Припинити слухати</string>
     <string name="metronome_listening">Слухаю…</string>
-    <string name="metronome_listen_line_stop">Стоп</string>
     <string name="metronome_heard">Почуто</string>
     <string name="metronome_use">Застосувати</string>
     <string name="metronome_not_now">Не зараз</string>

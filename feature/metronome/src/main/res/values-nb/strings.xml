@@ -23,9 +23,6 @@
     <string name="metronome_subdivision_eighths">Åttendeler</string>
     <string name="metronome_subdivision_triplets">Trioler</string>
     <string name="metronome_subdivision_sixteenths">Sekstendeler</string>
-    <string name="metronome_subdivision_eighths_on">Åttendeler mellom slagene</string>
-    <string name="metronome_subdivision_triplets_on">Trioler mellom slagene</string>
-    <string name="metronome_subdivision_sixteenths_on">Sekstendeler mellom slagene</string>
     <string name="metronome_options">Alternativer</string>
     <string name="metronome_trainer">Tempotrener</string>
     <string name="metronome_trainer_start">Starttempo</string>
@@ -65,7 +62,6 @@
     <string name="metronome_listen">Lytt</string>
     <string name="metronome_listen_stop_spoken">Slutt å lytte</string>
     <string name="metronome_listening">Lytter…</string>
-    <string name="metronome_listen_line_stop">Stopp</string>
     <string name="metronome_heard">Hørt</string>
     <string name="metronome_use">Bruk</string>
     <string name="metronome_not_now">Ikke nå</string>

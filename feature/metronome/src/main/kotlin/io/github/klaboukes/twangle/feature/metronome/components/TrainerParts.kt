@@ -127,7 +127,8 @@ internal fun TrainerRow(
             )
             Spacer(Modifier.width(ROW_PADDING))
             Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
-                RowName(name, bold = true)
+                // Bold on the screen's card; in the panel as its other text.
+                RowName(name, bold = card)
                 val style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, fontFeatureSettings = "$LINING_FIGURES, tnum")
                 val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
                 Text(

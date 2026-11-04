@@ -23,9 +23,6 @@
     <string name="metronome_subdivision_eighths">Achtel</string>
     <string name="metronome_subdivision_triplets">Triolen</string>
     <string name="metronome_subdivision_sixteenths">Sechzehntel</string>
-    <string name="metronome_subdivision_eighths_on">Achtel zwischen den Schlägen</string>
-    <string name="metronome_subdivision_triplets_on">Triolen zwischen den Schlägen</string>
-    <string name="metronome_subdivision_sixteenths_on">Sechzehntel zwischen den Schlägen</string>
     <string name="metronome_options">Optionen</string>
     <string name="metronome_trainer">Tempotrainer</string>
     <string name="metronome_trainer_start">Starttempo</string>
@@ -64,7 +61,6 @@
     <string name="metronome_listen">Zuhören</string>
     <string name="metronome_listen_stop_spoken">Zuhören beenden</string>
     <string name="metronome_listening">Höre zu…</string>
-    <string name="metronome_listen_line_stop">Stopp</string>
     <string name="metronome_heard">Gehört</string>
     <string name="metronome_use">Übernehmen</string>
     <string name="metronome_not_now">Nicht jetzt</string>

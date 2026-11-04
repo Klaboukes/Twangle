@@ -23,9 +23,6 @@
     <string name="metronome_subdivision_eighths">Sekizlikler</string>
     <string name="metronome_subdivision_triplets">Üçlemeler</string>
     <string name="metronome_subdivision_sixteenths">On altılıklar</string>
-    <string name="metronome_subdivision_eighths_on">Vuruşlar arası sekizlikler</string>
-    <string name="metronome_subdivision_triplets_on">Vuruşlar arası üçlemeler</string>
-    <string name="metronome_subdivision_sixteenths_on">Vuruşlar arası on altılıklar</string>
     <string name="metronome_options">Seçenekler</string>
     <string name="metronome_trainer">Tempo antrenörü</string>
     <string name="metronome_trainer_start">Başlangıç temposu</string>
@@ -64,7 +61,6 @@
     <string name="metronome_listen">Dinle</string>
     <string name="metronome_listen_stop_spoken">Dinlemeyi durdur</string>
     <string name="metronome_listening">Dinliyor…</string>
-    <string name="metronome_listen_line_stop">Durdur</string>
     <string name="metronome_heard">Duyulan</string>
     <string name="metronome_use">Kullan</string>
     <string name="metronome_not_now">Şimdi değil</string>
