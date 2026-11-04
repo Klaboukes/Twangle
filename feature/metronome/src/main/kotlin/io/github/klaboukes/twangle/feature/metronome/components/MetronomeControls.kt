@@ -50,6 +50,7 @@ import io.github.klaboukes.twangle.core.designsystem.buttonLook
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleButtonFace
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -221,7 +222,7 @@ internal fun StartStopButton(playing: Boolean, onClick: () -> Unit, modifier: Mo
     val source = remember { MutableInteractionSource() }
     val label = stringResource(if (playing) R.string.metronome_stop else R.string.metronome_start)
     BigFace(
-        icon = if (playing) R.drawable.ic_stop else R.drawable.ic_play,
+        icon = if (playing) DesignR.drawable.ic_stop else DesignR.drawable.ic_play,
         words = label,
         color = look.content(main = true),
         modifier = modifier

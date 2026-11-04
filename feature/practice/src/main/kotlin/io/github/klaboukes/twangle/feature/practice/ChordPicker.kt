@@ -1,62 +1,26 @@
 package io.github.klaboukes.twangle.feature.practice
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
-import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
-import io.github.klaboukes.twangle.core.designsystem.breakableAtHyphens
-import io.github.klaboukes.twangle.core.designsystem.breaksBetweenWords
-import io.github.klaboukes.twangle.core.designsystem.faceFill
-import io.github.klaboukes.twangle.core.designsystem.faceOutline
-import io.github.klaboukes.twangle.core.designsystem.koreanWordsKeptWhole
-import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.PanelEdge
+import io.github.klaboukes.twangle.core.designsystem.PanelLabel
+import io.github.klaboukes.twangle.core.designsystem.PickGrid
+import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -71,9 +35,10 @@ import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
  * docs/architecture/ui.md *Shared controls*), as wide as the row: "A minor seventh ⌄", "D Dorian ⌄". Until
  * Phase 63 a chord showed its symbol large over its words, small ("Am7 ⌄" over "A minor seventh"; the
  * panel and the tuner still write symbols). One steady height whatever the name, so the chart or the
- * neck under it never moves. A tap calls [onClick] to open the [ChordPanel]; [panel] places it right
- * under the button, given the row's width (upright, so the name stays in sight while picking), or the
- * screen puts it elsewhere (on its side, over the start half, so the panel doesn't hide the name and the chart).
+ * neck under it never moves. A tap calls [onClick] to open the [ChordPanel]; [onRowPlaced] tells the screen where
+ * the whole row is (the name with what is at its end), for the panel to open right under it, as wide as it (upright,
+ * so the name stays in sight while picking), or the screen puts it elsewhere (on its side, over the start half, so
+ * the panel doesn't hide the name and the chart).
  *
  * With [end] (the drone button on Scales, Phase 48, the owner's pick A in docs/design/drone-button-preview.html)
  * the name gives up [endWidth] and a small gap to it at the row's end; [end] is given the name's steady height,
@@ -91,7 +56,7 @@ internal fun ChordNameButton(
     notation: Notation,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    panel: @Composable (width: Dp) -> Unit = {},
+    onRowPlaced: (Rect) -> Unit = {},
     endWidth: Dp = 0.dp,
     end: (@Composable (height: Dp, rowWidth: Dp) -> Unit)? = null,
 ) {
@@ -102,43 +67,42 @@ internal fun ChordNameButton(
     val spoken = if (scales) scaleWords(scale, notation, speech) else chordWords(chord, notation, speech)
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         val width = minOf(maxWidth, NAME_ROW_MAX_WIDTH)
-        Box {
-            Row(Modifier.width(width)) {
-                NamePickerButton(
-                    name = name,
-                    spoken = spoken,
-                    onClick = onClick,
-                    heading = true,
-                    live = scales,
-                    faceModifier = Modifier.testTag(PracticeTestTags.NAME_PICKER),
-                    modifier = if (end == null) Modifier.width(width) else Modifier.width(width - endWidth - NAME_END_GAP),
-                )
-                if (end != null) {
-                    Spacer(Modifier.width(NAME_END_GAP))
-                    end(NAME_PICKER_HEIGHT, width)
-                }
+        Row(Modifier.width(width).panelAnchor(onRowPlaced)) {
+            NamePickerButton(
+                name = name,
+                spoken = spoken,
+                onClick = onClick,
+                heading = true,
+                live = scales,
+                faceModifier = Modifier.testTag(PracticeTestTags.NAME_PICKER),
+                modifier = if (end == null) Modifier.width(width) else Modifier.width(width - endWidth - NAME_END_GAP),
+            )
+            if (end != null) {
+                Spacer(Modifier.width(NAME_END_GAP))
+                end(NAME_PICKER_HEIGHT, width)
             }
-            panel(width)
         }
     }
 }
 
 /**
- * The name button's panel, [expanded] or not, a [FloatingMenu] under the place it is put in (the one look's floating
- * panel, Phase 75), at
- * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
- * ([RootPicker]), then "Chord type" over the twenty chord types four to a row ([ChordTypePicker]) or,
- * with [scales], the fourteen scales two to a row in one list, the most used first ([ScaleTypePicker]).
- * A pick (the one already picked too) closes it, so the chart or the neck shows it at once; changing
- * both the root and the type takes two openings. Back and a tap beside it call [onDismiss]. On a short
- * screen it scrolls.
+ * The name button's panel, [expanded] or not: the shared floating panel ([FloatingPanel], Phase 77; Material's menu in
+ * the same look until then) opening from [anchor] (the name's row upright, from its start; on its side the top of the
+ * start half), [width] wide (at most [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row ([RootPicker]),
+ * then "Chord type" over the twenty chord types four to a row ([ChordTypePicker]) or, with [scales], the fourteen
+ * scales two to a row in one list, the most used first ([ScaleTypePicker]), all on the shared pick buttons
+ * ([PickGrid]). A pick (the one already picked too) closes it, so the chart or the neck shows it at once; changing
+ * both the root and the type takes two openings. Back and a tap beside it call [onDismiss]. On a short screen it
+ * scrolls.
  *
- * TalkBack hears its grids as radio groups ("Root", "Chord type" or "Scale").
+ * TalkBack hears it by the tool's name ("Chords", "Scales") and its grids as radio groups ("Root", "Chord type" or
+ * "Scale").
  */
 @Composable
 internal fun ChordPanel(
     expanded: Boolean,
     onDismiss: () -> Unit,
+    anchor: Rect?,
     width: Dp,
     scales: Boolean,
     root: PitchClass,
@@ -150,40 +114,25 @@ internal fun ChordPanel(
     onScaleTypeChange: (ScaleType) -> Unit,
 ) {
     val spell = if (scales) scaleRootSpelling(scaleType, notation) else chordRootSpelling(quality, notation)
-    val density = LocalDensity.current
-    FloatingMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss,
-        // The menu is a window of its own: UI Automator finds its buttons by tag only when it says so too (as MainActivity's root does).
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
+    FloatingPanel(
+        open = expanded,
+        anchor = anchor,
+        onDismiss = onDismiss,
+        title = stringResource(if (scales) R.string.practice_tool_scales else R.string.practice_tool_chords),
+        width = minOf(width, NAME_ROW_MAX_WIDTH),
+        edge = PanelEdge.START,
+        tag = PracticeTestTags.NAME_PANEL,
     ) {
-        ScreenDensity(density) {
-            // A known width: a menu asks its content's intrinsic size, which a grid that measures its room can't give.
-            val gridWidth = minOf(width, NAME_ROW_MAX_WIDTH) - MENU_PADDING * 2
-            Column(Modifier.padding(horizontal = MENU_PADDING)) {
-                PanelLabel(stringResource(R.string.practice_root))
-                RootPicker(root, spell, gridWidth, onRootChange = onRootChange)
-                Spacer(Modifier.height(SECTION_GAP))
-                if (scales) {
-                    ScaleTypePicker(scaleType, gridWidth, onTypeChange = onScaleTypeChange)
-                } else {
-                    PanelLabel(stringResource(R.string.practice_chord_type))
-                    ChordTypePicker(root, quality, notation, gridWidth, onQualityChange = onQualityChange)
-                }
-            }
+        PanelLabel(stringResource(R.string.practice_root))
+        RootPicker(root, spell, onRootChange = onRootChange)
+        Spacer(Modifier.height(SECTION_GAP))
+        if (scales) {
+            ScaleTypePicker(scaleType, onTypeChange = onScaleTypeChange)
+        } else {
+            PanelLabel(stringResource(R.string.practice_chord_type))
+            ChordTypePicker(root, quality, notation, onQualityChange = onQualityChange)
         }
     }
-}
-
-/** A section's name in the panel, small and muted; TalkBack hears it as the grid's group name instead. */
-@Composable
-internal fun PanelLabel(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 6.dp, top = 4.dp, bottom = 2.dp).clearAndSetSemantics {},
-    )
 }
 
 /**
@@ -197,23 +146,21 @@ internal fun PanelLabel(text: String) {
 private fun RootPicker(
     root: PitchClass,
     spell: (PitchClass) -> String,
-    width: Dp,
     onRootChange: (PitchClass) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val speech = rememberNoteNameSpeech()
-    PickerGrid(
+    PickGrid(
         options = PitchClass.entries,
-        picked = root,
+        picked = { it == root },
+        onPick = onRootChange,
         perRow = ROOTS_PER_ROW,
-        maxButtonWidth = ROOT_BUTTON_MAX_WIDTH,
         groupLabel = stringResource(R.string.practice_root),
-        label = spell,
+        label = { spell(it) },
         spoken = { speech.name(spell(it)) },
         tag = PracticeTestTags::root,
-        width = width,
-        onPick = onRootChange,
         modifier = modifier,
+        maxFaceWidth = ROOT_BUTTON_MAX_WIDTH,
     )
 }
 
@@ -237,24 +184,22 @@ private fun ChordTypePicker(
     root: PitchClass,
     quality: ChordQuality,
     notation: Notation,
-    width: Dp,
     onQualityChange: (ChordQuality) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val speech = rememberNoteNameSpeech()
     val spoken = ChordQuality.inPanel.associateWith { chordWords(Chord.of(root, it), notation, speech) }
-    PickerGrid(
+    PickGrid(
         options = ChordQuality.inPanel,
-        picked = quality,
+        picked = { it == quality },
+        onPick = onQualityChange,
         perRow = TYPES_PER_ROW,
-        maxButtonWidth = TYPE_BUTTON_MAX_WIDTH,
         groupLabel = stringResource(R.string.practice_chord_type),
         label = { chordSymbol(Chord.of(root, it), notation) },
         spoken = { spoken.getValue(it) },
         tag = PracticeTestTags::type,
-        width = width,
-        onPick = onQualityChange,
         modifier = modifier,
+        maxFaceWidth = TYPE_BUTTON_MAX_WIDTH,
     )
 }
 
@@ -269,192 +214,24 @@ private fun ChordTypePicker(
 @Composable
 private fun ScaleTypePicker(
     type: ScaleType,
-    width: Dp,
     onTypeChange: (ScaleType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val names = ScaleType.entries.associateWith { stringResource(scaleTypeLabel(it)) }
-    PickerGrid(
+    PickGrid(
         options = ScaleType.entries,
-        picked = type,
+        picked = { it == type },
+        onPick = onTypeChange,
         perRow = SCALES_PER_ROW,
-        maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
         groupLabel = stringResource(R.string.practice_scale_type),
         label = { names.getValue(it) },
         spoken = { names.getValue(it) },
         tag = PracticeTestTags::scale,
-        width = width,
-        onPick = onTypeChange,
         modifier = modifier,
+        maxFaceWidth = SCALE_BUTTON_MAX_WIDTH,
         lines = 2,
     )
 }
-
-/**
- * [options] as see-through buttons [perRow] to a row (the last row centred), each as wide as the row
- * allows up to [maxButtonWidth] and 40 dp tall; the [picked] one in the accent's container with an
- * accent outline, as the metronome's meter buttons. Each touch area is its share of the row and 48 dp
- * tall, the gap between the faces inside it, so six roots still fit a 320 dp phone with 48 dp each.
- * The row is [width] wide where that is known (in a menu), else as wide as the room.
- */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun <T> PickerGrid(
-    options: List<T>,
-    picked: T,
-    perRow: Int,
-    maxButtonWidth: Dp,
-    groupLabel: String,
-    label: (T) -> String,
-    spoken: (T) -> String,
-    tag: (T) -> String,
-    onPick: (T) -> Unit,
-    modifier: Modifier = Modifier,
-    width: Dp? = null,
-    lines: Int = 1,
-) {
-    val rows = @Composable { room: Int ->
-        // Whole pixels, rounded down, so a row of [perRow] never comes out a pixel too wide and wraps.
-        val slot = minOf(maxButtonWidth + BUTTON_GAP, with(LocalDensity.current) { (room / perRow).toDp() })
-        FlowRow(
-            modifier = Modifier.selectableGroup().semantics { contentDescription = groupLabel },
-            horizontalArrangement = Arrangement.Center,
-            maxItemsInEachRow = perRow,
-        ) {
-            for (option in options) {
-                PickButton(
-                    text = label(option),
-                    spoken = spoken(option),
-                    picked = option == picked,
-                    slot = slot,
-                    lines = lines,
-                    onClick = { onPick(option) },
-                    modifier = Modifier.testTag(tag(option)),
-                )
-            }
-        }
-    }
-    if (width != null) {
-        Box(modifier.width(width), contentAlignment = Alignment.Center) { rows(with(LocalDensity.current) { width.roundToPx() }) }
-    } else {
-        BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { rows(constraints.maxWidth) }
-    }
-}
-
-@Composable
-private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, lines: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val source = remember { MutableInteractionSource() }
-    val shape = MaterialTheme.shapes.small
-    Box(
-        modifier = modifier
-            .selectable(
-                selected = picked,
-                interactionSource = source,
-                indication = null,
-                role = Role.RadioButton,
-                onClick = {
-                    source.pressFlash()
-                    onClick()
-                },
-            )
-            .semantics { contentDescription = spoken }
-            .size(slot, TOUCH_HEIGHT),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(slot - BUTTON_GAP, BUTTON_HEIGHT)
-                .pressFeedback(source, shape, fill = faceFill(picked), outline = faceOutline(picked))
-                .padding(horizontal = 3.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            PickLabel(text, if (picked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground, lines)
-        }
-    }
-}
-
-/** A button's label in [color] on up to [lines] lines, set smaller where it would not fit. */
-@Composable
-private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign = TextAlign.Center) {
-    val style = MaterialTheme.typography.labelLarge
-    Text(
-        musicText(breakableAtHyphens(koreanWordsKeptWhole(text))),
-        style = style.copy(
-            textAlign = align,
-            // Two lines take the size the text is set at, so they fit the face as it shrinks.
-            lineHeight = if (lines > 1) TWO_LINE_HEIGHT else style.lineHeight,
-            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
-        ),
-        color = color,
-        maxLines = lines,
-        // A one-line label never wraps, so the auto-size sees it too wide (Ear training's AnswerButton in
-        // IntervalsPart.kt says why).
-        softWrap = lines > 1,
-        autoSize = if (lines > 1) {
-            LabelAutoSize
-        } else {
-            // The largest size that fits: below MIN_LABEL_SIZE only where the label would otherwise be cut
-            // off (Classic's La♭maj7 at 2× text on a 320 dp phone fits at 7.5 sp).
-            TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp)
-        },
-    )
-}
-
-/**
- * The largest size from [largest] down to [smallest] at which the text fits its box
- * on its lines without breaking a word ("Pentatonique / majeure", never "Pentatoni / que"); Chinese
- * and Japanese, written without spaces, may break between any two characters. Smallest if none.
- * Where it can, it leaves [twoLineMargin] above and below, so two lines never touch the outline
- * (Classic's and Retro's letters did); at large text sizes, where even the smallest wouldn't fit
- * with it, the label may use the whole face. With [sideMargin] it also keeps that much clear at either
- * side, set a little smaller or on two lines for it (down to [SIDE_ROOM_SHARE] of the size it would
- * have without), so a long name doesn't run edge to edge ("Phrygian dominant" at 1.3× text, Phase 52).
- */
-internal class WholeWordsAutoSize(
-    private val largest: TextUnit,
-    private val smallest: TextUnit,
-    private val twoLineMargin: Dp = 0.dp,
-    private val sideMargin: Dp = 0.dp,
-) : TextAutoSize {
-    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
-        val margin = 2 * twoLineMargin.roundToPx()
-        val plain = largestFitting(constraints, text, margin) ?: return largestFitting(constraints, text, 0) ?: smallest
-        if (sideMargin == 0.dp) return plain
-        val floor = maxOf(smallest.value, plain.value * SIDE_ROOM_SHARE)
-        return largestFitting(constraints, text, margin, 2 * sideMargin.roundToPx(), floor) ?: plain
-    }
-
-    private fun TextAutoSizeLayoutScope.largestFitting(
-        constraints: Constraints,
-        text: AnnotatedString,
-        margin: Int,
-        sides: Int = 0,
-        floor: Float? = null,
-    ): TextUnit? {
-        var size = largest.value
-        // Down to [floor] itself where one is given, else to just above [smallest] (which is the answer when nothing fits).
-        while (if (floor == null) size > smallest.value else size >= floor - 0.001f) {
-            val layout = performLayout(constraints, text, size.sp)
-            val roomy = !constraints.hasBoundedHeight || layout.size.height <= constraints.maxHeight - margin
-            val clearOfSides = sides == 0 || !constraints.hasBoundedWidth || layout.widestLine() <= constraints.maxWidth - sides
-            if (!layout.didOverflowWidth && !layout.didOverflowHeight && roomy && clearOfSides && breaksBetweenWords(layout, text)) return size.sp
-            size -= LABEL_STEP
-        }
-        return null
-    }
-
-    private fun TextLayoutResult.widestLine(): Float = (0 until lineCount).maxOfOrNull { getLineRight(it) - getLineLeft(it) } ?: 0f
-
-    private fun breaksBetweenWords(layout: TextLayoutResult, text: AnnotatedString): Boolean = layout.breaksBetweenWords(text.text)
-
-    override fun equals(other: Any?): Boolean =
-        other is WholeWordsAutoSize && other.largest == largest && other.smallest == smallest && other.twoLineMargin == twoLineMargin &&
-            other.sideMargin == sideMargin
-    override fun hashCode(): Int = ((largest.hashCode() * 31 + smallest.hashCode()) * 31 + twoLineMargin.hashCode()) * 31 + sideMargin.hashCode()
-}
-
-/** A label keeps its side room ([WholeWordsAutoSize]'s sideMargin) only down to this share of the size it would have without. */
-private const val SIDE_ROOM_SHARE = 0.85f
 
 private const val ROOTS_PER_ROW = 6
 private const val SCALES_PER_ROW = 2
@@ -462,33 +239,12 @@ private const val TYPES_PER_ROW = 4
 private val ROOT_BUTTON_MAX_WIDTH = 56.dp
 private val TYPE_BUTTON_MAX_WIDTH = 84.dp
 private val SCALE_BUTTON_MAX_WIDTH = 180.dp
-private val BUTTON_GAP = 6.dp
-private val BUTTON_HEIGHT = 40.dp
-private val TOUCH_HEIGHT = 48.dp
 
 /**
- * The name button: as wide as the row, at most this wide (the panel as wide); the panel's grids this far in
- * from its edges, its sections this far apart.
+ * The name button: as wide as the row, at most this wide (the panel as wide); the panel's sections this far apart.
  */
 private val NAME_ROW_MAX_WIDTH = 400.dp
 
 /** Between the name and the part at the row's end (the drone button on Scales). */
 private val NAME_END_GAP = 8.dp
-private val MENU_PADDING = 4.dp
 private val SECTION_GAP = 4.dp
-
-private val LABEL_SIZE = 16.sp
-private val MIN_LABEL_SIZE = 8.sp
-private val LAST_RESORT_LABEL_SIZE = 6.sp
-private const val LABEL_STEP = 0.5f
-private val TWO_LINE_HEIGHT = 1.15.em
-private val TWO_LINE_MARGIN = 3.dp
-
-/** A scale's name keeps this much clear at either side inside the face's own 3 dp, where it can (Phase 52). */
-private val LABEL_SIDE_ROOM = 6.dp
-
-/**
- * A picker label: from [LABEL_SIZE] down to [MIN_LABEL_SIZE], with [TWO_LINE_MARGIN] where it can.
- * Written after those sizes: top-level values are set in the order they are written.
- */
-private val LabelAutoSize = WholeWordsAutoSize(LABEL_SIZE, MIN_LABEL_SIZE, TWO_LINE_MARGIN, LABEL_SIDE_ROOM)

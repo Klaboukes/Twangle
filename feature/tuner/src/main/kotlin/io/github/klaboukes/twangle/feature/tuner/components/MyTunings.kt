@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
@@ -40,7 +41,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 /**
  * The player's own tunings in the panel, under the presets: the small heading "My tunings" (as the
  * approved mock-up), then each of [tunings] as a [TuningRow] ([selected] ticked; a tap calls
- * [onSelect]; [ticked] brings it into view) with a ⋮ button at its end. Its menu has Edit ([onEdit]) and Delete ([onDelete]); Delete
+ * [onSelect]; [ticked] brings it into view) with a ⋯ button at its end. Its menu has Edit ([onEdit]) and Delete ([onDelete]); Delete
  * first asks in a dialog, so a stray tap deletes nothing. The heading also stands alone over "New tuning".
  */
 @Composable
@@ -109,7 +110,10 @@ internal fun MyTunings(
     }
 }
 
-/** The ⋮ button at the end of [tuning]'s row and the small menu it opens: Edit, Delete. */
+/**
+ * The ⋯ button at the end of [tuning]'s row and the small menu it opens: Edit, Delete. ⋯ is "more" everywhere, as
+ * the top row's ([io.github.klaboukes.twangle.core.designsystem.MoreButton]); a ⋮ until Phase 77.
+ */
 @Composable
 private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> Unit)?, onDelete: (() -> Unit)?) {
     var open by remember { mutableStateOf(false) }
@@ -117,7 +121,7 @@ private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> U
     Box {
         TwangleIconButton(onClick = { open = true }, modifier = Modifier.testTag(TunerTestTags.customTuningMenu(tuning.id))) {
             Icon(
-                painterResource(R.drawable.ic_more_vert),
+                painterResource(DesignR.drawable.ic_more_horiz),
                 contentDescription = stringResource(R.string.tuner_tuning_options, tuning.name),
                 tint = if (selected) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
             )

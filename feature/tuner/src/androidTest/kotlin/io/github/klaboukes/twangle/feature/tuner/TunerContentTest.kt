@@ -450,7 +450,7 @@ class TunerContentTest {
         show(TunerUiState.Listening(TunerMode.AUTO, many.last().tuning))
         openPanel()
         compose.onNodeWithTag(TunerTestTags.customTuning(many.last().id)).assertIsDisplayed()
-        // The part of the row that picks it (the ⋮ button beside it is not).
+        // The part of the row that picks it (the ⋯ button beside it is not).
         compose.onNodeWithText("Mine 16").assertIsDisplayed().assertIsSelected()
     }
 
@@ -527,7 +527,7 @@ class TunerContentTest {
         heading.performScrollTo().assertIsDisplayed().assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
         row.performScrollTo().assertIsDisplayed().assertIsNotSelected()
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-        // TalkBack: its name and strings, and the ⋮ button by the tuning's name.
+        // TalkBack: its name and strings, and the ⋯ button by the tuning's name.
         row.assert(hasContentDescription("Low C, C, G, C, G, B, E"))
         ownMenu(lowC).assert(hasContentDescription(context.getString(R.string.tuner_tuning_options, "Low C")))
         // Only this instrument's own tunings.

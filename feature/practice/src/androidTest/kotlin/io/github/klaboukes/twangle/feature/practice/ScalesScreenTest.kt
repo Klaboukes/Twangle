@@ -52,7 +52,7 @@ import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
-import io.github.klaboukes.twangle.core.testing.assertMenuUnder
+import io.github.klaboukes.twangle.core.testing.assertPanelUnder
 import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -172,7 +172,7 @@ class ScalesScreenTest {
         return results.single()
     }
 
-    /** Opens the panel and waits for it: a window of its own. */
+    /** Opens the panel and waits for it: it comes with a short fade. */
     private fun openPanel() {
         picker().performClick()
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.root(PitchClass.C)) }
@@ -184,7 +184,7 @@ class ScalesScreenTest {
         awaitPanelClosed()
     }
 
-    /** Waits for the panel to go: a window of its own, it goes with a short animation. */
+    /** Waits for the panel to go: it goes with a short fade. */
     private fun awaitPanelClosed() {
         compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.root(PitchClass.C)) }
     }
@@ -594,11 +594,11 @@ class ScalesScreenTest {
             if (size == TABLET_UPRIGHT) {
                 assertTrue("$case the neck as tall as its room $drawn $area", drawn.height >= area.height - 1.dp)
             }
-            // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not. On a
-            // tablet on its side the panels drop under the name as upright (Phase 52): the drone panel in one column.
-            val tablet = size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT
-            assertThePanel(case, wide = size == PHONE_LANDSCAPE || tablet)
-            assertTheDronePanel(case, wide = size == PHONE_LANDSCAPE, under = !tablet && size != PHONE_LANDSCAPE)
+            // On a tablet on its side the panels drop under the name as upright (Phase 52): the drone panel in one column. Since
+            // Phase 77 they float on the screen's own layer, so the tablets' forced windows show where (Material's menus, windows
+            // of their own, weren't scaled with them).
+            assertThePanel(case, wide = size == PHONE_LANDSCAPE)
+            assertTheDronePanel(case, wide = size == PHONE_LANDSCAPE)
         }
     }
 
@@ -637,7 +637,7 @@ class ScalesScreenTest {
             assertTrue("$case on its side the notes beside the sounds", left(firstNote) > left(PracticeTestTags.droneSound(DroneSound.TANPURA)))
         } else {
             assertTrue("$case upright the notes under the sounds", top(firstNote) > sounds.last())
-            if (under) assertMenuUnder(node(PracticeTestTags.DRONE_SOUND), node(PracticeTestTags.droneSound(DroneSound.TANPURA)), case)
+            if (under) assertPanelUnder(node(PracticeTestTags.DRONE_SOUND), node(PracticeTestTags.DRONE_PANEL), node(WINDOW), case)
         }
         assertTrue("$case Lower under the notes", top(PracticeTestTags.DRONE_LOWER) > top(PracticeTestTags.droneVoicing(DroneVoicing.FIFTH_OCTAVE)))
         if (texts) {
@@ -819,8 +819,14 @@ class ScalesScreenTest {
         assertTrue("$case seven rows, each right under the one before $rows", rows.size == 7 && steps.all { it > 0f } && steps.toSet().size == 1)
         val sizes = ScaleType.entries.map { node(scale(it)).fetchSemanticsNode().size }.toSet()
         assertEquals("$case every scale button of one size", 1, sizes.size)
-        // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
-        if (!wide) assertMenuUnder(picker(), node(PracticeTestTags.root(PitchClass.C)), case)
+        // Upright under the name; on its side over the start half, from its top.
+        val panel = node(PracticeTestTags.NAME_PANEL).getBoundsInRoot()
+        val window = node(WINDOW).getBoundsInRoot()
+        if (!wide) {
+            assertPanelUnder(picker(), node(PracticeTestTags.NAME_PANEL), node(WINDOW), case)
+        } else {
+            assertTrue("$case the panel $panel over the start half of $window", panel.left < (window.left + window.right) / 2 && panel.top < picker().getBoundsInRoot().top)
+        }
         for (pitch in PitchClass.entries) assertWhollyShown(node(PracticeTestTags.root(pitch)), "$case root $pitch")
         for (type in ScaleType.entries) assertWhollyShown(node(PracticeTestTags.scale(type)), "$case scale $type")
         if (texts) {

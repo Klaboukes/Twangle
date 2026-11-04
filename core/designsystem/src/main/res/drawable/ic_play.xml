@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ▶, Twangle's one play sign (Phase 77): the metronome's Start, Ear training's replay, the drone. A filled triangle,
+     its corners softened by a 2-unit round-joined stroke (the drone's and Ear training's, which drew it by hand until
+     then; the metronome's had sharp corners, docs/design/metronome-nav-preview.html). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineJoin="round"
+        android:pathData="M8,5.5L19,12L8,18.5z" />
+</vector>

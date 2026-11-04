@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit
 /**
  * The player's own tunings in the instrument-and-tuning panel, in Ink, in Dutch at
  * 2× text (the longest words at the largest size): the heading, the longest name a tuning may have
- * and its ⋮ button are wholly shown, the button beside the name and inside its row.
+ * and its ⋯ button are wholly shown, the button beside the name and inside its row.
  */
 @RunWith(AndroidJUnit4::class)
 class MyTuningsStylesTest {
@@ -101,11 +101,11 @@ class MyTuningsStylesTest {
             val name = compose.onNode(hasText(mine.name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(mine.id))), useUnmergedTree = true)
             assertWhollyShown(name, "${mine.name}")
             val menu = compose.onNodeWithTag(TunerTestTags.customTuningMenu(mine.id))
-            assertWhollyShown(menu, "⋮ of ${mine.name}")
+            assertWhollyShown(menu, "⋯ of ${mine.name}")
             val row = compose.onNodeWithTag(TunerTestTags.customTuning(mine.id)).getBoundsInRoot()
             val button = menu.getBoundsInRoot()
-            if (button.left < row.left - SLACK || button.right > row.right + SLACK) fail("⋮ $button is outside its row $row")
-            if (name.getBoundsInRoot().right > button.left + SLACK) fail("${mine.name} runs under its ⋮ button")
+            if (button.left < row.left - SLACK || button.right > row.right + SLACK) fail("⋯ $button is outside its row $row")
+            if (name.getBoundsInRoot().right > button.left + SLACK) fail("${mine.name} runs under its ⋯ button")
         }
     }
 
@@ -116,7 +116,7 @@ class MyTuningsStylesTest {
         val shown = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(longest.id))), useUnmergedTree = true)
         assertWhollyShown(shown, "$name")
         val button = compose.onNodeWithTag(TunerTestTags.customTuningMenu(longest.id)).getBoundsInRoot()
-        if (shown.getBoundsInRoot().right > button.left + SLACK) fail("$name runs under its ⋮ button")
+        if (shown.getBoundsInRoot().right > button.left + SLACK) fail("$name runs under its ⋯ button")
     }
 
     companion object {

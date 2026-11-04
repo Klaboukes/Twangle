@@ -89,6 +89,9 @@ object PracticeTestTags {
     /** The chord's or the scale's full name over its chart or neck ("C suspended second ⌄", "A minor pentatonic ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
     const val NAME_PICKER = "practice_name_picker"
 
+    /** That panel (the shared floating panel, Phase 77). */
+    const val NAME_PANEL = "practice_name_panel"
+
     /** The drone button on Scales (Phase 48): its ▶ / ■ half, and its other half with the sound's icon, which opens the drone panel. */
     const val DRONE_PLAY = "practice_drone_play"
     const val DRONE_SOUND = "practice_drone_sound"
@@ -112,6 +115,9 @@ object PracticeTestTags {
 
     /** The Capo helper's "Shapes I play" button, which opens the list of shapes. */
     const val CAPO_SHAPES = "practice_capo_shapes"
+
+    /** That list (the shared floating panel, Phase 77). */
+    const val CAPO_SHAPES_PANEL = "practice_capo_shapes_panel"
 
     /** An entry of the shapes' list, e.g. "practice_capo_shapes_a_minor". */
     fun capoShapes(shapes: SongKey): String = CAPO_SHAPES + "_" + shapes.tonic.name.lowercase() + if (shapes.minor) "_minor" else ""

@@ -13,23 +13,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -37,16 +32,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -55,10 +49,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,8 +60,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
-import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
+import io.github.klaboukes.twangle.core.designsystem.PANEL_ROW_INSET
+import io.github.klaboukes.twangle.core.designsystem.PanelEdge
+import io.github.klaboukes.twangle.core.designsystem.PanelLabel
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
+import io.github.klaboukes.twangle.core.designsystem.SwitchRow
+import io.github.klaboukes.twangle.core.designsystem.WholeWordsAutoSize
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
@@ -108,7 +105,8 @@ internal fun droneRootHz(root: PitchClass, a4Hz: Float): Float = NoteMapper(a4Hz
 /**
  * The split button, [DRONE_BUTTON_WIDTH] wide and [height] tall (the name button's): one pill split in two as the
  * segmented switch is (Phase 75, the one look; until then two rounded boxes side by side), ▶ on its start half while
- * the drone is still, ■ on the accent while it sounds ([playing]), a tap calling [onPlayStop]; then [sound]'s icon with
+ * the drone is still, ■ on the accent while it sounds ([playing]; the app's one ▶ and ■, `ic_play` and `ic_stop`, since
+ * Phase 77), a tap calling [onPlayStop]; then [sound]'s icon with
  * ⌄, a tap calling [onOpenPanel]. One thin outline round the whole pill and a line where the halves meet, in the
  * buttons' muted outline colour ([controlOutline]); each half lights on its own when pressed. Both halves keep their
  * size whatever plays. TalkBack hears "Play the drone" or "Stop the drone", and "Drone sound: Tanpura" as a drop-down
@@ -149,7 +147,7 @@ internal fun DroneButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                if (playing) STOP_ICON else PLAY_ICON,
+                painterResource(if (playing) DesignR.drawable.ic_stop else DesignR.drawable.ic_play),
                 contentDescription = null,
                 tint = if (playing) scheme.onPrimary else scheme.onBackground,
                 // Nudged towards the round end, so the icon looks in the middle of its half.
@@ -191,70 +189,56 @@ private val START_HALF = RoundedCornerShape(topStartPercent = 50, topEndPercent 
 private val END_HALF = RoundedCornerShape(topStartPercent = 0, topEndPercent = 50, bottomEndPercent = 50, bottomStartPercent = 0)
 
 /**
- * The drone panel, [expanded] or not, a [FloatingMenu] under the place it is put in, as the name button's panel:
- * "Sound" over the four sounds with their icons (tanpura, harmonium, flute organ, warm pad), "Notes" over Root,
- * + fifth and + fifth and octave, then the Lower switch; the picked ones in the container colour with an accent
- * outline and a ✓ ([ChoiceRow]). One column, at most [width] wide; [wide] (on its side, over the empty start half, 380 dp wide even where the half is narrower) in two columns, the
- * sounds beside the notes. A pick calls [onChoiceChange] and leaves the panel open, so another can be heard (the
- * drone crossfades to it while it sounds); Back or a tap beside it calls [onDismiss]. On a short screen it scrolls.
- * TalkBack hears it by name ("Drone"), the sounds and the notes as radio groups and Lower as a switch.
+ * The drone panel, [expanded] or not: the shared floating panel ([FloatingPanel], Phase 77; Material's menu in the same
+ * look until then) opening from [anchor] as the name button's panel: "Sound" over the four sounds with their icons
+ * (tanpura, harmonium, flute organ, warm pad), "Notes" over Root, + fifth and + fifth and octave, then the Lower switch
+ * ([SwitchRow]); the picked ones in the container colour with an accent outline and a ✓ ([ChoiceRow]). One column,
+ * [width] wide; [wide] (on its side, over the empty start half, 380 dp wide even where the half is narrower) in two
+ * columns, the sounds beside the notes. A pick calls [onChoiceChange] and leaves the panel open, so another can be
+ * heard (the drone crossfades to it while it sounds); Back or a tap beside it calls [onDismiss]. On a short screen it
+ * scrolls. TalkBack hears it by name ("Drone"), the sounds and the notes as radio groups and Lower as a switch.
  */
 @Composable
 internal fun DronePanel(
     expanded: Boolean,
     onDismiss: () -> Unit,
+    anchor: Rect?,
     wide: Boolean,
     width: Dp,
     choice: DroneChoice,
     onChoiceChange: (DroneChoice) -> Unit,
 ) {
-    val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val context = LocalContext.current
-    val resources = LocalResources.current
-    val title = stringResource(R.string.practice_drone)
-    FloatingMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss,
-        // A window of its own: UI Automator finds its rows by tag only when it says so too (as the name button's panel).
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
+    val sounds = @Composable { Sounds(choice.sound) { onChoiceChange(choice.copy(sound = it)) } }
+    val notes = @Composable {
+        Notes(choice.voicing) { onChoiceChange(choice.copy(voicing = it)) }
+        SwitchRow(
+            stringResource(R.string.practice_drone_lower),
+            choice.lower,
+            { onChoiceChange(choice.copy(lower = it)) },
+            Modifier.padding(top = SECTION_GAP).testTag(PracticeTestTags.DRONE_LOWER),
+        )
+    }
+    FloatingPanel(
+        open = expanded,
+        anchor = anchor,
+        onDismiss = onDismiss,
+        title = stringResource(R.string.practice_drone),
+        // On its side always the two columns' width, also where the start half is narrower: a drone pick changes
+        // nothing on the neck it reaches over, and narrower columns left too little beside the icon and the ✓'s room
+        // (Russian "Фисгармония" at 2× text on a 700 × 330 dp phone broke inside the word, the overnight run of 2026-11-01).
+        width = if (wide) PANEL_WIDTH_WIDE else width,
+        edge = PanelEdge.START,
+        tag = PracticeTestTags.DRONE_PANEL,
     ) {
-        // The screen's density and language, as ScreenDensity gives a menu its density: a menu is a window of its own,
-        // which takes them from its own view. In the app they are the same; a test that shows another language
-        // (PhoneScreen) gets the panel in it too, so its texts are checked in every language.
-        CompositionLocalProvider(
-            LocalDensity provides density,
-            LocalConfiguration provides configuration,
-            LocalContext provides context,
-            LocalResources provides resources,
-        ) {
-            // A known width: a menu asks its content's intrinsic size. On its side always the two columns' width, also
-            // where the start half is narrower: a drone pick changes nothing on the neck it reaches over, and narrower
-            // columns left too little beside the icon and the ✓'s room (Russian "Фисгармония" at 2× text on a
-            // 700 × 330 dp phone broke inside the word, the overnight run of 2026-11-01).
-            val panelWidth = (if (wide) PANEL_WIDTH_WIDE else width) - PANEL_PADDING * 2
-            val sounds = @Composable { Sounds(choice.sound) { onChoiceChange(choice.copy(sound = it)) } }
-            val notes = @Composable {
-                Notes(choice.voicing) { onChoiceChange(choice.copy(voicing = it)) }
-                LowerSwitch(choice.lower) { onChoiceChange(choice.copy(lower = it)) }
+        if (wide) {
+            Row(horizontalArrangement = Arrangement.spacedBy(COLUMN_GAP)) {
+                Column(Modifier.weight(1f)) { sounds() }
+                Column(Modifier.weight(1f)) { notes() }
             }
-            val panel = Modifier
-                .testTag(PracticeTestTags.DRONE_PANEL)
-                .semantics { paneTitle = title }
-                .padding(horizontal = PANEL_PADDING)
-                .width(panelWidth)
-            if (wide) {
-                Row(panel, horizontalArrangement = Arrangement.spacedBy(COLUMN_GAP)) {
-                    Column(Modifier.weight(1f)) { sounds() }
-                    Column(Modifier.weight(1f)) { notes() }
-                }
-            } else {
-                Column(panel) {
-                    sounds()
-                    Spacer(Modifier.height(SECTION_GAP))
-                    notes()
-                }
-            }
+        } else {
+            sounds()
+            Spacer(Modifier.height(SECTION_GAP))
+            notes()
         }
     }
 }
@@ -302,40 +286,6 @@ private fun OptionRow(text: String, icon: ImageVector?, picked: Boolean, tag: St
             maxLines = 2,
             autoSize = remember(style.fontSize, smallest) { WholeWordsAutoSize(style.fontSize, smallest) },
         )
-    }
-}
-
-/** "Lower" with a switch at the end; the whole row toggles it. */
-@Composable
-private fun LowerSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
-    Row(
-        Modifier
-            .testTag(PracticeTestTags.DRONE_LOWER)
-            .padding(top = SECTION_GAP)
-            .fillMaxWidth()
-            .heightIn(min = SWITCH_ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium)
-            .toggleable(value = checked, interactionSource = source, indication = null, role = Role.Switch) {
-                source.pressFlash()
-                onCheckedChange(it)
-            }
-            .padding(start = ROW_PADDING, end = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        val style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp)
-        val smallest = with(LocalDensity.current) { MIN_TEXT_SIZE.toSp() }
-        Text(
-            stringResource(R.string.practice_drone_lower),
-            style = style,
-            color = scheme.onSurface,
-            maxLines = 2,
-            autoSize = remember(style.fontSize, smallest) { WholeWordsAutoSize(style.fontSize, smallest) },
-            modifier = Modifier.weight(1f).padding(vertical = 6.dp),
-        )
-        Spacer(Modifier.width(8.dp))
-        Switch(checked = checked, onCheckedChange = null)
     }
 }
 
@@ -469,24 +419,6 @@ private fun roundRect(x: Float, y: Float, w: Float, h: Float, r: Float): String 
     "M${x + r},${y}h${w - 2 * r}a$r,$r 0,0 1,$r,$r" + "v${h - 2 * r}a$r,$r 0,0 1,${-r},$r" +
         "h${-(w - 2 * r)}a$r,$r 0,0 1,${-r},${-r}" + "v${-(h - 2 * r)}a$r,$r 0,0 1,$r,${-r}z"
 
-/** ▶ and ■, filled, their corners softened, the same size so the button's face never changes but for them. */
-private val PLAY_ICON = filled("play", "M8,5.5L19,12L8,18.5z", round = true)
-private val STOP_ICON = filled("stop", "M8,6.5h8a1.5,1.5 0,0 1,1.5,1.5v8a1.5,1.5 0,0 1,-1.5,1.5h-8a1.5,1.5 0,0 1,-1.5,-1.5v-8a1.5,1.5 0,0 1,1.5,-1.5z", round = false)
-
-private fun filled(name: String, path: String, round: Boolean): ImageVector = ImageVector.Builder(
-    name = "drone_$name",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f,
-).addPath(
-    pathData = addPathNodes(path),
-    fill = SolidColor(Color.Black),
-    stroke = if (round) SolidColor(Color.Black) else null,
-    strokeLineWidth = if (round) 2f else 0f,
-    strokeLineJoin = StrokeJoin.Round,
-).build()
-
 private const val LINE = 1.8f
 private const val FAINT_ALPHA = 0.55f
 
@@ -500,11 +432,9 @@ private val CHEVRON_SIZE = 20.dp
 
 /** The panel on its side, in two columns (from the start half's start, over the neck where the half is narrower); upright it is one column as wide as the name's row. */
 private val PANEL_WIDTH_WIDE = 380.dp
-private val PANEL_PADDING = 8.dp
 private val COLUMN_GAP = 8.dp
 private val SECTION_GAP = 4.dp
-private val SWITCH_ROW_HEIGHT = 52.dp
-private val ROW_PADDING = 12.dp
+private val ROW_PADDING = PANEL_ROW_INSET
 
 /** In dp, so it holds at any font size. */
 private val MIN_TEXT_SIZE = 8.dp

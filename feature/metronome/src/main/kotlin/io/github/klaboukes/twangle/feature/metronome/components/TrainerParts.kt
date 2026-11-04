@@ -48,6 +48,7 @@ import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
+import io.github.klaboukes.twangle.core.designsystem.PanelLabel
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
@@ -59,7 +60,7 @@ import io.github.klaboukes.twangle.feature.metronome.R
  * The speed trainer (Phase 62; since Phase 75 a row of its own at the foot of the screen, the first 2.0
  * mock-up's `.trainer`, docs/design/fresh-start-preview.html): its name, what it does in words and its
  * switch; the row opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
- * floating panel over the row ([FloatingPanel]). Until Phase 75 it was a row in the options panel and its
+ * floating panel over the row (the shared [FloatingPanel]). Until Phase 75 it was a row in the options panel and its
  * words stood on the status line.
  */
 
@@ -255,7 +256,7 @@ internal fun TrainerSettings(
 @Composable
 private fun FaceRow(title: String, modifier: Modifier = Modifier, choices: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     Column(modifier) {
-        PanelHeading(title)
+        PanelLabel(title)
         Row(
             Modifier
                 .fillMaxWidth()

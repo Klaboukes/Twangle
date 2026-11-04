@@ -64,7 +64,7 @@ object TunerTestTags {
     /** The dialog that asks before one of the player's own tunings is deleted. */
     const val DELETE_TUNING_DIALOG = "tuner_delete_tuning_dialog"
 
-    /** One of the player's own tunings in the panel, by its id, and its ⋮ button (Edit, Delete). */
+    /** One of the player's own tunings in the panel, by its id, and its ⋯ button (Edit, Delete). */
     fun customTuning(id: String): String = "tuner_custom_tuning_$id"
     fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
 

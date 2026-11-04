@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -62,9 +63,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
-import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
+import io.github.klaboukes.twangle.core.designsystem.PanelEdge
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
@@ -72,6 +73,7 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -143,15 +145,10 @@ fun CapoScreen(
     }
 
     val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
-    val picker = @Composable {
-        ShapesPicker(shapes, notation, speech, onPick = { picked ->
-            val index = CAPO_SHAPES.indexOf(picked)
-            if (index != shapesIndex) {
-                shapesIndex = index
-                onShapesChange(picked)
-            }
-        })
-    }
+    var shapesOpen by remember { mutableStateOf(false) }
+    // Where the shapes button is, in the root's coordinates: the list opens under it.
+    var shapesButton by remember { mutableStateOf<Rect?>(null) }
+    val picker = @Composable { ShapesPicker(shapes, notation, speech, onOpen = { shapesOpen = true }, onPlaced = { shapesButton = it }) }
     val stepper = @Composable { tight: Boolean ->
         CapoStepper(fret, spokenSoundsIn, step, if (tight) STEP_BUTTON_SIZE else STEPPER_HEIGHT, dimmed = shortString)
     }
@@ -289,54 +286,90 @@ fun CapoScreen(
                 }
             }
         }
+        // The list floats on its own layer over the screen.
+        ShapesPanel(
+            open = shapesOpen,
+            anchor = shapesButton,
+            shapes = shapes,
+            notation = notation,
+            speech = speech,
+            onPick = { picked ->
+                val index = CAPO_SHAPES.indexOf(picked)
+                if (index != shapesIndex) {
+                    shapesIndex = index
+                    onShapesChange(picked)
+                }
+            },
+            onDismiss = { shapesOpen = false },
+        )
     }
 }
 
 /**
  * "Shapes I play" over Twangle's one picker face ([NamePickerButton], Phase 63) showing the key of the
  * shapes picked in words ("C major ⌄", "A minor ⌄"; until Phase 63 a small 132 dp button with "C ▾"), as
- * wide as the table under it; a tap opens the list of [CAPO_SHAPES]. TalkBack hears the button as a list
- * with what is picked, each entry in words ("A minor").
+ * wide as the table under it; a tap calls [onOpen] to open the list of [CAPO_SHAPES] ([ShapesPanel]) under it,
+ * [onPlaced] telling the screen where it is. TalkBack hears the button as a list with what is picked.
  */
 @Composable
-private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSpeech, onPick: (SongKey) -> Unit) {
-    var open by remember { mutableStateOf(false) }
-    val spoken = stringResource(R.string.practice_capo_shapes_spoken, keyWords(shapes, notation, speech))
+private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSpeech, onOpen: () -> Unit, onPlaced: (Rect) -> Unit) {
+    NamePickerButton(
+        name = keyWords(shapes, notation),
+        spoken = stringResource(R.string.practice_capo_shapes_spoken, keyWords(shapes, notation, speech)),
+        onClick = onOpen,
+        caption = stringResource(R.string.practice_capo_shapes),
+        faceModifier = Modifier.testTag(PracticeTestTags.CAPO_SHAPES).panelAnchor(onPlaced),
+        modifier = Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth(),
+    )
+}
+
+/**
+ * The list of [CAPO_SHAPES] while [open], on the shared floating panel ([FloatingPanel], Phase 77; Material's menu in
+ * the same look until then) under the shapes button ([anchor]), from its start and as wide as it (at least
+ * [SHAPES_MENU_WIDTH]): the keys in words as the button writes them, [shapes] in bold in the accent. A pick calls
+ * [onPick] and closes it; Back or a tap beside it calls [onDismiss]. TalkBack hears it as "Shapes I play", each entry
+ * in words ("A minor").
+ */
+@Composable
+private fun ShapesPanel(
+    open: Boolean,
+    anchor: Rect?,
+    shapes: SongKey,
+    notation: Notation,
+    speech: NoteNameSpeech,
+    onPick: (SongKey) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val words = CAPO_SHAPES.associateWith { keyWords(it, notation, speech) }
-    Box {
-        NamePickerButton(
-            name = keyWords(shapes, notation),
-            spoken = spoken,
-            onClick = { open = true },
-            caption = stringResource(R.string.practice_capo_shapes),
-            faceModifier = Modifier.testTag(PracticeTestTags.CAPO_SHAPES),
-            modifier = Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth(),
-        )
-        val density = LocalDensity.current
-        // Under the box, from its start, the keys in words as the box writes them.
-        FloatingMenu(expanded = open, onDismissRequest = { open = false }) {
-            ScreenDensity(density) {
-                for (option in CAPO_SHAPES) {
-                    val picked = option == shapes
-                    TwangleMenuItem(
-                        text = {
-                            Text(
-                                musicText(keyWords(option, notation)),
-                                fontWeight = if (picked) FontWeight.Bold else null,
-                                color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            )
-                        },
-                        onClick = {
-                            open = false
-                            onPick(option)
-                        },
-                        modifier = Modifier
-                            .widthIn(min = SHAPES_MENU_WIDTH)
-                            .testTag(PracticeTestTags.capoShapes(option))
-                            .semantics { contentDescription = words.getValue(option) },
+    val width = with(LocalDensity.current) { (anchor?.width ?: 0f).toDp() }
+    FloatingPanel(
+        open = open,
+        anchor = anchor,
+        onDismiss = onDismiss,
+        title = stringResource(R.string.practice_capo_shapes),
+        width = maxOf(width, SHAPES_MENU_WIDTH),
+        edge = PanelEdge.START,
+        tag = PracticeTestTags.CAPO_SHAPES_PANEL,
+    ) {
+        for (option in CAPO_SHAPES) {
+            val picked = option == shapes
+            TwangleMenuItem(
+                text = {
+                    Text(
+                        musicText(keyWords(option, notation)),
+                        fontWeight = if (picked) FontWeight.Bold else null,
+                        color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     )
-                }
-            }
+                },
+                onClick = {
+                    onDismiss()
+                    onPick(option)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(PracticeTestTags.capoShapes(option))
+                    .semantics { contentDescription = words.getValue(option) },
+            )
         }
     }
 }

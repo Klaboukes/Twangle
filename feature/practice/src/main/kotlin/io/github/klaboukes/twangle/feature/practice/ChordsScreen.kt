@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -66,6 +67,7 @@ import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
@@ -191,10 +193,11 @@ fun ChordsScreen(
         }
         if (dronePlaying) KeepScreenOnWhileDroning()
     }
-    val dronePanel = @Composable { wide: Boolean, width: Dp ->
+    val dronePanel = @Composable { anchor: Rect?, wide: Boolean, width: Dp ->
         DronePanel(
             expanded = dronePanelOpen,
             onDismiss = { dronePanelOpen = false },
+            anchor = anchor,
             wide = wide,
             width = width,
             choice = droneChoice,
@@ -209,10 +212,15 @@ fun ChordsScreen(
 
     val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
     var panelOpen by remember { mutableStateOf(false) }
-    val panel = @Composable { width: Dp ->
+    // Where the panels open from: the name's row (upright, and on a tablet on its side) or the top of the start half
+    // (a phone on its side), in the root's coordinates.
+    var nameRow by remember { mutableStateOf<Rect?>(null) }
+    var startHalf by remember { mutableStateOf<Rect?>(null) }
+    val panel = @Composable { anchor: Rect?, width: Dp ->
         ChordPanel(
             expanded = panelOpen,
             onDismiss = { panelOpen = false },
+            anchor = anchor,
             width = width,
             scales = scales,
             root = root,
@@ -243,8 +251,8 @@ fun ChordsScreen(
             },
         )
     }
-    // Upright the panel opens right under the name; on its side over the start half ([wide]), so it hides neither the name nor the chart.
-    val name = @Composable { wide: Boolean ->
+    // Upright the panel opens right under the name; on its side over the start half, so it hides neither the name nor the chart.
+    val name = @Composable {
         ChordNameButton(
             scales = scales,
             root = root,
@@ -254,10 +262,7 @@ fun ChordsScreen(
             onClick = { panelOpen = true },
             // Upright both panels drop under the whole row, as wide as it, so nothing of the neck shows beside them
             // (the owner's report of 2026-10-26); on its side they open over the start half.
-            panel = if (wide) { _ -> } else { rowWidth ->
-                panel(rowWidth)
-                if (droning) dronePanel(false, rowWidth)
-            },
+            onRowPlaced = { nameRow = it },
             endWidth = if (listens) NAME_PICKER_HEIGHT else DRONE_BUTTON_WIDTH,
             end = if (listens && chordListener != null) {
                 { height, _ ->
@@ -332,7 +337,7 @@ fun ChordsScreen(
                     Row(Modifier.fillMaxWidth()) {
                         Box(Modifier.weight(1f)) { topRow() }
                         Spacer(Modifier.width(16.dp))
-                        Box(Modifier.weight(1f)) { name(false) }
+                        Box(Modifier.weight(1f)) { name() }
                     }
                     Spacer(Modifier.height(8.dp))
                 },
@@ -345,20 +350,21 @@ fun ChordsScreen(
             // Scales' drone button) in the middle of the height it leaves, the chart or the neck in the end half.
             Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        // The panels' place: from the top of the start half down, over the top row and the name, with
+                        // all the height for their choices; the chart beside them shows each pick.
+                        .panelAnchor { startHalf = Rect(it.left, it.top, it.right, it.top) }
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    // The panels' place: from the top of the start half down, over the top row and the name, with
-                    // all the height for their choices; the chart beside them shows each pick.
-                    BoxWithConstraints(Modifier.fillMaxWidth()) {
-                        panel(maxWidth)
-                        if (droning) dronePanel(true, maxWidth)
-                    }
                     Spacer(Modifier.height(TOP_BAR_TOP))
                     topRow()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(12.dp))
-                    name(true)
+                    name()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp))
                 }
@@ -391,7 +397,7 @@ fun ChordsScreen(
                         Spacer(Modifier.height(TOP_BAR_TOP))
                         topRow()
                         Spacer(Modifier.height(8.dp * gap))
-                        name(false)
+                        name()
                         Spacer(Modifier.height(4.dp * gap))
                     },
                     fill = fill,
@@ -399,6 +405,12 @@ fun ChordsScreen(
                 )
             }
         }
+        // The panels float on their own layer over the screen (the shared FloatingPanel).
+        val sideways = layout == PracticeLayout.HALVES
+        val anchor = if (sideways) startHalf else nameRow
+        val anchorWidth = with(LocalDensity.current) { (anchor?.width ?: 0f).toDp() }
+        panel(anchor, anchorWidth)
+        if (droning) dronePanel(anchor, sideways, anchorWidth)
     }
 }
 

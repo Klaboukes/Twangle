@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 /**
  * One choice of a list: [content] (a name, or a name over a line, in [LocalContentColor]) with the ✓
  * at the end when [selected]; the ✓'s room is kept on every row, so a name never moves when picked.
- * The whole row but [trailing] picks it ([onClick]); [trailing] (the tuning sheet's ⋮ for the player's
+ * The whole row but [trailing] picks it ([onClick]); [trailing] (the tuning sheet's ⋯ for the player's
  * own tunings) sits at the very end, outside the part that picks. At least [minHeight] tall (48 dp).
  * [spoken] replaces what TalkBack hears of [content].
  */
@@ -84,7 +84,7 @@ fun ChoiceRow(
                 .weight(1f)
                 .heightIn(min = minHeight)
                 .then(if (trailing != null) pick else Modifier)
-                .padding(start = 12.dp, end = if (trailing != null) 4.dp else 12.dp, top = 6.dp, bottom = 6.dp),
+                .padding(start = PANEL_ROW_INSET, end = if (trailing != null) 4.dp else PANEL_ROW_INSET, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {

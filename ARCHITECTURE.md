@@ -202,7 +202,7 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     ListenPermission (rememberListenPermission), BetweenLights
     components/ TempoParts (TempoHeading: − tempo + and its words, markingName), TempoRuler (the ruler to drag),
     MetronomeControls (MeterChoice, SoundChoice, BigButtons: Tap the beat and Start),
-    OptionsParts (FloatingPanel, SubdivisionChoice, VibrateSwitch, ListenRow),
+    OptionsParts (SubdivisionChoice, VibrateSwitch, ListenRow; the panel is :core:designsystem's FloatingPanel),
     TrainerParts (TrainerRow, TrainerSettings, trainerStatus), ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/

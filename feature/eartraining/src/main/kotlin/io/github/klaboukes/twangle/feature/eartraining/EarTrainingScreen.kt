@@ -45,14 +45,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -89,6 +86,7 @@ import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
@@ -456,7 +454,7 @@ private fun ReplayButton(onReplay: () -> Unit) {
         main = true,
     ) {
         // Nudged right, so the triangle looks centred in the face.
-        Icon(PLAY_ICON, contentDescription = null, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
+        Icon(painterResource(DesignR.drawable.ic_play), contentDescription = null, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
     }
 }
 
@@ -692,21 +690,6 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
-
-/** ▶, filled, its corners softened (as the drone button's). */
-private val PLAY_ICON: ImageVector = ImageVector.Builder(
-    name = "ear_replay",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f,
-).addPath(
-    pathData = addPathNodes("M8,5.5L19,12L8,18.5z"),
-    fill = SolidColor(Color.Black),
-    stroke = SolidColor(Color.Black),
-    strokeLineWidth = 2f,
-    strokeLineJoin = StrokeJoin.Round,
-).build()
 
 /** Under the exercise row: 24 dp less the 4 dp the options button's 52 dp face adds to the row, so the ▶ keeps its place. */
 private val QUESTION_TOP = 20.dp

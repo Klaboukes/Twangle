@@ -47,7 +47,7 @@ import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
-import io.github.klaboukes.twangle.core.testing.assertMenuUnder
+import io.github.klaboukes.twangle.core.testing.assertPanelUnder
 import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -140,7 +140,7 @@ class ChordsScreenTest {
         picker().assertTextEquals(words)
     }
 
-    /** Opens the panel and waits for it: a window of its own. */
+    /** Opens the panel and waits for it: it comes with a short fade. */
     private fun openPanel() {
         picker().performClick()
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.root(PitchClass.C)) }
@@ -152,7 +152,7 @@ class ChordsScreenTest {
         awaitPanelClosed()
     }
 
-    /** Waits for the panel to go: a window of its own, it goes with a short animation. */
+    /** Waits for the panel to go: it goes with a short fade. */
     private fun awaitPanelClosed() {
         compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.root(PitchClass.C)) }
     }
@@ -526,8 +526,9 @@ class ChordsScreenTest {
             if (size.width < size.height) {
                 assertEquals("$case the chip in the row's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
             }
-            // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not.
-            assertThePanel(case, wide = size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT)
+            // On a tablet the panel drops under the name, on its side too (Phase 52); since Phase 77 it floats on the screen's
+            // own layer, so the tablets' forced windows show where (Material's menu, a window of its own, wasn't scaled with them).
+            assertThePanel(case, wide = size == PHONE_LANDSCAPE)
             val chart = chart().getBoundsInRoot()
             // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp; the banjo's, a fret row taller, 194 dp).
             val least = if (tuning.hasShortString) 194.dp else if (size == PHONE_UPRIGHT) 156.dp else 170.dp
@@ -591,8 +592,14 @@ class ChordsScreenTest {
         val first = top(PracticeTestTags.root(PitchClass.C))
         val second = top(PracticeTestTags.root(PitchClass.F_SHARP))
         assertTrue("$case roots in two rows of six", top(PracticeTestTags.root(PitchClass.F)) == first && second > first && top(PracticeTestTags.root(PitchClass.B)) == second)
-        // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
-        if (!wide) assertMenuUnder(picker(), node(PracticeTestTags.root(PitchClass.C)), case)
+        // Upright under the name; on its side over the start half, from its top.
+        val panel = node(PracticeTestTags.NAME_PANEL).getBoundsInRoot()
+        val window = node(WINDOW).getBoundsInRoot()
+        if (!wide) {
+            assertPanelUnder(picker(), node(PracticeTestTags.NAME_PANEL), node(WINDOW), case)
+        } else {
+            assertTrue("$case the panel $panel over the start half of $window", panel.left < (window.left + window.right) / 2 && panel.top < picker().getBoundsInRoot().top)
+        }
         val types = top(PracticeTestTags.type(ChordQuality.MAJOR))
         assertTrue("$case the types under the roots", types > second)
         // C to C7, Cmaj7 to Csus4, C7sus4 to Cadd9, C9 to C7♯9, Cdim to Caug.
@@ -625,8 +632,8 @@ class ChordsScreenTest {
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
                 compose.assertEveryTextWhollyShown("$language $size at 2x:")
                 compose.assertNoWordBroken("$language $size at 2x:")
-                // The panel is a window of its own: Back with it shut would close the activity, and a tap while the last
-                // one is still going away only shuts that one (the Retro run, 2026-10-19). So wait for it both ways.
+                // Back with the panel shut would close the activity, and a tap while the last one is still going away only
+                // shuts that one (the Retro run, 2026-10-19, when it was a window of its own). So wait for it both ways.
                 openPanel()
                 compose.assertEveryTextWhollyShown("$language $size at 2x, panel:")
                 compose.assertNoWordBroken("$language $size at 2x, panel:")

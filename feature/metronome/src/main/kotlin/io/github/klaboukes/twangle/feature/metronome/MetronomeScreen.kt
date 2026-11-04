@@ -68,6 +68,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
 import io.github.klaboukes.twangle.core.designsystem.MoreButton
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
@@ -87,7 +88,6 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.components.BigButtons
-import io.github.klaboukes.twangle.feature.metronome.components.FloatingPanel
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
 import io.github.klaboukes.twangle.feature.metronome.components.ListenLine
 import io.github.klaboukes.twangle.feature.metronome.components.ListenRow
@@ -345,7 +345,7 @@ class BeatClock {
  * end half under the options button, which stands as far from the window's side as the tuner's focus mode
  * button there. The rail names the tab on its side, so no [title] shows.
  *
- * The options button opens a panel ([FloatingPanel]) under it with the clicks between the beats
+ * The options button opens the shared floating panel ([FloatingPanel]) under it with the clicks between the beats
  * ([subdivision], [onSubdivisionPick]), "Vibrate on the beat" ([onVibrateChange]) and Listen ([onListen],
  * which closes the panel); what is on in it shows as small icons on the status line ([StatusMark]). A
  * sound picked ([onSoundPick]) plays one bar while stopped, and is heard from the next beat while
@@ -626,12 +626,13 @@ fun MetronomeContent(
                         onNotNow = onNotNow,
                         modifier = Modifier.fillMaxSize(),
                     )
+                    // Under the ⋯ (or over it, low on the screen), their ends in line.
                     FloatingPanel(
                         open = optionsOpen,
-                        anchor = options,
-                        title = stringResource(R.string.metronome_options),
+                        anchor = optionsBounds,
                         onDismiss = { optionsOpen = false },
-                        modifier = Modifier.fillMaxSize(),
+                        title = stringResource(R.string.metronome_options),
+                        tag = MetronomeTestTags.OPTIONS_PANEL,
                     ) {
                         SubdivisionChoice(subdivision, meter, onSubdivisionPick)
                         VibrateSwitch(vibrate, onVibrateChange, Modifier.padding(top = 4.dp))
@@ -646,10 +647,9 @@ fun MetronomeContent(
                     if (trainer != null) {
                         FloatingPanel(
                             open = trainerOpen,
-                            anchor = trainerBounds?.translate(-layerOrigin),
-                            title = stringResource(R.string.metronome_trainer),
+                            anchor = trainerBounds,
                             onDismiss = { trainerOpen = false },
-                            modifier = Modifier.fillMaxSize(),
+                            title = stringResource(R.string.metronome_trainer),
                             tag = MetronomeTestTags.TRAINER_PANEL,
                         ) {
                             TrainerSettings(plan = trainer.plan, on = trainer.on, onOnChange = onTrainerOn, onPlan = onTrainerPlan)

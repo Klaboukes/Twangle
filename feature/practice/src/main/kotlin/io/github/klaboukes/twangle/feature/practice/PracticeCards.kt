@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
+import io.github.klaboukes.twangle.core.designsystem.WholeWordsAutoSize
 import io.github.klaboukes.twangle.core.designsystem.breakableAtHyphens
 import io.github.klaboukes.twangle.core.designsystem.koreanWordsKeptWhole
 import io.github.klaboukes.twangle.core.designsystem.musicText

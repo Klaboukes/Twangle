@@ -98,7 +98,7 @@ import kotlinx.coroutines.launch
  * (the tuner switches to its standard tuning) and keeps the sheet open; picking a tuning calls
  * [onTuningChange] and closes it. [onDismiss] is called once it has closed (a pick, a tap outside, a
  * swipe down or Back). [customTunings] are the player's own tunings; the sheet lists the instrument's
- * under its presets ([MyTunings]), each with a ⋮ menu: Edit closes the sheet and calls [onEditTuning]
+ * under its presets ([MyTunings]), each with a ⋯ menu: Edit closes the sheet and calls [onEditTuning]
  * (the tuning editor), Delete asks first and then calls [onDeleteTuning] (no menu entry without its
  * lambda). With [onNewTuning], the list ends in "New tuning", which closes the sheet and calls it with
  * the instrument shown (the tuning editor again). With [onLoweredByChange], a quiet "Lower by" row
@@ -608,7 +608,7 @@ private fun InstrumentChip(name: String, selected: Boolean, onClick: () -> Unit,
 /**
  * A tuning in the panel: its [name] over its open strings on the shared [ChoiceRow], the [selected]
  * one in the container colour with the accent outline and ticked. TalkBack says the name and the strings ("Half step down, E flat, A flat …"). The
- * player's own tunings put their ⋮ button in [trailing], at the end, outside the part that picks it.
+ * player's own tunings put their ⋯ button in [trailing], at the end, outside the part that picks it.
  */
 @Composable
 internal fun TuningRow(
