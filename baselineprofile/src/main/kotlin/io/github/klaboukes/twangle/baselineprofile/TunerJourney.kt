@@ -32,6 +32,7 @@ private const val PRACTICE_SCALES_TAG = "practice_card_scales"
 private const val PRACTICE_CAPO_TAG = "practice_card_capo"
 private const val PRACTICE_EAR_TRAINING_TAG = "practice_card_ear_training"
 private const val EAR_TRAINING_TAG = "ear_training"
+private const val EAR_EXERCISE_TAG = "ear_exercise_picker"
 private const val EAR_INTERVALS_TAG = "ear_exercise_intervals"
 private const val EAR_CHORD_TYPE_TAG = "ear_exercise_chord_type"
 private const val EAR_REPLAY_TAG = "ear_replay"
@@ -173,6 +174,7 @@ fun MacrobenchmarkScope.usePractice() {
     check(device.wait(Until.hasObject(By.res(EAR_TRAINING_TAG)), TIMEOUT_MS)) { "Ear training didn't open" }
     Thread.sleep(SHOW_MS) // Its first question (Play it back listens: the tuner's pitch pipeline runs).
     for (exercise in listOf(EAR_INTERVALS_TAG, EAR_CHORD_TYPE_TAG)) {
+        clickTag(EAR_EXERCISE_TAG) // The exercise's pill opens the three in its panel; a pick closes it.
         clickTag(exercise)
         clickTag(EAR_REPLAY_TAG)
         Thread.sleep(SHOW_MS)

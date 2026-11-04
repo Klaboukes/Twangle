@@ -425,7 +425,7 @@ class PracticeTabTest {
             openPractice()
             openTool(PracticeTool.EAR_TRAINING)
             assertTrue("Ear training shows", shown(EarTrainingTestTags.SCREEN))
-            assertTrue("with its three exercises", Exercise.entries.all { shown(EarTrainingTestTags.exercise(it)) })
+            assertTrue("with its exercise's pill", shown(EarTrainingTestTags.EXERCISE))
             assertEquals("the pick is saved", PracticeTool.EAR_TRAINING, waitForSaved(PracticeTool.EAR_TRAINING))
             assertTrue("its first question sounds at once", waitFor { tone.played.size == 1 })
             assertTrue("in the guitar's voice", tone.voices.single() == Instruments.GUITAR.voice)

@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Twangle's one picker face for a name (Phase 63, docs/architecture/ui.md *Shared controls*): the chord
- * on Chords, the scale on Scales, the shapes on the Capo helper. One wide pill, as wide as [modifier]
+ * on Chords, the scale on Scales, the shapes on the Capo helper, Ear training's exercise (Phase 77). One wide pill, as wide as [modifier]
  * makes it, on the see-through face of Twangle's buttons ([faceFill], [faceOutline]) in their round shape
  * (Phase 75: the one look's capsule, as the picker chip above it and the metronome's big buttons; until
  * then the style's `shapes.small`, a rounded box) with Twangle's press effect, the full [name] on
@@ -167,6 +167,12 @@ internal class NameAutoSize(
  * Phase 63, the Capo helper's 40 dp in a 48 dp touch area.
  */
 val NAME_PICKER_HEIGHT = 56.dp
+
+/**
+ * A name pill under a top row is as wide as the row, at most this wide (a tablet), centred, its panel as wide: Chords'
+ * and Scales' name, Ear training's exercise (Phase 77), so switching between the Practice tools moves nothing.
+ */
+val NAME_PICKER_MAX_WIDTH = 400.dp
 
 /** The name keeps this far from the pill's ends, clear of their curve. */
 private val NAME_PICKER_PADDING = 20.dp

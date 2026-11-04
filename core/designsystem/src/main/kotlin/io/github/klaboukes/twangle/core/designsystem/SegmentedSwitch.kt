@@ -46,7 +46,8 @@ import androidx.compose.ui.unit.sp
  * [onSelect]. The tuner's mode switch (Strings · Chromatic) is this switch (the Practice tab's tool switch was too, until Phase 47 gave it a tool button). Each
  * segment shows [label] on one line, all of them shrinking to one size where the widest must, and carries the test tag [tag].
  * TalkBack hears the segments as radio buttons by their labels, the picked one selected, or by [spoken]
- * where a short word stands for a longer name (Ear training's exercises: "Play back" for "Play it back").
+ * where a label is said otherwise than written (the metronome's meters: "Six-eight time" for "6/8"; Ear training's
+ * exercises, "Play back" for "Play it back", until Phase 77 gave them a name pill).
  * With [icon] each segment shows its icon in place of the label (the metronome's click sounds, Phase 75),
  * [ICON_SIZE] across, and TalkBack hears the label as its name.
  */

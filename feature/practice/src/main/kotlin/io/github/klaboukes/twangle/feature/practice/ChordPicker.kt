@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_MAX_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.PanelEdge
 import io.github.klaboukes.twangle.core.designsystem.PanelLabel
@@ -66,7 +67,7 @@ internal fun ChordNameButton(
     val name = if (scales) scaleWords(scale, notation) else chordWords(chord, notation)
     val spoken = if (scales) scaleWords(scale, notation, speech) else chordWords(chord, notation, speech)
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-        val width = minOf(maxWidth, NAME_ROW_MAX_WIDTH)
+        val width = minOf(maxWidth, NAME_PICKER_MAX_WIDTH)
         Row(Modifier.width(width).panelAnchor(onRowPlaced)) {
             NamePickerButton(
                 name = name,
@@ -88,7 +89,7 @@ internal fun ChordNameButton(
 /**
  * The name button's panel, [expanded] or not: the shared floating panel ([FloatingPanel], Phase 77; Material's menu in
  * the same look until then) opening from [anchor] (the name's row upright, from its start; on its side the top of the
- * start half), [width] wide (at most [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row ([RootPicker]),
+ * start half), [width] wide (at most [NAME_PICKER_MAX_WIDTH]): "Root" over the twelve roots six to a row ([RootPicker]),
  * then "Chord type" over the twenty chord types four to a row ([ChordTypePicker]) or, with [scales], the fourteen
  * scales two to a row in one list, the most used first ([ScaleTypePicker]), all on the shared pick buttons
  * ([PickGrid]). A pick (the one already picked too) closes it, so the chart or the neck shows it at once; changing
@@ -119,7 +120,7 @@ internal fun ChordPanel(
         anchor = anchor,
         onDismiss = onDismiss,
         title = stringResource(if (scales) R.string.practice_tool_scales else R.string.practice_tool_chords),
-        width = minOf(width, NAME_ROW_MAX_WIDTH),
+        width = minOf(width, NAME_PICKER_MAX_WIDTH),
         edge = PanelEdge.START,
         tag = PracticeTestTags.NAME_PANEL,
     ) {
@@ -240,11 +241,8 @@ private val ROOT_BUTTON_MAX_WIDTH = 56.dp
 private val TYPE_BUTTON_MAX_WIDTH = 84.dp
 private val SCALE_BUTTON_MAX_WIDTH = 180.dp
 
-/**
- * The name button: as wide as the row, at most this wide (the panel as wide); the panel's sections this far apart.
- */
-private val NAME_ROW_MAX_WIDTH = 400.dp
-
 /** Between the name and the part at the row's end (the drone button on Scales). */
 private val NAME_END_GAP = 8.dp
+
+/** The panel's sections this far apart. */
 private val SECTION_GAP = 4.dp

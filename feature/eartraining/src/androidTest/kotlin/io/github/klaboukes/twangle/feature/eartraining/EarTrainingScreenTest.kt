@@ -77,8 +77,8 @@ import org.junit.runner.RunWith
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Ear training screen (Phase 55) in Ink, from its state alone: the three exercises as words
- * TalkBack names in full, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
+ * The Ear training screen (Phase 55) in Ink, from its state alone: the exercise's name pill under the top row and
+ * the panel of the three it opens (upright and on its side), a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
  * and wrong shown gently with nothing moving; the "What is asked" ⋯ at the top row's end and the floating panel it
@@ -184,35 +184,104 @@ class EarTrainingScreenTest {
     private fun textOf(tag: String): String =
         node(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.Text) { emptyList() }.joinToString()
 
+    /**
+     * The exercise is a name pill under the top row, as Chords' name (Phase 77: until then a switch of three short
+     * words), opening the three exercises in the floating panel under it; a pick is passed on and closes it.
+     */
     @Test
-    fun talkBackNamesEachExerciseAndAPickIsPassedOn() {
+    fun theExercisePillOpensTheThreeExercisesAndAPickIsPassedOn() {
         show()
+        val pill = node(EarTrainingTestTags.EXERCISE)
+            .assert(hasText("Play it back"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Exercise: Play it back")))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
+            .assertIsDisplayed()
+        // As Chords' name: 8 dp under the top row, as wide as it (up to 400 dp), 56 dp high.
+        val row = node(TOP_ROW).getBoundsInRoot()
+        val at = pill.getBoundsInRoot()
+        assertEquals("8 dp under the top row", row.bottom.value + 8f, at.top.value, 0.5f)
+        assertEquals("as wide as the top row", row.width.value, at.width.value, 1f)
+        assertEquals("from its start", row.left.value, at.left.value, 1f)
+        assertEquals("the one picker height", 56f, at.height.value, 0.5f)
+        assertTrue("no panel yet", !exists(EarTrainingTestTags.EXERCISE_PANEL))
+
+        pill.performClick()
+        compose.waitForIdle()
+        node(EarTrainingTestTags.EXERCISE_PANEL)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Exercise"))
+        assertPanelUnder(pill, node(EarTrainingTestTags.EXERCISE_PANEL), node(WINDOW), "the exercises")
+        val panel = node(EarTrainingTestTags.EXERCISE_PANEL).getBoundsInRoot()
+        assertEquals("from the pill's start", at.left.value, panel.left.value, 0.5f)
+        assertEquals("as wide as the pill", at.width.value, panel.width.value, 1f)
         val names = mapOf(Exercise.PLAY_IT_BACK to "Play it back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chord type")
-        for (exercise in Exercise.entries) {
+        for ((exercise, name) in names) {
             node(EarTrainingTestTags.exercise(exercise))
-                .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(names.getValue(exercise))))
+                .assert(hasText(name))
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 .assertIsDisplayed()
         }
-        val words = mapOf(Exercise.PLAY_IT_BACK to "Play back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chord type")
-        for (exercise in Exercise.entries) node(EarTrainingTestTags.exercise(exercise)).assert(hasText(words.getValue(exercise)))
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsSelected()
-        val before = Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() }
+        node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsNotSelected()
         node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).performClick()
         compose.waitForIdle()
         assertEquals(listOf(Exercise.INTERVALS), picked)
-        node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected()
-        node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsNotSelected()
-        assertEquals("the words keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
-        // The switch runs across the whole row, as wide as the top row, in three equal segments (Phase 77: until then
-        // to 12 dp before the options button at its end).
-        val span = before.last().right - before.first().left
-        val row = node(TOP_ROW).getBoundsInRoot()
-        assertEquals("across the row", row.width.value, span.value, 1.5f)
-        assertEquals("from its start", row.left.value, before.first().left.value, 1.5f)
-        for (bounds in before) assertEquals("one steady width each", span.value / 3, bounds.width.value, 1.5f)
-        // Until Intervals' first question is in the state, nothing shows under the row.
+        assertTrue("a pick closes it", !exists(EarTrainingTestTags.EXERCISE_PANEL))
+        node(EarTrainingTestTags.EXERCISE).assert(hasText("Intervals"))
+        assertEquals("the pill stays put", at, node(EarTrainingTestTags.EXERCISE).getBoundsInRoot())
+        // Until Intervals' first question is in the state, nothing shows under the pill.
         assertTrue(!exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.HEARD))
+
+        // The one picked again closes it too, passing nothing on; Back closes it.
+        node(EarTrainingTestTags.EXERCISE).performClick()
+        compose.waitForIdle()
+        node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected().performClick()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.EXERCISE_PANEL))
+        assertEquals(listOf(Exercise.INTERVALS), picked)
+        node(EarTrainingTestTags.EXERCISE).performClick()
+        compose.waitForIdle()
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.EXERCISE_PANEL))
+    }
+
+    /**
+     * On its side the pill stands in the start half under the top row, in the middle of the height it leaves (as
+     * Chords' name), and its panel opens from the top of that half, open across a turn.
+     */
+    @Test
+    fun onItsSideThePillStandsInTheStartHalfAndItsPanelOpensOverIt() {
+        shownSize.value = PHONE_LANDSCAPE
+        show()
+        val window = node(WINDOW).getBoundsInRoot()
+        val row = node(TOP_ROW).getBoundsInRoot()
+        val pill = node(EarTrainingTestTags.EXERCISE).getBoundsInRoot()
+        val middle = (window.left + window.right) / 2
+        assertTrue("in the start half $pill", pill.right <= middle)
+        assertEquals("as wide as the top row", row.width.value, pill.width.value, 1f)
+        assertTrue("under the top row $pill", pill.top >= row.bottom + 8.dp)
+        val room = (row.bottom + window.bottom) / 2
+        assertEquals("in the middle of the height left", room.value, ((pill.top + pill.bottom) / 2).value, 12f)
+        node(EarTrainingTestTags.EXERCISE).performClick()
+        compose.waitForIdle()
+        for (size in listOf(PHONE_LANDSCAPE, XIAOMI, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val panel = node(EarTrainingTestTags.EXERCISE_PANEL).assertIsDisplayed().getBoundsInRoot()
+            val now = node(EarTrainingTestTags.EXERCISE).getBoundsInRoot()
+            assertEquals("$size: from the pill's start", now.left.value, panel.left.value, 0.5f)
+            assertEquals("$size: as wide as the pill", now.width.value, panel.width.value, 1f)
+            if (size == XIAOMI) {
+                assertPanelUnder(node(EarTrainingTestTags.EXERCISE), node(EarTrainingTestTags.EXERCISE_PANEL), node(WINDOW), "$size")
+            } else {
+                assertTrue("$size: from the top of the start half $panel", panel.top < now.top)
+            }
+            for (exercise in Exercise.entries) assertWhollyShown(node(EarTrainingTestTags.exercise(exercise)), "$size $exercise", scroll = false)
+        }
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.EXERCISE_PANEL))
     }
 
     @Test
@@ -233,7 +302,7 @@ class EarTrainingScreenTest {
     fun theTallyShowsOnceAQuestionWasAnsweredAndNothingMoves() {
         show()
         assertTrue("nothing to count yet", !exists(EarTrainingTestTags.TALLY))
-        val tags = Exercise.entries.map(EarTrainingTestTags::exercise) + listOf(EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY)
+        val tags = listOf(EarTrainingTestTags.EXERCISE, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY)
         val before = tags.map { node(it).getBoundsInRoot() }
         shownState.value = shownState.value.copy(tally = Tally(right = 7, asked = 9))
         compose.waitForIdle()
@@ -543,8 +612,8 @@ class EarTrainingScreenTest {
         show()
         node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
         compose.waitForIdle()
-        // The panel's heading; the exercise switch above it says "Intervals" too.
-        compose.onNode(hasText("Intervals") and !hasTestTag(EarTrainingTestTags.exercise(Exercise.INTERVALS))).assertExists()
+        // The panel's heading; the exercise pill above it says "Intervals" too.
+        compose.onNode(hasText("Intervals") and hasAnyAncestor(hasTestTag(EarTrainingTestTags.CHOICES_PANEL))).assertExists()
         compose.onNode(hasText("Played")).assertExists()
         val widths = Interval.entries.map { interval ->
             val chip = node(EarTrainingTestTags.askInterval(interval))
@@ -736,13 +805,13 @@ class EarTrainingScreenTest {
             val case = "$size dark $dark:"
             val window = bars().safeArea(size)
             for (tag in listOf(HEADER, EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.DOTS, EarTrainingTestTags.HEARD_LINE) +
-                Exercise.entries.map(EarTrainingTestTags::exercise)) {
+                EarTrainingTestTags.EXERCISE) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
             }
             val header = node(HEADER).getBoundsInRoot()
             assertTrue("$case the top row at the top $header", header.top - window.top in 4.dp..16.dp)
-            val row = node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).getBoundsInRoot()
-            assertTrue("$case the exercises under it $row", row.top >= header.bottom)
+            val row = node(EarTrainingTestTags.EXERCISE).getBoundsInRoot()
+            assertTrue("$case the exercise pill under it $row", row.top >= header.bottom)
             compose.assertEveryTextWhollyShown("$case")
         }
         // Intervals with all twelve: the end half or the column scrolls where it must, and everything shows.
@@ -783,6 +852,7 @@ class EarTrainingScreenTest {
                 compose.assertEveryTextWhollyShown("nl $size $mic at 2x:")
             }
             shownMic.value = MicPermissionStatus.GRANTED
+            checkExercisesAtTwiceTheTextSize("nl", size)
             for ((name, state) in playItBackStates()) {
                 shownState.value = state
                 compose.waitForIdle()
@@ -868,6 +938,25 @@ class EarTrainingScreenTest {
         compose.waitForIdle()
     }
 
+    /** The exercise's pill with each exercise's name, and its panel of the three, wholly shown at 2× text in [language] on [size]. */
+    private fun checkExercisesAtTwiceTheTextSize(language: String, size: DpSize) {
+        val before = shownState.value
+        for (exercise in Exercise.entries) {
+            shownState.value = EarTrainingState(exercise = exercise, tally = before.tally)
+            compose.waitForIdle()
+            assertWhollyShown(node(EarTrainingTestTags.EXERCISE), "$language $size $exercise pill at 2x")
+            compose.assertEveryTextWhollyShown("$language $size $exercise pill at 2x:")
+        }
+        node(EarTrainingTestTags.EXERCISE).performScrollTo().performClick()
+        compose.waitForIdle()
+        for (exercise in Exercise.entries) assertWhollyShown(node(EarTrainingTestTags.exercise(exercise)), "$language $size $exercise row at 2x")
+        compose.assertEveryTextWhollyShown("$language $size exercises panel at 2x:")
+        Espresso.pressBack()
+        compose.waitForIdle()
+        shownState.value = before
+        compose.waitForIdle()
+    }
+
     /** Intervals' states with the most text, every interval asked: the question, right, and wrong. */
     private fun intervalsStates(): List<Pair<String, EarTrainingState>> {
         val base = ALL_INTERVALS_ASKED.copy(tally = shownState.value.tally)
@@ -907,6 +996,7 @@ class EarTrainingScreenTest {
                     compose.assertEveryTextWhollyShown("$language $size $mic at 2x:")
                 }
                 shownMic.value = MicPermissionStatus.GRANTED
+                checkExercisesAtTwiceTheTextSize(language, size)
                 val single = shownState.value
                 for ((name, state) in playItBackStates()) {
                     shownState.value = state
