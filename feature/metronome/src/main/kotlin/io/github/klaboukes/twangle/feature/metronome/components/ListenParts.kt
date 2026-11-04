@@ -324,7 +324,7 @@ private val ACTION_GAP = 4.dp
 private val LINE_HEIGHT = 24.dp
 
 private val PILL_HEIGHT = 32.dp
-private const val LINE_FADE_MILLIS = 160
+internal const val LINE_FADE_MILLIS = 160
 
 /**
  * The suggestion: a balloon on its own layer over the screen, pointing at the Listen button under the

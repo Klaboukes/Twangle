@@ -203,8 +203,8 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     components/ TempoParts (TempoHeading: − tempo + and its words, markingName), TempoRuler (the ruler to drag),
     MetronomeControls (MeterChoice, BigButtons: Tap the beat and Start),
     OptionsParts (SoundChoice, SubdivisionChoice; the panel is :core:designsystem's FloatingPanel),
-    UnderBarsRow (Vibrate, Listen's line and Listen under the beat bars),
-    TrainerParts (TrainerRow, TrainerSettings, trainerStatus), ListenParts (ListenLine, ListenBalloon)
+    UnderBarsRow (Vibrate, the line: Listen's words or the trainer's, and Listen under the beat bars),
+    TrainerParts (TrainerRow, TrainerLine, TrainerSettings, trainerStatus), ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
     PracticeTools (practiceToolsFor, lastTimeTool, PracticeTestTags), PracticeCards (the cards, the last time row),

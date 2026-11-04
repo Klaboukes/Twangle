@@ -71,7 +71,7 @@ import java.util.concurrent.TimeUnit
  * mark, and TalkBack's slider), the meter as a segmented choice, Tap the beat, the Vibrate and Listen
  * buttons under the beat bars, the options panel under its button in the top end corner (the sounds,
  * one bar playing while stopped; the clicks between the beats, the speed trainer's row), and the speed
- * trainer's switch, words, settings and card (only while on) work and are saved, and the clicks stop
+ * trainer's switch, settings and words on the line under the bars (only while on) work and are saved, and the clicks stop
  * when the screen leaves the composition. TalkBack hears every control by name. [MetronomeStylesTest]
  * covers the layout light and dark.
  */
@@ -377,7 +377,7 @@ class MetronomeScreenTest {
             assertEquals("$name's face as wide as the ⋯'s", options.width.value, rect.width.value, 0.5f)
             assertEquals("$name's face as tall as the ⋯'s", options.height.value, rect.height.value, 0.5f)
         }
-        // The sound and the trainer are behind the options button; the trainer's card shows only while it is on.
+        // The sound and the trainer are behind the options button; the trainer's words show only while it is on.
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.COWBELL)).assertDoesNotExist()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
     }
@@ -696,21 +696,26 @@ class MetronomeScreenTest {
         compose.onNodeWithContentDescription("Start tempo, 96 BPM").assertExists()
         assertEquals(SpeedTrainer(96, 116, 5, 4), settings.current.metronomeTrainer)
         assertTrue(settings.current.metronomeTrainerOn)
-        // Back closes it, the trainer still on, its card on the screen at the foot saying what it will do.
+        // Back closes it, the trainer still on, its words on the line between Vibrate and Listen saying what it will do.
         back()
         trainerPanel.assertDoesNotExist()
-        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).performScrollTo().assertIsOn()
-        compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertContentDescriptionEquals("Speed trainer, from 96 to 116 BPM, +5 every 4 bars")
+        val line = compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo()
+        line.assertContentDescriptionEquals("Speed trainer, from 96 to 116 BPM, +5 every 4 bars")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assertHasClickAction()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true).assert(hasText("96 → 116 · +5 every 4 bars"))
-        val card = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
-        val lightsBounds = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
-        val meterBounds = compose.onNodeWithTag(MetronomeTestTags.meter(Meter.FOUR_FOUR)).getBoundsInRoot()
-        assertTrue("the card $card under the beat bars $lightsBounds", card.top >= lightsBounds.bottom)
-        assertTrue("the card $card over the meter $meterBounds", card.bottom <= meterBounds.top)
-        // Off on its card: the card goes.
-        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).performClick()
+        val words = line.getBoundsInRoot()
+        val vibrate = vibrateButton.getBoundsInRoot()
+        val listenFace = listenButton.getBoundsInRoot()
+        assertTrue("the trainer's words $words between Vibrate $vibrate and Listen $listenFace", words.left >= vibrate.right && words.right <= listenFace.left)
+        assertEquals("level with them", ((vibrate.top + vibrate.bottom) / 2).value, ((words.top + words.bottom) / 2).value, 1f)
+        // Off in its settings, opened from the line: the words go.
+        line.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS_SWITCH).assertIsOn().performClick()
         compose.waitForIdle()
         assertFalse(settings.current.metronomeTrainerOn)
+        back()
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
         // On again in the panel: its plan is saved, so no settings open and the panel stays.
         openPanel()
@@ -747,7 +752,7 @@ class MetronomeScreenTest {
     }
 
     @Test
-    fun climbingTheRowAndTempoFollowEachDownbeatAndATapOnTheRowOpensTheSettings() {
+    fun climbingTheWordsAndTempoFollowEachDownbeatAndATapOnTheLineOpensTheSettings() {
         show(trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true)
         start.performScrollTo().performClick()
         compose.waitForIdle()
@@ -767,12 +772,12 @@ class MetronomeScreenTest {
         figures.assert(hasText("90"))
         // Not a live region: TalkBack reads it when touched, never over the clicks.
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
-        // A tap on the card opens the settings over it.
+        // A tap on the line opens the settings over it.
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().performClick()
         compose.waitForIdle()
-        val card = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
+        val line = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
         val shownPanel = trainerPanel.assertIsDisplayed().getBoundsInRoot()
-        assertTrue("the panel $shownPanel over the card $card", shownPanel.bottom <= card.top)
+        assertTrue("the panel $shownPanel over the line $line", shownPanel.bottom <= line.top)
         back()
         trainerPanel.assertDoesNotExist()
         // Stop: back at the start.
@@ -791,8 +796,8 @@ class MetronomeScreenTest {
         compose.waitForIdle()
         compose.onNodeWithTag(MetronomeTestTags.FASTER).performScrollTo().performClick()
         compose.waitForIdle()
-        // Off, so its card goes.
-        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).assertDoesNotExist()
+        // Off, so its words go.
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
         figures.assert(hasText("86"))
         assertEquals(86, player.bpm)
         assertFalse(settings.current.metronomeTrainerOn)
@@ -818,7 +823,29 @@ class MetronomeScreenTest {
         for (i in tags.indices) {
             assertEquals("${tags[i]} top", off[i].top.value, on[i].top.value, 1f)
             assertEquals("${tags[i]} bottom", off[i].bottom.value, on[i].bottom.value, 1f)
+            assertEquals("${tags[i]} left", off[i].left.value, on[i].left.value, 1f)
+            assertEquals("${tags[i]} right", off[i].right.value, on[i].right.value, 1f)
         }
+    }
+
+    @Test
+    fun listenTakesTheTrainersLineAndEndsTheTrainer() {
+        show(trainer = SpeedTrainer(80, 90, 5, 4), trainerOn = true)
+        val trainerWords = compose.onNodeWithTag(MetronomeTestTags.TRAINER)
+        trainerWords.assertIsDisplayed()
+        val lights = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
+        // Listen wants a tempo from the music: the player took over, so the trainer goes off and Listen's words take the line.
+        listen()
+        lineSaysSoon("Listening…")
+        trainerWords.assertDoesNotExist()
+        assertFalse(settings.current.metronomeTrainerOn)
+        assertEquals("the bars stay put", lights, compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot())
+        // Stopped, the trainer stays off: its words don't come back.
+        listenButton.performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
+        compose.waitForIdle()
+        trainerWords.assertDoesNotExist()
+        assertEquals("the bars stay put", lights, compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot())
     }
 
     @Test
@@ -826,7 +853,6 @@ class MetronomeScreenTest {
         show(tools = ToolSwitches.ALL_ON.copy(speedTrainer = false), trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true)
         figures.assert(hasText("96"))
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
-        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).assertDoesNotExist()
         compose.onNodeWithText("Speed trainer", useUnmergedTree = true).assertDoesNotExist()
         openPanel()
         compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertExists()

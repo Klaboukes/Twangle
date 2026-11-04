@@ -98,9 +98,7 @@ import io.github.klaboukes.twangle.feature.metronome.components.TempoHeading
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRuler
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerRow
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerSettings
-import io.github.klaboukes.twangle.feature.metronome.components.TrainerSlot
 import io.github.klaboukes.twangle.feature.metronome.components.UnderBarsRow
-import io.github.klaboukes.twangle.feature.metronome.components.trainerRowRoom
 import io.github.klaboukes.twangle.feature.metronome.components.trainerStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -323,14 +321,14 @@ class BeatClock {
  * as large as the room the rest leave); the ruler that sets it by dragging ([TempoRuler]); the beat
  * lights, 1.1's upright bars (no numbers since 2026-11-04), and under them one row ([UnderBarsRow]):
  * Vibrate on the beat ([vibrate], [onVibrateChange]) at the start, Listen ([onListen]) at the end, and
- * Listen's status line between them; the meter as a segmented choice ([MeterChoice]); Tap the beat and
- * Start side by side, the same width ([BigButtons]); and, only while it is on, the speed trainer's card
- * with its switch ([TrainerRow]). The gaps share the height that is left; with very large text the column
+ * the line between them: Listen's words, or while the speed trainer is on and Listen has nothing to say
+ * the trainer's; the meter as a segmented choice ([MeterChoice]); Tap the beat and Start side by side, the
+ * same width ([BigButtons]). The gaps share the height that is left; with very large text the column
  * scrolls. Every round button on it (the gear, ⋯, − and +, Vibrate, Listen) has the gear's face.
  *
  * On a wide screen on its side the tempo, the ruler, the beat lights and the row under them stand in the
- * start half, the [header] over them, and the meter, the two big buttons and the trainer's card in the
- * end half under the options button, which stands as far from the window's side as the tuner's focus mode
+ * start half, the [header] over them, and the meter and the two big buttons in the end half under the
+ * options button, which stands as far from the window's side as the tuner's focus mode
  * button there. The rail names the tab on its side, so no [title] shows.
  *
  * The options button opens the shared floating panel ([FloatingPanel]) under it with three rows: the
@@ -339,9 +337,9 @@ class BeatClock {
  * show them) and the speed trainer's row ([trainer] null without its tool switch, and then nothing of it
  * shows). The trainer's row opens its settings ([TrainerSettings], [onTrainerPlan]) in a panel in the
  * options panel's place, and turning it on the first time goes straight there, already filled in
- * ([onTrainerOn]); while it is on its card on the screen says where it stands ("95 → 120 · +5 in 2 bars")
- * and opens the settings over it, and a dot under the ruler marks its goal. Back or a tap beside a panel
- * closes it.
+ * ([onTrainerOn]); while it is on its words on the line under the bars say where it stands ("95 → 120 ·
+ * +5 in 2 bars") and open the settings from there, and a dot under the ruler marks its goal. It keeps no
+ * room of its own, so turning it on or off moves nothing. Back or a tap beside a panel closes it.
  *
  * [listen] says where Listen stands (its button is Stop while it listens, [onListen] again); a found
  * tempo shows in a balloon pointing at the Listen button ([onUse], [onNotNow]; Back is Not now), and the
@@ -413,7 +411,7 @@ fun MetronomeContent(
     // Kept when the phone turns: the panel opens again in its place for the new layout.
     var optionsOpen by rememberSaveable { mutableStateOf(false) }
     var trainerOpen by rememberSaveable { mutableStateOf(false) }
-    // The trainer's settings open in the options panel's place when opened from its row there, else over its card.
+    // The trainer's settings open in the options panel's place when opened from its row there, else from its line.
     var trainerFromOptions by rememberSaveable { mutableStateOf(false) }
     val openTrainer: (fromOptions: Boolean) -> Unit = { fromOptions ->
         optionsOpen = false
@@ -501,29 +499,18 @@ fun MetronomeContent(
                     onTryAgain = onTryAgain,
                     onOpenSettings = onOpenSettings,
                     onListenPlaced = { listenBounds = it },
+                    // The trainer's words on the line while it is on (the options panel turns it on).
+                    trainer = if (trainerOn) trainerStatus(trainer.plan, bpm, trainer.bar, playing) else null,
+                    onTrainerOpen = { openTrainer(false) },
+                    onTrainerPlaced = { trainerBounds = it },
                 )
             }
-            val trainerCard: @Composable () -> Unit = {
-                if (trainer != null && trainer.on) {
-                    TrainerRow(
-                        on = true,
-                        status = trainerStatus(trainer.plan, bpm, trainer.bar, playing),
-                        onOnChange = onTrainerOn,
-                        onOpen = { openTrainer(false) },
-                        onPlaced = { trainerBounds = it },
-                    )
-                }
-            }
-            // The room between the ruler and the meter: the beat bars and the row under them, and at the room's
-            // foot the trainer's place, its card while it is on (the options panel turns it on). The place is
-            // kept whether it is on or off, so turning it on moves nothing and resizes nothing (the owner,
-            // 2026-11-04: bars that shrink for the card would make the page jittery).
-            val cardRoom = if (trainer != null && !wide) TRAINER_GAP + trainerRowRoom() else 0.dp
-            val roomMin = LIGHTS_HEIGHT + UNDER_BARS_ROOM + cardRoom
-            // On its side the card is in the other half, over the meter.
-            val noCard: @Composable () -> Unit = {}
+            // The room between the ruler and the meter: the beat bars and the row under them, the bars as tall as
+            // it allows. The trainer keeps no room of its own (the owner, 2026-11-04: most players never use it;
+            // bars that shrink or move when it turns on would make the page jittery).
+            val roomMin = LIGHTS_HEIGHT + UNDER_BARS_ROOM
             val barsRoom: @Composable (Dp) -> Unit = { tall ->
-                BarsRoom(tall, cardRoom, lights, underBars, if (wide) noCard else trainerCard)
+                BarsRoom(tall, lights, underBars)
             }
             val choices: @Composable () -> Unit = {
                 MeterChoice(meter, onMeterChange)
@@ -564,11 +551,6 @@ fun MetronomeContent(
                     ) {
                         topRow(false, true, false, Modifier)
                         Spacer(Modifier.gap(1f))
-                        // On its side the trainer's place is over the meter here, kept while it is off too.
-                        if (trainer != null) {
-                            TrainerSlot { trainerCard() }
-                            Spacer(Modifier.height(TRAINER_GAP))
-                        }
                         choices()
                         Spacer(Modifier.height(BUTTONS_GAP))
                         buttons()
@@ -648,7 +630,6 @@ fun MetronomeContent(
                                     if (on && !trainer.saved) openTrainer(true)
                                 },
                                 onOpen = { openTrainer(true) },
-                                card = false,
                                 modifier = Modifier.padding(top = 4.dp),
                             )
                         }
@@ -761,12 +742,11 @@ object MetronomeTestTags {
     const val LISTEN = "metronome_listen"
 
     /**
-     * The speed trainer (Phase 62, its row since Phase 75): its row (the part that opens its settings),
-     * the row's switch, its words on the row, the panel its settings open in, the settings, and their
-     * start and goal tempos (with "_slower" and "_faster" for their − and +).
+     * The speed trainer (Phase 62): its line under the bars while it is on (opens its settings) and its
+     * words there, the settings' switch, the panel its settings open in, the settings, and their start and
+     * goal tempos (with "_slower" and "_faster" for their − and +).
      */
     const val TRAINER = "metronome_trainer"
-    const val TRAINER_SWITCH = "metronome_trainer_switch"
     const val TRAINER_SETTINGS_SWITCH = "metronome_trainer_settings_switch"
     const val TRAINER_TEXT = "metronome_trainer_text"
     /** The trainer's row in the options panel: the row, its switch and its words. */
@@ -813,11 +793,10 @@ private val COLUMN_MAX_WIDTH = 480.dp
 
 /**
  * At least this between the tempo's words and the ruler, and the ruler and the beat bars; between the
- * row under the bars and the trainer's place, the bars' room and the meter, and under the column.
+ * bars' room and the meter, and under the column.
  */
 private val RULER_GAP = 8.dp
 private val LIGHTS_GAP = 16.dp
-private val TRAINER_GAP = 12.dp
 private val CHOICE_GAP = 12.dp
 
 /** The bars' room takes this many shares of the spare height, against one over the tempo and a half over the ruler. */
@@ -841,37 +820,31 @@ private val BUTTONS_GAP = 16.dp
 private val LIGHTS_HEIGHT = 72.dp
 
 /**
- * The room between the ruler and the meter, [tall]: at its foot [cardRoom] for the trainer's place, [card]
- * in it (nothing while the trainer is off); over it the beat bars ([lights]) as tall as the rest allows,
- * from [LIGHTS_HEIGHT] to [LIGHTS_TALLEST], with the row of Vibrate, Listen's words and Listen ([line])
- * under them, the two centred in that rest. The bars' size depends only on [tall], [cardRoom]
- * and the row's height (which Listen's words never change), never on whether the card shows, so the
- * trainer coming and going moves and resizes nothing. Taller than [tall] only where very large text
- * needs it.
+ * The room between the ruler and the meter, [tall]: the beat bars ([lights]) as tall as it allows, from
+ * [LIGHTS_HEIGHT] to [LIGHTS_TALLEST], with the row of Vibrate, the line and Listen ([line]) under them,
+ * the two centred in it. The bars' size depends only on [tall] and the row's height (which the line's
+ * words never change), so the trainer turning on or off, or Listen talking, moves and resizes nothing.
+ * Taller than [tall] only where very large text needs it. (Until 2026-11-04 the room's foot was kept for
+ * the speed trainer's card, whether it was on or off.)
  */
 @Composable
-private fun BarsRoom(tall: Dp, cardRoom: Dp, lights: @Composable () -> Unit, line: @Composable () -> Unit, card: @Composable () -> Unit) {
-    Layout(contents = listOf(lights, line, card), modifier = Modifier.fillMaxWidth()) { (lightsParts, lineParts, cardParts), constraints ->
+private fun BarsRoom(tall: Dp, lights: @Composable () -> Unit, line: @Composable () -> Unit) {
+    Layout(contents = listOf(lights, line), modifier = Modifier.fillMaxWidth()) { (lightsParts, lineParts), constraints ->
         val across = Constraints(maxWidth = constraints.maxWidth)
         val lineP = lineParts.map { it.measure(across) }
-        val cardP = cardParts.map { it.measure(across) }
         val lineHeight = lineP.sumOf { it.height }
-        val reserved = cardRoom.roundToPx()
-        val above = tall.roundToPx() - reserved
-        val barsHeight = (above - lineHeight).coerceIn(LIGHTS_HEIGHT.roundToPx(), LIGHTS_TALLEST.roundToPx())
+        val barsHeight = (tall.roundToPx() - lineHeight).coerceIn(LIGHTS_HEIGHT.roundToPx(), LIGHTS_TALLEST.roundToPx())
         val lightsP = lightsParts.map { it.measure(Constraints(maxWidth = constraints.maxWidth, minHeight = barsHeight, maxHeight = barsHeight)) }
         val block = barsHeight + lineHeight
-        val height = maxOf(tall.roundToPx(), block + reserved)
+        val height = maxOf(tall.roundToPx(), block)
         val width = constraints.maxWidth
         layout(width, height) {
-            // The bars and the row under them centred in the room over the trainer's place.
-            var y = ((height - reserved) - block).coerceAtLeast(0) / 2
+            // The bars and the row under them centred in the room.
+            var y = (height - block).coerceAtLeast(0) / 2
             for (p in lightsP + lineP) {
                 p.placeRelative((width - p.width) / 2, y)
                 y += p.height
             }
-            // The card at the foot of its place, right over the meter.
-            for (p in cardP) p.placeRelative((width - p.width) / 2, height - p.height)
         }
     }
 }

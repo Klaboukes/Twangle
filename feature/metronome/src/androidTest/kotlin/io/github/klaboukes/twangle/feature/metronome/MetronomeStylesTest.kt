@@ -54,7 +54,7 @@ import kotlin.math.abs
  * Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window, and nothing
  * overlaps; at 2× text, upright and on its side, every control can be scrolled to and is then wholly
  * shown. Playing, in 7/8 (every light's size) with eighths between the beats, the cowbell picked,
- * vibration on (its button under the beat bars filled) and the speed trainer climbing. The tempo's figures keep
+ * vibration on (its button under the beat bars filled) and the speed trainer climbing (its words on the line under the bars). The tempo's figures keep
  * one size whatever the tempo. The options panel opens under its button, the trainer's settings over
  * its row, wholly shown at 1x, 2x and in Dutch at 2x. With the app's gear at the top start (a stand-in as
  * large), as the app shows it upright, and without, as on its side (the gear is on the rail there).
@@ -137,14 +137,16 @@ class MetronomeStylesTest {
         ) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
             "tap the beat" to compose.onNodeWithTag(MetronomeTestTags.TAP),
             "start" to compose.onNodeWithTag(MetronomeTestTags.START),
-            // On (as shown here), the trainer's card is on the screen.
-            "trainer" to compose.onNodeWithTag(MetronomeTestTags.TRAINER),
-            "trainer's switch" to compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH),
-        )
+        ) + if (shownListen.value.phase == ListenPhase.IDLE) {
+            // On (as shown here), the trainer's words are on the line while Listen has nothing to say.
+            listOf("trainer" to compose.onNodeWithTag(MetronomeTestTags.TRAINER))
+        } else {
+            emptyList()
+        }
 
-    /** Parts that stand inside another: the tempo's figures inside their room between − and +, the meters in their bar. */
+    /** Parts that stand inside another: the meters in their bar, the trainer's words over Listen's (empty) line. */
     private fun contains(outer: String, inner: String) =
-        (outer.startsWith("meter") && inner.startsWith("meter")) || setOf(outer, inner) == setOf("trainer", "trainer's switch")
+        (outer.startsWith("meter") && inner.startsWith("meter")) || setOf(outer, inner) == setOf("trainer", "status line")
 
     @Test
     fun everythingFitsWithoutScrollingAndNothingOverlaps() {
@@ -316,6 +318,7 @@ class MetronomeStylesTest {
             compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().performClick()
             compose.waitForIdle()
             val row = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
+            assertTrue("$name the line $row under the bars", row.top >= compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot().bottom - SLACK)
             val panel = compose.onNodeWithTag(MetronomeTestTags.TRAINER_PANEL).assertIsDisplayed().getBoundsInRoot()
             assertInside(name, panel, bars().safeArea(size))
             // Upright over the row; on its side the window is too short for that, and it slides over the row, wholly inside.
@@ -390,7 +393,7 @@ class MetronomeStylesTest {
             shownSize.value = size
             shownListen.value = ListenUi()
             compose.waitForIdle()
-            val before = parts().map { (name, node) -> name to node.getBoundsInRoot() }
+            val before = parts().filter { it.first != "trainer" }.map { (name, node) -> name to node.getBoundsInRoot() }
             for (listen in listOf(
                 ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L),
                 ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96),
@@ -399,6 +402,8 @@ class MetronomeStylesTest {
             )) {
                 shownListen.value = listen
                 compose.waitForIdle()
+                // Listen's words take the line: the trainer's go while it talks.
+                compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
                 val after = parts().map { (name, node) -> name to node.getBoundsInRoot() }
                 assertEquals("${size.width} x ${size.height} ${listen.phase}", before, after)
             }

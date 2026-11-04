@@ -47,7 +47,7 @@
     <!-- TalkBack name of the button in the metronome's top right corner (a ⋯ icon, no word shown): opens the panel with the click sound, the clicks between the beats and the speed trainer. Also the panel's name. -->
     <string name="metronome_options">Options</string>
 
-    <!-- The speed trainer: the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the metronome's options panel and, while it is on, on a card above the time signatures on the metronome screen (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
+    <!-- The speed trainer: the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the metronome's options panel (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. While it is on, its words (not this name) show on the line under the beat lights. -->
     <string name="metronome_trainer">Speed trainer</string>
     <!-- Speed trainer settings: the label of the tempo it starts at (a number with − and + beside it). -->
     <string name="metronome_trainer_start">Start tempo</string>
@@ -72,7 +72,7 @@
         <item quantity="one">%1$s bar</item>
         <item quantity="other">%1$s bars</item>
     </plurals>
-    <!-- Under "Speed trainer" on its row: the tempo it starts at or plays now, an arrow, the goal tempo, then what comes next. %1$s the tempo now, %2$s the goal, %3$s one of the texts below (e.g. "+5 in 2 bars"). Example: "95 → 120 · +5 in 2 bars". -->
+    <!-- Under "Speed trainer" on its row in the options panel, and beside its icon on the line under the beat lights while it is on: the tempo it starts at or plays now, an arrow, the goal tempo, then what comes next. %1$s the tempo now, %2$s the goal, %3$s one of the texts below (e.g. "+5 in 2 bars"). Example: "95 → 120 · +5 in 2 bars". -->
     <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
     <!-- The end of the speed trainer's line while it climbs: the next step and in how many bars it comes. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
     <plurals name="metronome_trainer_next">
