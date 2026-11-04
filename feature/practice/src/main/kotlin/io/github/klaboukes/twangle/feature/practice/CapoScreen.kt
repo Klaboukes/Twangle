@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -59,17 +60,20 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_MAX_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.PanelEdge
+import io.github.klaboukes.twangle.core.designsystem.PickGrid
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
-import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -94,11 +98,12 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  * with [onPickInstrument] the chip opens the "What are you tuning?" sheet, else a plain line names them).
  *
  * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start with the tuning
- * chip beside it ([BackAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
- * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
- * half, the table the end half. All but the top row stand in the middle of the height they have (on a
- * tablet on its side, [practiceLayoutFor], the two halves together under the top row), as Chords centres
- * its chart and the metronome its column (on phones since Phase 63; until then they hung at the top).
+ * chip beside it ([BackAndTuningRow]), the shapes' pill right under it where Chords has its name (Phase 77), then the
+ * capo, the table and "Sounds in" in the middle of the height left, as Chords centres its chart and the metronome its
+ * column (on phones since Phase 63; until then they hung at the top). On a phone on its side (≥ 600 dp wide and wider
+ * than tall) that row, the pill (where Chords has its name, [SideHalf]), the capo and "Sounds in" fill the start half,
+ * the table the end half, in its middle; on a tablet on its side ([practiceLayoutFor]) the pill shares the top row's
+ * row, as Chords' name, and the two halves stand together in the middle of the height under it.
  *
  * Names follow the player's [notation], written as the key writes them ([CapoPlan.shapeSymbolOf],
  * [CapoPlan.soundingSymbolOf]: E♭ in E♭, A♯m in F♯). It opens on [savedShapes] and [savedFret], and
@@ -146,9 +151,18 @@ fun CapoScreen(
 
     val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
     var shapesOpen by remember { mutableStateOf(false) }
-    // Where the shapes button is, in the root's coordinates: the list opens under it.
+    // Where the shapes pill is (its caption too), and on its side the top of the start half, in the root's coordinates: the panel
+    // opens under the pill, or on its side from the top of that half (as Chords').
     var shapesButton by remember { mutableStateOf<Rect?>(null) }
-    val picker = @Composable { ShapesPicker(shapes, notation, speech, onOpen = { shapesOpen = true }, onPlaced = { shapesButton = it }) }
+    var startHalf by remember { mutableStateOf<Rect?>(null) }
+    val pill = @Composable { ShapesPicker(shapes, notation, speech, onOpen = { shapesOpen = true }, onPlaced = { shapesButton = it }) }
+    // Upright, the top row and the pill under it, as on Chords, Scales and Ear training: the pill's place is set here alone.
+    val header = @Composable { gap: Dp ->
+        Spacer(Modifier.height(TOP_BAR_TOP))
+        topRow()
+        Spacer(Modifier.height(gap))
+        pill()
+    }
     val stepper = @Composable { tight: Boolean ->
         CapoStepper(fret, spokenSoundsIn, step, if (tight) STEP_BUTTON_SIZE else STEPPER_HEIGHT, dimmed = shortString)
     }
@@ -190,8 +204,9 @@ fun CapoScreen(
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
         val height = maxHeight
         if (layout == PracticeLayout.LARGE_SIDE) {
-            // A tablet on its side: the top row at the top, and under it the two halves in the middle of the height
-            // left (as the metronome's column), so the lower half isn't left empty. Scrolls only at very large text.
+            // A tablet on its side, as Chords: the top row and the pill share one row at the top (the pill over the
+            // table's half), and under it the two halves in the middle of the height left (as the metronome's column),
+            // so the lower half isn't left empty. Scrolls only at very large text.
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -203,13 +218,12 @@ fun CapoScreen(
                 Row(Modifier.fillMaxWidth()) {
                     Box(Modifier.weight(1f), contentAlignment = Alignment.TopCenter) { topRow() }
                     Spacer(Modifier.width(16.dp))
-                    Spacer(Modifier.weight(1f))
+                    Box(Modifier.weight(1f)) { pill() }
                 }
                 Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        picker()
-                        Spacer(Modifier.height(8.dp))
                         stepper(false)
                         Spacer(Modifier.height(8.dp))
                         soundsInLine()
@@ -221,26 +235,34 @@ fun CapoScreen(
                 Spacer(Modifier.height(8.dp))
             }
         } else if (layout == PracticeLayout.HALVES) {
-            // A phone on its side: the top row at the top of the start half and the rest of that half in the middle
-            // of the height it leaves; the table in the middle of the end half (Phase 63, as Chords centres its chart;
-            // until then both hung at the top). Each half scrolls only where it doesn't fit.
+            // A phone on its side: the top row at the top of the start half, the pill where Chords has its name (in the
+            // middle of the height under the top row), the capo and "Sounds in" under it; the table in the middle of the
+            // end half (Phase 63, as Chords centres its chart). Each half scrolls only where it doesn't fit.
             Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
-                Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Spacer(Modifier.height(TOP_BAR_TOP))
-                    topRow()
-                    Spacer(Modifier.weight(1f))
-                    Spacer(Modifier.height(12.dp))
-                    picker()
-                    Spacer(Modifier.height(8.dp))
-                    stepper(false)
-                    Spacer(Modifier.height(8.dp))
-                    soundsInLine()
-                    Spacer(Modifier.weight(1f))
-                    Spacer(Modifier.height(8.dp))
-                }
+                SideHalf(
+                    viewport = height,
+                    top = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Spacer(Modifier.height(TOP_BAR_TOP))
+                            topRow()
+                        }
+                    },
+                    pill = pill,
+                    rest = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Spacer(Modifier.height(8.dp))
+                            stepper(false)
+                            Spacer(Modifier.height(8.dp))
+                            soundsInLine()
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        // The panel's place: from the top of the start half down, over the top row, as Chords'.
+                        .panelAnchor { startHalf = Rect(it.left, it.top, it.right, it.top) }
+                        .verticalScroll(rememberScrollState()),
+                )
                 Spacer(Modifier.width(16.dp))
                 Column(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
@@ -257,9 +279,9 @@ fun CapoScreen(
             // A short screen (a narrow phone with navigation buttons) gets the gaps closer, so it all still fits.
             val tight = maxHeight < ROOMY_HEIGHT
             val gap = if (tight) 0.5f else 1f
-            // The part under the top row stands in the middle of the height left, as Chords centres its chart and the
-            // metronome its column, instead of hanging at the top with the lower half empty (on a phone until Phase 63;
-            // on a tablet held upright since Phase 52). Where it doesn't fit, it scrolls as before.
+            // The pill right under the top row, where Chords, Scales and Ear training have theirs (Phase 77; until then it
+            // stood with the rest in the middle of the height); the capo, the table and "Sounds in" in the middle of the
+            // height under it, as Chords centres its chart and the metronome its column. Where it doesn't fit, it scrolls.
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 Column(
                     Modifier
@@ -270,12 +292,9 @@ fun CapoScreen(
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(TOP_BAR_TOP))
-                    topRow()
+                    header(if (tight) PILL_GAP_TIGHT else PILL_GAP)
                     Spacer(Modifier.weight(1f))
-                    Spacer(Modifier.height(if (tight) 2.dp else 12.dp))
-                    picker()
-                    Spacer(Modifier.height(8.dp * gap))
+                    Spacer(Modifier.height(12.dp * gap))
                     stepper(tight)
                     Spacer(Modifier.height(12.dp * gap))
                     table()
@@ -286,14 +305,23 @@ fun CapoScreen(
                 }
             }
         }
-        // The list floats on its own layer over the screen.
+        // The panel floats on its own layer over the screen: under the pill from its start and as wide as it; on a phone
+        // on its side from the top of the start half (as Chords' and Ear training's).
+        val pillAt = shapesButton
+        val anchor = if (layout == PracticeLayout.HALVES) {
+            startHalf?.let { half -> pillAt?.let { Rect(it.left, half.top, it.right, half.top) } }
+        } else {
+            pillAt
+        }
         ShapesPanel(
             open = shapesOpen,
-            anchor = shapesButton,
+            anchor = anchor,
+            width = with(LocalDensity.current) { (pillAt?.width ?: 0f).toDp() },
             shapes = shapes,
             notation = notation,
             speech = speech,
             onPick = { picked ->
+                shapesOpen = false
                 val index = CAPO_SHAPES.indexOf(picked)
                 if (index != shapesIndex) {
                     shapesIndex = index
@@ -306,71 +334,110 @@ fun CapoScreen(
 }
 
 /**
- * "Shapes I play" over Twangle's one picker face ([NamePickerButton], Phase 63) showing the key of the
- * shapes picked in words ("C major ⌄", "A minor ⌄"; until Phase 63 a small 132 dp button with "C ▾"), as
- * wide as the table under it; a tap calls [onOpen] to open the list of [CAPO_SHAPES] ([ShapesPanel]) under it,
- * [onPlaced] telling the screen where it is. TalkBack hears the button as a list with what is picked.
+ * On a phone on its side, the start half [viewport] tall: [top] (the top row) at the top; the [pill] with its face where
+ * Chords has its name (in the middle of the height under the top row, with 12 dp above it and 8 dp under it kept free,
+ * as Chords' column); and [rest] (the capo and "Sounds in") right under the pill. Where the rest doesn't fit under it
+ * there, the pill rises just enough, never closer than 12 dp to the top row; where even that doesn't fit, the half grows
+ * (and scrolls, in a scrolling [modifier]). All centred across.
  */
 @Composable
-private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSpeech, onOpen: () -> Unit, onPlaced: (Rect) -> Unit) {
-    NamePickerButton(
-        name = keyWords(shapes, notation),
-        spoken = stringResource(R.string.practice_capo_shapes_spoken, keyWords(shapes, notation, speech)),
-        onClick = onOpen,
-        caption = stringResource(R.string.practice_capo_shapes),
-        faceModifier = Modifier.testTag(PracticeTestTags.CAPO_SHAPES).panelAnchor(onPlaced),
-        modifier = Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth(),
-    )
+private fun SideHalf(
+    viewport: Dp,
+    top: @Composable () -> Unit,
+    pill: @Composable () -> Unit,
+    rest: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Layout(contents = listOf(top, pill, rest), modifier = modifier) { (tops, pills, rests), constraints ->
+        val width = constraints.maxWidth
+        val loose = Constraints(maxWidth = width)
+        val topPlaced = tops.map { it.measure(loose) }
+        val pillPlaced = pills.map { it.measure(loose) }
+        val restPlaced = rests.map { it.measure(loose) }
+        val topHeight = topPlaced.sumOf { it.height }
+        val pillHeight = pillPlaced.sumOf { it.height }
+        val restHeight = restPlaced.sumOf { it.height }
+        val above = SIDE_PILL_ABOVE.roundToPx()
+        val below = SIDE_PILL_BELOW.roundToPx()
+        val room = viewport.roundToPx()
+        // Chords' name: its column's two equal weights round "12 dp, the name" with 8 dp at the bottom (ChordsScreen's HALVES).
+        val face = NAME_PICKER_HEIGHT.roundToPx()
+        val chordsTop = topHeight + above + maxOf(0, room - topHeight - above - face - below) / 2
+        val lowest = room - below - restHeight - pillHeight
+        val pillTop = maxOf(topHeight + above, minOf(chordsTop, lowest))
+        val height = maxOf(room, pillTop + pillHeight + restHeight + below)
+        layout(width, height) {
+            topPlaced.forEach { it.place((width - it.width) / 2, 0) }
+            var y = pillTop
+            pillPlaced.forEach { it.place((width - it.width) / 2, y); y += it.height }
+            restPlaced.forEach { it.place((width - it.width) / 2, y); y += it.height }
+        }
+    }
 }
 
 /**
- * The list of [CAPO_SHAPES] while [open], on the shared floating panel ([FloatingPanel], Phase 77; Material's menu in
- * the same look until then) under the shapes button ([anchor]), from its start and as wide as it (at least
- * [SHAPES_MENU_WIDTH]): the keys in words as the button writes them, [shapes] in bold in the accent. A pick calls
- * [onPick] and closes it; Back or a tap beside it calls [onDismiss]. TalkBack hears it as "Shapes I play", each entry
- * in words ("A minor").
+ * The shapes picked on Twangle's one picker face ([NamePickerButton], Phase 63) in words ("C major ⌄", "A minor ⌄"; until
+ * Phase 63 a small 132 dp button with "C ▾"), with "Shapes I play" small under it. As wide as the row up to
+ * [NAME_PICKER_MAX_WIDTH] and centred, as Chords' name (Phase 77; until then as wide as the table, 320 dp), so switching
+ * between the Practice tools moves nothing. A tap calls [onOpen] to open the [ShapesPanel] under it, [onPlaced] telling
+ * the screen where the pill is with its caption, so the panel opens under "Shapes I play" rather than cutting through it.
+ * TalkBack hears it as a list with what is picked ("Shapes I play: C major").
+ */
+@Composable
+private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSpeech, onOpen: () -> Unit, onPlaced: (Rect) -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        NamePickerButton(
+            name = keyWords(shapes, notation),
+            spoken = stringResource(R.string.practice_capo_shapes_spoken, keyWords(shapes, notation, speech)),
+            onClick = onOpen,
+            caption = stringResource(R.string.practice_capo_shapes),
+            faceModifier = Modifier.testTag(PracticeTestTags.CAPO_SHAPES),
+            modifier = Modifier.width(minOf(maxWidth, NAME_PICKER_MAX_WIDTH)).panelAnchor(onPlaced),
+        )
+    }
+}
+
+/**
+ * The [CAPO_SHAPES] while [open], on the shared floating panel ([FloatingPanel], Phase 77) from [anchor] (under the pill's caption,
+ * from its start), [width] wide (the pill's): the shared pick buttons ([PickGrid], Phase 77; until then a list of the
+ * keys in words, the picked one in bold in the accent), the five major shapes in one row and the three minor ones
+ * centred under them, each by its symbol as the table writes it ("C", "Am"; Chords' panel writes symbols too), [shapes]
+ * tinted with the accent outline. A pick calls [onPick], which closes it; Back or a tap beside it calls [onDismiss].
+ * TalkBack hears it as "Shapes I play", a radio group, each in words ("A minor").
  */
 @Composable
 private fun ShapesPanel(
     open: Boolean,
     anchor: Rect?,
+    width: Dp,
     shapes: SongKey,
     notation: Notation,
     speech: NoteNameSpeech,
     onPick: (SongKey) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val title = stringResource(R.string.practice_capo_shapes)
     val words = CAPO_SHAPES.associateWith { keyWords(it, notation, speech) }
-    val width = with(LocalDensity.current) { (anchor?.width ?: 0f).toDp() }
     FloatingPanel(
         open = open,
         anchor = anchor,
         onDismiss = onDismiss,
-        title = stringResource(R.string.practice_capo_shapes),
-        width = maxOf(width, SHAPES_MENU_WIDTH),
+        title = title,
+        width = width,
         edge = PanelEdge.START,
         tag = PracticeTestTags.CAPO_SHAPES_PANEL,
     ) {
-        for (option in CAPO_SHAPES) {
-            val picked = option == shapes
-            TwangleMenuItem(
-                text = {
-                    Text(
-                        musicText(keyWords(option, notation)),
-                        fontWeight = if (picked) FontWeight.Bold else null,
-                        color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                    )
-                },
-                onClick = {
-                    onDismiss()
-                    onPick(option)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(PracticeTestTags.capoShapes(option))
-                    .semantics { contentDescription = words.getValue(option) },
-            )
-        }
+        PickGrid(
+            options = CAPO_SHAPES,
+            picked = { it == shapes },
+            onPick = onPick,
+            perRow = SHAPES_PER_ROW,
+            groupLabel = title,
+            label = { it.symbolOf(it.tonicChord, null, notation) },
+            spoken = { words.getValue(it) },
+            tag = PracticeTestTags::capoShapes,
+            maxFaceWidth = SHAPE_BUTTON_MAX_WIDTH,
+        )
     }
 }
 
@@ -599,9 +666,6 @@ private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, spee
     return stringResource(qualityWords(chord.quality), speech?.name(root) ?: root)
 }
 
-/** On its side from this width, as the other Practice tools. */
-
-
 /** Upright, as the other Practice tools' column. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
@@ -616,8 +680,17 @@ private val ROW_PADDING = 20.dp
 /** The table's card keeps this much above its heading and below its last row. */
 private val TABLE_PADDING = 4.dp
 
-/** The shapes' list is at least this wide (the shapes button's width until Phase 63). */
-private val SHAPES_MENU_WIDTH = 132.dp
+/** The shapes' panel: the five major shapes in one row, the three minor ones under them; each face at most this wide. */
+private const val SHAPES_PER_ROW = 5
+private val SHAPE_BUTTON_MAX_WIDTH = 64.dp
+
+/** Upright, the pill stands this far under the top row, as Chords' name (a quarter as far on a short screen, as there). */
+private val PILL_GAP = 8.dp
+private val PILL_GAP_TIGHT = 2.dp
+
+/** On a phone on its side, Chords' name keeps this much free above it (under the top row) and below it ([SideHalf]). */
+private val SIDE_PILL_ABOVE = 12.dp
+private val SIDE_PILL_BELOW = 8.dp
 private val MIN_LABEL_SIZE = 8.sp
 private val LAST_RESORT_LABEL_SIZE = 6.sp
 

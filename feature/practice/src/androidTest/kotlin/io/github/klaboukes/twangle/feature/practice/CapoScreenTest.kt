@@ -10,14 +10,18 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
@@ -32,12 +36,14 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
+import io.github.klaboukes.twangle.core.testing.assertPanelUnder
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -80,6 +86,7 @@ class CapoScreenTest {
     private val shownLocale = mutableStateOf("en")
     private val shownNotation = mutableStateOf(Notation.SHARPS)
     private val shownShortString = mutableStateOf(false)
+    private val shownChords = mutableStateOf(false)
     private val savedShapes = mutableListOf<SongKey>()
     private val savedFrets = mutableListOf<Int>()
     private val opened = mutableListOf<Chord>()
@@ -89,6 +96,23 @@ class CapoScreenTest {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(darkTheme = shownDark.value, animate = false) {
+                    // Chords in its place, to compare where the two pills stand.
+                    if (shownChords.value) {
+                        ChordsScreen(
+                            tuning = Tunings.STANDARD,
+                            tuningName = "Guitar · Standard",
+                            spokenTuningName = "Guitar, Standard",
+                            notation = shownNotation.value,
+                            savedRoot = PitchClass.C,
+                            savedQuality = ChordQuality.MAJOR,
+                            onRootChange = {},
+                            onQualityChange = {},
+                            onBack = {},
+                            modifier = Modifier.fillMaxSize().testTag(WINDOW),
+                            onPickInstrument = {},
+                        )
+                        return@TwangleTheme
+                    }
                     CapoScreen(
                         tuningName = "Guitar · Standard",
                         spokenTuningName = "Guitar, Standard",
@@ -191,15 +215,73 @@ class CapoScreenTest {
         )
         assertEquals("Sounds in C minor", spoken(PracticeTestTags.CAPO_SOUNDS_IN))
 
-        // Every shape is offered.
+        // Every shape is offered, on the shared pick buttons (Phase 77): the five major shapes in one row, the three minor
+        // ones under them, by their symbols, heard in words as radio buttons, the one picked marked; under the pill from
+        // its start and as wide as it.
         node(PracticeTestTags.CAPO_SHAPES).performClick()
-        for (shapes in CAPO_SHAPES) node(PracticeTestTags.capoShapes(shapes)).assertExists()
+        compose.waitForIdle()
+        val pill = node(PracticeTestTags.CAPO_SHAPES).getBoundsInRoot()
+        val panel = node(PracticeTestTags.CAPO_SHAPES_PANEL).assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Shapes I play"))
+            .getBoundsInRoot()
+        assertPanelUnder(node(PracticeTestTags.CAPO_SHAPES), node(PracticeTestTags.CAPO_SHAPES_PANEL), node(WINDOW), "the shapes")
+        val caption = compose.onNodeWithText("Shapes I play").getBoundsInRoot()
+        assertTrue("under the caption, which stays readable: $panel $caption", panel.top >= caption.bottom)
+        assertEquals("from the pill's start", pill.left.value, panel.left.value, 0.5f)
+        assertEquals("as wide as the pill", pill.width.value, panel.width.value, 1f)
+        val symbols = listOf("C", "D", "E", "G", "A", "Dm", "Em", "Am")
+        for ((shapes, symbol) in CAPO_SHAPES.zip(symbols)) {
+            val words = (if (shapes.minor) "minor" else "major").let { "${shapes.tonic.name.first()} $it" }
+            node(PracticeTestTags.capoShapes(shapes))
+                .assert(hasText(symbol))
+                .assert(hasContentDescription(words))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            assertWhollyShown(node(PracticeTestTags.capoShapes(shapes)), "shapes $symbol", scroll = false)
+        }
+        node(PracticeTestTags.capoShapes(SongKey(PitchClass.A, minor = true))).assertIsSelected()
+        node(PracticeTestTags.capoShapes(SongKey(PitchClass.C))).assertIsNotSelected()
+        fun top(shapes: SongKey) = node(PracticeTestTags.capoShapes(shapes)).getBoundsInRoot().top
+        val majors = CAPO_SHAPES.filter { !it.minor }.map(::top)
+        val minors = CAPO_SHAPES.filter { it.minor }.map(::top)
+        assertTrue("the majors in one row, the minors under them: $majors $minors", majors.distinct().size == 1 && minors.distinct().size == 1 && minors[0] > majors[0])
         node(PracticeTestTags.capoShapes(SongKey(PitchClass.G))).performClick()
         compose.waitForIdle()
+        assertFalse("a pick closes it", exists(PracticeTestTags.CAPO_SHAPES_PANEL))
+        assertEquals("the pill stays put", pill, node(PracticeTestTags.CAPO_SHAPES).getBoundsInRoot())
         assertEquals(
             rows("G major" to "B flat major", "A minor" to "C minor", "B minor" to "D minor", "C major" to "E flat major", "D major" to "F major", "E minor" to "G minor"),
             table(SongKey(PitchClass.G)),
         )
+    }
+
+    /**
+     * The shapes' pill stands where Chords has its name (Phase 77), so switching between the tools moves nothing: upright
+     * right under the top row, as wide and in the same place, also on a short screen and a tablet; on a tablet on its side
+     * in the top row's row; on a phone on its side where Chords' is, or a little higher where the capo and "Sounds in"
+     * wouldn't fit under it there. "Shapes I play" stands small under its face.
+     */
+    @Test
+    fun theShapesPillStandsWhereChordsHasItsName() {
+        show(SongKey(PitchClass.C), 3)
+        val caption = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_capo_shapes)
+        for (size in listOf(XIAOMI, PHONE_UPRIGHT, NARROW_UPRIGHT, TABLET_UPRIGHT, TABLET_LANDSCAPE, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            shownChords.value = true
+            compose.waitForIdle()
+            val chords = node(PracticeTestTags.NAME_PICKER).getBoundsInRoot()
+            shownChords.value = false
+            compose.waitForIdle()
+            val capo = node(PracticeTestTags.CAPO_SHAPES).getBoundsInRoot()
+            assertEquals("$size: from where Chords' name starts (a pixel apart at most)", chords.left.value, capo.left.value, 1f)
+            assertEquals("$size: as wide as Chords' name", chords.width.value, capo.width.value, 1f)
+            if (size == PHONE_LANDSCAPE) {
+                assertTrue("$size: at Chords' name or a little higher, $capo $chords", capo.top <= chords.top + 0.5.dp && capo.top >= chords.top - 40.dp)
+            } else {
+                assertEquals("$size: as high as Chords' name", chords.top.value, capo.top.value, 0.5f)
+            }
+            val under = compose.onNodeWithText(caption).getBoundsInRoot()
+            assertTrue("$size: the caption under the face $under $capo", under.top >= capo.bottom && under.top <= capo.bottom + 8.dp)
+        }
     }
 
     @Test
@@ -287,9 +369,11 @@ class CapoScreenTest {
             val tool = node(PracticeTestTags.BACK).getBoundsInRoot()
             assertTrue("$case the back arrow at the top $tool", tool.top >= window.top && tool.top <= window.top + 16.dp)
             if (size == TABLET_UPRIGHT || size == TABLET_LANDSCAPE) {
-                // A tablet (Phase 52): the part under the top row in the middle of the height left, not hanging at the top.
-                val first = if (size == TABLET_UPRIGHT) node(PracticeTestTags.CAPO_SHAPES) else node(PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR)))
-                val above = first.getBoundsInRoot().top - tool.bottom
+                // A tablet (Phase 52): the part under the pill (right under the top row since Phase 77, or in its row on
+                // its side) in the middle of the height left, not hanging at the top.
+                val first = if (size == TABLET_UPRIGHT) node(PracticeTestTags.CAPO_LOWER) else node(PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR)))
+                val caption = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_capo_shapes)
+                val above = first.getBoundsInRoot().top - compose.onNodeWithText(caption).getBoundsInRoot().bottom
                 val below = window.bottom - maxOf(node(PracticeTestTags.CAPO_SOUNDS_IN).getBoundsInRoot().bottom, node(last).getBoundsInRoot().bottom)
                 assertTrue("$case in the middle of the height: $above above, $below below", above > 100.dp && below > 100.dp && abs((above - below).value) < 60f)
                 if (size == TABLET_LANDSCAPE) {

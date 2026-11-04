@@ -52,8 +52,9 @@ import androidx.compose.ui.unit.sp
  * button) on two or three lines, whole words, smaller still, down to 5 sp ([NameAutoSize]; German
  * "G♯ harmonisches Moll" in Space Age's wide letters, the overnight run of 2026-11-01). Never taller.
  *
- * With [caption] a small muted line stands above the box ("Shapes I play"), hidden from TalkBack, so
- * [spoken] should say it. TalkBack hears the box as a drop-down list called [spoken], a [heading]
+ * With [caption] a small muted line stands under the box (Capo's "Shapes I play"; above it until Phase 77, when the
+ * name pills came to stand in one place under the top row: under it, the box's top is where every other pill's is),
+ * hidden from TalkBack, so [spoken] should say it. TalkBack hears the box as a drop-down list called [spoken], a [heading]
  * where it names what the screen shows, a polite [live] region where a new pick isn't said otherwise.
  * The name's text stays in the semantics tree for the tests. [faceModifier] goes on the box (a test tag).
  */
@@ -71,21 +72,6 @@ fun NamePickerButton(
     val source = remember { MutableInteractionSource() }
     val title = MaterialTheme.typography.titleLarge
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        if (caption != null) {
-            val label = MaterialTheme.typography.labelMedium
-            Text(
-                caption,
-                style = label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                // Never wrapped, so the auto-size sees a caption too wide (Ear training's AnswerButton says why).
-                softWrap = false,
-                autoSize = TextAutoSize.StepBased(minFontSize = SMALLEST_NAME, maxFontSize = label.fontSize, stepSize = 0.5.sp),
-                // The box says it with what is picked.
-                modifier = Modifier.semantics { hideFromAccessibility() },
-            )
-        }
         Row(
             faceModifier
                 .fillMaxWidth()
@@ -125,6 +111,21 @@ fun NamePickerButton(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 2.dp).size(20.dp),
+            )
+        }
+        if (caption != null) {
+            val label = MaterialTheme.typography.labelMedium
+            Text(
+                caption,
+                style = label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                // Never wrapped, so the auto-size sees a caption too wide (Ear training's AnswerButton says why).
+                softWrap = false,
+                autoSize = TextAutoSize.StepBased(minFontSize = SMALLEST_NAME, maxFontSize = label.fontSize, stepSize = 0.5.sp),
+                // The box says it with what is picked.
+                modifier = Modifier.padding(top = CAPTION_GAP).semantics { hideFromAccessibility() },
             )
         }
     }
@@ -173,6 +174,9 @@ val NAME_PICKER_HEIGHT = 56.dp
  * and Scales' name, Ear training's exercise (Phase 77), so switching between the Practice tools moves nothing.
  */
 val NAME_PICKER_MAX_WIDTH = 400.dp
+
+/** A [NamePickerButton]'s caption keeps this far under its box. */
+private val CAPTION_GAP = 2.dp
 
 /** The name keeps this far from the pill's ends, clear of their curve. */
 private val NAME_PICKER_PADDING = 20.dp

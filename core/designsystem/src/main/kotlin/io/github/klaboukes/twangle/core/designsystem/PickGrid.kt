@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Twangle's one grid of pick buttons in a panel (Phase 77, docs/architecture/ui.md *Shared controls*): Chords' roots and
- * chord types, Scales' roots and scales, Ear training's intervals, ways of playing and chord types. Until Phase 77
+ * chord types, Scales' roots and scales, Capo's shapes, Ear training's intervals, ways of playing and chord types. Until Phase 77
  * Chords drew its own (`PickerGrid`) and Ear training its chips (`ChipGrid`), 8 dp taller and muted.
  *
  * [options] as see-through buttons [perRow] to a row (the last row centred), each as wide as the row allows up to
