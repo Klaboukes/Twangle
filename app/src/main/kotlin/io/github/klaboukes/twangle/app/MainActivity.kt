@@ -339,6 +339,8 @@ class MainActivity : AppCompatActivity() {
                                         onFullScreenChange = { tunerFullScreen = it },
                                         ratingWindow = container.ratingWindow,
                                         settingsButton = gear,
+                                        // Its top row names the tab, as the metronome's and Practice's do (Phase 77).
+                                        title = stringResource(R.string.nav_tuner),
                                         focusMode = focusMode,
                                         onFocusModeChange = { container.focusMode.value = it },
                                     )
@@ -518,6 +520,7 @@ class MainActivity : AppCompatActivity() {
                     notation = settings.notationFor(appLanguage()),
                     header = { end ->
                         BackAndTuningRow(
+                            tool = PracticeTool.EAR_TRAINING,
                             onBack = onBack,
                             tuningName = practiceTuningName(settings),
                             spokenTuningName = spokenTuning(settings),

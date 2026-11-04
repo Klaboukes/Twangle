@@ -253,7 +253,7 @@ class RulerTest {
     /**
      * Upright the signal bars stand at the start of the strum check's row over the pegs, their left edge over the first
      * peg's (the owner's review of 2026-11-03: beside the ruler's heard note they read as the next note's); not in the
-     * ruler, and they stay put when the note goes. In Any note, with no pegs, they stand in the chip's row.
+     * ruler, and they stay put when the note goes. In Any note, with no pegs, they stand in the top row.
      */
     @Test
     fun theSignalBarsStandAtTheStartOfTheRowOverThePegs() {
@@ -274,7 +274,8 @@ class RulerTest {
         compose.waitForIdle()
         val chromatic = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
         val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        assertTrue("Any note: bars $chromatic not in the chip's row $chip", chromatic.top < chip.bottom && chromatic.bottom > chip.top)
+        // The top row, over the chip's own line (Phase 77).
+        assertTrue("Any note: bars $chromatic not in the top row over the chip $chip", chromatic.bottom <= chip.top && chromatic.top >= 0.dp)
     }
 
     /** Upright the ruler is the big needle where the column has room (the Xiaomi's), the plain one on a short screen (the S26's). */
@@ -287,14 +288,15 @@ class RulerTest {
         assertEquals("short", 78f, ruler.getBoundsInRoot().height.value, 0.5f)
     }
 
-    /** The 12th-fret check's panel takes the ruler's and the meter's place; the signal bars go back to the chip's row. */
+    /** The 12th-fret check's panel takes the ruler's and the meter's place; the signal bars go back to the top row. */
     @Test
     fun aToolsPanelHasNoRuler() {
         show(TunerUiState.IntonationCheck(Tunings.STANDARD), signalBars = true)
         ruler.assertDoesNotExist()
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
         val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        assertTrue("bars $bars not in the chip's row $chip", bars.top < chip.bottom && bars.bottom > chip.top)
+        // The top row, over the chip's own line (Phase 77).
+        assertTrue("bars $bars not in the top row over the chip $chip", bars.bottom <= chip.top && bars.top >= 0.dp)
     }
 
     /** The scale slides with the reading: the same note 40 cents sharp is drawn elsewhere than in tune. */

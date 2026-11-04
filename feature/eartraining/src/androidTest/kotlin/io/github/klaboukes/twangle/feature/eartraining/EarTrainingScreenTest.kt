@@ -162,7 +162,8 @@ class EarTrainingScreenTest {
                         },
                         onAllowMic = { micAsks++ },
                         onOpenSettings = { settingsOpened++ },
-                        // The top row's place (`:app` puts the back arrow and the picker chip there, the ⋯ at its end).
+                        // The top row's place (`:app` puts the back arrow and the tool's name there, the ⋯ at its end, and the
+                        // picker chip on its own line under it; TunerTabTest checks the real one's places).
                         header = { end ->
                             TopBar(
                                 middle = { Box(Modifier.size(160.dp, 48.dp).testTag(HEADER)) },

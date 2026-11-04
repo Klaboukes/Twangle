@@ -12,6 +12,15 @@ internal val TOOL_STRINGS_GAP = 8.dp
 
 internal val SECTION_SPACING = 24.dp
 
+/**
+ * Upright, a column shorter than [SHORT_COLUMN_HEIGHT] (the S26's 570 dp with its navigation buttons) closes up its
+ * sections to [SECTION_SPACING_SHORT] and the ruler to [RULER_METER_GAP_SHORT] over the lens (Phase 77: the picker
+ * chip's own line under the top row took 48 dp, and the lens was already at its least height there).
+ */
+internal val SHORT_COLUMN_HEIGHT = 610.dp
+internal val SECTION_SPACING_SHORT = 12.dp
+internal val RULER_METER_GAP_SHORT = 4.dp
+
 /** Upright, the ruler is drawn big (the needle, 2026-11-03) from this column height; a shorter one keeps it plain. */
 internal val LARGE_RULER_MIN_HEIGHT = 640.dp
 
@@ -58,8 +67,12 @@ internal val COMPACT_PANE_HEIGHT = 420.dp
 /** In the compact layout a tool's panel grows with the screen, up to this. */
 internal val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 
-/** The room at each end of the picker chip's row (the [TopBar]'s least): focus mode's 44 dp button outline and 8 dp clear of the chip. */
-internal val FOCUS_BUTTON_SLOT = 52.dp
+/**
+ * A window on its side at least this tall (a tablet) gives the picker chip its own line under the top row, as upright;
+ * a shorter one (a phone on its side, about 360 dp) keeps the chip in the row's middle ([ChipRow]), so the lens keeps
+ * its height. The tuning sheet's short window too.
+ */
+internal val CHIP_LINE_MIN_HEIGHT = 500.dp
 
 /** The gear's 48 dp touch area reaches this far past its 44 dp outline at each side. */
 internal val GEAR_OUTLINE_INSET = 2.dp

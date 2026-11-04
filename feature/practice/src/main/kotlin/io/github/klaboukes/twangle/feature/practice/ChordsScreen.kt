@@ -82,6 +82,7 @@ import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleFinder
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -96,8 +97,8 @@ import kotlinx.coroutines.withContext
  * to 12, every note named and the root in the accent ([ScaleNeck]). The two are one screen, so they
  * share their saved UI state: the root picked in one is the other's root too.
  *
- * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start, the instrument and tuning
- * beside it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the picker chip, which opens the instrument and tuning sheet),
+ * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start, the tool's name in
+ * the row's middle and the instrument and tuning on their own line under it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the picker chip, which opens the instrument and tuning sheet),
  * the chord's or the scale's full name on the one picker face as wide as the row ("C minor seventh ⌄",
  * "D Dorian ⌄", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
@@ -210,7 +211,7 @@ fun ChordsScreen(
         )
     }
 
-    val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { BackAndTuningRow(if (scales) PracticeTool.SCALES else PracticeTool.CHORDS, onBack, tuningName, spokenTuningName, onPickInstrument) }
     var panelOpen by remember { mutableStateOf(false) }
     // Where the panels open from: the name's row (upright, and on a tablet on its side) or the top of the start half
     // (a phone on its side), in the root's coordinates.

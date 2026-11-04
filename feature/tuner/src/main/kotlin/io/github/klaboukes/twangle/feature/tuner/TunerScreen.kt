@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -155,6 +156,7 @@ fun TunerScreen(
     settingsButton: (@Composable () -> Unit)? = null,
     focusMode: Boolean = false,
     onFocusModeChange: ((Boolean) -> Unit)? = null,
+    title: String? = null,
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -292,6 +294,7 @@ fun TunerScreen(
                     onFullScreenChange = onFullScreenChange,
                     onFocusModeChange = onFocusModeChange,
                     settingsButton = settingsButton,
+                    title = title,
                 )
                 val fade = if (animationsOff) 0 else WARNING_FADE_MILLIS
                 AnimatedVisibility(
@@ -311,22 +314,24 @@ fun TunerScreen(
                     onOpenSettings = mic::openSettings,
                     practiceTab = tools.practiceTab,
                 )
-                // Settings stays one tap away while the microphone is asked for: the gear in the header's corner.
-                if (settingsButton != null) {
-                    Box(Modifier.align(Alignment.TopStart).padding(start = COLUMN_PADDING - GEAR_OUTLINE_INSET, top = EDGE_INSET)) { settingsButton() }
-                }
-                // The picker chip works without the microphone too: the sheet opens over the prompt, and
-                // the tuning picked is the one the tuner listens for once allowed.
+                // The tuner's top over the prompt, as it stands over the tuner: Settings stays one tap away while the
+                // microphone is asked for (the gear in the row's corner), and the picker chip works without the
+                // microphone too: the sheet opens over the prompt, and the tuning picked is the one the tuner listens
+                // for once allowed.
                 val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
                 val shown = panelTuning
-                if (shown != null) {
-                    Box(
-                        Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = EDGE_INSET)
-                            .padding(horizontal = FOCUS_BUTTON_SLOT + COLUMN_PADDING),
-                    ) {
-                        TunerPickerChip(mode, shown, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) })
+                BoxWithConstraints(Modifier.align(Alignment.TopCenter).fillMaxWidth()) {
+                    val chipInRow = maxWidth > maxHeight && maxHeight < CHIP_LINE_MIN_HEIGHT
+                    Box(Modifier.padding(top = EDGE_INSET).padding(horizontal = COLUMN_PADDING)) {
+                        ChipRow(
+                            chip = { if (shown != null) TunerPickerChip(mode, shown, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) }) },
+                            bars = null,
+                            button = null,
+                            gear = settingsButton,
+                            title = title,
+                            chipInRow = chipInRow,
+                            hasChip = shown != null,
+                        )
                     }
                 }
                 if (pickerOpen && shown != null) {
@@ -402,8 +407,8 @@ private fun KeepScreenOn() {
  * adds small signal bars beside the ruler's heard note (at the start of the top row, [ChipRow], while a tool's panel
  * stands in the ruler's and the lens's place), which open the live [signalFigures] when tapped; focus mode, with its
  * controls hidden, leaves them out. The app's [settingsButton] (the gear, Phase 69) stands at the very start of the
- * top row, across from focus mode's button, which [onFocusModeChange] adds at its end. In the
- * row's middle the picker chip (2.0, Phase 70: "Guitar · Drop D ▾", the player's own tuning by its
+ * top row, across from focus mode's button, which [onFocusModeChange] adds at its end, and [title] ("Tune") in its middle
+ * (Phase 77). On its own line under the row (in its middle on a phone on its side, [ChipRow]) the picker chip (2.0, Phase 70: "Guitar · Drop D ▾", the player's own tuning by its
  * name, "Any note ▾" in chromatic mode) calls [onPickerOpenChange] with true. While [pickerOpen] the
  * picker sheet, "What are you tuning?", shows over the tuner ([InstrumentTuningPanel]), and
  * [onPickerOpenChange] hears false once it has closed. [instrument] is the one picked there (by
@@ -488,6 +493,7 @@ fun TunerContent(
     onFullScreenChange: (Boolean) -> Unit = {},
     onFocusModeChange: ((Boolean) -> Unit)? = null,
     settingsButton: (@Composable () -> Unit)? = null,
+    title: String? = null,
 ) {
     // Movable, so the bars keep their count (and an open figures panel stays open) when the layout
     // changes and the header is built afresh around them.
@@ -506,9 +512,10 @@ fun TunerContent(
         is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
-    // barsInRow: the signal bars in the chip's row, where they don't stand over the pegs.
-    val header = @Composable { barsInRow: Boolean ->
-        // The picker chip, top centre (2.0, Phase 70); none over an error, where the sheet can't open.
+    // barsInRow: the signal bars in the top row, where they don't stand over the pegs; chipInRow: the chip in the row's
+    // middle, in the name's place (a phone on its side, [ChipRow]).
+    val header = @Composable { barsInRow: Boolean, chipInRow: Boolean ->
+        // The picker chip on its line under the top row (2.0, Phase 70; Phase 77); none over an error, where the sheet can't open.
         val chip = @Composable {
             if (shownTuning != null) {
                 TunerPickerChip(mode, shownTuning, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) })
@@ -534,6 +541,9 @@ fun TunerContent(
             bars = if (showSignalBars && barsInRow) ({ movableSignalBars() }) else null,
             button = focusButton,
             gear = settingsButton,
+            title = title,
+            chipInRow = chipInRow,
+            hasChip = shownTuning != null,
         )
     }
     // The reading's tone, one for the lens's border, the word, the heard peg's ring and the whole screen's tint
@@ -669,14 +679,14 @@ fun TunerContent(
         }
     }
     val ruler = rulerShown?.let { @Composable { rulerWith(false, 0.dp) } }
-    val rulerAndGauge = @Composable { largeRuler: Boolean ->
+    val rulerAndGauge = @Composable { largeRuler: Boolean, rulerGap: Dp ->
         if (ruler == null) {
             gauge()
         } else {
             // Under its neighbours, as the lens is on its own: the lens's glow reaches past its box, behind them.
             Column(Modifier.zIndex(-1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 rulerWith(largeRuler, 0.dp)
-                Spacer(Modifier.height(RULER_METER_GAP))
+                Spacer(Modifier.height(rulerGap))
                 gauge()
             }
         }
@@ -686,12 +696,14 @@ fun TunerContent(
     val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) && strumPanel == null
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        // A phone on its side keeps the chip in the top row's middle, so the lens keeps its height ([ChipRow]).
+        val chipInRow = maxWidth > maxHeight && maxHeight < CHIP_LINE_MIN_HEIGHT
         val twoPane = @Composable {
             TwoPaneLayout(
                 error = error,
                 onRetry = onRetry,
                 // On its side the signal bars stay in the chip's row.
-                header = { header(true) },
+                header = { header(true, chipInRow) },
                 guitarSlot = guitarSlot,
                 gauge = gauge,
                 status = status,
@@ -703,18 +715,20 @@ fun TunerContent(
             val scale = columnScaleFor(maxWidth.value, maxHeight.value)
             // The big ruler where the column has room for it (the Xiaomi's 750 dp); a short one (the S26's 570) keeps the plain one.
             val largeRuler = maxHeight / scale >= LARGE_RULER_MIN_HEIGHT
+            // A short column closes up the ruler over the lens too (SingleColumnLayout closes up its sections).
+            val rulerGap = if (maxHeight / scale < SHORT_COLUMN_HEIGHT) RULER_METER_GAP_SHORT else RULER_METER_GAP
             ScaledUp(scale) {
                 SingleColumnLayout(
                     height = maxHeight / scale,
                     error = error,
                     onRetry = onRetry,
-                    header = { header(!barsByPegs) },
-                    gauge = { rulerAndGauge(largeRuler) },
+                    header = { header(!barsByPegs, false) },
+                    gauge = { rulerAndGauge(largeRuler, rulerGap) },
                     status = { status(false) },
                     lensGivesWay = plainMeter,
                     // Upright the signal bars stand in the strum check's row over the pegs.
                     guitarSlot = { guitarSlotWith(false, true) },
-                    overLens = if (ruler != null) rulerHeight(largeRuler) + RULER_METER_GAP else 0.dp,
+                    overLens = if (ruler != null) rulerHeight(largeRuler) + rulerGap else 0.dp,
                 )
             }
         }
@@ -726,7 +740,7 @@ fun TunerContent(
                 height = windowHeight,
                 error = error,
                 onRetry = onRetry,
-                header = if (focus) null else ({ header(true) }),
+                header = if (focus) null else ({ header(true, chipInRow) }),
                 ruler = rulerShown?.let { if (focus) ({ rulerWith(false, WIDE_RULER_CLEAR) }) else ruler },
                 gauge = gauge,
                 word = { word(true, true) },

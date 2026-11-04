@@ -519,12 +519,16 @@ class ChordsScreenTest {
             // arrow until 2026-11-04), as on the tuner.
             val backArrow = node(PracticeTestTags.BACK).getBoundsInRoot()
             val instrument = node(PracticeTestTags.TUNING).getBoundsInRoot()
+            // The tool's name in the top row beside the back arrow, the chip on its own line under it (Phase 77).
+            val title = node(PracticeTestTags.TITLE).getBoundsInRoot()
             assertTrue(
-                "$case the tuning beside the back arrow $backArrow $instrument",
-                instrument.left >= backArrow.right && instrument.top < backArrow.bottom && instrument.bottom > backArrow.top,
+                "$case the tool's name beside the back arrow $backArrow $title",
+                title.left >= backArrow.right && title.top < backArrow.bottom && title.bottom > backArrow.top,
             )
+            assertTrue("$case the tuning on its own line under the top row $backArrow $instrument", instrument.top >= backArrow.bottom)
+            assertEquals("$case the chip under the name", ((title.left + title.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
             if (size.width < size.height) {
-                assertEquals("$case the chip in the row's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
+                assertEquals("$case the chip in the window's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
             }
             // On a tablet the panel drops under the name, on its side too (Phase 52); since Phase 77 it floats on the screen's
             // own layer, so the tablets' forced windows show where (Material's menu, a window of its own, wasn't scaled with them).

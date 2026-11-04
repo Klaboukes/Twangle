@@ -50,7 +50,9 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
+import io.github.klaboukes.twangle.core.designsystem.PickerLine
 import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
@@ -97,6 +99,9 @@ internal fun SingleColumnLayout(
     overLens: Dp = 0.dp,
 ) {
     val textMargin = Modifier.padding(horizontal = COLUMN_PADDING - METER_MARGIN)
+    // A short column (the S26's 570 dp) closes up the sections, so the lens keeps its least height and the pegs stay in
+    // view with the picker chip's own line under the top row (Phase 77).
+    val spacing = if (height < SHORT_COLUMN_HEIGHT) SECTION_SPACING_SHORT else SECTION_SPACING
     FitColumn(
         height = height,
         modifier = Modifier
@@ -106,7 +111,7 @@ internal fun SingleColumnLayout(
     ) {
         Box(textMargin.padding(top = EDGE_INSET)) { header() }
         Spacer(Modifier.gap(TOP_GAP_WEIGHT))
-        Spacer(Modifier.height(SECTION_SPACING))
+        Spacer(Modifier.height(spacing))
         if (error != null) {
             Column(textMargin, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
                 TunerErrorMessage(error, onRetry)
@@ -115,13 +120,13 @@ internal fun SingleColumnLayout(
         } else {
             // On a short screen (a phone with navigation buttons) the lens's height, or a tool's panel, gives way, so the pegs stay in view.
             if (lensGivesWay) {
-                Shrinking { room -> LensOverWord(room, gauge, overLens) { Box(textMargin) { status() } } }
+                Shrinking { room -> LensOverWord(room, gauge, overLens, spacing) { Box(textMargin) { status() } } }
             } else {
                 Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
-                Spacer(Modifier.height(SECTION_SPACING))
+                Spacer(Modifier.height(spacing))
                 Box(textMargin) { status() }
             }
-            Spacer(Modifier.height(SECTION_SPACING))
+            Spacer(Modifier.height(spacing))
             Spacer(Modifier.gap(1f))
             Box(textMargin) { guitarSlot() }
         }
@@ -130,16 +135,16 @@ internal fun SingleColumnLayout(
 }
 
 /**
- * The ruler and the lens ([gauge], [overLens] of it above the lens) over the [word], [SECTION_SPACING] apart, in a
+ * The ruler and the lens ([gauge], [overLens] of it above the lens) over the [word], [spacing] apart, in a
  * [room] that high (2.0, Phase 71; docs/architecture/v2-plan.md, *The lens*, Size). The word keeps its height; the
  * lens takes the rest, from 0.85 down to half its width ([Lens]), and at half it stays, the column then scrolling.
  */
 @Composable
-private fun LensOverWord(room: Dp, gauge: @Composable () -> Unit, overLens: Dp, word: @Composable () -> Unit) {
+private fun LensOverWord(room: Dp, gauge: @Composable () -> Unit, overLens: Dp, spacingDp: Dp, word: @Composable () -> Unit) {
     Layout(contents = listOf(gauge, word)) { (gaugeMeasurables, wordMeasurables), constraints ->
         val across = Constraints(maxWidth = min(constraints.maxWidth, COLUMN_MAX_WIDTH.roundToPx()))
         val wordPlaceable = wordMeasurables.single().measure(across)
-        val spacing = SECTION_SPACING.roundToPx()
+        val spacing = spacingDp.roundToPx()
         val lensWidth = (across.maxWidth - (LENS_INSET * 2).roundToPx()).coerceAtLeast(0)
         val leastGauge = overLens.roundToPx() + (lensWidth * LENS_SHORT).roundToInt()
         val gaugeHeight = (room.roundToPx() - wordPlaceable.height - spacing).coerceAtLeast(leastGauge)
@@ -299,13 +304,20 @@ internal fun CompactLayout(
 }
 
 /**
- * The tuner's [TopBar]: the picker [chip] in the middle (2.0, Phase 70, in the mode switch's place), focus mode's
- * [button] at the end (owner, 2026-10-25: the same place in both modes, never moving), and the app's [gear] (Settings,
- * Phase 69) at the start with the signal [bars] right after it, where they stand in this row (Any note, a tool's panel,
- * on its side; over the pegs otherwise). The chip stays in the middle whether the bars show or not and never reaches
- * either end: a long name at a large font ends in "…" instead. None of them moves with anything the tuner hears; the
- * chip alone grows and shrinks with its name, about its centre. The same row as the metronome's and Practice's, so
- * switching tabs moves nothing (the owner's review of 2026-11-03).
+ * The tuner's top: its [TopBar], the tab's name in the middle ([title], "Tune", a heading, as the metronome and Practice
+ * name theirs; none where not given), focus mode's [button] at the end (owner, 2026-10-25: the same place in both modes,
+ * never moving), and the app's [gear] (Settings, Phase 69) at the start with the signal [bars] right after it, where
+ * they stand in this row (Any note, a tool's panel, on its side; over the pegs otherwise). Under the row, on its own
+ * centred line ([PickerLine]), the picker [chip] (2.0, Phase 70, in the mode switch's place), as on every Practice
+ * tool, so it stands in one place wherever it is (the owner, 2026-11-04: "each screen should just have the screen's
+ * name there"; until then the chip stood in the row's middle). A long name at a large font ends in "…". None of them
+ * moves with anything the tuner hears; the chip alone grows and shrinks with its name, about its centre. The same row
+ * as the metronome's and Practice's, so switching tabs moves nothing (the owner's review of 2026-11-03).
+ *
+ * With [chipInRow] (a window on its side shorter than [CHIP_LINE_MIN_HEIGHT], a phone on its side) the chip takes the
+ * row's middle instead, in the name's place: there the rail beside the tuner names the tab, as on the metronome on its
+ * side, and the chip's own line would take its height from the lens, which is all a phone on its side has to give. It
+ * stays as near the rule as the height allows: top centre, right where its line would start.
  */
 @Composable
 internal fun ChipRow(
@@ -313,6 +325,9 @@ internal fun ChipRow(
     bars: (@Composable () -> Unit)?,
     button: (@Composable () -> Unit)?,
     gear: (@Composable () -> Unit)? = null,
+    title: String? = null,
+    chipInRow: Boolean = false,
+    hasChip: Boolean = true,
 ) {
     val start = if (gear == null && bars == null) {
         null
@@ -325,7 +340,20 @@ internal fun ChipRow(
             }
         }
     }
-    TopBar(middle = chip, start = start, end = button)
+    if (chipInRow) {
+        TopBar(middle = chip, start = start, end = button)
+    } else {
+        Column(Modifier.fillMaxWidth()) {
+            TopBar(
+                middle = { if (title != null) TopBarTitle(title, Modifier.testTag(TunerTestTags.TITLE)) },
+                modifier = Modifier.fillMaxWidth(),
+                start = start,
+                end = button,
+            )
+            // None over an error, where the sheet can't open.
+            if (hasChip) PickerLine { chip() }
+        }
+    }
 }
 
 /**

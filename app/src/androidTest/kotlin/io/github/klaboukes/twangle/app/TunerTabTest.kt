@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.eartraining.EarTrainingTestTags
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.settings.SETTINGS_BACK_TAG
@@ -185,6 +186,50 @@ class TunerTabTest {
             assertEquals("the end button's face as the gear's", gears.getValue(Destination.TUNER).width(), ends.getValue(Destination.TUNER).width())
         }
     }
+
+    /**
+     * Every top row names its screen (Phase 77, the owner's wish of 2026-11-04: "Tune" on the tuner, the tool's name on a
+     * Practice tool, as Metronome and Practice name theirs), all in one place; the picker chip stands on its own line under
+     * the row in one place on the tuner and on every Practice tool, and the tools' name pills (Chords' and Scales' name,
+     * Capo's shapes, Ear training's exercise) right under it in one place, so switching between them moves nothing.
+     */
+    @Test
+    fun everyTopRowNamesItsScreenAndTheChipStandsInOnePlace() {
+        ActivityScenario.launch(MainActivity::class.java).use {
+            assertTrue("the tuner shows", shown(TunerTestTags.PICKER_CHIP))
+            val title = boundsOf(TunerTestTags.TITLE)
+            val chip = boundsOf(TunerTestTags.PICKER_CHIP)
+            val gear = boundsOf(NavigationTestTags.SETTINGS)
+            // The chip's touch area starts where the gear's ends (a pixel of rounding apart).
+            assertTrue("the chip under the top row $gear $chip", chip.top >= gear.bottom - 2)
+            assertNear("the chip under the name", title.centerX(), chip.centerX())
+            tab(Destination.PRACTICE)
+            var pillTop: Int? = null
+            for ((tool, pill) in listOf(
+                PracticeTool.CHORDS to PracticeTestTags.NAME_PICKER,
+                PracticeTool.SCALES to PracticeTestTags.NAME_PICKER,
+                PracticeTool.CAPO to PracticeTestTags.CAPO_SHAPES,
+                PracticeTool.EAR_TRAINING to EarTrainingTestTags.EXERCISE,
+            )) {
+                click(PracticeTestTags.card(tool))
+                val toolTitle = boundsOf(PracticeTestTags.TITLE)
+                assertNear("$tool's name as high as the tuner's", title.centerY(), toolTitle.centerY())
+                assertNear("$tool's name in the middle, as the tuner's", title.centerX(), toolTitle.centerX())
+                val toolChip = boundsOf(PracticeTestTags.TUNING)
+                assertNear("$tool's chip as high as the tuner's", chip.top, toolChip.top)
+                assertNear("$tool's chip in the middle, as the tuner's", chip.centerX(), toolChip.centerX())
+                val top = boundsOf(pill).top
+                pillTop?.let { assertNear("$tool's name pill where the other tools' are", it, top) }
+                pillTop = top
+                click(PracticeTestTags.BACK)
+                assertTrue("back on the cards", shown(PracticeTestTags.CARDS))
+            }
+        }
+    }
+
+    /** [expected] and [actual] (px) a pixel apart at most: centres of odd and even sizes round apart. */
+    private fun assertNear(message: String, expected: Int, actual: Int) =
+        assertTrue("$message: $expected, $actual", kotlin.math.abs(expected - actual) <= 1)
 
     /** [tag]'s bounds, found afresh while the tuner's screen keeps changing round it (a found node can go stale at once). */
     private fun boundsOf(tag: String): android.graphics.Rect {

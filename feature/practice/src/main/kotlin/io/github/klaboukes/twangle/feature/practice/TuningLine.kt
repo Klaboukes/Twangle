@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.feature.practice
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -26,10 +24,12 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.BackButton
 import io.github.klaboukes.twangle.core.designsystem.PickerChip
-import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_SLOT
+import io.github.klaboukes.twangle.core.designsystem.PickerLine
 import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
  * The Practice tools' instrument and tuning ("Guitar · Standard", [tuningName], heard as [spokenTuningName]).
@@ -73,17 +73,19 @@ internal fun TuningLine(
 }
 
 /**
- * The top row of every Practice tool (2.0, Phase 69; until then the tool button, Phase 47): every tab's [TopBar],
- * the back arrow ([BackButton], [onBack], back to the Practice cards) at its start, where the cards page has the
- * app's gear, and the instrument and tuning ([TuningLine]; the picker chip since Phase 70) in its middle, as the
- * tuner's chip, its name on one line ending in "…" where it is longer (beside the arrow at the start until
- * 2026-11-04). Only where the middle is too narrow for a few letters ([MIN_NAME_EMS] wide, a 320 dp phone at a very
- * large text size) does the chip go on a line of its own under the arrow, centred too. A tool's own button goes at
- * the row's [end] (Ear training's ⋯, Phase 77), where the tabs have theirs, and stays there in both cases. Public for
- * the tools of other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
+ * The top of every Practice tool (2.0, Phase 69; until then the tool button, Phase 47): every tab's [TopBar], the back
+ * arrow ([BackButton], [onBack], back to the Practice cards) at its start, where the cards page has the app's gear, the
+ * [tool]'s name in its middle ([TopBarTitle], "Chords", a heading, as the tabs name themselves there), and a tool's own
+ * button at its [end] (Ear training's ⋯, Phase 77), where the tabs have theirs. Under the row, on its own centred line
+ * ([PickerLine]), the instrument and tuning ([TuningLine]; the picker chip since Phase 70), in the same place as the
+ * tuner's chip, its name on one line ending in "…" where it is longer. Until 2026-11-04 (the owner: "each screen should
+ * just have the screen's name there") the chip stood in the row's middle, on a 320 dp phone at a very large text size
+ * on a line of its own; beside the arrow before that. Without [onPickInstrument] the plain line stands in the chip's
+ * place. Public for the tools of other modules (Ear training, `:feature:eartraining`), whose top `:app` builds with it.
  */
 @Composable
 fun BackAndTuningRow(
+    tool: PracticeTool,
     onBack: () -> Unit,
     tuningName: String,
     spokenTuningName: String,
@@ -91,33 +93,16 @@ fun BackAndTuningRow(
     modifier: Modifier = Modifier,
     end: (@Composable () -> Unit)? = null,
 ) {
-    val style = MaterialTheme.typography.titleSmall
-    val back = @Composable { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) }
-    BoxWithConstraints(modifier.fillMaxWidth()) {
-        // A few letters of the name at its size, however large the text is set, and the chip's caret (about an em).
-        val em = with(LocalDensity.current) { style.fontSize.toDp() }
-        val besideName = if (onPickInstrument != null) CHIP_PADDING + em else 0.dp
-        if (maxWidth - TOP_BAR_SLOT * 2 - besideName >= em * MIN_NAME_EMS) {
-            TopBar(
-                middle = { TuningLine(tuningName, spokenTuningName, onPickInstrument) },
-                modifier = Modifier.fillMaxWidth(),
-                start = back,
-                end = end,
-            )
-        } else {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                TopBar(middle = {}, modifier = Modifier.fillMaxWidth(), start = back, end = end)
-                TuningLine(tuningName, spokenTuningName, onPickInstrument)
-            }
-        }
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        TopBar(
+            middle = { TopBarTitle(stringResource(tool.label), Modifier.testTag(PracticeTestTags.TITLE)) },
+            modifier = Modifier.fillMaxWidth(),
+            start = { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) },
+            end = end,
+        )
+        PickerLine { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
     }
 }
-
-/** The name stays beside the back arrow where the row's middle holds about this many letters' widths (in ems) or more. */
-private const val MIN_NAME_EMS = 4f
-
-/** The picker chip's own room round its name (its padding and the caret's gap). */
-private val CHIP_PADDING = 34.dp
 
 /**
  * The quiet line in the capo table's place for a tuning with a short string (the banjo's fifth,

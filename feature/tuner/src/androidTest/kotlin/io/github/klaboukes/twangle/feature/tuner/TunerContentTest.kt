@@ -1640,8 +1640,9 @@ class TunerContentTest {
     /**
      * Upright, the lens spans the screen less 20 dp at each side (2.0, Phase 71), between the picker chip at the top
      * and the strings at the bottom, sitting a little high (the gap above it is the smaller one), and
-     * there is no "A4 = 440 Hz" line. With the big note gone (the phase's last step) the Xiaomi has room for the lens
-     * at its full planned height, 0.85 times its width; the word stands under it.
+     * there is no "A4 = 440 Hz" line. With the big note gone (the phase's last step) the Xiaomi had room for the lens
+     * at its full planned height, 0.85 times its width; since the picker chip has its own line under the top row (Phase
+     * 77) the lens gives about 13 dp of that height back (0.81), never its width. The word stands under it.
      */
     @Test
     fun uprightTheMeterSpansTheScreenBetweenPickerChipAndStrings() {
@@ -1650,12 +1651,13 @@ class TunerContentTest {
         val scale = window.width / PHONE_UPRIGHT.width
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         assertEquals("meter width", (PHONE_UPRIGHT.width - 40.dp).value * scale, gauge.width.value, 1f)
-        assertEquals("lens height", gauge.width.value * 0.85f, gauge.height.value, 1f)
+        assertTrue("lens height ${gauge.height}", gauge.height.value <= gauge.width.value * 0.85f + 1f && gauge.height.value >= gauge.width.value * 0.8f)
         val modeSwitch = pickerChip.getBoundsInRoot()
         val ruler = compose.onNodeWithTag(TunerTestTags.RULER).getBoundsInRoot()
         val wordBox = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
         val strings = stringChip("E2").getBoundsInRoot()
-        assertTrue("picker chip near the top at ${modeSwitch.top}", modeSwitch.top - window.top < 40.dp * scale)
+        // On its own line right under the top row (8 dp down, 48 dp high): its 40 dp pill 4 dp inside the line's 48.
+        assertEquals("picker chip right under the top row at ${modeSwitch.top}", (window.top + 60.dp * scale).value, modeSwitch.top.value, 1f)
         assertTrue("strings near the bottom at ${strings.bottom}", window.bottom - strings.bottom < 40.dp * scale)
         assertTrue("ruler under the picker chip", ruler.top >= modeSwitch.bottom)
         assertTrue("meter under the ruler", gauge.top > ruler.bottom)
@@ -1677,6 +1679,12 @@ class TunerContentTest {
         assertTrue("lens ${gauge.height} shorter than half its width", gauge.height.value >= gauge.width.value * 0.5f - 1f)
         stringChip("E2").assertIsDisplayed()
         word.assertIsDisplayed()
+        // The S26's own width too: the pegs wholly in view under the picker chip's own line (Phase 77), nothing scrolled.
+        shownSize.value = DpSize(360.dp, 570.dp)
+        compose.waitForIdle()
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val peg = stringChip("E2").getBoundsInRoot()
+        assertTrue("the pegs $peg wholly in view in $window", peg.bottom <= window.bottom)
     }
 
     /**
@@ -2192,16 +2200,25 @@ class TunerContentTest {
         val button = assertAtTheEndOfTheChipRow(compose.onNodeWithContentDescription(inLocale.getString(R.string.tuner_focus_mode)))
         val chip = pickerChip.getBoundsInRoot()
         assertEquals("chip centred", ((window.left + window.right) / 2).value, ((chip.left + chip.right) / 2).value, 1f)
-        assertTrue("chip $chip runs into the button $button", chip.right <= button.left)
+        assertTrue("chip $chip runs into the button $button", chip.right <= button.left || chip.top >= button.bottom)
         assertWhollyShown(pickerChip, "$locale chip")
     }
 
-    /** [button] stands at the end of the picker chip's row, level with the chip and after it; returns its bounds. */
+    /**
+     * [button] stands at the end of the top row, 8 dp down: upright over the picker chip's own line (Phase 77), on a phone
+     * on its side level with the chip in the row's middle and after it; returns its bounds.
+     */
     private fun assertAtTheEndOfTheChipRow(button: SemanticsNodeInteraction): DpRect {
         val place = button.assertIsDisplayed().getBoundsInRoot()
         val switch = pickerChip.assertIsDisplayed().getBoundsInRoot()
-        assertTrue("button at $place, switch at $switch: not level with it", abs(((place.top + place.bottom) - (switch.top + switch.bottom)).value) < 2f)
-        assertTrue("button at $place, switch at $switch: not after it", place.left >= switch.right)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        assertTrue("button at $place: not in the top row", place.top <= window.top + 12.dp)
+        if (window.width < window.height) {
+            assertTrue("button at $place, chip at $switch: the chip not on its own line under the row", switch.top >= place.bottom)
+        } else {
+            assertTrue("button at $place, switch at $switch: not level with it", abs(((place.top + place.bottom) - (switch.top + switch.bottom)).value) < 2f)
+            assertTrue("button at $place, switch at $switch: not after it", place.left >= switch.right)
+        }
         return place
     }
 

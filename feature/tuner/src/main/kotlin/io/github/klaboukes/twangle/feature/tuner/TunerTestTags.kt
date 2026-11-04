@@ -40,8 +40,14 @@ object TunerTestTags {
     /** The picker sheet, "What are you tuning?", opened from the picker chip. */
     const val PICKER_PANEL = "tuner_picker_panel"
 
-    /** The picker chip at the top of the tuner ("Guitar · Standard ▾", "Any note ▾"), which opens the sheet. */
+    /**
+     * The picker chip at the top of the tuner ("Guitar · Standard ▾", "Any note ▾"), which opens the sheet: on its own
+     * line under the top row (Phase 77), in the row's middle on a phone on its side.
+     */
     const val PICKER_CHIP = "tuner_picker_chip"
+
+    /** The tab's name in the middle of the tuner's top row ("Tune", Phase 77), over the picker chip's line. */
+    const val TITLE = "tuner_title"
 
     /** The sheet's Any note switch at its bottom (the whole row toggles it). */
     const val ANY_NOTE = "tuner_any_note"
@@ -80,7 +86,7 @@ object TunerTestTags {
     /** Focus mode's exit button, in the top end corner of the full-screen tuner. */
     const val EXIT_FOCUS = "tuner_exit_focus"
 
-    /** The button that turns focus mode on, at the end of the picker chip's row (top right, upright and on its side). */
+    /** The button that turns focus mode on, at the end of the top row (top right, upright and on its side). */
     const val ENTER_FOCUS = "tuner_enter_focus"
 
     /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */

@@ -48,6 +48,9 @@ object PracticeTestTags {
     /** The back arrow in the top start corner of every Practice tool, which leads back to the cards. */
     const val BACK = "practice_back"
 
+    /** A Practice tool's name in the middle of its top row ("Chords"; Phase 77), over the picker chip's own line. */
+    const val TITLE = "practice_tool_title"
+
     /** The Chords tool's screen. */
     const val CHORDS = "practice_chords"
 

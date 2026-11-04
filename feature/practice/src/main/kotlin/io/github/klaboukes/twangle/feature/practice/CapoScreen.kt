@@ -87,6 +87,7 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
  * The Practice tab's Capo helper (Phase 33, the owner's pick B in
@@ -97,8 +98,8 @@ import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
  * instrument and tuning picked with the picker chip ([tuningName], heard as [spokenTuningName];
  * with [onPickInstrument] the chip opens the "What are you tuning?" sheet, else a plain line names them).
  *
- * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start with the tuning
- * chip beside it ([BackAndTuningRow]), the shapes' pill right under it where Chords has its name (Phase 77), then the
+ * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start, "Capo" in the
+ * row's middle and the tuning chip on its own line under it ([BackAndTuningRow]), the shapes' pill right under it where Chords has its name (Phase 77), then the
  * capo, the table and "Sounds in" in the middle of the height left, as Chords centres its chart and the metronome its
  * column (on phones since Phase 63; until then they hung at the top). On a phone on its side (≥ 600 dp wide and wider
  * than tall) that row, the pill (where Chords has its name, [SideHalf]), the capo and "Sounds in" fill the start half,
@@ -149,7 +150,7 @@ fun CapoScreen(
         }
     }
 
-    val topRow = @Composable { BackAndTuningRow(onBack, tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { BackAndTuningRow(PracticeTool.CAPO, onBack, tuningName, spokenTuningName, onPickInstrument) }
     var shapesOpen by remember { mutableStateOf(false) }
     // Where the shapes pill is (its caption too), and on its side the top of the start half, in the root's coordinates: the panel
     // opens under the pill, or on its side from the top of that half (as Chords').
@@ -182,12 +183,14 @@ fun CapoScreen(
                 },
         )
     }
-    val table = @Composable {
+    // tight: a short upright screen, where the table leaves out its column names (Phase 77: the picker chip's own line
+    // took their height); each row still reads "Am → Cm", "Sounds in" says the rest, and TalkBack hears every row whole.
+    val table = @Composable { tight: Boolean ->
         if (shortString) {
             // Exactly the table's room, the table laid out unseen under it, so nothing round it moves (with the
             // content centred in the height since Phase 63, a line only about as tall moved the capo too).
             Box(Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth()) {
-                CapoTableView(plan, notation, speech, onOpenChord, shown = false)
+                CapoTableView(plan, notation, speech, onOpenChord, shown = false, header = !tight)
                 ShortStringLine(
                     stringResource(R.string.practice_capo_short_string),
                     Modifier.matchParentSize(),
@@ -196,7 +199,7 @@ fun CapoScreen(
                 )
             }
         } else {
-            CapoTableView(plan, notation, speech, onOpenChord)
+            CapoTableView(plan, notation, speech, onOpenChord, header = !tight)
         }
     }
 
@@ -229,7 +232,7 @@ fun CapoScreen(
                         soundsInLine()
                     }
                     Spacer(Modifier.width(16.dp))
-                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) { table() }
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) { table(false) }
                 }
                 Spacer(Modifier.weight(1f))
                 Spacer(Modifier.height(8.dp))
@@ -249,9 +252,12 @@ fun CapoScreen(
                     },
                     pill = pill,
                     rest = {
+                        // Where the half is short (a phone on its side) the stepper takes its tight size and hangs right
+                        // under "Shapes I play", so the pill rises as little as it can above Chords' name.
+                        val short = height < SIDE_SHORT_HEIGHT
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Spacer(Modifier.height(8.dp))
-                            stepper(false)
+                            Spacer(Modifier.height(if (short) 0.dp else 8.dp))
+                            stepper(short)
                             Spacer(Modifier.height(8.dp))
                             soundsInLine()
                         }
@@ -270,7 +276,7 @@ fun CapoScreen(
                 ) {
                     Spacer(Modifier.height(TABLE_TOP_WIDE))
                     Spacer(Modifier.weight(1f))
-                    table()
+                    table(false)
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp))
                 }
@@ -297,7 +303,7 @@ fun CapoScreen(
                     Spacer(Modifier.height(12.dp * gap))
                     stepper(tight)
                     Spacer(Modifier.height(12.dp * gap))
-                    table()
+                    table(tight)
                     Spacer(Modifier.height(12.dp * gap))
                     soundsInLine()
                     Spacer(Modifier.weight(1f))
@@ -554,7 +560,7 @@ private fun StepButton(higher: Boolean, enabled: Boolean, onClick: () -> Unit) {
  * the banjo's line).
  */
 @Composable
-private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSpeech, onOpenChord: (Chord) -> Unit, shown: Boolean = true) {
+private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSpeech, onOpenChord: (Chord) -> Unit, shown: Boolean = true, header: Boolean = true) {
     val openLabel = stringResource(R.string.practice_capo_open_chord)
     Column(
         Modifier
@@ -567,7 +573,7 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
             .clip(MaterialTheme.shapes.large)
             .padding(vertical = TABLE_PADDING),
     ) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = ROW_PADDING).semantics(mergeDescendants = true) { heading() }) {
+        if (header) Row(Modifier.fillMaxWidth().padding(horizontal = ROW_PADDING).semantics(mergeDescendants = true) { heading() }) {
             val style = MaterialTheme.typography.labelMedium
             val color = MaterialTheme.colorScheme.onSurfaceVariant
             // One line each, set smaller where a long word would not fit (Italian "Diteggiatura" at 2× text);
@@ -579,7 +585,7 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.practice_capo_sounds_column), style = style, color = color, textAlign = TextAlign.End, maxLines = 1, softWrap = false, autoSize = autoSize, modifier = Modifier.weight(1f))
         }
-        Spacer(Modifier.height(4.dp))
+        if (header) Spacer(Modifier.height(4.dp))
         val line = MaterialTheme.colorScheme.outlineVariant
         // A long name at 2× text on a narrow phone ("Sol♯m") is set smaller rather than cut off, and never wrapped (as
         // the header's).
@@ -691,6 +697,9 @@ private val PILL_GAP_TIGHT = 2.dp
 /** On a phone on its side, Chords' name keeps this much free above it (under the top row) and below it ([SideHalf]). */
 private val SIDE_PILL_ABOVE = 12.dp
 private val SIDE_PILL_BELOW = 8.dp
+
+/** A start half shorter than this (a phone on its side) closes up the capo's rows under the pill ([SideHalf]). */
+private val SIDE_SHORT_HEIGHT = 420.dp
 private val MIN_LABEL_SIZE = 8.sp
 private val LAST_RESORT_LABEL_SIZE = 6.sp
 

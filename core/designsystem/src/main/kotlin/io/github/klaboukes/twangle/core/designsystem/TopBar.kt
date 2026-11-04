@@ -1,11 +1,15 @@
 package io.github.klaboukes.twangle.core.designsystem
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.Layout
@@ -24,9 +28,11 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Every tab's top row, one rhythm (owner's pick 1 of the review of 2026-11-03, docs/design/v2-ruler-needle-preview.html):
- * the app's gear ([start], with the tuner's signal bars after it where they stand there) at the start, the tab's name or
- * the tuner's picker chip in the [middle], and the tab's own button ([end]: focus mode, the metronome's ⋯) at the end.
- * Each tab puts it [TOP_BAR_MARGIN] from the sides and [TOP_BAR_TOP] down, so switching tabs moves nothing.
+ * the app's gear ([start], with the tuner's signal bars after it where they stand there) at the start, the screen's
+ * name in the [middle] ([TopBarTitle]: the tab's, or a Practice tool's; until 2026-11-04 the tuner and the tools had
+ * the picker chip there, which now has its own line under the row, [PickerLine]), and the tab's own button ([end]:
+ * focus mode, the metronome's ⋯) at the end. Each tab puts it [TOP_BAR_MARGIN] from the sides and [TOP_BAR_TOP] down,
+ * so switching tabs moves nothing.
  *
  * [start] and [end] are buttons on a [TOP_BAR_FACE] face in a 48 dp touch area: their outlines, not their touch areas,
  * line up with the margin (the touch area reaches [TOP_BAR_OUTLINE_INSET] past it). The [middle] keeps clear of two
@@ -62,7 +68,18 @@ fun TopBar(
 }
 
 /**
- * A tab's or page's name in the middle of its [TopBar] ("Metronome", "Practice", "Settings"), a heading for TalkBack:
+ * The picker chip's own line right under a [TopBar] (2.0, Phase 77, the owner's wish of 2026-11-04 that every top row
+ * name its screen): [content] (the tuner's "Guitar · Standard ⌄" or "Any note ⌄", a Practice tool's) centred,
+ * [PICKER_LINE_GAP] under the row, so it stands in one place on the tuner and on every Practice tool. The chip's
+ * 48 dp touch area makes the line 48 dp high; the name pill of a Practice tool stands under it.
+ */
+@Composable
+fun PickerLine(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(modifier.fillMaxWidth().padding(top = PICKER_LINE_GAP), contentAlignment = Alignment.Center) { content() }
+}
+
+/**
+ * A tab's or page's name in the middle of its [TopBar] ("Tune", "Metronome", "Practice", "Chords", "Settings"), a heading for TalkBack:
  * one line, set smaller where it is too wide for its room (down to [TOP_BAR_TITLE_SMALLEST]), and only where even that
  * doesn't fit (French "À propos de Twangle" at 2× text) on two lines, which the row grows for.
  */
@@ -143,6 +160,9 @@ val TOP_BAR_MARGIN = 16.dp
 val TOP_BAR_FACE = 44.dp
 val TOP_BAR_ICON = 24.dp
 val TOP_BAR_OUTLINE_INSET = 2.dp
+
+/** Between the [TopBar] and the picker chip's line under it ([PickerLine]): its touch area starts where the row ends, so the pill stands 6 dp under the buttons' faces and its touch area keeps clear of theirs. */
+val PICKER_LINE_GAP = 0.dp
 
 /** The row's height: a button's touch area. */
 val TOP_BAR_HEIGHT = 48.dp
