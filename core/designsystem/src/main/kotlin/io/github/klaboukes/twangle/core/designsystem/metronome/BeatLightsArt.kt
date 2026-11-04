@@ -37,8 +37,9 @@ import kotlin.math.min
  * each, fainter than a plain beat at rest, evenly in the gaps (the last beat's after it); each lights
  * in the accent when its click sounds, dimmer than a beat and without the glow, and fades back. The
  * beats keep their places. Phase 75's round lights are history (docs/architecture/history.md). All
- * lengths in dp, at a row [BASE_HEIGHT_DP] tall; a taller row (upright on a tall phone, Phase 43)
- * draws everything larger in proportion, so the beat reads from a music stand.
+ * lengths in dp, at a row [BASE_HEIGHT_DP] tall; a taller row (the screen gives the bars its spare
+ * room) draws the bars taller in proportion, and the rest larger up to [MAX_ACROSS_SCALE], so the beat
+ * reads from a music stand.
  */
 
 /**
@@ -66,9 +67,11 @@ fun BeatLightsArt(
     val locale = appLocale()
     Spacer(
         modifier.drawWithCache {
-            val d = 1.dp.toPx() * lightsScale(size.height / 1.dp.toPx())
-            val lights = BeatLights(meter, clicksPerBeat.coerceAtLeast(1), roles, size, d)
-            val numberStyle = TextStyle(fontFamily = face, fontSize = (NUMBER_DP * d).toSp(), fontFeatureSettings = LINING_FIGURES)
+            val scale = lightsScale(size.height / 1.dp.toPx())
+            val d = 1.dp.toPx() * scale
+            val dx = 1.dp.toPx() * min(scale, MAX_ACROSS_SCALE)
+            val lights = BeatLights(meter, clicksPerBeat.coerceAtLeast(1), roles, size, d, dx)
+            val numberStyle = TextStyle(fontFamily = face, fontSize = (NUMBER_DP * dx).toSp(), fontFeatureSettings = LINING_FIGURES)
             val numbers = List(meter.beatsPerBar) { measurer.measure(localDigits(it + 1, locale), numberStyle) }
             val numberY = size.height * NUMBER_Y
             val litInk = roles.ink
@@ -106,6 +109,13 @@ private const val BASE_HEIGHT_DP = 60f
 /** How much larger than at [BASE_HEIGHT_DP] the marks are drawn in a row [heightDp] tall: in proportion, never smaller. */
 private fun lightsScale(heightDp: Float): Float = max(1f, heightDp / BASE_HEIGHT_DP)
 
+/**
+ * Across (the bars' width, their spacing, the dots, the glow, the numbers) the marks grow at most this
+ * much, however tall the row: in a tall row (filling the screen's spare room, 2026-11-04) the bars grow
+ * taller, not wider, so the dots between the beats keep clear of them on a narrow phone.
+ */
+private const val MAX_ACROSS_SCALE = 1.6f
+
 /** The marks sit this share of the way down, their numbers this share (clear of the tallest mark). */
 private const val MARK_Y = 0.36f
 private const val NUMBER_Y = 0.88f
@@ -142,12 +152,14 @@ private class BeatLights(
     val between: Int,
     private val roles: MeterRoles,
     size: Size,
+    /** Px to a dp down (the bars' height) and across (everything else, [MAX_ACROSS_SCALE]). */
     private val d: Float,
+    private val dx: Float,
 ) {
-    private val spacing = beatSpacing(size.width, meter.beatsPerBar, between, d)
+    private val spacing = beatSpacing(size.width, meter.beatsPerBar, between, dx)
     private val left = size.width / 2f - (meter.beatsPerBar - 1) / 2f * spacing
     private val y = size.height * MARK_Y
-    private val glows = Array(3) { GlowArt(GLOW_DP * d * TIER_SCALES[it], roles.accent) }
+    private val glows = Array(3) { GlowArt(GLOW_DP * dx * TIER_SCALES[it], roles.accent) }
     private val restingAlpha = if (roles.dark) 0.26f else 0.2f
     private val glowPeak = if (roles.dark) 0.34f else 0.2f
 
@@ -162,7 +174,7 @@ private class BeatLights(
         val x = x(i) + j * spacing / between
         val rest = roles.ink.faded(restingAlpha * SMALL_REST_SHARE)
         val color = if (level > 0f) lerp(rest, roles.accent.faded(SMALL_LIT_ALPHA), level) else rest
-        drawCircle(color, BAR_WIDTH_DP * d * DOT_SHARE / 2f, Offset(x, y))
+        drawCircle(color, BAR_WIDTH_DP * dx * DOT_SHARE / 2f, Offset(x, y))
     }
 
     /** Beat [i] as a rounded upright bar the size of its tier, lit at [level] (0 at rest) with a soft glow. */
@@ -178,7 +190,7 @@ private class BeatLights(
         val a = if (lit) 0.5f + 0.5f * level else restingAlpha + 0.06f * tier
         val x = x(i)
         if (lit) glows[tier].draw(this, x, y, level * glowPeak)
-        val w = BAR_WIDTH_DP * d * max(0.8f, sz)
+        val w = BAR_WIDTH_DP * dx * max(0.8f, sz)
         val h = BAR_HEIGHT_DP * d * sz
         // The round caps reach past the line's ends by half its width, so the line is that much shorter each end.
         drawLine(base.faded(a), Offset(x, y - h / 2f + w / 2f), Offset(x, y + h / 2f - w / 2f), w, StrokeCap.Round)

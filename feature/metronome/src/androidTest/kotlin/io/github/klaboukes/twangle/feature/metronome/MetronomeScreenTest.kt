@@ -341,6 +341,9 @@ class MetronomeScreenTest {
         assertTrue("the lights $lights under the ruler", lights.top >= ruler.bottom)
         assertTrue("the meter $meter under the lights", meter.top >= lights.bottom)
         assertTrue("Tap the beat $tap under the meter", tap.top >= meter.bottom)
+        // The meter right over the big buttons; the spare room goes to the beat bars, never over the buttons.
+        assertTrue("the meter $meter right over Tap the beat $tap", tap.top - meter.bottom <= 24.dp)
+        assertTrue("the beat bars $lights at least 72 dp tall", lights.height >= 71.5.dp)
         assertTrue("Tap the beat $tap beside Start $start", tap.right <= start.left)
         assertEquals("Tap the beat level with Start", tap.top.value, start.top.value, 0.5f)
         assertTrue("Start the wider", start.width > tap.width)
@@ -691,10 +694,10 @@ class MetronomeScreenTest {
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertContentDescriptionEquals("Speed trainer, from 96 to 116 BPM, +5 every 4 bars")
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true).assert(hasText("96 → 116 · +5 every 4 bars"))
         val card = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
+        val lightsBounds = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
         val meterBounds = compose.onNodeWithTag(MetronomeTestTags.meter(Meter.FOUR_FOUR)).getBoundsInRoot()
-        val startBounds = start.getBoundsInRoot()
-        assertTrue("the card $card under the meter $meterBounds", card.top >= meterBounds.bottom)
-        assertTrue("the card $card over Start $startBounds", card.bottom <= startBounds.top)
+        assertTrue("the card $card under the beat bars $lightsBounds", card.top >= lightsBounds.bottom)
+        assertTrue("the card $card over the meter $meterBounds", card.bottom <= meterBounds.top)
         // Off on its card: the card goes.
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).performClick()
         compose.waitForIdle()

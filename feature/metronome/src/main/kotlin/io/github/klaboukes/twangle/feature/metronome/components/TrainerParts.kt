@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
@@ -60,7 +61,7 @@ import io.github.klaboukes.twangle.feature.metronome.R
  * The speed trainer (Phase 62): a row in the options panel with its name, what it does in words and its
  * switch, which opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
  * floating panel of the same kind (the shared [FloatingPanel]); while it is on, the same row on a card
- * under the meter too ([TrainerSlot]) (the first 2.0 mock-up's `.trainer`, docs/design/fresh-start-preview.html),
+ * over the meter too (the screen's `BarsRoom`; on its side [TrainerSlot]) (the first 2.0 mock-up's `.trainer`, docs/design/fresh-start-preview.html),
  * opening its settings over it. Phase 75 had the card there always (until 2026-11-04); before that its
  * words stood on the status line.
  */
@@ -146,21 +147,25 @@ internal fun TrainerRow(
 }
 
 /**
- * The trainer's place on the screen, under the meter (where the click sounds stood until 2026-11-04):
- * [card] (its [TrainerRow] while it is on, nothing while off) over room kept as tall as that card would
- * be at this font size, so turning the trainer on or off moves nothing on the screen (the owner,
- * 2026-11-04: until then the card came and went under the big buttons and pushed the page up).
+ * The trainer's place over the meter on a screen on its side (upright the screen's bars' room keeps the
+ * same place at its foot): [card] (its [TrainerRow] while it is on, nothing while off) over room kept as
+ * tall as that card would be at this font size ([trainerRowRoom]), so turning the trainer on or off moves
+ * nothing on the screen (the owner, 2026-11-04: before, the card came and went under the big buttons and
+ * pushed the page up).
  */
 @Composable
 internal fun TrainerSlot(modifier: Modifier = Modifier, card: @Composable () -> Unit) {
-    val typography = MaterialTheme.typography
-    val density = LocalDensity.current
-    // The card's two lines (its name and its words, as in TrainerRow) and their padding.
-    val lines = with(density) { lineHeight(typography.bodyLarge, 16.sp).toDp() + lineHeight(typography.bodyMedium, 14.sp).toDp() }
-    val room = maxOf(TRAINER_ROW_HEIGHT, lines + 12.dp)
-    Box(modifier.widthIn(max = TRAINER_ROW_WIDEST).fillMaxWidth().heightIn(min = room), contentAlignment = Alignment.Center) {
+    Box(modifier.widthIn(max = TRAINER_ROW_WIDEST).fillMaxWidth().heightIn(min = trainerRowRoom()), contentAlignment = Alignment.Center) {
         card()
     }
+}
+
+/** How tall the trainer's card is at this font size: its two lines (its name and its words, as in [TrainerRow]) and their padding, at least [TRAINER_ROW_HEIGHT]. */
+@Composable
+internal fun trainerRowRoom(): Dp {
+    val typography = MaterialTheme.typography
+    val lines = with(LocalDensity.current) { lineHeight(typography.bodyLarge, 16.sp).toDp() + lineHeight(typography.bodyMedium, 14.sp).toDp() }
+    return maxOf(TRAINER_ROW_HEIGHT, lines + 12.dp)
 }
 
 /** A line of [style] set at [size]: its line height where the style has one, else 1.3 times the size. */

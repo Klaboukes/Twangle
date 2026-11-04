@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -57,6 +58,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -100,6 +102,7 @@ import io.github.klaboukes.twangle.feature.metronome.components.TempoRuler
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerRow
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerSettings
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerSlot
+import io.github.klaboukes.twangle.feature.metronome.components.trainerRowRoom
 import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
 import io.github.klaboukes.twangle.feature.metronome.components.subdivisionIcon
 import io.github.klaboukes.twangle.feature.metronome.components.subdivisionMarkName
@@ -483,52 +486,55 @@ fun MetronomeContent(
                     animationsOff = animationsOff,
                 )
             }
-            val lightsAndLine: @Composable () -> Unit = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    BeatLightsArt(
-                        meter = meter,
-                        litBeat = clock::litBeat,
-                        litLevel = clock::litLevel,
-                        // A small dot for each click between the beats, shown stopped too.
-                        clicksPerBeat = between.clicksPerBeat,
-                        litBetween = clock::litBetween,
-                        litBetweenLevel = clock::litBetweenLevel,
-                        modifier = Modifier
-                            .widthIn(max = LIGHTS_MAX_WIDTH)
-                            .fillMaxWidth()
-                            .height(LIGHTS_HEIGHT)
-                            .testTag(MetronomeTestTags.LIGHTS)
-                            .clearAndSetSemantics {},
-                    )
-                    ListenLine(
-                        listen,
-                        onTryAgain = onTryAgain,
-                        onOpenSettings = onOpenSettings,
-                        marks = marks,
-                        onStopListening = onListen,
+            val lights: @Composable () -> Unit = {
+                BeatLightsArt(
+                    meter = meter,
+                    litBeat = clock::litBeat,
+                    litLevel = clock::litLevel,
+                    // A small dot for each click between the beats, shown stopped too.
+                    clicksPerBeat = between.clicksPerBeat,
+                    litBetween = clock::litBetween,
+                    litBetweenLevel = clock::litBetweenLevel,
+                    modifier = Modifier
+                        .widthIn(max = LIGHTS_MAX_WIDTH)
+                        .fillMaxWidth()
+                        .testTag(MetronomeTestTags.LIGHTS)
+                        .clearAndSetSemantics {},
+                )
+            }
+            val line: @Composable () -> Unit = {
+                ListenLine(
+                    listen,
+                    onTryAgain = onTryAgain,
+                    onOpenSettings = onOpenSettings,
+                    marks = marks,
+                    onStopListening = onListen,
+                )
+            }
+            val trainerCard: @Composable () -> Unit = {
+                if (trainer != null && trainer.on) {
+                    TrainerRow(
+                        on = true,
+                        status = trainerStatus(trainer.plan, bpm, trainer.bar, playing),
+                        onOnChange = onTrainerOn,
+                        onOpen = { openTrainer(false) },
+                        onPlaced = { trainerBounds = it },
                     )
                 }
             }
-            // The meter, and under it the trainer's place: its card while it is on (the options panel turns it
-            // on), else the same room left empty, so turning it on or off moves nothing.
+            // The room between the ruler and the meter: the beat bars and the status line, and at the room's foot
+            // the trainer's place, its card while it is on (the options panel turns it on). The place is kept
+            // whether it is on or off, so turning it on moves nothing and resizes nothing (the owner, 2026-11-04:
+            // bars that shrink for the card would make the page jittery).
+            val cardRoom = if (trainer != null && !wide) TRAINER_GAP + trainerRowRoom() else 0.dp
+            val roomMin = LIGHTS_HEIGHT + LINE_ROOM + cardRoom
+            // On its side the card is in the other half, over the meter.
+            val noCard: @Composable () -> Unit = {}
+            val barsRoom: @Composable (Dp) -> Unit = { tall ->
+                BarsRoom(tall, cardRoom, lights, line, if (wide) noCard else trainerCard)
+            }
             val choices: @Composable () -> Unit = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    MeterChoice(meter, onMeterChange)
-                    if (trainer != null) {
-                        Spacer(Modifier.height(TRAINER_GAP))
-                        TrainerSlot {
-                            if (trainer.on) {
-                                TrainerRow(
-                                    on = true,
-                                    status = trainerStatus(trainer.plan, bpm, trainer.bar, playing),
-                                    onOnChange = onTrainerOn,
-                                    onOpen = { openTrainer(false) },
-                                    onPlaced = { trainerBounds = it },
-                                )
-                            }
-                        }
-                    }
-                }
+                MeterChoice(meter, onMeterChange)
             }
             val buttons: @Composable () -> Unit = {
                 BigButtons(
@@ -557,9 +563,8 @@ fun MetronomeContent(
                         Spacer(Modifier.gap(0.5f))
                         ruler()
                         Spacer(Modifier.height(LIGHTS_GAP))
-                        Spacer(Modifier.gap(0.5f))
-                        lightsAndLine()
-                        Spacer(Modifier.gap(1f))
+                        Growing(BARS_WEIGHT, roomMin) { tall -> barsRoom(tall) }
+                        Spacer(Modifier.height(BOTTOM_GAP))
                     }
                     FitColumn(
                         height = height - 16.dp,
@@ -567,6 +572,11 @@ fun MetronomeContent(
                     ) {
                         topRow(false, true, false, Modifier)
                         Spacer(Modifier.gap(1f))
+                        // On its side the trainer's place is over the meter here, kept while it is off too.
+                        if (trainer != null) {
+                            TrainerSlot { trainerCard() }
+                            Spacer(Modifier.height(TRAINER_GAP))
+                        }
                         choices()
                         Spacer(Modifier.height(BUTTONS_GAP))
                         buttons()
@@ -597,17 +607,16 @@ fun MetronomeContent(
                                 topRow(header != null && !headerAbove, true, true, Modifier)
                                 Spacer(Modifier.gap(1f))
                                 Shrinking { space -> heading(space) }
-                                // What is left is shared out evenly round the parts, the half gaps tying the
-                                // ruler to the tempo over it and the bars to the ruler.
+                                // What is left goes mostly to the beat bars' room, some over the tempo and the
+                                // ruler; the meter stays right over the big buttons.
                                 Spacer(Modifier.height(RULER_GAP))
                                 Spacer(Modifier.gap(0.5f))
                                 ruler()
                                 Spacer(Modifier.height(LIGHTS_GAP))
-                                Spacer(Modifier.gap(0.5f))
-                                lightsAndLine()
-                                Spacer(Modifier.gap(1f))
+                                Growing(BARS_WEIGHT, roomMin) { tall -> barsRoom(tall) }
+                                Spacer(Modifier.height(CHOICE_GAP))
                                 choices()
-                                Spacer(Modifier.gap(1f))
+                                Spacer(Modifier.height(BUTTONS_GAP))
                                 buttons()
                                 Spacer(Modifier.height(BOTTOM_GAP))
                             }
@@ -822,22 +831,68 @@ private val WIDE_MIN_WIDTH = 600.dp
 private val COLUMN_MAX_WIDTH = 480.dp
 
 /**
- * At least this between the tempo's words and the ruler, the ruler and the beat bars, and the meter and
- * the trainer's place, and under the column.
+ * At least this between the tempo's words and the ruler, and the ruler and the beat bars; between the
+ * status line and the trainer's place, the bars' room and the meter, and under the column.
  */
 private val RULER_GAP = 8.dp
 private val LIGHTS_GAP = 16.dp
 private val TRAINER_GAP = 12.dp
+private val CHOICE_GAP = 12.dp
+
+/** The bars' room takes this many shares of the spare height, against one over the tempo and a half over the ruler. */
+private const val BARS_WEIGHT = 3f
+
+/** The status line's room under the bars (its least height, `ListenLine`). */
+private val LINE_ROOM = 24.dp
+
+/** The beat bars' row is at most this tall: the bars 2.67 times their 60 dp size, the rest of the room round them. */
+private val LIGHTS_TALLEST = 160.dp
 private val BOTTOM_GAP = 12.dp
 
 /** On its side, between the choices and the big buttons. */
 private val BUTTONS_GAP = 16.dp
 
 /**
- * The beat lights' row: 72 dp high, so the bars and their numbers are drawn 1.2 times their 60 dp size
- * (the owner, 2026-11-04: a bit bigger), at most 360 dp wide (the lights keep together on a wide screen).
+ * The beat lights' row: at least 72 dp high, so the bars and their numbers are drawn at least 1.2 times
+ * their 60 dp size, and taller where the screen has room ([BarsRoom], [LIGHTS_TALLEST]); at most 360 dp
+ * wide (the lights keep together on a wide screen).
  */
 private val LIGHTS_HEIGHT = 72.dp
+
+/**
+ * The room between the ruler and the meter, [tall]: at its foot [cardRoom] for the trainer's place, [card]
+ * in it (nothing while the trainer is off); over it the beat bars ([lights]) as tall as the rest allows,
+ * from [LIGHTS_HEIGHT] to [LIGHTS_TALLEST], with the status line ([line]) under them, the two centred in
+ * that rest. The bars' size depends only on [tall] and [cardRoom], never on whether the card shows, so
+ * the trainer coming and going moves and resizes nothing. Taller than [tall] only where very large text
+ * needs it.
+ */
+@Composable
+private fun BarsRoom(tall: Dp, cardRoom: Dp, lights: @Composable () -> Unit, line: @Composable () -> Unit, card: @Composable () -> Unit) {
+    Layout(contents = listOf(lights, line, card), modifier = Modifier.fillMaxWidth()) { (lightsParts, lineParts, cardParts), constraints ->
+        val across = Constraints(maxWidth = constraints.maxWidth)
+        val lineP = lineParts.map { it.measure(across) }
+        val cardP = cardParts.map { it.measure(across) }
+        val lineHeight = lineP.sumOf { it.height }
+        val reserved = cardRoom.roundToPx()
+        val above = tall.roundToPx() - reserved
+        val barsHeight = (above - lineHeight).coerceIn(LIGHTS_HEIGHT.roundToPx(), LIGHTS_TALLEST.roundToPx())
+        val lightsP = lightsParts.map { it.measure(Constraints(maxWidth = constraints.maxWidth, minHeight = barsHeight, maxHeight = barsHeight)) }
+        val block = barsHeight + lineHeight
+        val height = maxOf(tall.roundToPx(), block + reserved)
+        val width = constraints.maxWidth
+        layout(width, height) {
+            // The bars and the line centred in the room over the trainer's place.
+            var y = ((height - reserved) - block).coerceAtLeast(0) / 2
+            for (p in lightsP + lineP) {
+                p.placeRelative((width - p.width) / 2, y)
+                y += p.height
+            }
+            // The card at the foot of its place, right over the meter.
+            for (p in cardP) p.placeRelative((width - p.width) / 2, height - p.height)
+        }
+    }
+}
 private val LIGHTS_MAX_WIDTH = 360.dp
 
 /**
