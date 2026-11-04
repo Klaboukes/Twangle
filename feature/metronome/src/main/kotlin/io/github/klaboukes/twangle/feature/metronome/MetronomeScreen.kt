@@ -99,6 +99,7 @@ import io.github.klaboukes.twangle.feature.metronome.components.TempoHeading
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRuler
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerRow
 import io.github.klaboukes.twangle.feature.metronome.components.TrainerSettings
+import io.github.klaboukes.twangle.feature.metronome.components.TrainerSlot
 import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
 import io.github.klaboukes.twangle.feature.metronome.components.subdivisionIcon
 import io.github.klaboukes.twangle.feature.metronome.components.subdivisionMarkName
@@ -239,12 +240,11 @@ fun MetronomeScreen(
 data class TrainerUi(val plan: SpeedTrainer, val on: Boolean, val saved: Boolean = true, val bar: Long = -1L)
 
 /**
- * The metronome's last beat and the frame clock, for the beat lights and the ruler's cursor: the beat
- * that sounded lights up at once and eases to a resting glow until the next one, and each click between
- * the beats lights its small dot and fades back (Phase 62); the cursor's glow fades out after each beat,
- * brighter on a downbeat. While Listen listens, the
- * beats it hears light the lights more softly instead ([followHeard]), with no glow. Read in the
- * draw phase only.
+ * The metronome's last beat and the frame clock, for the beat lights: the beat that sounded lights up
+ * at once and eases to a resting glow until the next one, and each click between the beats lights its
+ * small dot and fades back (Phase 62). (Until 2026-11-04 the ruler's cursor glowed on each beat too.)
+ * While Listen listens, the beats it hears light the lights more softly instead ([followHeard]), with
+ * no glow. Read in the draw phase only.
  */
 @Stable
 class BeatClock {
@@ -287,17 +287,6 @@ class BeatClock {
         return betweenClickLevel(millisSinceBeat(beat), beat.bpm, beat.clicksPerBeat)
     }
 
-    /** The ruler cursor's glow: fading out over a 220 ms decay, at full only after a downbeat. */
-    fun glow(): Float {
-        val beat = beat ?: return 0f
-        val strength = when (beat.accent) {
-            BeatAccent.DOWNBEAT -> 1f
-            BeatAccent.GROUP -> 0.75f
-            BeatAccent.PLAIN, BeatAccent.SUBDIVISION -> 0.55f // Beats are never SUBDIVISION.
-        }
-        return strength * exp(-millisSinceBeat(beat) / GLOW_DECAY_MILLIS)
-    }
-
     /**
      * Follows the detector's beat grid [heard] at the current frame: each new beat lights the next
      * light of a bar of [beatsPerBar], in order from the first heard (the detector can't know where
@@ -321,7 +310,6 @@ class BeatClock {
     private companion object {
         const val RESTING_LIGHT = 0.4f
         const val LIGHT_DECAY_MILLIS = 200f
-        const val GLOW_DECAY_MILLIS = 220f
 
         /** Heard beats light up softer than the metronome's own: 0.25 + 0.45 decaying, against 0.4 + 0.6. */
         const val HEARD_RESTING = 0.25f
@@ -489,7 +477,6 @@ fun MetronomeContent(
                     onBpmChange = onBpmChange,
                     onBpmChangeFinished = onBpmChangeFinished,
                     shown = motion::shown,
-                    beatGlow = clock::glow,
                     ringBpm = motion::ringBpm,
                     ringAlpha = motion::ringAlpha,
                     goalBpm = if (trainerOn) trainer.plan.goalBpm else 0,
@@ -522,29 +509,34 @@ fun MetronomeContent(
                     )
                 }
             }
+            // The meter, and under it the trainer's place: its card while it is on (the options panel turns it
+            // on), else the same room left empty, so turning it on or off moves nothing.
             val choices: @Composable () -> Unit = {
-                MeterChoice(meter, onMeterChange)
-            }
-            val buttons: @Composable () -> Unit = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    BigButtons(
-                        onTap = onTap,
-                        playing = playing || (listening && listen.wasPlaying),
-                        onToggle = onToggle,
-                        startResting = listening,
-                    )
-                    // On the screen only while it is on; the options panel turns it on.
-                    if (trainer != null && trainer.on) {
+                    MeterChoice(meter, onMeterChange)
+                    if (trainer != null) {
                         Spacer(Modifier.height(TRAINER_GAP))
-                        TrainerRow(
-                            on = true,
-                            status = trainerStatus(trainer.plan, bpm, trainer.bar, playing),
-                            onOnChange = onTrainerOn,
-                            onOpen = { openTrainer(false) },
-                            onPlaced = { trainerBounds = it },
-                        )
+                        TrainerSlot {
+                            if (trainer.on) {
+                                TrainerRow(
+                                    on = true,
+                                    status = trainerStatus(trainer.plan, bpm, trainer.bar, playing),
+                                    onOnChange = onTrainerOn,
+                                    onOpen = { openTrainer(false) },
+                                    onPlaced = { trainerBounds = it },
+                                )
+                            }
+                        }
                     }
                 }
+            }
+            val buttons: @Composable () -> Unit = {
+                BigButtons(
+                    onTap = onTap,
+                    playing = playing || (listening && listen.wasPlaying),
+                    onToggle = onToggle,
+                    startResting = listening,
+                )
             }
             if (wide) {
                 // The halves' edges at the top row's margin, as the tuner's on its side; inside each half's scroll its
@@ -562,7 +554,10 @@ fun MetronomeContent(
                         Spacer(Modifier.gap(1f))
                         Shrinking { room -> heading(room) }
                         Spacer(Modifier.height(RULER_GAP))
+                        Spacer(Modifier.gap(0.5f))
                         ruler()
+                        Spacer(Modifier.height(LIGHTS_GAP))
+                        Spacer(Modifier.gap(0.5f))
                         lightsAndLine()
                         Spacer(Modifier.gap(1f))
                     }
@@ -602,8 +597,13 @@ fun MetronomeContent(
                                 topRow(header != null && !headerAbove, true, true, Modifier)
                                 Spacer(Modifier.gap(1f))
                                 Shrinking { space -> heading(space) }
+                                // What is left is shared out evenly round the parts, the half gaps tying the
+                                // ruler to the tempo over it and the bars to the ruler.
                                 Spacer(Modifier.height(RULER_GAP))
+                                Spacer(Modifier.gap(0.5f))
                                 ruler()
+                                Spacer(Modifier.height(LIGHTS_GAP))
+                                Spacer(Modifier.gap(0.5f))
                                 lightsAndLine()
                                 Spacer(Modifier.gap(1f))
                                 choices()
@@ -821,16 +821,23 @@ private val WIDE_MIN_WIDTH = 600.dp
 /** The column keeps to this width on a large screen. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
-/** Between the tempo's words and the ruler, the big buttons and the trainer's card, and under the column. */
+/**
+ * At least this between the tempo's words and the ruler, the ruler and the beat bars, and the meter and
+ * the trainer's place, and under the column.
+ */
 private val RULER_GAP = 8.dp
+private val LIGHTS_GAP = 16.dp
 private val TRAINER_GAP = 12.dp
 private val BOTTOM_GAP = 12.dp
 
 /** On its side, between the choices and the big buttons. */
 private val BUTTONS_GAP = 16.dp
 
-/** The beat lights' row: 60 dp high (the bars and their numbers), at most 360 dp wide (the lights keep together on a wide screen). */
-private val LIGHTS_HEIGHT = 60.dp
+/**
+ * The beat lights' row: 72 dp high, so the bars and their numbers are drawn 1.2 times their 60 dp size
+ * (the owner, 2026-11-04: a bit bigger), at most 360 dp wide (the lights keep together on a wide screen).
+ */
+private val LIGHTS_HEIGHT = 72.dp
 private val LIGHTS_MAX_WIDTH = 360.dp
 
 /**

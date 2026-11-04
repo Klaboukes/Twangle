@@ -691,8 +691,10 @@ class MetronomeScreenTest {
         compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertContentDescriptionEquals("Speed trainer, from 96 to 116 BPM, +5 every 4 bars")
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true).assert(hasText("96 → 116 · +5 every 4 bars"))
         val card = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
+        val meterBounds = compose.onNodeWithTag(MetronomeTestTags.meter(Meter.FOUR_FOUR)).getBoundsInRoot()
         val startBounds = start.getBoundsInRoot()
-        assertTrue("the card $card under Start $startBounds", card.top >= startBounds.bottom)
+        assertTrue("the card $card under the meter $meterBounds", card.top >= meterBounds.bottom)
+        assertTrue("the card $card over Start $startBounds", card.bottom <= startBounds.top)
         // Off on its card: the card goes.
         compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).performClick()
         compose.waitForIdle()
@@ -783,6 +785,25 @@ class MetronomeScreenTest {
         assertEquals(86, player.bpm)
         assertFalse(settings.current.metronomeTrainerOn)
         start.performScrollTo().performClick()
+    }
+
+    @Test
+    fun turningTheTrainerOnOrOffMovesNothing() {
+        show(trainer = SpeedTrainer(96, 116, 5, 4))
+        val tags = listOf(MetronomeTestTags.BPM, MetronomeTestTags.RULER, MetronomeTestTags.LIGHTS, MetronomeTestTags.meter(Meter.FOUR_FOUR), MetronomeTestTags.TAP, MetronomeTestTags.START)
+        fun places() = tags.map { compose.onNodeWithTag(it, useUnmergedTree = it == MetronomeTestTags.BPM).getBoundsInRoot() }
+        val off = places()
+        openPanel()
+        // Its plan is saved, so turning it on opens no settings.
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION_SWITCH).performClick()
+        compose.waitForIdle()
+        back()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertIsDisplayed()
+        val on = places()
+        for (i in tags.indices) {
+            assertEquals("${tags[i]} top", off[i].top.value, on[i].top.value, 1f)
+            assertEquals("${tags[i]} bottom", off[i].bottom.value, on[i].bottom.value, 1f)
+        }
     }
 
     @Test

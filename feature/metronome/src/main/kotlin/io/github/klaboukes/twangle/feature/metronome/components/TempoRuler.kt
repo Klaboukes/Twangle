@@ -70,7 +70,7 @@ import kotlin.math.roundToInt
  * stops where the finger lifts.
  *
  * At rest the scale shows [shown] (the tempo, gliding to one Listen found), read while drawing. The
- * cursor's soft glow brightens on each beat ([beatGlow], 0..1). While Listen listens a small ring marks
+ * cursor has a steady soft glow; the beat shows on the beat bars, not here. While Listen listens a small ring marks
  * the tempo it is settling on ([ringBpm], 0 for none, at [ringAlpha]); while the speed trainer is on a
  * small accent dot under the scale marks its goal ([goalBpm], 0 for none).
  *
@@ -85,7 +85,6 @@ internal fun TempoRuler(
     onBpmChangeFinished: () -> Unit,
     modifier: Modifier = Modifier,
     shown: () -> Float = { bpm.toFloat() },
-    beatGlow: () -> Float = { 0f },
     ringBpm: () -> Float = { 0f },
     ringAlpha: () -> Float = { 0f },
     goalBpm: Int = 0,
@@ -242,7 +241,7 @@ internal fun TempoRuler(
                         val alpha = ringAlpha().coerceIn(0f, 1f) * edge
                         if (alpha > 0f) drawCircle(accent, ringRadius, Offset(x, ringY), alpha = alpha, style = ring)
                     }
-                    drawRect(glow, glowTopLeft, glowSize, alpha = GLOW_REST + (GLOW_BEAT - GLOW_REST) * beatGlow().coerceIn(0f, 1f))
+                    drawRect(glow, glowTopLeft, glowSize, alpha = GLOW_ALPHA)
                     drawLine(accent, Offset(centre, cursorTop), Offset(centre, base), cursor, StrokeCap.Round)
                 }
             },
@@ -283,9 +282,8 @@ private val CURSOR_TOP = 18.dp
 private val CURSOR_WIDTH = 3.dp
 private val GLOW_HALF_WIDTH = 10.dp
 
-/** The cursor's glow at rest and at its brightest, just after a beat. */
-private const val GLOW_REST = 0.18f
-private const val GLOW_BEAT = 0.5f
+/** The cursor's glow, steady: the beat shows on the beat bars only (until 2026-11-04 it brightened to 0.5 on each beat). */
+private const val GLOW_ALPHA = 0.18f
 
 /** Listen's ring over the tempo it is settling on. */
 private val RING_RADIUS = 5.dp

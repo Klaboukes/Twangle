@@ -53,7 +53,7 @@
     <!-- TalkBack name of the button in the metronome's top right corner (a ⋯ icon, no word shown): opens the panel with the click sound, the clicks between the beats, Vibrate on the beat, the speed trainer and Listen. Also the panel's name. -->
     <string name="metronome_options">Options</string>
 
-    <!-- The speed trainer: the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the metronome's options panel and, while it is on, on a card at the foot of the metronome screen (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
+    <!-- The speed trainer: the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the metronome's options panel and, while it is on, on a card under the time signatures on the metronome screen (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
     <string name="metronome_trainer">Speed trainer</string>
     <!-- Speed trainer settings: the label of the tempo it starts at (a number with − and + beside it). -->
     <string name="metronome_trainer_start">Start tempo</string>

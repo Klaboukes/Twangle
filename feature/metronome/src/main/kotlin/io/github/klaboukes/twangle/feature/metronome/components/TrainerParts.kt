@@ -60,7 +60,7 @@ import io.github.klaboukes.twangle.feature.metronome.R
  * The speed trainer (Phase 62): a row in the options panel with its name, what it does in words and its
  * switch, which opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
  * floating panel of the same kind (the shared [FloatingPanel]); while it is on, the same row on a card
- * at the foot of the screen too (the first 2.0 mock-up's `.trainer`, docs/design/fresh-start-preview.html),
+ * under the meter too ([TrainerSlot]) (the first 2.0 mock-up's `.trainer`, docs/design/fresh-start-preview.html),
  * opening its settings over it. Phase 75 had the card there always (until 2026-11-04); before that its
  * words stood on the status line.
  */
@@ -144,6 +144,28 @@ internal fun TrainerRow(
         TrainerSwitch(on, name, onOnChange, if (card) MetronomeTestTags.TRAINER_SWITCH else MetronomeTestTags.TRAINER_OPTION_SWITCH)
     }
 }
+
+/**
+ * The trainer's place on the screen, under the meter (where the click sounds stood until 2026-11-04):
+ * [card] (its [TrainerRow] while it is on, nothing while off) over room kept as tall as that card would
+ * be at this font size, so turning the trainer on or off moves nothing on the screen (the owner,
+ * 2026-11-04: until then the card came and went under the big buttons and pushed the page up).
+ */
+@Composable
+internal fun TrainerSlot(modifier: Modifier = Modifier, card: @Composable () -> Unit) {
+    val typography = MaterialTheme.typography
+    val density = LocalDensity.current
+    // The card's two lines (its name and its words, as in TrainerRow) and their padding.
+    val lines = with(density) { lineHeight(typography.bodyLarge, 16.sp).toDp() + lineHeight(typography.bodyMedium, 14.sp).toDp() }
+    val room = maxOf(TRAINER_ROW_HEIGHT, lines + 12.dp)
+    Box(modifier.widthIn(max = TRAINER_ROW_WIDEST).fillMaxWidth().heightIn(min = room), contentAlignment = Alignment.Center) {
+        card()
+    }
+}
+
+/** A line of [style] set at [size]: its line height where the style has one, else 1.3 times the size. */
+private fun lineHeight(style: TextStyle, size: androidx.compose.ui.unit.TextUnit): androidx.compose.ui.unit.TextUnit =
+    if (style.lineHeight.isSp) style.lineHeight else (size.value * 1.3f).sp
 
 /** The trainer's switch, its own touch target (48 dp), heard as "Speed trainer, switch". */
 @Composable
