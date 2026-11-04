@@ -13,9 +13,11 @@ import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
+import io.github.klaboukes.twangle.feature.settings.SETTINGS_BACK_TAG
 import io.github.klaboukes.twangle.feature.settings.R as SettingsR
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -149,7 +151,8 @@ class TunerTabTest {
     /**
      * Every tab's top row is one row (the owner's review of 2026-11-03: switching from the tuner to the metronome moved
      * the gear and the end button a little, and the metronome's button was bigger): the gear stands in the same place
-     * on every tab, and the tuner's focus mode button and the metronome's ⋯ are one size in one place.
+     * on every tab, and the tuner's focus mode button and the metronome's ⋯ are one size in one place; a Practice tool's
+     * and Settings' back arrow stand in the gear's place, as large.
      */
     @Test
     fun theTopRowStandsStillAcrossTheTabs() {
@@ -168,6 +171,15 @@ class TunerTabTest {
             }
             assertEquals("the metronome's gear", gears[Destination.TUNER], gears[Destination.METRONOME])
             assertEquals("Practice's gear", gears[Destination.TUNER], gears[Destination.PRACTICE])
+            // The pages without the gear have their back arrow in its place, as large (the owner's review of 2026-11-04).
+            click(PracticeTestTags.card(PracticeTool.CHORDS))
+            assertEquals("a Practice tool's back arrow", gears[Destination.TUNER], boundsOf(PracticeTestTags.BACK))
+            click(PracticeTestTags.BACK)
+            assertTrue("back on the cards", shown(PracticeTestTags.CARDS))
+            click(NavigationTestTags.SETTINGS)
+            assertEquals("Settings' back arrow", gears[Destination.TUNER], boundsOf(SETTINGS_BACK_TAG))
+            device.pressBack()
+            assertTrue("back on Practice", shown(PracticeTestTags.CARDS))
             // Both tags are on the buttons' faces.
             assertEquals("the ⋯ where focus mode's button is, as large", ends[Destination.TUNER], ends[Destination.METRONOME])
             assertEquals("the end button's face as the gear's", gears.getValue(Destination.TUNER).width(), ends.getValue(Destination.TUNER).width())

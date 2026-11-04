@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner.editor
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,20 +13,18 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -64,7 +63,10 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.designsystem.StepperButton
-import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -172,7 +174,6 @@ fun TuningEditorScreen(
  * or else a line when the last Save couldn't be written, [notSaved]), then a row per string: its note in the standard tuning, and its note in [draft] between − and +.
  * Notes are written in [notation]; a button at the end of [EDITOR_NOTE_RANGE] is turned off.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TuningEditor(
     draft: TuningDraft,
@@ -196,22 +197,36 @@ internal fun TuningEditor(
         // safeDrawing also keeps clear of the keyboard and of a camera cutout at the side.
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            // No title here: the title sits in the page, where it can wrap at a large font.
-            TopAppBar(
-                title = {},
-                windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                navigationIcon = {
-                    TwangleIconButton(onClick = onClose, modifier = Modifier.testTag(TuningEditorTestTags.CLOSE)) {
-                        Icon(painterResource(R.drawable.ic_close), contentDescription = stringResource(R.string.tuning_editor_close))
-                    }
-                },
-                actions = {
-                    TwangleTextButton(onClick = onSave, modifier = Modifier.testTag(TuningEditorTestTags.SAVE)) {
-                        Text(stringResource(R.string.tuning_editor_save))
-                    }
-                },
-            )
+            // Every tab's top row (TopBar): the ✕ in the gear's place on its 44 dp face, Save at the end, 8 dp down and
+            // 16 dp in, in the same centred column as the rows (Material's top bar until 2026-11-04, a bare ✕ 4 dp
+            // from the window's edge). No title here: the title sits in the page, where it can wrap at a large font.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                TopBar(
+                    middle = {},
+                    modifier = Modifier
+                        .widthIn(max = CONTENT_MAX_WIDTH)
+                        .fillMaxWidth()
+                        .padding(start = TOP_BAR_MARGIN, end = TOP_BAR_MARGIN, top = TOP_BAR_TOP),
+                    start = {
+                        TopBarButton(
+                            painterResource(R.drawable.ic_close),
+                            onClick = onClose,
+                            label = stringResource(R.string.tuning_editor_close),
+                            faceModifier = Modifier.testTag(TuningEditorTestTags.CLOSE),
+                        )
+                    },
+                    end = {
+                        TwangleTextButton(onClick = onSave, modifier = Modifier.testTag(TuningEditorTestTags.SAVE)) {
+                            Text(stringResource(R.string.tuning_editor_save))
+                        }
+                    },
+                )
+            }
         },
     ) { innerPadding ->
         Column(

@@ -78,10 +78,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
-import io.github.klaboukes.twangle.core.designsystem.StyleButton
-import io.github.klaboukes.twangle.core.designsystem.OptionsButton
 import io.github.klaboukes.twangle.core.designsystem.OPTIONS_FACE
+import io.github.klaboukes.twangle.core.designsystem.OptionsButton
 import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -205,7 +207,7 @@ fun EarTrainingContent(
         ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onToggleInterval, onToggleDirection, onToggleChordType, onDismiss = { choicesOpen = false })
     }
     val topRows = @Composable {
-        Spacer(Modifier.height(HEADER_TOP))
+        Spacer(Modifier.height(TOP_BAR_TOP))
         header()
         Spacer(Modifier.height(8.dp))
         ExerciseRow(state.exercise, onPickExercise, choicesOpen = choicesOpen, onOpenChoices = { choicesOpen = true })
@@ -244,7 +246,7 @@ fun EarTrainingContent(
         val scrolls = if (answersFillRoom) Modifier else Modifier.verticalScroll(questionScroll)
         if (maxWidth > maxHeight && maxWidth >= HALVES_MIN_WIDTH) {
             // On its side: the top rows in the start half, the question in the middle of the end half.
-            Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+            Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { topRows() }
                 Spacer(Modifier.width(16.dp))
                 Column(
@@ -706,8 +708,6 @@ private val PLAY_ICON: ImageVector = ImageVector.Builder(
     strokeLineJoin = StrokeJoin.Round,
 ).build()
 
-
-private val HEADER_TOP = 8.dp
 /** Under the exercise row: 24 dp less the 4 dp the options button's 52 dp face adds to the row, so the ▶ keeps its place. */
 private val QUESTION_TOP = 20.dp
 

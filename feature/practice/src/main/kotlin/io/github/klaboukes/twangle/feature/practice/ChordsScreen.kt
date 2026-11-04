@@ -62,10 +62,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.klaboukes.twangle.core.audio.DronePlayer
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShape
@@ -324,9 +326,9 @@ fun ChordsScreen(
             FillColumn(
                 viewport = height,
                 minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = TOP_BAR_MARGIN),
                 top = {
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     Row(Modifier.fillMaxWidth()) {
                         Box(Modifier.weight(1f)) { topRow() }
                         Spacer(Modifier.width(16.dp))
@@ -341,7 +343,7 @@ fun ChordsScreen(
             // A phone on its side, both halves used as the metronome and Capo use them (Phase 63's review; until then
             // the start half held only the top row): the top row at the top of the start half and the name (with
             // Scales' drone button) in the middle of the height it leaves, the chart or the neck in the end half.
-            Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+            Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
                 Column(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -352,7 +354,7 @@ fun ChordsScreen(
                         panel(maxWidth)
                         if (droning) dronePanel(true, maxWidth)
                     }
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     topRow()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(12.dp))
@@ -365,7 +367,7 @@ fun ChordsScreen(
                     viewport = height,
                     minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                    top = { Spacer(Modifier.height(HEADER_TOP)) },
+                    top = { Spacer(Modifier.height(TOP_BAR_TOP)) },
                     fill = fill,
                     bottom = bottom(1f),
                 )
@@ -386,7 +388,7 @@ fun ChordsScreen(
                         .padding(horizontal = 16.dp),
                     rowsMaxWidth = if (large) COLUMN_MAX_WIDTH - 32.dp else null,
                     top = {
-                        Spacer(Modifier.height(HEADER_TOP))
+                        Spacer(Modifier.height(TOP_BAR_TOP))
                         topRow()
                         Spacer(Modifier.height(8.dp * gap))
                         name(false)
@@ -599,8 +601,6 @@ private fun FillColumn(
     }
 }
 
-/** The back arrow stands this far down from the top, as the gear on the metronome and as the tuner's mode switch. */
-private val HEADER_TOP = 8.dp
 
 /** Upright, as the metronome's column. */
 private val COLUMN_MAX_WIDTH = 480.dp

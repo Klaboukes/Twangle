@@ -20,15 +20,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -45,20 +40,20 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
-import io.github.klaboukes.twangle.core.designsystem.OneLineAutoSize
-import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.BackButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
@@ -211,7 +206,6 @@ internal fun SettingsPage(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsScaffold(
     title: String,
@@ -226,35 +220,24 @@ private fun SettingsScaffold(
         // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            // The bar stands in the same centred column as the rows, so the title (and the back arrow)
-            // line up with the headings where the window is wider than the column (Phase 52: a tablet's
-            // title sat at the window's edge, 100 to 300 dp from the rows). The bar is see-through, so
-            // narrowing it shows nothing new; where the column is the whole width it is as before.
+            // Every tab's top row (TopBar): the back arrow in the gear's place, the title in the middle, 8 dp down
+            // and the arrow's outline 16 dp in, as the rows (Material's top bar until 2026-11-04, its title at the
+            // start beside a bare arrow). It stands in the same centred column as the rows, so the arrow lines up
+            // with them where the window is wider than the column (Phase 52: a tablet's title sat at the window's
+            // edge, 100 to 300 dp from the rows). The bar is see-through.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
                 contentAlignment = Alignment.TopCenter,
             ) {
-                TopAppBar(
-                    title = {
-                        // Set smaller where it doesn't fit the bar: in 1.1 Bengali's About title in Futuristic,
-                        // Orbitron's "Twangle" beside Bengali letters, made a line taller than the bar at 2× text
-                        // (the overnight run of 2026-10-30). It still wraps where it is too wide, as French "À propos
-                        // de Twangle" does at 2× text, in two lines that fit; one line never wrapped ran off the bar.
-                        val style = LocalTextStyle.current
-                        Text(title, autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, TITLE_SMALLEST) })
-                    },
-                    modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth(),
-                    windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                    navigationIcon = {
-                        if (onBack != null) {
-                            TwangleIconButton(onClick = onBack) {
-                                Icon(painterResource(DesignR.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
-                            }
-                        }
-                    },
+                TopBar(
+                    middle = { TopBarTitle(title) },
+                    modifier = Modifier
+                        .widthIn(max = CONTENT_MAX_WIDTH)
+                        .fillMaxWidth()
+                        .padding(start = TOP_BAR_MARGIN, end = TOP_BAR_MARGIN, top = TOP_BAR_TOP),
+                    start = onBack?.let { back -> { BackButton(back, stringResource(R.string.settings_back), faceModifier = Modifier.testTag(SETTINGS_BACK_TAG)) } },
                 )
             }
         },
@@ -496,8 +479,8 @@ private val CONTENT_MAX_WIDTH = 600.dp
 /** How far under the fixed title the rows fade out while the page is scrolled. */
 private val TITLE_FADE = 24.dp
 
-/** The top bar's title is set no smaller than this where it doesn't fit. */
-private val TITLE_SMALLEST = 14.sp
+/** The back arrow's face at the start of Settings' and About's top row, for UI tests (a resource id in the app). */
+const val SETTINGS_BACK_TAG = "settingsBack"
 
 private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SHARPS -> R.string.settings_notation_sharps

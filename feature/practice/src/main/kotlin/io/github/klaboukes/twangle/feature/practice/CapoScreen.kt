@@ -66,6 +66,8 @@ import io.github.klaboukes.twangle.core.designsystem.FloatingMenu
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
@@ -198,9 +200,9 @@ fun CapoScreen(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .heightIn(min = height)
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = TOP_BAR_MARGIN),
             ) {
-                Spacer(Modifier.height(HEADER_TOP))
+                Spacer(Modifier.height(TOP_BAR_TOP))
                 Row(Modifier.fillMaxWidth()) {
                     Box(Modifier.weight(1f), contentAlignment = Alignment.TopCenter) { topRow() }
                     Spacer(Modifier.width(16.dp))
@@ -225,12 +227,12 @@ fun CapoScreen(
             // A phone on its side: the top row at the top of the start half and the rest of that half in the middle
             // of the height it leaves; the table in the middle of the end half (Phase 63, as Chords centres its chart;
             // until then both hung at the top). Each half scrolls only where it doesn't fit.
-            Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+            Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
                 Column(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     topRow()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(12.dp))
@@ -271,7 +273,7 @@ fun CapoScreen(
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     topRow()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(if (tight) 2.dp else 12.dp))
@@ -566,8 +568,6 @@ private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, spee
 
 /** On its side from this width, as the other Practice tools. */
 
-/** The back arrow stands this far down from the top, as on the other Practice tools. */
-private val HEADER_TOP = 8.dp
 
 /** Upright, as the other Practice tools' column. */
 private val COLUMN_MAX_WIDTH = 480.dp

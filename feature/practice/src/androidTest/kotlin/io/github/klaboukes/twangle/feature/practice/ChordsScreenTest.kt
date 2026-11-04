@@ -515,13 +515,17 @@ class ChordsScreenTest {
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // One row: the back arrow at the start, the picker chip beside it (Phase 47, 69, 70).
+            // One row, every tab's: the back arrow at the start, the picker chip in the middle (Phase 47, 69, 70; beside the
+            // arrow until 2026-11-04), as on the tuner.
             val backArrow = node(PracticeTestTags.BACK).getBoundsInRoot()
             val instrument = node(PracticeTestTags.TUNING).getBoundsInRoot()
             assertTrue(
                 "$case the tuning beside the back arrow $backArrow $instrument",
                 instrument.left >= backArrow.right && instrument.top < backArrow.bottom && instrument.bottom > backArrow.top,
             )
+            if (size.width < size.height) {
+                assertEquals("$case the chip in the row's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
+            }
             // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not.
             assertThePanel(case, wide = size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT)
             val chart = chart().getBoundsInRoot()

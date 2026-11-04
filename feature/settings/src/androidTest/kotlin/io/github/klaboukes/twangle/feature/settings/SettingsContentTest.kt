@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_FACE
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -522,8 +523,10 @@ class SettingsContentTest {
         )
         val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
         headings.forEach { compose.onNodeWithText(context.getString(it)).assert(isHeading) }
-        // No other heading: the four groups are all there is (Phase 75; five until then).
-        compose.onAllNodes(isHeading).assertCountEquals(headings.size)
+        // No other heading but the page's title (every tab's top row, 2026-11-04): the four groups are all there is
+        // (Phase 75; five until then).
+        compose.onNodeWithText(context.getString(R.string.settings_title)).assert(isHeading)
+        compose.onAllNodes(isHeading).assertCountEquals(headings.size + 1)
 
         // Top to bottom: each heading, then the settings of its group (2.0, Phase 75, the first mock-up's four groups).
         // Unclipped positions: most of these rows are below the fold.
@@ -566,44 +569,46 @@ class SettingsContentTest {
     }
 
     /**
-     * The page's title lines up with the rows' column (Phase 52): on a tablet the title stayed at the window's
-     * edge while the rows stood in the centred 600 dp column, 100 dp apart upright and 300 dp on its side. On
-     * a phone the column is the whole width, so the title stays where it was.
+     * The page's top row stands over the rows' column (Phase 52): on a tablet the title stayed at the window's
+     * edge while the rows stood in the centred 600 dp column, 100 dp apart upright and 300 dp on its side. Since
+     * 2026-11-04 it is every tab's top row, the title in the middle of the column.
      */
     @Test
-    fun onATabletUprightTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(TABLET_UPRIGHT)
+    fun onATabletUprightTheTitleStandsOverTheRows() = assertSettingsTitleLinesUp(TABLET_UPRIGHT)
 
     @Test
-    fun onATabletOnItsSideTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(TABLET_ON_ITS_SIDE)
+    fun onATabletOnItsSideTheTitleStandsOverTheRows() = assertSettingsTitleLinesUp(TABLET_ON_ITS_SIDE)
 
     @Test
-    fun onAPhoneTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(PHONE)
+    fun onAPhoneTheTitleStandsOverTheRows() = assertSettingsTitleLinesUp(PHONE)
 
     private fun assertSettingsTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE)
-        val start = columnStart() + ROW_INSET
         val title = compose.onNodeWithText(context.getString(R.string.settings_title)).getBoundsInRoot()
         val heading = compose.onNodeWithText(context.getString(R.string.settings_group_tuning)).getBoundsInRoot()
-        assertEquals("$size: the first heading at the column's start", start.value, heading.left.value, tolerance())
-        assertEquals("$size: the title in line with the heading", heading.left.value, title.left.value, tolerance())
+        assertEquals("$size: the first heading at the column's start", (columnStart() + ROW_INSET).value, heading.left.value, tolerance())
+        assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
     }
 
-    /** On About the back arrow stands at the column's start, its arrow in line with the text, and the title after it. */
+    /** On About the back arrow's outline stands at the column's start, in line with the text, and the title in the middle. */
     @Test
     fun onATabletUprightAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_UPRIGHT)
 
     @Test
     fun onATabletOnItsSideAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_ON_ITS_SIDE)
 
+    @Test
+    fun onAPhoneAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(PHONE)
+
     private fun assertAboutTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE, about = true)
-        val start = columnStart()
-        val back = compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).getBoundsInRoot()
+        val back = compose.onNodeWithTag(SETTINGS_BACK_TAG).getBoundsInRoot()
         val title = compose.onNodeWithText(context.getString(R.string.about_title)).getBoundsInRoot()
         val text = compose.onNodeWithText(context.getString(R.string.settings_about_free_title)).getBoundsInRoot()
-        assertEquals("$size: the text at the column's start", (start + ROW_INSET).value, text.left.value, tolerance())
-        // Material's top bar keeps the 48 dp back button 4 dp in, so its 24 dp arrow starts 16 dp in, as the text.
-        assertEquals("$size: the back arrow's middle", (text.left + 12.dp).value, ((back.left + back.right) / 2).value, tolerance())
+        assertEquals("$size: the text at the column's start", (columnStart() + ROW_INSET).value, text.left.value, tolerance())
+        assertEquals("$size: the back arrow's outline in line with the text", text.left.value, back.left.value, tolerance())
+        assertEquals("$size: the arrow on the top row's face", TOP_BAR_FACE.value, (back.right - back.left).value, tolerance())
+        assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
         assertTrue("$size: the title after the arrow", title.left >= back.right)
     }
 
@@ -619,6 +624,8 @@ class SettingsContentTest {
         val safe = safeArea()
         return safe.left + maxOf(0.dp, (safe.right - safe.left - CONTENT_WIDTH) / 2)
     }
+
+    private fun columnMiddle(): Dp = safeArea().let { (it.left + it.right) / 2 }
 
     @Test
     fun aboutShowsTheVersionThePromiseAndThePrivacyStatement() {
