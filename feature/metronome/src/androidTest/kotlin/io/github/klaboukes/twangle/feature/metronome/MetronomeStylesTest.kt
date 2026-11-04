@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_OUTLINE_INSET
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
@@ -410,7 +411,8 @@ class MetronomeStylesTest {
         val case = "tablet upright with the gear:"
         val gear = compose.onNodeWithTag(HEADER).windowBounds()
         assertEquals("$case gear's width", 48f, gear.width.value, 1f)
-        assertEquals("$case gear's left", ((TABLET_UPRIGHT.width - 448.dp) / 2).value, gear.left.value, 1f)
+        // Its face's outline (inside the 48 dp touch area) at the column's text margin, as on every tab.
+        assertEquals("$case gear's left", ((TABLET_UPRIGHT.width - 448.dp) / 2 - TOP_BAR_OUTLINE_INSET).value, gear.left.value, 1f)
         assertEquals("$case gear's top", 8f, gear.top.value, 1f)
         val bounds = parts().map { (name, node) -> name to node.windowBounds() }
         for ((name, rect) in bounds) {

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_OUTLINE_INSET
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.ZERO_WIDTH_SPACE
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -178,9 +179,9 @@ class PracticeCardsTest {
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
             val cards = PracticeTool.entries.map { card(it).getBoundsInRoot() }
-            // At the top start of the cards' column, as the tools' back arrow stands at their column's (the window's on a phone).
+            // At the top start of the cards' column, its face's outline (inside its 48 dp touch area) in line with the cards, as on every tab.
             val gear = node(GEAR).getBoundsInRoot()
-            assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left - cards[0].left).value) < 1f)
+            assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left + TOP_BAR_OUTLINE_INSET - cards[0].left).value) < 1f)
             val side = size.width > size.height
             if (side) {
                 assertTrue("$case on its side all four in one row", cards.all { abs((it.top - cards[0].top).value) < 0.5f })

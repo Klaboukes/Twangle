@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.app
 
 import android.Manifest
+import android.os.SystemClock
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -144,11 +146,55 @@ class TunerTabTest {
         }
     }
 
+    /**
+     * Every tab's top row is one row (the owner's review of 2026-11-03: switching from the tuner to the metronome moved
+     * the gear and the end button a little, and the metronome's button was bigger): the gear stands in the same place
+     * on every tab, and the tuner's focus mode button and the metronome's ⋯ are one size in one place.
+     */
+    @Test
+    fun theTopRowStandsStillAcrossTheTabs() {
+        ActivityScenario.launch(MainActivity::class.java).use {
+            assertTrue("the tuner shows", shown(TunerTestTags.PICKER_CHIP))
+            val gears = mutableMapOf<Destination, android.graphics.Rect>()
+            val ends = mutableMapOf<Destination, android.graphics.Rect>()
+            for ((destination, end) in listOf(
+                Destination.TUNER to TunerTestTags.ENTER_FOCUS,
+                Destination.METRONOME to MetronomeTestTags.OPTIONS,
+                Destination.PRACTICE to null,
+            )) {
+                tab(destination)
+                gears[destination] = boundsOf(NavigationTestTags.SETTINGS)
+                if (end != null) ends[destination] = boundsOf(end)
+            }
+            assertEquals("the metronome's gear", gears[Destination.TUNER], gears[Destination.METRONOME])
+            assertEquals("Practice's gear", gears[Destination.TUNER], gears[Destination.PRACTICE])
+            // Both tags are on the buttons' faces.
+            assertEquals("the ⋯ where focus mode's button is, as large", ends[Destination.TUNER], ends[Destination.METRONOME])
+            assertEquals("the end button's face as the gear's", gears.getValue(Destination.TUNER).width(), ends.getValue(Destination.TUNER).width())
+        }
+    }
+
+    /** [tag]'s bounds, found afresh while the tuner's screen keeps changing round it (a found node can go stale at once). */
+    private fun boundsOf(tag: String): android.graphics.Rect {
+        assertTrue("$tag shows", shown(tag))
+        repeat(BOUNDS_TRIES) {
+            try {
+                device.findObject(By.res(tag))?.let { return it.visibleBounds }
+            } catch (_: androidx.test.uiautomator.StaleObjectException) {
+                // Found again on the next try.
+            }
+            SystemClock.sleep(BOUNDS_RETRY_MS)
+        }
+        error("$tag kept going stale")
+    }
+
     private fun click(selector: androidx.test.uiautomator.BySelector) =
         (device.wait(Until.findObject(selector), WAIT_MS) ?: error("no $selector")).click()
 
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L
+        const val BOUNDS_TRIES = 40
+        const val BOUNDS_RETRY_MS = 50L
     }
 }

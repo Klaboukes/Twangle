@@ -421,6 +421,7 @@ class MainActivity : AppCompatActivity() {
             savedTrainer = settings.metronomeTrainer,
             savedTrainerOn = settings.metronomeTrainerOn,
             header = gear,
+            title = stringResource(R.string.nav_metronome),
         )
     }
 

@@ -58,11 +58,8 @@ internal val COMPACT_PANE_HEIGHT = 420.dp
 /** In the compact layout a tool's panel grows with the screen, up to this. */
 internal val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 
-/** The room at each end of the picker chip's row: focus mode's 44 dp button outline and 8 dp clear of the chip; the signal bars' 48 dp touch area fits it too. */
+/** The room at each end of the picker chip's row (the [TopBar]'s least): focus mode's 44 dp button outline and 8 dp clear of the chip. */
 internal val FOCUS_BUTTON_SLOT = 52.dp
-
-/** The room at each end of that row with the app's gear and the signal bars both at its start: the gear's 46 dp past the margin, the bars' 48 dp touch area less what clears it. */
-internal val GEAR_AND_BARS_SLOT = 92.dp
 
 /** The gear's 48 dp touch area reaches this far past its 44 dp outline at each side. */
 internal val GEAR_OUTLINE_INSET = 2.dp

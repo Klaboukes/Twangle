@@ -68,8 +68,13 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
-import io.github.klaboukes.twangle.core.designsystem.OptionsButton
+import io.github.klaboukes.twangle.core.designsystem.MoreButton
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_OUTLINE_INSET
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.designsystem.metronome.BeatLightsArt
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
@@ -121,7 +126,8 @@ import kotlin.math.roundToInt
  *
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
  * [ToolSwitches.ALL_OFF] this is the metronome alone. [header] is the app's gear that opens Settings
- * (2.0, Phase 69; the Practice tab's tool button until then), at the top start ([MetronomeContent]).
+ * (2.0, Phase 69; the Practice tab's tool button until then), at the top start, and [title] the tab's name in the
+ * top row's middle ([MetronomeContent]).
  * Since Phase 75 the tempo is the screen (docs/design/fresh-start-preview.html); 1.1's round tempo dial
  * is history (docs/architecture/history.md).
  */
@@ -141,6 +147,7 @@ fun MetronomeScreen(
     savedTrainer: SpeedTrainer? = null,
     savedTrainerOn: Boolean = false,
     header: (@Composable () -> Unit)? = null,
+    title: String? = null,
 ) {
     val viewModel: MetronomeViewModel = viewModel {
         MetronomeViewModel(
@@ -219,6 +226,7 @@ fun MetronomeScreen(
         onTrainerOn = viewModel::setTrainerOn,
         onTrainerPlan = viewModel::setTrainer,
         header = header,
+        title = title,
     )
 }
 
@@ -324,8 +332,8 @@ class BeatClock {
 /**
  * The metronome's screen for [bpm], [meter], [playing], [vibrate] and [sound], stateless (2.0, Phase 75;
  * the first 2.0 mock-up, docs/design/fresh-start-preview.html): the tempo is the screen. Upright, top to
- * bottom: the [header] (the app's gear, Phase 69) at the top start and the options button at the top
- * end; the tempo big with − and + either side and "beats per minute · Andante" under it ([TempoHeading],
+ * bottom: the top row, every tab's [TopBar] (the [header], the app's gear, Phase 69, at the start, the tab's
+ * [title] in the middle and the options button, ⋯, at the end; the owner's review of 2026-11-03); the tempo big with − and + either side and "beats per minute · Andante" under it ([TempoHeading],
  * as large as the room the rest leave); the ruler that sets it by dragging ([TempoRuler]); the beat
  * lights and Listen's status line; the meter and the click sound as segmented choices ([MeterChoice],
  * [SoundChoice]); Tap the beat and Start side by side ([BigButtons]); and the speed trainer's row with
@@ -334,7 +342,8 @@ class BeatClock {
  *
  * On a wide screen on its side the tempo, the ruler, the beat lights and the status line stand in the
  * start half, the [header] over them, and the choices, the two big buttons and the trainer's row in the
- * end half under the options button.
+ * end half under the options button, which stands as far from the window's side as the tuner's focus mode
+ * button there. The rail names the tab on its side, so no [title] shows.
  *
  * The options button opens a panel ([FloatingPanel]) under it with the clicks between the beats
  * ([subdivision], [onSubdivisionPick]), "Vibrate on the beat" ([onVibrateChange]) and Listen ([onListen],
@@ -385,6 +394,7 @@ fun MetronomeContent(
     onTrainerOn: (Boolean) -> Unit = {},
     onTrainerPlan: (SpeedTrainer) -> Unit = {},
     header: (@Composable () -> Unit)? = null,
+    title: String? = null,
 ) {
     val listening = listen.listening
     val currentHeard by rememberUpdatedState(heard)
@@ -438,21 +448,28 @@ fun MetronomeContent(
             // rule (1 on every phone, and on its side); the gear keeps its own size and place there.
             val scale = if (wide) 1f else columnScaleFor(width.value, height.value)
             val headerAbove = header != null && scale > 1f
-            val topRow: @Composable (withHeader: Boolean, withOptions: Boolean) -> Unit = { withHeader, withOptions ->
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    if (withHeader) header?.invoke()
-                    Spacer(Modifier.weight(1f))
-                    if (withOptions) {
-                        // The shared options button; TalkBack hears "Options" as a drop-down list.
-                        OptionsButton(
-                            open = optionsOpen,
-                            onClick = { optionsOpen = true },
-                            label = stringResource(R.string.metronome_options),
-                            role = Role.DropdownList,
-                            modifier = Modifier.testTag(MetronomeTestTags.OPTIONS).onGloballyPositioned { optionsBounds = it.boundsInRoot() },
-                        )
-                    }
-                }
+            // Every tab's top row: the gear, the tab's name, the ⋯ (on its side only the ⋯; TopBar says why).
+            val topRow: @Composable (withHeader: Boolean, withOptions: Boolean, withTitle: Boolean, modifier: Modifier) -> Unit = { withHeader, withOptions, withTitle, rowModifier ->
+                TopBar(
+                    middle = { if (withTitle && title != null) TopBarTitle(title) },
+                    modifier = rowModifier.fillMaxWidth(),
+                    start = header?.takeIf { withHeader },
+                    end = if (withOptions) {
+                        {
+                            // TalkBack hears "Options" as a drop-down list.
+                            MoreButton(
+                                open = optionsOpen,
+                                onClick = { optionsOpen = true },
+                                label = stringResource(R.string.metronome_options),
+                                role = Role.DropdownList,
+                                // The panel's end in line with the button's outline, not its touch area.
+                                faceModifier = Modifier.testTag(MetronomeTestTags.OPTIONS).onGloballyPositioned { optionsBounds = it.boundsInRoot() },
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                )
             }
             val heading: @Composable (Dp) -> Unit = { room ->
                 TempoHeading(bpm = motion.shownBpm, onStep = onStep, room = room, glow = motion::foundGlow)
@@ -528,16 +545,18 @@ fun MetronomeContent(
                 }
             }
             if (wide) {
+                // The halves' edges at the top row's margin, as the tuner's on its side; inside each half's scroll its
+                // buttons' touch areas reach past it, unclipped.
                 Row(
-                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN - TOP_BAR_OUTLINE_INSET),
                     horizontalArrangement = Arrangement.spacedBy(24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     FitColumn(
                         height = height - 16.dp,
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = TOP_BAR_OUTLINE_INSET, vertical = 8.dp),
                     ) {
-                        if (header != null) topRow(true, false)
+                        if (header != null) topRow(true, false, false, Modifier)
                         Spacer(Modifier.gap(1f))
                         Shrinking { room -> heading(room) }
                         Spacer(Modifier.height(RULER_GAP))
@@ -547,9 +566,9 @@ fun MetronomeContent(
                     }
                     FitColumn(
                         height = height - 16.dp,
-                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = TOP_BAR_OUTLINE_INSET, vertical = 8.dp),
                     ) {
-                        topRow(false, true)
+                        topRow(false, true, false, Modifier)
                         Spacer(Modifier.gap(1f))
                         choices()
                         Spacer(Modifier.height(BUTTONS_GAP))
@@ -560,9 +579,11 @@ fun MetronomeContent(
             } else {
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     if (headerAbove) {
-                        Spacer(Modifier.height(HEADER_TOP))
+                        Spacer(Modifier.height(TOP_BAR_TOP))
                         // At the start of a phone's column, as on the other screens on a tablet.
-                        Box(Modifier.widthIn(max = COLUMN_MAX_WIDTH).fillMaxWidth().padding(horizontal = 16.dp)) { header?.invoke() }
+                        Box(Modifier.widthIn(max = COLUMN_MAX_WIDTH).fillMaxWidth().padding(horizontal = TOP_BAR_MARGIN)) {
+                            TopBar(middle = {}, start = header)
+                        }
                     }
                     BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         // Laid out as on a phone of the room divided by the scale, then drawn that much bigger.
@@ -573,10 +594,10 @@ fun MetronomeContent(
                                 modifier = Modifier
                                     .verticalScroll(rememberScrollState())
                                     .widthIn(max = COLUMN_MAX_WIDTH)
-                                    .padding(horizontal = 16.dp),
+                                    .padding(horizontal = TOP_BAR_MARGIN),
                             ) {
-                                Spacer(Modifier.height(HEADER_TOP))
-                                topRow(header != null && !headerAbove, true)
+                                Spacer(Modifier.height(TOP_BAR_TOP))
+                                topRow(header != null && !headerAbove, true, true, Modifier)
                                 Spacer(Modifier.gap(1f))
                                 Shrinking { space -> heading(space) }
                                 Spacer(Modifier.height(RULER_GAP))
@@ -776,9 +797,6 @@ object MetronomeTestTags {
 
 /** Side by side from this width, when wider than tall. */
 private val WIDE_MIN_WIDTH = 600.dp
-
-/** The top row stands this far down from the top, as the tuner's header row. */
-private val HEADER_TOP = 8.dp
 
 /** The column keeps to this width on a large screen. */
 private val COLUMN_MAX_WIDTH = 480.dp

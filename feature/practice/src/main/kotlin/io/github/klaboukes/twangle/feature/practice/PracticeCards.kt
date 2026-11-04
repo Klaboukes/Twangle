@@ -38,12 +38,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.breakableAtHyphens
 import io.github.klaboukes.twangle.core.designsystem.koreanWordsKeptWhole
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -60,8 +62,8 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
  * The Practice tab (2.0, Phase 69; the first 2.0 mock-up's Practice, docs/design/fresh-start-preview.html):
- * [title] ("Practice") at the top, after the app's gear ([settingsButton], upright; on its side the gear is
- * at the rail's top), then one big card per tool in [tools] (each tool's switch hides its card,
+ * [title] ("Practice") in the middle of the top row, every tab's [TopBar], with the app's gear at its start
+ * ([settingsButton], upright; on its side the gear is at the rail's top), then one big card per tool in [tools] (each tool's switch hides its card,
  * [practiceToolsFor]): its picture in the accent ([practiceToolPicture]), its name and a line saying what
  * it does. A tap on a card calls [onOpen], which opens the tool full screen; its back arrow and Back come
  * back here. Under the cards the "last time" row reopens [lastTime], the tool used last, with what was
@@ -118,7 +120,7 @@ fun PracticeCards(
                     .firstOrNull { (maxWidth - gap * (it - 1)) / it - padding * 2 >= lineEm * MIN_LINE_EMS } ?: 1
                 val cardWidth = (maxWidth - gap * (columns - 1)) / columns
                 Column {
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     TitleRow(title, settingsButton)
                     Spacer(Modifier.height(if (short) SHORT_GAP / 2 else TITLE_GAP))
                     for (row in tools.chunked(columns)) {
@@ -152,21 +154,10 @@ fun PracticeCards(
     }
 }
 
-/** The page's top row: the gear (where given) and the title, one line high as the tools' top rows. */
+/** The page's top row: every tab's [TopBar], the gear (where given) at its start and the title in its middle. */
 @Composable
 private fun TitleRow(title: String, settingsButton: (@Composable () -> Unit)?) {
-    Row(Modifier.fillMaxWidth().heightIn(min = TOP_ROW_HEIGHT), verticalAlignment = Alignment.CenterVertically) {
-        if (settingsButton != null) {
-            settingsButton()
-            Spacer(Modifier.width(TITLE_AFTER_GEAR))
-        }
-        Text(
-            title,
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontSize = TITLE_SIZE),
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.semantics { heading() },
-        )
-    }
+    TopBar(middle = { TopBarTitle(title) }, modifier = Modifier.fillMaxWidth(), start = settingsButton)
 }
 
 /** One tool's card: its picture at the top, its name and what it does at the bottom, on the surface with a thin line round it. */
@@ -325,13 +316,9 @@ private val SHORT_PICTURE = 56.dp
 /** On a phone on its side: the gaps between the cards and inside them. */
 private val SHORT_GAP = 12.dp
 
-/** The title row stands as far down as the tools' top rows ([HEADER_TOP] in ChordsScreen) and is as tall as the gear's touch area. */
-private val HEADER_TOP = 8.dp
-private val TOP_ROW_HEIGHT = 48.dp
-private val TITLE_AFTER_GEAR = 8.dp
+/** Under the title row. */
 private val TITLE_GAP = 12.dp
 
-private val TITLE_SIZE = 22.sp
 private val NAME_SIZE = 19.sp
 private val NAME_MIN_SIZE = 6.sp
 private val LINE_SIZE = 13.5.sp

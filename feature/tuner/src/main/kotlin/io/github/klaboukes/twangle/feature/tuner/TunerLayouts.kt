@@ -50,11 +50,11 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
+import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
-import io.github.klaboukes.twangle.feature.tuner.components.TUNER_BUTTON_FACE
 import io.github.klaboukes.twangle.feature.tuner.components.shortStringGapFor
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
 import io.github.klaboukes.twangle.feature.tuner.components.LENS_SHORT
@@ -299,18 +299,13 @@ internal fun CompactLayout(
 }
 
 /**
- * The picker [chip] centred (2.0, Phase 70, in the mode switch's place), with focus mode's [button] at
- * the row's end, its outline in line with the column's text margin (owner, 2026-10-25: the same place
- * in both modes, never moving), and the signal [bars] at its start, across from the button. The row
- * takes the whole width. The chip keeps clear of two equal slots ([FOCUS_BUTTON_SLOT]) at the row's
- * ends, whether the bars show or not, so it stays centred and never reaches either: a long name at a
- * large font ends in "…" instead. None of them moves with anything the tuner hears, nor when the bars
- * are turned on; the chip alone grows and shrinks with its name, about its centre.
- *
- * The app's [gear] (Settings, Phase 69) stands at the very start, its outline in line with the text
- * margin as the button's is at the end, and the bars right after it; with both, the two end slots
- * grow to [GEAR_AND_BARS_SLOT], so the chip stays centred. The bars stand here only while a tool's panel
- * takes the ruler's place; in the plain tuner they are beside the ruler's heard note (Phase 71).
+ * The tuner's [TopBar]: the picker [chip] in the middle (2.0, Phase 70, in the mode switch's place), focus mode's
+ * [button] at the end (owner, 2026-10-25: the same place in both modes, never moving), and the app's [gear] (Settings,
+ * Phase 69) at the start with the signal [bars] right after it, where they stand in this row (Any note, a tool's panel,
+ * on its side; over the pegs otherwise). The chip stays in the middle whether the bars show or not and never reaches
+ * either end: a long name at a large font ends in "…" instead. None of them moves with anything the tuner hears; the
+ * chip alone grows and shrinks with its name, about its centre. The same row as the metronome's and Practice's, so
+ * switching tabs moves nothing (the owner's review of 2026-11-03).
  */
 @Composable
 internal fun ChipRow(
@@ -319,41 +314,18 @@ internal fun ChipRow(
     button: (@Composable () -> Unit)?,
     gear: (@Composable () -> Unit)? = null,
 ) {
-    val barsSlot = @Composable { if (bars != null) Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
-    val buttonSlot = @Composable { if (button != null) button() }
-    val gearSlot = @Composable { if (gear != null) gear() }
-    Layout(contents = listOf(chip, barsSlot, buttonSlot, gearSlot)) { (chipMeasurables, barsMeasurables, buttonMeasurables, gearMeasurables), constraints ->
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val buttonPlaceable = buttonMeasurables.singleOrNull()?.measure(loose)
-        val barsPlaceable = barsMeasurables.singleOrNull()?.measure(loose)
-        val gearPlaceable = gearMeasurables.singleOrNull()?.measure(loose)
-        val slot = when {
-            gearPlaceable != null && barsPlaceable != null -> GEAR_AND_BARS_SLOT.roundToPx()
-            buttonPlaceable != null || barsPlaceable != null || gearPlaceable != null -> FOCUS_BUTTON_SLOT.roundToPx()
-            else -> 0
-        }
-        val bounded = constraints.hasBoundedWidth
-        val chipRoom = if (bounded) (loose.maxWidth - 2 * slot).coerceAtLeast(0) else Constraints.Infinity
-        val chipPlaceable = chipMeasurables.singleOrNull()?.measure(loose.copy(maxWidth = chipRoom))
-        val width = if (bounded) constraints.maxWidth else (chipPlaceable?.width ?: 0) + 2 * slot
-        val height = maxOf(chipPlaceable?.height ?: 0, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0, gearPlaceable?.height ?: 0)
-        layout(width, height) {
-            chipPlaceable?.placeRelative((width - chipPlaceable.width) / 2, (height - chipPlaceable.height) / 2)
-            // The gear's touch area is wider than its outline; the outline starts at the row's start.
-            val gearEnd = gearPlaceable?.let {
-                val outlineInset = (it.width - TUNER_BUTTON_FACE.roundToPx()).coerceAtLeast(0) / 2
-                it.placeRelative(-outlineInset, (height - it.height) / 2)
-                it.width - outlineInset
-            } ?: 0
-            // The bars in the middle of their 48 dp touch area, which starts at the row's start, or after the gear's.
-            barsPlaceable?.placeRelative(gearEnd + (SIGNAL_BARS_SLOT.roundToPx() - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
-            // The touch area is wider than the outline; the outline ends at the row's end.
-            buttonPlaceable?.let {
-                val outlineInset = (it.width - TUNER_BUTTON_FACE.roundToPx()).coerceAtLeast(0) / 2
-                it.placeRelative(width - it.width + outlineInset, (height - it.height) / 2)
+    val start = if (gear == null && bars == null) {
+        null
+    } else {
+        @Composable {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (gear != null) gear()
+                // The bars in the middle of their 48 dp touch area, after the gear's.
+                if (bars != null) Box(Modifier.size(SIGNAL_BARS_SLOT), contentAlignment = Alignment.Center) { Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
             }
         }
     }
+    TopBar(middle = chip, start = start, end = button)
 }
 
 /**
