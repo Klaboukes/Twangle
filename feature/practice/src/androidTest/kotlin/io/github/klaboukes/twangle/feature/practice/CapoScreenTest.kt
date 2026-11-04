@@ -257,14 +257,15 @@ class CapoScreenTest {
     /**
      * The shapes' pill stands where Chords has its name (Phase 77), so switching between the tools moves nothing: upright
      * right under the top row, as wide and in the same place, also on a short screen and a tablet; on a tablet on its side
-     * in the top row's row; on a phone on its side where Chords' is, or a little higher where the capo and "Sounds in"
-     * wouldn't fit under it there. "Shapes I play" stands small under its face.
+     * in the top row's row; on a phone on its side exactly where Chords' is too (until 2026-11-04 it rose about 16 dp on
+     * the Xiaomi to leave the capo and "Sounds in" room under it; "Sounds in" now stands under the table), on a short one,
+     * the Xiaomi's and a taller one. "Shapes I play" stands small under its face.
      */
     @Test
     fun theShapesPillStandsWhereChordsHasItsName() {
         show(SongKey(PitchClass.C), 3)
         val caption = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_capo_shapes)
-        for (size in listOf(XIAOMI, PHONE_UPRIGHT, NARROW_UPRIGHT, TABLET_UPRIGHT, TABLET_LANDSCAPE, PHONE_LANDSCAPE)) {
+        for (size in listOf(XIAOMI, PHONE_UPRIGHT, NARROW_UPRIGHT, TABLET_UPRIGHT, TABLET_LANDSCAPE, PHONE_LANDSCAPE, XIAOMI_LANDSCAPE, TALL_LANDSCAPE)) {
             shownSize.value = size
             shownChords.value = true
             compose.waitForIdle()
@@ -274,13 +275,20 @@ class CapoScreenTest {
             val capo = node(PracticeTestTags.CAPO_SHAPES).getBoundsInRoot()
             assertEquals("$size: from where Chords' name starts (a pixel apart at most)", chords.left.value, capo.left.value, 1f)
             assertEquals("$size: as wide as Chords' name", chords.width.value, capo.width.value, 1f)
-            if (size == PHONE_LANDSCAPE) {
-                assertTrue("$size: at Chords' name or a little higher, $capo $chords", capo.top <= chords.top + 0.5.dp && capo.top >= chords.top - 40.dp)
-            } else {
-                assertEquals("$size: as high as Chords' name", chords.top.value, capo.top.value, 0.5f)
-            }
+            assertEquals("$size: as high as Chords' name", chords.top.value, capo.top.value, 0.5f)
             val under = compose.onNodeWithText(caption).getBoundsInRoot()
             assertTrue("$size: the caption under the face $under $capo", under.top >= capo.bottom && under.top <= capo.bottom + 8.dp)
+            if (size.width > size.height && size.width < TABLET_LANDSCAPE.width) {
+                // A phone on its side: the capo in the middle of the height under the caption, "Sounds in" under the table.
+                val stepper = node(PracticeTestTags.CAPO_HIGHER).getBoundsInRoot()
+                val window = bars().safeArea(size)
+                val middle = (under.bottom + window.bottom - 8.dp) / 2
+                assertTrue("$size: the capo under the caption $stepper $under", stepper.top >= under.bottom)
+                assertEquals("$size: the capo in the middle of the height under the caption", middle.value, ((stepper.top + stepper.bottom) / 2).value, 1.5f)
+                val table = node(PracticeTestTags.capoRow(Chord.of(PitchClass.A, ChordQuality.MINOR))).getBoundsInRoot()
+                val soundsIn = node(PracticeTestTags.CAPO_SOUNDS_IN).getBoundsInRoot()
+                assertTrue("$size: Sounds in under the table, in the end half $soundsIn $table $stepper", soundsIn.top >= table.bottom && soundsIn.left >= stepper.right)
+            }
         }
     }
 
@@ -330,7 +338,7 @@ class CapoScreenTest {
     }
 
     @Test
-    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() = assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE), listOf(false, true))
+    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() = assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE, XIAOMI_LANDSCAPE), listOf(false, true))
 
     /** On a tablet, upright and on its side (Phase 52): it fits as on a phone, and all under the top row stands in the middle of the height, as the metronome's column. */
     @Test
@@ -499,6 +507,10 @@ class CapoScreenTest {
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
+
+        /** The Xiaomi on its side less the status bar, the gesture bar and the rail; a tall phone on its side (not short). */
+        private val XIAOMI_LANDSCAPE = DpSize(769.dp, 345.dp)
+        private val TALL_LANDSCAPE = DpSize(900.dp, 430.dp)
 
         /** The Lenovo Tab M11 (1280 x 800 dp) upright less its bars and navigation bar, and on its side (Phase 52). */
         private val TABLET_UPRIGHT = DpSize(800.dp, 1120.dp)

@@ -102,8 +102,8 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
  * row's middle and the tuning chip on its own line under it ([BackAndTuningRow]), the shapes' pill right under it where Chords has its name (Phase 77), then the
  * capo, the table and "Sounds in" in the middle of the height left, as Chords centres its chart and the metronome its
  * column (on phones since Phase 63; until then they hung at the top). On a phone on its side (≥ 600 dp wide and wider
- * than tall) that row, the pill (where Chords has its name, [SideHalf]), the capo and "Sounds in" fill the start half,
- * the table the end half, in its middle; on a tablet on its side ([practiceLayoutFor]) the pill shares the top row's
+ * than tall) that row, the pill (exactly where Chords has its name, [SideHalf]) and the capo fill the start half, the
+ * table and "Sounds in" under it the end half, in its middle; on a tablet on its side ([practiceLayoutFor]) the pill shares the top row's
  * row, as Chords' name, and the two halves stand together in the middle of the height under it.
  *
  * Names follow the player's [notation], written as the key writes them ([CapoPlan.shapeSymbolOf],
@@ -238,9 +238,14 @@ fun CapoScreen(
                 Spacer(Modifier.height(8.dp))
             }
         } else if (layout == PracticeLayout.HALVES) {
-            // A phone on its side: the top row at the top of the start half, the pill where Chords has its name (in the
-            // middle of the height under the top row), the capo and "Sounds in" under it; the table in the middle of the
-            // end half (Phase 63, as Chords centres its chart). Each half scrolls only where it doesn't fit.
+            // A phone on its side, in the upright order: the top row at the top of the start half, the pill exactly where
+            // Chords has its name (in the middle of the height under the top row) and the capo in the middle of the height
+            // under it; the table and "Sounds in" under it in the middle of the end half (Phase 63, as Chords centres its
+            // chart). Until 2026-11-04 "Sounds in" stood under the capo, and the pill rose about 16 dp above Chords' name
+            // on the Xiaomi to leave them room. Each half scrolls only where it doesn't fit.
+            // A short half (a phone on its side) gets the stepper no taller than its buttons and the table without its
+            // column names, as a short upright screen: each row still reads "Am → Cm", and "Sounds in" says the rest.
+            val short = height < SIDE_SHORT_HEIGHT
             Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
                 SideHalf(
                     viewport = height,
@@ -251,17 +256,7 @@ fun CapoScreen(
                         }
                     },
                     pill = pill,
-                    rest = {
-                        // Where the half is short (a phone on its side) the stepper takes its tight size and hangs right
-                        // under "Shapes I play", so the pill rises as little as it can above Chords' name.
-                        val short = height < SIDE_SHORT_HEIGHT
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Spacer(Modifier.height(if (short) 0.dp else 8.dp))
-                            stepper(short)
-                            Spacer(Modifier.height(8.dp))
-                            soundsInLine()
-                        }
-                    },
+                    rest = { stepper(short) },
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
@@ -274,11 +269,14 @@ fun CapoScreen(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(TABLE_TOP_WIDE))
+                    // On a short half the table's top keeps no room of its own: the gaps round it are what the height leaves.
+                    Spacer(Modifier.height(if (short) 0.dp else TABLE_TOP_WIDE))
                     Spacer(Modifier.weight(1f))
-                    table(false)
+                    table(short)
+                    Spacer(Modifier.height(SIDE_SOUNDS_IN_GAP))
+                    soundsInLine()
                     Spacer(Modifier.weight(1f))
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(if (short) 0.dp else 8.dp))
                 }
             }
         } else {
@@ -340,11 +338,12 @@ fun CapoScreen(
 }
 
 /**
- * On a phone on its side, the start half [viewport] tall: [top] (the top row) at the top; the [pill] with its face where
- * Chords has its name (in the middle of the height under the top row, with 12 dp above it and 8 dp under it kept free,
- * as Chords' column); and [rest] (the capo and "Sounds in") right under the pill. Where the rest doesn't fit under it
- * there, the pill rises just enough, never closer than 12 dp to the top row; where even that doesn't fit, the half grows
- * (and scrolls, in a scrolling [modifier]). All centred across.
+ * On a phone on its side, the start half [viewport] tall: [top] (the top row) at the top; the [pill] with its face exactly
+ * where Chords has its name (in the middle of the height under the top row, with 12 dp above it and 8 dp under it kept
+ * free, as Chords' column), so switching between the tools moves nothing; and [rest] (the capo) in the middle of the
+ * height between the pill's caption and those 8 dp at the bottom. Where the rest doesn't fit there it hangs right under
+ * the caption and the half grows (and scrolls, in a scrolling [modifier]); the pill never moves for it (until 2026-11-04
+ * it rose instead). All centred across.
  */
 @Composable
 private fun SideHalf(
@@ -368,14 +367,14 @@ private fun SideHalf(
         val room = viewport.roundToPx()
         // Chords' name: its column's two equal weights round "12 dp, the name" with 8 dp at the bottom (ChordsScreen's HALVES).
         val face = NAME_PICKER_HEIGHT.roundToPx()
-        val chordsTop = topHeight + above + maxOf(0, room - topHeight - above - face - below) / 2
-        val lowest = room - below - restHeight - pillHeight
-        val pillTop = maxOf(topHeight + above, minOf(chordsTop, lowest))
-        val height = maxOf(room, pillTop + pillHeight + restHeight + below)
+        val pillTop = topHeight + above + maxOf(0, room - topHeight - above - face - below) / 2
+        val restTop = pillTop + pillHeight + maxOf(0, room - below - pillTop - pillHeight - restHeight) / 2
+        val height = maxOf(room, restTop + restHeight + below)
         layout(width, height) {
             topPlaced.forEach { it.place((width - it.width) / 2, 0) }
             var y = pillTop
             pillPlaced.forEach { it.place((width - it.width) / 2, y); y += it.height }
+            y = restTop
             restPlaced.forEach { it.place((width - it.width) / 2, y); y += it.height }
         }
     }
@@ -698,8 +697,14 @@ private val PILL_GAP_TIGHT = 2.dp
 private val SIDE_PILL_ABOVE = 12.dp
 private val SIDE_PILL_BELOW = 8.dp
 
-/** A start half shorter than this (a phone on its side) closes up the capo's rows under the pill ([SideHalf]). */
+/**
+ * A window on its side shorter than this (a phone) gets the stepper no taller than its buttons and the table without its
+ * column names, so the table and "Sounds in" fit in the end half.
+ */
 private val SIDE_SHORT_HEIGHT = 420.dp
+
+/** On its side, "Sounds in" keeps this far under the table. */
+private val SIDE_SOUNDS_IN_GAP = 8.dp
 private val MIN_LABEL_SIZE = 8.sp
 private val LAST_RESORT_LABEL_SIZE = 6.sp
 
