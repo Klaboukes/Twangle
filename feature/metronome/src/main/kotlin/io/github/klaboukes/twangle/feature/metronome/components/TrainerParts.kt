@@ -57,10 +57,11 @@ import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
- * The speed trainer (Phase 62; since Phase 75 a row of its own at the foot of the screen, the first 2.0
- * mock-up's `.trainer`, docs/design/fresh-start-preview.html): its name, what it does in words and its
- * switch; the row opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
- * floating panel over the row (the shared [FloatingPanel]). Until Phase 75 it was a row in the options panel and its
+ * The speed trainer (Phase 62): a row in the options panel with its name, what it does in words and its
+ * switch, which opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
+ * floating panel of the same kind (the shared [FloatingPanel]); while it is on, the same row on a card
+ * at the foot of the screen too (the first 2.0 mock-up's `.trainer`, docs/design/fresh-start-preview.html),
+ * opening its settings over it. Phase 75 had the card there always (until 2026-11-04); before that its
  * words stood on the status line.
  */
 
@@ -75,9 +76,10 @@ data class TrainerStatus(val text: String, val spoken: String)
  * The speed trainer's row (Phase 75): its rising-line icon (in the accent while [on]), its name over
  * [status]'s words in the muted colour (its plan while stopped, where it stands while it climbs), and
  * its switch at the end ([onOnChange]). A tap on the row opens its settings ([onOpen]); [onPlaced] gives
- * the row's place, for them to open from. On a raised card with a thin outline, as the mock-up, at least
- * [TRAINER_ROW_HEIGHT] tall; the words shrink to one line each rather than wrap. TalkBack hears a button
- * with [TrainerStatus.spoken] and a switch "Speed trainer".
+ * the row's place, for them to open from. On the screen ([card]) on a raised card with a thin outline, as
+ * the mock-up; in the options panel bare, as its other rows. At least [TRAINER_ROW_HEIGHT] tall; the words
+ * shrink to one line each rather than wrap. TalkBack hears a button with [TrainerStatus.spoken] and a
+ * switch "Speed trainer".
  */
 @Composable
 internal fun TrainerRow(
@@ -87,19 +89,19 @@ internal fun TrainerRow(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
     onPlaced: (Rect) -> Unit = {},
+    card: Boolean = true,
 ) {
     val scheme = MaterialTheme.colorScheme
     val source = remember { MutableInteractionSource() }
     val name = stringResource(R.string.metronome_trainer)
-    val shape = MaterialTheme.shapes.large
+    val shape = if (card) MaterialTheme.shapes.large else MaterialTheme.shapes.medium
     Row(
         modifier
             .widthIn(max = TRAINER_ROW_WIDEST)
             .fillMaxWidth()
             .onGloballyPositioned { onPlaced(it.boundsInRoot()) }
             .heightIn(min = TRAINER_ROW_HEIGHT)
-            .background(scheme.surface.copy(alpha = CARD_ALPHA), shape)
-            .border(1.dp, scheme.outlineVariant, shape)
+            .then(if (card) Modifier.background(scheme.surface.copy(alpha = CARD_ALPHA), shape).border(1.dp, scheme.outlineVariant, shape) else Modifier)
             .pressFeedback(source, shape)
             .padding(start = ROW_PADDING, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -107,7 +109,7 @@ internal fun TrainerRow(
         Row(
             Modifier
                 .weight(1f)
-                .testTag(MetronomeTestTags.TRAINER)
+                .testTag(if (card) MetronomeTestTags.TRAINER else MetronomeTestTags.TRAINER_OPTION)
                 .heightIn(min = TRAINER_ROW_HEIGHT)
                 .clickable(interactionSource = source, indication = null, role = Role.Button) {
                     source.pressFlash()
@@ -134,12 +136,12 @@ internal fun TrainerRow(
                     maxLines = 1,
                     softWrap = false,
                     autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = style.fontSize, stepSize = 0.5.sp),
-                    modifier = Modifier.testTag(MetronomeTestTags.TRAINER_TEXT),
+                    modifier = Modifier.testTag(if (card) MetronomeTestTags.TRAINER_TEXT else MetronomeTestTags.TRAINER_OPTION_TEXT),
                 )
             }
         }
         Spacer(Modifier.width(8.dp))
-        TrainerSwitch(on, name, onOnChange)
+        TrainerSwitch(on, name, onOnChange, if (card) MetronomeTestTags.TRAINER_SWITCH else MetronomeTestTags.TRAINER_OPTION_SWITCH)
     }
 }
 

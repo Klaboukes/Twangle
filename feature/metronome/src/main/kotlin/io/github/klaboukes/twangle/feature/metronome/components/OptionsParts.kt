@@ -37,6 +37,7 @@ import io.github.klaboukes.twangle.core.designsystem.SwitchRow
 import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -44,11 +45,44 @@ import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
  * The options panel (Phase 62; since Phase 75 behind the options button in the screen's top end corner):
- * what is set less often than the tempo. Its rows, top to bottom: the clicks between the beats ("Between
- * the beats", Phase 62), Vibrate on the beat, and Listen (Phase 27). The click sounds left it for the
- * screen in Phase 75 ([SoundChoice]), and the speed trainer for a row of its own ([TrainerRow]), whose
- * settings open in a panel of the same kind (the shared [FloatingPanel]) from that row.
+ * what is set less often than the tempo. Its rows, top to bottom: the click sound ([SoundChoice]), the
+ * clicks between the beats ("Between the beats", Phase 62), Vibrate on the beat, the speed trainer
+ * ([TrainerRow] without its card, whose settings open in a panel of the same kind, the shared
+ * [FloatingPanel], in this one's place) and Listen (Phase 27). From Phase 75 to 2026-11-04 the sound
+ * and the trainer stood on the screen (the owner: set once and left, not worth a row there); the
+ * trainer's card still shows there while it is on.
  */
+
+/**
+ * The panel's first row: "Sound" over the four click sounds as icons side by side, as the note values.
+ * A tap calls [onPick] and leaves the panel open (while stopped one bar of it plays, while playing it is
+ * heard from the next beat). TalkBack hears a radio group "Sound" and each sound by its name.
+ */
+@Composable
+internal fun SoundChoice(sound: ClickSound, onPick: (ClickSound) -> Unit, modifier: Modifier = Modifier) {
+    val title = stringResource(R.string.metronome_sound)
+    Column(modifier) {
+        PanelLabel(title)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .selectableGroup()
+                .semantics { contentDescription = title },
+            horizontalArrangement = Arrangement.spacedBy(SEGMENT_GAP),
+        ) {
+            for (option in ClickSound.entries) {
+                IconSegment(
+                    icon = soundIcon(option),
+                    name = soundName(option),
+                    tag = MetronomeTestTags.sound(option),
+                    picked = option == sound,
+                    onPick = { onPick(option) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
 
 /**
  * [subdivision]'s note-value icon in [meter]: a single note for none, then two, three (with its 3) and
@@ -133,7 +167,7 @@ internal fun SubdivisionChoice(
 }
 
 /**
- * One choice of a row (a sound, a note value): its [icon] on the shared face ([ChoiceFace]), a radio
+ * One choice of a row (a click sound, a note value): its [icon] on the shared face ([ChoiceFace]), a radio
  * button TalkBack hears by [name]. Not [enabled]: dimmed in place, untouchable.
  */
 @Composable

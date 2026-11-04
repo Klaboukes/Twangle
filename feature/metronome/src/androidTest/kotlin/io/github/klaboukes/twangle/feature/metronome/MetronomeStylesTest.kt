@@ -132,18 +132,17 @@ class MetronomeStylesTest {
             "ruler" to compose.onNodeWithTag(MetronomeTestTags.RULER),
             "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
             "status line" to compose.onNodeWithTag(MetronomeTestTags.LINE),
-        ) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } +
-            ClickSound.entries.map { "sound $it" to compose.onNodeWithTag(MetronomeTestTags.sound(it)) } + listOf(
-                "tap the beat" to compose.onNodeWithTag(MetronomeTestTags.TAP),
-                "start" to compose.onNodeWithTag(MetronomeTestTags.START),
-                "trainer" to compose.onNodeWithTag(MetronomeTestTags.TRAINER),
-                "trainer's switch" to compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH),
-            )
+        ) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
+            "tap the beat" to compose.onNodeWithTag(MetronomeTestTags.TAP),
+            "start" to compose.onNodeWithTag(MetronomeTestTags.START),
+            // On (as shown here), the trainer's card is on the screen.
+            "trainer" to compose.onNodeWithTag(MetronomeTestTags.TRAINER),
+            "trainer's switch" to compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH),
+        )
 
-    /** Parts that stand inside another: the tempo's figures inside their room between − and +, the meters and sounds in their bars. */
+    /** Parts that stand inside another: the tempo's figures inside their room between − and +, the meters in their bar. */
     private fun contains(outer: String, inner: String) =
-        (outer.startsWith("meter") && inner.startsWith("meter")) || (outer.startsWith("sound") && inner.startsWith("sound")) ||
-            setOf(outer, inner) == setOf("trainer", "trainer's switch")
+        (outer.startsWith("meter") && inner.startsWith("meter")) || setOf(outer, inner) == setOf("trainer", "trainer's switch")
 
     @Test
     fun everythingFitsWithoutScrollingAndNothingOverlaps() {
@@ -289,8 +288,11 @@ class MetronomeStylesTest {
             // Under the button, its end edge in line with the button's (where the window leaves room).
             if (panel.top > window.top + 8.dp + SLACK) assertTrue("$name panel $panel under the options button $options", panel.top >= options.bottom - SLACK)
             if (options.right - panel.width >= window.left + 8.dp) assertEquals("$name panel's end in line with the button's", options.right.value, panel.right.value, 1f)
+            for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$name $option")
             for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$name $option")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE), "$name vibrate switch")
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION), "$name trainer")
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION_SWITCH), "$name trainer's switch")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$name listen")
             if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the panel open")
             back()

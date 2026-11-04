@@ -335,23 +335,25 @@ class BeatClock {
  * bottom: the top row, every tab's [TopBar] (the [header], the app's gear, Phase 69, at the start, the tab's
  * [title] in the middle and the options button, ⋯, at the end; the owner's review of 2026-11-03); the tempo big with − and + either side and "beats per minute · Andante" under it ([TempoHeading],
  * as large as the room the rest leave); the ruler that sets it by dragging ([TempoRuler]); the beat
- * lights and Listen's status line; the meter and the click sound as segmented choices ([MeterChoice],
- * [SoundChoice]); Tap the beat and Start side by side ([BigButtons]); and the speed trainer's row with
- * its switch ([TrainerRow]; [trainer] null without its tool switch, and then nothing of it shows). The
- * gaps share the height that is left; with very large text the column scrolls.
+ * lights, 1.1's upright bars with their numbers, and Listen's status line; the meter as a segmented
+ * choice ([MeterChoice]); Tap the beat and Start side by side ([BigButtons]); and, only while it is on,
+ * the speed trainer's card with its switch ([TrainerRow]). The gaps share the height that is left; with
+ * very large text the column scrolls.
  *
  * On a wide screen on its side the tempo, the ruler, the beat lights and the status line stand in the
- * start half, the [header] over them, and the choices, the two big buttons and the trainer's row in the
+ * start half, the [header] over them, and the meter, the two big buttons and the trainer's card in the
  * end half under the options button, which stands as far from the window's side as the tuner's focus mode
  * button there. The rail names the tab on its side, so no [title] shows.
  *
- * The options button opens the shared floating panel ([FloatingPanel]) under it with the clicks between the beats
- * ([subdivision], [onSubdivisionPick]), "Vibrate on the beat" ([onVibrateChange]) and Listen ([onListen],
- * which closes the panel); what is on in it shows as small icons on the status line ([StatusMark]). A
- * sound picked ([onSoundPick]) plays one bar while stopped, and is heard from the next beat while
- * playing. The trainer's row opens its settings ([TrainerSettings], [onTrainerPlan]) in a panel over the
- * row, and turning it on the first time goes straight there, already filled in ([onTrainerOn]); while it
- * is on its row says where it stands ("95 → 120 · +5 in 2 bars") and a dot under the ruler marks its
+ * The options button opens the shared floating panel ([FloatingPanel]) under it with the click sound
+ * ([sound], [onSoundPick]: a pick plays one bar while stopped, and is heard from the next beat while
+ * playing), the clicks between the beats ([subdivision], [onSubdivisionPick]), "Vibrate on the beat"
+ * ([onVibrateChange]), the speed trainer's row ([trainer] null without its tool switch, and then nothing
+ * of it shows) and Listen ([onListen], which closes the panel); what is on in it shows as small icons on
+ * the status line ([StatusMark]). The trainer's row opens its settings ([TrainerSettings],
+ * [onTrainerPlan]) in a panel in the options panel's place, and turning it on the first time goes
+ * straight there, already filled in ([onTrainerOn]); while it is on its card on the screen says where it
+ * stands ("95 → 120 · +5 in 2 bars") and opens the settings over it, and a dot under the ruler marks its
  * goal. Back or a tap beside a panel closes it.
  *
  * [listen] says where Listen stands (its status line has Stop while it listens, [onListen] again); a
@@ -423,6 +425,13 @@ fun MetronomeContent(
     // Kept when the phone turns: the panel opens again in its place for the new layout.
     var optionsOpen by rememberSaveable { mutableStateOf(false) }
     var trainerOpen by rememberSaveable { mutableStateOf(false) }
+    // The trainer's settings open in the options panel's place when opened from its row there, else over its card.
+    var trainerFromOptions by rememberSaveable { mutableStateOf(false) }
+    val openTrainer: (fromOptions: Boolean) -> Unit = { fromOptions ->
+        optionsOpen = false
+        trainerFromOptions = fromOptions
+        trainerOpen = true
+    }
     val trainerOn = trainer?.on == true
     val vibrateName = stringResource(R.string.metronome_vibrate)
     // What is on in the options panel, on the status line (Phase 62), in the panel's order. The note
@@ -514,11 +523,7 @@ fun MetronomeContent(
                 }
             }
             val choices: @Composable () -> Unit = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    MeterChoice(meter, onMeterChange)
-                    Spacer(Modifier.height(CHOICE_GAP))
-                    SoundChoice(sound, onSoundPick)
-                }
+                MeterChoice(meter, onMeterChange)
             }
             val buttons: @Composable () -> Unit = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -528,17 +533,14 @@ fun MetronomeContent(
                         onToggle = onToggle,
                         startResting = listening,
                     )
-                    if (trainer != null) {
+                    // On the screen only while it is on; the options panel turns it on.
+                    if (trainer != null && trainer.on) {
                         Spacer(Modifier.height(TRAINER_GAP))
                         TrainerRow(
-                            on = trainer.on,
-                            status = trainerStatus(trainer.plan, bpm, trainer.bar, playing && trainer.on),
-                            onOnChange = { on ->
-                                onTrainerOn(on)
-                                // The first time straight to its settings, already filled in.
-                                if (on && !trainer.saved) trainerOpen = true
-                            },
-                            onOpen = { trainerOpen = true },
+                            on = true,
+                            status = trainerStatus(trainer.plan, bpm, trainer.bar, playing),
+                            onOnChange = onTrainerOn,
+                            onOpen = { openTrainer(false) },
                             onPlaced = { trainerBounds = it },
                         )
                     }
@@ -634,8 +636,22 @@ fun MetronomeContent(
                         title = stringResource(R.string.metronome_options),
                         tag = MetronomeTestTags.OPTIONS_PANEL,
                     ) {
-                        SubdivisionChoice(subdivision, meter, onSubdivisionPick)
+                        SoundChoice(sound, onSoundPick)
+                        SubdivisionChoice(subdivision, meter, onSubdivisionPick, Modifier.padding(top = 4.dp))
                         VibrateSwitch(vibrate, onVibrateChange, Modifier.padding(top = 4.dp))
+                        if (trainer != null) {
+                            TrainerRow(
+                                on = trainer.on,
+                                status = trainerStatus(trainer.plan, bpm, trainer.bar, playing && trainer.on),
+                                onOnChange = { on ->
+                                    onTrainerOn(on)
+                                    // The first time straight to its settings, already filled in.
+                                    if (on && !trainer.saved) openTrainer(true)
+                                },
+                                onOpen = { openTrainer(true) },
+                                card = false,
+                            )
+                        }
                         ListenRow(
                             listening = listening,
                             onClick = {
@@ -647,7 +663,7 @@ fun MetronomeContent(
                     if (trainer != null) {
                         FloatingPanel(
                             open = trainerOpen,
-                            anchor = trainerBounds,
+                            anchor = if (trainerFromOptions) optionsBounds else trainerBounds,
                             onDismiss = { trainerOpen = false },
                             title = stringResource(R.string.metronome_trainer),
                             tag = MetronomeTestTags.TRAINER_PANEL,
@@ -760,6 +776,10 @@ object MetronomeTestTags {
     const val TRAINER_SWITCH = "metronome_trainer_switch"
     const val TRAINER_SETTINGS_SWITCH = "metronome_trainer_settings_switch"
     const val TRAINER_TEXT = "metronome_trainer_text"
+    /** The trainer's row in the options panel: the row, its switch and its words. */
+    const val TRAINER_OPTION = "metronome_trainer_option"
+    const val TRAINER_OPTION_SWITCH = "metronome_trainer_option_switch"
+    const val TRAINER_OPTION_TEXT = "metronome_trainer_option_text"
     const val TRAINER_PANEL = "metronome_trainer_panel"
     const val TRAINER_SETTINGS = "metronome_trainer_settings"
     const val TRAINER_START = "metronome_trainer_start"
@@ -801,17 +821,16 @@ private val WIDE_MIN_WIDTH = 600.dp
 /** The column keeps to this width on a large screen. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
-/** Between the tempo's words and the ruler, the meter and sound choices, the big buttons and the trainer's row, and under the column. */
+/** Between the tempo's words and the ruler, the big buttons and the trainer's card, and under the column. */
 private val RULER_GAP = 8.dp
-private val CHOICE_GAP = 8.dp
 private val TRAINER_GAP = 12.dp
 private val BOTTOM_GAP = 12.dp
 
 /** On its side, between the choices and the big buttons. */
 private val BUTTONS_GAP = 16.dp
 
-/** The beat lights' row: 48 dp high, at most 360 dp wide (the lights keep together on a wide screen). */
-private val LIGHTS_HEIGHT = 48.dp
+/** The beat lights' row: 60 dp high (the bars and their numbers), at most 360 dp wide (the lights keep together on a wide screen). */
+private val LIGHTS_HEIGHT = 60.dp
 private val LIGHTS_MAX_WIDTH = 360.dp
 
 /**

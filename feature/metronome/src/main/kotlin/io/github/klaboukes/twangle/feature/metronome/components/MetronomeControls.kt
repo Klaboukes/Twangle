@@ -58,8 +58,9 @@ import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
  * The metronome's controls under the tempo (2.0, Phase 75; the first 2.0 mock-up,
- * docs/design/fresh-start-preview.html, `.segrow` and `.bigrow`): the meter and the click sound as
- * segmented choices (the tuner's [SegmentedSwitch]), then Tap the beat and Start side by side, Start
+ * docs/design/fresh-start-preview.html, `.segrow` and `.bigrow`): the meter as a segmented choice (the
+ * tuner's [SegmentedSwitch]; the click sound beside it went to the options panel on 2026-11-04,
+ * [SoundChoice]), then Tap the beat and Start side by side, Start
  * the larger, in the accent. Every one shows Twangle's press effect instead of Material's ripple; Tap
  * the beat its own crisp flash.
  */
@@ -118,28 +119,6 @@ internal fun MeterChoice(meter: Meter, onMeterChange: (Meter) -> Unit, modifier:
         label = { meterLabel(it) },
         tag = { MetronomeTestTags.meter(it) },
         spoken = { meterSpoken(it) },
-        modifier = modifier
-            .widthIn(max = CHOICE_WIDEST)
-            .fillMaxWidth()
-            .semantics { contentDescription = label },
-    )
-}
-
-/**
- * The click sound: the four sounds as icons in one segmented choice, the picked one filled. A tap calls
- * [onPick] (while stopped one bar of it plays, while playing it is heard from the next beat). TalkBack
- * hears a radio group "Sound" and each sound by its name.
- */
-@Composable
-internal fun SoundChoice(sound: ClickSound, onPick: (ClickSound) -> Unit, modifier: Modifier = Modifier) {
-    val label = stringResource(R.string.metronome_sound)
-    SegmentedSwitch(
-        options = ClickSound.entries,
-        selected = sound,
-        onSelect = onPick,
-        label = { soundName(it) },
-        tag = { MetronomeTestTags.sound(it) },
-        icon = { painterResource(soundIcon(it)) },
         modifier = modifier
             .widthIn(max = CHOICE_WIDEST)
             .fillMaxWidth()
