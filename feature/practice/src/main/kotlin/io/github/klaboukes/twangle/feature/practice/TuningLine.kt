@@ -78,8 +78,9 @@ internal fun TuningLine(
  * app's gear, and the instrument and tuning ([TuningLine]; the picker chip since Phase 70) in its middle, as the
  * tuner's chip, its name on one line ending in "…" where it is longer (beside the arrow at the start until
  * 2026-11-04). Only where the middle is too narrow for a few letters ([MIN_NAME_EMS] wide, a 320 dp phone at a very
- * large text size) does the chip go on a line of its own under the arrow, centred too. Public for the tools of
- * other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
+ * large text size) does the chip go on a line of its own under the arrow, centred too. A tool's own button goes at
+ * the row's [end] (Ear training's ⋯, Phase 77), where the tabs have theirs, and stays there in both cases. Public for
+ * the tools of other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
  */
 @Composable
 fun BackAndTuningRow(
@@ -88,6 +89,7 @@ fun BackAndTuningRow(
     spokenTuningName: String,
     onPickInstrument: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    end: (@Composable () -> Unit)? = null,
 ) {
     val style = MaterialTheme.typography.titleSmall
     val back = @Composable { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) }
@@ -100,10 +102,11 @@ fun BackAndTuningRow(
                 middle = { TuningLine(tuningName, spokenTuningName, onPickInstrument) },
                 modifier = Modifier.fillMaxWidth(),
                 start = back,
+                end = end,
             )
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                TopBar(middle = {}, modifier = Modifier.fillMaxWidth(), start = back)
+                TopBar(middle = {}, modifier = Modifier.fillMaxWidth(), start = back, end = end)
                 TuningLine(tuningName, spokenTuningName, onPickInstrument)
             }
         }

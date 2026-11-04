@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 
 /*
  * The small parts every panel shares (Phase 77, docs/architecture/ui.md *Shared controls*): the floating panels
- * ([FloatingPanel]) and the sheet of Ear training's "What is asked". Until Phase 77 the metronome, the drone, Chords
+ * ([FloatingPanel]), Ear training's "What is asked" among them. Until Phase 77 the metronome, the drone, Chords
  * and Ear training each drew their own, a little apart in size, colour and room (Ear training's headings in the
  * accent, the switch rows 48, 52 and 56 dp tall).
  */

@@ -29,7 +29,7 @@
         <item quantity="one">%1$d right of %2$d</item>
         <item quantity="other">%1$d right of %2$d</item>
     </plurals>
-    <!-- The button with a sliders icon at the end of the exercise row (TalkBack), and the title of the panel it opens, where the player picks what the questions ask. -->
+    <!-- TalkBack's name for the ⋯ button at the end of Ear training's top row, and of the small panel it opens, where the player picks what the questions ask. -->
     <string name="ear_choices">What is asked</string>
     <!-- In that panel, Play it back: the heading over the three choices of notes asked. -->
     <string name="ear_notes">Notes</string>

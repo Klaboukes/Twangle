@@ -3,37 +3,24 @@ package io.github.klaboukes.twangle.feature.eartraining
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_FACE_GAP
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
 import io.github.klaboukes.twangle.core.designsystem.PanelLabel
 import io.github.klaboukes.twangle.core.designsystem.PickGrid
-import io.github.klaboukes.twangle.core.designsystem.SheetUnderNavigationBar
 import io.github.klaboukes.twangle.core.designsystem.SwitchRow
 import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.appLocale
@@ -48,9 +35,12 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 
 /**
  * "What is asked" (the owner's pick A: questions start at once, and this panel opens any time): the
- * choices of the [exercise] shown, in a panel from the bottom as the instrument and tuning panel. A
+ * choices of the exercise shown, while [open], in the app's floating panel ([FloatingPanel], as the metronome's
+ * options) under the ⋯ that opened it ([anchor]), their ends in line, [width] wide (the top row's); it scrolls where
+ * the window is short. Until Phase 77 a sheet from the bottom, as the instrument and tuning sheet. A
  * pick takes effect at once ([onNoteChoice]: a question the new choice doesn't offer gives way to a new
- * one) and the panel stays open for more; a tap beside it, a swipe down or Back closes it ([onDismiss]).
+ * one) and the panel stays open for more; a tap beside it or Back closes it ([onDismiss]). TalkBack hears it by
+ * its name, "What is asked"; it shows no title of its own, as the metronome's.
  *
  * Play it back picks its notes (the open strings, the natural notes to the 5th fret, or every note to
  * the 12th, on the instrument and tuning picked), how many in a row (1 to 4, [onNotesInRow]) and whether
@@ -60,9 +50,11 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
  * picks its types from the Chords tool's twenty, in its order ([onToggleChordType]), the same way.
  * Everything picked here is saved ([EarTrainingViewModel]).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ChoicesPanel(
+    open: Boolean,
+    anchor: Rect?,
+    width: Dp,
     state: EarTrainingState,
     onNoteChoice: (NoteChoice) -> Unit,
     onNotesInRow: (Int) -> Unit,
@@ -73,40 +65,19 @@ internal fun ChoicesPanel(
     onDismiss: () -> Unit,
 ) {
     val exercise = state.exercise
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scheme = MaterialTheme.colorScheme
-    // The whole panel, with its handle and the room for the navigation bar under it.
-    val density = LocalDensity.current
-    val window = LocalWindowInfo.current.containerSize.height
-    val navigationBar = WindowInsets.navigationBars.getBottom(density)
-    val maxHeight = with(density) { (window * PANEL_MAX_HEIGHT - navigationBar).toDp() - HANDLE_HEIGHT }
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = PANEL_SHAPE,
-        containerColor = scheme.surface,
-        contentColor = scheme.onSurface,
-        modifier = Modifier.testTag(EarTrainingTestTags.CHOICES_PANEL),
+    FloatingPanel(
+        open = open,
+        anchor = anchor,
+        onDismiss = onDismiss,
+        title = stringResource(R.string.ear_choices),
+        width = width,
+        tag = EarTrainingTestTags.CHOICES_PANEL,
     ) {
-        // The sheet's colour under the gesture bar too, no white strip there.
-        SheetUnderNavigationBar()
-        Column(
-            Modifier
-                .heightIn(max = maxHeight)
-                .verticalScroll(rememberScrollState())
-                .padding(start = LIST_PADDING, end = LIST_PADDING, bottom = 22.dp),
-        ) {
-            Text(
-                stringResource(R.string.ear_choices),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .padding(start = PANEL_PADDING - LIST_PADDING, end = PANEL_PADDING - LIST_PADDING, top = 4.dp, bottom = 6.dp)
-                    .semantics { heading() },
-            )
+        Column(Modifier.padding(bottom = 4.dp)) {
             when (exercise) {
                 Exercise.PLAY_IT_BACK -> {
                     val notes = stringResource(R.string.ear_notes)
-                    GroupLabel(notes)
+                    GroupLabel(notes, first = true)
                     Column(Modifier.selectableGroup().semantics { contentDescription = notes }) {
                         for (choice in NoteChoice.entries) {
                             ChoiceRow(
@@ -149,7 +120,7 @@ internal fun ChoicesPanel(
                 }
                 Exercise.INTERVALS -> {
                     val intervals = stringResource(R.string.ear_exercise_intervals)
-                    GroupLabel(intervals)
+                    GroupLabel(intervals, first = true)
                     ToggleGrid(
                         options = Interval.entries,
                         on = { it in state.intervals },
@@ -173,7 +144,7 @@ internal fun ChoicesPanel(
                 }
                 Exercise.CHORD_TYPE -> {
                     val types = stringResource(R.string.ear_exercise_chord_type)
-                    GroupLabel(types)
+                    GroupLabel(types, first = true)
                     ToggleGrid(
                         options = ChordQuality.inPanel,
                         on = { it in state.chordTypes },
@@ -197,9 +168,13 @@ private val NoteChoice.label: Int
         NoteChoice.ALL_TO_12TH -> R.string.ear_notes_all
     }
 
-/** A group's name in the panel: the shared small label ([PanelLabel]; until Phase 77 a heading of its own in the accent). */
+/**
+ * A group's name in the panel: the shared small label ([PanelLabel]; until Phase 77 a heading of its own in the accent),
+ * [GROUP_GAP] under the group above it, or at the panel's top where it is the [first], as the metronome's.
+ */
 @Composable
-private fun GroupLabel(text: String) = PanelLabel(text, Modifier.padding(top = GROUP_GAP - 4.dp))
+private fun GroupLabel(text: String, first: Boolean = false) =
+    PanelLabel(text, Modifier.padding(top = if (first) 0.dp else GROUP_GAP - 4.dp))
 
 /**
  * Choices that are [on] or off among several (an interval, up, down or together, a chord type): the shared pick
@@ -231,17 +206,6 @@ private fun <T> ToggleGrid(
 
 /** Play it back's choice of notes in a row: one to four. */
 private val NOTES_IN_ROW = (1..NoteQuestions.MAX_LENGTH).toList()
-
-/** The panel's top corners, as the instrument and tuning panel's: 22 dp, Ink's large shape. */
-private val PANEL_SHAPE: Shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
-
-/** The panel is at most this share of the window's height, so the question shows above it. */
-private const val PANEL_MAX_HEIGHT = 0.74f
-
-/** Material's drag handle at the panel's top: 4 dp with 22 dp above and below. */
-private val HANDLE_HEIGHT = 48.dp
-private val PANEL_PADDING = 20.dp
-private val LIST_PADDING = 12.dp
 
 /** Above each group's name, and above Any octave. */
 private val GROUP_GAP = 10.dp

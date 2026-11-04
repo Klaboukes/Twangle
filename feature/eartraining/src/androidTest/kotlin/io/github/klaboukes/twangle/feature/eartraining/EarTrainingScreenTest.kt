@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.eartraining
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -58,6 +60,7 @@ import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
+import io.github.klaboukes.twangle.core.testing.assertPanelUnder
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -78,8 +81,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
  * TalkBack names in full, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
- * and wrong shown gently with nothing moving; the "What is asked" panel with Play it back's and
- * Intervals' choices; Chord type's question and its buttons (three in a column, all twenty scrolling
+ * and wrong shown gently with nothing moving; the "What is asked" ⋯ at the top row's end and the floating panel it
+ * opens under it with Play it back's and Intervals' choices, open across a turned phone; Chord type's question and its buttons (three in a column, all twenty scrolling
  * in their own box), right and wrong, its chips, and the no-shape line; and the whole screen fitting, upright and on its side, at 2× text in Dutch
  * (every language with `--languages`).
  */
@@ -159,8 +162,14 @@ class EarTrainingScreenTest {
                         },
                         onAllowMic = { micAsks++ },
                         onOpenSettings = { settingsOpened++ },
-                        // The tool button's place (`:app` puts the tool button and the tuning line there).
-                        header = { Box(Modifier.size(160.dp, 48.dp).testTag(HEADER)) },
+                        // The top row's place (`:app` puts the back arrow and the picker chip there, the ⋯ at its end).
+                        header = { end ->
+                            TopBar(
+                                middle = { Box(Modifier.size(160.dp, 48.dp).testTag(HEADER)) },
+                                modifier = Modifier.fillMaxWidth().testTag(TOP_ROW),
+                                end = end,
+                            )
+                        },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                     )
                 }
@@ -195,10 +204,12 @@ class EarTrainingScreenTest {
         node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected()
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsNotSelected()
         assertEquals("the words keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
-        // The switch runs across the row to 12 dp before the options button, in three equal segments (Phase 65).
+        // The switch runs across the whole row, as wide as the top row, in three equal segments (Phase 77: until then
+        // to 12 dp before the options button at its end).
         val span = before.last().right - before.first().left
-        val choices = node(EarTrainingTestTags.CHOICES).getBoundsInRoot()
-        assertEquals("across the row", (choices.left - before.first().left).value - 12f, span.value, 1.5f)
+        val row = node(TOP_ROW).getBoundsInRoot()
+        assertEquals("across the row", row.width.value, span.value, 1.5f)
+        assertEquals("from its start", row.left.value, before.first().left.value, 1.5f)
         for (bounds in before) assertEquals("one steady width each", span.value / 3, bounds.width.value, 1.5f)
         // Until Intervals' first question is in the state, nothing shows under the row.
         assertTrue(!exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.HEARD))
@@ -230,9 +241,14 @@ class EarTrainingScreenTest {
         assertEquals("7 right of 9", spoken(EarTrainingTestTags.TALLY))
         assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
         assertEquals("What is asked", spoken(EarTrainingTestTags.CHOICES))
+        node(EarTrainingTestTags.CHOICES).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
+        // The top row's ⋯ (Phase 77: until then the 52 dp options button at the exercise row's end), its outline at the row's end.
         val choices = node(EarTrainingTestTags.CHOICES).getBoundsInRoot()
-        assertEquals("the shared options button, 52 dp", 52f, choices.width.value, 0.5f)
-        assertEquals(52f, choices.height.value, 0.5f)
+        val row = node(TOP_ROW).getBoundsInRoot()
+        assertEquals("the top row's 44 dp ⋯", 44f, choices.width.value, 0.5f)
+        assertEquals(44f, choices.height.value, 0.5f)
+        assertEquals("at the row's end", row.right.value, choices.right.value, 0.5f)
+        assertEquals("in the row's middle", (row.top + row.bottom).value / 2, (choices.top + choices.bottom).value / 2, 0.5f)
     }
 
     @Test
@@ -365,8 +381,16 @@ class EarTrainingScreenTest {
         show()
         node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
         compose.waitForIdle()
-        node(EarTrainingTestTags.CHOICES_PANEL).assertExists()
-        compose.onNode(hasText("What is asked")).assertIsDisplayed()
+        // The floating panel under the ⋯ (a sheet from the bottom until Phase 77), their ends in line, as wide as the top
+        // row; TalkBack hears it by its name.
+        node(EarTrainingTestTags.CHOICES_PANEL)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "What is asked"))
+        assertPanelUnder(node(EarTrainingTestTags.CHOICES), node(EarTrainingTestTags.CHOICES_PANEL), node(WINDOW), "What is asked")
+        val panel = node(EarTrainingTestTags.CHOICES_PANEL).getBoundsInRoot()
+        assertEquals("its end under the ⋯'s", node(EarTrainingTestTags.CHOICES).getBoundsInRoot().right.value, panel.right.value, 0.5f)
+        assertEquals("as wide as the top row", node(TOP_ROW).getBoundsInRoot().width.value, panel.width.value, 1f)
+        assertTrue("no title of its own", compose.onAllNodes(hasText("What is asked")).fetchSemanticsNodes().isEmpty())
         val names = mapOf(
             NoteChoice.OPEN_STRINGS to "Open strings",
             NoteChoice.NATURALS_TO_5TH to "Natural notes to the 5th fret",
@@ -409,6 +433,31 @@ class EarTrainingScreenTest {
         assertEquals(listOf(NoteMatch.EXACT), matches)
         node(EarTrainingTestTags.ANY_OCTAVE).assertIsOff()
         // It stays open for more, and Back closes it.
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.CHOICES_PANEL))
+    }
+
+    /** The panel keeps open when the phone turns, under the ⋯ in its new place; on its side, short, it scrolls. */
+    @Test
+    fun whatIsAskedStaysOpenUnderTheButtonAcrossATurnedPhone() {
+        shownState.value = ALL_CHORDS_ASKED
+        show()
+        node(EarTrainingTestTags.CHOICES).performClick()
+        compose.waitForIdle()
+        for (size in listOf(PHONE_LANDSCAPE, NARROW_UPRIGHT, XIAOMI)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val case = "$size:"
+            node(EarTrainingTestTags.CHOICES_PANEL).assertIsDisplayed()
+            assertPanelUnder(node(EarTrainingTestTags.CHOICES), node(EarTrainingTestTags.CHOICES_PANEL), node(WINDOW), case)
+            val panel = node(EarTrainingTestTags.CHOICES_PANEL).getBoundsInRoot()
+            val window = node(WINDOW).getBoundsInRoot()
+            assertTrue("$case inside the window $panel", panel.top >= window.top && panel.bottom <= window.bottom + 0.5.dp)
+            assertTrue("$case inside the window $panel", panel.left >= window.left && panel.right <= window.right + 0.5.dp)
+            // The last of the twenty scrolls into view inside the panel.
+            assertWhollyShown(node(EarTrainingTestTags.askChordType(ChordQuality.inPanel.last())), "$case the last chord type")
+        }
         Espresso.pressBack()
         compose.waitForIdle()
         assertTrue(!exists(EarTrainingTestTags.CHOICES_PANEL))
@@ -893,6 +942,7 @@ class EarTrainingScreenTest {
     companion object {
         private const val WINDOW = "window"
         private const val HEADER = "header"
+        private const val TOP_ROW = "top_row"
         private const val TEST_TIMEOUT_SECONDS = 30L
 
         /** The Xiaomi 12X less the status and navigation bars, a short narrow phone less the bars, on its side less the rail, and a 320 dp phone. */

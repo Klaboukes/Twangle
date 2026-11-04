@@ -516,12 +516,13 @@ class MainActivity : AppCompatActivity() {
                     tonePlayer = container.tonePlayer,
                     settingsRepository = container.settingsRepository,
                     notation = settings.notationFor(appLanguage()),
-                    header = {
+                    header = { end ->
                         BackAndTuningRow(
                             onBack = onBack,
                             tuningName = practiceTuningName(settings),
                             spokenTuningName = spokenTuning(settings),
                             onPickInstrument = openPanel,
+                            end = end,
                         )
                     },
                     savedSettings = settings,
