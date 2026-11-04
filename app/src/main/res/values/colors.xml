@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Mustard, from the Retro style (its dark "second" colour). -->
-    <color name="ic_launcher_background">#E3B23C</color>
-    <!-- Opening screen: the launcher icon's mustard, so the icon's circle melts into the screen.
-         values-night swaps in a dark warm brown. -->
-    <color name="splash_background">#E3B23C</color>
+    <!-- Ink dark (the one look's dark background): the launcher icon's tile, the harmonics drawn for it
+         (ic_launcher_foreground.xml, scripts/launcher-icon.py). -->
+    <color name="ic_launcher_background">#0E1116</color>
+    <!-- Opening screen: Ink light's background, the colour of the app's first frame in light mode, with the
+         icon's dark tile in the middle. values-night swaps in Ink dark, so the tile melts into the screen. -->
+    <color name="splash_background">#F6F7F9</color>
 </resources>

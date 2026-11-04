@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The launcher icon's mustard, as on the phone. -->
-    <color name="ic_launcher_background">#E3B23C</color>
+    <!-- Ink dark, the launcher icon's tile, as on the phone. -->
+    <color name="ic_launcher_background">#0E1116</color>
 </resources>

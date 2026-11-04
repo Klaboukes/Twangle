@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Twangle 2.0 Logo</title>
+<!--
+TWANGLE 2.0 LOGO, ROUND 4 (2026-11-04). Of round 3's abstract marks (round3.html) the owner picked D, "Three lights":
+three coloured strands, out of step, that braid together and run on as one white line. Six shape variations of it,
+and two colour sets: Cool (Ink's blue, a teal, Ink's green) and Ink's story (the meter's amber far off, the accent
+blue, the green in tune), whose three lights add up to white where they cross.
+Note for building it: the see-through "light adds up" blending has no VectorDrawable equivalent, so the launcher
+foreground would ship as bitmaps (adaptive icons allow that); the themed icon is a one-colour vector.
+-->
+<style>
+  :root { --bg:#F6F7F9; --card:#FFFFFF; --ink:#14181D; --muted:#4D5560; --line:#E1E5EA; --accent:#1A6FC4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:1120px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  h2 { font-size:18px; margin:36px 0 12px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:760px; }
+  .controls { display:flex; gap:6px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+  .controls span { color:var(--muted); font-size:14px; margin-right:6px; min-width:80px; }
+  .chip { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:5px 14px;
+          font:inherit; font-size:14px; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:14px; margin-top:16px; }
+  .card { background:var(--card); border:2px solid transparent; border-radius:20px; padding:16px; cursor:pointer;
+          box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .card:hover { border-color:var(--line); }
+  .card.picked { border-color:var(--accent); }
+  .card h3 { margin:10px 0 2px; font-size:15px; }
+  .card p { margin:0; color:var(--muted); font-size:13px; }
+  .card svg, .sizes svg, .apps svg, .lock svg.icon { filter:drop-shadow(0 1px 2px rgba(0,0,0,.22)); }
+  .row { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; }
+  .cap { color:var(--muted); font-size:13px; margin-top:8px; text-align:center; }
+  .phone { width:280px; border-radius:32px; padding:24px 18px 28px; }
+  .wall-dark { background:linear-gradient(160deg,#2b3a4d 0%,#4c5b6b 50%,#8a7a6a 100%); }
+  .wall-light { background:linear-gradient(160deg,#eef1f4 0%,#dfe6ee 100%); }
+  .apps { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 6px; }
+  .app { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:11px; color:#fff;
+         text-shadow:0 1px 2px rgba(0,0,0,.5); }
+  .wall-light .app { color:#222; text-shadow:none; }
+  .ph { width:48px; height:48px; border-radius:16px; }
+  .sizes { display:flex; gap:18px; align-items:flex-end; background:var(--card); padding:16px 20px; border-radius:18px; }
+  .splash { width:200px; height:360px; border-radius:30px; display:flex; align-items:center; justify-content:center; }
+  button.replay { font:inherit; font-size:13px; border:1px solid var(--line); background:var(--card); border-radius:999px;
+                  padding:5px 14px; cursor:pointer; }
+  .lock { border-radius:18px; padding:22px 28px; display:flex; align-items:center; justify-content:center; gap:14px; min-height:120px; }
+  .watch { width:190px; height:190px; border-radius:50%; background:#000; display:flex; flex-direction:column;
+           align-items:center; justify-content:center; gap:8px; box-shadow:0 0 0 10px #2a2d33; color:#fff; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Three lights, round 4</h1>
+  <p class="lead">Six ways to draw "Three lights": three strands, out of step, that braid together and run on as one
+    line. Switch the colours between Cool and Ink's story (amber far off, blue, green in tune, the meter's own
+    colours, which add up to white where they cross). Tap one for the home screen, the opening animation and the name.
+    Other rounds: <a href="round1.html">1</a> · <a href="round2.html">2</a> · <a href="round3.html">3</a> · <a href="round5.html">5</a> · <a href="round6.html">6</a> · <a href="round7.html">7</a> · <a href="index.html">8</a></p>
+
+  <div class="controls" id="cols"></div>
+  <div class="controls" id="bgs"></div>
+  <div class="grid" id="options"></div>
+
+  <h2>On the home screen</h2>
+  <div class="row" id="home"></div>
+
+  <h2>Shapes and sizes</h2>
+  <div class="row" id="sizes"></div>
+
+  <h2>Themed icon (Android 13 and later, when the player turns it on)</h2>
+  <div class="row" id="themed"></div>
+
+  <h2>Opening the app</h2>
+  <div class="row" id="splash"></div>
+
+  <h2>The name with the mark</h2>
+  <div class="row" id="lockups"></div>
+
+  <h2>On the watch</h2>
+  <div class="row" id="watch"></div>
+</main>
+
+<script>
+// Ink's colours (StylePalettes.kt, v2) per background; teal sits between Ink's blue and green.
+const BGS = {
+  dark:  { label:'Ink dark',  bg:'#0E1116', ink:'#FFFFFF', blend:'screen',
+           cool:['#5FC4FF','#2FD1C5','#3DDC84'], story:['#FFB648','#5FC4FF','#3DDC84'] },
+  deep:  { label:'Deep blue', bg:'#0E1116', bg2:'#16304F', ink:'#FFFFFF', blend:'screen',
+           cool:['#5FC4FF','#2FD1C5','#3DDC84'], story:['#FFB648','#5FC4FF','#3DDC84'] },
+  light: { label:'Ink light', bg:'#FFFFFF', ink:'#14181D', blend:'multiply',
+           cool:['#1A6FC4','#0F8C8C','#107E46'], story:['#D98400','#1A6FC4','#107E46'] },
+};
+const COLS = { story:'Ink\'s story', cool:'Cool' };
+let bgKey = 'dark', colKey = 'story';
+const pal = (b = BGS[bgKey]) => ({ bg:b.bg, bg2:b.bg2, ink:b.ink, blend:b.blend, cols:b[colKey] });
+const mono = (bg, fg) => ({ bg, ink:fg, blend:'normal', cols:[fg, fg, fg], mono:true });
+
+let uid = 0;
+
+/*
+ * Three strands from S to E, out of step (phases 0, ⅓, ⅔ of a turn), their swing fading to nothing at E so they
+ * join exactly. p (0..1) is the opening animation: at 0 the strands are further out of step and wider apart.
+ */
+function strands(c, p, o) {
+  const { S, E, amp, cycles, width = 3.6, shape = 'braid', ribbon = false, glow = true, ease = 1.15 } = o;
+  const dx = E[0] - S[0], dy = E[1] - S[1], len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len;
+  let s = '';
+  c.cols.forEach((colour, k) => {
+    // Each light fades in out of the dark over its first fifth, so no strand starts with a hard cut.
+    const g = 'f' + (uid++), col = `url(#${g})`;
+    s += `<defs><linearGradient id="${g}" gradientUnits="userSpaceOnUse" x1="${S[0]}" y1="${S[1]}" x2="${E[0]}" y2="${E[1]}">
+      <stop offset="0" stop-color="${colour}" stop-opacity="0"/><stop offset=".22" stop-color="${colour}"/>
+      <stop offset="1" stop-color="${colour}"/></linearGradient></defs>`;
+    const pts = [];
+    for (let i = 0; i <= 160; i++) {
+      const u = i / 160, fade = Math.pow(1 - u, ease);
+      let off;
+      if (shape === 'fan') {
+        // Three into one: each strand comes in from its own height and eases onto the line.
+        const sm = u * u * (3 - 2 * u);
+        off = [-1, 0.15, 1][k] * amp * (1 - sm) * (1 + (1 - p) * .5) + 2.5 * Math.sin(Math.PI * 2 * u + k * 2) * (1 - u);
+      } else {
+        off = amp * (1 + (1 - p) * .3) * fade * Math.sin(2 * Math.PI * cycles * u + (k * 2 * Math.PI / 3 + (1 - p) * 2.2) * fade);
+      }
+      pts.push([S[0] + dx * u + nx * off, S[1] + dy * u + ny * off, u]);
+    }
+    if (ribbon) {
+      const w = u => (width * 1.9) * Math.pow(1 - u, .7) + width * .38;
+      const side = sign => pts.map(([x, y, u]) => [x + nx * sign * w(u) / 2, y + ny * sign * w(u) / 2]);
+      const a = side(1), b = side(-1).reverse();
+      const d = [...a, ...b].map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(2) + ',' + q[1].toFixed(2)).join('') + 'Z';
+      s += `<path d="${d}" fill="${col}" opacity=".92" style="mix-blend-mode:${c.blend}"/>`;
+    } else {
+      const d = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(2) + ',' + q[1].toFixed(2)).join('');
+      if (glow && !c.mono) s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${width * 2.4}" stroke-linecap="round" opacity=".08" style="mix-blend-mode:${c.blend}"/>`;
+      s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${width}" stroke-linecap="round" style="mix-blend-mode:${c.blend}"/>`;
+    }
+  });
+  return s;
+}
+const line = (c, a, b, w = 3.6) =>
+  `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${c.ink}" stroke-width="${w}" stroke-linecap="round"/>`;
+
+const OPTIONS = [
+  { id:'braid', n:1, name:'The braid',
+    idea:'Round 3\'s D, smoothed: one and a half turns of braid, a soft halo on each strand, then the white line.',
+    mark:(c, p = 1) => strands(c, p, { S:[24,54], E:[70,54], amp:15, cycles:1.5 }) + line(c, [70,54], [85,54]) },
+  { id:'fan', n:2, name:'Three into one',
+    idea:'No braid: three lights come in from three heights and ease onto one line. Calmer, and it reads at any size.',
+    mark:(c, p = 1) => strands(c, p, { S:[22,54], E:[66,54], amp:17, shape:'fan', width:3.8 }) + line(c, [66,54], [86,54], 3.8) },
+  { id:'rise', n:3, name:'Rising',
+    idea:'The braid climbs from bottom left to top right: more lift and motion, the line heading up and out.',
+    mark:(c, p = 1) => strands(c, p, { S:[30,77], E:[63,44], amp:13, cycles:1.4 }) + line(c, [63,44], [76,31]) },
+  { id:'ribbon', n:4, name:'Ribbons',
+    idea:'The strands as painted ribbons, wide where they start and tapering as they agree: more brush, less wire.',
+    mark:(c, p = 1) => strands(c, p, { S:[23,54], E:[70,54], amp:14, cycles:1.3, ribbon:true, width:3.6 }) + line(c, [69,54], [85,54], 3.4) },
+  { id:'fine', n:5, name:'Fine light',
+    idea:'Slimmer strands and a longer, tighter braid across the whole icon: delicate, like light on a string.',
+    mark:(c, p = 1) => strands(c, p, { S:[21,54], E:[76,54], amp:13, cycles:2.4, width:2.4, ease:1.4 }) + line(c, [76,54], [87,54], 2.4) },
+  { id:'tee', n:6, name:'The T',
+    idea:'The three lights rise and become the stem of a white T: the logo turns into the name\'s first letter.',
+    mark:(c, p = 1) => strands(c, p, { S:[54,85], E:[54,52], amp:11, cycles:1.25, width:3.8 })
+      + line(c, [54,52], [54,33], 3.8) + line(c, [36,31], [72,31], 4.4) },
+];
+
+function squirclePath() {
+  let d = '';
+  for (let i = 0; i <= 64; i++) {
+    const a = i / 64 * 2 * Math.PI, co = Math.cos(a), si = Math.sin(a);
+    d += (i ? ' L' : 'M') + (54 + 36 * Math.sign(co) * Math.sqrt(Math.abs(co))).toFixed(2) + ','
+                          + (54 + 36 * Math.sign(si) * Math.sqrt(Math.abs(si))).toFixed(2);
+  }
+  return d + 'Z';
+}
+const SHAPES = { squircle:`<path d="${squirclePath()}"/>`, circle:'<circle cx="54" cy="54" r="36"/>',
+                 rounded:'<rect x="18" y="18" width="72" height="72" rx="16"/>' };
+
+function backdrop(c) {
+  if (!c.bg2) return `<rect width="108" height="108" fill="${c.bg}"/>`;
+  const g = 'b' + (uid++);
+  return `<defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.bg2}"/>
+    <stop offset="1" stop-color="${c.bg}"/></linearGradient></defs><rect width="108" height="108" fill="url(#${g})"/>`;
+}
+function icon(o, size, shape = 'squircle', c = pal(), cls = '') {
+  const id = 'c' + (uid++);
+  return `<svg class="${cls}" width="${size}" height="${size}" viewBox="18 18 72 72" style="display:block">
+    <defs><clipPath id="${id}">${SHAPES[shape]}</clipPath></defs>
+    <g clip-path="url(#${id})" style="isolation:isolate">${backdrop(c)}${o.mark(c)}</g></svg>`;
+}
+
+let picked = OPTIONS[0];
+
+function chips(elId, label, entries, current, set) {
+  const el = document.getElementById(elId);
+  el.innerHTML = `<span>${label}</span>` + entries.map(([k, l]) =>
+    `<button class="chip" data-k="${k}" aria-pressed="${k === current}">${l}</button>`).join('');
+  el.querySelectorAll('.chip').forEach(b => b.onclick = () => { set(b.dataset.k); render(); });
+}
+function renderControls() {
+  chips('cols', 'Colours', Object.entries(COLS), colKey, k => colKey = k);
+  chips('bgs', 'Background', Object.entries(BGS).map(([k, b]) => [k, b.label]), bgKey, k => bgKey = k);
+}
+
+function renderOptions() {
+  document.getElementById('options').innerHTML = OPTIONS.map(o => `
+    <div class="card ${o === picked ? 'picked' : ''}" data-id="${o.id}">
+      ${icon(o, 120)}<h3>${o.n}. ${o.name}</h3><p>${o.idea}</p></div>`).join('');
+  document.querySelectorAll('.card').forEach(el => el.onclick = () => {
+    picked = OPTIONS.find(o => o.id === el.dataset.id); render(); });
+}
+
+const FILLER = ['#d9534f','#3a7bd5','#f0ad4e','#5cb85c','#8e6cc9','#2bb3a3','#e07a5f'];
+function homeScreen(cls) {
+  const names = ['Camera','Mail','Maps','Photos','Twangle','Music','Clock','Notes'];
+  return `<div class="phone ${cls}"><div class="apps">${names.map((n, i) => `<div class="app">${
+    n === 'Twangle' ? icon(picked, 48) : `<div class="ph" style="background:${FILLER[i % FILLER.length]}"></div>`
+  }<span>${n}</span></div>`).join('')}</div></div>`;
+}
+function themedRow(cls, bg, fg) {
+  const other = `<svg width="48" height="48"><circle cx="24" cy="24" r="24" fill="${bg}"/><circle cx="24" cy="24" r="9" fill="${fg}" opacity=".7"/></svg>`;
+  return `<div class="phone ${cls}"><div class="apps">${[0,1,2,3].map(i => `<div class="app">${
+    i === 1 ? icon(picked, 48, 'circle', mono(bg, fg)) : other}<span>${i === 1 ? 'Twangle' : ''}</span></div>`).join('')}</div></div>`;
+}
+
+let anim = 0;
+function renderDetail() {
+  const o = picked, c = pal();
+  document.getElementById('home').innerHTML =
+    `<div>${homeScreen('wall-dark')}<div class="cap">Dark wallpaper</div></div>
+     <div>${homeScreen('wall-light')}<div class="cap">Light wallpaper</div></div>`;
+  document.getElementById('sizes').innerHTML = ['squircle','circle','rounded'].map(s => `
+    <div><div class="sizes">${icon(o,96,s)}${icon(o,48,s)}${icon(o,32,s)}${icon(o,24,s)}</div>
+    <div class="cap">${{squircle:'Squircle (Xiaomi, Samsung)', circle:'Circle (Pixel)', rounded:'Rounded square'}[s]}</div></div>`).join('');
+  document.getElementById('themed').innerHTML =
+    `<div>${themedRow('wall-light', '#D6E3FF', '#2A4678')}<div class="cap">Themed, light</div></div>
+     <div>${themedRow('wall-dark', '#2A3A55', '#C9DAFF')}<div class="cap">Themed, dark</div></div>`;
+
+  // Opening the app: the lights fall into step in about a second.
+  const splashBg = c.bg2 ? `linear-gradient(180deg, ${c.bg2}, ${c.bg})` : c.bg;
+  document.getElementById('splash').innerHTML = `
+    <div><div class="splash" style="background:${splashBg}">
+      <svg width="150" height="150" viewBox="18 18 72 72" id="splashArt" style="isolation:isolate"></svg></div>
+      <div class="cap"><button class="replay" id="replay">Play again</button></div></div>`;
+  const play = () => {
+    const svg = document.getElementById('splashArt'), start = performance.now(), mine = ++anim;
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const frame = now => {
+      if (mine !== anim) return;
+      const t = Math.min(1, (now - start) / 1000);
+      svg.innerHTML = `<g opacity="${Math.min(1, t * 3)}">${o.mark(c, ease(t))}</g>`;
+      if (t < 1) requestAnimationFrame(frame);
+    };
+    svg.innerHTML = '';
+    requestAnimationFrame(frame);
+  };
+  document.getElementById('replay').onclick = play; play();
+
+  const word = (fill, weight, size) =>
+    `<span style="font:${weight} ${size}px system-ui, sans-serif; color:${fill}; letter-spacing:-.01em">Twangle</span>`;
+  const bare = (cc, size) => `<svg width="${size}" height="${size}" viewBox="18 18 72 72" style="isolation:isolate">${o.mark(cc)}</svg>`;
+  // The name on the line: the strands braid into the underline of the word.
+  const onLine = cc => `<div style="position:relative; display:inline-block; padding:0 0 18px 0">
+      ${word(cc.ink, 600, 44)}
+      <svg width="250" height="40" viewBox="0 0 250 40" style="position:absolute; left:-70px; bottom:-8px; isolation:isolate">
+        ${strands(cc, 1, { S:[6,20], E:[96,20], amp:11, cycles:1.6, width:3 })}
+        <line x1="96" y1="20" x2="244" y2="20" stroke="${cc.ink}" stroke-width="3" stroke-linecap="round"/></svg></div>`;
+  document.getElementById('lockups').innerHTML = `
+    <div><div class="lock" style="background:#F6F7F9">${icon(o, 64, 'squircle', c, 'icon')}${word('#14181D', 600, 40)}</div>
+      <div class="cap">Icon and name (store, website)</div></div>
+    <div><div class="lock" style="background:#0E1116">${bare(pal(BGS.dark), 64)}${word('#FFFFFF', 400, 40)}</div>
+      <div class="cap">The mark alone, dark</div></div>
+    <div><div class="lock" style="background:#FFFFFF">${bare(pal(BGS.light), 64)}${word('#14181D', 600, 40)}</div>
+      <div class="cap">The mark alone, light</div></div>
+    <div><div class="lock" style="background:#0E1116; padding:28px 34px 28px 104px">${onLine(pal(BGS.dark))}</div>
+      <div class="cap">The lights become the line under the name (website, store graphic)</div></div>`;
+  document.getElementById('watch').innerHTML = `
+    <div><div class="watch">${icon(o, 64, 'circle')}<span>Twangle</span></div><div class="cap">Galaxy Watch app list</div></div>`;
+}
+
+function render() { renderControls(); renderOptions(); renderDetail(); }
+render();
+</script>
+</body>
+</html>

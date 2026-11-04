@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Twangle 2.0 Logo</title>
+<!--
+FINAL (owner, 2026-11-04): A, "Half and a third", in Ink's story colours (amber, blue, green) on Ink dark.
+Built in Phase 79 by scripts/launcher-icon.py (ARCHITECTURE.md, *Name, app ID and icon*). The rounds, each its own
+page here: 1 the 1.1 mark in Ink's colours ("I meant a total redesign"), 2 objects (sound hole, strobe, headstock,
+unison, neck, fork: "nothing I like"), 3 abstract marks (the owner chose to go on with D, then B), 4 Three lights,
+5 Harmonics (5, One moment), 6 One moment (6, Colour only), 7 Colour only (1), 8 this page.
+TWANGLE 2.0 LOGO, ROUND 8 (2026-11-04). The owner picked round 7's 1 (round7.html), but near both top corners the
+smaller waves poke out above the amber arch (blue at the right, green at the left): near the ends sin(nπu) climbs
+n times as steeply as sin(πu), so a wave taller than 1/n of the arch leaves it. Three fixes (ROUND8) beside it.
+ROUND 7: The owner picked round 6's 6, "Colour only" (round6.html), and asked
+for one more round on it: six refinements below (ROUND7). Round 6's notes follow.
+ROUND 6: Of round 5's Harmonics variations (round5.html) the owner liked 5, "One
+moment" (one instant of the string's first three harmonics, filled between the string and each curve), in Ink's
+story colours (amber, blue, green) on Ink dark. Six refinements of it; the opening animation swings each harmonic
+at its own speed (mode n n times as fast as the whole) and settles into the logo's pose.
+Mode n of a string fixed at both ends swings as sin(nπu), u along the string (any acoustics text, e.g. Fletcher &
+Rossing, The Physics of Musical Instruments, ch. 2); the lens shapes are its envelope, ±|sin(nπu)|.
+Building note: the see-through "light adds up" blending has no VectorDrawable equivalent, so the launcher
+foreground would ship as bitmaps; the themed icon is a one-colour vector.
+-->
+<style>
+  :root { --bg:#F6F7F9; --card:#FFFFFF; --ink:#14181D; --muted:#4D5560; --line:#E1E5EA; --accent:#1A6FC4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:1120px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  h2 { font-size:18px; margin:36px 0 12px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:760px; }
+  .controls { display:flex; gap:6px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+  .controls span { color:var(--muted); font-size:14px; margin-right:6px; min-width:80px; }
+  .chip { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:5px 14px;
+          font:inherit; font-size:14px; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:14px; margin-top:16px; }
+  .card { background:var(--card); border:2px solid transparent; border-radius:20px; padding:16px; cursor:pointer;
+          box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .card:hover { border-color:var(--line); }
+  .card.picked { border-color:var(--accent); }
+  .card h3 { margin:10px 0 2px; font-size:15px; }
+  .card p { margin:0; color:var(--muted); font-size:13px; }
+  .card svg, .sizes svg, .apps svg, .lock svg.icon { filter:drop-shadow(0 1px 2px rgba(0,0,0,.22)); }
+  .row { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; }
+  .cap { color:var(--muted); font-size:13px; margin-top:8px; text-align:center; }
+  .phone { width:280px; border-radius:32px; padding:24px 18px 28px; }
+  .wall-dark { background:linear-gradient(160deg,#2b3a4d 0%,#4c5b6b 50%,#8a7a6a 100%); }
+  .wall-light { background:linear-gradient(160deg,#eef1f4 0%,#dfe6ee 100%); }
+  .apps { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 6px; }
+  .app { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:11px; color:#fff;
+         text-shadow:0 1px 2px rgba(0,0,0,.5); }
+  .wall-light .app { color:#222; text-shadow:none; }
+  .ph { width:48px; height:48px; border-radius:16px; }
+  .sizes { display:flex; gap:18px; align-items:flex-end; background:var(--card); padding:16px 20px; border-radius:18px; }
+  .splash { width:200px; height:360px; border-radius:30px; display:flex; align-items:center; justify-content:center; }
+  button.replay { font:inherit; font-size:13px; border:1px solid var(--line); background:var(--card); border-radius:999px;
+                  padding:5px 14px; cursor:pointer; }
+  .lock { border-radius:18px; padding:22px 28px; display:flex; align-items:center; justify-content:center; gap:14px; min-height:120px; }
+  .watch { width:190px; height:190px; border-radius:50%; background:#000; display:flex; flex-direction:column;
+           align-items:center; justify-content:center; gap:8px; box-shadow:0 0 0 10px #2a2d33; color:#fff; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Colour only, round 8</h1>
+  <p class="lead">Round 7's pick, with the blue and green kept inside the amber arch at the top corners. Three ways to
+    do it, next to the original. Compare them in the close-up below the cards.
+    Other rounds: <a href="round1.html">1</a> · <a href="round2.html">2</a> · <a href="round3.html">3</a> · <a href="round4.html">4</a> · <a href="round5.html">5</a> · <a href="round6.html">6</a> · <a href="round7.html">7</a></p>
+
+  <div class="controls" id="cols"></div>
+  <div class="controls" id="bgs"></div>
+  <div class="grid" id="options"></div>
+
+  <h2>Close up</h2>
+  <div class="row" id="close"></div>
+
+  <h2>On the home screen</h2>
+  <div class="row" id="home"></div>
+
+  <h2>Shapes and sizes</h2>
+  <div class="row" id="sizes"></div>
+
+  <h2>Themed icon (Android 13 and later, when the player turns it on)</h2>
+  <div class="row" id="themed"></div>
+
+  <h2>Opening the app</h2>
+  <div class="row" id="splash"></div>
+
+  <h2>The name with the mark</h2>
+  <div class="row" id="lockups"></div>
+
+  <h2>On the watch</h2>
+  <div class="row" id="watch"></div>
+</main>
+
+<script>
+// Ink's colours (StylePalettes.kt, v2) per background; teal sits between Ink's blue and green.
+const BGS = {
+  dark:  { label:'Ink dark',  bg:'#0E1116', ink:'#FFFFFF', blend:'screen',
+           cool:['#5FC4FF','#2FD1C5','#3DDC84'], story:['#FFB648','#5FC4FF','#3DDC84'], blue:['#2B6FD6','#5FC4FF','#C8ECFF'] },
+  deep:  { label:'Deep blue', bg:'#0E1116', bg2:'#16304F', ink:'#FFFFFF', blend:'screen',
+           cool:['#5FC4FF','#2FD1C5','#3DDC84'], story:['#FFB648','#5FC4FF','#3DDC84'], blue:['#2B6FD6','#5FC4FF','#C8ECFF'] },
+  light: { label:'Ink light', bg:'#FFFFFF', ink:'#14181D', blend:'multiply',
+           cool:['#1A6FC4','#0F8C8C','#107E46'], story:['#D98400','#1A6FC4','#107E46'], blue:['#9CC7F0','#1A6FC4','#0B3C73'] },
+};
+const COLS = { cool:'Cool', story:'Ink\'s story', blue:'Blue' };
+let bgKey = 'dark', colKey = 'story';
+const pal = (b = BGS[bgKey]) => ({ bg:b.bg, bg2:b.bg2, ink:b.ink, blend:b.blend, cols:b[colKey] });
+const mono = (bg, fg) => ({ bg, ink:fg, blend:'normal', cols:[fg, fg, fg], mono:true });
+
+let uid = 0;
+const lerp = (a, b, t) => a + (b - a) * t;
+function mix(h1, h2, t) {
+  const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const a = p(h1), b = p(h2);
+  return '#' + a.map((v, i) => Math.round(lerp(v, b[i], t)).toString(16).padStart(2, '0')).join('');
+}
+// The colour set spread over k layers (for five harmonics).
+function spread(cols, k) {
+  return Array.from({ length:k }, (_, i) => {
+    const t = i / (k - 1) * 2, j = Math.min(1, Math.floor(t));
+    return mix(cols[j], cols[j + 1], t - j);
+  });
+}
+const P = (pts) => pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(2) + ',' + q[1].toFixed(2)).join('');
+
+/*
+ * Mode n of the string from x0 to x1 at height y: its envelope (a row of n lenses), or with `half` only the side
+ * above the string, or with `signed` one moment of its swing (sin, not |sin|). p (0..1) grows the swing for the
+ * opening animation.
+ */
+// How far mode n stands from its resting pose during the opening animation (p 0..1): at first it swings at its own
+// speed, n times as fast as the whole string, then eases into the logo's pose and holds.
+function swing(n, p) {
+  if (p >= 1) return 1;
+  const s = p * p * (3 - 2 * p);
+  return lerp(Math.cos(2 * Math.PI * n * 1.6 * p), 1, s);
+}
+function mode(c, n, amp, col, op, o = {}) {
+  const { x0 = 24, x1 = 84, y = 54, half = false, signed = false, outline = false, p = 1, sw = 1.8,
+          sgn = 1, grad = false, crest = false, env = null, cap = null } = o;
+  const top = [], bot = [];
+  for (let i = 0; i <= 160; i++) {
+    const u = i / 160, x = lerp(x0, x1, u), s = Math.sin(n * Math.PI * u);
+    let a = signed ? amp * sgn * s * swing(n, p) : amp * p * Math.abs(s);
+    if (env) a *= env(u);                         // a softening towards the string's ends
+    if (cap && a > 0) a = Math.min(a, cap(u));    // never above the arch
+    top.push([x, y - a]); bot.push([x, y + a]);
+  }
+  const d = half || signed ? P(top) + `L${x1},${y}L${x0},${y}Z` : P(top) + P(bot.reverse()).replace('M', 'L') + 'Z';
+  const blend = `style="mix-blend-mode:${c.blend}"`;
+  if (outline) return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linejoin="round" opacity="${Math.min(1, op + .25)}" ${blend}/>`;
+  let fill = col, defs = '';
+  if (grad) {
+    // Glass: strongest out at the curve, thinning towards the string; 'lit': the other way round, lit from the string.
+    const g = 'm' + (uid++), edge = grad === 'lit' ? .3 : 1, mid = grad === 'lit' ? 1 : .18;
+    defs = `<defs><linearGradient id="${g}" gradientUnits="userSpaceOnUse" x1="0" y1="${y - amp}" x2="0" y2="${y + amp}">
+      <stop offset="0" stop-color="${col}" stop-opacity="${edge}"/><stop offset=".5" stop-color="${col}" stop-opacity="${mid}"/>
+      <stop offset="1" stop-color="${col}" stop-opacity="${edge}"/></linearGradient></defs>`;
+    fill = `url(#${g})`;
+  }
+  let s = `${defs}<path d="${d}" fill="${fill}" opacity="${op}" ${blend}/>`;
+  if (crest) s += `<path d="${P(top)}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" ${blend}/>`;
+  return s;
+}
+// The string's real shape at that moment: the three harmonics added up (scaled to stay inside the icon).
+function sumLine(c, parts, o) {
+  const { x0, x1, y = 54, p = 1, scale = .55, w = 2.2 } = o, pts = [];
+  for (let i = 0; i <= 200; i++) {
+    const u = i / 200;
+    const a = parts.reduce((t, [n, amp, sgn]) => t + amp * sgn * Math.sin(n * Math.PI * u) * swing(n, p), 0) * scale;
+    pts.push([lerp(x0, x1, u), y - a]);
+  }
+  return `<path d="${P(pts)}" fill="none" stroke="${c.ink}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+// The string itself: a fine line fading out at both ends.
+function string(c, x0, x1, y, w = 1.6) {
+  const g = 's' + (uid++);
+  return `<defs><linearGradient id="${g}" gradientUnits="userSpaceOnUse" x1="${x0}" y1="0" x2="${x1}" y2="0">
+      <stop offset="0" stop-color="${c.ink}" stop-opacity="0"/><stop offset=".12" stop-color="${c.ink}"/>
+      <stop offset=".88" stop-color="${c.ink}"/><stop offset="1" stop-color="${c.ink}" stop-opacity="0"/></linearGradient></defs>
+    <line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="url(#${g})" stroke-width="${w}"/>`;
+}
+
+// Round 6: refinements of "One moment". Each part is [harmonic, height, which way it swings first].
+const ROUND6 = [
+  { id:'clean', n:1, name:'Cleaned up',
+    idea:'Round 5\'s pick, wider and a touch bigger so it fills the icon evenly, with the fine fading string.',
+    parts:[[1,23,1],[2,15.5,1],[3,10.5,1]], ops:[.8,.72,.9], x:[21,87] },
+  { id:'balanced', n:2, name:'Balanced',
+    idea:'The halves swing the other way, so there is as much colour below the string as above: calmer, centred.',
+    parts:[[1,23,1],[2,15.5,-1],[3,10.5,1]], ops:[.8,.72,.9], x:[21,87] },
+  { id:'sum', n:3, name:'With the string',
+    idea:'Adds the string itself in white: its real shape at that moment, the three colours added up. The colours are what it\'s made of.',
+    parts:[[1,23,1],[2,15.5,-1],[3,10.5,1]], ops:[.62,.58,.75], x:[21,87], sum:true },
+  { id:'glass', n:4, name:'Glass',
+    idea:'Each colour strongest at its curve and thinning towards the string, with a fine edge: light through glass.',
+    parts:[[1,23,1],[2,15.5,-1],[3,10.5,1]], ops:[.85,.9,1], x:[21,87], grad:true, crest:true },
+  { id:'crest', n:5, name:'Drawn edges',
+    idea:'Softer fills with a crisp coloured line along each curve: sharper at small sizes and on the watch.',
+    parts:[[1,23,1],[2,15.5,-1],[3,10.5,1]], ops:[.5,.45,.55], x:[21,87], crest:true },
+  { id:'pure', n:6, name:'Colour only',
+    idea:'No string line at all and edge to edge: just the three colours, bigger. The boldest and the simplest.',
+    parts:[[1,26,1],[2,17.5,-1],[3,12,1]], ops:[.85,.78,.95], x:[17,91], bare:true },
+].map(v => ({ ...v, mark:(c, p = 1) => {
+  const Y = 58, o = { p, signed:true, y:Y, x0:v.x[0], x1:v.x[1], grad:v.grad, crest:v.crest, sw:1.6 };
+  let s = v.parts.map(([n, amp, sgn], i) => mode(c, n, amp, c.cols[i], v.ops[i], { ...o, sgn })).join('');
+  if (v.sum) s += string(c, 15, 93, Y, 1).replace('<line', '<line opacity=".35"')
+                 + sumLine(c, v.parts, { x0:v.x[0], x1:v.x[1], y:Y, p, scale:.5, w:1.8 });
+  else if (!v.bare) s += string(c, 15, 93, Y);
+  return s;
+} }));
+
+const OPTIONS_ROUND5 = [
+  { id:'three', n:1, name:'Harmonics',
+    idea:'Round 3\'s B, refined: the whole, the halves and the thirds, with small marks where the string stays still.',
+    mark:(c, p = 1) => {
+      const [a, b, d] = c.cols;
+      let s = mode(c, 1, 22, a, .5, { p }) + mode(c, 2, 14, b, .68, { p }) + mode(c, 3, 9, d, .9, { p });
+      s += string(c, 18, 90, 54);
+      [1/3, 1/2, 2/3].forEach(u => s += `<circle cx="${(24 + 60 * u).toFixed(2)}" cy="54" r="1.5" fill="${c.ink}" opacity="${p}"/>`);
+      return s;
+    } },
+  { id:'five', n:2, name:'Five harmonics',
+    idea:'The first five layers, each finer and brighter: denser and richer, like light through layered glass.',
+    mark:(c, p = 1) => {
+      const cs = spread(c.cols, 5), amps = [23, 16, 11.5, 8.5, 6.5];
+      return amps.map((a, i) => mode(c, i + 1, a, cs[i], .32 + i * .14, { p })).join('') + string(c, 18, 90, 54, 1.3);
+    } },
+  { id:'lines', n:3, name:'Line drawing',
+    idea:'The same shapes as fine coloured lines with no fill: lighter, more like an engraving or a physics plate.',
+    mark:(c, p = 1) => {
+      const [a, b, d] = c.cols;
+      return mode(c, 1, 23, a, .75, { p, outline:true, sw:2.2 }) + mode(c, 2, 15, b, .75, { p, outline:true, sw:2 })
+        + mode(c, 3, 9.5, d, .75, { p, outline:true, sw:1.8 }) + string(c, 18, 90, 54, 1.4);
+    } },
+  { id:'half', n:4, name:'Arches',
+    idea:'Only the side above the string: three rows of arches standing on one line. Steadier, less like an eye.',
+    mark:(c, p = 1) => {
+      const [a, b, d] = c.cols, o = { p, half:true, y:66 };
+      return mode(c, 1, 30, a, .5, o) + mode(c, 2, 20, b, .68, o) + mode(c, 3, 13, d, .9, o) + string(c, 16, 92, 66, 2);
+    } },
+  { id:'swing', n:5, name:'One moment',
+    idea:'Not the outline of the swing but one instant of it: the whole, the halves and the thirds caught mid-swing.',
+    mark:(c, p = 1) => {
+      const [a, b, d] = c.cols, o = k => ({ p, signed:true, y:54 + 0 * k });
+      return mode(c, 1, 22, a, .5, o(1)) + mode(c, 2, 15, b, .65, o(2)) + mode(c, 3, 10, d, .88, o(3)) + string(c, 18, 90, 54);
+    } },
+  { id:'rosette', n:6, name:'Rosette',
+    idea:'The string closed into a ring, its harmonics as petals around it: three, five and seven. Like a guitar\'s rosette.',
+    mark:(c, p = 1) => {
+      const [a, b, d] = c.cols, R = 19;
+      const ring = (n, A, col, op) => {
+        const out = [], inn = [];
+        for (let i = 0; i <= 360; i++) {
+          const t = i / 360 * 2 * Math.PI, e = A * p * Math.abs(Math.sin(n * (t + Math.PI / 2) / 2 + Math.PI / 2));
+          out.push([54 + (R + e) * Math.cos(t), 54 + (R + e) * Math.sin(t)]);
+          inn.push([54 + (R - e * .3) * Math.cos(t), 54 + (R - e * .3) * Math.sin(t)]);
+        }
+        return `<path d="${P(out)}Z${P(inn.reverse())}Z" fill="${col}" fill-rule="evenodd" opacity="${op}" style="mix-blend-mode:${c.blend}"/>`;
+      };
+      return ring(3, 11, a, .5) + ring(5, 7.5, b, .68) + ring(7, 5, d, .9)
+        + `<circle cx="54" cy="54" r="${R}" fill="none" stroke="${c.ink}" stroke-width="1.5"/>`;
+    } },
+];
+
+// Round 7: refinements of round 6's "Colour only". Same parts as there unless a variant says otherwise.
+const PARTS6 = [[1,26,1],[2,17.5,-1],[3,12,1]];
+const ROUND7 = [
+  { id:'as6', n:1, name:'As in round 6',
+    idea:'Your pick, unchanged, to compare the others with.',
+    parts:PARTS6, ops:[.85,.78,.95], x:[17,91] },
+  { id:'bold', n:2, name:'Taller',
+    idea:'The same, a third taller, so the colour fills more of the icon and holds up better at small sizes.',
+    parts:[[1,31,1],[2,21,-1],[3,14.5,1]], ops:[.85,.78,.95], x:[17,91], y:56 },
+  { id:'bleed', n:3, name:'Off the edge',
+    idea:'The string runs on past both sides, so the icon is a window onto a longer string, not a shape in a box.',
+    parts:[[1,28,1],[2,19,-1],[3,13,1]], ops:[.85,.78,.95], x:[6,102] },
+  { id:'flat', n:4, name:'Flat colour',
+    idea:'Solid colours, no see-through: amber at the back, blue, then green in front. Crisp like a poster, and Android can draw it as a plain vector.',
+    parts:PARTS6, ops:[1,1,1], x:[17,91], flat:true },
+  { id:'lit', n:5, name:'Lit from the string',
+    idea:'Each colour brightest along the (unseen) string and fading towards its crest, as if the string gives off the light.',
+    parts:PARTS6, ops:[1,1,1], x:[17,91], grad:'lit' },
+  { id:'tilt', n:6, name:'Tilted',
+    idea:'The whole picture turned a little, rising to the right: more movement, the way a guitar neck slants.',
+    parts:[[1,27,1],[2,18,-1],[3,12.5,1]], ops:[.85,.78,.95], x:[8,100], tilt:-14 },
+].map(v => ({ ...v, mark:(c, p = 1) => {
+  const Y = v.y ?? 58, cc = v.flat ? { ...c, blend:'normal' } : c;
+  const o = { p, signed:true, y:Y, x0:v.x[0], x1:v.x[1], grad:v.grad };
+  const s = v.parts.map(([n, amp, sgn], i) => mode(cc, n, amp, c.cols[i], v.ops[i], { ...o, sgn })).join('');
+  return v.tilt ? `<g transform="rotate(${v.tilt} 54 54)">${s}</g>` : s;
+} }));
+
+// Round 8: keep the smaller waves inside the amber arch near the top corners.
+const ROUND8 = [
+  { id:'orig', n:'1', name:'As in round 7',
+    idea:'Your pick as it was: at the top corners the blue (right) and green (left) rise above the amber.',
+    parts:PARTS6, ops:[.85,.78,.95], x:[17,91] },
+  { id:'series', n:'A', name:'Half and a third',
+    idea:'The halves half as tall as the whole, the thirds a third as tall. Still exact, and then no wave can ever leave the arch. Less colour below the string.',
+    parts:[[1,28,1],[2,14,-1],[3,9.3,1]], ops:[.85,.78,.95], x:[17,91], y:57 },
+  { id:'taper', n:'B', name:'Softened ends',
+    idea:'Same heights in the middle; the blue and green ease off towards the ends, so they stay inside the arch and the corners stay clean.',
+    parts:PARTS6, ops:[.85,.78,.95], x:[17,91], taper:true },
+  { id:'clip', n:'C', name:'Trimmed to the arch',
+    idea:'Exactly the original, but anything above the amber is cut off along its edge: the arch becomes the outline of the whole top.',
+    parts:PARTS6, ops:[.85,.78,.95], x:[17,91], clip:true },
+].map(v => ({ ...v, mark:(c, p = 1) => {
+  const Y = v.y ?? 58, A1 = v.parts[0][1];
+  const o = { p, signed:true, y:Y, x0:v.x[0], x1:v.x[1] };
+  return v.parts.map(([n, amp, sgn], i) => mode(c, n, amp, c.cols[i], v.ops[i], { ...o, sgn,
+    env: v.taper && n > 1 ? u => Math.pow(Math.sin(Math.PI * u), .8) : null,
+    cap: v.clip && n > 1 ? u => A1 * Math.sin(Math.PI * u) * Math.max(0, swing(1, p)) : null })).join('');
+} }));
+const OPTIONS = ROUND8;
+
+function squirclePath() {
+  let d = '';
+  for (let i = 0; i <= 64; i++) {
+    const a = i / 64 * 2 * Math.PI, co = Math.cos(a), si = Math.sin(a);
+    d += (i ? ' L' : 'M') + (54 + 36 * Math.sign(co) * Math.sqrt(Math.abs(co))).toFixed(2) + ','
+                          + (54 + 36 * Math.sign(si) * Math.sqrt(Math.abs(si))).toFixed(2);
+  }
+  return d + 'Z';
+}
+const SHAPES = { squircle:`<path d="${squirclePath()}"/>`, circle:'<circle cx="54" cy="54" r="36"/>',
+                 rounded:'<rect x="18" y="18" width="72" height="72" rx="16"/>' };
+
+function backdrop(c) {
+  if (!c.bg2) return `<rect width="108" height="108" fill="${c.bg}"/>`;
+  const g = 'b' + (uid++);
+  return `<defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.bg2}"/>
+    <stop offset="1" stop-color="${c.bg}"/></linearGradient></defs><rect width="108" height="108" fill="url(#${g})"/>`;
+}
+function icon(o, size, shape = 'squircle', c = pal(), cls = '') {
+  const id = 'c' + (uid++);
+  return `<svg class="${cls}" width="${size}" height="${size}" viewBox="18 18 72 72" style="display:block">
+    <defs><clipPath id="${id}">${SHAPES[shape]}</clipPath></defs>
+    <g clip-path="url(#${id})" style="isolation:isolate">${backdrop(c)}${o.mark(c)}</g></svg>`;
+}
+
+let picked = OPTIONS[0];
+
+function chips(elId, label, entries, current, set) {
+  const el = document.getElementById(elId);
+  el.innerHTML = `<span>${label}</span>` + entries.map(([k, l]) =>
+    `<button class="chip" data-k="${k}" aria-pressed="${k === current}">${l}</button>`).join('');
+  el.querySelectorAll('.chip').forEach(b => b.onclick = () => { set(b.dataset.k); render(); });
+}
+function renderControls() {
+  chips('cols', 'Colours', Object.entries(COLS), colKey, k => colKey = k);
+  chips('bgs', 'Background', Object.entries(BGS).map(([k, b]) => [k, b.label]), bgKey, k => bgKey = k);
+}
+
+function renderOptions() {
+  document.getElementById('options').innerHTML = OPTIONS.map(o => `
+    <div class="card ${o === picked ? 'picked' : ''}" data-id="${o.id}">
+      ${icon(o, 120)}<h3>${o.n}. ${o.name}</h3><p>${o.idea}</p></div>`).join('');
+  document.querySelectorAll('.card').forEach(el => el.onclick = () => {
+    picked = OPTIONS.find(o => o.id === el.dataset.id); render(); });
+}
+
+const FILLER = ['#d9534f','#3a7bd5','#f0ad4e','#5cb85c','#8e6cc9','#2bb3a3','#e07a5f'];
+function homeScreen(cls) {
+  const names = ['Camera','Mail','Maps','Photos','Twangle','Music','Clock','Notes'];
+  return `<div class="phone ${cls}"><div class="apps">${names.map((n, i) => `<div class="app">${
+    n === 'Twangle' ? icon(picked, 48) : `<div class="ph" style="background:${FILLER[i % FILLER.length]}"></div>`
+  }<span>${n}</span></div>`).join('')}</div></div>`;
+}
+function themedRow(cls, bg, fg) {
+  const other = `<svg width="48" height="48"><circle cx="24" cy="24" r="24" fill="${bg}"/><circle cx="24" cy="24" r="9" fill="${fg}" opacity=".7"/></svg>`;
+  return `<div class="phone ${cls}"><div class="apps">${[0,1,2,3].map(i => `<div class="app">${
+    i === 1 ? icon(picked, 48, 'circle', mono(bg, fg)) : other}<span>${i === 1 ? 'Twangle' : ''}</span></div>`).join('')}</div></div>`;
+}
+
+let anim = 0;
+function renderDetail() {
+  const o = picked, c = pal();
+  document.getElementById('close').innerHTML = OPTIONS.map(v =>
+    `<div>${icon(v, 230)}<div class="cap">${v.n}. ${v.name}</div></div>`).join('');
+  document.getElementById('home').innerHTML =
+    `<div>${homeScreen('wall-dark')}<div class="cap">Dark wallpaper</div></div>
+     <div>${homeScreen('wall-light')}<div class="cap">Light wallpaper</div></div>`;
+  document.getElementById('sizes').innerHTML = ['squircle','circle','rounded'].map(s => `
+    <div><div class="sizes">${icon(o,96,s)}${icon(o,48,s)}${icon(o,32,s)}${icon(o,24,s)}</div>
+    <div class="cap">${{squircle:'Squircle (Xiaomi, Samsung)', circle:'Circle (Pixel)', rounded:'Rounded square'}[s]}</div></div>`).join('');
+  document.getElementById('themed').innerHTML =
+    `<div>${themedRow('wall-light', '#D6E3FF', '#2A4678')}<div class="cap">Themed, light</div></div>
+     <div>${themedRow('wall-dark', '#2A3A55', '#C9DAFF')}<div class="cap">Themed, dark</div></div>`;
+
+  // Opening the app: the string rings, each harmonic swinging at its own speed, then holds the logo's pose (1.8 s).
+  const splashBg = c.bg2 ? `linear-gradient(180deg, ${c.bg2}, ${c.bg})` : c.bg;
+  document.getElementById('splash').innerHTML = `
+    <div><div class="splash" style="background:${splashBg}">
+      <svg width="150" height="150" viewBox="18 18 72 72" id="splashArt" style="isolation:isolate"></svg></div>
+      <div class="cap"><button class="replay" id="replay">Play again</button></div></div>`;
+  const play = () => {
+    const svg = document.getElementById('splashArt'), start = performance.now(), mine = ++anim;
+    const frame = now => {
+      if (mine !== anim) return;
+      const t = Math.min(1, (now - start) / 1800);
+      svg.innerHTML = `<g opacity="${Math.min(1, t * 5)}">${o.mark(c, t)}</g>`;
+      if (t < 1) requestAnimationFrame(frame);
+    };
+    svg.innerHTML = '';
+    requestAnimationFrame(frame);
+  };
+  document.getElementById('replay').onclick = play; play();
+
+  const word = (fill, weight, size) =>
+    `<span style="font:${weight} ${size}px system-ui, sans-serif; color:${fill}; letter-spacing:-.01em">Twangle</span>`;
+  const bare = (cc, size) => `<svg width="${size}" height="${size}" viewBox="18 18 72 72" style="isolation:isolate">${o.mark(cc)}</svg>`;
+  // The name on the string: the word sits on a ringing string, its harmonics behind the letters.
+  const onString = cc => {
+    const [a, b, d] = cc.cols;
+    return `<div style="position:relative; width:300px; height:96px">
+      <svg width="300" height="96" viewBox="0 0 300 96" style="position:absolute; inset:0; isolation:isolate">
+        ${mode(cc, 1, 40, a, .3, { x0:6, x1:294, y:48, signed:true })}${mode(cc, 2, 27, b, .34, { x0:6, x1:294, y:48, signed:true, sgn:-1 })}${mode(cc, 3, 18, d, .42, { x0:6, x1:294, y:48, signed:true })}
+      </svg><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center">${word(cc.ink, 600, 46)}</div></div>`;
+  };
+  document.getElementById('lockups').innerHTML = `
+    <div><div class="lock" style="background:#F6F7F9">${icon(o, 64, 'squircle', c, 'icon')}${word('#14181D', 600, 40)}</div>
+      <div class="cap">Icon and name (store, website)</div></div>
+    <div><div class="lock" style="background:#0E1116">${bare(pal(BGS.dark), 64)}${word('#FFFFFF', 400, 40)}</div>
+      <div class="cap">The mark alone, dark</div></div>
+    <div><div class="lock" style="background:#FFFFFF">${bare(pal(BGS.light), 64)}${word('#14181D', 600, 40)}</div>
+      <div class="cap">The mark alone, light</div></div>
+    <div><div class="lock" style="background:#0E1116">${onString(pal(BGS.dark))}</div>
+      <div class="cap">The name ringing (website, store graphic)</div></div>`;
+  document.getElementById('watch').innerHTML = `
+    <div><div class="watch">${icon(o, 64, 'circle')}<span>Twangle</span></div><div class="cap">Galaxy Watch app list</div></div>`;
+}
+
+function render() { renderControls(); renderOptions(); renderDetail(); }
+render();
+</script>
+</body>
+</html>

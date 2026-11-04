@@ -62,6 +62,7 @@ scripts/store-graphics.sh [locale…]     # the Play Store's icon and every lang
 scripts/style-screens.sh                # pictures of the tuner in Ink, light and dark, for the owner (~1 min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
+python -I scripts/launcher-icon.py      # draws the launcher icon, themed icon and watch mark (phone and watch) from the harmonics; edit it, not the drawables (ARCHITECTURE.md, *Name, app ID and icon*)
 ```
 `scripts/ui-test-scope.py`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
