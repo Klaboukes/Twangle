@@ -81,13 +81,14 @@ internal fun TuningLine(
  * tuner's chip, its name on one line ending in "…" where it is longer. Until 2026-11-04 (the owner: "each screen should
  * just have the screen's name there") the chip stood in the row's middle, on a 320 dp phone at a very large text size
  * on a line of its own; beside the arrow before that. Without [onPickInstrument] the plain line stands in the chip's
- * place. Public for the tools of other modules (Ear training, `:feature:eartraining`), whose top `:app` builds with it.
+ * place; without [tuningName] no line at all (the pitch trail, which listens for any note). Public for the tools of
+ * other modules (Ear training, `:feature:eartraining`; the pitch trail, `:feature:tuner`), whose top `:app` builds with it.
  */
 @Composable
 fun BackAndTuningRow(
     tool: PracticeTool,
     onBack: () -> Unit,
-    tuningName: String,
+    tuningName: String?,
     spokenTuningName: String,
     onPickInstrument: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -100,7 +101,7 @@ fun BackAndTuningRow(
             start = { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) },
             end = end,
         )
-        PickerLine { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
+        if (tuningName != null) PickerLine { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
     }
 }
 

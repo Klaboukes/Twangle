@@ -13,7 +13,7 @@ import io.github.klaboukes.twangle.core.settings.ToolSwitches
 /**
  * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order, each with its
  * switch on: chords, scales (a tool of its own since Phase 47), the capo helper (Phase 33, only with
- * chords, whose charts its rows open) and Ear training (Phase 55). None while the Practice tab's switch
+ * chords, whose charts its rows open), Ear training (Phase 55) and the pitch trail (2.0, Phase 78). None while the Practice tab's switch
  * is off, or every tool's: there is then no Practice tab, and the metronome keeps its own (since 2.0,
  * Phase 69, a tab of its own either way).
  */
@@ -24,6 +24,7 @@ fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> {
         if (tools.scales) add(PracticeTool.SCALES)
         if (tools.capoHelper && tools.chords) add(PracticeTool.CAPO)
         if (tools.earTraining) add(PracticeTool.EAR_TRAINING)
+        if (tools.pitchTrail) add(PracticeTool.PITCH_TRAIL)
     }
 }
 

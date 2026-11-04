@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Назад</string>
     <string name="practice_tool_ear_training">Тренировка слуха</string>
+    <string name="practice_tool_pitch_trail">График высоты</string>
     <string name="practice_root">Тоника</string>
     <string name="practice_chord_type">Тип аккорда</string>
     <string name="practice_chord_major">%1$s мажор</string>

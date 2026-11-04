@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">戻る</string>
     <string name="practice_tool_ear_training">耳トレーニング</string>
+    <string name="practice_tool_pitch_trail">ピッチの軌跡</string>
     <string name="practice_root">ルート</string>
     <string name="practice_chord_type">コードの種類</string>
     <string name="practice_chord_major">%1$s メジャー</string>

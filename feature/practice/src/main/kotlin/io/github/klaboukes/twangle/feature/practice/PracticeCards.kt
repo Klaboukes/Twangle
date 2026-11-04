@@ -72,12 +72,16 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
  * [savedScaleType] in the player's [notation]); with nothing used yet ([lastTimeTool] null) there is no row.
  *
  * Upright two cards to a row ([PracticeLayout.COLUMN], at most [COLUMN_MAX_WIDTH] wide; a tablet a little
- * wider), on its side all four in one row ([PracticeLayout.HALVES], [PracticeLayout.LARGE_SIDE]), so the
+ * wider), on its side all of them in one row ([PracticeLayout.HALVES], [PracticeLayout.LARGE_SIDE]), so the
  * page fits a phone on its side without scrolling at the usual text size; at a large text size on a narrow
  * window fewer to a row (two on its side, one upright), so each card's line breaks only between words. Each card is at least
  * [UPRIGHT_RATIO] (on its side [SIDE_RATIO]) times as tall as wide, so a row's cards are one height at the
  * usual text size; a card grows where large text needs it (the row's others then stay as they are), and
- * the page scrolls where even that doesn't fit.
+ * the page scrolls where even that doesn't fit. A card left alone in the last row (the fifth, the pitch trail since
+ * Phase 78) is a wide, low one across the whole row, its picture beside its name ([WIDE_PICTURE]), so five cards fit
+ * a tablet upright, as four did (on its side the five share one row); on an upright window shorter than [TIGHT_HEIGHT] (the S26's
+ * 570 dp) the grid's cards are a little lower ([TIGHT_RATIO]) with their pictures at their least, and the wide card
+ * lower still, so they fit there too.
  *
  * TalkBack hears each card as one button ("Chords, Every shape, left-handed too"), the title as a heading
  * and the row as one button ("Last time, Chords, C major").
@@ -98,7 +102,9 @@ fun PracticeCards(
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CARDS)) {
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
         val side = layout == PracticeLayout.HALVES || layout == PracticeLayout.LARGE_SIDE
-        val preferred = if (side) SIDE_COLUMNS else UPRIGHT_COLUMNS
+        val pageHeight = maxHeight
+        // On its side every card in one row (five since Phase 78), upright two to a row.
+        val preferred = if (side) maxOf(SIDE_COLUMNS, tools.size) else UPRIGHT_COLUMNS
         val maxContent = when (layout) {
             PracticeLayout.COLUMN -> COLUMN_MAX_WIDTH
             PracticeLayout.LARGE_COLUMN -> LARGE_COLUMN_MAX_WIDTH
@@ -120,21 +126,31 @@ fun PracticeCards(
                 val columns = generateSequence(preferred) { if (it > 1) it / 2 else null }
                     .firstOrNull { (maxWidth - gap * (it - 1)) / it - padding * 2 >= lineEm * MIN_LINE_EMS } ?: 1
                 val cardWidth = (maxWidth - gap * (columns - 1)) / columns
+                // A lone card under the grid on a short upright window: everything a little smaller.
+                val tight = !side && columns > 1 && tools.size % columns == 1 && pageHeight < TIGHT_HEIGHT
                 Column {
                     Spacer(Modifier.height(TOP_BAR_TOP))
                     TitleRow(title, settingsButton)
                     Spacer(Modifier.height(if (short) SHORT_GAP / 2 else TITLE_GAP))
                     for (row in tools.chunked(columns)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                            // Alone in a row of several: a wide, low card across it.
+                            val wide = row.size == 1 && columns > 1
                             for (tool in row) {
                                 ToolCard(
                                     tool,
                                     // One to a row, a card is as tall as its contents, not as its width.
-                                    minHeight = if (columns == 1) 0.dp else cardWidth * if (side) SIDE_RATIO else UPRIGHT_RATIO,
-                                    picture = if (short) SHORT_PICTURE else (cardWidth * PICTURE_SHARE).coerceIn(MIN_PICTURE, MAX_PICTURE),
-                                    padding = padding,
+                                    minHeight = if (columns == 1 || wide) 0.dp else cardWidth * if (side) SIDE_RATIO else if (tight) TIGHT_RATIO else UPRIGHT_RATIO,
+                                    picture = when {
+                                        wide -> if (short || tight) SHORT_WIDE_PICTURE else WIDE_PICTURE
+                                        short -> SHORT_PICTURE
+                                        tight -> MIN_PICTURE
+                                        else -> (cardWidth * PICTURE_SHARE).coerceIn(MIN_PICTURE, MAX_PICTURE)
+                                    },
+                                    padding = if (wide && tight) SHORT_GAP else padding,
                                     onClick = { onOpen(tool) },
-                                    modifier = Modifier.width(cardWidth),
+                                    modifier = if (wide) Modifier.fillMaxWidth() else Modifier.width(cardWidth),
+                                    wide = wide,
                                 )
                             }
                         }
@@ -161,46 +177,62 @@ private fun TitleRow(title: String, settingsButton: (@Composable () -> Unit)?) {
     TopBar(middle = { TopBarTitle(title) }, modifier = Modifier.fillMaxWidth(), start = settingsButton)
 }
 
-/** One tool's card: its picture at the top, its name and what it does at the bottom, on the surface with a thin line round it. */
+/**
+ * One tool's card: its picture at the top, its name and what it does at the bottom, on the surface with a thin line
+ * round it; [wide], its picture at the start and its name and line beside it, low.
+ */
 @Composable
-private fun ToolCard(tool: PracticeTool, minHeight: Dp, picture: Dp, padding: Dp, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ToolCard(tool: PracticeTool, minHeight: Dp, picture: Dp, padding: Dp, onClick: () -> Unit, modifier: Modifier = Modifier, wide: Boolean = false) {
     val source = remember { MutableInteractionSource() }
     val shape = RoundedCornerShape(CARD_CORNER)
-    Column(
-        modifier
-            .heightIn(min = minHeight)
-            .testTag(PracticeTestTags.card(tool))
-            .pressFeedback(source, shape, fill = MaterialTheme.colorScheme.surface, outline = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant))
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            }
-            .padding(padding),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Box(Modifier.fillMaxWidth().padding(bottom = 8.dp), contentAlignment = Alignment.Center) {
-            Icon(practiceToolPicture(tool), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(picture))
+    val card = modifier
+        .heightIn(min = minHeight)
+        .testTag(PracticeTestTags.card(tool))
+        .pressFeedback(source, shape, fill = MaterialTheme.colorScheme.surface, outline = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant))
+        .clickable(interactionSource = source, indication = null, role = Role.Button) {
+            source.pressFlash()
+            onClick()
         }
-        Column {
-            // One line, set smaller where it doesn't fit (Dutch "Akkoorden" at 2x text on a 320 dp phone); never wrapped,
-            // so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
-            Text(
-                stringResource(tool.label),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = NAME_SIZE),
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                softWrap = false,
-                autoSize = TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = NAME_SIZE, stepSize = 0.5.sp),
-            )
-            // Set smaller where a word wouldn't fit its line whole (large text), a line ending only between words.
-            Text(
-                wholeWords(stringResource(tool.cardLine)),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = LINE_SIZE),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                autoSize = remember { WholeWordsAutoSize(LINE_SIZE, LINE_MIN_SIZE) },
-                modifier = Modifier.padding(top = 2.dp),
-            )
+        .padding(padding)
+    val pictureIcon = @Composable {
+        Icon(practiceToolPicture(tool), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(picture))
+    }
+    if (wide) {
+        Row(card, verticalAlignment = Alignment.CenterVertically) {
+            pictureIcon()
+            Spacer(Modifier.width(16.dp))
+            Box(Modifier.weight(1f)) { ToolCardWords(tool) }
         }
+        return
+    }
+    Column(card, verticalArrangement = Arrangement.SpaceBetween) {
+        Box(Modifier.fillMaxWidth().padding(bottom = 8.dp), contentAlignment = Alignment.Center) { pictureIcon() }
+        ToolCardWords(tool)
+    }
+}
+
+/** A card's name and the line saying what its tool does. */
+@Composable
+private fun ToolCardWords(tool: PracticeTool) {
+    Column {
+        // One line, set smaller where it doesn't fit (Dutch "Akkoorden" at 2x text on a 320 dp phone); never wrapped,
+        // so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
+        Text(
+            stringResource(tool.label),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = NAME_SIZE),
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = NAME_SIZE, stepSize = 0.5.sp),
+        )
+        // Set smaller where a word wouldn't fit its line whole (large text), a line ending only between words.
+        Text(
+            wholeWords(stringResource(tool.cardLine)),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = LINE_SIZE),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            autoSize = remember { WholeWordsAutoSize(LINE_SIZE, LINE_MIN_SIZE) },
+            modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }
 
@@ -215,7 +247,7 @@ private fun lastTimeDetail(tool: PracticeTool, notation: Notation, root: PitchCl
     val (picked, spoken) = when (tool) {
         PracticeTool.CHORDS -> Chord.of(root, quality).let { chordWords(it, notation) to chordWords(it, notation, speech) }
         PracticeTool.SCALES -> Scale(root, scaleType).let { scaleWords(it, notation) to scaleWords(it, notation, speech) }
-        PracticeTool.CAPO, PracticeTool.EAR_TRAINING -> return LastTimeLine(name, name)
+        PracticeTool.CAPO, PracticeTool.EAR_TRAINING, PracticeTool.PITCH_TRAIL -> return LastTimeLine(name, name)
     }
     return LastTimeLine(
         stringResource(R.string.practice_last_time_detail, name, picked),
@@ -274,6 +306,7 @@ internal val PracticeTool.label: Int
         PracticeTool.SCALES -> R.string.practice_tool_scales
         PracticeTool.CAPO -> R.string.practice_tool_capo
         PracticeTool.EAR_TRAINING -> R.string.practice_tool_ear_training
+        PracticeTool.PITCH_TRAIL -> R.string.practice_tool_pitch_trail
     }
 
 /** The line under each tool's name on its card, saying what it does. */
@@ -283,6 +316,7 @@ private val PracticeTool.cardLine: Int
         PracticeTool.SCALES -> R.string.practice_card_scales
         PracticeTool.CAPO -> R.string.practice_card_capo
         PracticeTool.EAR_TRAINING -> R.string.practice_card_ear_training
+        PracticeTool.PITCH_TRAIL -> R.string.practice_card_pitch_trail
     }
 
 /** Two cards to a row upright, four on its side; fewer where a card's line would hold less than this many letters (ems). */
@@ -293,6 +327,9 @@ private const val MIN_LINE_EMS = 7f
 /** A card's height to its width, at least: the mock-up's upright, a little flatter on its side, where height is short. */
 private const val UPRIGHT_RATIO = 1.08f
 private const val SIDE_RATIO = 0.9f
+
+/** Upright on a short window with a lone fifth card ([TIGHT_HEIGHT]): a little lower. */
+private const val TIGHT_RATIO = 0.95f
 
 /** The cards' width, at most: a phone's column, a tablet's upright, and four in a row on a tablet on its side. */
 private val COLUMN_MAX_WIDTH = 480.dp
@@ -313,6 +350,13 @@ private const val PICTURE_SHARE = 0.5f
 private val MIN_PICTURE = 64.dp
 private val MAX_PICTURE = 120.dp
 private val SHORT_PICTURE = 56.dp
+
+/** A wide card's picture, beside its name; on a phone on its side smaller. */
+private val WIDE_PICTURE = 56.dp
+private val SHORT_WIDE_PICTURE = 40.dp
+
+/** Upright windows shorter than this (the S26's 570 dp less its bars) draw five cards a little smaller. */
+private val TIGHT_HEIGHT = 640.dp
 
 /** On a phone on its side: the gaps between the cards and inside them. */
 private val SHORT_GAP = 12.dp

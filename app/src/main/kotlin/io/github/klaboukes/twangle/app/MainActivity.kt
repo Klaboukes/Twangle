@@ -69,6 +69,7 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.eartraining.EarTrainingScreen
+import io.github.klaboukes.twangle.feature.tuner.trail.PitchTrailScreen
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
@@ -357,7 +358,7 @@ class MainActivity : AppCompatActivity() {
                                     onOpen = openTool,
                                     settingsButton = gear,
                                 )
-                                Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING ->
+                                Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING, Screen.PRACTICE_PITCH_TRAIL ->
                                     PracticeToolScreen(
                                         container = container,
                                         settings = settings,
@@ -529,6 +530,15 @@ class MainActivity : AppCompatActivity() {
                     savedSettings = settings,
                 )
             }
+            PracticeTool.PITCH_TRAIL -> PitchTrailScreen(
+                audioRecorder = container.pitchTrailRecorder,
+                settingsRepository = container.settingsRepository,
+                // It listens for any note: no instrument under the top row.
+                header = {
+                    BackAndTuningRow(tool = PracticeTool.PITCH_TRAIL, onBack = onBack, tuningName = null, spokenTuningName = "", onPickInstrument = null)
+                },
+                saved = settings,
+            )
         }
     }
 

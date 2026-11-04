@@ -263,6 +263,7 @@ feature/practice practice_spoken_string 5db5f4ae
 feature/practice practice_tool_capo 936e4161
 feature/practice practice_tool_chords c534559c
 feature/practice practice_tool_ear_training 0ba4a968
+feature/practice practice_tool_pitch_trail e81c43ad
 feature/practice practice_tool_scales 42a0052b
 feature/settings about_title 1e68861c
 feature/settings settings_a4_lower d775d788

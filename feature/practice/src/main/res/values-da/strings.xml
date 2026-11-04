@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Tilbage</string>
     <string name="practice_tool_ear_training">Gehørtræning</string>
+    <string name="practice_tool_pitch_trail">Tonespor</string>
     <string name="practice_root">Grundtone</string>
     <string name="practice_chord_type">Akkordtype</string>
     <string name="practice_chord_major">%1$s-dur</string>

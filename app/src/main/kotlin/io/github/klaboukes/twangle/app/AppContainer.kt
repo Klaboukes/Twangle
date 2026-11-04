@@ -82,6 +82,17 @@ class AppContainer(private val appContext: Context) {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
 
+    /**
+     * The microphone for the pitch trail (2.0, Phase 78), open only while it is shown. Its own recorder, as Ear
+     * training's: the tuner's keeps the microphone 5 s after the tuner leaves, and one recorder reads on a single thread.
+     */
+    val pitchTrailRecorder: AudioRecorder
+        get() = testAudioRecorder ?: trailMicRecorder
+
+    private val trailMicRecorder: AudioRecorder by lazy {
+        if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
+    }
+
     /** Listen in Chords: each strummed chord named from [chordsRecorder], or from a test's [testAudioRecorder]. */
     val chordListener: ChordListener
         get() = testAudioRecorder?.let { ChordListener(it) } ?: micChordListener

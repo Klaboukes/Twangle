@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">뒤로</string>
     <string name="practice_tool_ear_training">청음 훈련</string>
+    <string name="practice_tool_pitch_trail">음높이 궤적</string>
     <string name="practice_root">근음</string>
     <string name="practice_chord_type">코드 종류</string>
     <string name="practice_chord_major">%1$s 메이저</string>

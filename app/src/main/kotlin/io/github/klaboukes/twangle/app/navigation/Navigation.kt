@@ -9,7 +9,7 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
  * (opened from the tuner or a Practice tool).
  */
 enum class Screen {
-    TUNER, METRONOME, PRACTICE, PRACTICE_CHORDS, PRACTICE_SCALES, PRACTICE_CAPO, PRACTICE_EAR_TRAINING, SETTINGS, ABOUT, TUNING_EDITOR,
+    TUNER, METRONOME, PRACTICE, PRACTICE_CHORDS, PRACTICE_SCALES, PRACTICE_CAPO, PRACTICE_EAR_TRAINING, PRACTICE_PITCH_TRAIL, SETTINGS, ABOUT, TUNING_EDITOR,
 }
 
 /**
@@ -36,6 +36,7 @@ val Screen.destination: Destination?
         Screen.TUNER -> Destination.TUNER
         Screen.METRONOME -> Destination.METRONOME
         Screen.PRACTICE, Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING,
+        Screen.PRACTICE_PITCH_TRAIL,
         -> Destination.PRACTICE
         Screen.SETTINGS, Screen.ABOUT, Screen.TUNING_EDITOR -> null
     }
@@ -55,6 +56,7 @@ val PracticeTool.screen: Screen
         PracticeTool.SCALES -> Screen.PRACTICE_SCALES
         PracticeTool.CAPO -> Screen.PRACTICE_CAPO
         PracticeTool.EAR_TRAINING -> Screen.PRACTICE_EAR_TRAINING
+        PracticeTool.PITCH_TRAIL -> Screen.PRACTICE_PITCH_TRAIL
     }
 
 /** The Practice tool [this] screen shows, or null for every other screen. */
@@ -72,7 +74,7 @@ fun Screen.back(settingsOpener: Screen, chordsFromCapo: Boolean = false): Screen
     Screen.ABOUT -> Screen.SETTINGS
     Screen.SETTINGS -> settingsOpener
     Screen.PRACTICE_CHORDS -> if (chordsFromCapo) Screen.PRACTICE_CAPO else Screen.PRACTICE
-    Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING -> Screen.PRACTICE
+    Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING, Screen.PRACTICE_PITCH_TRAIL -> Screen.PRACTICE
     Screen.METRONOME, Screen.PRACTICE, Screen.TUNING_EDITOR -> Screen.TUNER
 }
 

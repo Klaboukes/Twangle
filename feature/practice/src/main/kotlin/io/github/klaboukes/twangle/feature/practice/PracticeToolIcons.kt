@@ -40,6 +40,11 @@ private fun draw(tool: PracticeTool): ImageVector {
             "M7,9.5a5,5 0,0 1,10,0c0,3 -2.6,3.8 -3.4,5.8c-0.6,1.6 -0.8,3.2 -2.6,4.2c-1.4,0.7 -3,0 -3.5,-1.2",
             "M10,10a2,2 0,0 1,4,0c0,1.2 -1.2,1.5 -1.6,2.6",
         ) to emptyList()
+        // A note's line read left to right: steady, then a vibrato's wave, between the in-tune band's two edges; no
+        // dot at its head (the owner, 2026-11-04: a dot with a wavy tail reads as something else entirely).
+        PracticeTool.PITCH_TRAIL -> listOf(
+            "M3,6.5h18", "M3,17.5h18", "M3,12h6c1.5,0 1.5,-3.5 3,-3.5s1.5,7 3,7s1.5,-7 3,-7s1.5,3.5 3,3.5",
+        ) to emptyList()
     }
     val builder = ImageVector.Builder(
         name = "practice_" + tool.name.lowercase(),
@@ -137,6 +142,12 @@ private fun drawPicture(tool: PracticeTool): ImageVector {
             line("M30,44a14,14 0,1 1,28,0c0,10 -10,12 -10,22a6,6 0,0 1,-12,0")
             line("M38,44a6,6 0,0 1,12,0")
             line("M66,24q12,20 0,40M74,16q18,28 0,56", alpha = WAVES)
+        }
+        // A held note as a line graph, read left to right: steady in the in-tune band (its two edges faint), then a
+        // vibrato's wave that grows wider. No dot at its head (the owner, 2026-11-04).
+        PracticeTool.PITCH_TRAIL -> {
+            line("M12,36h64M12,52h64", alpha = HALF)
+            line("M12,44h22c4,0 4,-8 8,-8s4,16 8,16s4,-22 8,-22s4,28 8,28s4,-14 8,-14")
         }
     }
     return builder.build()

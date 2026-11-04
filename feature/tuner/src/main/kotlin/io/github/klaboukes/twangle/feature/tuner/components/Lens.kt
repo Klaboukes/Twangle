@@ -5,6 +5,7 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,6 +79,9 @@ import kotlin.math.roundToInt
  *   moves;
  * - TalkBack skips it, one silent item: the word under it speaks the reading.
  *
+ * The pitch trail (Phase 78) borrows the box with [tallest] (a taller box, filling the height it is given) and its own
+ * [art] in the look's place.
+ *
  * [cents] and [reception] are never read while composing: the look reads the [LensReading] in its layer and
  * draw phases only, so readings move it without recomposing the screen around it. Both are [LiveFloat]s, so
  * those reads box nothing; drawing the box allocates nothing per frame.
@@ -94,6 +98,8 @@ fun Lens(
     wide: Boolean = false,
     animationsOff: Boolean = false,
     tone: LiveTone = rememberLiveTone(cents, inTune, precision, animationsOff),
+    tallest: Float = LENS_TALL,
+    art: (@Composable BoxScope.(LensReading) -> Unit)? = null,
 ) {
     val currentCents = rememberUpdatedState(cents)
     val spring = remember(look) { meterFeel(look).spring() }
@@ -127,7 +133,7 @@ fun Lens(
     // draws, so a still meter lets the screen slow down.
     Box(
         modifier
-            .lensSize(wide)
+            .lensSize(wide, tallest)
             .preferredFrameRate(LENS_FRAME_RATE)
             .clearAndSetSemantics { lensQuiet = quiet }
             .drawWithCache {
@@ -145,21 +151,21 @@ fun Lens(
                 }
             },
     ) {
-        LensLookArt(look, reading, wide)
+        if (art != null) art(reading) else LensLookArt(look, reading, wide)
     }
 }
 
 /**
  * The meter's size ([Lens]): as wide as it may be; upright as high as the height it is given, between
- * [LENS_LEAST] and [LENS_TALL] of its width; [wide] as high as the height it is given, up to [LENS_SHORT] of its
+ * [LENS_LEAST] and [tallest] ([LENS_TALL]) of its width; [wide] as high as the height it is given, up to [LENS_SHORT] of its
  * width (the wide layout gives it the room under the ruler and over the word); [LENS_SHORT] of it with no height to
  * fit in. Asked for its intrinsic height (the layouts that fit a gauge to the room), it gives the short one.
  */
-private fun Modifier.lensSize(wide: Boolean): Modifier = layout { measurable, constraints ->
+private fun Modifier.lensSize(wide: Boolean, tallest: Float): Modifier = layout { measurable, constraints ->
     val width = if (constraints.hasBoundedWidth) constraints.maxWidth else constraints.minWidth
     val short = (width * LENS_SHORT).roundToInt()
     val least = (width * LENS_LEAST).roundToInt()
-    val tall = (width * LENS_TALL).roundToInt()
+    val tall = (width * tallest).roundToInt()
     val height = when {
         !constraints.hasBoundedHeight -> short
         wide -> constraints.maxHeight.coerceAtMost(short)

@@ -137,7 +137,8 @@ class PracticeCardsTest {
         val ears = card(PracticeTool.EAR_TRAINING).getBoundsInRoot()
         assertEquals("Capo beside Chords", chords.top.value, capo.top.value, 0.5f)
         assertTrue("Ear training under them", ears.top >= chords.bottom)
-        assertEquals("every card one width", chords.width.value, ears.width.value, 0.5f)
+        // Alone in its row it is the wide, low card across it (Phase 78).
+        assertEquals("the lone card across the row", (capo.right - chords.left).value, ears.width.value, 0.5f)
     }
 
     @Test
@@ -178,20 +179,30 @@ class PracticeCardsTest {
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            val cards = PracticeTool.entries.map { card(it).getBoundsInRoot() }
+            // Upright the grid's four, and the fifth alone in the last row (the pitch trail, Phase 78): wide and low across
+            // it. On its side all five in one row.
+            val side = size.width > size.height
+            val inGrid = if (side) PracticeTool.entries.size else GRID
+            val cards = PracticeTool.entries.take(inGrid).map { card(it).getBoundsInRoot() }
+            val lone = PracticeTool.entries.drop(inGrid).map { card(it).getBoundsInRoot() }
             // At the top start of the cards' column, its face's outline (inside its 48 dp touch area) in line with the cards, as on every tab.
             val gear = node(GEAR).getBoundsInRoot()
             assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left + TOP_BAR_OUTLINE_INSET - cards[0].left).value) < 1f)
-            val side = size.width > size.height
             if (side) {
-                assertTrue("$case on its side all four in one row", cards.all { abs((it.top - cards[0].top).value) < 0.5f })
+                assertTrue("$case on its side all in one row", cards.all { abs((it.top - cards[0].top).value) < 0.5f })
             } else {
                 assertEquals("$case upright two to a row", cards[0].top.value, cards[1].top.value, 0.5f)
                 assertTrue("$case upright two to a row", cards[2].top >= cards[0].bottom)
             }
             for (bounds in cards) assertEquals("$case one size", cards[0].width.value, bounds.width.value, 1f)
+            for (bounds in lone) {
+                assertTrue("$case the lone card under the grid", bounds.top >= cards.maxOf { it.bottom })
+                // Within a few dp: the grid's cards are each rounded to the pixel.
+                assertEquals("$case the lone card across the row", (cards.maxOf { it.right } - cards[0].left).value, bounds.width.value, 5f)
+                assertTrue("$case the lone card low", bounds.height < cards[0].height)
+            }
             val row = node(PracticeTestTags.LAST_TIME).getBoundsInRoot()
-            assertTrue("$case the last time row under the cards", row.top >= cards.maxOf { it.bottom })
+            assertTrue("$case the last time row under the cards", row.top >= (cards + lone).maxOf { it.bottom })
         }
     }
 
@@ -236,6 +247,9 @@ class PracticeCardsTest {
     }
 
     companion object {
+        /** The cards in the grid; the rest stand alone in the last row, wide. */
+        const val GRID = 4
+
         private const val GEAR = "gear"
         private const val TEST_TIMEOUT_SECONDS = 30L
 

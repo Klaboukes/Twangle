@@ -839,10 +839,10 @@ fun TunerContent(
 private class HeardWords(val shown: String, val spoken: String)
 
 /** What the ruler shows: its 12 [names], where it rests while quiet ([rest]) and the [heard] note (null while quiet). */
-private class RulerShown(val names: List<String>, val rest: Int, val heard: Int?)
+internal class RulerShown(val names: List<String>, val rest: Int, val heard: Int?)
 
 /** The note the ruler last showed as heard, so it rests there once the string dies away (not state: nothing redraws for it). */
-private class LastHeardNote {
+internal class LastHeardNote {
     var midi: Int? = null
 }
 
@@ -852,7 +852,7 @@ private class LastHeardNote {
  * tuning's first string or A4). Null for every other state: the ruler shows only in the plain tuner.
  */
 @Composable
-private fun rulerFor(state: TunerUiState, lastHeard: LastHeardNote): RulerShown? {
+internal fun rulerFor(state: TunerUiState, lastHeard: LastHeardNote): RulerShown? {
     val mode: TunerMode
     val tuning: Tuning
     val notation: Notation

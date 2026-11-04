@@ -30,7 +30,8 @@ data class ToolSwitches(
     val chordNaming: Boolean,
     /**
      * Phase 31: the pitch trail, a mode in the tuner until 2.0 made it the lens's default look (Phase 71), then the
-     * trail look's brake; since Phase 78 the switch of the Practice tool it becomes (the tuner draws no trail).
+     * trail look's brake; since Phase 78 the switch of its Practice tool ([PracticeTool.PITCH_TRAIL]), so only with
+     * [practiceTab] (the tuner draws no trail).
      */
     val pitchTrail: Boolean,
     /** Phase 32: the Practice tab, with its tools' cards (2.0: beside the Metronome tab). Off: no Practice tab. */

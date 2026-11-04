@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Retour</string>
     <string name="practice_tool_ear_training">Oreille musicale</string>
+    <string name="practice_tool_pitch_trail">Trace de hauteur</string>
     <string name="practice_root">Fondamentale</string>
     <string name="practice_chord_type">Type d\'accord</string>
     <string name="practice_chord_major">%1$s majeur</string>

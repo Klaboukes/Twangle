@@ -20,6 +20,10 @@
     <string name="practice_back">Back</string>
     <!-- Phase 55: Ear training, a Practice tool of its own (Play it back, Intervals, Chord type). -->
     <string name="practice_tool_ear_training">Ear training</string>
+    <!-- Phase 78: the pitch trail, a Practice tool of its own (a held note drawn as a line, its last seconds falling under it), its name on its card, its top row and the "Last time" row. One or two words. -->
+    <string name="practice_tool_pitch_trail">Pitch trail</string>
+    <!-- Practice tab: the line under "Pitch trail" on its card (sing or play a long note and see how steady it is, a bend or a vibrato). About five words. -->
+    <string name="practice_card_pitch_trail">How steady is your note?</string>
     <!-- Chords (Phase 32): TalkBack, the group of root buttons (C, C♯, D …) the chord is built on. -->
     <string name="practice_root">Root</string>
     <!-- TalkBack, the group of chord type buttons (C, Cm, C7 …). -->

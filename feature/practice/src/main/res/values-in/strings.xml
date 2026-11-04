@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Kembali</string>
     <string name="practice_tool_ear_training">Latihan pendengaran</string>
+    <string name="practice_tool_pitch_trail">Jejak nada</string>
     <string name="practice_root">Nada dasar</string>
     <string name="practice_chord_type">Jenis akor</string>
     <string name="practice_chord_major">%1$s mayor</string>

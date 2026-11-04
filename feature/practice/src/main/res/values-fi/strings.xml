@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Takaisin</string>
     <string name="practice_tool_ear_training">Korvaharjoitus</string>
+    <string name="practice_tool_pitch_trail">Sävelkäyrä</string>
     <string name="practice_root">Pohjasävel</string>
     <string name="practice_chord_type">Sointutyyppi</string>
     <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->

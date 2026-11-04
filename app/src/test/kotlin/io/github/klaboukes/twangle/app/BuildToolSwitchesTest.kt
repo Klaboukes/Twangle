@@ -6,8 +6,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Which tools each build shows: every live tool in every build. The speed trainer went live after the
- * owner's check (Phase 62, 2026-10-31), so a release build shows it too.
+ * Which tools each build shows: every live tool in every build, and the pitch trail as a Practice tool (Phase 78) only
+ * in debug builds until the owner's check passes. The speed trainer went live after the owner's check (Phase 62,
+ * 2026-10-31), so a release build shows it too.
  */
 class BuildToolSwitchesTest {
 
@@ -17,9 +18,9 @@ class BuildToolSwitchesTest {
     }
 
     @Test
-    fun `a release build shows every tool, the speed trainer too`() {
+    fun `a release build shows every live tool, the speed trainer too, but not yet the pitch trail`() {
         val release = toolSwitchesFor(debugBuild = false)
         assertTrue(release.speedTrainer)
-        assertEquals(ToolSwitches.ALL_ON, release)
+        assertEquals(ToolSwitches.ALL_ON.copy(pitchTrail = false), release)
     }
 }

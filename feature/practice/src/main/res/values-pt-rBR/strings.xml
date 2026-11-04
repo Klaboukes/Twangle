@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Voltar</string>
     <string name="practice_tool_ear_training">Treino de ouvido</string>
+    <string name="practice_tool_pitch_trail">Linha de afinação</string>
     <string name="practice_root">Tônica</string>
     <string name="practice_chord_type">Tipo de acorde</string>
     <string name="practice_chord_major">%1$s maior</string>

@@ -106,6 +106,12 @@ enum class PracticeTool {
 
     /** Ear training (Phase 55, with its own switch, [ToolSwitches.earTraining]): Play it back, Intervals and Chord type. */
     EAR_TRAINING,
+
+    /**
+     * The pitch trail (2.0, Phase 78, with its switch, [ToolSwitches.pitchTrail]): a held note's last seconds as a
+     * line, for singers and players without frets. The tuner's meter drew it from Phase 71 to 77.
+     */
+    PITCH_TRAIL,
 }
 
 /** Everything the user can change, with the defaults a fresh install starts from. */

@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">वापस</string>
     <string name="practice_tool_ear_training">कान की ट्रेनिंग</string>
+    <string name="practice_tool_pitch_trail">सुर की रेखा</string>
     <string name="practice_root">रूट</string>
     <string name="practice_chord_type">कॉर्ड का प्रकार</string>
     <string name="practice_chord_major">%1$s मेजर</string>

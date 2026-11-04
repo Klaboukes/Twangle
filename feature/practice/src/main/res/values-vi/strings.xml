@@ -10,6 +10,7 @@
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Quay lại</string>
     <string name="practice_tool_ear_training">Luyện tai</string>
+    <string name="practice_tool_pitch_trail">Đường cao độ</string>
     <string name="practice_root">Nốt gốc</string>
     <string name="practice_chord_type">Loại hợp âm</string>
     <string name="practice_chord_major">%1$s trưởng</string>
