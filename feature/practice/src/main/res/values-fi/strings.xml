@@ -6,11 +6,12 @@
     <string name="practice_card_scales">Soita burdonin mukana</string>
     <string name="practice_card_capo">Oikea nauha haluamaasi sävellajiin</string>
     <string name="practice_card_ear_training">Kuule sävel, soita perässä</string>
-    <string name="practice_last_time">Viimeksi</string>
+    <string name="practice_last_time">Viimeksi käytetty</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Takaisin</string>
     <string name="practice_tool_ear_training">Korvaharjoitus</string>
     <string name="practice_tool_pitch_trail">Sävelkäyrä</string>
+    <string name="practice_card_pitch_trail">Kuinka vakaa sävelesi on?</string>
     <string name="practice_root">Pohjasävel</string>
     <string name="practice_chord_type">Sointutyyppi</string>
     <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->
@@ -97,6 +98,8 @@
     <string name="practice_capo_row_spoken">Ote %1$s, soi %2$s</string>
     <string name="practice_capo_open_chord">avaa Soinnuissa</string>
     <string name="practice_drone">Burdoni</string>
+    <string name="practice_chords_listen">Kuuntele</string>
+    <string name="practice_chords_listening">Kuuntelee</string>
     <string name="practice_drone_play">Soita burdoni</string>
     <string name="practice_drone_stop">Pysäytä burdoni</string>
     <string name="practice_drone_sound_spoken">Burdonin ääni: %1$s</string>

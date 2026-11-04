@@ -5,11 +5,12 @@
     <string name="practice_card_scales">Грай під бурдон</string>
     <string name="practice_card_capo">Який лад для потрібної тональності</string>
     <string name="practice_card_ear_training">Послухай ноту, зіграй її</string>
-    <string name="practice_last_time">Минулого разу</string>
+    <string name="practice_last_time">Останнє</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Назад</string>
     <string name="practice_tool_ear_training">Тренування слуху</string>
     <string name="practice_tool_pitch_trail">Графік висоти</string>
+    <string name="practice_card_pitch_trail">Наскільки рівно звучить нота?</string>
     <string name="practice_root">Тоніка</string>
     <string name="practice_chord_type">Тип акорду</string>
     <string name="practice_chord_major">%1$s мажор</string>
@@ -95,6 +96,8 @@
     <string name="practice_capo_row_spoken">Аплікатура %1$s, звучить %2$s</string>
     <string name="practice_capo_open_chord">відкрити в Акордах</string>
     <string name="practice_drone">Бурдон</string>
+    <string name="practice_chords_listen">Слухати</string>
+    <string name="practice_chords_listening">Слухаю</string>
     <string name="practice_drone_play">Увімкнути бурдон</string>
     <string name="practice_drone_stop">Зупинити бурдон</string>
     <string name="practice_drone_sound_spoken">Звук бурдону: %1$s</string>

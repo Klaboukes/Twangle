@@ -163,6 +163,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, jeszcze nie zagrana</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, odczyt niepewny</string>
+    <string name="tuner_strum_close">Zamknij test strun</string>
     <string name="tuner_strum_all_in_tune">Wszystkie struny nastrojone</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">Nastrojona: %1$d z %2$d</item>
@@ -173,6 +174,8 @@
     <string name="tuner_strum_not_heard">Nie słychać</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Test 12. progu</string>
+    <string name="tuner_intonation_check_summary">Czy siodełko stoi dobrze?</string>
+    <string name="tuner_intonation_close">Zamknij test 12. progu</string>
     <string name="tuner_intonation_step_open">Pusta</string>
     <string name="tuner_intonation_step_fret">12. próg</string>
     <string name="tuner_intonation_choose_string">Wybierz strunę</string>

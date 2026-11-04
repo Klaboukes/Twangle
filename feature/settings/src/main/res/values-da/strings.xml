@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">Afkryds stemte strenge</string>
     <string name="settings_string_tick_off_summary">Et flueben ved hver streng, når den er stemt, og »Stemt. Spil løs.«, når alle er det</string>
     <string name="settings_show_signal_bars_title">Vis signalbjælker</string>
-    <string name="settings_show_signal_bars_summary">For de nysgerrige: Små bjælker ved tonen viser, hvor godt tuneren hører dig. Tryk på dem for at se tallene</string>
+    <string name="settings_show_signal_bars_summary">For de nysgerrige: Små bjælker over strengene viser, hvor godt tuneren hører dig. Tryk på dem for at se tallene</string>
 
     <string name="settings_language_title">Sprog</string>
     <string name="settings_language_phone">Telefonens sprog</string>

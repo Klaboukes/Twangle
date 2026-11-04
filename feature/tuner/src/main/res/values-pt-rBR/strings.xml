@@ -160,6 +160,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ainda não tocada</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, não ouvida</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, com menos certeza</string>
+    <string name="tuner_strum_close">Fechar o teste com batida</string>
     <string name="tuner_strum_all_in_tune">Todas as cordas afinadas</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d de %2$d afinada</item>
@@ -169,6 +170,8 @@
     <string name="tuner_strum_not_heard">Não ouvida</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Teste da casa 12</string>
+    <string name="tuner_intonation_check_summary">O rastilho está no lugar certo?</string>
+    <string name="tuner_intonation_close">Fechar o teste da casa 12</string>
     <string name="tuner_intonation_step_open">Solta</string>
     <string name="tuner_intonation_step_fret">Casa 12</string>
     <string name="tuner_intonation_choose_string">Escolha uma corda</string>

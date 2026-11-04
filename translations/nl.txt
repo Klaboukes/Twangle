@@ -46,6 +46,7 @@ feature/eartraining ear_direction_up 55490a4b
 feature/eartraining ear_exercise_chord_type 8a2b23f5
 feature/eartraining ear_exercise_intervals 01f871ad
 feature/eartraining ear_exercise_play_back 8bd8cafe
+feature/eartraining ear_exercise_spoken 0a0546f1
 feature/eartraining ear_exercises 9bc3516b
 feature/eartraining ear_hold cd8c7184
 feature/eartraining ear_interval_major_second be2963d3
@@ -170,6 +171,7 @@ feature/practice practice_capo_sounds_in dabdfb36
 feature/practice practice_card_capo df09173e
 feature/practice practice_card_chords 97ac48e5
 feature/practice practice_card_ear_training f3a31e60
+feature/practice practice_card_pitch_trail 3b5e8c44
 feature/practice practice_card_scales faf59e67
 feature/practice practice_chart_fret 746cb283
 feature/practice practice_chord_add9 d8d8bc16
@@ -210,7 +212,7 @@ feature/practice practice_drone_sound_spoken 3bef2522
 feature/practice practice_drone_stop cde2cf09
 feature/practice practice_drone_tanpura c1df7180
 feature/practice practice_drone_warm_pad c323a057
-feature/practice practice_last_time 07aef1c3
+feature/practice practice_last_time 830ec7f8
 feature/practice practice_last_time_detail fed2d9b8
 feature/practice practice_root 44cb005e
 feature/practice practice_scale_blues b05786df
@@ -311,7 +313,7 @@ feature/settings settings_notation_sample 481fe2f7
 feature/settings settings_notation_sharps 965cd489
 feature/settings settings_notation_solfege 86108139
 feature/settings settings_notation_title dab557ae
-feature/settings settings_show_signal_bars_summary 3c567c40
+feature/settings settings_show_signal_bars_summary 40e652c8
 feature/settings settings_show_signal_bars_title 76f1f602
 feature/settings settings_string_tick_off_summary f5894e6f
 feature/settings settings_string_tick_off_title be2c9e21
@@ -377,8 +379,10 @@ feature/tuner tuner_intonation_back_mm e9765036
 feature/tuner tuner_intonation_check 5471e11b
 feature/tuner tuner_intonation_check_again fb7099ad
 feature/tuner tuner_intonation_check_string f86c8b3d
+feature/tuner tuner_intonation_check_summary f8ec80f9
 feature/tuner tuner_intonation_choose_detail daa9f673
 feature/tuner tuner_intonation_choose_string cb35577c
+feature/tuner tuner_intonation_close 44451b64
 feature/tuner tuner_intonation_fine fa67303a
 feature/tuner tuner_intonation_fine_detail eeab2866
 feature/tuner tuner_intonation_forward bc91d6eb

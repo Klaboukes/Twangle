@@ -153,6 +153,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, belum digenjreng</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, tidak terdengar</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, kurang pasti</string>
+    <string name="tuner_strum_close">Tutup cek genjreng</string>
     <string name="tuner_strum_all_in_tune">Semua senar sudah pas</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%1$d dari %2$d pas</item>
@@ -160,6 +161,8 @@
     <string name="tuner_strum_not_heard">Tidak terdengar</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Cek fret ke-12</string>
+    <string name="tuner_intonation_check_summary">Apakah posisi sadel sudah tepat?</string>
+    <string name="tuner_intonation_close">Tutup cek fret ke-12</string>
     <string name="tuner_intonation_step_open">Lepas</string>
     <string name="tuner_intonation_step_fret">Fret ke-12</string>
     <string name="tuner_intonation_choose_string">Pilih satu senar</string>

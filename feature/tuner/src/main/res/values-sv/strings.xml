@@ -156,6 +156,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, inte anslagen än</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, hördes inte</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre säker</string>
+    <string name="tuner_strum_close">Stäng anslagstestet</string>
     <string name="tuner_strum_all_in_tune">Alla strängar är stämda</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d av %2$d stämd</item>
@@ -164,6 +165,8 @@
     <string name="tuner_strum_not_heard">Inte hörd</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Test vid 12:e bandet</string>
+    <string name="tuner_intonation_check_summary">Sitter sadeln på rätt plats?</string>
+    <string name="tuner_intonation_close">Stäng testet vid 12:e bandet</string>
     <string name="tuner_intonation_step_open">Lös</string>
     <string name="tuner_intonation_step_fret">12:e bandet</string>
     <string name="tuner_intonation_choose_string">Välj en sträng</string>

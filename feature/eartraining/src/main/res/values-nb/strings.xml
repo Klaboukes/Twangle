@@ -4,6 +4,7 @@
     <string name="ear_exercise_play_back">Spill etter</string>
     <string name="ear_exercise_intervals">Intervaller</string>
     <string name="ear_exercise_chord_type">Akkordtype</string>
+    <string name="ear_exercise_spoken">Øvelse: %1$s</string>
     <string name="ear_replay">Hør igjen</string>
     <string name="ear_play_prompt">Spill den på instrumentet ditt</string>
     <string name="ear_spoken_heard">Hørt: %1$s</string>

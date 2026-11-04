@@ -6,11 +6,12 @@
     <string name="practice_card_scales">Med bordun att spela till</string>
     <string name="practice_card_capo">Vilket band för din tonart</string>
     <string name="practice_card_ear_training">Hör en ton, spela efter den</string>
-    <string name="practice_last_time">Senast</string>
+    <string name="practice_last_time">Senast använt</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Tillbaka</string>
     <string name="practice_tool_ear_training">Gehörsträning</string>
     <string name="practice_tool_pitch_trail">Tonkurva</string>
+    <string name="practice_card_pitch_trail">Hur stadig är din ton?</string>
     <string name="practice_root">Grundton</string>
     <string name="practice_chord_type">Ackordtyp</string>
     <string name="practice_chord_major">%1$s-dur</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">Grepp %1$s, låter som %2$s</string>
     <string name="practice_capo_open_chord">öppna i Ackord</string>
     <string name="practice_drone">Bordun</string>
+    <string name="practice_chords_listen">Lyssna</string>
+    <string name="practice_chords_listening">Lyssnar</string>
     <string name="practice_drone_play">Spela bordun</string>
     <string name="practice_drone_stop">Stoppa bordun</string>
     <string name="practice_drone_sound_spoken">Bordunljud: %1$s</string>

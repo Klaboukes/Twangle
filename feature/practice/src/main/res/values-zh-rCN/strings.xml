@@ -6,11 +6,12 @@
     <string name="practice_card_scales">伴着持续音弹奏</string>
     <string name="practice_card_capo">想要的调，夹第几品</string>
     <string name="practice_card_ear_training">听一个音，弹出来</string>
-    <string name="practice_last_time">上次</string>
+    <string name="practice_last_time">上次使用</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">返回</string>
     <string name="practice_tool_ear_training">练耳</string>
     <string name="practice_tool_pitch_trail">音高轨迹</string>
+    <string name="practice_card_pitch_trail">你的音稳不稳？</string>
     <string name="practice_root">根音</string>
     <string name="practice_chord_type">和弦类型</string>
     <string name="practice_chord_major">%1$s 大三和弦</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">%1$s 指法，发声为 %2$s</string>
     <string name="practice_capo_open_chord">在“和弦”中打开</string>
     <string name="practice_drone">持续音</string>
+    <string name="practice_chords_listen">聆听</string>
+    <string name="practice_chords_listening">正在聆听</string>
     <string name="practice_drone_play">播放持续音</string>
     <string name="practice_drone_stop">停止持续音</string>
     <string name="practice_drone_sound_spoken">持续音音色：%1$s</string>

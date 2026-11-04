@@ -6,11 +6,12 @@
     <string name="practice_card_scales">Main bersama drone</string>
     <string name="practice_card_capo">Fret untuk nada dasar yang Anda mau</string>
     <string name="practice_card_ear_training">Dengar nada, lalu tirukan</string>
-    <string name="practice_last_time">Terakhir kali</string>
+    <string name="practice_last_time">Terakhir dipakai</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Kembali</string>
     <string name="practice_tool_ear_training">Latihan pendengaran</string>
     <string name="practice_tool_pitch_trail">Jejak nada</string>
+    <string name="practice_card_pitch_trail">Seberapa stabil nada Anda?</string>
     <string name="practice_root">Nada dasar</string>
     <string name="practice_chord_type">Jenis akor</string>
     <string name="practice_chord_major">%1$s mayor</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">Bentuk %1$s, berbunyi %2$s</string>
     <string name="practice_capo_open_chord">buka di Akor</string>
     <string name="practice_drone">Drone</string>
+    <string name="practice_chords_listen">Dengarkan</string>
+    <string name="practice_chords_listening">Mendengarkan</string>
     <string name="practice_drone_play">Putar drone</string>
     <string name="practice_drone_stop">Hentikan drone</string>
     <string name="practice_drone_sound_spoken">Suara drone: %1$s</string>

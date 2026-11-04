@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">Huk av stemte strenger</string>
     <string name="settings_string_tick_off_summary">En hake på hver streng når den er stemt, og «Stemt. Spill i vei.» når alle er det</string>
     <string name="settings_show_signal_bars_title">Vis signalstolper</string>
-    <string name="settings_show_signal_bars_summary">For de nysgjerrige: små stolper ved tonen viser hvor godt stemmeren hører deg. Trykk på dem for tallene</string>
+    <string name="settings_show_signal_bars_summary">For de nysgjerrige: små stolper over strengene viser hvor godt stemmeren hører deg. Trykk på dem for tallene</string>
 
     <string name="settings_language_title">Språk</string>
     <string name="settings_language_phone">Telefonens språk</string>

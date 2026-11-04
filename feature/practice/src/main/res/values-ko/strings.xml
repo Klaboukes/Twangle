@@ -6,11 +6,12 @@
     <string name="practice_card_scales">드론에 맞춰 연주해요</string>
     <string name="practice_card_capo">원하는 키에 맞는 프렛</string>
     <string name="practice_card_ear_training">음을 듣고 따라 쳐요</string>
-    <string name="practice_last_time">지난번</string>
+    <string name="practice_last_time">최근 사용</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">뒤로</string>
     <string name="practice_tool_ear_training">청음 훈련</string>
     <string name="practice_tool_pitch_trail">음높이 궤적</string>
+    <string name="practice_card_pitch_trail">음이 얼마나 안정적인가요?</string>
     <string name="practice_root">근음</string>
     <string name="practice_chord_type">코드 종류</string>
     <string name="practice_chord_major">%1$s 메이저</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">%1$s 운지, 실제 %2$s</string>
     <string name="practice_capo_open_chord">코드에서 열기</string>
     <string name="practice_drone">드론</string>
+    <string name="practice_chords_listen">듣기</string>
+    <string name="practice_chords_listening">듣는 중</string>
     <string name="practice_drone_play">드론 재생</string>
     <string name="practice_drone_stop">드론 정지</string>
     <string name="practice_drone_sound_spoken">드론 소리: %1$s</string>

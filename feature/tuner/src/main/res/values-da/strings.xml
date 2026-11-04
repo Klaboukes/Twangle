@@ -156,6 +156,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ikke slået an endnu</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, ikke hørt</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre sikker</string>
+    <string name="tuner_strum_close">Luk anslagstjekket</string>
     <string name="tuner_strum_all_in_tune">Alle strenge er stemt</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d af %2$d stemt</item>
@@ -164,6 +165,8 @@
     <string name="tuner_strum_not_heard">Ikke hørt</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Tjek ved 12. bånd</string>
+    <string name="tuner_intonation_check_summary">Sidder sadlen det rigtige sted?</string>
+    <string name="tuner_intonation_close">Luk tjekket ved 12. bånd</string>
     <string name="tuner_intonation_step_open">Løs</string>
     <string name="tuner_intonation_step_fret">12. bånd</string>
     <string name="tuner_intonation_choose_string">Vælg en streng</string>

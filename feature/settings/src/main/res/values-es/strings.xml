@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">Marcar las cuerdas afinadas</string>
     <string name="settings_string_tick_off_summary">Una marca en cada cuerda afinada, y «Todo afinado. ¡A tocar!» cuando lo estén todas</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
-    <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
+    <string name="settings_show_signal_bars_summary">Para curiosos: unas barras sobre las cuerdas muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
 
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_phone">Idioma del teléfono</string>

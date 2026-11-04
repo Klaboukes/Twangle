@@ -160,6 +160,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, non ancora suonata</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, non sentita</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, meno sicura</string>
+    <string name="tuner_strum_close">Chiudi il controllo a pennata</string>
     <string name="tuner_strum_all_in_tune">Tutte le corde sono intonate</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d su %2$d intonata</item>
@@ -169,6 +170,8 @@
     <string name="tuner_strum_not_heard">Non sentita</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Controllo al 12° tasto</string>
+    <string name="tuner_intonation_check_summary">La selletta è al posto giusto?</string>
+    <string name="tuner_intonation_close">Chiudi il controllo al 12° tasto</string>
     <string name="tuner_intonation_step_open">A vuoto</string>
     <string name="tuner_intonation_step_fret">12° tasto</string>
     <string name="tuner_intonation_choose_string">Scegli una corda</string>

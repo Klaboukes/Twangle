@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">ติ๊กสายที่จูนแล้ว</string>
     <string name="settings_string_tick_off_summary">ติ๊กที่สายแต่ละสายเมื่อตรงเสียง และขึ้น “ตรงเสียงแล้ว เล่นได้เลย” เมื่อครบทุกสาย</string>
     <string name="settings_show_signal_bars_title">แสดงแถบสัญญาณ</string>
-    <string name="settings_show_signal_bars_summary">สำหรับคนที่อยากรู้: แถบเล็กๆ ข้างโน้ตบอกว่าจูนเนอร์ได้ยินคุณชัดแค่ไหน แตะเพื่อดูตัวเลข</string>
+    <string name="settings_show_signal_bars_summary">สำหรับคนที่อยากรู้: แถบเล็กๆ เหนือสายบอกว่าจูนเนอร์ได้ยินคุณชัดแค่ไหน แตะเพื่อดูตัวเลข</string>
 
     <string name="settings_language_title">ภาษา</string>
     <string name="settings_language_phone">ภาษาของโทรศัพท์</string>

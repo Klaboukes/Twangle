@@ -153,6 +153,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ยังไม่ได้ตี</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, ไม่ค่อยแน่ใจ</string>
+    <string name="tuner_strum_close">ปิดเช็กทุกสาย</string>
     <string name="tuner_strum_all_in_tune">ทุกสายตรงเสียง</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">ตรงเสียง %1$d จาก %2$d สาย</item>
@@ -160,6 +161,8 @@
     <string name="tuner_strum_not_heard">ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">เช็กเฟรตที่ 12</string>
+    <string name="tuner_intonation_check_summary">แซดเดิลอยู่ถูกที่ไหม</string>
+    <string name="tuner_intonation_close">ปิดเช็กเฟรตที่ 12</string>
     <string name="tuner_intonation_step_open">สายเปล่า</string>
     <string name="tuner_intonation_step_fret">เฟรตที่ 12</string>
     <string name="tuner_intonation_choose_string">เลือกสาย</string>

@@ -153,6 +153,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, 아직 치지 않음</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, 들리지 않음</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, 덜 확실함</string>
+    <string name="tuner_strum_close">스트럼 체크 닫기</string>
     <string name="tuner_strum_all_in_tune">모든 줄의 음이 맞아요</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%2$d줄 중 %1$d줄 맞음</item>
@@ -160,6 +161,8 @@
     <string name="tuner_strum_not_heard">안 들림</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12프렛 체크</string>
+    <string name="tuner_intonation_check_summary">새들 위치가 맞나요?</string>
+    <string name="tuner_intonation_close">12프렛 체크 닫기</string>
     <string name="tuner_intonation_step_open">개방현</string>
     <string name="tuner_intonation_step_fret">12프렛</string>
     <string name="tuner_intonation_choose_string">줄을 고르세요</string>

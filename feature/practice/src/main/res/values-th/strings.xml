@@ -6,11 +6,12 @@
     <string name="practice_card_scales">มีโดรนให้เล่นตาม</string>
     <string name="practice_card_capo">เฟรตไหนได้คีย์ที่ต้องการ</string>
     <string name="practice_card_ear_training">ฟังโน้ต แล้วเล่นตาม</string>
-    <string name="practice_last_time">ครั้งล่าสุด</string>
+    <string name="practice_last_time">ใช้ล่าสุด</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">กลับ</string>
     <string name="practice_tool_ear_training">ฝึกหู</string>
     <string name="practice_tool_pitch_trail">เส้นระดับเสียง</string>
+    <string name="practice_card_pitch_trail">โน้ตของคุณนิ่งแค่ไหน</string>
     <string name="practice_root">รูท</string>
     <string name="practice_chord_type">ชนิดคอร์ด</string>
     <string name="practice_chord_major">%1$s เมเจอร์</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">ฟอร์ม %1$s, เสียงจริง %2$s</string>
     <string name="practice_capo_open_chord">เปิดในเครื่องมือคอร์ด</string>
     <string name="practice_drone">โดรน</string>
+    <string name="practice_chords_listen">ฟัง</string>
+    <string name="practice_chords_listening">กำลังฟัง</string>
     <string name="practice_drone_play">เล่นโดรน</string>
     <string name="practice_drone_stop">หยุดโดรน</string>
     <string name="practice_drone_sound_spoken">เสียงโดรน: %1$s</string>

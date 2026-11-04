@@ -6,11 +6,12 @@
     <string name="practice_card_scales">Graj do burdonu</string>
     <string name="practice_card_capo">Który próg dla wybranej tonacji</string>
     <string name="practice_card_ear_training">Posłuchaj dźwięku, zagraj go</string>
-    <string name="practice_last_time">Ostatnio</string>
+    <string name="practice_last_time">Ostatnio używane</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Wstecz</string>
     <string name="practice_tool_ear_training">Trening słuchu</string>
     <string name="practice_tool_pitch_trail">Ślad wysokości</string>
+    <string name="practice_card_pitch_trail">Jak równo trzymasz dźwięk?</string>
     <string name="practice_root">Pryma</string>
     <string name="practice_chord_type">Rodzaj akordu</string>
     <string name="practice_chord_major">%1$s-dur</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">Chwyt %1$s, brzmi jak %2$s</string>
     <string name="practice_capo_open_chord">otwórz w Akordach</string>
     <string name="practice_drone">Burdon</string>
+    <string name="practice_chords_listen">Słuchaj</string>
+    <string name="practice_chords_listening">Słucham</string>
     <string name="practice_drone_play">Włącz burdon</string>
     <string name="practice_drone_stop">Zatrzymaj burdon</string>
     <string name="practice_drone_sound_spoken">Dźwięk burdonu: %1$s</string>

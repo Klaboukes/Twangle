@@ -169,6 +169,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s، لم يُضرب بعد</string>
     <string name="tuner_strum_spoken_not_heard">%1$s، لم يُسمع</string>
     <string name="tuner_strum_spoken_less_sure">%1$s، قراءة أقل يقينًا</string>
+    <string name="tuner_strum_close">أغلق فحص بضربة</string>
     <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
     <plurals name="tuner_strum_count">
         <item quantity="zero">%1$d من %2$d مضبوطة</item>
@@ -181,6 +182,8 @@
     <string name="tuner_strum_not_heard">لم يُسمع</string>
     <string name="tuner_strum_spoken_string">%1$s، %2$s</string>
     <string name="tuner_intonation_check">فحص الدستان ١٢</string>
+    <string name="tuner_intonation_check_summary">هل السرج في مكانه الصحيح؟</string>
+    <string name="tuner_intonation_close">أغلق فحص الدستان ١٢</string>
     <string name="tuner_intonation_step_open">مفتوح</string>
     <string name="tuner_intonation_step_fret">الدستان ١٢</string>
     <string name="tuner_intonation_choose_string">اختر وترًا</string>

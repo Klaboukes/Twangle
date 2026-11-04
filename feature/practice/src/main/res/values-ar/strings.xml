@@ -6,11 +6,12 @@
     <string name="practice_card_scales">مع نغمة مستمرة تعزف معها</string>
     <string name="practice_card_capo">أي دستان للمقام الذي تريده</string>
     <string name="practice_card_ear_training">اسمع نغمة، ثم اعزفها</string>
-    <string name="practice_last_time">آخر مرة</string>
+    <string name="practice_last_time">آخر استخدام</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">رجوع</string>
     <string name="practice_tool_ear_training">تدريب الأذن</string>
     <string name="practice_tool_pitch_trail">أثر النغمة</string>
+    <string name="practice_card_pitch_trail">ما مدى ثبات نغمتك؟</string>
     <string name="practice_root">النغمة الأساسية</string>
     <string name="practice_chord_type">نوع الكورد</string>
     <string name="practice_chord_major">%1$s ماجور</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">شكل %1$s، يُسمَع %2$s</string>
     <string name="practice_capo_open_chord">افتح في الكوردات</string>
     <string name="practice_drone">النغمة المستمرة</string>
+    <string name="practice_chords_listen">استمع</string>
+    <string name="practice_chords_listening">جارٍ الاستماع</string>
     <string name="practice_drone_play">تشغيل النغمة المستمرة</string>
     <string name="practice_drone_stop">إيقاف النغمة المستمرة</string>
     <string name="practice_drone_sound_spoken">صوت النغمة المستمرة: %1$s</string>

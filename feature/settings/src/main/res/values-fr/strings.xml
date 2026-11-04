@@ -47,7 +47,7 @@
     <string name="settings_string_tick_off_title">Cocher les cordes accordées</string>
     <string name="settings_string_tick_off_summary">Une coche sur chaque corde juste, et « Tout est juste. Jouez. » quand toutes le sont</string>
     <string name="settings_show_signal_bars_title">Afficher les barres de signal</string>
-    <string name="settings_show_signal_bars_summary">Pour les curieux : de petites barres près de la note montrent si l\'accordeur vous entend bien. Touchez-les pour voir les chiffres</string>
+    <string name="settings_show_signal_bars_summary">Pour les curieux : de petites barres au-dessus des cordes montrent si l\'accordeur vous entend bien. Touchez-les pour voir les chiffres</string>
 
     <string name="settings_language_title">Langue</string>
     <string name="settings_language_phone">Langue du téléphone</string>

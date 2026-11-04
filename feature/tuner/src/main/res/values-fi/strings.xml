@@ -158,6 +158,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ei vielä soitettu</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, epävarmempi</string>
+    <string name="tuner_strum_close">Sulje lyöntitesti</string>
     <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d/%2$d vireessä</item>
@@ -166,6 +167,8 @@
     <string name="tuner_strum_not_heard">Ei kuulunut</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12. nauhan testi</string>
+    <string name="tuner_intonation_check_summary">Onko talla oikeassa kohdassa?</string>
+    <string name="tuner_intonation_close">Sulje 12. nauhan testi</string>
     <string name="tuner_intonation_step_open">Avoin</string>
     <string name="tuner_intonation_step_fret">12. nauha</string>
     <string name="tuner_intonation_choose_string">Valitse kieli</string>

@@ -159,6 +159,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, aún sin rasguear</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, no se oyó</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, menos seguro</string>
+    <string name="tuner_strum_close">Cerrar la prueba de rasgueo</string>
     <string name="tuner_strum_all_in_tune">Todas las cuerdas afinadas</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d de %2$d afinada</item>
@@ -168,6 +169,8 @@
     <string name="tuner_strum_not_heard">No se oyó</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Prueba del traste 12</string>
+    <string name="tuner_intonation_check_summary">¿Está bien puesta la selleta?</string>
+    <string name="tuner_intonation_close">Cerrar la prueba del traste 12</string>
     <string name="tuner_intonation_step_open">Al aire</string>
     <string name="tuner_intonation_step_fret">Traste 12</string>
     <string name="tuner_intonation_choose_string">Elige una cuerda</string>

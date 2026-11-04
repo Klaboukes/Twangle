@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">Gestimmte Saiten abhaken</string>
     <string name="settings_string_tick_off_summary">Ein Haken an jeder Saite, sobald sie gestimmt ist, und „Gestimmt. Spiel los.“, wenn alle stimmen</string>
     <string name="settings_show_signal_bars_title">Signalbalken zeigen</string>
-    <string name="settings_show_signal_bars_summary">Für Neugierige: kleine Balken neben der Note zeigen, wie gut dich das Stimmgerät hört. Tippe darauf für die Werte</string>
+    <string name="settings_show_signal_bars_summary">Für Neugierige: kleine Balken über den Saiten zeigen, wie gut dich das Stimmgerät hört. Tippe darauf für die Werte</string>
 
     <string name="settings_language_title">Sprache</string>
     <string name="settings_language_phone">Sprache des Handys</string>

@@ -153,6 +153,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s、まだ弾いていません</string>
     <string name="tuner_strum_spoken_not_heard">%1$s、聞き取れず</string>
     <string name="tuner_strum_spoken_less_sure">%1$s、やや不確か</string>
+    <string name="tuner_strum_close">ストロークチェックを閉じる</string>
     <string name="tuner_strum_all_in_tune">すべての弦が合っています</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%2$d 本中 %1$d 本が合っています</item>
@@ -160,6 +161,8 @@
     <string name="tuner_strum_not_heard">聞こえません</string>
     <string name="tuner_strum_spoken_string">%1$s、%2$s</string>
     <string name="tuner_intonation_check">12フレットチェック</string>
+    <string name="tuner_intonation_check_summary">サドルの位置は合っていますか？</string>
+    <string name="tuner_intonation_close">12フレットチェックを閉じる</string>
     <string name="tuner_intonation_step_open">開放</string>
     <string name="tuner_intonation_step_fret">12フレット</string>
     <string name="tuner_intonation_choose_string">弦を選んでください</string>

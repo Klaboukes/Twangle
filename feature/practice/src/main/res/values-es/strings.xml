@@ -6,11 +6,12 @@
     <string name="practice_card_scales">Con bordón para tocar encima</string>
     <string name="practice_card_capo">Qué traste para el tono que quieres</string>
     <string name="practice_card_ear_training">Oye una nota y repítela</string>
-    <string name="practice_last_time">La última vez</string>
+    <string name="practice_last_time">Último uso</string>
     <string name="practice_last_time_detail">%1$s · %2$s</string>
     <string name="practice_back">Atrás</string>
     <string name="practice_tool_ear_training">Oído musical</string>
     <string name="practice_tool_pitch_trail">Trazo de afinación</string>
+    <string name="practice_card_pitch_trail">¿Tu nota es estable?</string>
     <string name="practice_root">Nota fundamental</string>
     <string name="practice_chord_type">Tipo de acorde</string>
     <string name="practice_chord_major">%1$s mayor</string>
@@ -96,6 +97,8 @@
     <string name="practice_capo_row_spoken">Forma de %1$s, suena %2$s</string>
     <string name="practice_capo_open_chord">abrir en Acordes</string>
     <string name="practice_drone">Bordón</string>
+    <string name="practice_chords_listen">Escuchar</string>
+    <string name="practice_chords_listening">Escuchando</string>
     <string name="practice_drone_play">Tocar el bordón</string>
     <string name="practice_drone_stop">Detener el bordón</string>
     <string name="practice_drone_sound_spoken">Sonido del bordón: %1$s</string>

@@ -153,6 +153,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, chưa quét</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, chưa nghe được</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, chưa chắc lắm</string>
+    <string name="tuner_strum_close">Đóng quét kiểm tra</string>
     <string name="tuner_strum_all_in_tune">Tất cả dây đều chuẩn</string>
     <plurals name="tuner_strum_count">
         <item quantity="other">%1$d trên %2$d dây chuẩn</item>
@@ -160,6 +161,8 @@
     <string name="tuner_strum_not_heard">Không nghe thấy</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Kiểm tra phím 12</string>
+    <string name="tuner_intonation_check_summary">Ngựa đàn có đúng chỗ không?</string>
+    <string name="tuner_intonation_close">Đóng kiểm tra phím 12</string>
     <string name="tuner_intonation_step_open">Dây buông</string>
     <string name="tuner_intonation_step_fret">Phím 12</string>
     <string name="tuner_intonation_choose_string">Chọn một dây</string>

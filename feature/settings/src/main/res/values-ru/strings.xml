@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">Отмечать настроенные струны</string>
     <string name="settings_string_tick_off_summary">Галочка на каждой струне, когда она настроена, и «Настроено. Играй.», когда все</string>
     <string name="settings_show_signal_bars_title">Индикатор сигнала</string>
-    <string name="settings_show_signal_bars_summary">Для любопытных: полоски у ноты показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
+    <string name="settings_show_signal_bars_summary">Для любопытных: полоски над струнами показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
 
     <string name="settings_language_title">Язык</string>
     <string name="settings_language_phone">Язык телефона</string>

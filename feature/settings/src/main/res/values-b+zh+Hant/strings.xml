@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">為調準的弦打勾</string>
     <string name="settings_string_tick_off_summary">每根弦調準後打勾，全部調準時顯示「已調準。開彈吧。」</string>
     <string name="settings_show_signal_bars_title">顯示訊號格</string>
-    <string name="settings_show_signal_bars_summary">給好奇的你：音名旁的小訊號格顯示調音器聽得有多清楚。輕觸即可查看數值</string>
+    <string name="settings_show_signal_bars_summary">給好奇的你：琴弦上方的小訊號格顯示調音器聽得有多清楚。輕觸即可查看數值</string>
 
     <string name="settings_language_title">語言</string>
     <string name="settings_language_phone">手機語言</string>

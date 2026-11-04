@@ -46,7 +46,7 @@
     <string name="settings_string_tick_off_title">Bocka av stämda strängar</string>
     <string name="settings_string_tick_off_summary">En bock på varje sträng när den är stämd, och ”Stämd. Spela på.” när alla är det</string>
     <string name="settings_show_signal_bars_title">Visa signalstaplar</string>
-    <string name="settings_show_signal_bars_summary">För nyfikna: små staplar vid tonen visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
+    <string name="settings_show_signal_bars_summary">För nyfikna: små staplar ovanför strängarna visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
 
     <string name="settings_language_title">Språk</string>
     <string name="settings_language_phone">Telefonens språk</string>

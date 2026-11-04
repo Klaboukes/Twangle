@@ -160,6 +160,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, pas encore grattée</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, pas entendue</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, moins fiable</string>
+    <string name="tuner_strum_close">Fermer le test en grattant</string>
     <string name="tuner_strum_all_in_tune">Toutes les cordes sont justes</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d sur %2$d juste</item>
@@ -169,6 +170,8 @@
     <string name="tuner_strum_not_heard">Pas entendue</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Test de la 12e case</string>
+    <string name="tuner_intonation_check_summary">Le pontet est-il bien placé ?</string>
+    <string name="tuner_intonation_close">Fermer le test de la 12e case</string>
     <string name="tuner_intonation_step_open">À vide</string>
     <string name="tuner_intonation_step_fret">12e case</string>
     <string name="tuner_intonation_choose_string">Choisissez une corde</string>
