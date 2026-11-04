@@ -139,9 +139,10 @@ private fun drawPicture(tool: PracticeTool): ImageVector {
             fill("M18,32h52a7,7 0,0 1,0,14h-52a7,7 0,0 1,0,-14z")
         }
         PracticeTool.EAR_TRAINING -> {
-            line("M30,44a14,14 0,1 1,28,0c0,10 -10,12 -10,22a6,6 0,0 1,-12,0")
-            line("M38,44a6,6 0,0 1,12,0")
-            line("M66,24q12,20 0,40M74,16q18,28 0,56", alpha = WAVES)
+            // Centred in the box: the ear and its waves run from 18 to about 71 (until 2026-11-04 12 units to the right).
+            line("M18,44a14,14 0,1 1,28,0c0,10 -10,12 -10,22a6,6 0,0 1,-12,0")
+            line("M26,44a6,6 0,0 1,12,0")
+            line("M54,24q12,20 0,40M62,16q18,28 0,56", alpha = WAVES)
         }
         // A held note as a line graph, read left to right: steady in the in-tune band (its two edges faint), then a
         // vibrato's wave that grows wider. No dot at its head (the owner, 2026-11-04).

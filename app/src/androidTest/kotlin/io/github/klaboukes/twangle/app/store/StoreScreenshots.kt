@@ -89,7 +89,7 @@ class StoreScreenshots(private val shot: Shot) {
         IN_TUNE(dark = false, focus = 0f..0.62f),
 
         /**
-         * Practice's four cards and the "Last time" row, the bar's three tabs under them: the whole
+         * Practice's tools as rows under the "Last used" row, the bar's three tabs under them: the whole
          * screen (2.0's navigation, Phase 69). Its case also saves the metronome's screen for the
          * website (`raw-metronome.png`), which has no store picture of its own.
          */
@@ -186,7 +186,7 @@ class StoreScreenshots(private val shot: Shot) {
             Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
             Shot.PRACTICE -> {
                 runBlocking {
-                    // "Last time": Chords, C major.
+                    // "Last used": Chords, C major.
                     settings.setPracticeTool(PracticeTool.CHORDS)
                     settings.setPracticeRoot(PitchClass.C)
                     settings.setPracticeChordQuality(ChordQuality.MAJOR)

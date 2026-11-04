@@ -49,11 +49,11 @@ import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 
 /**
- * The Practice cards (2.0, Phase 69) in Ink, light and dark: a card per tool offered, in its order, two
- * to a row upright and four in a row on its side, each one button that opens its tool, the gear before
- * the title upright, and the "last time" row only when a tool was used, naming it and what was picked in
- * it. The page fits without scrolling upright and on its side at the usual text size, on a tablet too,
- * and is wholly shown at 2× text.
+ * The Practice tab (2.0, Phase 69; rows since Phase 78's review, 2026-11-04) in Ink, light and dark: a row per tool
+ * offered, in its order, one column upright and in columns on its side, all one size, each one button that opens its
+ * tool, the gear before the title upright, and the "Last used" shortcut above the tools only when a tool was used,
+ * naming it and what was picked in it. The page fits without scrolling upright and on its side at the usual text
+ * size, on a tablet too, and is wholly shown at 2× text.
  */
 @RunWith(AndroidJUnit4::class)
 class PracticeCardsTest {
@@ -125,20 +125,19 @@ class PracticeCardsTest {
         assertTrue(exists(PracticeTestTags.card(PracticeTool.CHORDS)))
     }
 
-    /** Each tool's switch hides its card (CLAUDE.md, *Every tool has a switch*); the others keep their order. */
+    /** Each tool's switch hides its row (CLAUDE.md, *Every tool has a switch*); the others keep their order. */
     @Test
     fun aToolsSwitchHidesItsCard() {
         shownTools.value = listOf(PracticeTool.CHORDS, PracticeTool.CAPO, PracticeTool.EAR_TRAINING)
         show()
         compose.waitForIdle()
-        assertFalse("no Scales card", exists(PracticeTestTags.card(PracticeTool.SCALES)))
+        assertFalse("no Scales row", exists(PracticeTestTags.card(PracticeTool.SCALES)))
         val chords = card(PracticeTool.CHORDS).getBoundsInRoot()
         val capo = card(PracticeTool.CAPO).getBoundsInRoot()
         val ears = card(PracticeTool.EAR_TRAINING).getBoundsInRoot()
-        assertEquals("Capo beside Chords", chords.top.value, capo.top.value, 0.5f)
-        assertTrue("Ear training under them", ears.top >= chords.bottom)
-        // Alone in its row it is the wide, low card across it (Phase 78).
-        assertEquals("the lone card across the row", (capo.right - chords.left).value, ears.width.value, 0.5f)
+        assertTrue("Capo under Chords", capo.top >= chords.bottom)
+        assertTrue("Ear training under Capo", ears.top >= capo.bottom)
+        assertEquals("every row one width", chords.width.value, ears.width.value, 0.5f)
     }
 
     @Test
@@ -150,13 +149,13 @@ class PracticeCardsTest {
         // The line may end after its hyphen (an unseen, unspoken zero-width space).
         assertEquals("Chords, Every shape, left-handed too", chords.replace(ZERO_WIDTH_SPACE.toString(), ""))
         node(PracticeTestTags.LAST_TIME).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-        assertEquals("Last time, Scales · A minor pentatonic", spoken(PracticeTestTags.LAST_TIME))
+        assertEquals("Last used, Scales · A minor pentatonic", spoken(PracticeTestTags.LAST_TIME))
         shownLastTime.value = PracticeTool.CHORDS
         compose.waitForIdle()
-        assertEquals("Last time, Chords · A minor", spoken(PracticeTestTags.LAST_TIME))
+        assertEquals("Last used, Chords · A minor", spoken(PracticeTestTags.LAST_TIME))
         shownLastTime.value = PracticeTool.CAPO
         compose.waitForIdle()
-        assertEquals("Last time, Capo", spoken(PracticeTestTags.LAST_TIME))
+        assertEquals("Last used, Capo", spoken(PracticeTestTags.LAST_TIME))
     }
 
     @Test
@@ -179,30 +178,24 @@ class PracticeCardsTest {
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // Upright the grid's four, and the fifth alone in the last row (the pitch trail, Phase 78): wide and low across
-            // it. On its side all five in one row.
-            val side = size.width > size.height
-            val inGrid = if (side) PracticeTool.entries.size else GRID
-            val cards = PracticeTool.entries.take(inGrid).map { card(it).getBoundsInRoot() }
-            val lone = PracticeTool.entries.drop(inGrid).map { card(it).getBoundsInRoot() }
-            // At the top start of the cards' column, its face's outline (inside its 48 dp touch area) in line with the cards, as on every tab.
+            val rows = PracticeTool.entries.map { card(it).getBoundsInRoot() }
+            // At the top start of the page's column, its face's outline (inside its 48 dp touch area) in line with the rows, as on every tab.
             val gear = node(GEAR).getBoundsInRoot()
-            assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left + TOP_BAR_OUTLINE_INSET - cards[0].left).value) < 1f)
-            if (side) {
-                assertTrue("$case on its side all in one row", cards.all { abs((it.top - cards[0].top).value) < 0.5f })
+            assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left + TOP_BAR_OUTLINE_INSET - rows[0].left).value) < 1f)
+            // Within a pixel or two: each column is rounded to the pixel.
+            for (bounds in rows) assertEquals("$case one width", rows[0].width.value, bounds.width.value, 2f)
+            if (size.width > size.height) {
+                // On its side in columns, left to right then down: the first line's rows side by side and one height.
+                assertEquals("$case on its side the first two beside each other", rows[0].top.value, rows[1].top.value, 0.5f)
+                assertTrue("$case on its side in columns", rows[1].left >= rows[0].right)
+                assertEquals("$case a line one height", rows[0].height.value, rows[1].height.value, 1f)
             } else {
-                assertEquals("$case upright two to a row", cards[0].top.value, cards[1].top.value, 0.5f)
-                assertTrue("$case upright two to a row", cards[2].top >= cards[0].bottom)
+                // Upright one column, in the tools' order.
+                for (i in 1 until rows.size) assertTrue("$case upright each under the one before", rows[i].top >= rows[i - 1].bottom)
             }
-            for (bounds in cards) assertEquals("$case one size", cards[0].width.value, bounds.width.value, 1f)
-            for (bounds in lone) {
-                assertTrue("$case the lone card under the grid", bounds.top >= cards.maxOf { it.bottom })
-                // Within a few dp: the grid's cards are each rounded to the pixel.
-                assertEquals("$case the lone card across the row", (cards.maxOf { it.right } - cards[0].left).value, bounds.width.value, 5f)
-                assertTrue("$case the lone card low", bounds.height < cards[0].height)
-            }
-            val row = node(PracticeTestTags.LAST_TIME).getBoundsInRoot()
-            assertTrue("$case the last time row under the cards", row.top >= (cards + lone).maxOf { it.bottom })
+            val shortcut = node(PracticeTestTags.LAST_TIME).getBoundsInRoot()
+            assertTrue("$case Last used above the tools", shortcut.bottom <= rows.minOf { it.top })
+            assertTrue("$case Last used under the title", shortcut.top >= gear.bottom)
         }
     }
 
@@ -247,9 +240,6 @@ class PracticeCardsTest {
     }
 
     companion object {
-        /** The cards in the grid; the rest stand alone in the last row, wide. */
-        const val GRID = 4
-
         private const val GEAR = "gear"
         private const val TEST_TIMEOUT_SECONDS = 30L
 
