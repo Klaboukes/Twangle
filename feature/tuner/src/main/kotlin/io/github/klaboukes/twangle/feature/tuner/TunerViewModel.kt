@@ -13,7 +13,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumInstruments
-import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -145,23 +144,10 @@ class TunerViewModel(
 
     private val signal = MutableStateFlow<SignalFigures?>(null)
 
-    private val trailFeed = PitchTrailFeed(PitchHistory())
-
-    /**
-     * The last few seconds of the tuner's readings, for the lens's trail (2.0, Phase 71; 1.1's pitch trail tool):
-     * written on the DSP thread with every reading while [tools] has the pitch trail, read in the draw phase
-     * without recomposing (see [PitchHistory]). Stays empty while the switch is off (the trail look's brake: the
-     * lens then shows the Light arc, [lensLook]).
-     */
-    val pitchHistory: PitchHistory get() = trailFeed.history
-
-    /**
-     * What the tuner's lens draws inside it: the saved look, but the Light arc for a saved or defaulted trail while
-     * [tools] has the trail's brake on ([ToolSwitches.shownLensLook], Phase 72).
-     */
+    /** What the tuner's meter draws: the saved look (Classic, the Light arc or the strobe; Phase 78). */
     val lensLook: StateFlow<LensLook> = settingsRepository.settings
-        .map { tools.shownLensLook(it.lensLook) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tools.shownLensLook(saved.lensLook))
+        .map { it.lensLook }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.lensLook)
 
     /**
      * What the tuner hears now, for the signal bars' figures: updated about [SIGNAL_UPDATES_PER_SECOND]
@@ -590,8 +576,6 @@ class TunerViewModel(
         var ignoredFrames = 0
         // Whether the last reading was the 12th-fret check's: the tuner's smoothing starts afresh after it.
         var elsewhere = false
-        val frameSeconds = pipeline.frameSeconds
-        if (tools.pitchTrail) trailFeed.start()
         // The strum analysis beside the tuner hears what the tuner hears while the strum check's button is on, unless
         // the app's own tone (or its echo) would be heard. Every sound is then a strum: the player said one comes.
         val hearing = object : StrumHearing {
@@ -643,10 +627,6 @@ class TunerViewModel(
                     interpreter = TunerInterpreter(pipeline.frameSeconds)
                 }
                 if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
-                // The lens's trail follows the tuner's own readings; a tone, the 12th-fret check or a strum ringing leaves a gap in its line.
-                if (tools.pitchTrail && (ignoredFrames > 0 || current.intonationChecking || heardShown.setsAside)) {
-                    trailFeed.gap(frameSeconds)
-                }
                 if (ignoredFrames > 0) {
                     // The mic would hear the app's own tone: show the listening state instead, and
                     // start the smoothing afresh afterwards so nothing of the tone carries over.
@@ -662,7 +642,6 @@ class TunerViewModel(
                 // note read is one of the strum's, so the tuner waits instead (the lens and the ruler quiet).
                 publishHeard(heardShown.tuner(own))
                 val state = if (heardShown.setsAside && own is TunerUiState.Detected) interpreter.listening(current) else own
-                if (tools.pitchTrail && !heardShown.setsAside) trailFeed.record(state, frameSeconds)
                 if (showSignalBars.value && frame++ % framesPerFigure == 0) {
                     val reception = interpreter.reception
                     signal.value = SignalFigures(

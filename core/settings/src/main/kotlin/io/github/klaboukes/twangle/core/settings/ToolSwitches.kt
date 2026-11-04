@@ -29,9 +29,8 @@ data class ToolSwitches(
      */
     val chordNaming: Boolean,
     /**
-     * Phase 31: the pitch trail, a mode in the tuner until 2.0 made it the lens's default look (Phase 71); since
-     * Phase 72 the trail look's brake: off, Settings' Meter offers the Light arc and the strobe only and a saved
-     * or defaulted trail shows as the Light arc ([lensLooks], [shownLensLook]).
+     * Phase 31: the pitch trail, a mode in the tuner until 2.0 made it the lens's default look (Phase 71), then the
+     * trail look's brake; since Phase 78 the switch of the Practice tool it becomes (the tuner draws no trail).
      */
     val pitchTrail: Boolean,
     /** Phase 32: the Practice tab, with its tools' cards (2.0: beside the Metronome tab). Off: no Practice tab. */
@@ -68,16 +67,6 @@ data class ToolSwitches(
             "earTraining" to earTraining,
             "speedTrainer" to speedTrainer,
         )
-
-    /** The lens's looks Settings' Meter offers, in their order: all three, or without the trail while [pitchTrail] is off. */
-    val lensLooks: List<LensLook>
-        get() = LensLook.offered(pitchTrail)
-
-    /**
-     * The look the lens draws, and Settings' Meter shows picked, for the [saved] one: itself, but for the trail while
-     * [pitchTrail] is off, which shows as the Light arc (then the default; [LensLook.shown]).
-     */
-    fun shownLensLook(saved: LensLook): LensLook = LensLook.shown(saved, pitchTrail)
 
     companion object {
         /** Every tool shows: debug builds, and the default of the ViewModels' tests. */

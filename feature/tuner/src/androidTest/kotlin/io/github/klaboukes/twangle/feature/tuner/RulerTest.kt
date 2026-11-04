@@ -199,8 +199,8 @@ class RulerTest {
             val meter = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
             val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
             assertTrue("$size: ruler $box not over the meter $meter", box.bottom <= meter.top)
-            // Upright across the column, 12 dp past the lens at each side (the lens keeps 20 dp from the screen's
-            // edges, Phase 71); on its side across the readout pane, over the lens that shrinks to fit.
+            // Upright across the column, as wide as the meter (both 8 dp from the screen's edges since Phase 78);
+            // on its side across the readout pane, over the meter that shrinks to fit.
             assertTrue("$size: ruler $box narrower than the meter $meter", box.left <= meter.left && box.right >= meter.right)
             if (size.width < size.height) {
                 assertTrue("$size: ruler $box not centred over the meter $meter", abs((meter.left - box.left - (box.right - meter.right)).value) < 1f)

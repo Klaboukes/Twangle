@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Cores do papel de parede</string>
     <string name="settings_dynamic_color_summary">Usar as cores do seu papel de parede</string>
     <string name="settings_meter_title">Indicador</string>
-    <string name="settings_meter_trail">Rastro</string>
+    <string name="settings_meter_classic">Clássico</string>
     <string name="settings_meter_light_arc">Arco de luzes</string>
     <string name="settings_meter_strobe">Estroboscópio</string>
 

@@ -38,7 +38,7 @@
     <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
 
     <string name="settings_meter_title">Meter</string>
-    <string name="settings_meter_trail">Toonlijn</string>
+    <string name="settings_meter_classic">Klassiek</string>
     <string name="settings_meter_light_arc">Lichtboog</string>
     <string name="settings_meter_strobe">Stroboscoop</string>
 

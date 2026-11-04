@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Farver fra baggrund</string>
     <string name="settings_dynamic_color_summary">Brug farverne fra din baggrund</string>
     <string name="settings_meter_title">Måler</string>
-    <string name="settings_meter_trail">Tonespor</string>
+    <string name="settings_meter_classic">Klassisk</string>
     <string name="settings_meter_light_arc">LED-bue</string>
     <string name="settings_meter_strobe">Stroboskop</string>
 

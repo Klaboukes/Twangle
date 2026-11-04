@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">वॉलपेपर के रंग</string>
     <string name="settings_dynamic_color_summary">अपने वॉलपेपर के रंग इस्तेमाल करें</string>
     <string name="settings_meter_title">मीटर</string>
-    <string name="settings_meter_trail">सुर-रेखा</string>
+    <string name="settings_meter_classic">क्लासिक</string>
     <string name="settings_meter_light_arc">रोशनी का चाप</string>
     <string name="settings_meter_strobe">स्ट्रोब</string>
 

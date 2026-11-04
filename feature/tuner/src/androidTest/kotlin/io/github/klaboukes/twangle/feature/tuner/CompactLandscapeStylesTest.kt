@@ -247,7 +247,7 @@ class CompactLandscapeStylesTest {
     }
 
     /**
-     * The lens (the trail, the default look; `LensLooksTest` and `WideLayoutTest` draw the others wide) on a phone
+     * The meter (Classic, the default look; `LensLooksTest` and `WideLayoutTest` draw the others wide) on a phone
      * (light) and a tablet (dark) on their side. With the test below, each size is seen in both themes.
      */
     @Test
@@ -265,7 +265,8 @@ class CompactLandscapeStylesTest {
     }
 
     /**
-     * The lens's wide box is covered by the lens, with clear marks on it, and TalkBack finds nothing in it. (1.1 also
+     * The meter's wide box has the look's clear marks in it, straight on the page (no face since Phase 78), and TalkBack
+     * finds nothing in it. (1.1 also
      * checked each other meter look against Classic here; they went in Phase 67, and the lens's looks get `LensLooksTest`.)
      */
     private fun assertMeterCoversItsBox(case: String) {
@@ -283,21 +284,17 @@ class CompactLandscapeStylesTest {
         assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
         assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
         assertTrue("$case: something inside the meter for TalkBack", node.children.isEmpty())
-        // In the box (every other pixel): the calm field covers most of it (all of it that is on screen),
-        // with clear marks on it. Colours as ARGB ints, as a million pixels add up.
-        val background = BACKGROUND.toArgb()
+        // In the box (every other pixel): clear marks on the page, which is the colour seen most. Colours as ARGB
+        // ints, as a million pixels add up.
         var inBox = 0
-        var drawn = 0
         val counts = HashMap<Int, Int>()
         for (y in evenFrom(boxTop)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
             for (x in evenFrom(boxLeft)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
                 val argb = pixels.argbAt(x, y)
                 inBox++
-                if (channelDistance(argb, background) >= 0.02f * 255) drawn++
                 counts[argb] = (counts[argb] ?: 0) + 1
             }
         }
-        assertTrue("$case covers ${drawn * 100 / inBox} % of its box", drawn > inBox * 0.75f)
         val face = counts.maxBy { it.value }.key
         var details = 0
         for (y in boxTop.coerceAtLeast(0)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {

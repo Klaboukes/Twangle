@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Bakgrundsfärger</string>
     <string name="settings_dynamic_color_summary">Använd färgerna från din bakgrundsbild</string>
     <string name="settings_meter_title">Mätare</string>
-    <string name="settings_meter_trail">Tonkurva</string>
+    <string name="settings_meter_classic">Klassisk</string>
     <string name="settings_meter_light_arc">LED-båge</string>
     <string name="settings_meter_strobe">Stroboskop</string>
 

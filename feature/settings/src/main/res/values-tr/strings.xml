@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Duvar kâğıdı renkleri</string>
     <string name="settings_dynamic_color_summary">Duvar kâğıdındaki renkleri kullan</string>
     <string name="settings_meter_title">Gösterge</string>
-    <string name="settings_meter_trail">Ses izi</string>
+    <string name="settings_meter_classic">Klasik</string>
     <string name="settings_meter_light_arc">Işık yayı</string>
     <string name="settings_meter_strobe">Stroboskop</string>
 

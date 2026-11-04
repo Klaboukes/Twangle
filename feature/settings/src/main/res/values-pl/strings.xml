@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Kolory tapety</string>
     <string name="settings_dynamic_color_summary">Używaj kolorów z tapety</string>
     <string name="settings_meter_title">Wskaźnik</string>
-    <string name="settings_meter_trail">Ślad</string>
+    <string name="settings_meter_classic">Klasyczny</string>
     <string name="settings_meter_light_arc">Łuk świetlny</string>
     <string name="settings_meter_strobe">Stroboskop</string>
 

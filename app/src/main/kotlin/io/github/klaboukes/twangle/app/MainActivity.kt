@@ -375,8 +375,6 @@ class MainActivity : AppCompatActivity() {
                                     // Android 13+ redraws the widget itself on the new configuration.
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
                                     onBack = { picked = settingsOpener },
-                                    // Without the trail in this build, Meter offers the Light arc and the strobe.
-                                    trailLook = tools.pitchTrail,
                                 )
                                 Screen.ABOUT -> AboutScreen(
                                     appVersion = BuildConfig.VERSION_NAME,

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
@@ -64,17 +63,17 @@ class WideLayoutTest {
     private val shownSize = mutableStateOf(PHONE_SIDE)
     private val shownDark = mutableStateOf(false)
     private val shownFocus = mutableStateOf(false)
-    private val shownLook = mutableStateOf(LensLook.TRAIL)
+    private val shownLook = mutableStateOf(LensLook.CLASSIC)
     private val fullScreenReports = mutableListOf<Boolean>()
 
-    /** The lens's face in the theme shown. */
+    /** The page under the meter in the theme shown (the meter has no face of its own since Phase 78). */
     private var face = Color.Unspecified
 
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value) {
                 TwangleTheme(darkTheme = shownDark.value, animate = false) {
-                    face = MaterialTheme.colorScheme.surface
+                    face = MaterialTheme.colorScheme.background
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerContent(
                         shownState.value,
@@ -88,7 +87,6 @@ class WideLayoutTest {
                         onFocusModeChange = {},
                         onFullScreenChange = { fullScreenReports += it },
                         lensLook = shownLook.value,
-                        pitchHistory = HISTORY,
                     )
                 }
             }
@@ -202,8 +200,8 @@ class WideLayoutTest {
 
     /**
      * Each look drawn in the wide box (Phase 72's `wide`), light and dark, with and without focus mode: the box is
-     * covered, the look draws clearly inside it, and a flat reading leans left (the Light arc's lit wedge, the trail's
-     * line, the strobe's toned bands all start from the left half or fill both). `LensLooksTest` has each look's motion.
+     * covered, the look draws clearly inside it, and a flat reading leans left (the Light arc's lit wedge; Classic's
+     * needle and the strobe's toned bands are checked in `LensLooksTest`, which has each look's motion).
      */
     @Test
     fun eachLookIsDrawnWide() {
@@ -221,7 +219,7 @@ class WideLayoutTest {
                     var left = 0
                     var right = 0
                     var all = 0
-                    // Inside the box, clear of the rounded corners and the ♭ ♯ in the bottom corners.
+                    // Inside the box, clear of the ♭ ♯ in the bottom corners.
                     val inset = pixels.height / 5
                     for (y in inset until pixels.height - inset step 2) {
                         for (x in inset until pixels.width - inset step 2) {
@@ -233,9 +231,7 @@ class WideLayoutTest {
                             }
                         }
                     }
-                    // The trail draws its line from the readings' times, which this fixed history has left behind;
-                    // LensLooksTest drives the trail's clock and checks its line wide.
-                    if (look != LensLook.TRAIL) assertTrue("$case draws ${drawn * 100 / all} % of its box", drawn > all / 100)
+                    assertTrue("$case draws ${drawn * 100 / all} % of its box", drawn > all / 100)
                     if (look == LensLook.LIGHT_ARC) assertTrue("$case flat lights the left: $left left, $right right", left > right)
                 }
             }
@@ -262,8 +258,5 @@ class WideLayoutTest {
         /** A frame or two, for effects to run on a stopped clock; and the cross-fade of the controls. */
         const val FRAME_MS = 32L
         const val FADE_MS = 1_000L
-
-        /** 5 s of a string 12 cents flat, for the trail. */
-        val HISTORY: PitchHistory = LensLooksTest.history { -12f }
     }
 }

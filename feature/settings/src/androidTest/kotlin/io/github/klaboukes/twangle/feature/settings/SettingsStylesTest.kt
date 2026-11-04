@@ -166,7 +166,7 @@ class SettingsStylesTest {
             R.string.settings_theme_light,
             R.string.settings_theme_dark,
             R.string.settings_meter_title,
-            R.string.settings_meter_trail,
+            R.string.settings_meter_classic,
             R.string.settings_meter_light_arc,
             R.string.settings_meter_strobe,
             R.string.settings_left_handed_title,

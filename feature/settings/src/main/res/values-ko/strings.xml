@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">배경화면 색상</string>
     <string name="settings_dynamic_color_summary">배경화면의 색상 사용</string>
     <string name="settings_meter_title">게이지</string>
-    <string name="settings_meter_trail">궤적</string>
+    <string name="settings_meter_classic">클래식</string>
     <string name="settings_meter_light_arc">라이트 아크</string>
     <string name="settings_meter_strobe">스트로브</string>
 

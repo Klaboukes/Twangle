@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.animation.core.FloatSpringSpec
+import io.github.klaboukes.twangle.core.settings.LensLook
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -37,15 +38,26 @@ class MeterFeelTest {
 
     @Test
     fun `every look settles naturally, never jittery`() {
-        for ((look, feel) in listOf("Light arc" to MeterFeels.LIGHT_ARC)) {
+        for ((look, feel) in listOf("Classic" to MeterFeels.CLASSIC, "Light arc" to MeterFeels.LIGHT_ARC)) {
             assertTrue("$look damping ${feel.dampingRatio}", feel.dampingRatio >= 0.5f)
             assertTrue("$look settles in ${feel.settleSeconds(-38f, 0f, 0.5f)} s", feel.settleSeconds(-38f, 0f, 0.5f) < 2.5f)
         }
     }
 
     @Test
-    fun `the light arc follows almost without swinging`() {
-        val arc = MeterFeels.LIGHT_ARC
+    fun `classic swings a little past a new string, like a mechanical needle, then settles`() {
+        val classic = meterFeel(LensLook.CLASSIC)
+        // From 38 cents flat to the note: a few cents past it (about 9 % of the swing), not a wobble.
+        val past = classic.overshoot(-38f, 0f)
+        assertTrue("overshoot $past cents", past in 2f..5f)
+        assertTrue("settles in ${classic.settleSeconds(-38f, 0f, 0.5f)} s", classic.settleSeconds(-38f, 0f, 0.5f) < 1.2f)
+        assertEquals(0f, classic.at(3f, -38f, 0f), 0.05f)
+    }
+
+    @Test
+    fun `the light arc and the strobe follow almost without swinging`() {
+        assertEquals(MeterFeels.LIGHT_ARC, meterFeel(LensLook.STROBE))
+        val arc = meterFeel(LensLook.LIGHT_ARC)
         assertTrue(arc.overshoot(-38f, 0f) < 0.2f)
         assertTrue(arc.overshoot(10f, 40f) < 0.2f)
     }

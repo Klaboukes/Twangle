@@ -4,8 +4,8 @@
 # docs/architecture/performance.md, "Meter looks". Since Phase 72 (2.0) it measures each of the
 # lens's three looks, the app started afresh with each.
 #
-#   scripts/meter-frames.sh                      the trail, the Light arc and the strobe, 3 windows of 7 s each
-#   scripts/meter-frames.sh STROBE               one look (TRAIL, LIGHT_ARC, STROBE; colons between several)
+#   scripts/meter-frames.sh                      Classic, the Light arc and the strobe, 3 windows of 7 s each
+#   scripts/meter-frames.sh STROBE               one look (CLASSIC, LIGHT_ARC, STROBE; colons between several)
 #   scripts/meter-frames.sh CURRENT              the look the app shows
 #
 # Needs the phone connected, unlocked and upright, about 5 minutes. It installs the minified

@@ -59,7 +59,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.shortStringGapFor
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
-import io.github.klaboukes.twangle.feature.tuner.components.LENS_SHORT
+import io.github.klaboukes.twangle.feature.tuner.components.LENS_LEAST
 import io.github.klaboukes.twangle.feature.tuner.components.TuneWordLine
 import io.github.klaboukes.twangle.feature.tuner.components.RULER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
@@ -145,8 +145,7 @@ private fun LensOverWord(room: Dp, gauge: @Composable () -> Unit, overLens: Dp, 
         val across = Constraints(maxWidth = min(constraints.maxWidth, COLUMN_MAX_WIDTH.roundToPx()))
         val wordPlaceable = wordMeasurables.single().measure(across)
         val spacing = spacingDp.roundToPx()
-        val lensWidth = (across.maxWidth - (LENS_INSET * 2).roundToPx()).coerceAtLeast(0)
-        val leastGauge = overLens.roundToPx() + (lensWidth * LENS_SHORT).roundToInt()
+        val leastGauge = overLens.roundToPx() + (across.maxWidth * LENS_LEAST).roundToInt()
         val gaugeHeight = (room.roundToPx() - wordPlaceable.height - spacing).coerceAtLeast(leastGauge)
         val gaugePlaceable = gaugeMeasurables.single().measure(across.copy(maxHeight = gaugeHeight))
         val width = maxOf(gaugePlaceable.width, wordPlaceable.width)
@@ -427,8 +426,8 @@ internal fun WideLayout(
         val bottomHeight = bottomPlaceable?.height ?: 0
         val windowHeight = height.roundToPx()
         val room = maxOf(windowHeight - topPlaceable.height - bottomHeight, WIDE_LENS_LEAST.roundToPx())
-        // The lens's own inset (room for its glow at its sides) makes up the rest of its side margin.
-        val middleWidth = (width - 2 * (WIDE_SIDE - LENS_INSET).roundToPx()).coerceAtLeast(0)
+        // The meter and the tools' panels, with no frame of their own since Phase 78, as wide as the window less its side margins.
+        val middleWidth = (width - 2 * WIDE_SIDE.roundToPx()).coerceAtLeast(0)
         val middlePlaceable = middleMeasurables.single().measure(
             Constraints(maxWidth = middleWidth, maxHeight = if (error == null) room else Constraints.Infinity),
         )
@@ -548,7 +547,7 @@ private val WIDE_TOOL_SLOT = 48.dp
 /** The wide layout's header and focus mode's exit button keep their outlines this far from the window's sides, as upright. */
 private val WIDE_EDGE = 16.dp
 
-/** The wide layout's lens and the line under it keep this far from the window's sides (*The lens*, Size wide). */
+/** The wide layout's meter and the line under it keep this far from the window's sides (*The meter*, Size wide). */
 private val WIDE_SIDE = 24.dp
 
 /**

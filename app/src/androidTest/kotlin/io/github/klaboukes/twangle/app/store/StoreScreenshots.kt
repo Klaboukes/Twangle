@@ -285,7 +285,7 @@ class StoreScreenshots(private val shot: Shot) {
                         waitUntil { !scenario.landscape() }
                     },
                 ) { scenario ->
-                    // The trail is the lens's look since 2.0's Phase 71: nothing to pick. A held A4, as sung or played high up the neck: any note, so chromatic (Any note, set as the
+                    // Until Phase 78 the trail was the meter look (Phase 78 moves this shot to the Practice card). A held A4, as sung or played high up the neck: any note, so chromatic (Any note, set as the
                     // sheet's switch would set it). Not through UI Automator: once the trail moves, it waits for a still screen
                     // before each step, up to its time-out.
                     runBlocking { settings.setMode(TunerMode.CHROMATIC) }

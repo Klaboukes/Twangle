@@ -27,7 +27,7 @@
     <string name="settings_dynamic_color_title">Кольори шпалер</string>
     <string name="settings_dynamic_color_summary">Брати кольори зі шпалер</string>
     <string name="settings_meter_title">Шкала</string>
-    <string name="settings_meter_trail">Графік</string>
+    <string name="settings_meter_classic">Класичний</string>
     <string name="settings_meter_light_arc">Світлова дуга</string>
     <string name="settings_meter_strobe">Строб</string>
     <string name="settings_left_handed_title">Для шульги</string>

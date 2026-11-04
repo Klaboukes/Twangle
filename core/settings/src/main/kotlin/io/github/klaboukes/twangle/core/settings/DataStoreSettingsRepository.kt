@@ -474,7 +474,7 @@ class DataStoreSettingsRepository internal constructor(
         /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") is no longer read. */
         private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
         private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
-        /** The lens's look ([LensLook]), under 1.1's meter look's key, where 1.1's Light arc keeps its name. */
+        /** The meter's look ([LensLook]), under 1.1's meter look's key, where 1.1's Classic and Light arc keep their names. */
         private val METER_LOOK = stringPreferencesKey("meter_look")
 
         /*
@@ -680,9 +680,10 @@ class DataStoreSettingsRepository internal constructor(
         }
 
         /**
-         * The lens look's rule (docs/architecture/v2-plan.md, *Settings from 1.1*): a saved look 2.0 has (1.1's Light
-         * arc included); else the strobe where 1.1 showed its strobe wave under the meter ([showedStrobe]); else null,
-         * the default. 1.1's other meter looks (Classic, Pointers, Loupe, Arrows, Light bars and older names) say nothing.
+         * The meter look's rule (docs/architecture/v2-plan.md, *Settings from 1.1*): a saved look 2.0 has (1.1's Classic
+         * and Light arc included); else the strobe where 1.1 showed its strobe wave under the meter ([showedStrobe]); else
+         * null, the default. 1.1's other meter looks (Pointers, Loupe, Arrows, Light bars and older names) and 2.0's
+         * trail of Phases 71 to 77 say nothing.
          */
         private fun lensLook(prefs: Preferences): LensLook? =
             enumOrNull<LensLook>(prefs[METER_LOOK]) ?: LensLook.STROBE.takeIf { showedStrobe(prefs) }

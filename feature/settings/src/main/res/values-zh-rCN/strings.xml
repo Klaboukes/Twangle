@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">壁纸配色</string>
     <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
     <string name="settings_meter_title">仪表</string>
-    <string name="settings_meter_trail">轨迹</string>
+    <string name="settings_meter_classic">经典</string>
     <string name="settings_meter_light_arc">光弧</string>
     <string name="settings_meter_strobe">频闪</string>
 

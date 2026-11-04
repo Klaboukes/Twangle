@@ -1638,11 +1638,10 @@ class TunerContentTest {
     }
 
     /**
-     * Upright, the lens spans the screen less 20 dp at each side (2.0, Phase 71), between the picker chip at the top
-     * and the strings at the bottom, sitting a little high (the gap above it is the smaller one), and
-     * there is no "A4 = 440 Hz" line. With the big note gone (the phase's last step) the Xiaomi had room for the lens
-     * at its full planned height, 0.85 times its width; since the picker chip has its own line under the top row (Phase
-     * 77) the lens gives about 13 dp of that height back (0.81), never its width. The word stands under it.
+     * Upright, the meter spans the screen less 8 dp at each side (2.0, Phase 78: no frame; until then a lens 20 dp
+     * in), between the picker chip at the top and the strings at the bottom, sitting a little high (the gap above it
+     * is the smaller one), and there is no "A4 = 440 Hz" line. A phone has room for its full height, 0.6 times its
+     * width. The word stands under it.
      */
     @Test
     fun uprightTheMeterSpansTheScreenBetweenPickerChipAndStrings() {
@@ -1650,8 +1649,8 @@ class TunerContentTest {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val scale = window.width / PHONE_UPRIGHT.width
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
-        assertEquals("meter width", (PHONE_UPRIGHT.width - 40.dp).value * scale, gauge.width.value, 1f)
-        assertTrue("lens height ${gauge.height}", gauge.height.value <= gauge.width.value * 0.85f + 1f && gauge.height.value >= gauge.width.value * 0.8f)
+        assertEquals("meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, gauge.width.value, 1f)
+        assertEquals("meter height", gauge.width.value * 0.6f, gauge.height.value, 1f)
         val modeSwitch = pickerChip.getBoundsInRoot()
         val ruler = compose.onNodeWithTag(TunerTestTags.RULER).getBoundsInRoot()
         val wordBox = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
@@ -1669,14 +1668,14 @@ class TunerContentTest {
         compose.onNodeWithText("A4", substring = true).assertDoesNotExist()
     }
 
-    /** On a short screen (the S26's 570 dp) the lens's height gives way, never its width, down to half its width. */
+    /** On a short screen (the S26's 570 dp) the meter's height gives way, never its width, down to 0.45 of its width. */
     @Test
-    fun onAShortScreenTheLensGivesWayInHeightNotWidth() {
+    fun onAShortScreenTheMeterGivesWayInHeightNotWidth() {
         show(detected(-12.3f), size = DpSize(393.dp, 570.dp))
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
-        assertEquals("meter width", (393.dp - 40.dp).value, gauge.width.value, 1f)
-        assertTrue("lens ${gauge.height} not shorter than 0.85 of its width", gauge.height.value < gauge.width.value * 0.85f - 1f)
-        assertTrue("lens ${gauge.height} shorter than half its width", gauge.height.value >= gauge.width.value * 0.5f - 1f)
+        assertEquals("meter width", (393.dp - 16.dp).value, gauge.width.value, 1f)
+        assertTrue("meter ${gauge.height} taller than 0.6 of its width", gauge.height.value <= gauge.width.value * 0.6f + 1f)
+        assertTrue("meter ${gauge.height} shorter than 0.45 of its width", gauge.height.value >= gauge.width.value * 0.45f - 1f)
         stringChip("E2").assertIsDisplayed()
         word.assertIsDisplayed()
         // The S26's own width too: the pegs wholly in view under the picker chip's own line (Phase 77), nothing scrolled.
@@ -1735,14 +1734,14 @@ class TunerContentTest {
                 assertEquals("$state: $part's bottom", (small.bottom * grow).value, big.bottom.value, down)
             }
             val meter = tablet.getValue("meter")
-            assertEquals("meter width", (480.dp - 40.dp).value * grow, meter.width.value, 2f)
+            assertEquals("meter width", (480.dp - 16.dp).value * grow, meter.width.value, 2f)
             assertTrue("meter centred", abs((meter.left - (TABLET_PORTRAIT.width - meter.right)).value) < 2f)
         }
         // A phone keeps its own column.
         shownState.value = listening
         shownSize.value = PHONE
         compose.waitForIdle()
-        assertEquals("phone meter width", (PHONE.width - 40.dp).value, compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds().width.value, 1f)
+        assertEquals("phone meter width", (PHONE.width - 16.dp).value, compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds().width.value, 1f)
     }
 
     /**

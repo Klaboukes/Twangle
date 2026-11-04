@@ -20,8 +20,9 @@ import java.util.regex.Pattern
  * Frame times and main-thread work of the tuner's lens in chromatic mode, with the reading moving
  * all the time. The `benchmarkRelease` app hears a synthetic tone that sweeps across about ±30
  * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 72
- * (2.0) it measures each of the lens's three looks: for each it starts the app afresh with the look
- * in the launch (`--es lensLook TRAIL`, which only this build and debug builds take, `MainActivity`).
+ * (2.0) it measures each of the meter's three looks (Classic, the Light arc, the strobe since Phase 78):
+ * for each it starts the app afresh with the look in the launch (`--es lensLook CLASSIC`, which only
+ * this build and debug builds take, `MainActivity`).
  *
  * For each look it switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
@@ -31,7 +32,7 @@ import java.util.regex.Pattern
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.
  * Instrumentation arguments: `meterLooks` (names separated by colons, as Gradle cuts arguments at
- * commas: `TRAIL`, `LIGHT_ARC`, `STROBE`, or `CURRENT`, the look the app shows), `runs`, `seconds`.
+ * commas: `CLASSIC`, `LIGHT_ARC`, `STROBE`, or `CURRENT`, the look the app shows), `runs`, `seconds`.
  */
 @RunWith(AndroidJUnit4::class)
 class MeterFramesBenchmark {
@@ -220,8 +221,8 @@ class MeterFramesBenchmark {
         const val PICKER_CHIP_TAG = "tuner_picker_chip"
         const val CURRENT = "CURRENT"
 
-        /** The lens's looks (`LensLook`'s names), measured in this order by default. */
-        val LENS_LOOKS = listOf("TRAIL", "LIGHT_ARC", "STROBE")
+        /** The meter's looks (`LensLook`'s names), measured in this order by default. */
+        val LENS_LOOKS = listOf("CLASSIC", "LIGHT_ARC", "STROBE")
         val ALL_LOOKS = LENS_LOOKS.joinToString(":")
         val KNOWN_LOOKS = LENS_LOOKS.toSet() + CURRENT
 

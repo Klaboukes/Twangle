@@ -40,11 +40,11 @@ internal val SIGNAL_BARS_SLOT = 48.dp
 /** The single column's text margin at each side. */
 internal val COLUMN_PADDING = 16.dp
 
-/** The upright gauge's margin at each side of the screen (the approved 1.1 mock-up's 8 dp; a tool's panel spans it). */
+/**
+ * The upright meter's margin at each side of the screen (the approved 1.1 mock-up's 8 dp): the meter, with no frame
+ * since Phase 78, and a tool's panel span the column less it.
+ */
 internal val METER_MARGIN = 8.dp
-
-/** The lens's sides, this far in from the gauge's margin: 20 dp from the screen's edges (*The lens*, Size). */
-internal val LENS_INSET = 12.dp
 
 /** On its side the readout pane leaves this much above and below the lens and the word, for the lens's glow. */
 internal val LENS_GLOW_ROOM = 24.dp

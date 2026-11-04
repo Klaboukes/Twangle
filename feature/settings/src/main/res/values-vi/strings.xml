@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Màu hình nền</string>
     <string name="settings_dynamic_color_summary">Dùng màu từ hình nền của bạn</string>
     <string name="settings_meter_title">Đồng hồ đo</string>
-    <string name="settings_meter_trail">Đường cao độ</string>
+    <string name="settings_meter_classic">Cổ điển</string>
     <string name="settings_meter_light_arc">Cung đèn</string>
     <string name="settings_meter_strobe">Strobe</string>
 

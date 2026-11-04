@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">Hintergrundfarben</string>
     <string name="settings_dynamic_color_summary">Farben deines Hintergrundbilds verwenden</string>
     <string name="settings_meter_title">Anzeige</string>
-    <string name="settings_meter_trail">Tonverlauf</string>
+    <string name="settings_meter_classic">Klassisch</string>
     <string name="settings_meter_light_arc">LED-Bogen</string>
     <string name="settings_meter_strobe">Stroboskop</string>
 

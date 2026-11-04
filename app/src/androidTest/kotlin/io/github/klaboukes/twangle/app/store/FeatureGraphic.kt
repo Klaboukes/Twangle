@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
 import java.util.Locale
@@ -54,9 +53,9 @@ import java.util.Locale
  * the start side the store [icon] beside the name "Twangle" in the app's display face (1.1 set it in
  * Retro's), and under them [line], what sets Twangle apart
  * in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set as the app sets
- * that language (its fonts, right to left for Arabic). On the end side three of the tuner's lenses fanned
+ * that language (its fonts, right to left for Arabic). On the end side three of the tuner's meters fanned
  * out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in each of the
- * lens's looks (since Phase 72: the Light arc, the trail in front, the strobe), each with a string brought into
+ * meter's looks (since Phase 78: the Light arc, Classic in front, the strobe), each with a string brought into
  * tune and held there, in tune's green with its glow. No note names, so the line is
  * the one text to translate. Everything important keeps clear of the edges, which Play may crop.
  */
@@ -157,9 +156,8 @@ private fun Fan() {
 }
 
 /**
- * The tuner's lens ([Lens], 2.0 Phase 71) in the card's look on a card of the app's background, light or dark: a
- * string tuned up into the in-tune zone and held there, the border and the glow green. (Until Phase 71 1.1's Classic
- * needle.)
+ * The tuner's meter ([Lens], 2.0 Phases 71 and 78) in the card's look on a card of the app's background, light or
+ * dark: a string in the in-tune zone and held there, the look and the glow green.
  */
 @Composable
 private fun MeterCard(card: FanCard, modifier: Modifier) {
@@ -173,11 +171,9 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
                 .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center,
         ) {
-            val history = remember { tunedInTrail() }
             Lens(
                 look = card.look,
                 cents = { 0f },
-                history = history,
                 inTune = true,
                 glow = true,
                 animationsOff = true,
@@ -187,21 +183,7 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
     }
 }
 
-/**
- * The trail the lenses draw, still: the last [TRAIL_SECONDS] of a string tuned up from [TRAIL_START_CENTS] flat into
- * the zone, easing in as a tuning peg is turned, then held in tune (green) for its last [IN_TUNE_SECONDS].
- */
-private fun tunedInTrail(): PitchHistory = PitchHistory().apply {
-    val readings = (TRAIL_SECONDS / PitchHistory.DEFAULT_FRAME_SECONDS).toInt()
-    for (i in 0..readings) {
-        val t = i * PitchHistory.DEFAULT_FRAME_SECONDS
-        val left = 1f - (t / (TRAIL_SECONDS - IN_TUNE_SECONDS)).coerceAtMost(1f)
-        val cents = TRAIL_START_CENTS * left * left
-        push(t, TRAIL_TARGET_MIDI, cents, inTune = t >= TRAIL_SECONDS - IN_TUNE_SECONDS)
-    }
-}
-
-/** One card of the fan: light or dark, and the lens's look on it. */
+/** One card of the fan: light or dark, and the meter's look on it. */
 private data class FanCard(val dark: Boolean, val look: LensLook)
 
 
@@ -209,10 +191,10 @@ private data class FanCard(val dark: Boolean, val look: LensLook)
 const val FEATURE_WIDTH = 1024
 const val FEATURE_HEIGHT = 500
 
-/** Left to right: the middle one in front, light between two darks; the trail, the default look, in front. */
+/** Left to right: the middle one in front, light between two darks; Classic, the default look, in front. */
 private val FAN = listOf(
     FanCard(dark = true, look = LensLook.LIGHT_ARC),
-    FanCard(dark = false, look = LensLook.TRAIL),
+    FanCard(dark = false, look = LensLook.CLASSIC),
     FanCard(dark = true, look = LensLook.STROBE),
 )
 
@@ -245,9 +227,3 @@ private val CARD_SHADOW = 10.dp
 private val CARD_SPREAD = 50.dp
 private val CARD_DROP = 7.dp
 private const val CARD_TILT = 9f
-
-/** The fan's trail: a string (A2) tuned up from this many cents flat over the seconds the lens shows, the last of them in tune. */
-private const val TRAIL_TARGET_MIDI = 45
-private const val TRAIL_START_CENTS = -30f
-private const val TRAIL_SECONDS = 0.4f
-private const val IN_TUNE_SECONDS = 0.12f

@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.feature.settings.components
 
-import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -68,28 +67,6 @@ class MeterDemoTest {
         holdStill(demo)
         assertEquals("in tune, settled", 1f, demo.tuned.floatValue)
         assertTrue("within the strobe's half cent: ${demo.cents.floatValue}", abs(demo.cents.floatValue) < 0.5f)
-    }
-
-    @Test
-    fun `the trail's history fills as the tuner's does, one note, the in-tune part marked`() {
-        val demo = MeterDemo()
-        holdStill(demo)
-        val history = demo.history
-        val expected = METER_DEMO_STILL_SECONDS / PitchHistory.DEFAULT_FRAME_SECONDS
-        assertTrue("about one reading a frame: ${history.end} for $expected", abs(history.end - expected) <= 1f)
-        var lastTime = Float.NEGATIVE_INFINITY
-        var flatSeen = false
-        history.forEachWithin { time, target, cents, inTune ->
-            assertTrue("time goes on", time > lastTime)
-            lastTime = time
-            assertEquals("one note, so the line never breaks", 45, target)
-            if (cents < -10f) {
-                flatSeen = true
-                assertFalse("flat is not in tune", inTune)
-            }
-        }
-        assertTrue("the flat start is in view", flatSeen)
-        assertTrue("the newest reading is on the note, in tune", history.inTuneAt(history.end - 1))
     }
 
     @Test

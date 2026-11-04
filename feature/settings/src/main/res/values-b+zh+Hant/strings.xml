@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">桌布配色</string>
     <string name="settings_dynamic_color_summary">使用桌布中的顏色</string>
     <string name="settings_meter_title">儀表</string>
-    <string name="settings_meter_trail">軌跡</string>
+    <string name="settings_meter_classic">經典</string>
     <string name="settings_meter_light_arc">光弧</string>
     <string name="settings_meter_strobe">頻閃</string>
 

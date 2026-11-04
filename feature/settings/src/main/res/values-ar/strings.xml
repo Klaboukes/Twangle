@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">ألوان الخلفية</string>
     <string name="settings_dynamic_color_summary">استخدم ألوانًا من خلفية شاشتك</string>
     <string name="settings_meter_title">المؤشر</string>
-    <string name="settings_meter_trail">مسار النغمة</string>
+    <string name="settings_meter_classic">كلاسيكي</string>
     <string name="settings_meter_light_arc">قوس ضوئي</string>
     <string name="settings_meter_strobe">ستروب</string>
 

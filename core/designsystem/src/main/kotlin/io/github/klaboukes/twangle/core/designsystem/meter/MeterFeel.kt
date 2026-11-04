@@ -24,21 +24,24 @@ data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
 }
 
 /**
- * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`); the lens's
- * looks take theirs from [meterFeel]. (1.1's Classic, which swung a little past a new string like a mechanical
- * needle, went in Phase 71 with the last thing that drew it, the store's feature graphic.)
+ * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`); the meter's
+ * looks take theirs from [meterFeel].
  */
 object MeterFeels {
+    /** Classic swings a little past a new string, like a mechanical needle (1.1's, back in Phase 78). */
+    val CLASSIC = MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
+
     /** Light arc follows almost without swinging. */
     val LIGHT_ARC = MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
 }
 
 /**
- * The spring the lens's marker ([MeterReading.cents]) follows each reading with in [look]: the Light arc's,
- * almost without swinging, for every look (the trail and the strobe draw the readings themselves, not the marker).
+ * The spring the meter's marker ([MeterReading.cents]) follows each reading with in [look]: Classic's needle its own,
+ * the Light arc's, almost without swinging, for the others (the strobe drifts from the marker's cents).
  */
 fun meterFeel(look: LensLook): MeterFeel = when (look) {
-    LensLook.TRAIL, LensLook.LIGHT_ARC, LensLook.STROBE -> MeterFeels.LIGHT_ARC
+    LensLook.CLASSIC -> MeterFeels.CLASSIC
+    LensLook.LIGHT_ARC, LensLook.STROBE -> MeterFeels.LIGHT_ARC
 }
 
 /** Smoothstep: starts and ends gently. */

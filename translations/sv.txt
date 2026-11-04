@@ -301,10 +301,10 @@ feature/settings settings_language_phone 9702945f
 feature/settings settings_language_title a4fe6526
 feature/settings settings_left_handed_summary 0b2dd917
 feature/settings settings_left_handed_title e72cb958
+feature/settings settings_meter_classic ae25d648
 feature/settings settings_meter_light_arc 456d8906
 feature/settings settings_meter_strobe 3a2260e6
 feature/settings settings_meter_title 2293b30e
-feature/settings settings_meter_trail e2c8d39b
 feature/settings settings_notation_automatic 2d5700af
 feature/settings settings_notation_flats b3400ed7
 feature/settings settings_notation_german e74f3e0f

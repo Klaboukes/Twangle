@@ -70,7 +70,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
-import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
@@ -84,7 +83,6 @@ import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
-import io.github.klaboukes.twangle.feature.tuner.components.trailMotionWords
 import io.github.klaboukes.twangle.feature.tuner.components.ScreenTintFrom
 import io.github.klaboukes.twangle.feature.tuner.components.TuneWordLine
 import io.github.klaboukes.twangle.feature.tuner.components.rememberLiveTone
@@ -290,7 +288,6 @@ fun TunerScreen(
                     onCheckAgain = viewModel::checkIntonationAgain,
                     onNextString = viewModel::checkNextString,
                     lensLook = lensLook,
-                    pitchHistory = viewModel.pitchHistory,
                     onFullScreenChange = onFullScreenChange,
                     onFocusModeChange = onFocusModeChange,
                     settingsButton = settingsButton,
@@ -436,10 +433,7 @@ private fun KeepScreenOn() {
  * its lines in the word's ([IntonationPanel], [IntonationStatus]), the verdict's buttons calling [onCheckAgain] and
  * [onNextString]; the pegs pick the string ([onStringClick]) and carry each string's result. The panel's × and Back
  * turn it off again. In the plain
- * tuner the lens ([Lens], 2.0 Phase 71) stands under the ruler, drawing [lensLook] (the
- * trail for every look until Phase 72) from [pitchHistory], the last seconds of readings (an empty one when
- * none is given); while it is given, the trail's motion ("wavering", "bending up") joins the word's spoken
- * reading ([trailMotionWords]).
+ * tuner the meter ([Lens], 2.0 Phases 71 and 78) stands under the ruler, drawing [lensLook] straight on the page.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held upright; any
  * window wider than tall the wide layout (2.0, Phase 73, [WideLayout]): the ruler across the full width, the lens
@@ -489,7 +483,6 @@ fun TunerContent(
     onCheckAgain: () -> Unit = {},
     onNextString: () -> Unit = {},
     lensLook: LensLook = LensLook.DEFAULT,
-    pitchHistory: PitchHistory? = null,
     onFullScreenChange: (Boolean) -> Unit = {},
     onFocusModeChange: ((Boolean) -> Unit)? = null,
     settingsButton: (@Composable () -> Unit)? = null,
@@ -579,9 +572,6 @@ fun TunerContent(
         GuitarSlotFor(state, mode, strings, strumButton, wide = wide, bars = if (barsByPegs && withBars) ({ movableSignalBars() }) else null)
     }
     val guitarSlot = @Composable { guitarSlotWith(false, false) }
-    // The lens's last seconds: the tuner's, or an empty one where none is given (its look then draws no line).
-    val emptyHistory = remember { PitchHistory() }
-    val history = pitchHistory ?: emptyHistory
     val gauge = @Composable {
         // The 12th-fret check takes the lens's place, at the old meter's shape.
         if (state is TunerUiState.IntonationCheck) {
@@ -594,15 +584,14 @@ fun TunerContent(
             Lens(
                 look = lensLook,
                 cents = needleCents,
-                history = history,
                 precision = inTunePrecision,
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 glow = meterGlow,
                 animationsOff = animationsOff,
                 // A window wider than tall gets the lens's wide shape and its looks drawn wide.
                 wide = LocalLensWide.current,
-                // Drawn under its neighbours, with room at its sides for its glow, which reaches past its box.
-                modifier = Modifier.zIndex(-1f).padding(horizontal = LENS_INSET).testTag(TunerTestTags.GAUGE),
+                // Drawn under its neighbours: its in-tune glow reaches past its box and fades out on the page.
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
                 reception = reception,
                 tone = tone,
             )
@@ -611,8 +600,6 @@ fun TunerContent(
     // Kept here, as the bars are: TalkBack's pacing carries over when the word is built afresh (another layout),
     // so a note fading to "Play a string" (or a short drop-out) isn't said at once.
     val speech = rememberPacedSpeech()
-    // The trail's motion, said after the reading while the lens shows the trail (the lens itself is silent).
-    val motion = if (pitchHistory != null) trailMotionWords(pitchHistory) else null
     val detected = state as? TunerUiState.Detected
     val readout = detected?.let { NoteReadout(it.noteName, it.octave, it.cents, it.inTune, it.hint) }
     // The word under the lens (Phase 71), the tuner's one speaking item: what to do, the cents under it, or what to play.
@@ -641,7 +628,6 @@ fun TunerContent(
             // While a reference tone sounds its line says which, not a tip about the mic.
             // Nor while a strum's count stands there: a strum's many notes read as noise to the tuner.
             tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null && heardQuiet == null },
-            motion = motion,
             tone = tone,
             compact = compact,
             start = start,

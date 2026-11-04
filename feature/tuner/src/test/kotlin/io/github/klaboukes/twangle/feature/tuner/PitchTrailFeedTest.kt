@@ -1,23 +1,12 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
-import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
-import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
-import io.github.klaboukes.twangle.core.settings.LensLook
-import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -78,119 +67,5 @@ class PitchTrailFeedTest {
         assertTrue(history.isEmpty)
         feed.gap(frame)
         assertEquals(5 * frame, history.timeAt(4), 1e-6f)
-    }
-
-    // ---- Fed by the tuner ----
-
-    private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
-        TunerViewModel(recorder, FakeSettingsRepository(), FakeTonePlayer(), StandardTestDispatcher(testScheduler), tools = tools)
-
-    @Test
-    fun `the tuner fills the history with the played note`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true))
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(1_000)
-
-        val history = vm.pitchHistory
-        assertTrue("about one entry per frame, got ${history.end}", history.end > 30)
-        var notes = 0
-        history.forEachWithin { _, target, cents, _ ->
-            if (target != PitchHistory.NO_NOTE) {
-                notes++
-                assertEquals(45, target)
-                assertTrue("off by $cents c", abs(cents) < 1f)
-            }
-        }
-        assertTrue("only $notes notes", notes > 20)
-        // Every entry is one frame after the one before.
-        val end = history.end
-        for (i in history.firstReadable(end) + 1 until end) {
-            assertEquals(1024f / 48_000f, history.timeAt(i) - history.timeAt(i - 1), 1e-4f)
-        }
-    }
-
-    @Test
-    fun `silence leaves only gaps`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder.silence())
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(500)
-
-        val history = vm.pitchHistory
-        assertTrue(history.end > 10)
-        history.forEachWithin { _, target, _, _ -> assertEquals(PitchHistory.NO_NOTE, target) }
-    }
-
-    @Test
-    fun `stays empty while its switch is off`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true), ToolSwitches.ALL_OFF)
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(500)
-
-        assertTrue(vm.state.value is TunerUiState.Detected)
-        assertEquals(0L, vm.pitchHistory.end)
-    }
-
-    // ---- The trail as the lens's look (2.0, Phase 71) ----
-
-    @Test
-    fun `the history fills in chromatic mode too, with no tool to turn on`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true))
-        vm.setMode(TunerMode.CHROMATIC)
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(500)
-
-        var notes = 0
-        vm.pitchHistory.forEachWithin { _, target, _, _ -> if (target != PitchHistory.NO_NOTE) notes++ }
-        assertTrue("only $notes notes", notes > 10)
-    }
-
-    @Test
-    fun `the 12th-fret check on draws no note in the trail`() = runTest(dispatcher) {
-        val vm = TunerViewModel(
-            FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true),
-            FakeSettingsRepository(AppSettings()),
-            FakeTonePlayer(),
-            StandardTestDispatcher(testScheduler),
-            saved = AppSettings(),
-        )
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        vm.setIntonationCheck(true)
-        advanceTimeBy(500)
-
-        vm.pitchHistory.forEachWithin { _, target, _, _ -> assertEquals(PitchHistory.NO_NOTE, target) }
-    }
-
-    @Test
-    fun `the lens look is the saved one`() = runTest(dispatcher) {
-        val settings = FakeSettingsRepository()
-        val vm = TunerViewModel(FakeAudioRecorder.silence(), settings, FakeTonePlayer(), StandardTestDispatcher(testScheduler))
-        backgroundScope.launch { vm.lensLook.collect {} }
-        advanceTimeBy(100)
-        assertEquals(LensLook.TRAIL, vm.lensLook.value)
-        settings.setLensLook(LensLook.STROBE)
-        advanceTimeBy(100)
-        assertEquals(LensLook.STROBE, vm.lensLook.value)
-    }
-
-    @Test
-    fun `with the trail's brake on, a saved or defaulted trail shows as the Light arc`() = runTest(dispatcher) {
-        val settings = FakeSettingsRepository()
-        val tools = ToolSwitches.ALL_ON.copy(pitchTrail = false)
-        val vm = TunerViewModel(FakeAudioRecorder.silence(), settings, FakeTonePlayer(), StandardTestDispatcher(testScheduler), tools = tools)
-        assertEquals("before the settings come", LensLook.LIGHT_ARC, vm.lensLook.value)
-        backgroundScope.launch { vm.lensLook.collect {} }
-        advanceTimeBy(100)
-        assertEquals("the default", LensLook.LIGHT_ARC, vm.lensLook.value)
-        settings.setLensLook(LensLook.STROBE)
-        advanceTimeBy(100)
-        assertEquals(LensLook.STROBE, vm.lensLook.value)
-        settings.setLensLook(LensLook.TRAIL)
-        advanceTimeBy(100)
-        assertEquals("a saved trail", LensLook.LIGHT_ARC, vm.lensLook.value)
     }
 }

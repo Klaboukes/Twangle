@@ -112,7 +112,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
         assertEquals(false, settings.showSignalBars)
-        assertEquals("a fresh install's lens shows the trail", LensLook.TRAIL, settings.lensLook)
+        assertEquals("a fresh install's meter shows the Classic needle", LensLook.CLASSIC, settings.lensLook)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
@@ -565,7 +565,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown notation counts as never picked", null, settings.notationChoice)
         assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals("an unknown meter look over an unknown wave gives the trail", LensLook.DEFAULT, settings.lensLook)
+        assertEquals("an unknown meter look over an unknown wave gives the default", LensLook.DEFAULT, settings.lensLook)
         assertEquals(466f, settings.a4Hz)
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
         assertEquals("an unknown click gives the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
@@ -657,11 +657,12 @@ class DataStoreSettingsRepositoryTest {
             assertEquals("${look.name}, whatever showed under the meter", look, lensLookFrom(meterLook = look.name, display = "WAVE", waveLook = "STROBE"))
         }
         assertEquals("1.1's Light arc stays the Light arc", LensLook.LIGHT_ARC, lensLookFrom(meterLook = "LIGHT_ARC", display = "STROBE"))
+        assertEquals("1.1's Classic stays Classic", LensLook.CLASSIC, lensLookFrom(meterLook = "CLASSIC", display = "WAVE", waveLook = "STROBE"))
     }
 
     @Test
     fun `rule 2, a 1_1 meter look 2_0 lacks over the strobe is the strobe`() = runTest {
-        for (gone in listOf("CLASSIC", "POINTERS", "LOUPE", "ARROWS", "LIGHT_BARS", "SPIRIT_LEVEL", "ECLIPSE", "ROLLING_SCALE", "SUNDIAL")) {
+        for (gone in listOf("TRAIL", "POINTERS", "LOUPE", "ARROWS", "LIGHT_BARS", "SPIRIT_LEVEL", "ECLIPSE", "ROLLING_SCALE", "SUNDIAL")) {
             assertEquals("$gone over the strobe wave", LensLook.STROBE, lensLookFrom(meterLook = gone, display = "WAVE", waveLook = "STROBE"))
         }
         assertEquals("no meter look saved, the strobe wave", LensLook.STROBE, lensLookFrom(display = "WAVE", waveLook = "STROBE"))
@@ -678,14 +679,15 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `rule 3, anything else is the trail`() = runTest {
-        assertEquals("a fresh install", LensLook.TRAIL, lensLookFrom())
-        assertEquals("1.1's defaults, Classic over the ribbon", LensLook.TRAIL, lensLookFrom(meterLook = "CLASSIC", display = "WAVE", waveLook = "RIBBON"))
-        assertEquals("the cents under the meter, the strobe picked for the wave", LensLook.TRAIL, lensLookFrom(display = "NEEDLE", waveLook = "STROBE"))
-        assertEquals("the old wave-view switch off", LensLook.TRAIL, lensLookFrom(showWaves = false, waveLook = "STROBE"))
-        assertEquals("the strobe wave's look never saved: the ribbon", LensLook.TRAIL, lensLookFrom(display = "WAVE"))
-        assertEquals("another wave look", LensLook.TRAIL, lensLookFrom(meterLook = "LOUPE", display = "WAVE", waveLook = "FIREFLIES"))
-        assertEquals("a damaged meter look and wave look", LensLook.TRAIL, lensLookFrom(meterLook = "SUNDIAL", waveLook = "LAVA_LAMP"))
+    fun `rule 3, anything else is the Classic needle`() = runTest {
+        assertEquals("a fresh install", LensLook.CLASSIC, lensLookFrom())
+        assertEquals("1.1's defaults, Classic over the ribbon", LensLook.CLASSIC, lensLookFrom(meterLook = "CLASSIC", display = "WAVE", waveLook = "RIBBON"))
+        assertEquals("2.0's trail, a Practice tool since Phase 78", LensLook.CLASSIC, lensLookFrom(meterLook = "TRAIL"))
+        assertEquals("the cents under the meter, the strobe picked for the wave", LensLook.CLASSIC, lensLookFrom(display = "NEEDLE", waveLook = "STROBE"))
+        assertEquals("the old wave-view switch off", LensLook.CLASSIC, lensLookFrom(showWaves = false, waveLook = "STROBE"))
+        assertEquals("the strobe wave's look never saved: the ribbon", LensLook.CLASSIC, lensLookFrom(display = "WAVE"))
+        assertEquals("another wave look", LensLook.CLASSIC, lensLookFrom(meterLook = "LOUPE", display = "WAVE", waveLook = "FIREFLIES"))
+        assertEquals("a damaged meter look and wave look", LensLook.CLASSIC, lensLookFrom(meterLook = "SUNDIAL", waveLook = "LAVA_LAMP"))
     }
 
     @Test
@@ -696,13 +698,13 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("wave_look")] = "STROBE"
         }
         close()
-        repository().setLensLook(LensLook.TRAIL)
+        repository().setLensLook(LensLook.LIGHT_ARC)
         close()
 
         val store = dataStore()
-        assertEquals("the trail picked, not the strobe 1.1 showed", LensLook.TRAIL, repository(store).settings.first().lensLook)
+        assertEquals("the Light arc picked, not the strobe 1.1 showed", LensLook.LIGHT_ARC, repository(store).settings.first().lensLook)
         val saved = store.data.first()
-        assertEquals("TRAIL", saved[stringPreferencesKey("meter_look")])
+        assertEquals("LIGHT_ARC", saved[stringPreferencesKey("meter_look")])
         assertEquals("1.1's display is removed", null, saved[stringPreferencesKey("tuner_display")])
         assertEquals("the old wave-view switch is removed", null, saved[booleanPreferencesKey("show_waves")])
         assertEquals("1.1's wave look is removed", null, saved[stringPreferencesKey("wave_look")])
@@ -938,9 +940,9 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `the three lens looks, the trail first and the default`() {
-        assertEquals(listOf(LensLook.TRAIL, LensLook.LIGHT_ARC, LensLook.STROBE), LensLook.entries)
-        assertEquals(LensLook.TRAIL, LensLook.DEFAULT)
+    fun `the three meter looks, Classic first and the default`() {
+        assertEquals(listOf(LensLook.CLASSIC, LensLook.LIGHT_ARC, LensLook.STROBE), LensLook.entries)
+        assertEquals(LensLook.CLASSIC, LensLook.DEFAULT)
     }
 
     @Test

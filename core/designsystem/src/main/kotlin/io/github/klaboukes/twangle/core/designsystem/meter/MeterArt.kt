@@ -132,7 +132,7 @@ internal class GlowArt(private val radius: Float, color: Color) {
  * The in-tune moment's glow (the mock-up's `tuneGlow`): a [GlowArt] in the style's "in tune" colour, its
  * middle and radius in px from [place] (made once per size), at [MeterRoles.tuneGlowAlpha] when fully lit. It
  * is drawn once, in a layer of its own under the look's marker; [MeterReading.glow] only sets that layer's
- * opacity, so easing it in and out redraws nothing and allocates nothing. In the lens it is clipped to the box.
+ * opacity, so easing it in and out redraws nothing and allocates nothing. Nothing clips it: it fades out on the page.
  */
 @Composable
 internal fun BoxScope.TuneGlow(roles: MeterRoles, reading: MeterReading, place: CacheDrawScope.() -> Pair<Offset, Float>) {

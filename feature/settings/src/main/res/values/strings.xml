@@ -65,8 +65,8 @@
 
     <!-- Meter: the title over three picture cards that choose what the tuner draws in its box under the note names (in the Tuner screen group). -->
     <string name="settings_meter_title">Meter</string>
-    <!-- Meter look, the name under its card: the last seconds of the note drawn as a line falling down the box, the newest reading at the top as a dot. Shown on one line. -->
-    <string name="settings_meter_trail">Trail</string>
+    <!-- Meter look, the name under its card: a needle on a numbered half-circle dial, as on an analogue meter (the default). Shown on one line. -->
+    <string name="settings_meter_classic">Classic</string>
     <!-- Meter look, the name under its card: a fan of little lights that opens from the centre toward the note, like an LED pedal tuner. Shown on one line. -->
     <string name="settings_meter_light_arc">Light arc</string>
     <!-- Meter look, the name under its card: bands of stripes that drift while out of tune and stand still in tune, as on a strobe tuner. Shown on one line. -->

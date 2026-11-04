@@ -33,7 +33,7 @@
     <string name="settings_dynamic_color_title">Couleurs du fond d\'écran</string>
     <string name="settings_dynamic_color_summary">Utiliser les couleurs de votre fond d\'écran</string>
     <string name="settings_meter_title">Affichage</string>
-    <string name="settings_meter_trail">Trace</string>
+    <string name="settings_meter_classic">Classique</string>
     <string name="settings_meter_light_arc">Arc lumineux</string>
     <string name="settings_meter_strobe">Stroboscope</string>
 

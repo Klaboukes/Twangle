@@ -78,8 +78,6 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
  * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
  * Android 8–12 AppCompat keeps it. The app's screens are then recreated in it; [onLanguageChange]
  * follows, for what lives outside them (the home-screen widget).
- *
- * [trailLook] is the build's switch for the trail look (`ToolSwitches.pitchTrail`): off, Meter offers the Light arc and the strobe only, a saved trail showing as the Light arc.
  */
 @Composable
 fun SettingsScreen(
@@ -90,7 +88,6 @@ fun SettingsScreen(
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
     onBack: (() -> Unit)? = null,
-    trailLook: Boolean = true,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -113,7 +110,6 @@ fun SettingsScreen(
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onLensLookChange = viewModel::setLensLook,
         onLeftHandedChange = viewModel::setLeftHanded,
-        trailLook = trailLook,
         modifier = modifier,
         onBack = onBack,
         languages = languageTags,
@@ -134,7 +130,7 @@ fun SettingsScreen(
  * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
  * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
  * [onBack] the top bar has a back arrow, as About's. Meter's
- * cards (2.0 Phase 72) are the trail, the Light arc and the strobe, or the last two in a build without [trailLook].
+ * cards (2.0 Phases 72 and 78) are Classic, the Light arc and the strobe.
  */
 @Composable
 fun SettingsContent(
@@ -153,7 +149,6 @@ fun SettingsContent(
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    trailLook: Boolean = true,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
@@ -180,7 +175,6 @@ fun SettingsContent(
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onLensLookChange = onLensLookChange,
                 onLeftHandedChange = onLeftHandedChange,
-                trailLook = trailLook,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
         }
@@ -313,7 +307,6 @@ private fun SettingsGroups(
     onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
-    trailLook: Boolean,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -381,8 +374,8 @@ private fun SettingsGroups(
             Rows {
                 // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
                 MeterPicker(
-                    looks = LensLook.offered(trailLook),
-                    selected = LensLook.shown(settings.lensLook, trailLook),
+                    looks = LensLook.entries,
+                    selected = settings.lensLook,
                     onSelect = onLensLookChange,
                     precision = settings.inTunePrecision,
                 )

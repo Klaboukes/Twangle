@@ -5,10 +5,8 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -20,15 +18,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.RenderEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.preferredFrameRate
 import androidx.compose.ui.res.stringResource
@@ -62,27 +56,27 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
- * The lens under the ruler (2.0, Phase 71; docs/architecture/v2-plan.md, *The lens*): how far. A rounded box,
- * [LENS_CORNER] corners, on the surface colour, from −50 cents (left, flat, ♭ in the bottom start corner) to +50
- * (right, sharp, ♯ in the bottom end corner), in tune in the middle, the player's [look] drawn inside it
- * ([LensLookArt], clipped to the box). Everything about the box is fixed, so a look changes nothing around it:
+ * The meter under the ruler (2.0, Phases 71 and 78; docs/architecture/v2-plan.md, *The meter*): how far. A box
+ * straight on the page, with no face, border or frame of its own since Phase 78 (until then a rounded lens on the
+ * surface colour with a border in the reading's tone), from −50 cents (left, flat, ♭ in the bottom start corner) to
+ * +50 (right, sharp, ♯ in the bottom end corner), in tune in the middle, the player's [look] drawn in it
+ * ([LensLookArt]). Everything about the box is fixed, so a look changes nothing around it:
  *
- * - its size: as wide as it is given; upright 0.85 times as high as wide ([LENS_TALL]) where the height it is
- *   given allows, giving way down to half its width ([LENS_SHORT]); [wide] (a window wider than tall, Phase 73) as
- *   high as the height it is given, at most half its width (about 3.4 : 1 on a phone on its side); without a height
- *   to fit in, half its width;
+ * - its size: as wide as it is given; upright [LENS_TALL] times as high as wide where the height it is given
+ *   allows, giving way down to [LENS_LEAST] of its width on a short phone; [wide] (a window wider than tall, Phase 73) as high
+ *   as the height it is given, at most half its width (about 3.4 : 1 on a phone on its side); without a height to
+ *   fit in, half its width;
  * - one reading ([LensReading], here [TunerLensReading]): the marker springs to each reading with the look's
- *   feel ([meterFeel]), pinned at ±50, resting in the middle without a note ([cents] gives NaN); the
- *   last seconds ([history]) for the trail; the in-tune window of [precision] ([meterInTuneWindow]); "in tune"
- *   while [inTune], eased; the in-tune glow while [glow] ([rememberInTuneGlow]), eased; with [animationsOff]
- *   both switch at once;
+ *   feel ([meterFeel]), pinned at ±50, resting in the middle without a note ([cents] gives NaN); the in-tune
+ *   window of [precision] ([meterInTuneWindow]); "in tune" while [inTune], eased; the in-tune glow while [glow]
+ *   ([rememberInTuneGlow]), eased, drawn by the look and fading out on the page past the box (nothing is
+ *   clipped); with [animationsOff] both switch at once;
  * - the reading's tone ([tone], a [LiveTone], [readingToneAmount]; the tuner shares it with the word and the
  *   screen's tint): muted without a reading, amber eased toward green as the note nears the zone, green in tune.
- *   The border is the line colour at rest and the tone with a reading, with a soft glow round the box, wider in
- *   tune. No red anywhere;
- * - the quiet state: when the string dies the lens fades to rest (presence to 0.3 over the fade), its border
- *   back to the line colour, the glow off; the trail falls out of the box, then nothing moves;
- * - TalkBack skips it, one silent item: the word under it speaks the reading (and the trail's words, [trailMotionWords]).
+ *   No red anywhere;
+ * - the quiet state: when the string dies the look fades to rest (presence to 0.3 over the fade), then nothing
+ *   moves;
+ * - TalkBack skips it, one silent item: the word under it speaks the reading.
  *
  * [cents] and [reception] are never read while composing: the look reads the [LensReading] in its layer and
  * draw phases only, so readings move it without recomposing the screen around it. Both are [LiveFloat]s, so
@@ -92,7 +86,6 @@ import kotlin.math.roundToInt
 fun Lens(
     look: LensLook,
     cents: LiveFloat,
-    history: PitchHistory,
     modifier: Modifier = Modifier,
     inTune: Boolean = false,
     glow: Boolean = inTune,
@@ -119,30 +112,25 @@ fun Lens(
     )
     val window = rememberUpdatedState(meterInTuneWindow(precision))
     val currentReception = rememberUpdatedState(reception)
-    val scheme = MaterialTheme.colorScheme
-    val colours = rememberUpdatedState(LensColours(face = scheme.surface, line = scheme.outlineVariant, muted = scheme.onSurfaceVariant))
+    val muted = rememberUpdatedState(MaterialTheme.colorScheme.onSurfaceVariant)
     val blurs = rememberReceptionBlurs()
     val currentTone = rememberUpdatedState(tone)
-    val reading = remember(blurs, history) {
-        TunerLensReading(marker, currentTone, glowAmount, window, currentReception, blurs, history)
+    val reading = remember(blurs) {
+        TunerLensReading(marker, currentTone, glowAmount, window, currentReception, blurs)
     }
     val measurer = rememberTextMeasurer(cacheSize = 0)
-    val shape = remember { RoundedCornerShape(LENS_CORNER) }
-    // Read here, so the lens's semantics follow a note coming and going (it changes only then).
+    // Read here, so the meter's semantics follow a note coming and going (it changes only then).
     val quiet = !tone.hasReading
 
     // Android 15+ picks the screen's rate from what apps ask for, and a plain Compose animation only asks for
     // the "normal" rate (60 Hz on the S26). The moving look asks for 120 Hz; the request only counts while it
-    // draws, so a still lens lets the screen slow down.
+    // draws, so a still meter lets the screen slow down.
     Box(
         modifier
             .lensSize(wide)
             .preferredFrameRate(LENS_FRAME_RATE)
             .clearAndSetSemantics { lensQuiet = quiet }
             .drawWithCache {
-                val corner = LENS_CORNER.toPx()
-                val restBorder = Stroke(width = REST_BORDER.toPx())
-                val liveBorder = Stroke(width = LIVE_BORDER.toPx())
                 // A drawing, like the ruler: the signs keep their size with the font size.
                 val signStyle = TextStyle(fontFamily = MusicSignsFont, fontSize = SIGN_SIZE.toSp())
                 val flat = measurer.measure(AnnotatedString("♭"), signStyle)
@@ -150,75 +138,41 @@ fun Lens(
                 val signInset = SIGN_INSET.toPx()
                 val flatAt = Offset(signInset - flat.size.width / 2f, size.height - signInset - flat.size.height / 2f)
                 val sharpAt = Offset(size.width - signInset - sharp.size.width / 2f, size.height - signInset - sharp.size.height / 2f)
-                val glowReach = GLOW_REACH.toPx()
-                val glowReachInTune = GLOW_REACH_IN_TUNE.toPx()
                 onDrawWithContent {
-                    val shown = colours.value
-                    val presence = reading.presence
-                    val tone = reading.tone
-                    val lit = reading.glow.coerceIn(0f, 1f)
-                    // The glow round the box: rounded rects from the outside in, each adding a little, under the face.
-                    if (presence > 0f) {
-                        val reach = glowReach + (glowReachInTune - glowReach) * lit
-                        val strength = presence * (GLOW_ALPHA + (GLOW_ALPHA_IN_TUNE - GLOW_ALPHA) * lit) / GLOW_RINGS
-                        for (ring in GLOW_RINGS downTo 1) {
-                            val out = reach * ring / GLOW_RINGS
-                            drawRoundRect(
-                                tone,
-                                topLeft = Offset(-out, -out),
-                                size = Size(size.width + 2f * out, size.height + 2f * out),
-                                cornerRadius = CornerRadius(corner + out),
-                                alpha = strength,
-                            )
-                        }
-                    }
-                    drawRoundRect(shown.face, cornerRadius = CornerRadius(corner))
                     drawContent()
-                    val border = if (presence > 0f) liveBorder else restBorder
-                    val half = border.width / 2f
-                    drawRoundRect(
-                        mixColour(shown.line, tone.copy(alpha = BORDER_ALPHA), presence),
-                        topLeft = Offset(half, half),
-                        size = Size(size.width - border.width, size.height - border.width),
-                        cornerRadius = CornerRadius(corner - half),
-                        style = border,
-                    )
-                    drawText(flat, color = shown.muted, topLeft = flatAt)
-                    drawText(sharp, color = shown.muted, topLeft = sharpAt)
+                    drawText(flat, color = muted.value, topLeft = flatAt)
+                    drawText(sharp, color = muted.value, topLeft = sharpAt)
                 }
             },
     ) {
-        Box(Modifier.matchParentSize().clip(shape)) { LensLookArt(look, reading, wide) }
+        LensLookArt(look, reading, wide)
     }
 }
 
 /**
- * The lens's size ([Lens]): as wide as it may be; upright as high as the height it is given, between
- * [LENS_SHORT] and [LENS_TALL] of its width; [wide] as high as the height it is given, up to [LENS_SHORT] of its
+ * The meter's size ([Lens]): as wide as it may be; upright as high as the height it is given, between
+ * [LENS_LEAST] and [LENS_TALL] of its width; [wide] as high as the height it is given, up to [LENS_SHORT] of its
  * width (the wide layout gives it the room under the ruler and over the word); [LENS_SHORT] of it with no height to
  * fit in. Asked for its intrinsic height (the layouts that fit a gauge to the room), it gives the short one.
  */
 private fun Modifier.lensSize(wide: Boolean): Modifier = layout { measurable, constraints ->
     val width = if (constraints.hasBoundedWidth) constraints.maxWidth else constraints.minWidth
     val short = (width * LENS_SHORT).roundToInt()
+    val least = (width * LENS_LEAST).roundToInt()
     val tall = (width * LENS_TALL).roundToInt()
     val height = when {
         !constraints.hasBoundedHeight -> short
         wide -> constraints.maxHeight.coerceAtMost(short)
-        else -> constraints.maxHeight.coerceIn(short, tall)
+        else -> constraints.maxHeight.coerceIn(least, tall)
     }
     val placeable = measurable.measure(Constraints.fixed(width, height))
     layout(width, height) { placeable.placeRelative(0, 0) }
 }
 
-/** The lens's colours, from the theme: its face, its rest border and the signs (the tone is the [LiveTone]'s). */
-@Immutable
-private data class LensColours(val face: Color, val line: Color, val muted: Color)
-
 /**
  * The tuner's live [LensReading]: the marker's spring, the [LiveTone] (the resting fade, the "in tune" amount and the
- * tone, shared with the word and the screen's tint), the in-tune glow, the in-tune window, the reception's fade and
- * blur and the history. Nothing here allocates.
+ * tone, shared with the word and the screen's tint), the in-tune glow, the in-tune window and the reception's fade
+ * and blur. Nothing here allocates.
  */
 @Stable
 private class TunerLensReading(
@@ -228,7 +182,6 @@ private class TunerLensReading(
     private val window: State<Float>,
     private val reception: State<LiveFloat>,
     private val blurs: Array<RenderEffect?>,
-    override val history: PitchHistory,
 ) : LensReading {
     private val heldReception = HeldReception()
 
@@ -256,9 +209,9 @@ private class TunerLensReading(
 }
 
 /**
- * What the trail says of [history] for TalkBack, joining the spoken reading while the trail is the lens's look
- * (Phase 71: [PitchTrailDescriber]'s motion, settled so it doesn't chatter): "wavering", "bending up", "bending
- * down", or null for a steady note or none. Worked out every [DESCRIBE_EVERY_MS].
+ * What the trail says of [history] for TalkBack (Phase 71: [PitchTrailDescriber]'s motion, settled so it doesn't
+ * chatter): "wavering", "bending up", "bending down", or null for a steady note or none. Worked out every
+ * [DESCRIBE_EVERY_MS]. The tuner's meter drew the trail in Phases 71 to 77; Phase 78 moves it to Practice.
  */
 @Composable
 fun trailMotionWords(history: PitchHistory): String? {
@@ -278,28 +231,20 @@ fun trailMotionWords(history: PitchHistory): String? {
     }
 }
 
-/** Whether the lens is quiet: nothing heard, its border at rest (for UI tests; TalkBack hears nothing of the lens). */
+/** Whether the meter is quiet: nothing heard (for UI tests; TalkBack hears nothing of the meter). */
 val LensQuiet = SemanticsPropertyKey<Boolean>("LensQuiet")
 var SemanticsPropertyReceiver.lensQuiet by LensQuiet
 
-/** The lens upright: 0.85 times as high as wide where there is room (the mock-up's 206 : 244), and at least half. */
-const val LENS_TALL = 0.85f
+/**
+ * The meter upright: 0.6 times as high as wide where there is room (Classic's dial and the Light arc's fan need
+ * about 0.55 and the strobe fills any box; until Phase 78 the lens was 0.85, for the trail), and at least 0.45 on a
+ * short phone (the S26 at a narrow 360 dp: the meter spans 24 dp more since it lost its frame, and half its width
+ * pushed the pegs down; the looks then draw a little smaller, their width kept). On its side, and with no height to
+ * fit in, at most half as high as wide.
+ */
+const val LENS_TALL = 0.6f
+const val LENS_LEAST = 0.45f
 const val LENS_SHORT = 0.5f
-
-/** Ink's large shape. */
-private val LENS_CORNER = 22.dp
-
-/** The border: the line colour at rest, the tone at [BORDER_ALPHA] with a reading. */
-private val REST_BORDER = 1.5.dp
-private val LIVE_BORDER = 2.dp
-private const val BORDER_ALPHA = 0.75f
-
-/** The glow round the box with a reading (the mock-up's 14 blur, 28 in tune) and how strong it starts. */
-private val GLOW_REACH = 14.dp
-private val GLOW_REACH_IN_TUNE = 28.dp
-private const val GLOW_ALPHA = 0.16f
-private const val GLOW_ALPHA_IN_TUNE = 0.3f
-private const val GLOW_RINGS = 12
 
 /** ♭ and ♯: their middles this far in from the bottom corners, this big. */
 private val SIGN_INSET = 16.dp
@@ -314,5 +259,5 @@ private const val DESCRIBE_EVERY_MS = 500L
 @Preview(showBackground = true, widthDp = 360)
 @Composable
 private fun LensPreview() {
-    MaterialTheme { Lens(look = LensLook.TRAIL, cents = { -18f }, history = PitchHistory()) }
+    MaterialTheme { Lens(look = LensLook.CLASSIC, cents = { -18f }) }
 }

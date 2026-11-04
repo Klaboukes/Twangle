@@ -148,8 +148,8 @@ class TunerStylesTest {
             val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
             val scale = (window.right - window.left) / PHONE_UPRIGHT.width
             val meter = gauge.assertIsDisplayed().getBoundsInRoot()
-            // The lens: the screen less 20 dp each side (Phase 71).
-            assertEquals("$case meter width", (PHONE_UPRIGHT.width - 40.dp).value * scale, (meter.right - meter.left).value, 1f)
+            // The meter: the screen less 8 dp each side (Phase 78; the lens was 20 dp in).
+            assertEquals("$case meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, (meter.right - meter.left).value, 1f)
         }
     }
 

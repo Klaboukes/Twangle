@@ -32,7 +32,7 @@
     <string name="settings_dynamic_color_title">สีจากวอลเปเปอร์</string>
     <string name="settings_dynamic_color_summary">ใช้สีจากวอลเปเปอร์ของคุณ</string>
     <string name="settings_meter_title">มาตรวัด</string>
-    <string name="settings_meter_trail">เส้นระดับเสียง</string>
+    <string name="settings_meter_classic">คลาสสิก</string>
     <string name="settings_meter_light_arc">ไฟโค้ง</string>
     <string name="settings_meter_strobe">สโตรบ</string>
 

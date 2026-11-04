@@ -124,7 +124,6 @@ class SettingsContentTest {
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
         settingsBack: Boolean = false,
-        trailLook: Boolean = true,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
@@ -155,7 +154,6 @@ class SettingsContentTest {
                         onLensLookChange = { lensLookChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
-                        trailLook = trailLook,
                         dynamicColorAvailable = dynamicColorAvailable,
                         languages = languages,
                         appLanguage = appLanguage,
@@ -466,7 +464,7 @@ class SettingsContentTest {
         val leftHanded = top(R.string.settings_left_handed_title)
         assertTrue("Meter over Light or dark, Left-handed charts under both", theme > meter && leftHanded > theme)
         val names = mapOf(
-            LensLook.TRAIL to R.string.settings_meter_trail,
+            LensLook.CLASSIC to R.string.settings_meter_classic,
             LensLook.LIGHT_ARC to R.string.settings_meter_light_arc,
             LensLook.STROBE to R.string.settings_meter_strobe,
         )
@@ -484,26 +482,16 @@ class SettingsContentTest {
             assertTrue("$look's card ($top to $bottom) between Meter ($meter) and Light or dark ($theme)", top > meter && bottom < theme)
             node.positionInRoot.x
         }
-        assertEquals("Trail · Light arc · Strobe, in one row", lefts.sorted(), lefts)
+        assertEquals("Classic · Light arc · Strobe, in one row", lefts.sorted(), lefts)
     }
 
     @Test
     fun pickingAMeterCardSavesItsLook() {
         show(AppSettings())
-        compose.onNodeWithTag(lensLookCardTag(LensLook.TRAIL)).performScrollTo().assertIsSelected()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.CLASSIC)).performScrollTo().assertIsSelected()
         compose.onNodeWithTag(lensLookCardTag(LensLook.LIGHT_ARC)).performClick()
         compose.onNodeWithTag(lensLookCardTag(LensLook.STROBE)).performClick()
         assertEquals(listOf(LensLook.LIGHT_ARC, LensLook.STROBE), lensLookChanges)
-    }
-
-    /** The trail look's brake (`ToolSwitches.pitchTrail` off in a build): no trail card, and a saved trail shows as the Light arc. */
-    @Test
-    fun withoutTheTrailMeterOffersTheLightArcAndTheStrobe() {
-        show(AppSettings(lensLook = LensLook.TRAIL), trailLook = false)
-        compose.onNodeWithTag(lensLookCardTag(LensLook.TRAIL)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.settings_meter_trail)).assertDoesNotExist()
-        compose.onNodeWithTag(lensLookCardTag(LensLook.LIGHT_ARC)).performScrollTo().assertIsSelected()
-        compose.onNodeWithTag(lensLookCardTag(LensLook.STROBE)).assertIsNotSelected()
     }
 
     @Test

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +38,17 @@ import kotlin.math.abs
 import kotlin.math.exp
 
 /**
- * The trail look (2.0, Phase 71; the default): the last seconds of the reading, falling under the newest one
+ * What the trail reads while drawing: a [LensReading] and the last seconds of readings it draws ([history], written
+ * on the DSP thread, read while drawing). Its own reading since the trail left the tuner's meter (Phase 78).
+ */
+@Stable
+interface TrailReading : LensReading {
+    val history: PitchHistory
+}
+
+/**
+ * The trail (2.0, Phase 71, the tuner's meter look until Phase 78 made it a Practice tool): the last seconds of
+ * the reading, falling under the newest one
  * (docs/design/v2-tuner-screens-preview.html, `lensFall`; 1.1's pitch trail tool, turned). The newest reading
  * is a dot with a soft glow [TrailGeometry.NOW_FROM_TOP] under the top edge, and the older ones fall under it
  * at [TrailGeometry.FALL_PER_SECOND], fading out toward the bottom; cents run across, flat left and sharp
@@ -52,7 +63,7 @@ import kotlin.math.exp
  * are made once per size and colours). Once the string dies the line falls out of the box and the loop rests.
  */
 @Composable
-internal fun BoxScope.TrailLook(reading: LensReading) {
+fun BoxScope.TrailLook(reading: TrailReading) {
     val history = reading.history
     val green = MaterialTheme.styleTokens.inTune
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
@@ -254,7 +265,7 @@ private class TrailArt(val geometry: TrailGeometry, private val green: Color, pr
         endY = geometry.height,
     )
 
-    fun draw(scope: DrawScope, reading: LensReading, clock: TrailClock) = with(scope) {
+    fun draw(scope: DrawScope, reading: TrailReading, clock: TrailClock) = with(scope) {
         val glow = reading.glow.coerceIn(0f, 1f)
         val presence = reading.presence
         // The in-tune zone, down the whole height; a little brighter while the in-tune glow is lit.

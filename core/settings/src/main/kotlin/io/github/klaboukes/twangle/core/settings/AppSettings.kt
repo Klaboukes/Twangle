@@ -64,14 +64,15 @@ enum class ThemeMode {
 }
 
 /**
- * What the tuner's lens draws (Phases 71 and 72; until then the tuner draws 1.1's Classic needle, whatever is
- * saved). Saved in settings by [name] under 1.1's `meter_look` key, so don't rename the entries: 1.1's Light arc
- * keeps its name, and a 1.1 look that 2.0 doesn't have is read by the lens look's rule
- * (`DataStoreSettingsRepository`, docs/architecture/v2-plan.md, *Settings from 1.1*).
+ * What the tuner's meter draws (Phases 71, 72 and 78). Saved in settings by [name] under 1.1's `meter_look` key, so
+ * don't rename the entries: 1.1's Classic and Light arc keep their names, and a 1.1 look that 2.0 doesn't have is read
+ * by the meter look's rule (`DataStoreSettingsRepository`, docs/architecture/v2-plan.md, *Settings from 1.1*). 2.0's
+ * `TRAIL` (the default from Phase 71 until the trail became a Practice tool in Phase 78) is no entry any more, so a
+ * saved one reads as the default.
  */
 enum class LensLook {
-    /** The last seconds of the reading, falling under the newest one (Phase 71, from 1.1's pitch trail tool). */
-    TRAIL,
+    /** A needle on a numbered half-circle dial (1.1's Classic meter look, the default again since Phase 78). */
+    CLASSIC,
 
     /** A fan of little lights that opens from the centre toward the note (1.1's Light arc meter look). */
     LIGHT_ARC,
@@ -81,20 +82,7 @@ enum class LensLook {
     ;
 
     companion object {
-        val DEFAULT = TRAIL
-
-        /**
-         * The looks Settings' Meter offers, in their order: all three, or without the trail in a build whose [trail]
-         * is braked off (`ToolSwitches.pitchTrail`, Phase 72).
-         */
-        fun offered(trail: Boolean): List<LensLook> = if (trail) entries else entries - TRAIL
-
-        /**
-         * The look the lens draws, and Settings' Meter shows picked, for the [saved] one: itself, but the Light arc
-         * for the trail in a build without it ([trail] off; the Light arc is then the default). The saved value is
-         * left as it is, so a build with the trail back shows it again.
-         */
-        fun shown(saved: LensLook, trail: Boolean): LensLook = if (saved == TRAIL && !trail) LIGHT_ARC else saved
+        val DEFAULT = CLASSIC
     }
 }
 
