@@ -103,8 +103,12 @@ class MainActivity : AppCompatActivity() {
     private var openTunerRequests by mutableIntStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The opening screen (Theme.Twangle.Starting): the icon on gold, or on dark brown in dark mode.
-        installSplashScreen().setKeepOnScreenCondition { !ready }
+        // The opening screen (Theme.Twangle.Starting): the icon on Ink light, or on Ink dark in dark mode, its
+        // harmonics swinging into place on Android 12 and up.
+        installSplashScreen().apply {
+            setKeepOnScreenCondition { !ready }
+            setOnExitAnimationListener { opening -> opening.fadeOutOnceStill() }
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container

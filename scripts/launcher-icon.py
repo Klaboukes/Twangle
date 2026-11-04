@@ -12,9 +12,14 @@ shapes. Each shape runs from the string out to its own edge and the shapes overl
 so every edge inside the mark is a later shape's edge over an earlier one: no seams where two colours meet.
 
 Writes, for the phone app and the watch app:
-  res/drawable/ic_launcher_foreground.xml   the icon (on @color/ic_launcher_background) and the opening screen's
+  res/drawable/ic_launcher_foreground.xml   the icon (on @color/ic_launcher_background)
   res/drawable/ic_launcher_monochrome.xml   the themed icon: the three harmonics in one colour, three strengths
-and wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark.
+wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark, and
+app/src/main/res/drawable/ic_opening_animated.xml, the opening screen's icon (Android 12 and up play it): the
+string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
+settling into the icon's pose, then the icon's own flat colours fade in over it as it comes to rest. While they
+swing the harmonics are see-through the plain way, not added up like light, which nobody can tell apart in
+motion. Android 8 to 11 show it still: its resting state is the icon.
 
     python -I scripts/launcher-icon.py [--preview out.svg]
 """
@@ -178,6 +183,64 @@ def path_xml(colour, data, alpha=None):
     return f'\n    <path\n        android:fillColor="{colour}"{a}\n        android:pathData="{data}" />\n'
 
 
+OPENING_MS = 800                             # the opening animation, all of it
+SWING_PART = 0.75                            # the share of it the string swings; the rest the colours light up
+SWING_FRAMES = 48
+
+
+def swing(n, q):
+    """How far harmonic n stands from the string, as a share of its resting height, q (0..1) into the swing:
+    plucked from rest, swinging n times as fast as the whole string (sin), easing into the resting pose
+    (smoothstep, so it arrives with no jolt) and never past it."""
+    s = q * q * (3 - 2 * q)
+    return s + (1 - s) * math.sin(2 * math.pi * n * q)
+
+
+def keyframes(prop, values):
+    frames = "".join(f'\n                        <keyframe android:fraction="{f:.4f}" android:value="{v:.4f}" />'
+                     for f, v in values)
+    return (f'\n            <objectAnimator\n                android:duration="{OPENING_MS}"\n'
+            f'                android:interpolator="@android:anim/linear_interpolator">\n'
+            f'                <propertyValuesHolder\n                    android:propertyName="{prop}"\n'
+            f'                    android:valueType="floatType">{frames}\n                </propertyValuesHolder>\n'
+            f'            </objectAnimator>\n')
+
+
+def target(name, animator):
+    return (f'\n    <target android:name="{name}">\n        <aapt:attr name="android:animation">'
+            + animator + '        </aapt:attr>\n    </target>\n')
+
+
+def opening(painted):
+    """The opening screen's animated icon: the three harmonics swinging (each in a group hinged on the string,
+    its height animated), under the icon's flat shapes, which stay clear until the swing is over."""
+    moving = "".join(
+        f'\n    <group\n        android:name="h{k}"\n        android:pivotY="{STRING_Y}">\n'
+        f'        <path\n            android:name="m{k}"\n            android:fillColor="{HARMONICS[k][3]}"\n'
+        f'            android:fillAlpha="0"\n            android:pathData="{harmonic_outline(k)}" />\n    </group>\n'
+        for k in range(3))
+    resting = "".join(f'\n    <path\n        android:name="r{i}"\n        android:fillColor="{c}"\n        android:pathData="{d}" />\n'
+                      for i, (c, d) in enumerate(painted))
+    body = vector(108, 108, moving + resting, "").split("-->\n", 1)[1]       # the <vector> without the file header
+    body = "".join("        " + line + "\n" if line else "\n" for line in body.rstrip("\n").split("\n"))
+    swing_end = SWING_PART
+    targets = ""
+    for k in range(3):
+        n = HARMONICS[k][0]
+        frames = [(i / SWING_FRAMES * swing_end, swing(n, i / SWING_FRAMES)) for i in range(SWING_FRAMES + 1)]
+        targets += target(f"h{k}", keyframes("scaleY", frames + [(1.0, 1.0)]))
+        strength = HARMONICS[k][4]
+        targets += target(f"m{k}", keyframes("fillAlpha", [(0.0, strength), (0.999, strength), (1.0, 0.0)]))
+    for i in range(len(painted)):
+        targets += target(f"r{i}", keyframes("fillAlpha", [(0.0, 0.0), (swing_end, 0.0), (1.0, 1.0)]))
+    return (HEADER.format(what="The opening screen's icon: the string plucked, each harmonic swinging at its own speed into\n"
+                               "     the icon's pose, then the icon's colours lighting up (ic_launcher_foreground.xml). Still, it is that icon.")
+            + '<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
+            + '    xmlns:aapt="http://schemas.android.com/aapt">\n\n'
+            + '    <aapt:attr name="android:drawable">\n' + body + '    </aapt:attr>\n'
+            + targets + '</animated-vector>\n')
+
+
 def main():
     painted = regions()
     foreground = vector(108, 108, "".join(path_xml(c, d) for c, d in painted),
@@ -197,6 +260,11 @@ def main():
         (res / "ic_launcher_foreground.xml").write_text(foreground, encoding="utf-8", newline="\n")
         (res / "ic_launcher_monochrome.xml").write_text(monochrome, encoding="utf-8", newline="\n")
     (ROOT / "wear/src/main/res/drawable/ic_twangle_mark.xml").write_text(mark, encoding="utf-8", newline="\n")
+    (ROOT / "app/src/main/res/drawable/ic_opening_animated.xml").write_text(opening(painted), encoding="utf-8", newline="\n")
+    (ROOT / "app/src/main/res/values/opening_animation.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
+        '<resources>\n    <!-- How long the opening screen\'s icon animation lasts (Theme.Twangle.Starting). -->\n'
+        f'    <integer name="opening_animation_ms">{OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
     print(f"{len(painted)} shapes, {sum(d.count('L') + 1 for _, d in painted)} points")
 
     if "--preview" in sys.argv:
