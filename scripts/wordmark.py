@@ -124,7 +124,10 @@ def swing(n, q):
 
 def website_name(word):
     """The website's ringing name: an inline SVG with its own style, the harmonics plucked by CSS keyframes
-    (one set per harmonic, and a copy that :hover switches to, which starts the pluck again)."""
+    (one set per harmonic). Each wave is drawn twice: the first plucks as the page opens, the second is hidden
+    until the name is hovered, which shows it and so plucks it, the first hidden meanwhile. Leaving keeps the
+    second for the pluck's length (delayed transitions of display and visibility), so a quick leave never cuts
+    the pluck short. Browsers without discrete transitions (from 2023 and older) pluck only as the page opens."""
     waves = []
     for n, height, sign, _, _, _ in HARMONICS:
         points = []
@@ -132,18 +135,24 @@ def website_name(word):
             u = i / 96
             x = STRING_START + (STRING_END - STRING_START) * u
             points.append(f"{x:.1f},{STRING_Y - sign * height * math.sin(n * math.pi * u):.1f}")
-        waves.append(f'<path class="h{n}" d="M{STRING_START},{STRING_Y} L' + " ".join(points) + ' Z"/>')
+        d = f"M{STRING_START},{STRING_Y} L" + " ".join(points) + " Z"
+        waves.append(f'<path class="h{n} first" d="{d}"/><path class="h{n} again" d="{d}"/>')
     css = []
     for n, _, _, light, dark, strength in HARMONICS:
         frames = " ".join(f"{100 * i / PLUCK_FRAMES:.0f}%{{transform:scaleY({swing(n, i / PLUCK_FRAMES):.3f})}}"
                           for i in range(PLUCK_FRAMES + 1))
-        css.append(f"@keyframes pluck{n}{{{frames}}}@keyframes pluck{n}b{{{frames}}}")
+        css.append(f"@keyframes pluck{n}{{{frames}}}")
         css.append(f".ringing .h{n}{{fill:{light};opacity:{strength};animation:pluck{n} {PLUCK_MS}ms linear both}}")
-        css.append(f".brand:hover .ringing .h{n}{{animation-name:pluck{n}b}}")
         css.append(f"@media (prefers-color-scheme:dark){{.ringing .h{n}{{fill:{dark}}}}}")
     css.append(f".ringing path{{transform-box:view-box;transform-origin:0 {STRING_Y}px;mix-blend-mode:multiply}}")
     css.append("@media (prefers-color-scheme:dark){.ringing path{mix-blend-mode:screen}}")
     css.append(".ringing .word{fill:currentColor;mix-blend-mode:normal}")
+    css.append(".ringing .again{display:none}")
+    css.append(f"@supports (transition-behavior:allow-discrete){{"
+               f".ringing .again{{transition:display 0s {PLUCK_MS}ms allow-discrete}}"
+               f".ringing .first{{transition:visibility 0s {PLUCK_MS}ms}}"
+               f".brand:hover .ringing .again{{display:inline;transition-delay:0s}}"
+               f".brand:hover .ringing .first{{visibility:hidden;transition-delay:0s}}}}")
     css.append("@media (prefers-reduced-motion:reduce){.ringing path{animation:none!important}}")
     return ("<!-- Drawn by scripts/wordmark.py: change that script and run it again rather than editing this file. -->\n"
             f'<svg class="ringing" viewBox="0 0 {FRAME_W} {FRAME_H}" aria-hidden="true" focusable="false">'
