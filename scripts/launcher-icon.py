@@ -46,6 +46,11 @@ MONO_ALPHA = [0.5, 0.75, 1.0]                # the themed icon's strengths, whol
 # lowered, two waves' overlap more than all three's, which stays the lightest (HSL, as the mock-up's toHsl).
 OVERLAP_SATURATION, OVERLAP_SATURATION_CAP = 0.25, 0.85
 OVERLAP_DARKER = {2: 0.10, 3: 0.03}
+# Overlaps whose added-up colour hardly showed in a small icon, painted in a colour of their own instead (owner,
+# 2026-11-05): the whole and the halves in the light mint all three add up to, which stands out on the amber, all
+# three in a stronger pink, and the halves and the thirds under the string a paler cyan, lighter than their blue
+# and green.
+OVERLAP_COLOURS = {(0, 1): "#DBFADB", (0, 1, 2): "#F48FB1", (1, 2): "#A6FAFF"}
 SAMPLES = 1500
 TOLERANCE = 0.01                             # how far a simplified edge may stray, in canvas units
 # The launcher icon (and the themed icon) draw the mark at this size about the canvas's centre, so it sits inside
@@ -106,7 +111,9 @@ def hex_of(c):
 def colour_of(members):
     """The colour the mock-up shows where the harmonics in `members` overlap: each one screened over the
     background in turn at its strength (CSS mix-blend-mode: screen with opacity, in sRGB), an overlap then
-    made more colourful and deeper (OVERLAP_SATURATION, OVERLAP_DARKER)."""
+    made more colourful and deeper (OVERLAP_SATURATION, OVERLAP_DARKER), or the colour OVERLAP_COLOURS gives it."""
+    if tuple(sorted(members)) in OVERLAP_COLOURS:
+        return OVERLAP_COLOURS[tuple(sorted(members))]
     dst = rgb(BACKGROUND)
     for k in sorted(members):
         blended = screen(dst, rgb(HARMONICS[k][3]))
