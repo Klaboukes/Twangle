@@ -369,9 +369,12 @@ class CapoScreenTest {
                 title.left >= backArrow.right && title.top < backArrow.bottom && title.bottom > backArrow.top,
             )
             assertTrue("$case the tuning on its own line under the top row $backArrow $instrument", instrument.top >= backArrow.bottom)
-            assertEquals("$case the chip under the name", ((title.left + title.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
+            // Each centred in whole pixels, so they can be a pixel apart: on a tablet's window forced onto the Xiaomi
+            // (0.8 px a dp) that is 1.2 dp (the overnight run of 2026-11-05, after Nunito changed the name's width).
+            val near = maxOf(1f, 1.05f / node(PracticeTestTags.TUNING).fetchSemanticsNode().layoutInfo.density.density)
+            assertEquals("$case the chip under the name", ((title.left + title.right) / 2).value, ((instrument.left + instrument.right) / 2).value, near)
             if (size.width < size.height) {
-                assertEquals("$case the chip in the window's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, 1f)
+                assertEquals("$case the chip in the window's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, near)
             }
             val middle = (window.left + window.right) / 2
             if (size.width > size.height) {

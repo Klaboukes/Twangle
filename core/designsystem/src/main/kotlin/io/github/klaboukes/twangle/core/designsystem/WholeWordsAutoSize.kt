@@ -70,7 +70,12 @@ class WholeWordsAutoSize(
         (((largest.hashCode() * 31 + smallest.hashCode()) * 31 + twoLineMargin.hashCode()) * 31 + sideMargin.hashCode()) * 31 + lastResort.hashCode()
 }
 
-/** A label keeps its side room ([WholeWordsAutoSize]'s sideMargin) only down to this share of the size it would have without. */
-private const val SIDE_ROOM_SHARE = 0.85f
+/**
+ * A label keeps its side room ([WholeWordsAutoSize]'s sideMargin) only down to this share of the size it would have without.
+ * 0.85 until the overnight run of 2026-11-05: in Nunito, at few pixels a letter, widths shrink in steps
+ * ("Phrygian dominant" at 1.3× text on a tablet's window forced onto the Xiaomi, 0.8 px a dp, was 141 px wide from
+ * 16 down to 15.5 sp and 135 px from 15 to 14 sp), so 15 % smaller wasn't always clear of the sides.
+ */
+private const val SIDE_ROOM_SHARE = 0.8f
 
 private const val LABEL_STEP = 0.5f
