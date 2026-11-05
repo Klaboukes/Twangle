@@ -37,7 +37,7 @@ import kotlin.math.roundToInt
 
 /**
  * A4 calibration: a slider over 415–466 Hz in 1 Hz steps (low on the left in every language), − and +
- * for single steps (the shared stepper, [StepperButton]), and a reset to 440 Hz. A drag is saved once the finger lifts; until the
+ * for single steps (the shared stepper, [StepperButton]), and a reset to 440 Hz, always shown in full. A drag is saved once the finger lifts; until the
  * saved value comes back the slider keeps showing where it was dropped, so it doesn't jump back.
  */
 @Composable
@@ -106,9 +106,10 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
                 )
             }
         }
+        // Always in the accent, at 440 Hz too (where a tap changes nothing): greyed out it was too faint to
+        // find on a dimmed screen, and lit up only once the slider moved (owner, 2026-11-05).
         TwangleTextButton(
-            onClick = { onA4Change(NoteMapper.DEFAULT_A4_HZ) },
-            enabled = shown != NoteMapper.DEFAULT_A4_HZ,
+            onClick = { if (shown != NoteMapper.DEFAULT_A4_HZ) onA4Change(NoteMapper.DEFAULT_A4_HZ) },
             modifier = Modifier.align(Alignment.End),
         ) {
             Text(stringResource(R.string.settings_a4_reset, NoteMapper.DEFAULT_A4_HZ.roundToInt()))

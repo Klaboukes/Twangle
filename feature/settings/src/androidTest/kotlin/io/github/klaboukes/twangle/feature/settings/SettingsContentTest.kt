@@ -240,9 +240,11 @@ class SettingsContentTest {
     }
 
     @Test
-    fun resetIsDisabledAt440() {
+    fun resetStaysAButtonAt440AndChangesNothing() {
+        // Never greyed out: too faint on a dimmed screen (owner, 2026-11-05).
         show(AppSettings(a4Hz = 440f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).assertIsEnabled().performClick()
+        assertEquals(emptyList<Float>(), a4Changes)
     }
 
     @Test
