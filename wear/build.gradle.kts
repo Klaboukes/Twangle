@@ -53,6 +53,8 @@ android {
 
     buildFeatures {
         compose = true
+        // BuildConfig.DEBUG picks the tools a build shows (WatchToolSwitches.kt).
+        buildConfig = true
     }
 
     androidResources {
@@ -76,6 +78,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.android)
+    // The metronome's tempo and click choice, kept on the watch (WatchMetronomeStore.kt).
+    implementation(libs.androidx.datastore.preferences)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.wear.compose.foundation)

@@ -22,6 +22,12 @@ object WatchColors {
 
     /** The amber of a note far off, which the dot and the word ease from toward [inTune] ([WatchTone]). */
     val farOff = Color(0xFFFFB648)
+
+    /** The watch's own: the metronome's speaker button while off, a step up from black (the mock-up's surface). */
+    val surface = Color(0xFF1B2029)
+
+    /** The watch's own: the page dot of the page not shown, between the track and the muted text. */
+    val dotOff = Color(0xFF4A515C)
 }
 
 /** Wear Material 3 in [WatchColors]: buttons in the accent, text in ink and muted, on black. */

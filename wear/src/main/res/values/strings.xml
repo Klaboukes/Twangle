@@ -47,4 +47,21 @@
     <string name="wear_shortcut_tune">Tune</string>
     <!-- Watch: what the tile and the watch-face shortcut do, read by TalkBack and shown in the watch's tile list. -->
     <string name="wear_shortcut_open">Open the tuner</string>
+    <!-- Watch metronome: small under the big tempo number, what it counts (beats per minute). Kept as "BPM" in every language, as on the phone. -->
+    <string name="wear_metronome_bpm" translatable="false">BPM</string>
+    <!-- Watch metronome, TalkBack: the tempo read aloud. %1$d is the number of beats per minute, e.g. "96 beats per minute". -->
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d beat per minute</item>
+        <item quantity="other">%1$d beats per minute</item>
+    </plurals>
+    <!-- Watch metronome, TalkBack: said after the tempo while the metronome plays ("96 beats per minute, Playing"). -->
+    <string name="wear_metronome_playing">Playing</string>
+    <!-- Watch metronome, TalkBack: said after the tempo while the metronome is stopped. -->
+    <string name="wear_metronome_stopped">Stopped</string>
+    <!-- Watch metronome, TalkBack: the name of the round ▶ button that starts the metronome. One word, as on the phone's metronome. -->
+    <string name="wear_metronome_start">Start</string>
+    <!-- Watch metronome, TalkBack: the name of the round ■ button that stops the metronome. One word. -->
+    <string name="wear_metronome_stop">Stop</string>
+    <!-- Watch metronome, TalkBack: the name of the small speaker button, a switch: on, the watch's speaker clicks on every beat; off, the beat is only a tap on the wrist. -->
+    <string name="wear_metronome_click">Click sound</string>
 </resources>

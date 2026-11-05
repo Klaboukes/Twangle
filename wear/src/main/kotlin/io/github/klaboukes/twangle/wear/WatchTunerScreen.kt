@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -79,41 +80,84 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * The watch app: the microphone permission first, then the tuner. [tuner] is only asked for (and
- * so the microphone only opened) once the permission is granted. While the tuner is shown, the
- * watch's screen state goes to the view model, which lets go of the mic when the screen goes off,
- * the screen is held on while the tuner hears playing, and the wrist feels a tap as a note comes
- * in tune.
+ * The watch app: the tuner, and with [tools]' metronome on (Phase 80) the metronome a swipe left of it, two
+ * pages with dots ([WatchPages]), the one shown first [opening], a later [request] moving there; with it off,
+ * the tuner alone. [metronome] is only asked for once its page shows.
  */
 @Composable
-fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
+fun WatchApp(
+    tools: WatchToolSwitches,
+    tuner: @Composable () -> WatchTunerViewModel,
+    metronome: @Composable () -> WatchMetronomeViewModel,
+    opening: WatchPage = WatchPage.TUNER,
+    request: WatchPage? = null,
+    onRequestDone: () -> Unit = {},
+) {
     WatchTheme {
         AppScaffold {
-            val permission = rememberWatchMicPermission()
-            if (permission.granted) {
-                val viewModel = tuner()
-                val awake = rememberWatchScreenAwake(viewModel.state)
-                ScreenOnEffect { on ->
-                    viewModel.setScreenOn(on)
-                    if (on) awake.touched()
-                }
-                LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.shown() }
-                val state by viewModel.state.collectAsStateWithLifecycle()
-                // One soft tap on the wrist as the note comes in tune, as the arc turns green.
-                WatchInTuneTapEffect(state)
-                // The arc runs along the edge, where the time would be, so the tuner leaves it out.
-                ScreenScaffold(timeText = {}) {
-                    WatchTuner(state, onRetry = viewModel::retry)
-                }
-            } else {
-                ScreenScaffold {
-                    Message(
-                        text = stringResource(R.string.wear_mic_needed),
-                        action = stringResource(if (permission.needsSettings) R.string.wear_open_settings else R.string.wear_allow_mic),
-                        onAction = permission.onAction,
-                    )
-                }
-            }
+            WatchAppPages(
+                tools = tools,
+                opening = opening,
+                request = request,
+                onRequestDone = onRequestDone,
+                tunerPage = { WatchTunerPage(tuner) },
+                metronomePage = { WatchMetronomePage(metronome) },
+            )
+        }
+    }
+}
+
+/** The pages [tools] allow: the tuner and the metronome side by side ([WatchPages]), or with the metronome off the tuner alone. */
+@Composable
+internal fun WatchAppPages(
+    tools: WatchToolSwitches,
+    opening: WatchPage,
+    request: WatchPage?,
+    onRequestDone: () -> Unit,
+    tunerPage: @Composable () -> Unit,
+    metronomePage: @Composable () -> Unit,
+) {
+    if (tools.metronome) {
+        WatchPages(opening, request, onRequestDone, tuner = tunerPage, metronome = metronomePage)
+    } else {
+        tunerPage()
+        // A request for the metronome has nowhere to go: the tuner it is.
+        LaunchedEffect(request) { if (request != null) onRequestDone() }
+    }
+}
+
+/**
+ * The tuner's page: the microphone permission first, then the tuner. [tuner] is only asked for (and so
+ * the microphone only opened) once the permission is granted, and its state is only collected while this
+ * page shows. While the tuner is shown, the watch's screen state goes to the view model, which lets go of
+ * the mic when the screen goes off, the screen is held on while the tuner hears playing, and the wrist
+ * feels a tap as a note comes in tune.
+ */
+@Composable
+fun WatchTunerPage(tuner: @Composable () -> WatchTunerViewModel) {
+    val permission = rememberWatchMicPermission()
+    if (permission.granted) {
+        val viewModel = tuner()
+        val awake = rememberWatchScreenAwake(viewModel.state)
+        ScreenOnEffect { on ->
+            viewModel.setScreenOn(on)
+            if (on) awake.touched()
+        }
+        LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.shown() }
+        val state by viewModel.state.collectAsStateWithLifecycle()
+        // One soft tap on the wrist as the note comes in tune, as the arc turns green.
+        WatchInTuneTapEffect(state)
+        // The arc runs along the edge, where the time would be, so the tuner leaves it out.
+        ScreenScaffold(timeText = {}) {
+            WatchTuner(state, onRetry = viewModel::retry)
+        }
+    } else {
+        ScreenScaffold {
+            Message(
+                text = stringResource(R.string.wear_mic_needed),
+                action = stringResource(if (permission.needsSettings) R.string.wear_open_settings else R.string.wear_allow_mic),
+                onAction = permission.onAction,
+            )
         }
     }
 }

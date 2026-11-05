@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 3 november 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 5 november 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -13,7 +13,7 @@ Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gema
 - Het geluid wordt live in het geheugen van de telefoon geanalyseerd om de toonhoogte of het tempo te vinden, en daarna meteen weggegooid. Twangle **neemt nooit geluid op, bewaart het niet en verstuurt het niet**.
 
 ## Op een horloge
-De app van Twangle voor Wear OS-horloges werkt zelfstandig, zonder de telefoon. Daarvoor gelden dezelfde regels: hij luistert met de microfoon van het horloge alleen zolang de stemmer op het scherm van het horloge staat, analyseert het geluid in het geheugen van het horloge en gooit het daarna meteen weg, en neemt nooit iets op, bewaart niets en verstuurt niets. Ook de horloge-app heeft geen internettoestemming. Het enige wat hij onthoudt, op het horloge zelf, is of je nee hebt gezegd tegen de microfoon, zodat hij weet of hij het opnieuw mag vragen.
+De app van Twangle voor Wear OS-horloges werkt zelfstandig, zonder de telefoon. Daarvoor gelden dezelfde regels: hij luistert met de microfoon van het horloge alleen zolang de stemmer op het scherm van het horloge staat, analyseert het geluid in het geheugen van het horloge en gooit het daarna meteen weg, en neemt nooit geluid op, bewaart het niet en verstuurt het niet. De metronoom op het horloge gebruikt de microfoon nooit. Ook de horloge-app heeft geen internettoestemming. Hij onthoudt maar twee dingen, op het horloge zelf: of je nee hebt gezegd tegen de microfoon, zodat hij weet of hij het opnieuw mag vragen, en het tempo van zijn metronoom en of die metronoom klikt via de luidspreker van het horloge. Beide blijven buiten de back-up van Android.
 
 ## Geen internet, geen tracking
 - Twangle heeft **geen internettoestemming** en kan dus niets versturen.
@@ -45,7 +45,7 @@ De widget op je startscherm laat het instrument en de stemming zien die je hebt 
 Heb je de back-up van Android zelf aangezet (bijvoorbeeld Google-back-up), dan kan Android deze instellingen meenemen in de back-up van je telefoon of overzetten naar een nieuwe telefoon, zodat ze na een herinstallatie terugkomen. Alleen of je nee hebt gezegd tegen de microfoon blijft erbuiten: een nieuwe telefoon heeft het je nog niet gevraagd. Die back-up wordt geregeld door Android en je back-updienst, niet door Twangle, en je beheert hem in de instellingen van je telefoon. Er zit nooit geluid in.
 
 ## Trillen
-Twangle kan kort trillen als een snaar gestemd is, en op de tel van de metronoom als je dat aanzet. Daarvoor is de triltoestemming van Android nodig, die bij installatie wordt gegeven en geen toegang tot gegevens geeft.
+Twangle kan kort trillen als een snaar gestemd is, en op de tel van de metronoom als je dat aanzet; het horloge tikt op je pols als een noot zuiver wordt en op elke tel van zijn metronoom. Daarvoor is de triltoestemming van Android nodig, die bij installatie wordt gegeven en geen toegang tot gegevens geeft.
 
 ## Kinderen
 Twangle verzamelt van niemand persoonsgegevens, ook niet van kinderen.

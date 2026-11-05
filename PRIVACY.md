@@ -1,6 +1,6 @@
 # Twangle privacy policy
 
-*Effective date: 3 November 2026* · [Nederlands](PRIVACY.nl.md)
+*Effective date: 5 November 2026* · [Nederlands](PRIVACY.nl.md)
 
 Twangle is a guitar tuner for Android, with a metronome and practice tools, made by the developer Klaboukes. In short: **Twangle collects no data about you.** Nothing you play and nothing about you leaves your phone.
 
@@ -13,7 +13,7 @@ Twangle is a guitar tuner for Android, with a metronome and practice tools, made
 - The sound is analysed live, in the phone's memory, to find the pitch or the tempo, and thrown away straight after. Twangle **never records, saves or sends** any sound.
 
 ## On a watch
-Twangle's Wear OS watch app works on its own, without the phone. It follows the same rules: it hears through the watch's own microphone only while its tuner is on the watch's screen, analyses the sound in the watch's memory and throws it away straight after, and never records, saves or sends anything. It has no internet permission either. The only thing it remembers, on the watch itself, is whether you said no to the microphone, so it knows whether to ask again.
+Twangle's Wear OS watch app works on its own, without the phone. It follows the same rules: it hears through the watch's own microphone only while its tuner is on the watch's screen, analyses the sound in the watch's memory and throws it away straight after, and never records, saves or sends any sound. Its metronome never uses the microphone. It has no internet permission either. It remembers only two things, on the watch itself: whether you said no to the microphone, so it knows whether to ask again, and its metronome's tempo and whether the metronome clicks through the watch's speaker. Both stay out of Android's backup.
 
 ## No internet, no tracking
 - Twangle has **no internet permission**, so it cannot send anything anywhere.
@@ -45,7 +45,7 @@ The home-screen widget shows the instrument and tuning you chose. It never uses 
 If you have turned on Android's own backup (for example Google backup), Android may include these settings in your phone's backup or copy them to a new phone, so they come back after a reinstall. Only whether you said no to the microphone stays out of it: a new phone hasn't asked you yet. That backup is run by Android and your backup provider, not by Twangle, and you control it in the phone's settings. It never contains sound.
 
 ## Vibration
-Twangle can vibrate briefly when a string is in tune, and on the metronome's beat if you turn that on. This needs Android's vibrate permission, which is granted on install and gives no access to any data.
+Twangle can vibrate briefly when a string is in tune, and on the metronome's beat if you turn that on; the watch taps your wrist when a note comes in tune and on every beat of its metronome. This needs Android's vibrate permission, which is granted on install and gives no access to any data.
 
 ## Children
 Twangle collects no personal data from anyone, including children.

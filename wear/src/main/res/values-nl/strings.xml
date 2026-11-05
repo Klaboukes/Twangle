@@ -27,4 +27,13 @@
     <string name="wear_tile_tune">Stemmen</string>
     <string name="wear_shortcut_tune">Stem</string>
     <string name="wear_shortcut_open">Open de stemmer</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d slag per minuut</item>
+        <item quantity="other">%1$d slagen per minuut</item>
+    </plurals>
+    <string name="wear_metronome_playing">Speelt</string>
+    <string name="wear_metronome_stopped">Gestopt</string>
+    <string name="wear_metronome_start">Start</string>
+    <string name="wear_metronome_stop">Stop</string>
+    <string name="wear_metronome_click">Klikgeluid</string>
 </resources>

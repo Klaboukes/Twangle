@@ -1,8 +1,8 @@
 package io.github.klaboukes.twangle.wear
 
 import android.os.SystemClock
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -11,7 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.keepScreenOn
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
@@ -76,7 +77,7 @@ internal class WatchScreenAwake(private val clock: () -> Long) {
 
 /**
  * Keeps the watch's screen on while [states] tell of playing ([WatchScreenAwake]); a window flag,
- * not a wake lock. The returned keeper takes [WatchScreenAwake.touched] when the screen comes on.
+ * not a wake lock (Compose's counted `keepScreenOn`). The returned keeper takes [WatchScreenAwake.touched] when the screen comes on.
  */
 @Composable
 internal fun rememberWatchScreenAwake(states: StateFlow<WatchTunerState>): WatchScreenAwake {
@@ -89,12 +90,7 @@ internal fun rememberWatchScreenAwake(states: StateFlow<WatchTunerState>): Watch
     LaunchedEffect(awake, states, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { states.collect(awake::heard) }
     }
-    if (awake.held) {
-        val view = LocalView.current
-        DisposableEffect(view) {
-            view.keepScreenOn = true
-            onDispose { view.keepScreenOn = false }
-        }
-    }
+    // Counted with the metronome page's keeper, so the page left behind after a swipe never undoes this one's.
+    if (awake.held) Spacer(Modifier.keepScreenOn())
     return awake
 }
