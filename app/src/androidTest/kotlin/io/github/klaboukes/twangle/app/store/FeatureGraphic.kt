@@ -175,7 +175,7 @@ private val FAN = listOf(
 private val TEXT_EDGE = 36.dp
 /** The name's capitals: the icon about 33 dp and the word 75 dp across, clear of the fan. */
 private val NAME_CAP_HEIGHT = 13.dp
-private val TEXT_WIDTH = 140.dp
+private val TEXT_WIDTH = 124.dp
 private val LINE_GAP = 10.dp
 private const val LINE_SIZE = 14f
 private const val LINE_MIN_SIZE = 11f

@@ -19,7 +19,7 @@ Part of §6 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 ## One language list
 `twangle.languages` in the root `gradle.properties` (`en,nl,de,fr,es,it,pt-rBR,zh-rCN,ja,ko,hi,in,ru,tr,pl,ar,vi,th,b+zh+Hant,bn,uk,sv,nb,da,fi`), as Android resource qualifiers (`de`, `pt-rBR`, `zh-rCN`, `b+sr+Latn`). The first is the default, whose texts are in `res/values/`.
 
-Since Phase 67 (2.0, one look) every text is in the phone's own font, so no language needs a face of its own; 1.1's per-language face rules for its six styles' display faces (`facesFor`, `StyleFontCoverageTest`) are in [history](history.md), *Meter, wave and styles*.
+Since Phase 79 every text is in Nunito (`TwangleFont`, [Meter and styles](ui-meter-and-styles.md), *Lettering*), which covers the Latin, Cyrillic and Vietnamese letters; the other scripts' letters come from the phone's own font glyph by glyph, so no language needs a face of its own (Phase 67 to 79 every text was in the phone's own font); 1.1's per-language face rules for its six styles' display faces (`facesFor`, `StyleFontCoverageTest`) are in [history](history.md), *Meter, wave and styles*.
 
 ## Day and night
 Owner, 2026-10-28: with 25 languages, translating every new or reworded text into all of them would slow every day's work. So the work is split:

@@ -1,16 +1,35 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 
 /**
- * The face for number readouts ("12 cents flat", the tempo): the phone's own plain sans, as every other text
- * (2.0's one look, Ink; the six styles' bundled faces went in Phase 67). It has no ♯ and ♭; [musicText] sets
- * those in [MusicSignsFont].
+ * Twangle's own face, Nunito (Phase 79, the owner's pick of 2026-11-05 after a branding review): rounded ends like
+ * the name's Comfortaa and the icon's harmonics, but sturdy and open at small sizes, so the app looks the same on
+ * every brand of phone (until then it took the phone's own font: MiSans on a Xiaomi, One UI Sans on a Galaxy).
+ * Bundled whole and unchanged ([R.font.nunito], one variable file, SIL OFL 1.1, credited on the About page),
+ * one [Font] for each weight the app asks for. It covers the Latin, Cyrillic and Vietnamese letters, 17 of the 25
+ * languages; Chinese, Japanese, Korean, Arabic, Hindi, Bengali and Thai letters, which it lacks, come from the
+ * phone's own font, glyph by glyph, as Android does for any face. Its figures are lining and all one width, so a
+ * changing number never shifts.
  */
-val NumberFont: FontFamily = FontFamily.Default
+@OptIn(ExperimentalTextApi::class)
+val TwangleFont: FontFamily = FontFamily(
+    listOf(200, 300, 400, 500, 600, 700, 800, 900).map { weight ->
+        Font(R.font.nunito, FontWeight(weight), variationSettings = FontVariation.Settings(FontVariation.weight(weight)))
+    },
+)
+
+/**
+ * The face for number readouts ("12 cents flat", the tempo): [TwangleFont], as every other text. It has no ♯
+ * and ♭; [musicText] sets those in [MusicSignsFont].
+ */
+val NumberFont: FontFamily = TwangleFont
 
 /**
  * The OpenType feature for lining figures: digits standing full height on the baseline, so a 0 never
@@ -20,13 +39,13 @@ val NumberFont: FontFamily = FontFamily.Default
 const val LINING_FIGURES = "lnum"
 
 /**
- * Material 3's type scale in the phone's own plain sans ([FontFamily.Default], in every language and
- * script), the display and headline styles light, every style with [LINING_FIGURES].
+ * Material 3's type scale in [TwangleFont], the display and headline styles light, every style with
+ * [LINING_FIGURES].
  */
 fun inkTypography(): Typography {
     val base = Typography()
-    fun TextStyle.display() = copy(fontFamily = FontFamily.Default, fontWeight = FontWeight.Light, fontFeatureSettings = LINING_FIGURES)
-    fun TextStyle.text() = copy(fontFamily = FontFamily.Default, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.display() = copy(fontFamily = TwangleFont, fontWeight = FontWeight.Light, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.text() = copy(fontFamily = TwangleFont, fontFeatureSettings = LINING_FIGURES)
     return base.copy(
         displayLarge = base.displayLarge.display(),
         displayMedium = base.displayMedium.display(),

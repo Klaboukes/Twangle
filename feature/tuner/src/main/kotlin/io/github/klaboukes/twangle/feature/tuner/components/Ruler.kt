@@ -42,6 +42,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.TwangleFont
 import io.github.klaboukes.twangle.core.designsystem.lens.meterInTuneExit
 import io.github.klaboukes.twangle.core.designsystem.lens.readingToneAmount
 import io.github.klaboukes.twangle.core.designsystem.lens.readingToneShare
@@ -145,8 +146,9 @@ fun Ruler(
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer(cacheSize = 0)
     // Sizes in dp, not sp: the ruler is a drawing, and a 2× font would not fit its height.
-    val bigStyle = TextStyle(fontSize = with(density) { sizes.bigName.toSp() }, fontWeight = FontWeight.ExtraBold)
-    val smallStyle = TextStyle(fontSize = with(density) { sizes.smallName.toSp() }, fontWeight = FontWeight.Medium)
+    // In the app's face, as every text (a measurer's own default would be the phone's).
+    val bigStyle = TextStyle(fontFamily = TwangleFont, fontSize = with(density) { sizes.bigName.toSp() }, fontWeight = FontWeight.ExtraBold)
+    val smallStyle = TextStyle(fontFamily = TwangleFont, fontSize = with(density) { sizes.smallName.toSp() }, fontWeight = FontWeight.Medium)
     val big = remember(names, density, sizes) { Array(names.size) { measurer.measure(musicText(names[it]), bigStyle) } }
     val small = remember(names, density, sizes) { Array(names.size) { measurer.measure(musicText(names[it]), smallStyle) } }
 

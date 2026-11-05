@@ -1,10 +1,13 @@
 /* The Twangle website (Phase 54, docs/architecture/website.md). Contemporary colours
    (core/designsystem StylePalettes.kt), light or dark as the visitor's device is set, the device's
-   own font (Contemporary uses Roboto), nothing loaded from another site (website/build.py checks). */
+   own font (Contemporary uses Roboto), nothing loaded from another site (website/build.py checks).
+   Since Phase 79 the text is in the app's own face, Nunito: nunito.woff2, a cut of its Latin letters with its
+   weights (SIL OFL 1.1, nunito-OFL.txt beside it; docs/architecture/website.md says how it was cut). */
+@font-face { font-family: Nunito; src: url("nunito.woff2") format("woff2"); font-weight: 200 1000; font-display: swap; }
 :root {
   --page: #F5F7FC; --surface: #EFF2FA; --line: #D9DEEA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
   --container: color-mix(in srgb, #3A4FD6 14%, #F5F7FC);
-  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui: Nunito, Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root {

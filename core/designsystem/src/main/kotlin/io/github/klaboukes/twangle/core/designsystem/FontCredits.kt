@@ -12,7 +12,8 @@ data class FontCredit(
     val licenceAsset: String,
 )
 
-/** Every typeface the app bundles, all under the SIL Open Font License 1.1 (see [MusicSignsFont]; the text itself is the phone's own font). */
+/** Every typeface the app bundles, all under the SIL Open Font License 1.1 ([TwangleFont] for the text, [MusicSignsFont]). */
 val bundledFontCredits: List<FontCredit> = listOf(
+    FontCredit("Nunito", "The Nunito Project Authors", "nunito.ttf", "licenses/OFL-nunito.txt"),
     FontCredit("Noto Sans Symbols", "Google", "music_signs.ttf", "licenses/OFL-notosanssymbols.txt"),
 )
