@@ -87,6 +87,24 @@ enum class LensLook {
 }
 
 /**
+ * What the tuner shows under its meter (2.0, Phase 78): the word that says which way to turn (Tighten · Loosen, the
+ * cents small under it) or the signed cents big in its place. "In tune" and "Play a string" are words in both. Saved
+ * by [name] under `under_meter`, so don't rename the entries.
+ */
+enum class UnderMeter {
+    /** Tighten · Loosen (Too low · Too high in Any note), with the cents small under it: a beginner's help. */
+    WORDS,
+
+    /** The signed cents ("−12") big in the word's place, nothing under it. */
+    CENTS,
+    ;
+
+    companion object {
+        val DEFAULT = WORDS
+    }
+}
+
+/**
  * A tool of the Practice tab (Phase 32, with its switch on, [ToolSwitches.practiceTab]). Saved in
  * settings by [name], so don't rename the entries. The metronome was one until 2.0 gave it a tab of its
  * own (Phase 69): a saved `METRONOME` reads as nothing used yet.
@@ -155,6 +173,11 @@ data class AppSettings(
      * under "Show tuning help", `show_tune_hint`, which 2.0 no longer reads) starts without them.
      */
     val stringTickOff: Boolean = false,
+    /**
+     * What goes under the meter (2.0, Phase 78): Words by default. While none was picked, 1.1's "Show tune up/down
+     * hint" (`show_tune_hint`) decides: a player who had turned it off gets [UnderMeter.CENTS].
+     */
+    val underMeter: UnderMeter = UnderMeter.DEFAULT,
     /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
     val showSignalBars: Boolean = false,
     /**

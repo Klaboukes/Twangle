@@ -62,6 +62,7 @@ import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
@@ -107,6 +108,7 @@ fun SettingsScreen(
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onStringTickOffChange = viewModel::setStringTickOff,
+        onUnderMeterChange = viewModel::setUnderMeter,
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onLensLookChange = viewModel::setLensLook,
         onLeftHandedChange = viewModel::setLeftHanded,
@@ -145,6 +147,7 @@ fun SettingsContent(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onStringTickOffChange: (Boolean) -> Unit,
+    onUnderMeterChange: (UnderMeter) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
@@ -172,6 +175,7 @@ fun SettingsContent(
                 onKeepScreenOnChange = onKeepScreenOnChange,
                 onVibrateInTuneChange = onVibrateInTuneChange,
                 onStringTickOffChange = onStringTickOffChange,
+                onUnderMeterChange = onUnderMeterChange,
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onLensLookChange = onLensLookChange,
                 onLeftHandedChange = onLeftHandedChange,
@@ -304,6 +308,7 @@ private fun SettingsGroups(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onStringTickOffChange: (Boolean) -> Unit,
+    onUnderMeterChange: (UnderMeter) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
@@ -341,6 +346,14 @@ private fun SettingsGroups(
         }
         SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
             Rows {
+                // What the tuner shows under its meter (2.0, Phase 78): the word, or the cents big in its place.
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_under_meter_title),
+                    options = UnderMeter.entries,
+                    selected = settings.underMeter,
+                    onSelect = onUnderMeterChange,
+                ) { stringResource(underMeterLabel(it)) }
+                HorizontalDivider()
                 SwitchSetting(
                     title = stringResource(R.string.settings_keep_screen_on_title),
                     summary = stringResource(R.string.settings_keep_screen_on_summary),
@@ -497,6 +510,11 @@ private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precis
     InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
 }
 
+private fun underMeterLabel(choice: UnderMeter): Int = when (choice) {
+    UnderMeter.WORDS -> R.string.settings_under_meter_words
+    UnderMeter.CENTS -> R.string.settings_under_meter_cents
+}
+
 private fun themeLabel(theme: ThemeMode): Int = when (theme) {
     ThemeMode.SYSTEM -> R.string.settings_theme_system
     ThemeMode.LIGHT -> R.string.settings_theme_light
@@ -519,6 +537,7 @@ private fun SettingsContentPreview() {
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
             onStringTickOffChange = {},
+            onUnderMeterChange = {},
             onShowSignalBarsChange = {},
             onLensLookChange = {},
             onLeftHandedChange = {},

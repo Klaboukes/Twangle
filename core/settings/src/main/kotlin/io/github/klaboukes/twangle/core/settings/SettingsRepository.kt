@@ -97,6 +97,9 @@ interface SettingsRepository {
 
     suspend fun setStringTickOff(enabled: Boolean)
 
+    /** What goes under the meter. Also removes 1.1's `show_tune_hint`, which decides only until one is picked. */
+    suspend fun setUnderMeter(choice: UnderMeter)
+
     suspend fun setShowSignalBars(enabled: Boolean)
 
     /**

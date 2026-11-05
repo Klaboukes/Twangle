@@ -20,6 +20,7 @@ import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -136,6 +137,11 @@ class TunerViewModel(
     val stringTickOff: StateFlow<Boolean> = settingsRepository.settings
         .map { it.stringTickOff }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.stringTickOff)
+
+    /** What goes under the meter: the word with the cents small, or the cents big in its place (a saved setting; 2.0, Phase 78). */
+    val underMeter: StateFlow<UnderMeter> = settingsRepository.settings
+        .map { it.underMeter }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.underMeter)
 
     /** Whether small signal bars by the note show how well the tuner hears (a saved setting, off by default). */
     val showSignalBars: StateFlow<Boolean> = settingsRepository.settings

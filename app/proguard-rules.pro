@@ -8,6 +8,7 @@
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.InTunePrecision { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.ThemeMode { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.LensLook { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.settings.UnderMeter { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.Meter { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.music.Notation { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.ClickSound { public static final ** *; }

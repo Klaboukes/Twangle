@@ -72,6 +72,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.isCutOffAtTheBottom
@@ -159,6 +160,9 @@ class TunerContentTest {
     /** Set to take the tuner away while it is shown. */
     private val shownGone = mutableStateOf(false)
 
+    /** What goes under the meter (Phase 78), changeable while shown. */
+    private val shownUnderMeter = mutableStateOf(UnderMeter.DEFAULT)
+
     /** The theme's tones, as [show] draws them. */
     private lateinit var tokens: StyleTokens
 
@@ -179,6 +183,7 @@ class TunerContentTest {
         focusMode: Boolean = false,
         signalBars: Boolean = false,
         signalFigures: Flow<SignalFigures?> = emptyFlow(),
+        underMeter: UnderMeter = UnderMeter.DEFAULT,
     ) {
         shownMode.value = mode
         shownState.value = state
@@ -189,6 +194,7 @@ class TunerContentTest {
         shownPickerOpen.value = false
         shownSize.value = size
         shownGone.value = false
+        shownUnderMeter.value = underMeter
         compose.setContent {
             val content = @Composable {
                 backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -215,6 +221,7 @@ class TunerContentTest {
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         stringTickOff = stringTickOff,
+                        underMeter = shownUnderMeter.value,
                         focusMode = shownCompact.value,
                         showSignalBars = shownSignalBars.value,
                         signalFigures = signalFigures,
@@ -1321,6 +1328,91 @@ class TunerContentTest {
         wordCents.assertTextEquals(text(R.string.tuner_tip_too_noisy))
         word.assertTextEquals(text(R.string.tuner_hint_play_string))
         compose.onNode(hasContentDescription(text(R.string.tuner_tip_too_noisy))).assertExists()
+    }
+
+    // Settings' Under the meter: Cents (2.0, Phase 78): the signed cents big in the word's place, nothing under them.
+
+    @Test
+    fun withCentsAFlatStringShowsTheMinusCentsInTheWordsPlaceAndNothingUnderThem() {
+        show(detected(-12.3f), underMeter = UnderMeter.CENTS)
+        word.assertTextEquals("\u221212")
+        wordCents.assertTextEquals("")
+        compose.onNodeWithText(text(R.string.tuner_word_tighten)).assertDoesNotExist()
+        compose.onNodeWithText(twelveCentsFlat).assertDoesNotExist()
+        shownState.value = detected(8f)
+        compose.waitForIdle()
+        word.assertTextEquals("+8")
+        wordCents.assertTextEquals("")
+    }
+
+    /** "In tune" and "Play a string" read the same with the cents as with the words. */
+    @Test
+    fun withCentsInTuneAndPlayAStringStayWords() {
+        show(listening, underMeter = UnderMeter.CENTS)
+        word.assertTextEquals(text(R.string.tuner_hint_play_string))
+        wordCents.assertTextEquals("")
+        shownState.value = detected(-3f, inTune = true)
+        compose.waitForIdle()
+        word.assertTextEquals(inTuneLabel)
+        wordCents.assertTextEquals(context.resources.getQuantityString(R.plurals.tuner_cents_off, 3, 3))
+    }
+
+    @Test
+    fun withCentsAnyNoteShowsTheCentsToo() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, underMeter = UnderMeter.CENTS)
+        word.assertTextEquals("\u221212")
+        compose.onNodeWithText(text(R.string.tuner_word_too_low)).assertDoesNotExist()
+    }
+
+    /** TalkBack still hears which way to turn ("12 cents flat, Tighten"), once, with the cents on screen. */
+    @Test
+    fun withCentsTalkBackStillHearsTheDirection() {
+        show(detected(-12.3f), underMeter = UnderMeter.CENTS)
+        val spoken = "E 2, $twelveCentsFlat, ${text(R.string.tuner_word_tighten)}"
+        compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
+        word.assert(hiddenFromTalkBack)
+    }
+
+    @Test
+    fun withCentsATipStillTakesTheLineUnderThem() {
+        show(detected(-12.3f).copy(tip = ReceptionTip.TOO_SOFT), underMeter = UnderMeter.CENTS)
+        word.assertTextEquals("\u221212")
+        wordCents.assertTextEquals(text(R.string.tuner_tip_too_soft))
+    }
+
+    /** The cents in the word's place move nothing: the screen keeps its shape whichever is picked. */
+    @Test
+    fun withCentsTheWordsPlaceMovesNothing() {
+        show(listening)
+        val wordsBox = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
+        val strings = stringChip("A2").getBoundsInRoot()
+        shownUnderMeter.value = UnderMeter.CENTS
+        compose.waitForIdle()
+        for (state in listOf(listening, detected(-12.3f), detected(8f), detected(-3f, inTune = true), listening)) {
+            shownState.value = state
+            compose.waitForIdle()
+            val now = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
+            assertEquals("$state", wordsBox.top, now.top)
+            assertEquals("$state", wordsBox.bottom, now.bottom)
+            assertEquals("$state", strings, stringChip("A2").getBoundsInRoot())
+        }
+    }
+
+    @Test
+    fun withCentsOnItsSideTheCentsShowToo() {
+        show(detected(-12.3f), size = PHONE_LANDSCAPE, underMeter = UnderMeter.CENTS)
+        word.assertIsDisplayed().assertTextEquals("\u221212")
+        wordCents.assertTextEquals("")
+    }
+
+    @Test
+    fun withCentsInFocusModeTheCentsShowToo() {
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true, underMeter = UnderMeter.CENTS)
+        word.assertIsDisplayed().assertTextEquals("\u221212")
+        wordCents.assertTextEquals("")
+        shownState.value = detected(-3f, inTune = true)
+        compose.waitForIdle()
+        word.assertTextEquals(inTuneLabel)
     }
 
     @Test

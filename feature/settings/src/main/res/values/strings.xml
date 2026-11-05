@@ -7,7 +7,7 @@
     <!-- Group headings, in this order. -->
     <!-- Settings group heading over the reference pitch (A4), the note names and how close counts as in tune. One short word. -->
     <string name="settings_group_tuning">Tuning</string>
-    <!-- Settings group heading over what happens while tuning: keep screen on, vibration, the string ticks, signal bars. -->
+    <!-- Settings group heading over what happens while tuning: what shows under the meter, keep screen on, vibration, the string ticks, signal bars. -->
     <string name="settings_group_while_tuning">While tuning</string>
     <!-- Settings group heading over light or dark, wallpaper colours, the meter's look and left-handed charts. -->
     <string name="settings_group_look">Look</string>
@@ -78,6 +78,12 @@
     <string name="settings_left_handed_summary">Chord charts and the scale neck drawn for a guitar held the other way round</string>
 
     <!-- While tuning. -->
+    <!-- Title of a choice (two radio buttons) of what the tuner shows under its meter while a string is off: a word that says which way to turn the peg, or the number of cents. -->
+    <string name="settings_under_meter_title">Under the meter</string>
+    <!-- Under the meter choice, the default: a word says which way to turn ("Tighten" or "Loosen": use the same translations as the tuner's words, tuner_word_tighten and tuner_word_loosen), with the cents small under it. -->
+    <string name="settings_under_meter_words">Words: Tighten or Loosen</string>
+    <!-- Under the meter choice: the cents (hundredths of a semitone) big in the word's place, flat with a minus sign, sharp with a plus. Keep the example "−12" as it is (a minus sign, U+2212). -->
+    <string name="settings_under_meter_cents">Cents: −12</string>
     <string name="settings_keep_screen_on_title">Keep screen on</string>
     <!-- The line under the Keep screen on switch. -->
     <string name="settings_keep_screen_on_summary">The screen stays on while you tune</string>

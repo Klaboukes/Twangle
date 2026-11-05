@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -82,6 +83,7 @@ class SettingsViewModelTest {
         vm.setKeepScreenOn(false)
         vm.setVibrateInTune(false)
         vm.setStringTickOff(true)
+        vm.setUnderMeter(UnderMeter.CENTS)
         vm.setShowSignalBars(true)
         vm.setLeftHanded(true)
         runCurrent()
@@ -91,6 +93,7 @@ class SettingsViewModelTest {
         assertEquals(false, repository.current.keepScreenOn)
         assertEquals(false, repository.current.vibrateInTune)
         assertEquals(true, repository.current.stringTickOff)
+        assertEquals(UnderMeter.CENTS, repository.current.underMeter)
         assertEquals(true, repository.current.showSignalBars)
         assertEquals(true, repository.current.leftHanded)
     }

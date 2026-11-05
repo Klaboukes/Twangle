@@ -247,6 +247,14 @@ class DataStoreSettingsRepository internal constructor(
         save { it[STRING_TICK_OFF] = enabled }
     }
 
+    override suspend fun setUnderMeter(choice: UnderMeter) {
+        save {
+            it[UNDER_METER] = choice.name
+            // 1.1's tune hint decides only until a choice is made (underMeter's rule).
+            it.remove(OLD_SHOW_TUNE_HINT)
+        }
+    }
+
     override suspend fun setShowSignalBars(enabled: Boolean) {
         save { it[SHOW_SIGNAL_BARS] = enabled }
     }
@@ -414,6 +422,7 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
+            underMeter = underMeter(prefs),
             showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
             micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
@@ -471,8 +480,17 @@ class DataStoreSettingsRepository internal constructor(
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
-        /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") is no longer read. */
+        /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") has no say in it. */
         private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
+
+        /** What goes under the meter ([UnderMeter], by its name; 2.0, Phase 78). */
+        private val UNDER_METER = stringPreferencesKey("under_meter")
+
+        /**
+         * 1.1's "Show tune up/down hint" (later "Show tuning help"), on by default: read only for the rule of what goes
+         * under the meter ([underMeter]), and removed once a choice is made.
+         */
+        private val OLD_SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
         private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
         /** The meter's look ([LensLook]), under 1.1's meter look's key, where 1.1's Classic and Light arc keep their names. */
         private val METER_LOOK = stringPreferencesKey("meter_look")
@@ -685,6 +703,11 @@ class DataStoreSettingsRepository internal constructor(
          * null, the default. 1.1's other meter looks (Pointers, Loupe, Arrows, Light bars and older names) and 2.0's
          * trail of Phases 71 to 77 say nothing.
          */
+        /** The choice saved; without one, Cents for a 1.1 player who had turned the tune hint off, else Words. */
+        private fun underMeter(prefs: Preferences): UnderMeter =
+            enumOrNull<UnderMeter>(prefs[UNDER_METER])
+                ?: if (prefs[OLD_SHOW_TUNE_HINT] == false) UnderMeter.CENTS else UnderMeter.DEFAULT
+
         private fun lensLook(prefs: Preferences): LensLook? =
             enumOrNull<LensLook>(prefs[METER_LOOK]) ?: LensLook.STROBE.takeIf { showedStrobe(prefs) }
 

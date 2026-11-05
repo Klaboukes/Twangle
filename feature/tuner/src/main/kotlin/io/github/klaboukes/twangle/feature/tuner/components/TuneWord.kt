@@ -93,6 +93,10 @@ data class NoteReadout(
  * doesn't talk over itself (pass the screen's one [PacedSpeech]). Each line keeps its height whatever it says, and
  * keeps to one line, set smaller where it doesn't fit, so nothing under it moves. [compact] sets both smaller.
  * [start] sets both lines at the start, not centred (the wide layout's word in its bottom start corner, Phase 73).
+ *
+ * With [centsBig] (Settings' *Under the meter: Cents*, Phase 78) a direction's word gives its place to the signed cents
+ * ([signedCentsText], "−12", "+8"), in the same tone and size, and the small line under it stays empty (a tip still
+ * takes it); "In tune" and the quiet text read as with the words, and TalkBack still says the direction.
  */
 @Composable
 fun TuneWordLine(
@@ -108,6 +112,7 @@ fun TuneWordLine(
     quietInTune: Boolean = false,
     compact: Boolean = false,
     start: Boolean = false,
+    centsBig: Boolean = false,
     speech: PacedSpeech = rememberPacedSpeech(),
 ) {
     val held = remember { HeldWord() }
@@ -123,20 +128,25 @@ fun TuneWordLine(
             held.quietInTune = quietInTune
         }
     }
-    val wordText = when (word) {
-        TuneWord.PLAY -> quietShown
-        TuneWord.IN_TUNE -> inTuneLabel()
-        else -> stringResource(word.label)
+    val directionText = if (word.isDirection) stringResource(word.label) else null
+    // With the cents big a direction shows them in the word's place; only while a note is heard (a held word has one).
+    val centsInPlace = centsBig && directionText != null && readout != null
+    val wordText = when {
+        word == TuneWord.PLAY -> quietShown
+        word == TuneWord.IN_TUNE -> inTuneLabel()
+        centsInPlace -> signedCentsText(readout!!.cents)
+        else -> directionText!!
     }
     val tipText = tip?.let { stringResource(it.label) }
     val small = when {
         tipText != null -> tipText
         readout == null -> ""
         readout.inTune -> centsAmountText(readout.cents)
+        centsInPlace -> ""
         else -> centsText(readout.cents)
     }
     val spoken = pacedSpeech(
-        text = if (readout != null) spokenReading(readout, wordText.takeIf { word.isDirection }, tipText, motion) else tipText ?: spokenQuiet,
+        text = if (readout != null) spokenReading(readout, directionText, tipText, motion) else tipText ?: spokenQuiet,
         key = readout?.let(::spokenReadingKey),
         speech = speech,
     )
@@ -164,7 +174,12 @@ fun TuneWordLine(
     val big = if (compact) COMPACT_WORD_SIZE else WORD_SIZE
     val wordStyle = MaterialTheme.typography.headlineSmall.copy(fontSize = big, lineHeight = WORD_LINE_HEIGHT, fontWeight = FontWeight.Bold, textAlign = textAlign)
     val quietStyle = wordStyle.copy(fontSize = if (compact) COMPACT_QUIET_SIZE else QUIET_SIZE, fontWeight = FontWeight.SemiBold)
-    val shownStyle = if (word == TuneWord.PLAY) quietStyle else wordStyle
+    // The big cents in the numbers' face, so their width doesn't jump as they change.
+    val shownStyle = when {
+        word == TuneWord.PLAY -> quietStyle
+        centsInPlace -> wordStyle.copy(fontFamily = NumberFont)
+        else -> wordStyle
+    }
     val smallStyle = MaterialTheme.typography.bodyMedium.let { if (tipText == null && readout != null) it.copy(fontFamily = NumberFont) else it }
     val wordLine = rememberLineHeight(wordStyle)
     val smallLine = rememberLineHeight(MaterialTheme.typography.bodyMedium)
@@ -352,6 +367,23 @@ internal fun centsText(cents: Float): String {
         else -> stringResource(R.string.tuner_cents_zero)
     }
 }
+
+/**
+ * The cents big in the word's place (Settings' *Under the meter: Cents*): rounded to whole cents, flat with a minus
+ * sign (U+2212, as wide as the plus), "−12", sharp with a plus, "+8", none at 0; the digits in [locale]'s own.
+ */
+internal fun signedCentsText(cents: Float, locale: Locale): String {
+    val rounded = cents.roundToInt()
+    val digits = String.format(locale, "%d", abs(rounded))
+    return when {
+        rounded < 0 -> "\u2212$digits"
+        rounded > 0 -> "+$digits"
+        else -> digits
+    }
+}
+
+@Composable
+private fun signedCentsText(cents: Float): String = signedCentsText(cents, LocalConfiguration.current.locales[0])
 
 /** "2 cents", "1 cent", "0 cents": how far off without which way, for under "In tune". */
 @Composable

@@ -111,6 +111,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
+        assertEquals("the word under the meter on a fresh install", UnderMeter.WORDS, settings.underMeter)
         assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's meter shows the Classic needle", LensLook.CLASSIC, settings.lensLook)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
@@ -149,6 +150,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setStringTickOff(true)
+        repo.setUnderMeter(UnderMeter.CENTS)
         repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
         repo.setMetronomeBpm(96)
@@ -187,6 +189,7 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             stringTickOff = true,
+            underMeter = UnderMeter.CENTS,
             showSignalBars = true,
             lensLook = LensLook.STROBE,
             metronomeBpm = 96,
@@ -750,6 +753,7 @@ class DataStoreSettingsRepositoryTest {
         assertFalse(settings.keepScreenOn)
         assertFalse(settings.vibrateInTune)
         assertFalse("1.1's Show tuning help on gives no tick-off", settings.stringTickOff)
+        assertEquals("and the word under the meter", UnderMeter.WORDS, settings.underMeter)
         // Look: Retro, Bold and the Loupe go; the strobe wave under the Loupe makes the lens the strobe
         assertEquals(ThemeMode.DARK, settings.theme)
         assertFalse("1.1's default, never switched, gives Ink (2026-11-03)", settings.dynamicColor)
@@ -991,7 +995,7 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `1_1's Show tuning help is left in the file unread, so a 1_1 player starts without the tick-off`() = runTest {
+    fun `1_1's Show tuning help has no say in the tick-off, so a 1_1 player starts without it`() = runTest {
         val store = dataStore()
         val repo = repository(store)
         for (shown in listOf(true, false)) {
@@ -1001,6 +1005,36 @@ class DataStoreSettingsRepositoryTest {
         repo.setStringTickOff(true)
         assertEquals("the old key stays as it lay", false, store.data.first()[booleanPreferencesKey("show_tune_hint")])
         assertEquals(true, repo.settings.first().stringTickOff)
+    }
+
+    @Test
+    fun `a 1_1 player who had turned the tune hint off gets the cents under the meter, one who had it on the words`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        store.edit { it[booleanPreferencesKey("show_tune_hint")] = false }
+        assertEquals(UnderMeter.CENTS, repo.settings.first().underMeter)
+        store.edit { it[booleanPreferencesKey("show_tune_hint")] = true }
+        assertEquals(UnderMeter.WORDS, repo.settings.first().underMeter)
+    }
+
+    @Test
+    fun `the choice under the meter is saved under under_meter and takes over from 1_1's tune hint for good`() = runTest {
+        val store = dataStore()
+        store.edit { it[booleanPreferencesKey("show_tune_hint")] = false }
+        repository(store).setUnderMeter(UnderMeter.WORDS)
+        val saved = store.data.first()
+        assertEquals("WORDS", saved[stringPreferencesKey("under_meter")])
+        assertEquals("the old key is read only once", null, saved[booleanPreferencesKey("show_tune_hint")])
+        assertEquals("a restart keeps the pick", UnderMeter.WORDS, repository(store).settings.first().underMeter)
+        repository(store).setUnderMeter(UnderMeter.CENTS)
+        assertEquals(UnderMeter.CENTS, repository(store).settings.first().underMeter)
+    }
+
+    @Test
+    fun `an unknown choice under the meter reads as the words`() = runTest {
+        val store = dataStore()
+        store.edit { it[stringPreferencesKey("under_meter")] = "PICTURES" }
+        assertEquals(UnderMeter.WORDS, repository(store).settings.first().underMeter)
     }
 
     @Test
@@ -1286,6 +1320,7 @@ class DataStoreSettingsRepositoryTest {
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
+            "setUnderMeter" to { repo.setUnderMeter(UnderMeter.CENTS) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             // 1.1's focus mode switch is there (below), so the read once tries to remove it.

@@ -47,6 +47,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -91,6 +92,7 @@ class SettingsContentTest {
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tickOffChanges = mutableListOf<Boolean>()
+    private val underMeterChanges = mutableListOf<UnderMeter>()
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
@@ -150,6 +152,7 @@ class SettingsContentTest {
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onStringTickOffChange = { tickOffChanges += it },
+                        onUnderMeterChange = { underMeterChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
                         onLensLookChange = { lensLookChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
@@ -335,6 +338,34 @@ class SettingsContentTest {
         compose.onNodeWithText(context.getString(R.string.settings_notation_german)).performClick()
         compose.onNodeWithText("Automatic", substring = true).performClick()
         assertEquals(listOf(Notation.SOLFEGE, Notation.GERMAN, null), notationChanges)
+    }
+
+    /**
+     * What goes under the meter (2.0, Phase 78), first in While tuning: Words by default, Cents reported when picked;
+     * the words named as the tuner says them, in Dutch too.
+     */
+    @Test
+    fun underTheMeterIsWordsByDefaultAndReportsCents() = assertUnderMeter("en", "Under the meter", "Words: Tighten or Loosen", "Cents: −12")
+
+    @Test
+    fun dutchUnderTheMeterIsWordsByDefaultAndReportsCents() = assertUnderMeter("nl", "Onder de meter", "Woorden: Strakker of Losser", "Cent: −12")
+
+    private fun assertUnderMeter(locale: String, title: String, words: String, cents: String) {
+        show(AppSettings(), locale = locale)
+        val res = resourcesIn(locale)
+        assertEquals(listOf(title, words, cents), listOf(R.string.settings_under_meter_title, R.string.settings_under_meter_words, R.string.settings_under_meter_cents).map(res::getString))
+        compose.onNodeWithText(title).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(words).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(cents).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(UnderMeter.CENTS), underMeterChanges)
+    }
+
+    @Test
+    fun underTheMeterShowsCentsWhenPicked() {
+        show(AppSettings(underMeter = UnderMeter.CENTS))
+        compose.onNodeWithText(context.getString(R.string.settings_under_meter_cents)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_under_meter_words)).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(UnderMeter.WORDS), underMeterChanges)
     }
 
     @Test
@@ -525,6 +556,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_notation_title)),
             top(context.getString(R.string.settings_in_tune_precision_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
+            top(context.getString(R.string.settings_under_meter_title)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),

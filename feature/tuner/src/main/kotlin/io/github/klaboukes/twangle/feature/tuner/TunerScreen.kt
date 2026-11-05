@@ -78,6 +78,7 @@ import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
@@ -198,6 +199,7 @@ fun TunerScreen(
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val inTunePrecision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     val stringTickOff by viewModel.stringTickOff.collectAsStateWithLifecycle()
+    val underMeter by viewModel.underMeter.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
     val tunedStrings by viewModel.tunedStrings.collectAsStateWithLifecycle()
@@ -275,6 +277,7 @@ fun TunerScreen(
                     meterGlow = glowing,
                     animationsOff = animationsOff,
                     stringTickOff = stringTickOff,
+                    underMeter = underMeter,
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
                     focusMode = focusMode,
@@ -461,6 +464,7 @@ fun TunerContent(
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
     stringTickOff: Boolean = false,
+    underMeter: UnderMeter = UnderMeter.DEFAULT,
     showSignalBars: Boolean = false,
     signalFigures: Flow<SignalFigures?> = emptyFlow(),
     focusMode: Boolean = false,
@@ -629,6 +633,8 @@ fun TunerContent(
             // Nor while a strum's count stands there: a strum's many notes read as noise to the tuner.
             tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null && heardQuiet == null },
             tone = tone,
+            // Settings' Under the meter (Phase 78): the signed cents big in the word's place.
+            centsBig = underMeter == UnderMeter.CENTS,
             compact = compact,
             start = start,
             speech = speech,

@@ -12,6 +12,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -356,6 +357,7 @@ class TunerViewModelTest {
         val saved = AppSettings(
             inTunePrecision = InTunePrecision.entries.first { it != InTunePrecision.DEFAULT },
             stringTickOff = !AppSettings().stringTickOff,
+            underMeter = UnderMeter.CENTS,
             showSignalBars = !AppSettings().showSignalBars,
             keepScreenOn = !AppSettings().keepScreenOn,
             vibrateInTune = !AppSettings().vibrateInTune,
@@ -365,6 +367,7 @@ class TunerViewModelTest {
         // Before anything has been read or collected: what the screen shows on its first frame.
         assertEquals(saved.inTunePrecision, vm.inTunePrecision.value)
         assertEquals(saved.stringTickOff, vm.stringTickOff.value)
+        assertEquals(saved.underMeter, vm.underMeter.value)
         assertEquals(saved.showSignalBars, vm.showSignalBars.value)
         assertEquals(saved.keepScreenOn, vm.keepScreenOn.value)
         assertEquals(saved.vibrateInTune, vm.vibrateInTune.value)
@@ -534,6 +537,18 @@ class TunerViewModelTest {
         settings.setStringTickOff(true)
         runCurrent()
         assertTrue(vm.stringTickOff.value)
+    }
+
+    @Test
+    fun `what goes under the meter follows the setting, the words by default`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.underMeter.collect {} }
+        runCurrent()
+        assertEquals("the words by default", UnderMeter.WORDS, vm.underMeter.value)
+
+        settings.setUnderMeter(UnderMeter.CENTS)
+        runCurrent()
+        assertEquals(UnderMeter.CENTS, vm.underMeter.value)
     }
 
     @Test

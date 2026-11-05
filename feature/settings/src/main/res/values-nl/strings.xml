@@ -46,6 +46,9 @@
     <string name="settings_left_handed_summary">Akkoordschema\'s en de hals bij Toonladders getekend voor een gitaar die andersom wordt vastgehouden</string>
 
     <!-- While tuning. -->
+    <string name="settings_under_meter_title">Onder de meter</string>
+    <string name="settings_under_meter_words">Woorden: Strakker of Losser</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
     <string name="settings_keep_screen_on_title">Scherm aan laten</string>
     <string name="settings_keep_screen_on_summary">Het scherm blijft aan terwijl je stemt</string>
     <string name="settings_vibrate_in_tune_title">Trillen bij zuivere toon</string>
