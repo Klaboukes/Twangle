@@ -89,10 +89,20 @@ class WatchShortcutsTest {
     fun theTileAndShortcutHaveTheirTextsInEnglishAndDutch() {
         for (values in listOf("values", "values-nl")) {
             val texts = File("src/main/res/$values/strings.xml").readText()
-            for (name in listOf("wear_tile_tune", "wear_shortcut_tune", "wear_shortcut_open")) {
+            for (name in listOf("wear_tile_tune", "wear_tile_metronome", "wear_tile_open_metronome", "wear_shortcut_tune", "wear_shortcut_open")) {
                 assertNotNull("$name in $values", Regex("name=\"$name\"").find(texts))
             }
         }
+        // "96 BPM" is the same in every language, as "BPM" under the metronome's tempo.
+        assertNotNull(Regex("name=\"wear_tile_tempo\" translatable=\"false\"").find(File("src/main/res/values/strings.xml").readText()))
+    }
+
+    @Test
+    fun theTilesButtonsReachTheOpenAppInsteadOfStackingASecondOne() {
+        // In the standard mode a tile launch after the launcher's put a second activity on top (2026-11-05).
+        val activities = manifest.getElementsByTagName("activity")
+        val watch = (0 until activities.length).map { activities.item(it) as Element }.single { it.android("name") == ".WatchActivity" }
+        assertEquals("singleTask", watch.android("launchMode"))
     }
 
     private companion object {

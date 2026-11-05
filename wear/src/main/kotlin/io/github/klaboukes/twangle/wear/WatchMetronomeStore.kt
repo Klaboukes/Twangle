@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.wear.tiles.TileService
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -33,16 +34,29 @@ interface WatchMetronomeStore {
     suspend fun setClick(click: Boolean)
 
     companion object {
-        /** The watch's own file (`files/datastore/watch_metronome.preferences_pb`), which Android's backup leaves out. */
-        fun of(context: Context): WatchMetronomeStore = DataStoreWatchMetronomeStore(context.applicationContext.watchMetronomeData)
+        /**
+         * The watch's own file (`files/datastore/watch_metronome.preferences_pb`), which Android's backup leaves out.
+         * A new tempo asks the watch to fetch the tile again, so its Metronome button shows it.
+         */
+        fun of(context: Context): WatchMetronomeStore {
+            val app = context.applicationContext
+            return DataStoreWatchMetronomeStore(app.watchMetronomeData) {
+                TileService.getUpdater(app).requestUpdate(WatchTileService::class.java)
+            }
+        }
     }
 }
 
 /**
  * [WatchMetronomeStore] in a small DataStore of its own, read and written off the main thread. A tempo
  * outside 30–250 BPM (written by a later version, say) reads clamped; a broken file reads as the defaults.
+ * [onTempoChanged] runs after a tempo was written that differs from the one kept: the tile's refresh, cheap,
+ * as the view model writes the tempo once per turn of the bezel.
  */
-class DataStoreWatchMetronomeStore(private val data: DataStore<Preferences>) : WatchMetronomeStore {
+class DataStoreWatchMetronomeStore(
+    private val data: DataStore<Preferences>,
+    private val onTempoChanged: () -> Unit = {},
+) : WatchMetronomeStore {
 
     override val choices: Flow<WatchMetronomeChoices> = data.data
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
@@ -54,7 +68,13 @@ class DataStoreWatchMetronomeStore(private val data: DataStore<Preferences>) : W
         }
 
     override suspend fun setTempo(bpm: Int) {
-        save { it[TEMPO] = ClickTrack.clampBpm(bpm) }
+        val tempo = ClickTrack.clampBpm(bpm)
+        var changed = false
+        save {
+            changed = it[TEMPO] != tempo
+            it[TEMPO] = tempo
+        }
+        if (changed) onTempoChanged()
     }
 
     override suspend fun setClick(click: Boolean) {
@@ -75,7 +95,7 @@ class DataStoreWatchMetronomeStore(private val data: DataStore<Preferences>) : W
     }
 }
 
-/** The one DataStore for the file in this process: the app and, later, its tile read the same. */
+/** The one DataStore for the file in this process: the app and its tile read the same. */
 private val Context.watchMetronomeData: DataStore<Preferences> by preferencesDataStore(name = WATCH_METRONOME_FILE)
 
 /** The DataStore's name; on disk `files/datastore/watch_metronome.preferences_pb` (left out of backups). */

@@ -43,6 +43,12 @@
     <string name="wear_try_again">Try again</string>
     <!-- Watch tile (the screen beside the watch face): the button along its bottom edge that opens the tuner. One short word. -->
     <string name="wear_tile_tune">Tune</string>
+    <!-- Watch tile: the name on the wide button above Tune that opens the metronome (Phase 80). One word, as the phone's Metronome tab. -->
+    <string name="wear_tile_metronome">Metronome</string>
+    <!-- Watch tile: small under "Metronome" on its button, the tempo the metronome will start at. %1$d is the number of beats per minute, e.g. "96 BPM". Kept as "BPM" in every language, as on the phone. -->
+    <string name="wear_tile_tempo" translatable="false">%1$d BPM</string>
+    <!-- Watch tile, TalkBack: the name of the Metronome button. %1$s is the tempo in words (the text "96 beats per minute"), e.g. "Open the metronome, 96 beats per minute". -->
+    <string name="wear_tile_open_metronome">Open the metronome, %1$s</string>
     <!-- Watch-face shortcut: the word under Twangle's mark in a small round slot of the watch face; a tap opens the tuner. At most 5 letters: watch faces cut longer words. -->
     <string name="wear_shortcut_tune">Tune</string>
     <!-- Watch: what the tile and the watch-face shortcut do, read by TalkBack and shown in the watch's tile list. -->

@@ -64,4 +64,18 @@ class WatchMetronomeStoreTest {
         data.edit { it[intPreferencesKey("tempo_bpm")] = 5 }
         assertEquals(30, store.choices.first().bpm)
     }
+
+    @Test
+    fun `a new tempo asks for the tile again, the same tempo or the click doesn't`() = runBlocking {
+        var asked = 0
+        val store = DataStoreWatchMetronomeStore(data) { asked++ }
+        store.setTempo(96)
+        assertEquals(1, asked)
+        store.setTempo(96)
+        assertEquals("the tempo it already had", 1, asked)
+        store.setClick(true)
+        assertEquals("the click isn't on the tile", 1, asked)
+        store.setTempo(97)
+        assertEquals(2, asked)
+    }
 }

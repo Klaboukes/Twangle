@@ -19,7 +19,8 @@ import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
 /**
  * The watch app's one activity: the tuner, after the microphone permission, and with the metronome's switch
  * on ([watchToolSwitchesFor]) the metronome a swipe left of it. Opened with [EXTRA_PAGE] it shows that page
- * ([intentFor]), at start and when opened again while it runs.
+ * ([intentFor]; the tile's buttons), at start and when opened again while it runs: it is `singleTask` in the
+ * manifest, so a launch that finds it open always reaches [onNewIntent], never a second activity.
  */
 class WatchActivity : ComponentActivity() {
 
@@ -30,7 +31,7 @@ class WatchActivity : ComponentActivity() {
         installSplashScreen().setOnExitAnimationListener { opening -> opening.fadeOutOnceStill() }
         super.onCreate(savedInstanceState)
         // Asks the watch to fetch the tile again: one it fetched before an update stays as it was (the Galaxy
-        // Watch 5 kept the old mark after an install whose fetch timed out, 2026-11-05). Cheap; the tile never changes.
+        // Watch 5 kept the old mark after an install whose fetch timed out, 2026-11-05). Cheap.
         TileService.getUpdater(this).requestUpdate(WatchTileService::class.java)
         val tools = watchToolSwitchesFor(BuildConfig.DEBUG)
         // Only a fresh start opens on the page asked for; a remade activity keeps the page it showed.
