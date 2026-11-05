@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -39,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import io.github.klaboukes.twangle.core.designsystem.RingingName
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
+import io.github.klaboukes.twangle.core.designsystem.TwangleName
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.feature.tuner.components.Lens
@@ -49,8 +48,8 @@ import java.util.Locale
 /**
  * The Play Store's feature graphic (docs/store-listing.md, *Icon and feature graphic*), one for each
  * store language: [FEATURE_WIDTH] × [FEATURE_HEIGHT] pixels on [BACKGROUND]'s quiet background. On
- * the start side Twangle's name ringing ([RingingName], Phase 79: the word in Comfortaa on a string, the
- * icon's three harmonics behind it; 1.1 showed the icon over the name in Retro's face), and under it [line],
+ * the start side Twangle's icon and name ([TwangleName], Phase 79: the launcher icon beside the word in
+ * Comfortaa; 1.1 showed the icon over the name in Retro's face), and under it [line],
  * what sets Twangle apart in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set
  * as the app sets that language (its fonts, right to left for Arabic). On the end side three of the tuner's
  * meters fanned out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in
@@ -77,8 +76,8 @@ fun FeatureGraphic(line: String, locale: Locale) {
                 },
             ) {
                 StyleBackdrop(Modifier.fillMaxSize())
-                // The word and the line start at TEXT_EDGE; the string's thin end is decoration and runs on nearer the edge.
-                Box(Modifier.align(Alignment.CenterStart).padding(start = TEXT_EDGE - WORD_INSET)) { NameAndLine(line, locale) }
+                // The icon and the line start at TEXT_EDGE.
+                Box(Modifier.align(Alignment.CenterStart).padding(start = TEXT_EDGE)) { NameAndLine(line, locale) }
                 // The fan is decoration too.
                 Box(Modifier.align(Alignment.CenterEnd).padding(end = FAN_EDGE)) { Fan() }
             }
@@ -86,11 +85,11 @@ fun FeatureGraphic(line: String, locale: Locale) {
     }
 }
 
-/** The name ringing, the line under it starting where the word does, a sentence a line. */
+/** The icon and name, the line under it starting where the icon does, a sentence a line. */
 @Composable
 private fun NameAndLine(line: String, locale: Locale) {
     Column {
-        RingingName(Modifier.width(NAME_WIDTH))
+        TwangleName(NAME_CAP_HEIGHT)
         Spacer(Modifier.height(LINE_GAP))
         Text(
             remember(line) { sentencesOnTheirOwnLines(line) ?: line },
@@ -105,7 +104,7 @@ private fun NameAndLine(line: String, locale: Locale) {
             maxLines = 2,
             // A long language's line a little smaller, never cut off.
             autoSize = TextAutoSize.StepBased(minFontSize = LINE_MIN_SIZE.sp, maxFontSize = LINE_SIZE.sp, stepSize = 0.5.sp),
-            modifier = Modifier.padding(start = WORD_INSET).widthIn(max = TEXT_WIDTH),
+            modifier = Modifier.widthIn(max = TEXT_WIDTH),
         )
     }
 }
@@ -174,12 +173,10 @@ private val FAN = listOf(
 
 /** About 100 px of the 1024 from the start edge, as Play may crop or cover it (379 dp in all): where the word and the line start. */
 private val TEXT_EDGE = 36.dp
-private val NAME_WIDTH = 160.dp
-
-/** Where the word starts in the name's box (scripts/wordmark.py centres it: 74.4 of the frame's 340). */
-private val WORD_INSET = NAME_WIDTH * (74.4f / 340f)
-private val TEXT_WIDTH = 124.dp
-private val LINE_GAP = 2.dp
+/** The name's capitals: the icon about 33 dp and the word 75 dp across, clear of the fan. */
+private val NAME_CAP_HEIGHT = 13.dp
+private val TEXT_WIDTH = 140.dp
+private val LINE_GAP = 10.dp
 private const val LINE_SIZE = 14f
 private const val LINE_MIN_SIZE = 11f
 private const val LINE_ALPHA = 0.88f

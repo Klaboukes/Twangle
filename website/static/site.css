@@ -23,8 +23,10 @@ img { max-width: 100%; }
 header { border-bottom: 1px solid var(--line); }
 header .wrap { display: flex; align-items: center; gap: 16px; min-height: 60px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; color: var(--ink); text-decoration: none; margin-right: auto; }
-/* The name ringing (Phase 79, website/ringing-name.svg): the word about 19 px tall, as the old name was. */
-.brand .ringing { display: block; height: 50px; width: auto; aspect-ratio: 340 / 110; }
+/* The icon and name (Phase 79, website/twangle-icon.svg and twangle-name.svg, TwangleName.kt's proportions): the
+   capitals about 15 px tall, the icon 2.5 times that, the word's capitals level with the icon's middle. */
+.brand .twangle-icon { display: block; height: 38px; width: 38px; flex: none; }
+.brand .twangle-name { display: block; height: 19.4px; margin-left: -2.5px; width: auto; aspect-ratio: 449.7 / 100.8; align-self: flex-start; margin-top: 11.5px; }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 16px; top: 8px; background: var(--page); padding: 6px 12px; border-radius: 8px; z-index: 1; }
 nav { display: flex; gap: 18px; font-size: 16px; }

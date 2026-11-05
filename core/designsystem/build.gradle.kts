@@ -33,6 +33,8 @@ dependencies {
     api(libs.androidx.compose.ui)
     api(libs.androidx.compose.ui.graphics)
     api(libs.androidx.compose.material3)
+    // TwangleName plucks the icon's animated vector (twangle_icon_plucked.xml), as the opening screen does.
+    implementation(libs.androidx.compose.animation.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
 

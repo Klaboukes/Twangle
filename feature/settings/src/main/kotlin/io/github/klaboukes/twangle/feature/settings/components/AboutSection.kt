@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -32,7 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.designsystem.RingingName
+import io.github.klaboukes.twangle.core.designsystem.TwangleName
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
 import io.github.klaboukes.twangle.feature.settings.headingStyle
@@ -42,7 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * The About rows: the app's name ringing ([RingingName]) over its [appVersion], the free-forever promise, the privacy statement,
+ * The About rows: the app's name with its icon ([TwangleName]) over its [appVersion], the free-forever promise, the privacy statement,
  * "Help and website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
  * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; Google's own
  * rating window is asked for once from the tuner, Phase 50), and a credit for
@@ -94,19 +94,19 @@ fun AboutSection(
 }
 
 /**
- * The page's head: Twangle's name ringing, as on the store's banner and the website (Phase 79), centred over
- * the version, its string plucked as the page opens and again at a tap. TalkBack reads it as the page's first
- * heading, the name.
+ * The page's head: Twangle's icon and name, as on the store's banner and the website (Phase 79), centred over
+ * the version, the icon's string plucked as the page opens and again at a tap. TalkBack reads it as the page's
+ * first heading, the name.
  */
 @Composable
 private fun NameAndVersion(appVersion: String) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         val name = stringResource(R.string.settings_about_app_name)
-        RingingName(
+        TwangleName(
+            capHeight = NAME_CAP_HEIGHT,
             plucked = true,
             modifier = Modifier
-                .widthIn(max = NAME_WIDTH)
-                .fillMaxWidth()
+                .padding(bottom = 8.dp)
                 .semantics {
                     contentDescription = name
                     heading()
@@ -120,8 +120,8 @@ private fun NameAndVersion(appVersion: String) {
     }
 }
 
-/** The ringing name's widest: the word about 150 dp across, a heading's size beside the rows under it. */
-private val NAME_WIDTH = 260.dp
+/** The name's capitals: the word about 115 dp across and the icon 50 dp, a heading's size beside the rows under it. */
+private val NAME_CAP_HEIGHT = 20.dp
 
 @Composable
 private fun AboutText(title: String, body: String) {

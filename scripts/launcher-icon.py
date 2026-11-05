@@ -16,7 +16,9 @@ Writes, for the phone app and the watch app:
   res/drawable/ic_launcher_foreground.xml   the icon (on @color/ic_launcher_background)
   res/drawable/ic_launcher_monochrome.xml   the themed icon: the three harmonics in one colour, three strengths
 wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark,
-wear/src/main/res/drawable/ic_twangle_mark_colour.xml, the mark in its colours in the middle of the watch tile, and
+wear/src/main/res/drawable/ic_twangle_mark_colour.xml, the mark in its colours in the middle of the watch tile,
+core/designsystem/src/main/res/drawable/twangle_icon_plucked.xml and website/twangle-icon.svg, the icon beside the
+name (TwangleName.kt, the website's top bar), plucked as the opening screen's, and
 res/drawable/ic_opening_animated.xml in both, the opening screen's icon (Android 12 and up play it): the
 string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
 settling into the icon's pose, every overlap in the icon's own colour all the while. Android 8 to 11 show it
@@ -58,6 +60,11 @@ TOLERANCE = 0.01                             # how far a simplified edge may str
 # the edge of the watch's round icon, and round launchers cut the string's ends off). The opening screen and the
 # tile's cropped marks keep the full size (owner, 2026-11-05).
 MARK_SCALE = 0.75
+# The mark on its own beside the name (the owner, 2026-11-05: the mark and the name apart, not the name on the
+# string): the harmonics cropped to themselves with a unit round them, as (x, y, width, height) on the 108-unit
+# canvas. The whole swings only above the string (SWINGS 0.5) and no harmonic ever past its resting height, so
+# the pluck stays inside it.
+MARK_CROP = (16.0, 28.0, 76.0, 44.0)
 
 
 def height(k, u):
@@ -188,7 +195,9 @@ HEADER = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 
-def vector(size_dp, viewport, body, what, translate=None, scale=None):
+def vector(size_dp, viewport, body, what, translate=None, scale=None, height=None):
+    """A vector drawable size_dp across on a square viewport, or with height a viewport `viewport` wide and
+    `height` tall, in dp the same."""
     group_open, group_close = "", ""
     if translate or scale:
         attrs = (f'android:translateX="{translate[0]}"\n        android:translateY="{translate[1]}"' if translate else
@@ -199,8 +208,8 @@ def vector(size_dp, viewport, body, what, translate=None, scale=None):
         body = "".join("    " + line + "\n" if line else "\n" for line in body.splitlines())
     return (HEADER.format(what=what)
             + '<vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
-            + f'    android:width="{size_dp}dp"\n    android:height="{size_dp}dp"\n'
-            + f'    android:viewportWidth="{viewport}"\n    android:viewportHeight="{viewport}">\n'
+            + f'    android:width="{size_dp}dp"\n    android:height="{size_dp if height is None else height}dp"\n'
+            + f'    android:viewportWidth="{viewport}"\n    android:viewportHeight="{viewport if height is None else height}">\n'
             + group_open + body + group_close + "</vector>\n")
 
 
@@ -258,6 +267,24 @@ def opening(hold_ms=0):
     scales multiply to each harmonic's own swing (relative_swing). Painted singles, then pairs, then all three,
     as the icon's regions are, so each point ends in the colour of everything that covers it. With hold_ms the
     string first rests that long (the harmonics flat on it), then swings for OPENING_MS."""
+    body, animated = plucked_groups()
+    drawable = vector(108, 108, body, "").split("-->\n", 1)[1]           # the <vector> without the file header
+    return animated_vector(drawable, animated, hold_ms,
+                           "The opening screen's icon: the string plucked, each harmonic swinging at its own speed into\n"
+                           "     the icon's pose, its overlaps in the icon's colours throughout (ic_launcher_foreground.xml).\n"
+                           "     Still, it is that icon.")
+
+
+# The icon beside the name (the owner, 2026-11-05: the mark and the name apart, not the name on its string): the
+# launcher icon as the home screen shows it, its dark tile with round corners (the adaptive icon's visible 72
+# units, corners as Play rounds the store icon) and the mark at MARK_SCALE, plucked as the opening screen's.
+TILE = (18, 18, 72, 72)
+TILE_CORNER = 16
+
+
+def plucked_groups():
+    """The plucked mark's groups on the 108-unit canvas (as opening() says) and the (name, harmonic, outer
+    harmonic) of each group to animate."""
     sets = [[0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2]]
     body, animated = "", []
     for i, members in enumerate(sets):
@@ -274,24 +301,111 @@ def opening(hold_ms=0):
             close = f"{indent}</group>\n" + close
             indent += "    "
         body += close
-    drawable = vector(108, 108, body, "").split("-->\n", 1)[1]           # the <vector> without the file header
+    return body, animated
+
+
+def pluck_values(k, outer, hold_ms=0, frames=SWING_FRAMES):
+    """(fraction of the whole animation, scaleY) for a group of harmonic k inside harmonic `outer`'s."""
+    total = hold_ms + OPENING_MS
+    values = [((hold_ms + q * OPENING_MS) / total,
+               swing(HARMONICS[k][0], q) if outer is None else relative_swing(k, outer, q))
+              for q in (i / frames for i in range(frames + 1))]
+    if hold_ms:
+        values.insert(0, (0.0, values[0][1]))
+    return values
+
+
+def animated_vector(drawable, animated, hold_ms, what):
     drawable = "".join("        " + line + "\n" if line else "\n" for line in drawable.rstrip("\n").split("\n"))
-    targets = ""
-    for name, k, outer in animated:
-        total = hold_ms + OPENING_MS
-        frames = [i / SWING_FRAMES for i in range(SWING_FRAMES + 1)]
-        values = [((hold_ms + q * OPENING_MS) / total,
-                   swing(HARMONICS[k][0], q) if outer is None else relative_swing(k, outer, q)) for q in frames]
-        if hold_ms:
-            values.insert(0, (0.0, values[0][1]))
-        targets += target(name, keyframes("scaleY", values, total))
-    return (HEADER.format(what="The opening screen's icon: the string plucked, each harmonic swinging at its own speed into\n"
-                               "     the icon's pose, its overlaps in the icon's colours throughout (ic_launcher_foreground.xml).\n"
-                               "     Still, it is that icon.")
+    targets = "".join(target(name, keyframes("scaleY", pluck_values(k, outer, hold_ms), hold_ms + OPENING_MS))
+                      for name, k, outer in animated)
+    return (HEADER.format(what=what)
             + '<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
             + '    xmlns:aapt="http://schemas.android.com/aapt">\n\n'
             + '    <aapt:attr name="android:drawable">\n' + drawable + '    </aapt:attr>\n'
             + targets + '</animated-vector>\n')
+
+
+def tile_path():
+    x, y, w, h = TILE
+    r = TILE_CORNER
+    return (f"M{x + r},{y} L{x + w - r},{y} A{r},{r} 0 0 1 {x + w},{y + r} L{x + w},{y + h - r} "
+            f"A{r},{r} 0 0 1 {x + w - r},{y + h} L{x + r},{y + h} A{r},{r} 0 0 1 {x},{y + h - r} "
+            f"L{x},{y + r} A{r},{r} 0 0 1 {x + r},{y} Z")
+
+
+def icon_beside_name():
+    """TwangleName.kt's icon: the tile and the mark plucked, cropped to the tile. Still, it is the launcher icon."""
+    body, animated = plucked_groups()
+    body = "".join("    " + line + "\n" if line else "\n" for line in body.splitlines())
+    x, y, w, h = TILE
+    drawable = (f'<vector\n'
+                f'    android:width="{w}dp"\n    android:height="{h}dp"\n'
+                f'    android:viewportWidth="{w}"\n    android:viewportHeight="{h}">\n'
+                f'\n    <group\n        android:translateX="{-x}"\n        android:translateY="{-y}">\n'
+                f'        <path\n            android:fillColor="{BACKGROUND}"\n            android:pathData="{tile_path()}" />\n'
+                f'\n        <group\n            android:scaleX="{MARK_SCALE}"\n            android:scaleY="{MARK_SCALE}"\n'
+                f'            android:pivotX="54"\n            android:pivotY="54">\n'
+                + "".join("        " + line + "\n" if line else "\n" for line in body.splitlines())
+                + '        </group>\n    </group>\n</vector>\n')
+    return animated_vector(drawable, animated, 0,
+                           "Twangle's icon beside its name (TwangleName.kt): the launcher icon on its tile with round\n"
+                           "     corners, its harmonics plucked as the opening screen's (ic_opening_animated.xml).")
+
+
+WEBSITE_FRAMES = 25
+
+
+def website_icon():
+    """The website's icon beside the name in its top bar: icon_beside_name() as an inline SVG, plucked by CSS as the
+    page opens and again on hover (website/build.py; the site runs no script). Each group is drawn twice, as in
+    scripts/wordmark.py's ringing name before it: the first plucks as the page opens, the second is hidden until
+    the name is hovered, which shows it and so plucks it, the first hidden meanwhile; leaving keeps the second for
+    the pluck's length, so a quick leave never cuts it short."""
+    # Each harmonic's shape once (pathData is SVG's path syntax too), used by the clips and the fills.
+    shapes = "".join(f'<path id="tw-p{k}" d="{harmonic_outline(k)}"/>' for k in range(3))
+    clips = "".join(f'<clipPath id="tw-h{k}"><use href="#tw-p{k}"/></clipPath>' for k in range(3))
+    sets = [[0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2]]
+
+    def copy(kind):
+        out = ""
+        for i, members in enumerate(sets):
+            close = ""
+            for depth, k in enumerate(members):
+                clip = f' clip-path="url(#tw-h{k})"' if depth < len(members) - 1 else ""
+                out += f'<g class="s{i}g{depth}"{clip}>'
+                if depth == len(members) - 1:
+                    out += f'<use href="#tw-p{k}" fill="{colour_of(members)}"/>'
+                close += "</g>"
+            out += close
+        return f'<g class="{kind}">{out}</g>'
+
+    css = []
+    for i, members in enumerate(sets):
+        for depth, k in enumerate(members):
+            outer = members[depth - 1] if depth else None
+            frames = " ".join(f"{100 * f:.0f}%{{transform:scaleY({v:.3f})}}"
+                              for f, v in pluck_values(k, outer, frames=WEBSITE_FRAMES))
+            css.append(f"@keyframes tw-s{i}g{depth}{{{frames}}}")
+            css.append(f".twangle-icon .s{i}g{depth}{{animation:tw-s{i}g{depth} {OPENING_MS}ms linear both}}")
+    # Each plucked group hinged on the string; not the group holding them, whose own transform sizes the mark.
+    css.append(f".twangle-icon .first g,.twangle-icon .again g{{transform-box:view-box;transform-origin:0 {STRING_Y}px}}")
+    css.append(".twangle-icon .again{display:none}")
+    css.append(f"@supports (transition-behavior:allow-discrete){{"
+               f".twangle-icon .again{{transition:display 0s {OPENING_MS}ms allow-discrete}}"
+               f".twangle-icon .first{{transition:visibility 0s {OPENING_MS}ms}}"
+               f".brand:hover .twangle-icon .again{{display:inline;transition-delay:0s}}"
+               f".brand:hover .twangle-icon .first{{visibility:hidden;transition-delay:0s}}}}")
+    css.append("@media (prefers-reduced-motion:reduce){.twangle-icon g g{animation:none!important}}")
+    x, y, w, h = TILE
+    # The mark at MARK_SCALE about the canvas's centre, in a group of its own so the plucked groups' own
+    # transforms (their animations) don't replace it.
+    scale = f"translate(54 54) scale({MARK_SCALE}) translate(-54 -54)"
+    return ("<!-- Drawn by scripts/launcher-icon.py: change that script and run it again rather than editing this file. -->\n"
+            f'<svg class="twangle-icon" viewBox="{x} {y} {w} {h}" aria-hidden="true" focusable="false">'
+            f"<style>{''.join(css)}</style><defs>{shapes}{clips}</defs>"
+            f'<path fill="{BACKGROUND}" d="{tile_path()}"/>'
+            f'<g transform="{scale}">{copy("first")}{copy("again")}</g></svg>\n')
 
 
 def main():
@@ -322,6 +436,9 @@ def main():
         (res / "ic_launcher_foreground.xml").write_text(foreground, encoding="utf-8", newline="\n")
         (res / "ic_launcher_monochrome.xml").write_text(monochrome, encoding="utf-8", newline="\n")
     (ROOT / "wear/src/main/res/drawable/ic_twangle_mark.xml").write_text(mark, encoding="utf-8", newline="\n")
+    (ROOT / "core/designsystem/src/main/res/drawable/twangle_icon_plucked.xml").write_text(
+        icon_beside_name(), encoding="utf-8", newline="\n")
+    (ROOT / "website/twangle-icon.svg").write_text(website_icon(), encoding="utf-8", newline="\n")
     for module, theme, hold in (("app", "Theme.Twangle.Starting", 0), ("wear", "Theme.Twangle.Watch.Starting", WATCH_HOLD_MS)):
         (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(hold), encoding="utf-8", newline="\n")
         (ROOT / module / "src/main/res/values/opening_animation.xml").write_text(
