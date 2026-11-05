@@ -1,14 +1,15 @@
 """Draw Twangle's launcher icon (2.0, Phase 79) as Android vector drawables.
 
 The mark is one moment of a plucked string's first three harmonics (the owner's pick from
-docs/design/logo-v2-preview/, round 8, "A"): mode n of a string fixed at both ends swings as sin(n*pi*u),
+docs/design/logo-v2-preview/, round 8's "A" in round 10's colours, "Richer overlaps"): mode n of a string fixed at both ends swings as sin(n*pi*u),
 u along the string (Fletcher & Rossing, The Physics of Musical Instruments, ch. 2). The whole string is amber,
 the halves blue, the thirds green, each half and a third as tall as the whole, so no harmonic ever rises above
 the whole's arch (|sin(n*x)| <= n*sin(x) on 0..pi).
 
-In the mock-up the three colours are see-through and add up like light ("screen" blending). A vector drawable
-can't blend, so this script works out each overlap's final colour on the icon's background and paints flat
-shapes. Each shape runs from the string out to its own edge and the shapes overlapping more are painted later,
+In the mock-up the three colours are see-through and add up like light ("screen" blending), each overlap then
+made more colourful and a little deeper (round 10: added up alone, the overlaps above the string all came out
+nearly white, the halves and the thirds hard to tell apart in a small icon). A vector drawable can't blend, so
+this script works out each overlap's final colour on the icon's background and paints flat shapes. Each shape runs from the string out to its own edge and the shapes overlapping more are painted later,
 so every edge inside the mark is a later shape's edge over an earlier one: no seams where two colours meet.
 
 Writes, for the phone app and the watch app:
@@ -24,6 +25,7 @@ motion. Android 8 to 11 show it still: its resting state is the icon.
     python -I scripts/launcher-icon.py [--preview out.svg]
 """
 
+import colorsys
 import math
 import pathlib
 import sys
@@ -40,6 +42,10 @@ HARMONICS = [
     (3, 28.0 / 3, 1, "#3DDC84", 0.95),       # the thirds: Ink's green (in tune)
 ]
 MONO_ALPHA = [0.5, 0.75, 1.0]                # the themed icon's strengths, whole to thirds
+# Round 10's "Richer overlaps": an overlap's saturation raised by this much (up to the cap) and its lightness
+# lowered, two waves' overlap more than all three's, which stays the lightest (HSL, as the mock-up's toHsl).
+OVERLAP_SATURATION, OVERLAP_SATURATION_CAP = 0.25, 0.85
+OVERLAP_DARKER = {2: 0.10, 3: 0.03}
 SAMPLES = 1500
 TOLERANCE = 0.01                             # how far a simplified edge may stray, in canvas units
 
@@ -94,13 +100,18 @@ def hex_of(c):
 
 def colour_of(members):
     """The colour the mock-up shows where the harmonics in `members` overlap: each one screened over the
-    background in turn at its strength (CSS mix-blend-mode: screen with opacity, in sRGB)."""
+    background in turn at its strength (CSS mix-blend-mode: screen with opacity, in sRGB), an overlap then
+    made more colourful and deeper (OVERLAP_SATURATION, OVERLAP_DARKER)."""
     dst = rgb(BACKGROUND)
     for k in sorted(members):
         blended = screen(dst, rgb(HARMONICS[k][3]))
         a = HARMONICS[k][4]
         dst = tuple(d + (b - d) * a for d, b in zip(dst, blended))
-    return hex_of(dst)
+    if len(members) > 1:
+        h, l, sat = colorsys.rgb_to_hls(*dst)
+        sat = min(OVERLAP_SATURATION_CAP, sat + OVERLAP_SATURATION)
+        dst = colorsys.hls_to_rgb(h, l - OVERLAP_DARKER[len(members)], sat)
+    return hex_of(tuple(min(1.0, max(0.0, v)) for v in dst))
 
 
 def simplify(points, tolerance):
@@ -246,7 +257,7 @@ def main():
     foreground = vector(108, 108, "".join(path_xml(c, d) for c, d in painted),
                         "Twangle's mark: one moment of a plucked string's first three harmonics, the whole in amber,\n"
                         "     the halves in blue, the thirds in green, where they overlap the colours they add up to on\n"
-                        "     @color/ic_launcher_background. 108-unit adaptive icon canvas.")
+                        "     @color/ic_launcher_background, made richer. 108-unit adaptive icon canvas.")
     mono_body = "".join(path_xml("#FFFFFFFF", harmonic_outline(k), MONO_ALPHA[k]) for k in range(3))
     monochrome = vector(108, 108, mono_body,
                         "The themed icon: the same three harmonics in one colour at three strengths.")

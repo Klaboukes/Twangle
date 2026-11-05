@@ -7,12 +7,21 @@
 <meta name="darkreader-lock">
 <title>Twangle 2.0 Logo</title>
 <!--
-FINAL (owner, 2026-11-04): A, "Half and a third", in Ink's story colours (amber, blue, green) on Ink dark.
+FINAL (owner, 2026-11-05): round 8's A, "Half and a third", in this round's 2, "Richer overlaps": Ink's story colours
+(amber, blue, green) on Ink dark, the overlaps more colourful and a little deeper than light adding up alone gives.
 Built in Phase 79 by scripts/launcher-icon.py (ARCHITECTURE.md, *Name, app ID and icon*). The rounds, each its own
 page here: 1 the 1.1 mark in Ink's colours ("I meant a total redesign"), 2 objects (sound hole, strobe, headstock,
 unison, neck, fork: "nothing I like"), 3 abstract marks (the owner chose to go on with D, then B), 4 Three lights,
-5 Harmonics (5, One moment), 6 One moment (6, Colour only), 7 Colour only (1), 8 this page.
-TWANGLE 2.0 LOGO, ROUND 8 (2026-11-04). The owner picked round 7's 1 (round7.html), but near both top corners the
+5 Harmonics (5, One moment), 6 One moment (6, Colour only), 7 Colour only (1), 8 the arch's corners (A), 9 the
+thirds apart, solid or with gaps (none: "I do like that the overlaps get a distinct color"), 10 this page. Of the
+lockups ("The name with the mark") the owner liked "The name ringing" (2026-11-05).
+TWANGLE 2.0 LOGO, ROUND 10 (2026-11-05). Of round 9 (round9.html) the owner wants to keep the see-through overlaps,
+each with its own colour, only standing out more. Each overlap of the waves is painted as its own flat region (as the
+launcher icon already is), in a colour worked out per option (ROUND10): stronger, darker amber, or picked by hand.
+ROUND 9 (2026-11-05). Round 8's A was built (Phase 79), then the owner found the thirds (green)
+hard to tell from the halves (blue) in a small icon: drawn as light adding up ("screen"), every overlap above the
+string washes towards white, so blue over amber and green over blue over amber look alike. Four fixes (ROUND9).
+ROUND 8 (2026-11-04). The owner picked round 7's 1 (round7.html), but near both top corners the
 smaller waves poke out above the amber arch (blue at the right, green at the left): near the ends sin(nπu) climbs
 n times as steeply as sin(πu), so a wave taller than 1/n of the arch leaves it. Three fixes (ROUND8) beside it.
 ROUND 7: The owner picked round 6's 6, "Colour only" (round6.html), and asked
@@ -68,10 +77,11 @@ foreground would ship as bitmaps; the themed icon is a one-colour vector.
 </head>
 <body>
 <main>
-  <h1>Colour only, round 8</h1>
-  <p class="lead">Round 7's pick, with the blue and green kept inside the amber arch at the top corners. Three ways to
-    do it, next to the original. Compare them in the close-up below the cards.
-    Other rounds: <a href="round1.html">1</a> · <a href="round2.html">2</a> · <a href="round3.html">3</a> · <a href="round4.html">4</a> · <a href="round5.html">5</a> · <a href="round6.html">6</a> · <a href="round7.html">7</a></p>
+  <h1>Colour only, round 10</h1>
+  <p class="lead">Today's icon, keeping its see-through overlaps, each overlap in its own colour, with those colours
+    standing out more, so the green thirds and the blue halves are easy to tell apart even small. Three ways, next to
+    the icon as it is. Compare them small in the close-up.
+    Other rounds: <a href="round1.html">1</a> · <a href="round2.html">2</a> · <a href="round3.html">3</a> · <a href="round4.html">4</a> · <a href="round5.html">5</a> · <a href="round6.html">6</a> · <a href="round7.html">7</a> · <a href="round8.html">8</a> · <a href="round9.html">9</a></p>
 
   <div class="controls" id="cols"></div>
   <div class="controls" id="bgs"></div>
@@ -319,7 +329,114 @@ const ROUND8 = [
     env: v.taper && n > 1 ? u => Math.pow(Math.sin(Math.PI * u), .8) : null,
     cap: v.clip && n > 1 ? u => A1 * Math.sin(Math.PI * u) * Math.max(0, swing(1, p)) : null })).join('');
 } }));
-const OPTIONS = ROUND8;
+
+// Round 9: round 8's A with the thirds kept apart from the halves. blends: each wave's blending ('screen' adds light,
+// 'normal' lays it over what is behind); gap: a thin line of the background along the blue's and the green's curves.
+const PARTS8 = [[1,28,1],[2,14,-1],[3,9.3,1]];
+function crestGap(c, n, amp, sgn, o, w) {
+  const pts = [];
+  for (let i = 0; i <= 160; i++) {
+    const u = i / 160;
+    pts.push([lerp(o.x0, o.x1, u), o.y - amp * sgn * Math.sin(n * Math.PI * u) * swing(n, o.p)]);
+  }
+  return `<path d="${P(pts)}" fill="none" stroke="${c.bg}" stroke-width="${w}" stroke-linecap="butt" stroke-linejoin="round"/>`;
+}
+const ROUND9 = [
+  { id:'a', n:'1', name:'As now',
+    idea:'Round 8’s A, the icon on the phone today: above the string the blue and the green both fade towards white.',
+    ops:[.85,.78,.95] },
+  { id:'solid', n:'2', name:'Each its own colour',
+    idea:'No light adding up: amber at the back, the blue laid over it, the green in front, each nearly solid. Every wave keeps its own colour wherever it is.',
+    ops:[.85,.94,.96], blends:['normal','normal','normal'] },
+  { id:'green', n:'3', name:'Green in front',
+    idea:'The amber and blue see-through as now; only the thirds solid on top, so the smallest wave always reads as green.',
+    ops:[.85,.78,1], blends:[null,null,'normal'] },
+  { id:'gaps', n:'4', name:'Thin gaps',
+    idea:'The colours as now, with a thin line of the dark background along the blue and the green, so each wave has an edge even where the colours run together.',
+    ops:[.85,.78,.95], gap:3 },
+  { id:'solidgaps', n:'5', name:'Own colours, thin gaps',
+    idea:'2 and 4 together: solid colours with a thin dark line between them. The crispest at the smallest sizes, like a cut-paper poster.',
+    ops:[.85,1,1], blends:['normal','normal','normal'], gap:2.4 },
+].map(v => ({ ...v, mark:(c, p = 1) => {
+  const o = { p, signed:true, y:57, x0:17, x1:91 };
+  return PARTS8.map(([n, amp, sgn], i) => {
+    const cc = v.blends && v.blends[i] && !c.mono ? { ...c, blend:v.blends[i] } : c;
+    const gap = v.gap && n > 1 && !c.mono ? crestGap(c, n, amp, sgn, o, v.gap) : '';
+    return gap + mode(cc, n, amp, c.cols[i], v.ops[i], { ...o, sgn });
+  }).join('');
+} }));
+
+// Round 10: every overlap of the three waves painted as its own flat region, in colour(S) for the set S of waves
+// that cover it. The regions nest (the overlap of two lies inside each of them), so painting the singles, then the
+// pairs, then the three gives each region exactly its colour.
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+const hex = c => '#' + c.map(v => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')).join('');
+// CSS 'screen' with opacity, the way the icon blends today: light adding up.
+function screenOver(base, col, op) { return base.map((b, i) => b + op * (1 - (1 - b) * (1 - col[i]) - b)); }
+function toHsl([r, g, b]) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  if (!d) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
+}
+function fromHsl([h, s, l]) {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return [r + m, g + m, b + m];
+}
+function waveD(n, amp, sgn, o) {
+  const pts = [];
+  for (let i = 0; i <= 160; i++) {
+    const u = i / 160;
+    pts.push([lerp(o.x0, o.x1, u), o.y - amp * sgn * Math.sin(n * Math.PI * u) * swing(n, o.p)]);
+  }
+  return P(pts) + `L${o.x1},${o.y}L${o.x0},${o.y}Z`;
+}
+const SETS = [[0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2]];
+const key = S => S.join('');
+function screenColours(c, ops) {
+  const out = {};
+  SETS.forEach(S => out[key(S)] = hex(S.reduce((b, i) => screenOver(b, rgb(c.cols[i]), ops[i]), rgb(c.bg))));
+  return out;
+}
+const ROUND10 = [
+  { id:'now', n:'1', name:'As now',
+    idea:'Today\u2019s icon: the overlaps above the string are pale yellow, pale pink and near white, close to each other.',
+    colours:c => screenColours(c, [.85, .78, .95]) },
+  { id:'rich', n:'2', name:'Richer overlaps',
+    idea:'The same colours, each overlap made more colourful and a little deeper: the halves over the amber a clear rose, the thirds over both still the lightest.',
+    colours:c => {
+      const out = screenColours(c, [.85, .78, .95]);
+      SETS.filter(S => S.length > 1).forEach(S => {
+        const [h, sa, l] = toHsl(rgb(out[key(S)]));
+        out[key(S)] = hex(fromHsl([h, Math.min(.85, sa + .25), S.length === 3 ? l - .03 : l - .1]));
+      });
+      return out;
+    } },
+  { id:'deep', n:'3', name:'Deeper amber',
+    idea:'The amber a little darker, so when the light adds up the overlaps stop short of white and keep the blue\u2019s and green\u2019s own tint.',
+    colours:c => screenColours(c, [.72, .8, .95]) },
+  { id:'picked', n:'4', name:'Picked by hand',
+    idea:'Each overlap given its own clear colour that still reads as its two colours mixed: lime where green crosses amber, rose where blue does, cream where all three meet, teal below.',
+    colours:c => ({ ...screenColours(c, [.85, .78, .95]), '02':'#C9DE5A', '01':'#EC93A6', '012':'#FBF1DC', '12':'#4FD9CB' }) },
+  { id:'bold', n:'5', name:'Picked, bolder',
+    idea:'4 with the overlaps a step stronger: a deeper rose and lime, the meeting of all three almost white, so even at the smallest size each part has its own colour.',
+    colours:c => ({ ...screenColours(c, [.85, .78, .95]), '02':'#B9D443', '01':'#E3758F', '012':'#FFF6E6', '12':'#3ACCBE' }) },
+].map(v => ({ ...v, mark:(c, p = 1) => {
+  const o = { p, y:57, x0:17, x1:91 };
+  if (c.mono || c.blend !== 'screen') return ROUND9[0].mark(c, p);
+  const ds = PARTS8.map(([n, amp, sgn]) => waveD(n, amp, sgn, o)), cols = v.colours(c);
+  let defs = '', body = '';
+  const clipOf = i => { const id = 'w' + (uid++); defs += `<clipPath id="${id}"><path d="${ds[i]}"/></clipPath>`; return id; };
+  SETS.forEach(S => {
+    let inner = `<path d="${ds[S[S.length - 1]]}" fill="${cols[key(S)]}"/>`;
+    S.slice(0, -1).reverse().forEach(i => inner = `<g clip-path="url(#${clipOf(i)})">${inner}</g>`);
+    body += inner;
+  });
+  return `<defs>${defs}</defs>${body}`;
+} }));
+const OPTIONS = ROUND10;
 
 function squirclePath() {
   let d = '';
@@ -384,7 +501,8 @@ let anim = 0;
 function renderDetail() {
   const o = picked, c = pal();
   document.getElementById('close').innerHTML = OPTIONS.map(v =>
-    `<div>${icon(v, 230)}<div class="cap">${v.n}. ${v.name}</div></div>`).join('');
+    `<div>${icon(v, 200)}<div class="sizes" style="margin-top:10px">${icon(v, 64)}${icon(v, 48)}${icon(v, 32)}${icon(v, 24)}</div>
+      <div class="cap">${v.n}. ${v.name}</div></div>`).join('');
   document.getElementById('home').innerHTML =
     `<div>${homeScreen('wall-dark')}<div class="cap">Dark wallpaper</div></div>
      <div>${homeScreen('wall-light')}<div class="cap">Light wallpaper</div></div>`;
