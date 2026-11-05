@@ -86,7 +86,7 @@ private const val HALO = 0.3f
 // The band is drawn from [start] (left of it) to past its right edge, one mark per [period]; a
 // mark's centre sits a quarter period in, where a plain half-filled stripe's would. Marks that have
 // faded out completely at the ends are skipped. The bars follow the approved mock-up
-// (docs/design/theme-styles-preview.html, drawStrobe).
+// (docs/design/1.x/theme-styles-preview.html, drawStrobe).
 private fun DrawScope.bars(left: Float, top: Float, width: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
     val barWidth = max(3.dp.toPx(), period * 0.32f).coerceAtMost(height)
     val halo = HALO * glow

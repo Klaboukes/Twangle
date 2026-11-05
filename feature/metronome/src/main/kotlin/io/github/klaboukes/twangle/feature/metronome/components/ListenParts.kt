@@ -97,7 +97,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /*
- * Listen's status line and its suggestion balloon (Phase 27, docs/design/metronome-listen-preview.html,
+ * Listen's status line and its suggestion balloon (Phase 27, docs/design/1.x/metronome-listen-preview.html,
  * "Line" and "Found"). Since 2026-11-04 the line stands between the Vibrate and Listen buttons under the
  * beat bars ([UnderBarsRow]); from Phase 62 until then it showed small icons of what was on in the
  * options panel while Listen had nothing to say.

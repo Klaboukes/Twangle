@@ -75,7 +75,7 @@ import kotlin.math.min
  * opens Settings ([SettingsGear]) is in the top start corner: on its side at the top of the rail, upright
  * in the screen's own top row, so [content] gets the gear to place there (`gear`, null where the rail
  * holds it or no bar shows). Both are variant B of the approved
- * mock-up (docs/design/metronome-nav-preview.html), with the icons of 2.0's first mock-up
+ * mock-up (docs/design/1.x/metronome-nav-preview.html), with the icons of 2.0's first mock-up
  * (docs/design/fresh-start-preview.html): icons and names straight on the app's background over a calm
  * field, the open tab ([selected]) in the accent with the accent's mark under its name. A tap on another tab calls [onSelect], and one on the open
  * tab [onReselect] (the Tuner tab's closes the tuner's tools). Every item is a tab: the instrument

@@ -45,7 +45,7 @@ internal enum class NeckLie {
 }
 
 /**
- * A scale on the whole neck (the owner's pick I in docs/design/practice-preview.html): the strings of
+ * A scale on the whole neck (the owner's pick I in docs/design/1.x/practice-preview.html): the strings of
  * [tuning], frets 0 to [ScaleFinder.HIGHEST_FRET], every note of the scale ([notes], from
  * [ScaleFinder.notesOf] on [tuning]) a dot with its name in the player's [notation] as the scale writes it
  * ([Scale.nameOf]); the root's dots filled in the accent, the colour note's ([Scale.colourNote],

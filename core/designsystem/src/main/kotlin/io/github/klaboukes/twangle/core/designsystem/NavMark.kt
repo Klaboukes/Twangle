@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * The mark under the open screen's name in the navigation bar (variant B of the approved mock-up,
- * docs/design/metronome-nav-preview.html): a rounded 20 × 4 dp bar (1.1's Contemporary; the other
+ * docs/design/1.x/metronome-nav-preview.html): a rounded 20 × 4 dp bar (1.1's Contemporary; the other
  * styles had their own marks), drawn in [color] (the accent), centred in a [NAV_MARK_WIDTH] ×
  * [NAV_MARK_HEIGHT] box, whatever the font size. Says nothing to TalkBack.
  */

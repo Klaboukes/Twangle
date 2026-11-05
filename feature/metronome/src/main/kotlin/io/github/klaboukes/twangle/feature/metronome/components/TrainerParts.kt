@@ -57,7 +57,7 @@ import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
  * The speed trainer (Phase 62): a row in the options panel with its name, what it does in words and its
- * switch, which opens its settings (round 1's panel, docs/design/metronome-practice-preview.html) in a
+ * switch, which opens its settings (round 1's panel, docs/design/1.x/metronome-practice-preview.html) in a
  * floating panel of the same kind (the shared [FloatingPanel]); while it is on, its words on the line
  * between the Vibrate and Listen buttons too ([TrainerLine]), opening its settings from there. From
  * Phase 75 to 2026-11-04 the same row stood on a card over the meter (the first 2.0 mock-up's

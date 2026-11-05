@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * The tabs' line icons, drawn for Twangle as on 2.0's first mock-up (docs/design/fresh-start-preview.html;
- * the metronome from the approved docs/design/metronome-nav-preview.html), redrawn as the owner picked
+ * the metronome from the approved docs/design/1.x/metronome-nav-preview.html), redrawn as the owner picked
  * on 2026-11-04: a tuner's dial, a metronome and a chord chart, in 1.8 dp lines on a 24 dp grid, small
  * dots and the chart's nut filled; the open tab's in 2.2 dp.
  * The gear that opens Settings ([GEAR_ICON]) is drawn the same way.

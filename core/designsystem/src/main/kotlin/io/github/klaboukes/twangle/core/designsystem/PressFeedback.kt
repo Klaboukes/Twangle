@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.exp
 
 /*
- * Twangle's press effect (Phase 27, docs/design/metronome-listen-preview.html, "Press" and "Tap
+ * Twangle's press effect (Phase 27, docs/design/1.x/metronome-listen-preview.html, "Press" and "Tap
  * tempo's press"), one look for every button in place of Material's ripple: the button lights up on
  * touch-down, stays lit while held, sinks a little and fades after release.
  */

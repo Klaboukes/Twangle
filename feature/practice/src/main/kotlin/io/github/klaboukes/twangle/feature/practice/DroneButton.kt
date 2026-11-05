@@ -78,7 +78,7 @@ import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 
 /*
- * The drone under the Scales tool (Phase 48, the owner's pick A in docs/design/drone-button-preview.html): one split
+ * The drone under the Scales tool (Phase 48, the owner's pick A in docs/design/1.x/drone-button-preview.html): one split
  * button at the end of the scale's name row, ▶ / ■ on its start half and the sound's icon with ⌄ on its end half, which
  * drops the drone panel (Sound, Notes, Lower) under the whole name row, as wide as it. The drone sounds the scale's
  * root ([droneRootHz]) through a [DronePlayer], only while Scales shows ([StopDroneWhenHidden]).

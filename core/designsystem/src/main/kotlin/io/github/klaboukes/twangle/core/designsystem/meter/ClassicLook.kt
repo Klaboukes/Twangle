@@ -41,7 +41,7 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /*
- * Classic (Phase 78; 1.1's Classic meter look, docs/design/meter-looks-preview.html, in Ink's plain finish, which
+ * Classic (Phase 78; 1.1's Classic meter look, docs/design/1.x/meter-looks-preview.html, in Ink's plain finish, which
  * was 1.1 Contemporary's): a needle on a half-circle dial, the most familiar tuner face and the most precise, the
  * meter's default since the trail left it. The scale is plain (no stretch: a numbered scale must stay even), so a
  * cent turns the needle 1.8° everywhere, about 4.7 dp at its tip on a phone. It sits straight on the page like the

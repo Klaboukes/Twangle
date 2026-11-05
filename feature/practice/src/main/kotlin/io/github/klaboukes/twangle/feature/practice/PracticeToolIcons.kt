@@ -27,7 +27,7 @@ private fun draw(tool: PracticeTool): ImageVector {
         PracticeTool.CHORDS -> listOf(
             "M5.25,4h13.5", "M5.25,4v16", "M9.75,4v16", "M14.25,4v16", "M18.75,4v16", "M5.25,9.5h13.5", "M5.25,15h13.5",
         ) to listOf(Dot(14.25f, 6.75f, 2f), Dot(9.75f, 12.25f, 2f))
-        // A staircase, a scale climbing step by step: four treads, as the mock-up's (docs/design/tool-button-preview.html).
+        // A staircase, a scale climbing step by step: four treads, as the mock-up's (docs/design/1.x/tool-button-preview.html).
         PracticeTool.SCALES -> listOf("M3.5,18.5h4.25v-4.25h4.25v-4.25h4.25v-4.25h4.25") to emptyList()
         // A capo across the strings, as the Chords icon's box: the nut, four strings, and the capo a solid bar across
         // them, past the outer two ([CAPO_BAR]); no frets or fingers, so it can't be taken for a chord. Phase 65: until
@@ -35,7 +35,7 @@ private fun draw(tool: PracticeTool): ImageVector {
         PracticeTool.CAPO -> listOf(
             "M5.25,4h13.5", "M5.25,4v16", "M9.75,4v16", "M14.25,4v16", "M18.75,4v16",
         ) to emptyList()
-        // An ear, as the mock-up's (docs/design/ear-training-preview.html): the outer curl down to the lobe, and the inner fold.
+        // An ear, as the mock-up's (docs/design/1.x/ear-training-preview.html): the outer curl down to the lobe, and the inner fold.
         PracticeTool.EAR_TRAINING -> listOf(
             "M7,9.5a5,5 0,0 1,10,0c0,3 -2.6,3.8 -3.4,5.8c-0.6,1.6 -0.8,3.2 -2.6,4.2c-1.4,0.7 -3,0 -3.5,-1.2",
             "M10,10a2,2 0,0 1,4,0c0,1.2 -1.2,1.5 -1.6,2.6",

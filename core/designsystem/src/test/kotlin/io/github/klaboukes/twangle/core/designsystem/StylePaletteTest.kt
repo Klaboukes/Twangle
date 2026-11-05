@@ -12,7 +12,7 @@ import kotlin.math.sqrt
 /**
  * Ink, light and dark, must stay readable: WCAG 2.2 AA, 4.5:1 for any text against what it sits on,
  * 3:1 for marks (ticks, needle, outlines of controls). The rules are 1.1's approved mock-up's
- * (docs/design/theme-styles-preview.html, "Roles"); the colours are 2.0's (docs/architecture/v2-plan.md,
+ * (docs/design/1.x/theme-styles-preview.html, "Roles"); the colours are 2.0's (docs/architecture/v2-plan.md,
  * *The lens*).
  */
 class StylePaletteTest {

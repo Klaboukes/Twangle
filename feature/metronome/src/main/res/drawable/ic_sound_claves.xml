@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The claves: one stick resting level, the other coming down onto it at about 30 degrees (never crossing), two impact marks, in the row icons' line style; variant A5 of docs/design/metronome-sound-preview.html, drawn for Twangle. -->
+<!-- The claves: one stick resting level, the other coming down onto it at about 30 degrees (never crossing), two impact marks, in the row icons' line style; variant A5 of docs/design/1.x/metronome-sound-preview.html, drawn for Twangle. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

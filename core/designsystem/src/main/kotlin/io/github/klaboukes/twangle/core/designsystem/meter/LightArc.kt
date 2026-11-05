@@ -25,8 +25,8 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /*
- * The Light arc, as on the round-2 mock-up page (docs/design/meter-looks-round2-preview.html, drawFan),
- * sharpened in Phase 60 (docs/design/meter-precision-preview.html, drawFan with `sharp`) and fitted into
+ * The Light arc, as on the round-2 mock-up page (docs/design/1.x/meter-looks-round2-preview.html, drawFan),
+ * sharpened in Phase 60 (docs/design/1.x/meter-precision-preview.html, drawFan with `sharp`) and fitted into
  * 2.0's lens in Phase 72 (docs/design/v2-tuner-screens-preview.html, lensArc): a fan of little lights, like
  * an LED pedal's, with no numbers. The rays from the centre out to the reading light up as a wedge, brightest
  * at the reading, in the reading's tone; the middle ray is the centre mark. The rays stand on the stretched

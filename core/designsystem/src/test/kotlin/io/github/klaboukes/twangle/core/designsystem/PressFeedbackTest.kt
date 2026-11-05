@@ -7,7 +7,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
-/** The press effect's timing (docs/design/metronome-listen-preview.html, "Press" and "Tap tempo's press"). */
+/** The press effect's timing (docs/design/1.x/metronome-listen-preview.html, "Press" and "Tap tempo's press"). */
 class PressFeedbackTest {
 
     private fun ms(millis: Int) = millis * 1_000_000L

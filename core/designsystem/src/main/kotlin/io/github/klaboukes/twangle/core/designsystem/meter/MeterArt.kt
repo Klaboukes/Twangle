@@ -19,8 +19,8 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 
 /*
  * The shared art of the meter looks, "as if by the same artist" (docs/architecture/ui-meter-and-styles.md,
- * Meter art language; the approved mock-ups docs/design/meter-looks-preview.html and, for the open face,
- * docs/design/theme-styles-preview.html are the reference, and the names here match their helpers).
+ * Meter art language; the approved mock-ups docs/design/1.x/meter-looks-preview.html and, for the open face,
+ * docs/design/1.x/theme-styles-preview.html are the reference, and the names here match their helpers).
  * The meter has no plate or frame: it sits straight on the screen's background. Every look is built
  * from these pieces: the same glow (GlowArt), in the same colour roles (MeterRoles). Classic's scale, hub
  * and arc (ScaleMarks, HubArt, TrackArt) went in Phase 71, when the lens took the tuner's reading; the

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The cowbell: a bell widening to its mouth, with its handle, in the row icons' line style; as in docs/design/metronome-sound-preview.html, drawn for Twangle. -->
+<!-- The cowbell: a bell widening to its mouth, with its handle, in the row icons' line style; as in docs/design/1.x/metronome-sound-preview.html, drawn for Twangle. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

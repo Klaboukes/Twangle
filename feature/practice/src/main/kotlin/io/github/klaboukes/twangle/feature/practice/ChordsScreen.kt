@@ -89,7 +89,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * The Practice tab's Chords tool (Phase 32, the owner's picks D, G and I in
- * docs/design/practice-preview.html): pick a root and a chord type, see its finger shapes on the
+ * docs/design/1.x/practice-preview.html): pick a root and a chord type, see its finger shapes on the
  * instrument and [tuning] picked with the instrument button (the player's own tunings too), one big
  * chart at a time, easiest first, with ‹ "2 of 3" › under it and a swipe across the chart for the
  * others. With [scales] it is the Scales tool (a tool of its own since Phase 47, before that a second view
@@ -101,7 +101,7 @@ import kotlinx.coroutines.withContext
  * the row's middle and the instrument and tuning on their own line under it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the picker chip, which opens the instrument and tuning sheet),
  * the chord's or the scale's full name on the one picker face as wide as the row ("C minor seventh ⌄",
  * "D Dorian ⌄", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
- * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
+ * docs/design/1.x/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
  * pager. On its side (≥ 600 dp wide and wider than tall) the top row is at the top of the start
  * half and the name button in the middle of the rest of it, and the panel opens over that half; the chart or

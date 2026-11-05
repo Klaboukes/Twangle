@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Between the beats: sixteenths in 2/4 to 5/4, four clicks per beat. Four notes joined by two beams, as on the mock-up (docs/design/metronome-layout-preview.html, option II). -->
+<!-- Between the beats: sixteenths in 2/4 to 5/4, four clicks per beat. Four notes joined by two beams, as on the mock-up (docs/design/1.x/metronome-layout-preview.html, option II). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

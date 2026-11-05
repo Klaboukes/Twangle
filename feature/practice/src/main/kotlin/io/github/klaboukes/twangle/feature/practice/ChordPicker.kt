@@ -41,7 +41,7 @@ import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
  * so the name stays in sight while picking), or the screen puts it elsewhere (on its side, over the start half, so
  * the panel doesn't hide the name and the chart).
  *
- * With [end] (the drone button on Scales, Phase 48, the owner's pick A in docs/design/drone-button-preview.html)
+ * With [end] (the drone button on Scales, Phase 48, the owner's pick A in docs/design/1.x/drone-button-preview.html)
  * the name gives up [endWidth] and a small gap to it at the row's end; [end] is given the name's steady height,
  * so both are one height whatever the name and the language, and the row's width.
  *

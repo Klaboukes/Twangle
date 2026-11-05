@@ -4,7 +4,7 @@ import kotlin.math.abs
 import kotlin.math.sign
 
 /*
- * The stretched middle (Phase 60, docs/design/meter-precision-preview.html, `stretch` and `ease`):
+ * The stretched middle (Phase 60, docs/design/1.x/meter-precision-preview.html, `stretch` and `ease`):
  * the looks that read "to the cent" give the last few cents near the note more room and squeeze
  * the far ends, where only the direction matters. Classic never uses it: its numbered scale would
  * go uneven.

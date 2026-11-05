@@ -24,7 +24,7 @@ data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
 }
 
 /**
- * The looks' springs, as on the approved mock-up page (`docs/design/meter-looks-preview.html`, `FEEL`); the meter's
+ * The looks' springs, as on the approved mock-up page (`docs/design/1.x/meter-looks-preview.html`, `FEEL`); the meter's
  * looks take theirs from [meterFeel].
  */
 object MeterFeels {

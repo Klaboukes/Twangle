@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ■, Twangle's one stop sign (Phase 77): the metronome's Stop, the drone's. A rounded square, about as tall as the ▶
-     (ic_play), drawn for Twangle (docs/design/metronome-nav-preview.html). -->
+     (ic_play), drawn for Twangle (docs/design/1.x/metronome-nav-preview.html). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

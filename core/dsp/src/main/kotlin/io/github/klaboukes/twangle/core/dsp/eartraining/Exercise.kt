@@ -2,7 +2,7 @@ package io.github.klaboukes.twangle.core.dsp.eartraining
 
 /**
  * Ear training's three exercises (Phase 55), picked with three icons in a row (the owner's pick A in
- * docs/design/ear-training-preview.html). No fourth one: a scale by ear stays in IDEAS.md.
+ * docs/design/1.x/ear-training-preview.html). No fourth one: a scale by ear stays in IDEAS.md.
  */
 enum class Exercise(
     /** Whether the exercise hears the instrument through the microphone; the others are answered with buttons. */

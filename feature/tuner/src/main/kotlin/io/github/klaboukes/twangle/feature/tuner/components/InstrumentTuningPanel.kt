@@ -103,7 +103,7 @@ import kotlinx.coroutines.launch
  * lambda). With [onNewTuning], the list ends in "New tuning", which closes the sheet and calls it with
  * the instrument shown (the tuning editor again). With [onLoweredByChange], a quiet "Lower by" row
  * under the list lowers the picked tuning a semitone at a time (as the owner chose in
- * docs/design/lower-tuning.html), calling it with the new amount and keeping the sheet open; the
+ * docs/design/1.x/lower-tuning.html), calling it with the new amount and keeping the sheet open; the
  * ticked row then shows the lowered tuning. [tuning] comes lowered ([Tuning.loweredBy]); a tap on its
  * row keeps it so, another row picks that tuning as written. With [onAnyNoteChange] (the tuner's, not
  * the Practice tools'), the sheet ends in the Any note switch ([AnyNoteRow]), on while [anyNote]: the

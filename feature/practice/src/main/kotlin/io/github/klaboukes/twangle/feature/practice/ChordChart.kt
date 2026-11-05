@@ -40,7 +40,7 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 
 /**
- * One chord [shape] as songbooks draw it (the owner's pick D in docs/design/practice-preview.html):
+ * One chord [shape] as songbooks draw it (the owner's pick D in docs/design/1.x/practice-preview.html):
  * an upright box, the strings top to bottom with the thickest on the left, [ChordShape.CHART_ROWS]
  * fret rows; the nut drawn thick at the top, or "5fr" beside the first row higher up the neck; o over
  * a string played open, × over one not played; a filled dot per pressed string with its finger

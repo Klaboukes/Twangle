@@ -91,7 +91,7 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
  * The Practice tab's Capo helper (Phase 33, the owner's pick B in
- * docs/design/capo-helper-preview.html): pick the shapes you play ("Shapes I play", C D E G A and
+ * docs/design/1.x/capo-helper-preview.html): pick the shapes you play ("Shapes I play", C D E G A and
  * Dm Em Am), move the capo with ‹ › (no capo to fret 11), and a table shows what each of the key's
  * six usual chords sounds with the capo on (C shapes at 3: C → E♭, Dm → Fm … Am → Cm), with "Sounds
  * in E♭" under it. A tap on a row opens its shape in the Chords tool ([onOpenChord]), on the

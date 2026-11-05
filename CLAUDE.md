@@ -114,7 +114,7 @@ python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa B
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
 - The project owner is a professional software engineer (20+ years: .NET, web, scripting, SQL) but new to Android and Kotlin, and leaves the code here to Claude. Talk to them in plain language about outcomes and the actions they need to take; go technical only where a detail matters for them to know (a tradeoff to weigh, a risk, why something failed). Brief sub-agents the same way, never as "non-coder" (owner, 2026-10-28).
-- Open every mock-up and preview page (`docs/design/*.html`) for the owner in Firefox (`C:\Program Files\Mozilla Firefox\firefox.exe <full path>`), never in the app's built-in browser, which doesn't play their sounds (owner, 2026-10-26).
+- Open every mock-up and preview page (`docs/design/*.html`; 1.1's replaced ones in `docs/design/1.x/`) for the owner in Firefox (`C:\Program Files\Mozilla Firefox\firefox.exe <full path>`), never in the app's built-in browser, which doesn't play their sounds (owner, 2026-10-26).
 
 ## Git & GitHub
 Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.

@@ -65,7 +65,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * ([tap]) or Listen ([listen]) ends it: the switch goes off and the tempo stays where it was. The
  * climbing tempos aren't saved as the metronome's tempo; the one it is left at when it ends is.
  *
- * **Listen** (Phase 27, docs/design/metronome-listen-preview.html): [listen] opens [recorder] (the
+ * **Listen** (Phase 27, docs/design/1.x/metronome-listen-preview.html): [listen] opens [recorder] (the
  * microphone; the screen has asked for the permission first) and feeds a [TempoDetector] on
  * [dspDispatcher], with the metronome's own clicks paused. It ends by itself once the tempo is
  * steady, after [LISTEN_MILLIS], when the player taps Stop or touches another control (the player

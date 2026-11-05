@@ -8,7 +8,7 @@ import kotlin.math.sign
 
 /*
  * The light arc's fan (Phase 25, the round-2 mock-up's drawFan; sharpened in Phase 60,
- * docs/design/meter-precision-preview.html): rays of little lights fanning out from under the box,
+ * docs/design/1.x/meter-precision-preview.html): rays of little lights fanning out from under the box,
  * evenly spaced on the stretched scale ([meterStretch]), one every LIGHT_ARC_STEP_CENTS of it from
  * −50 to +50, each a row of LIGHT_ARC_DOTS lights from the inside out. So the rays near the middle
  * stand a few cents apart and the outer ones far apart: the first out is reached at about 3 cents,

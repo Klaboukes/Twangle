@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.isSpecified
  * see-through face on the background (the surface at 45 % behind a thin outline in the muted colour, 3:1
  * against the background since Phase 65, [controlOutline]), picked ones in the container colour with a
  * 2 dp accent outline, a screen's main action filled in the accent. Every one shows Twangle's press
- * effect ([pressFeedback]). It began as the metronome's buttons (docs/design/metronome-nav-preview.html);
+ * effect ([pressFeedback]). It began as the metronome's buttons (docs/design/1.x/metronome-nav-preview.html);
  * the instrument button, Chords' and Capo's ‹ ›, Ear training's ▶, the top row's buttons ([TopBarButton])
  * and the steppers (Settings' A4, the tuning sheet's "Lower by") use it too.
  */

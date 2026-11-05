@@ -112,7 +112,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 
 /**
- * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/ear-training-preview.html
+ * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/1.x/ear-training-preview.html
  * (all option A, 2026-10-28): the three exercises as three icons in a row, the questions starting at
  * once, the "What is asked" button opening the choices any time, and Play it back showing the note
  * the tuner hears as the player plays. Intervals is answered with buttons and never asks for the
