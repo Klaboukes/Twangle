@@ -212,24 +212,20 @@ private fun Caption(caption: String, modifier: Modifier) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val widthPx = constraints.maxWidth
         val heightPx = constraints.maxHeight
-        // The largest size that fits in two lines, else the largest in three: a short caption stays large.
-        val style = remember(text, base, widthPx, heightPx) {
-            fun fits(candidate: TextStyle, lines: Int): Boolean {
-                val layout = measurer.measure(text, candidate, constraints = Constraints(maxWidth = widthPx))
-                return layout.lineCount <= lines && layout.size.height <= heightPx
+        // Two sentences ("Strum once. See every string.") get a line each, at the largest size where both fit so (also
+        // in the height: the landscape band holds one line at the largest size, two only just), rather than a larger
+        // one that breaks a sentence in two ("No / sign-up"). Otherwise the largest size that fits in two lines, else
+        // the largest in three: a short caption stays large.
+        val (shown, style) = remember(text, base, widthPx, heightPx) {
+            fun fits(candidate: String, style: TextStyle, lines: Int, exactly: Boolean = false): Boolean {
+                val layout = measurer.measure(candidate, style, constraints = Constraints(maxWidth = widthPx))
+                return (if (exactly) layout.lineCount == lines else layout.lineCount <= lines) && layout.size.height <= heightPx
             }
             val sizes = CAPTION_SIZES.map { base.captionStyle(it) }
-            sizes.filter { it.fontSize.value >= TWO_LINE_MIN_SIZE }.firstOrNull { fits(it, 2) }
-                ?: sizes.firstOrNull { fits(it, CAPTION_MAX_LINES) }
-                ?: sizes.last()
-        }
-        // Two short sentences ("Play a string. See it in tune.") get a line each, where they fit so
-        // (also in the height: the landscape band holds one line at the largest size, two only just).
-        val shown = remember(text, style, widthPx, heightPx) {
-            sentencesOnTheirOwnLines(text)?.takeIf { split ->
-                measurer.measure(split, style, constraints = Constraints(maxWidth = widthPx))
-                    .let { it.lineCount == 2 && it.size.height <= heightPx }
-            } ?: text
+            val twoLineSizes = sizes.filter { it.fontSize.value >= TWO_LINE_MIN_SIZE }
+            val split = sentencesOnTheirOwnLines(text)
+            split?.let { lines -> twoLineSizes.firstOrNull { fits(lines, it, 2, exactly = true) }?.let { lines to it } }
+                ?: (text to (twoLineSizes.firstOrNull { fits(text, it, 2) } ?: sizes.firstOrNull { fits(text, it, CAPTION_MAX_LINES) } ?: sizes.last()))
         }
         Text(shown, style = style, color = MaterialTheme.colorScheme.onBackground)
     }

@@ -3,18 +3,16 @@ package io.github.klaboukes.twangle.app.store
 import android.content.res.Configuration
 import android.os.LocaleList
 import android.text.TextUtils
-import androidx.compose.foundation.background
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,9 +20,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -37,7 +33,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleName
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -50,12 +45,11 @@ import java.util.Locale
  * store language: [FEATURE_WIDTH] × [FEATURE_HEIGHT] pixels on [BACKGROUND]'s quiet background. On
  * the start side Twangle's icon and name ([TwangleName], Phase 79: the launcher icon beside the word in
  * Comfortaa; 1.1 showed the icon over the name in Retro's face), and under it [line],
- * what sets Twangle apart in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set
- * as the app sets that language (its fonts, right to left for Arabic). On the end side three of the tuner's
- * meters fanned out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in
- * each of the meter's looks (since Phase 78: the Light arc, Classic in front, the strobe), each with a string
- * brought into tune and held there, in tune's green with its glow. No note names, so the line is
- * the one text to translate. Everything important keeps clear of the edges, which Play may crop.
+ * what sets Twangle apart in a few words ("It does what you need it to do. And nothing else."), in [locale]'s
+ * language, set as the app sets that language (its fonts, right to left for Arabic). On the end side one meter
+ * upright, Classic on a dark card, a string brought into tune and held there, in tune's green with its glow (2.0's
+ * listing, 2026-11-05: until then three meters fanned out, each card too small for its ♭ and ♯). No note names, so
+ * the line is the one text to translate. Everything important keeps clear of the edges, which Play may crop.
  */
 @Composable
 fun FeatureGraphic(line: String, locale: Locale) {
@@ -78,8 +72,7 @@ fun FeatureGraphic(line: String, locale: Locale) {
                 StyleBackdrop(Modifier.fillMaxSize())
                 // The icon and the line start at TEXT_EDGE.
                 Box(Modifier.align(Alignment.CenterStart).padding(start = TEXT_EDGE)) { NameAndLine(line, locale) }
-                // The fan is decoration too.
-                Box(Modifier.align(Alignment.CenterEnd).padding(end = FAN_EDGE)) { Fan() }
+                Box(Modifier.align(Alignment.CenterEnd).padding(end = METER_EDGE)) { Meter() }
             }
         }
     }
@@ -109,86 +102,50 @@ private fun NameAndLine(line: String, locale: Locale) {
     }
 }
 
-/** Three lenses fanned out, the middle one in front. */
-@Composable
-private fun Fan() {
-    Box(Modifier.size(FAN_WIDTH, FAN_HEIGHT), contentAlignment = Alignment.Center) {
-        FAN.forEachIndexed { i, card ->
-            val side = i - FAN.size / 2
-            MeterCard(
-                card,
-                Modifier
-                    .zIndex(if (side == 0) 1f else 0f)
-                    // Not mirrored right to left: the cards' tilt isn't, and the fan should open upward.
-                    .absoluteOffset(x = CARD_SPREAD * side, y = CARD_DROP * kotlin.math.abs(side))
-                    .rotate(CARD_TILT * side),
-            )
-        }
-    }
-}
-
 /**
- * The tuner's meter ([Lens], 2.0 Phases 71 and 78) in the card's look on a card, light or dark: a string in the
- * in-tune zone and held there, the look and the glow green. A dark card is Ink dark's raised surface, as the
- * frameless meter (Phase 78) on the app's own background would leave it unseen on the graphic's.
+ * The tuner's meter ([Lens], 2.0 Phases 71 and 78), Classic, the default look, straight on the background as the
+ * app draws it (Phase 78's frameless meter; the owner, 2026-11-05, after a grey card behind it): a string in the
+ * in-tune zone and held there, the needle and the glow green.
  */
 @Composable
-private fun MeterCard(card: FanCard, modifier: Modifier) {
-    TwangleTheme(darkTheme = card.dark, animate = false) {
-        val shape = RoundedCornerShape(CARD_CORNER)
-        Box(
-            modifier
-                .size(CARD_WIDTH, CARD_HEIGHT)
-                .shadow(CARD_SHADOW, shape)
-                .clip(shape)
-                .background(if (card.dark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center,
-        ) {
-            Lens(
-                look = card.look,
-                cents = { 0f },
-                inTune = true,
-                glow = true,
-                animationsOff = true,
-                modifier = Modifier.size(CARD_WIDTH - CARD_PADDING * 2, CARD_HEIGHT - CARD_PADDING * 2),
-            )
-        }
+private fun Meter() {
+    Box(Modifier.size(METER_WIDTH, METER_HEIGHT), contentAlignment = Alignment.Center) {
+        // Laid out at its size on a phone and drawn smaller, so its numbers, ♭ and ♯ keep the app's proportions
+        // (laid out at the graphic's size, its ♭ and ♯, sized for a phone, ran into the numbers).
+        val scale = METER_WIDTH / LENS_WIDTH
+        Lens(
+            look = LensLook.CLASSIC,
+            cents = { 0f },
+            inTune = true,
+            glow = true,
+            animationsOff = true,
+            modifier = Modifier
+                .requiredSize(LENS_WIDTH, LENS_HEIGHT)
+                .graphicsLayer { scaleX = scale; scaleY = scale },
+        )
     }
 }
-
-/** One card of the fan: light or dark, and the meter's look on it. */
-private data class FanCard(val dark: Boolean, val look: LensLook)
 
 
 /** Play's feature graphic, exactly. */
 const val FEATURE_WIDTH = 1024
 const val FEATURE_HEIGHT = 500
 
-/** Left to right: the middle one in front, light between two darks; Classic, the default look, in front. */
-private val FAN = listOf(
-    FanCard(dark = true, look = LensLook.LIGHT_ARC),
-    FanCard(dark = false, look = LensLook.CLASSIC),
-    FanCard(dark = true, look = LensLook.STROBE),
-)
-
 /** About 100 px of the 1024 from the start edge, as Play may crop or cover it (379 dp in all): where the word and the line start. */
 private val TEXT_EDGE = 36.dp
 /** The name's capitals: the icon about 33 dp and the word 75 dp across, clear of the fan. */
 private val NAME_CAP_HEIGHT = 13.dp
-private val TEXT_WIDTH = 124.dp
+private val TEXT_WIDTH = 182.dp
 private val LINE_GAP = 10.dp
 private const val LINE_SIZE = 14f
-private const val LINE_MIN_SIZE = 11f
+private const val LINE_MIN_SIZE = 10f
 private const val LINE_ALPHA = 0.88f
 
-private val FAN_EDGE = 20.dp
-private val FAN_WIDTH = 196.dp
-private val FAN_HEIGHT = 140.dp
-private val CARD_WIDTH = 94.dp
-private val CARD_HEIGHT = 76.dp
-private val CARD_PADDING = 8.dp
-private val CARD_CORNER = 12.dp
-private val CARD_SHADOW = 10.dp
-private val CARD_SPREAD = 50.dp
-private val CARD_DROP = 7.dp
-private const val CARD_TILT = 9f
+/** The meter keeps about 50 px of the 1024 from the end edge; as large as the line's room allows. */
+private val METER_EDGE = 22.dp
+private val METER_WIDTH = 136.dp
+private val METER_HEIGHT = 100.dp
+
+/** The meter's size on a phone held upright, which the graphic shows smaller. */
+private val LENS_WIDTH = 330.dp
+private val LENS_HEIGHT = 230.dp
