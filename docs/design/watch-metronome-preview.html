@@ -1,0 +1,475 @@
+<!doctype html>
+<!--
+Twangle 2.0, a metronome on the watch: the rough mock-up of Phase 80 (ROADMAP.md, "Phase 80 — A metronome on the
+watch"). Ink, dark, the bare idea: one look, no options. Each screen is a Galaxy Watch 5-sized round screen
+(198 dp, drawn here at 236 px) in the watch app's own colours (WatchColors in wear/.../WatchTheme.kt); the tuner
+is drawn with WatchDial's proportions. Self-contained: open it straight from disk in Firefox.
+
+What the page shows:
+1. The tuner with two page dots at the bottom; every few seconds it swipes left to the metronome and back.
+2. The metronome stopped: the tempo large in the middle ("96", "BPM" small under it), a round ▶ under that,
+   a small speaker button above it (off: taps only), four beat lights round the ring (the first at 12 o'clock),
+   and a faint arrow at the edge for the bezel or crown that turns the tempo.
+3. The metronome playing, live: the lights step round at the tempo, the first beat in the accent and wider,
+   ■ in place of ▶, the watch giving a small shake on each beat (the first one stronger). Its speaker button,
+   or the page's Speaker button, adds short clicks through WebAudio, only while it plays; Stop, leaving the
+   page or three minutes of clicks stop them. The slider, the arrow keys or the mouse wheel over the watch
+   change the tempo (30–250).
+4. The Twangle tile: Tune stays its edge button, Metronome (with the last tempo) is the button above it.
+
+Decided (owner, 2026-11-05):
+- The beat is a tap on the wrist on every beat, the first beat of the bar stronger; the click from the
+  watch's speaker is an option (off: taps only).
+- Only the tempo and start/stop: four beats to the bar, no meter choice, no tap tempo.
+- Reached by a swipe left from the tuner (two pages) and by the tile's Metronome button.
+- Calm: no bursts, no flashes; plain and useful.
+Built on Claude's recommendation unless the owner asks for changes (the speaker above the tempo, ▶ under it,
+the lights inside the page dots, the tile's Metronome button above Tune).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="darkreader-lock">
+<title>Metronome on the watch</title>
+<style>
+:root {
+  --page: #0e1116; --card: #171b22; --ink: #eef1f5; --muted: #a8b0bc; --line: #262c35;
+  --accent: #5fc4ff; --onaccent: #0e1116; --s: 236px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font: 15px/1.5 "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif; }
+.page { max-width: 1280px; margin: 0 auto; padding: 36px 24px 70px; }
+h1 { font-size: 34px; margin: 0 0 6px; letter-spacing: -.02em; line-height: 1.15; }
+.lede { color: var(--muted); margin: 0 0 30px; max-width: 860px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 34px 22px; justify-items: center; }
+figure { margin: 0; width: 280px; }
+.stage { display: flex; justify-content: center; padding: 50px 0 46px; }
+figcaption { margin-top: 4px; font-size: 14px; color: var(--muted); }
+figcaption b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 2px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.controls button { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.controls button.on { border-color: var(--accent); color: var(--accent); }
+.controls input[type=range] { width: 130px; accent-color: var(--accent); }
+.controls output { color: var(--ink); min-width: 56px; }
+.decided { margin: 40px 0 0; max-width: 860px; color: var(--muted); font-size: 14px; }
+.decided b { color: var(--ink); }
+.decided ul { margin: 6px 0 0; padding-left: 20px; }
+
+/* The watch: a Galaxy Watch 5-like case, strap stubs, two buttons on the right (watch-ideas-preview.html). */
+.watch { position: relative; width: calc(var(--s) + 32px); height: calc(var(--s) + 32px); }
+.strap { position: absolute; left: 50%; transform: translateX(-50%); width: 56%; height: 74px; border-radius: 16px;
+  background: linear-gradient(90deg, #15181f, #262a34 50%, #15181f); }
+.strap.top { top: -44px; border-radius: 16px 16px 8px 8px; }
+.strap.bot { bottom: -44px; border-radius: 8px 8px 16px 16px; }
+.btnw { position: absolute; inset: 0; }
+.btnw::after { content: ""; position: absolute; right: -5px; top: 50%; margin-top: -14px; width: 10px; height: 28px; border-radius: 4px;
+  background: linear-gradient(90deg, #2c3039, #8b919e 60%, #4b505b); }
+.btnw.b1 { transform: rotate(-30deg); } .btnw.b2 { transform: rotate(30deg); }
+.case { position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 200deg, #5d636f, #2a2e36 18%, #8d93a0 34%, #3b3f48 52%, #6e7480 70%, #2a2e36 86%, #5d636f);
+  box-shadow: 0 22px 44px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.6); }
+.bezel { position: absolute; inset: 5px; border-radius: 50%; background: #000; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.watch canvas, .glass { position: absolute; left: 16px; top: 16px; width: var(--s); height: var(--s); border-radius: 50%; }
+.glass { pointer-events: none; background: linear-gradient(140deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 38%); }
+canvas.live { cursor: pointer; }
+/* A tap on the wrist: a small shake, the first beat a little stronger. Calm: a few tenths of a pixel to 1.4 px. */
+.watch.buzz { animation: buzz .14s linear; }
+.watch.buzz-s { animation: buzzS .2s linear; }
+@keyframes buzz { 25% { transform: translate(.7px,-.3px); } 50% { transform: translate(-.7px,.3px); } 75% { transform: translate(.4px,.2px); } }
+@keyframes buzzS { 20% { transform: translate(1.4px,-.5px); } 40% { transform: translate(-1.4px,.5px); } 60% { transform: translate(.9px,.4px); } 80% { transform: translate(-.5px,-.2px); } }
+@media (max-width: 420px) {
+  :root { --s: 210px; }
+  .page { padding-left: 16px; padding-right: 16px; }
+  h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>A metronome on the watch</h1>
+  <p class="lede">Rough mock-up of Phase 80 in Ink, on a Galaxy Watch 5-sized screen. The beat is a tap on the wrist; the click is optional. Only the tempo and start/stop, four beats to the bar.</p>
+
+  <div class="grid">
+    <figure>
+      <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="swipe"></canvas><div class="glass"></div></div></div>
+      <figcaption><b>1 · The tuner, two pages</b>Two dots at the bottom; swipe left for the metronome, right to come back.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="stopped"></canvas><div class="glass"></div></div></div>
+      <figcaption><b>2 · The metronome, stopped</b>The tempo in the middle, ▶ under it, the speaker above it (off: taps only); a swipe round the edge or the crown turns the tempo.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="stage"><div class="watch" id="liveWatch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="playing" class="live" id="liveCanvas"></canvas><div class="glass"></div></div></div>
+      <div class="controls">
+        <button id="playBtn" type="button">Stop</button>
+        <button id="soundBtn" type="button">Speaker: off</button>
+        <input id="bpm" type="range" min="30" max="250" value="96" aria-label="Tempo">
+        <output id="bpmOut">96 BPM</output>
+      </div>
+      <figcaption><b>3 · Playing</b>The light steps round, the first beat wider and blue; a tap on each beat, the first one stronger. Try the slider, the arrow keys or the wheel.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="tile"></canvas><div class="glass"></div></div></div>
+      <figcaption><b>4 · The tile</b>Tune stays the edge button; Metronome above it opens the metronome at the last tempo.</figcaption>
+    </figure>
+  </div>
+
+  <div class="decided">
+    <b>Decided (owner, 2026-11-05):</b>
+    <ul>
+      <li>A tap on the wrist on every beat, the first beat of the bar stronger; the watch's click optional.</li>
+      <li>Tempo and start/stop only: four beats to the bar, no meter choice, no tap tempo.</li>
+      <li>Reached by a swipe from the tuner and by the tile's Metronome button.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const FONT = '"Google Sans", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif';
+const SYM = '"Segoe UI Symbol", "Noto Sans Symbols", ' + FONT;
+// WatchColors (wear/.../WatchTheme.kt): the phone's Ink, dark, on black.
+const C = { ink: '#EEF1F5', muted: '#A8B0BC', track: '#262C35', accent: '#5FC4FF', onAccent: '#0E1116', inTune: '#3DDC84', farOff: '#FFB648', surface: '#1B2029' };
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+const approach = (v, t, s) => v < t ? Math.min(t, v + s) : Math.max(t, v - s);
+const DEG = Math.PI / 180;
+const at = (cx, cy, r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+const noise = (t, s = 0) => Math.sin(t * 7.3 + s) * .5 + Math.sin(t * 13.1 + s * 2) * .3 + Math.sin(t * 3.7 + s * 3) * .2;
+function hex(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function rgba(h, a) { const [r, g, b] = hex(h); return `rgba(${r},${g},${b},${a})`; }
+function mixHex(a, b, t) { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+function dot(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+function text(ctx, s, x, y, size, color, weight = 500, font = FONT, align = 'center') {
+  ctx.save(); ctx.fillStyle = color; ctx.font = `${weight} ${size}px ${font}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.fillText(s, x, y); ctx.restore();
+}
+
+/* ---------- The tuner (WatchTuner: WatchDial's proportions) ---------- */
+
+function pluck(tl, amp, tau = .75, w = 2.6, seed = 0) {
+  return amp * Math.exp(-tl / tau) * Math.cos(tl * w) + .7 * noise(tl, seed) * (Math.exp(-tl / .9) + .25);
+}
+class Tuner {
+  constructor() { this.mc = 0; this.mv = 0; this.alpha = 0; this.hold = 0; this.glow = 0; this.shown = 0; }
+  step(raw, dt) {
+    const target = raw == null ? this.mc : raw, w = 14, n = Math.max(1, Math.ceil(dt * 240)), h = dt / n;
+    for (let i = 0; i < n; i++) { const a = w * w * (target - this.mc) - 2 * w * this.mv; this.mv += a * h; this.mc += this.mv * h; }
+    const on = raw != null;
+    this.alpha = approach(this.alpha, on ? 1 : 0, dt / .4);
+    if (on && Math.abs(raw) <= 2.5) this.hold += dt; else if (!on || Math.abs(raw) > 4) this.hold = 0;
+    this.glow = approach(this.glow, on && this.hold >= .35 ? 1 : 0, dt / .7);
+    if (on) this.shown = Math.round(raw);
+  }
+}
+const angleFor = c => (-90 + clamp(c, -50, 50) / 50 * 135) * DEG;
+
+function drawTuner(ctx, S, tu) {
+  const cx = S / 2, cy = S / 2, R = S * (.5 - .09), st = S * .04;
+  const share = Math.max(tu.glow, clamp(1 - Math.abs(tu.mc) / 30, 0, 1));
+  const tone = mixHex(C.farOff, C.inTune, share);
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = st;
+  ctx.strokeStyle = mixHex(C.track, mixHex(C.track, C.inTune, .45), tu.glow);
+  ctx.beginPath(); ctx.arc(cx, cy, R, angleFor(-50), angleFor(50)); ctx.stroke(); ctx.restore();
+  ctx.fillStyle = C.muted; dot(ctx, ...at(cx, cy, R, angleFor(0)), S * .012);
+  if (tu.alpha > .01) {
+    const [x, y] = at(cx, cy, R, angleFor(tu.mc)), hr = S * .085;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, hr);
+    g.addColorStop(0, rgba(tone, .35 * tu.alpha)); g.addColorStop(1, rgba(tone, 0));
+    ctx.fillStyle = g; dot(ctx, x, y, hr);
+    ctx.fillStyle = rgba(tone, tu.alpha); dot(ctx, x, y, S * .04);
+  }
+  const reach = S * (.5 - .09 - .085);
+  for (const [s, a] of [['♭', -90 - 118], ['♯', -90 + 118]]) {
+    const [x, y] = at(cx, cy, reach, a * DEG);
+    text(ctx, s, x, y, S * .062, rgba(C.muted, .75), 400, SYM);
+  }
+  if (tu.alpha > .01) {
+    ctx.save(); ctx.globalAlpha = tu.alpha;
+    ctx.font = `800 ${S * .36}px ${FONT}`; const lw = ctx.measureText('A').width;
+    ctx.font = `600 ${S * .11}px ${FONT}`; const ow = ctx.measureText('2').width;
+    const x0 = cx - (lw + ow) / 2, base = cy - S * .05 + S * .13;
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    ctx.fillStyle = C.ink; ctx.font = `800 ${S * .36}px ${FONT}`; ctx.fillText('A', x0, base);
+    ctx.fillStyle = C.muted; ctx.font = `600 ${S * .11}px ${FONT}`; ctx.fillText('2', x0 + lw, base);
+    const word = tu.glow > .5 || Math.abs(tu.mc) < 2.5 ? 'In tune' : tu.mc < 0 ? 'Tighten' : 'Loosen';
+    ctx.globalAlpha = smooth((tu.alpha - .5) / .5);
+    text(ctx, word, cx, cy + S * .215, S * .075, tone, 700);
+    ctx.globalAlpha = tu.alpha;
+    const a = Math.abs(tu.shown);
+    text(ctx, (tu.shown > 0 ? '+' : tu.shown < 0 ? '−' : '') + a + (a === 1 ? ' cent' : ' cents'), cx, cy + S * .30, S * .055, C.muted, 400);
+    ctx.restore();
+  }
+  // "Play a note" stands in the word's place while nothing is heard; the two never show at once.
+  const quiet = smooth((.5 - tu.alpha) / .5);
+  if (quiet > .01) text(ctx, 'Play a note', cx, cy + S * .215, S * .068, rgba(C.muted, quiet), 600);
+}
+
+/* ---------- The metronome page ---------- */
+
+// The lights sit a little further in than the tuner's arc (11 % from the edge, not 9 %), so the page dots fit under the bottom one.
+const LIGHT_INSET = .11, LIGHT_HALF = 34;
+
+function metronomeIcon(ctx, x, y, u, color) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = u * .18; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x - u * .8, y + u); ctx.lineTo(x - u * .32, y - u); ctx.lineTo(x + u * .32, y - u); ctx.lineTo(x + u * .8, y + u); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y + u * .75); ctx.lineTo(x + u * .7, y - u * .9); ctx.stroke();
+  ctx.restore();
+}
+
+function speakerIcon(ctx, x, y, u, color, on) {
+  ctx.save(); ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = u * .16; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x - u * .95, y - u * .35); ctx.lineTo(x - u * .45, y - u * .35); ctx.lineTo(x + u * .1, y - u * .85);
+  ctx.lineTo(x + u * .1, y + u * .85); ctx.lineTo(x - u * .45, y + u * .35); ctx.lineTo(x - u * .95, y + u * .35); ctx.closePath(); ctx.fill();
+  if (on) {
+    ctx.beginPath(); ctx.arc(x + u * .2, y, u * .5, -50 * DEG, 50 * DEG); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + u * .2, y, u * .9, -50 * DEG, 50 * DEG); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(x + u * .4, y - u * .4); ctx.lineTo(x + u * 1.05, y + u * .4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + u * 1.05, y - u * .4); ctx.lineTo(x + u * .4, y + u * .4); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** m: { bpm, playing, sound, lights: [4 × 0..1], hint, edge: null | { a (degrees), on (0..1) } } */
+function drawMetronome(ctx, S, m) {
+  const cx = S / 2, cy = S / 2, R = S * (.5 - LIGHT_INSET), st = S * .035;
+  // Four beat lights round the ring, the first at 12 o'clock, clockwise. The first beat's light is the accent and wider.
+  for (let i = 0; i < 4; i++) {
+    const mid = (-90 + 90 * i) * DEG, half = LIGHT_HALF * DEG, v = m.lights[i], first = i === 0;
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.strokeStyle = C.track; ctx.lineWidth = st;
+    ctx.beginPath(); ctx.arc(cx, cy, R, mid - half, mid + half); ctx.stroke();
+    if (v > .01) {
+      const col = first ? C.accent : C.ink;
+      ctx.strokeStyle = rgba(col, v * (first ? 1 : .85)); ctx.lineWidth = st * (first ? 1 + .45 * v : 1);
+      ctx.shadowColor = rgba(col, .45 * v); ctx.shadowBlur = S * .025;
+      ctx.beginPath(); ctx.arc(cx, cy, R, mid - half, mid + half); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // The speaker, small, above the tempo.
+  const sy = cy - S * .245, sr = S * .058;
+  ctx.fillStyle = m.sound ? rgba(C.accent, .18) : C.surface; dot(ctx, cx, sy, sr);
+  if (m.sound) { ctx.save(); ctx.strokeStyle = C.accent; ctx.lineWidth = S * .008; ctx.beginPath(); ctx.arc(cx, sy, sr, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+  speakerIcon(ctx, cx - S * .008, sy, S * .028, m.sound ? C.accent : C.muted, m.sound);
+  // The tempo, as large as the tuner's note, "BPM" small under it.
+  text(ctx, String(m.bpm), cx, cy - S * .03, S * .30, C.ink, 800);
+  text(ctx, 'BPM', cx, cy + S * .118, S * .058, C.muted, 600);
+  // ▶ or ■ in a round accent button.
+  const py = cy + S * .245;
+  ctx.fillStyle = C.accent; dot(ctx, cx, py, S * .085); ctx.fillStyle = C.onAccent;
+  if (m.playing) {
+    const q = S * .026; ctx.beginPath(); ctx.roundRect(cx - q, py - q, 2 * q, 2 * q, q * .25); ctx.fill();
+  } else {
+    const q = S * .034; ctx.beginPath(); ctx.moveTo(cx - q * .7, py - q); ctx.lineTo(cx + q, py); ctx.lineTo(cx - q * .7, py + q); ctx.closePath(); ctx.fill();
+  }
+  // The bezel or crown turns the tempo: a faint curved arrow at the edge.
+  if (m.hint) {
+    const r = S * .475, a0 = -28 * DEG, a1 = 28 * DEG;
+    ctx.save(); ctx.strokeStyle = rgba(C.muted, .55); ctx.fillStyle = rgba(C.muted, .55); ctx.lineWidth = S * .008; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(cx, cy, r, a0 + 5 * DEG, a1 - 5 * DEG); ctx.stroke();
+    for (const [a, dir] of [[a0, -1], [a1, 1]]) {
+      const [x, y] = at(cx, cy, r, a), tx = -Math.sin(a) * dir, ty = Math.cos(a) * dir, nx = Math.cos(a), ny = Math.sin(a), k = S * .022;
+      ctx.beginPath(); ctx.moveTo(x + tx * k * .3, y + ty * k * .3); ctx.lineTo(x - tx * k + nx * k * .6, y - ty * k + ny * k * .6); ctx.lineTo(x - tx * k - nx * k * .6, y - ty * k - ny * k * .6); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  // A finger running round the edge while the tempo changes (the Watch 5's touch bezel).
+  if (m.edge && m.edge.on > .01) {
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = S * .016; ctx.strokeStyle = rgba('#ffffff', .45 * m.edge.on);
+    ctx.shadowColor = rgba(C.accent, .7 * m.edge.on); ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(cx, cy, S / 2 - S * .014, (m.edge.a - 10) * DEG, (m.edge.a + 10) * DEG); ctx.stroke(); ctx.restore();
+  }
+}
+
+/** The pager's two dots at the bottom edge; active 0 = the tuner, 1 = the metronome (in between while swiping). */
+function drawPageDots(ctx, S, active) {
+  const cx = S / 2, y = S / 2 + S * .462, gap = S * .022, r = S * .011;
+  for (let i = 0; i < 2; i++) {
+    const on = 1 - Math.abs(active - i);
+    ctx.fillStyle = mixHex('#4a515c', C.ink, clamp(on, 0, 1)); dot(ctx, cx + (i - .5) * 2 * gap, y, r);
+  }
+}
+
+/* ---------- The tile ---------- */
+
+function drawTile(ctx, S) {
+  const cx = S / 2, cy = S / 2;
+  text(ctx, 'Twangle', cx, cy - S * .3, S * .066, C.ink, 600);
+  // Metronome: a wide button in the main slot, the last tempo under its name.
+  const w = S * .72, h = S * .24, x = cx - w / 2, y = cy - S * .135;
+  ctx.fillStyle = C.surface; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill();
+  metronomeIcon(ctx, x + S * .1, y + h / 2, S * .036, C.accent);
+  text(ctx, 'Metronome', x + S * .175, y + h * .36, S * .064, C.ink, 600, FONT, 'left');
+  text(ctx, '96 BPM', x + S * .175, y + h * .7, S * .052, C.muted, 500, FONT, 'left');
+  // Tune: the edge button along the bottom, as today.
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, S / 2 - S * .03, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = C.accent; ctx.beginPath(); ctx.roundRect(cx - S * .32, cy + S * .21, S * .64, S * .4, S * .1); ctx.fill(); ctx.restore();
+  text(ctx, 'Tune', cx, cy + S * .325, S * .07, C.onAccent, 600);
+}
+
+/* ---------- The scenes ---------- */
+
+const LIGHTS_OFF = [0, 0, 0, 0];
+
+const SCENES = {
+  // 1: the tuner reads a pluck, then the page swipes left to the metronome and back.
+  swipe() {
+    const tu = new Tuner(), P = 11;
+    return (ctx, S, t, dt) => {
+      const k = t % P;
+      tu.step(k > .6 && k < 5 ? pluck(k - .6, -24, .8, 2.4, 3) : null, dt);
+      const p = k < 5.6 ? 0 : k < 6.3 ? smooth((k - 5.6) / .7) : k < 9.4 ? 1 : k < 10.1 ? 1 - smooth((k - 9.4) / .7) : 0;
+      ctx.save(); ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); ctx.clip();
+      if (p < 1) { ctx.save(); ctx.translate(-p * S, 0); drawTuner(ctx, S, tu); ctx.restore(); }
+      if (p > 0) { ctx.save(); ctx.translate((1 - p) * S, 0); drawMetronome(ctx, S, { bpm: 96, playing: false, sound: false, lights: LIGHTS_OFF }); ctx.restore(); }
+      ctx.restore();
+      drawPageDots(ctx, S, p);
+      // The finger: a soft round touch that slides with the page.
+      const sw = k >= 5.45 && k < 6.4 ? (k - 5.45) / .95 : k >= 9.25 && k < 10.2 ? (k - 9.25) / .95 : -1;
+      if (sw >= 0) {
+        const left = k < 8, u = smooth(sw), x = left ? S * (.78 - .56 * u) : S * (.22 + .56 * u), a = Math.sin(sw * Math.PI);
+        ctx.fillStyle = `rgba(255,255,255,${.22 * a})`; dot(ctx, x, S * .62, S * .07);
+      }
+    };
+  },
+
+  // 2: the metronome, stopped.
+  stopped() {
+    return (ctx, S) => {
+      drawMetronome(ctx, S, { bpm: 96, playing: false, sound: false, lights: LIGHTS_OFF, hint: true });
+      drawPageDots(ctx, S, 1);
+    };
+  },
+
+  // 3: the metronome, playing (live).
+  playing(card) {
+    return (ctx, S, t, dt) => {
+      const now = performance.now() / 1000;
+      while (M.q.length && M.q[0].t <= now) {
+        const b = M.q.shift();
+        M.lit = b.beat; M.litAt = b.t; tap(b.beat === 0);
+      }
+      for (let i = 0; i < 4; i++) {
+        const target = M.playing && i === M.lit ? .8 + .2 * Math.exp(-(now - M.litAt) / .15) : 0;
+        M.lights[i] = M.lights[i] < target ? approach(M.lights[i], target, dt / .05) : approach(M.lights[i], target, dt / .15);
+      }
+      const since = now - M.edgeAt;
+      const edge = since < 1 ? { a: M.edgeA, on: since < .15 ? since / .15 : 1 - smooth((since - .35) / .65) } : null;
+      drawMetronome(ctx, S, { bpm: M.bpm, playing: M.playing, sound: M.sound, lights: M.lights, edge });
+      drawPageDots(ctx, S, 1);
+    };
+  },
+
+  tile() { return (ctx, S) => drawTile(ctx, S); },
+};
+
+/* ---------- The live metronome: a look-ahead clock, so the clicks keep time even when a frame is late ---------- */
+
+const M = { bpm: 96, playing: false, sound: false, next: 0, count: 0, q: [], lit: -1, litAt: 0, lights: [0, 0, 0, 0], soundSince: 0, edgeAt: -9, edgeA: 0 };
+let actx = null;
+const SOUND_LIMIT = 180; // seconds of clicks before the speaker turns itself off
+
+function click(when, first) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine'; o.frequency.value = first ? 1760 : 1320;
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(first ? .45 : .3, when + .002);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + .035);
+  o.connect(g).connect(actx.destination); o.start(when); o.stop(when + .05);
+}
+
+setInterval(() => {
+  if (!M.playing) return;
+  const now = performance.now() / 1000;
+  while (M.next < now + .12) {
+    const beat = M.count++ % 4;
+    M.q.push({ t: M.next, beat });
+    if (M.sound && actx) click(actx.currentTime + Math.max(0, M.next - now), beat === 0);
+    M.next += 60 / M.bpm;
+  }
+  if (M.sound && now - M.soundSince > SOUND_LIMIT) setSound(false);
+}, 25);
+
+const liveWatch = document.getElementById('liveWatch');
+function tap(strong) {
+  liveWatch.classList.remove('buzz', 'buzz-s'); void liveWatch.offsetWidth; liveWatch.classList.add(strong ? 'buzz-s' : 'buzz');
+}
+
+const playBtn = document.getElementById('playBtn'), soundBtn = document.getElementById('soundBtn');
+const slider = document.getElementById('bpm'), out = document.getElementById('bpmOut');
+
+function setPlaying(on) {
+  M.playing = on; M.q = []; M.lit = -1;
+  if (on) { M.count = 0; M.next = performance.now() / 1000 + .1; if (M.sound) M.soundSince = performance.now() / 1000; }
+  playBtn.textContent = on ? 'Stop' : 'Start';
+}
+function setSound(on) {
+  if (on && !actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (on && actx.state === 'suspended') actx.resume();
+  M.sound = on; M.soundSince = performance.now() / 1000;
+  soundBtn.textContent = on ? 'Speaker: on' : 'Speaker: off';
+  soundBtn.classList.toggle('on', on);
+}
+function setBpm(v, fromSlider) {
+  const b = clamp(Math.round(v), 30, 250);
+  if (b === M.bpm) return;
+  M.edgeA = clamp(M.edgeA + (b > M.bpm ? 6 : -6), -40, 40); M.edgeAt = performance.now() / 1000;
+  M.bpm = b; out.textContent = b + ' BPM';
+  if (!fromSlider) slider.value = b;
+}
+
+playBtn.addEventListener('click', () => setPlaying(!M.playing));
+soundBtn.addEventListener('click', () => setSound(!M.sound));
+slider.addEventListener('input', () => setBpm(+slider.value, true));
+document.addEventListener('keydown', e => {
+  if (e.target === slider) return;
+  const step = e.shiftKey ? 5 : 1;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setBpm(M.bpm + step); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setBpm(M.bpm - step); e.preventDefault(); }
+});
+const liveCanvas = document.getElementById('liveCanvas');
+liveCanvas.addEventListener('wheel', e => { setBpm(M.bpm + (e.deltaY < 0 ? 1 : -1)); e.preventDefault(); }, { passive: false });
+liveCanvas.addEventListener('click', e => {
+  const r = liveCanvas.getBoundingClientRect(), S = r.width, x = e.clientX - r.left - S / 2, y = e.clientY - r.top - S / 2;
+  if (Math.hypot(x, y - S * .245) < S * .11) setPlaying(!M.playing);
+  else if (Math.hypot(x, y + S * .245) < S * .08) setSound(!M.sound);
+});
+// Leaving the page stops the clicks, as leaving the app will on the watch.
+document.addEventListener('visibilitychange', () => { if (document.hidden) { setSound(false); setPlaying(false); } });
+setPlaying(true);
+
+/* ---------- Drawing ---------- */
+
+const items = [];
+document.querySelectorAll('canvas[data-scene]').forEach(cv => {
+  const S = cv.clientWidth;
+  cv.width = Math.round(S * DPR); cv.height = Math.round(S * DPR);
+  items.push({ ctx: cv.getContext('2d'), S, draw: SCENES[cv.dataset.scene](cv.closest('figure')) });
+});
+let last = performance.now();
+// ?t=<seconds> starts the scenes that far in, to look at one moment.
+const t0 = last - 1000 * (+new URLSearchParams(location.search).get('t') || 0);
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000), t = (now - t0) / 1000;
+  last = now;
+  for (const it of items) {
+    const { ctx, S } = it;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, S, S);
+    it.draw(ctx, S, t, dt);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
