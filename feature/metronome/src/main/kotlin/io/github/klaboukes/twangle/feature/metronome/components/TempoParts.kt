@@ -99,7 +99,7 @@ internal fun TempoHeading(
             val down = (room - wordsHeight - WORDS_GAP).coerceIn(FIGURES_SMALLEST, FIGURES_LARGEST)
             val figures = remember(widest, across, down, density) {
                 // The figures' size in dp: as tall as [down] allows, as wide as [across] allows.
-                val probe = TextStyle(fontFamily = NumberFont, fontSize = with(density) { 100.dp.toSp() }, fontWeight = FontWeight.ExtraBold, letterSpacing = FIGURES_SPACING, fontFeatureSettings = "$LINING_FIGURES, tnum")
+                val probe = TextStyle(fontFamily = NumberFont, fontSize = with(density) { 100.dp.toSp() }, fontWeight = FIGURES_WEIGHT, letterSpacing = FIGURES_SPACING, fontFeatureSettings = "$LINING_FIGURES, tnum")
                 val width = with(density) { measurer.measure(widest, probe).size.width.toDp() }
                 minOf(down, 100.dp * (across / width).coerceAtLeast(0f))
             }
@@ -108,7 +108,7 @@ internal fun TempoHeading(
                 fontSize = with(density) { figures.toSp() },
                 lineHeight = with(density) { figures.toSp() },
                 lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FIGURES_WEIGHT,
                 letterSpacing = FIGURES_SPACING,
                 fontFeatureSettings = "$LINING_FIGURES, tnum",
                 textAlign = TextAlign.Center,
@@ -201,6 +201,9 @@ private val FIGURES_SMALLEST = 56.dp
 
 /** The figures stand a little closer together, as the mock-up's (−0.05 em). */
 private val FIGURES_SPACING = (-0.04).em
+
+/** Bold, a step under the mock-up's extra bold: in Nunito that read too heavy (owner, 2026-11-05). */
+private val FIGURES_WEIGHT = FontWeight.Bold
 
 /** The words under the figures: 16 at 1× (in dp), growing with the font up to [MAX_WORDS_SCALE]. */
 private val WORDS_SIZE = 16.dp
