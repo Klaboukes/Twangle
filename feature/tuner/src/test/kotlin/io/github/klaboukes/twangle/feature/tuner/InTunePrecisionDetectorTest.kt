@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** The phone's two in-tune windows ([forPrecision]); the detector itself is tested in :core:dsp. */
-class InTuneDetectorTest {
+class InTunePrecisionDetectorTest {
 
     /** One hop at 48 kHz, as on the phone. */
     private val frame = 1024f / 48_000f

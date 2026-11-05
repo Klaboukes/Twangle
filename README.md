@@ -102,6 +102,12 @@ GitHub Actions builds, tests and lints `main` every night. It doesn't keep the A
 
 Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
+## Licence
+
+Twangle is free software under the [GNU General Public License, version 3](LICENSE): you may copy, change and share it, as long as what you build from it stays open under the same licence.
+
+The name "Twangle" and its logo (the app icon) are not covered by the licence. A copy you share must use its own name and icon.
+
 ## Fonts
 
 Text is set in the phone's own font. The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google), bundled under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses) and renamed Twangle Music Signs as the licence asks of a changed font. The app icons are Google's Material Symbols (Apache License 2.0).
