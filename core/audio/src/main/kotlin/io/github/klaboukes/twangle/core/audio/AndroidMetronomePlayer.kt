@@ -19,6 +19,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -56,9 +57,15 @@ import kotlinx.coroutines.launch
  * a [start] during one starts the click track over within the same session and track (the frames
  * already queued still play out first), so nothing waits for a track to close and open again.
  *
+ * Silent ([setSilent], the watch's taps only): the click track renders as ever, its beats noted on
+ * their samples, and the chunk is zeroed before it is written, so the track, its timestamps and the
+ * [beats] run exactly as with the clicks (measured on the Galaxy Watch 5, strum-and-metronome.md).
+ *
  * [beats]: the session notes each click as it renders it, works out from the output's timestamp
- * (`AudioTrack.getTimestamp`) when it will be heard, and emits it then from a timer; before the
- * first timestamp, when the playback head reaches it.
+ * (`AudioTrack.getTimestamp`) when it will be heard, and emits it then from a timer on a thread of
+ * its own at urgent-audio priority; before the first timestamp, when the playback head reaches it.
+ * [upcomingBeats] gets each beat as soon as its moment is worked out, ahead of it, for the watch's
+ * taps.
  *
  * No audio focus: the clicks play over another app's music (a backing track to play along with),
  * which keeps playing at its own volume, and another app taking the audio doesn't stop them. A call
@@ -83,6 +90,10 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private val scope = CoroutineScope(SupervisorJob())
     private val writeDispatcher = Dispatchers.IO.limitedParallelism(1)
 
+    // The timers that tell each beat as it is heard: a thread of their own at urgent-audio priority
+    // (urgentAudioDispatcher), made with the first session and kept, asleep between beats.
+    private val beatDispatcher by lazy { urgentAudioDispatcher("MetronomeBeats") }
+
     private val lock = Any()
 
     // Guarded by lock: whether a session runs, a stop it hasn't taken yet, and the wanted settings.
@@ -92,6 +103,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private var wantedMeter = Meter.DEFAULT
     private var wantedSound = ClickSound.DEFAULT
     private var wantedSubdivision = Subdivision.DEFAULT
+    private var wantedSilent = false
 
     // Guarded by lock: the speed trainer wanted, and a count bumped whenever one is started or ended,
     // so the session hands it to the click track once each time.
@@ -115,6 +127,12 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     )
     override val beats: SharedFlow<MetronomeBeat> = beatFlow.asSharedFlow()
 
+    private val upcomingFlow = MutableSharedFlow<MetronomeBeat>(
+        extraBufferCapacity = BEAT_BUFFER,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    override val upcomingBeats: SharedFlow<MetronomeBeat> = upcomingFlow.asSharedFlow()
+
     // Everything below is used only on the writer thread.
     private val clickTrack = ClickTrack(sampleRate)
     private val timestamp = AudioTimestamp()
@@ -134,6 +152,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     // The session: whether it plays a preview, the restarts it has taken, the track frame the click
     // track's sample 0 was written at, frames written to the track, and where a preview's bar ends.
     private var preview = false
+    private var silent = false
     private var seenRestarts = 0
     private var seenTrainerStarts = 0
     private var clickOffset = 0L
@@ -247,6 +266,10 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         synchronized(lock) { if (active && !wantedPreview) wantedSubdivision = subdivision }
     }
 
+    override fun setSilent(silent: Boolean) {
+        synchronized(lock) { wantedSilent = silent }
+    }
+
     override fun stop() {
         synchronized(lock) { if (active) stopRequested = true }
     }
@@ -282,6 +305,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
             newTrainer = trainerStarts != seenTrainerStarts
             seenTrainerStarts = trainerStarts
             preview = wantedPreview
+            silent = wantedSilent
             restart = restarts != seenRestarts
             seenRestarts = restarts
         }
@@ -312,7 +336,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         var listening = false
         var ended = false
         // Timers that emit beats at the moment they are heard; cancelled with the session.
-        val beatScope = CoroutineScope(Dispatchers.Default + Job())
+        val beatScope = CoroutineScope(beatDispatcher + Job())
         try {
             if (isCallMode(audioManager.mode)) {
                 Log.i(TAG, "A call: the metronome stays silent")
@@ -326,7 +350,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
                 appContext.registerReceiver(noisyReceiver, noisy)
             }
             listening = true
-            AudioOutput.showVolumeIfSilent(audioManager)
+            // Silent clicks need no volume; a preview always sounds.
+            if (synchronized(lock) { wantedPreview || !wantedSilent }) AudioOutput.showVolumeIfSilent(audioManager)
             framesWritten = 0L
             // The first requests always start the click track over, at frame 0.
             seenRestarts = synchronized(lock) { restarts } - 1
@@ -353,6 +378,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
                     if (bar < chunkFrames) buffer.fill(0f, bar, chunkFrames)
                 } else {
                     clickTrack.render(buffer, listener = noteBeat)
+                    // Silent: the beats were noted on their samples; silence plays in their place.
+                    if (silent) buffer.fill(0f)
                 }
                 AudioOutput.write(opened, buffer, buffer.size)
                 framesWritten += chunkFrames
@@ -392,7 +419,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
      * Hands the pending beats on. Once the output has a timestamp, each beat's moment is known well
      * ahead (it was rendered about one buffer earlier), so it is emitted by a timer at that moment:
      * the writer thread itself only wakes when the speaker takes a block of samples (every 10–40 ms).
-     * Before the first timestamp, a beat is emitted as soon as the playback head reaches it.
+     * Before the first timestamp, a beat is emitted as soon as the playback head reaches it. Either
+     * way it goes to [upcomingBeats] at once.
      */
     private fun scheduleBeats(track: AudioTrack, beatScope: CoroutineScope) {
         if (pendingCount == 0) return
@@ -409,11 +437,15 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
                 heardBeat(heardAt)
             }
             dropOldestPending()
-            val wait = beat.heardAtNanos - now
+            upcomingFlow.tryEmit(beat)
+            // From now, not from before the timestamp calls above, which took several ms on the watch.
+            val wait = beat.heardAtNanos - System.nanoTime()
             if (wait <= EARLY_NANOS) {
                 beatFlow.tryEmit(beat)
             } else {
-                beatScope.launch {
+                // The timer is set at once, from here: a hop to the beat thread first would make
+                // every beat late by however long that thread took to wake.
+                beatScope.launch(start = CoroutineStart.UNDISPATCHED) {
                     delay(wait / NANOS_PER_MILLI)
                     beatFlow.tryEmit(beat)
                 }

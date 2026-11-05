@@ -16,10 +16,11 @@ import kotlinx.coroutines.flow.asStateFlow
  * [MetronomePlayer] for tests: makes no sound and emits no beats by itself.
  *
  * - [bpm], [meter], [sound], [subdivision] and [trainer] follow the calls the way the real player
- *   does (clamped, ignored while stopped); [startCount], [stopCount] and [previewCount] count calls.
- * - [beat] emits a beat as if it had just been heard, with the accent the meter gives it; with a
- *   [trainer] on, each downbeat counts a bar and takes the trainer's tempo for it, as the real click
- *   track climbs.
+ *   does (clamped, ignored while stopped), [silent] too (kept, playing or not); [startCount],
+ *   [stopCount] and [previewCount] count calls.
+ * - [beat] emits a beat as if it had just been heard (to [upcomingBeats] as well), with the accent
+ *   the meter gives it; with a [trainer] on, each downbeat counts a bar and takes the trainer's
+ *   tempo for it, as the real click track climbs.
  * - A preview lasts until [finishPreview] (its bar heard), [stop] or [start].
  */
 class FakeMetronomePlayer : MetronomePlayer {
@@ -32,6 +33,9 @@ class FakeMetronomePlayer : MetronomePlayer {
 
     private val beatFlow = MutableSharedFlow<MetronomeBeat>(extraBufferCapacity = 64)
     override val beats: SharedFlow<MetronomeBeat> = beatFlow.asSharedFlow()
+
+    private val upcomingFlow = MutableSharedFlow<MetronomeBeat>(extraBufferCapacity = 64)
+    override val upcomingBeats: SharedFlow<MetronomeBeat> = upcomingFlow.asSharedFlow()
 
     /** The tempo playing (or last played or previewed); while a trainer climbs, the tempo it climbed to. */
     var bpm: Int = ClickTrack.DEFAULT_BPM
@@ -47,6 +51,10 @@ class FakeMetronomePlayer : MetronomePlayer {
 
     /** The subdivision playing (or last played or previewed), as picked (not yet [Subdivision.within] the meter). */
     var subdivision: Subdivision = Subdivision.DEFAULT
+        private set
+
+    /** Whether the clicks are silent ([setSilent]), playing or not. */
+    var silent: Boolean = false
         private set
 
     /** The speed trainer climbing, or null. */
@@ -107,6 +115,10 @@ class FakeMetronomePlayer : MetronomePlayer {
         if (playing.value) this.subdivision = subdivision
     }
 
+    override fun setSilent(silent: Boolean) {
+        this.silent = silent
+    }
+
     override fun previewBar(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
         this.sound = sound
         this.subdivision = subdivision
@@ -130,8 +142,9 @@ class FakeMetronomePlayer : MetronomePlayer {
     }
 
     /**
-     * Emits beat [index] (counted from the start, in the current meter) as heard at [heardAtNanos]; a
-     * downbeat with a [trainer] on first takes the next bar's tempo.
+     * Emits beat [index] (counted from the start, in the current meter) as heard at [heardAtNanos],
+     * to [upcomingBeats] first and then to [beats]; a downbeat with a [trainer] on first takes the
+     * next bar's tempo.
      */
     fun beat(index: Long, heardAtNanos: Long = 0L) {
         val beatInBar = (index % meter.beatsPerBar).toInt()
@@ -140,17 +153,17 @@ class FakeMetronomePlayer : MetronomePlayer {
             trainerBar++
             bpm = ClickTrack.clampBpm(climbing.bpmOfBar(trainerBar))
         }
-        beatFlow.tryEmit(
-            MetronomeBeat(
-                index,
-                beatInBar,
-                meter.accentOf(beatInBar),
-                heardAtNanos,
-                sound,
-                bpm = bpm,
-                trainerBar = if (climbing != null) trainerBar else -1L,
-                clicksPerBeat = subdivision.within(meter).clicksPerBeat,
-            ),
+        val beat = MetronomeBeat(
+            index,
+            beatInBar,
+            meter.accentOf(beatInBar),
+            heardAtNanos,
+            sound,
+            bpm = bpm,
+            trainerBar = if (climbing != null) trainerBar else -1L,
+            clicksPerBeat = subdivision.within(meter).clicksPerBeat,
         )
+        upcomingFlow.tryEmit(beat)
+        beatFlow.tryEmit(beat)
     }
 }

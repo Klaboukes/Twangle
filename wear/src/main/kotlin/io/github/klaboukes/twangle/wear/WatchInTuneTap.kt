@@ -79,7 +79,7 @@ fun rememberWristTap(): () -> Unit {
     }
 }
 
-private fun Context.vibrator(): Vibrator =
+internal fun Context.vibrator(): Vibrator =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         getSystemService(VibratorManager::class.java).defaultVibrator
     } else {
@@ -94,4 +94,4 @@ private fun Context.vibrator(): Vibrator =
 const val TAP_MILLIS = 150L
 
 /** The tap's strength, the motor's full amplitude (1–255). */
-private const val TAP_AMPLITUDE = 255
+internal const val TAP_AMPLITUDE = 255
