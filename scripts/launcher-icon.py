@@ -48,6 +48,11 @@ OVERLAP_SATURATION, OVERLAP_SATURATION_CAP = 0.25, 0.85
 OVERLAP_DARKER = {2: 0.10, 3: 0.03}
 SAMPLES = 1500
 TOLERANCE = 0.01                             # how far a simplified edge may stray, in canvas units
+# The launcher icon (and the themed icon) draw the mark at this size about the canvas's centre, so it sits inside
+# the 66-unit safe zone with room around it like other apps' symbols (owner, 2026-11-05: at full width it ran to
+# the edge of the watch's round icon, and round launchers cut the string's ends off). The opening screen and the
+# tile's cropped marks keep the full size (owner, 2026-11-05).
+MARK_SCALE = 0.75
 
 
 def height(k, u):
@@ -176,10 +181,13 @@ HEADER = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 
-def vector(size_dp, viewport, body, what, translate=None):
+def vector(size_dp, viewport, body, what, translate=None, scale=None):
     group_open, group_close = "", ""
-    if translate:
-        group_open = f'\n    <group\n        android:translateX="{translate[0]}"\n        android:translateY="{translate[1]}">\n'
+    if translate or scale:
+        attrs = (f'android:translateX="{translate[0]}"\n        android:translateY="{translate[1]}"' if translate else
+                 f'android:scaleX="{scale}"\n        android:scaleY="{scale}"\n'
+                 f'        android:pivotX="{viewport / 2:g}"\n        android:pivotY="{viewport / 2:g}"')
+        group_open = f'\n    <group\n        {attrs}>\n'
         group_close = "    </group>\n"
         body = "".join("    " + line + "\n" if line else "\n" for line in body.splitlines())
     return (HEADER.format(what=what)
@@ -284,10 +292,12 @@ def main():
     foreground = vector(108, 108, "".join(path_xml(c, d) for c, d in painted),
                         "Twangle's mark: one moment of a plucked string's first three harmonics, the whole in amber,\n"
                         "     the halves in blue, the thirds in green, where they overlap the colours they add up to on\n"
-                        "     @color/ic_launcher_background, made richer. 108-unit adaptive icon canvas.")
+                        "     @color/ic_launcher_background, made richer. 108-unit adaptive icon canvas, the mark at MARK_SCALE\n"
+                        "     about its centre.",
+                        scale=MARK_SCALE)
     mono_body = "".join(path_xml("#FFFFFFFF", harmonic_outline(k), MONO_ALPHA[k]) for k in range(3))
     monochrome = vector(108, 108, mono_body,
-                        "The themed icon: the same three harmonics in one colour at three strengths.")
+                        "The themed icon: the same three harmonics in one colour at three strengths.", scale=MARK_SCALE)
     # The watch's mark: the harmonics cropped to themselves (x 17..91, y 29..71), white so the tile can tint it.
     mark = vector(24, 78, mono_body,
                   "Twangle's mark on its own for the watch tile and the watch face shortcut: the launcher icon's\n"
