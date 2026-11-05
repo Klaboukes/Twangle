@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Turunkan A4 1\u00A0Hz</string>
     <string name="settings_a4_raise">Naikkan A4 1\u00A0Hz</string>
     <string name="settings_a4_reset">Kembalikan ke %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Stem presisi</string>
+    <string name="settings_precise_summary">Pas dalam 2 sen, bukan 5</string>
 
     <string name="settings_notation_title">Nama nada</string>
     <string name="settings_notation_sharps">Kres: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Terang atau gelap</string>
-    <string name="settings_theme_system">Default sistem</string>
+    <string name="settings_theme_system">Ikuti ponsel</string>
     <string name="settings_theme_light">Terang</string>
     <string name="settings_theme_dark">Gelap</string>
     <string name="settings_dynamic_color_title">Warna wallpaper</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Kidal</string>
     <string name="settings_left_handed_summary">Diagram akor dan leher di Tangga nada digambar untuk gitar yang dipegang terbalik</string>
+    <string name="settings_under_meter_title">Di bawah meter</string>
+    <string name="settings_under_meter_words">Kata: Kencangkan atau Kendurkan</string>
+    <string name="settings_under_meter_cents">Sen: −12</string>
 
     <string name="settings_keep_screen_on_title">Layar tetap menyala</string>
     <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Batal</string>
     <string name="about_title">Tentang Twangle</string>
     <string name="settings_about_link_summary">Versi %1$s, bantuan, privasi, dan lisensi</string>
+    <string name="settings_about_name_title">Nama</string>
+    <string name="settings_about_name_meaning">Twang adalah kata Inggris untuk dengung senar yang dipetik.</string>
     <string name="settings_about_version">Versi %1$s</string>
     <string name="settings_about_free_title">Gratis selamanya</string>
     <string name="settings_about_free_summary">Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Tidak sekarang, tidak nanti.</string>

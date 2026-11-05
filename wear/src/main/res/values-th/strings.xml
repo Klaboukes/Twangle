@@ -22,6 +22,16 @@
     <string name="wear_mic_unavailable">เปิดไมโครโฟนไม่ได้</string>
     <string name="wear_try_again">ลองอีกครั้ง</string>
     <string name="wear_tile_tune">จูน</string>
+    <string name="wear_tile_metronome">เมโทรนอม</string>
+    <string name="wear_tile_open_metronome">เปิดเมโทรนอม %1$s</string>
     <string name="wear_shortcut_tune">จูน</string>
     <string name="wear_shortcut_open">เปิดจูนเนอร์</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="other">%1$d จังหวะต่อนาที</item>
+    </plurals>
+    <string name="wear_metronome_playing">กำลังเล่น</string>
+    <string name="wear_metronome_stopped">หยุดแล้ว</string>
+    <string name="wear_metronome_start">เริ่ม</string>
+    <string name="wear_metronome_stop">หยุด</string>
+    <string name="wear_metronome_click">เสียงคลิก</string>
 </resources>

@@ -28,6 +28,18 @@
     <string name="wear_mic_unavailable">No se puede abrir el micrófono.</string>
     <string name="wear_try_again">Reintentar</string>
     <string name="wear_tile_tune">Afinar</string>
+    <string name="wear_tile_metronome">Metrónomo</string>
+    <string name="wear_tile_open_metronome">Abrir el metrónomo, %1$s</string>
     <string name="wear_shortcut_tune">Afina</string>
     <string name="wear_shortcut_open">Abrir el afinador</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d pulso por minuto</item>
+        <item quantity="many">%1$d pulsos por minuto</item>
+        <item quantity="other">%1$d pulsos por minuto</item>
+    </plurals>
+    <string name="wear_metronome_playing">Sonando</string>
+    <string name="wear_metronome_stopped">Detenido</string>
+    <string name="wear_metronome_start">Iniciar</string>
+    <string name="wear_metronome_stop">Detener</string>
+    <string name="wear_metronome_click">Sonido de clic</string>
 </resources>

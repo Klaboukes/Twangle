@@ -10,6 +10,8 @@
     <string name="settings_a4_lower">Знизити A4 на 1\u00A0Гц</string>
     <string name="settings_a4_raise">Підвищити A4 на 1\u00A0Гц</string>
     <string name="settings_a4_reset">Скинути до %1$d\u00A0Гц</string>
+    <string name="settings_precise_title">Точне налаштування</string>
+    <string name="settings_precise_summary">Налаштовано в межах 2 центів, а не 5</string>
     <string name="settings_notation_title">Назви нот</string>
     <string name="settings_notation_sharps">Дієзи: C, C♯, D …</string>
     <string name="settings_notation_flats">Бемолі: C, D♭, D …</string>
@@ -18,7 +20,7 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Німецькі: C, C♯, D … H</string>
     <string name="settings_theme_title">Світла чи темна тема</string>
-    <string name="settings_theme_system">Як у системі</string>
+    <string name="settings_theme_system">Як на телефоні</string>
     <string name="settings_theme_light">Світла</string>
     <string name="settings_theme_dark">Темна</string>
     <string name="settings_dynamic_color_title">Кольори шпалер</string>
@@ -29,6 +31,9 @@
     <string name="settings_meter_strobe">Строб</string>
     <string name="settings_left_handed_title">Для шульги</string>
     <string name="settings_left_handed_summary">Схеми акордів і гриф у гамах намальовано для гітари, яку тримають навпаки</string>
+    <string name="settings_under_meter_title">Під шкалою</string>
+    <string name="settings_under_meter_words">Слова: Підтягни або Послаб</string>
+    <string name="settings_under_meter_cents">Центи: −12</string>
     <string name="settings_keep_screen_on_title">Не вимикати екран</string>
     <string name="settings_keep_screen_on_summary">Екран не гасне, поки ти налаштовуєш</string>
     <string name="settings_vibrate_in_tune_title">Вібрація, коли налаштовано</string>
@@ -42,6 +47,8 @@
     <string name="settings_language_cancel">Скасувати</string>
     <string name="about_title">Про Twangle</string>
     <string name="settings_about_link_summary">Версія %1$s, довідка, конфіденційність і ліцензії</string>
+    <string name="settings_about_name_title">Назва</string>
+    <string name="settings_about_name_meaning">Twang англійською — дзвінкий звук защипнутої струни.</string>
     <string name="settings_about_version">Версія %1$s</string>
     <string name="settings_about_free_title">Безкоштовно назавжди</string>
     <string name="settings_about_free_summary">Без реклами, без облікового запису, без покупок у додатку й без стеження. Ні зараз, ні потім.</string>

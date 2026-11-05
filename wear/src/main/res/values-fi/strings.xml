@@ -26,6 +26,17 @@
     <string name="wear_mic_unavailable">Mikrofonia ei voi avata.</string>
     <string name="wear_try_again">Yritä uudelleen</string>
     <string name="wear_tile_tune">Viritä</string>
+    <string name="wear_tile_metronome">Metronomi</string>
+    <string name="wear_tile_open_metronome">Avaa metronomi, %1$s</string>
     <string name="wear_shortcut_tune">Viritä</string>
     <string name="wear_shortcut_open">Avaa viritin</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d isku minuutissa</item>
+        <item quantity="other">%1$d iskua minuutissa</item>
+    </plurals>
+    <string name="wear_metronome_playing">Käynnissä</string>
+    <string name="wear_metronome_stopped">Pysäytetty</string>
+    <string name="wear_metronome_start">Käynnistä</string>
+    <string name="wear_metronome_stop">Pysäytä</string>
+    <string name="wear_metronome_click">Napsautusääni</string>
 </resources>

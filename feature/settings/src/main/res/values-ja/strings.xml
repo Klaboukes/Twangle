@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">A4 を 1\u00A0Hz 下げる</string>
     <string name="settings_a4_raise">A4 を 1\u00A0Hz 上げる</string>
     <string name="settings_a4_reset">%1$d\u00A0Hz に戻す</string>
+    <string name="settings_precise_title">精密チューニング</string>
+    <string name="settings_precise_summary">5 セントでなく 2 セント以内で合っていると判定</string>
 
     <string name="settings_notation_title">音名</string>
     <string name="settings_notation_sharps">シャープ：C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">ライト / ダーク</string>
-    <string name="settings_theme_system">システムに従う</string>
+    <string name="settings_theme_system">スマートフォンと同じ</string>
     <string name="settings_theme_light">ライト</string>
     <string name="settings_theme_dark">ダーク</string>
     <string name="settings_dynamic_color_title">壁紙の色</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">左利き</string>
     <string name="settings_left_handed_summary">コードダイアグラムとスケールの指板を、逆向きに構えたギター用に描きます</string>
+    <string name="settings_under_meter_title">メーターの下</string>
+    <string name="settings_under_meter_words">言葉：締める・緩める</string>
+    <string name="settings_under_meter_cents">セント：−12</string>
 
     <string name="settings_keep_screen_on_title">画面をオンのままにする</string>
     <string name="settings_keep_screen_on_summary">チューニング中は画面が消えません</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">キャンセル</string>
     <string name="about_title">Twangle について</string>
     <string name="settings_about_link_summary">バージョン %1$s、ヘルプ、プライバシーとライセンス</string>
+    <string name="settings_about_name_title">名前の由来</string>
+    <string name="settings_about_name_meaning">Twang は英語で、弦をはじいたときに響く音のことです。</string>
     <string name="settings_about_version">バージョン %1$s</string>
     <string name="settings_about_free_title">ずっと無料</string>
     <string name="settings_about_free_summary">広告なし、アカウント不要、アプリ内課金なし、トラッキングなし。今もこれからも。</string>

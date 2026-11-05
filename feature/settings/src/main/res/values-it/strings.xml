@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Abbassa A4 di 1\u00A0Hz</string>
     <string name="settings_a4_raise">Alza A4 di 1\u00A0Hz</string>
     <string name="settings_a4_reset">Ripristina %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Accordatura precisa</string>
+    <string name="settings_precise_summary">Intonato entro 2 cent anziché 5</string>
 
     <string name="settings_notation_title">Nomi delle note</string>
     <string name="settings_notation_sharps">Diesis: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Chiaro o scuro</string>
-    <string name="settings_theme_system">Come il sistema</string>
+    <string name="settings_theme_system">Come il telefono</string>
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_dark">Scuro</string>
     <string name="settings_dynamic_color_title">Colori dello sfondo</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Mancino</string>
     <string name="settings_left_handed_summary">Schemi degli accordi e manico delle scale disegnati per una chitarra tenuta al contrario</string>
+    <string name="settings_under_meter_title">Sotto l\'indicatore</string>
+    <string name="settings_under_meter_words">Parole: Tendi o Allenta</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
 
     <string name="settings_keep_screen_on_title">Schermo sempre acceso</string>
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso durante l\'accordatura</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Annulla</string>
     <string name="about_title">Info su Twangle</string>
     <string name="settings_about_link_summary">Versione %1$s, aiuto, privacy e licenze</string>
+    <string name="settings_about_name_title">Il nome</string>
+    <string name="settings_about_name_meaning">In inglese, twang è il suono vibrante di una corda pizzicata.</string>
     <string name="settings_about_version">Versione %1$s</string>
     <string name="settings_about_free_title">Gratis per sempre</string>
     <string name="settings_about_free_summary">Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Né ora né mai.</string>

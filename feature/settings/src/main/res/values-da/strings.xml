@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Sænk A4 med 1 Hz</string>
     <string name="settings_a4_raise">Hæv A4 med 1 Hz</string>
     <string name="settings_a4_reset">Nulstil til %1$d Hz</string>
+    <string name="settings_precise_title">Præcis stemning</string>
+    <string name="settings_precise_summary">Stemt inden for 2 cent i stedet for 5</string>
 
     <string name="settings_notation_title">Tonenavne</string>
     <string name="settings_notation_sharps">Med kryds: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Lys eller mørk</string>
-    <string name="settings_theme_system">Systemstandard</string>
+    <string name="settings_theme_system">Som telefonen</string>
     <string name="settings_theme_light">Lys</string>
     <string name="settings_theme_dark">Mørk</string>
     <string name="settings_dynamic_color_title">Farver fra baggrund</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Venstrehåndet</string>
     <string name="settings_left_handed_summary">Akkorddiagrammer og skalahalsen tegnet til en guitar, der holdes omvendt</string>
+    <string name="settings_under_meter_title">Under måleren</string>
+    <string name="settings_under_meter_words">Ord: Stram eller Slæk</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
 
     <string name="settings_keep_screen_on_title">Hold skærmen tændt</string>
     <string name="settings_keep_screen_on_summary">Skærmen forbliver tændt, mens du stemmer</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Annuller</string>
     <string name="about_title">Om Twangle</string>
     <string name="settings_about_link_summary">Version %1$s, hjælp, privatliv og licenser</string>
+    <string name="settings_about_name_title">Navnet</string>
+    <string name="settings_about_name_meaning">Twang er engelsk for klangen af en knipset streng.</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_free_title">Gratis for altid</string>
     <string name="settings_about_free_summary">Ingen reklamer, ingen konto, ingen køb i appen og ingen sporing. Hverken nu eller senere.</string>

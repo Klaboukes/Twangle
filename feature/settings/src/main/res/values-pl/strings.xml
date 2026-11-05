@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Obniż A4 o 1\u00A0Hz</string>
     <string name="settings_a4_raise">Podnieś A4 o 1\u00A0Hz</string>
     <string name="settings_a4_reset">Przywróć %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Precyzyjne strojenie</string>
+    <string name="settings_precise_summary">Nastrojone w granicach 2 centów zamiast 5</string>
 
     <string name="settings_notation_title">Nazwy dźwięków</string>
     <string name="settings_notation_sharps">Krzyżyki: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Jasny czy ciemny</string>
-    <string name="settings_theme_system">Jak w systemie</string>
+    <string name="settings_theme_system">Jak w telefonie</string>
     <string name="settings_theme_light">Jasny</string>
     <string name="settings_theme_dark">Ciemny</string>
     <string name="settings_dynamic_color_title">Kolory tapety</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Dla leworęcznych</string>
     <string name="settings_left_handed_summary">Diagramy akordów i gryf skal rysowane dla gitary trzymanej odwrotnie</string>
+    <string name="settings_under_meter_title">Pod wskaźnikiem</string>
+    <string name="settings_under_meter_words">Słowa: Podciągnij lub Popuść</string>
+    <string name="settings_under_meter_cents">Centy: −12</string>
 
     <string name="settings_keep_screen_on_title">Nie wygaszaj ekranu</string>
     <string name="settings_keep_screen_on_summary">Ekran nie gaśnie podczas strojenia</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Anuluj</string>
     <string name="about_title">O Twangle</string>
     <string name="settings_about_link_summary">Wersja %1$s, pomoc, prywatność i licencje</string>
+    <string name="settings_about_name_title">Nazwa</string>
+    <string name="settings_about_name_meaning">Twang to po angielsku dźwięczny odgłos szarpniętej struny.</string>
     <string name="settings_about_version">Wersja %1$s</string>
     <string name="settings_about_free_title">Za darmo na zawsze</string>
     <string name="settings_about_free_summary">Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Ani teraz, ani później.</string>

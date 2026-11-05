@@ -25,6 +25,17 @@
     <string name="wear_mic_unavailable">মাইক্রোফোন চালু করা যাচ্ছে না।</string>
     <string name="wear_try_again">আবার চেষ্টা করুন</string>
     <string name="wear_tile_tune">টিউন করুন</string>
+    <string name="wear_tile_metronome">মেট্রোনোম</string>
+    <string name="wear_tile_open_metronome">মেট্রোনোম খুলুন, %1$s</string>
     <string name="wear_shortcut_tune">টিউন</string>
     <string name="wear_shortcut_open">টিউনার খুলুন</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">প্রতি মিনিটে %1$d বিট</item>
+        <item quantity="other">প্রতি মিনিটে %1$d বিট</item>
+    </plurals>
+    <string name="wear_metronome_playing">বাজছে</string>
+    <string name="wear_metronome_stopped">থেমে আছে</string>
+    <string name="wear_metronome_start">শুরু করুন</string>
+    <string name="wear_metronome_stop">থামান</string>
+    <string name="wear_metronome_click">ক্লিক সাউন্ড</string>
 </resources>

@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">A4 1 Hz alemmas</string>
     <string name="settings_a4_raise">A4 1 Hz ylemmäs</string>
     <string name="settings_a4_reset">Palauta %1$d Hz</string>
+    <string name="settings_precise_title">Tarkka viritys</string>
+    <string name="settings_precise_summary">Vireessä 2 sentin tarkkuudella 5:n sijaan</string>
 
     <string name="settings_notation_title">Sävelnimet</string>
     <string name="settings_notation_sharps">Ylennykset: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Vaalea vai tumma</string>
-    <string name="settings_theme_system">Järjestelmän oletus</string>
+    <string name="settings_theme_system">Kuten puhelimessa</string>
     <string name="settings_theme_light">Vaalea</string>
     <string name="settings_theme_dark">Tumma</string>
     <string name="settings_dynamic_color_title">Taustakuvan värit</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Vasenkätinen</string>
     <string name="settings_left_handed_summary">Sointukaaviot ja asteikkokaula piirretään toisin päin pidetylle kitaralle</string>
+    <string name="settings_under_meter_title">Mittarin alla</string>
+    <string name="settings_under_meter_words">Sanat: Kiristä tai Löysää</string>
+    <string name="settings_under_meter_cents">Sentit: −12</string>
 
     <string name="settings_keep_screen_on_title">Pidä näyttö päällä</string>
     <string name="settings_keep_screen_on_summary">Näyttö pysyy päällä, kun virität</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Peruuta</string>
     <string name="about_title">Tietoja Twanglesta</string>
     <string name="settings_about_link_summary">Versio %1$s, ohjeet, tietosuoja ja lisenssit</string>
+    <string name="settings_about_name_title">Nimi</string>
+    <string name="settings_about_name_meaning">Twang on englantia ja tarkoittaa näppäillyn kielen helähdystä.</string>
     <string name="settings_about_version">Versio %1$s</string>
     <string name="settings_about_free_title">Ilmainen ikuisesti</string>
     <string name="settings_about_free_summary">Ei mainoksia, ei tiliä, ei sovelluksen sisäisiä ostoja eikä seurantaa. Ei nyt eikä myöhemmin.</string>

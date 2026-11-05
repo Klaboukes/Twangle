@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">اخفض A4 هرتزًا واحدًا</string>
     <string name="settings_a4_raise">ارفع A4 هرتزًا واحدًا</string>
     <string name="settings_a4_reset">أعِد إلى %1$d\u00A0هرتز</string>
+    <string name="settings_precise_title">الضبط الدقيق</string>
+    <string name="settings_precise_summary">مضبوط ضمن سنتين بدلًا من ٥</string>
 
     <string name="settings_notation_title">أسماء النغمات</string>
     <string name="settings_notation_sharps">دييز: C، C♯، D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">فاتح أو داكن</string>
-    <string name="settings_theme_system">حسب النظام</string>
+    <string name="settings_theme_system">حسب الهاتف</string>
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
     <string name="settings_dynamic_color_title">ألوان الخلفية</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">وضع الأعسر</string>
     <string name="settings_left_handed_summary">مخططات الكوردات وزند السلالم مرسومة لجيتار يُمسك بالاتجاه المعاكس</string>
+    <string name="settings_under_meter_title">تحت المؤشر</string>
+    <string name="settings_under_meter_words">كلمات: شُدّ أو أرخِ</string>
+    <string name="settings_under_meter_cents">سنتات: −١٢</string>
 
     <string name="settings_keep_screen_on_title">إبقاء الشاشة مضاءة</string>
     <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة أثناء الدوزنة</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">إلغاء</string>
     <string name="about_title">حول Twangle</string>
     <string name="settings_about_link_summary">الإصدار %1$s، المساعدة والخصوصية والتراخيص</string>
+    <string name="settings_about_name_title">الاسم</string>
+    <string name="settings_about_name_meaning">كلمة twang الإنجليزية تعني رنين الوتر المنقور.</string>
     <string name="settings_about_version">الإصدار %1$s</string>
     <string name="settings_about_free_title">مجاني إلى الأبد</string>
     <string name="settings_about_free_summary">بلا إعلانات ولا حساب ولا مشتريات داخل التطبيق ولا تتبّع. لا الآن ولا لاحقًا.</string>

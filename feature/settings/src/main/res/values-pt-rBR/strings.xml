@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Baixar A4 em 1\u00A0Hz</string>
     <string name="settings_a4_raise">Subir A4 em 1\u00A0Hz</string>
     <string name="settings_a4_reset">Voltar para %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Afinação precisa</string>
+    <string name="settings_precise_summary">Afinado com margem de 2 cents em vez de 5</string>
 
     <string name="settings_notation_title">Nomes das notas</string>
     <string name="settings_notation_sharps">Sustenidos: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Claro ou escuro</string>
-    <string name="settings_theme_system">Padrão do sistema</string>
+    <string name="settings_theme_system">Igual ao celular</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Escuro</string>
     <string name="settings_dynamic_color_title">Cores do papel de parede</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Canhoto</string>
     <string name="settings_left_handed_summary">Diagramas de acordes e braço das escalas desenhados para um violão segurado ao contrário</string>
+    <string name="settings_under_meter_title">Abaixo do indicador</string>
+    <string name="settings_under_meter_words">Palavras: Aperte ou Afrouxe</string>
+    <string name="settings_under_meter_cents">Cents: −12</string>
 
     <string name="settings_keep_screen_on_title">Manter a tela ligada</string>
     <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto você afina</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Cancelar</string>
     <string name="about_title">Sobre o Twangle</string>
     <string name="settings_about_link_summary">Versão %1$s, ajuda, privacidade e licenças</string>
+    <string name="settings_about_name_title">O nome</string>
+    <string name="settings_about_name_meaning">Em inglês, twang é o som vibrante de uma corda dedilhada.</string>
     <string name="settings_about_version">Versão %1$s</string>
     <string name="settings_about_free_title">Grátis para sempre</string>
     <string name="settings_about_free_summary">Sem anúncios, sem conta, sem compras no app e sem rastreamento. Nem agora, nem depois.</string>

@@ -23,6 +23,16 @@
     <string name="wear_mic_unavailable">マイクを開けません。</string>
     <string name="wear_try_again">再試行</string>
     <string name="wear_tile_tune">チューニング</string>
+    <string name="wear_tile_metronome">メトロノーム</string>
+    <string name="wear_tile_open_metronome">メトロノームを開く、%1$s</string>
     <string name="wear_shortcut_tune">チューナー</string>
     <string name="wear_shortcut_open">チューナーを開く</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="other">1分間に%1$d拍</item>
+    </plurals>
+    <string name="wear_metronome_playing">再生中</string>
+    <string name="wear_metronome_stopped">停止中</string>
+    <string name="wear_metronome_start">スタート</string>
+    <string name="wear_metronome_stop">ストップ</string>
+    <string name="wear_metronome_click">クリック音</string>
 </resources>

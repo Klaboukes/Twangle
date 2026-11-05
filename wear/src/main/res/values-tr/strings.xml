@@ -26,6 +26,17 @@
     <string name="wear_mic_unavailable">Mikrofon açılamıyor.</string>
     <string name="wear_try_again">Tekrar dene</string>
     <string name="wear_tile_tune">Akort</string>
+    <string name="wear_tile_metronome">Metronom</string>
+    <string name="wear_tile_open_metronome">Metronomu aç, %1$s</string>
     <string name="wear_shortcut_tune">Akort</string>
     <string name="wear_shortcut_open">Akort ekranını aç</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">Dakikada %1$d vuruş</item>
+        <item quantity="other">Dakikada %1$d vuruş</item>
+    </plurals>
+    <string name="wear_metronome_playing">Çalıyor</string>
+    <string name="wear_metronome_stopped">Durduruldu</string>
+    <string name="wear_metronome_start">Başlat</string>
+    <string name="wear_metronome_stop">Durdur</string>
+    <string name="wear_metronome_click">Tık sesi</string>
 </resources>

@@ -10,6 +10,8 @@
     <string name="settings_a4_lower">A4 ১ হার্জ কমান</string>
     <string name="settings_a4_raise">A4 ১ হার্জ বাড়ান</string>
     <string name="settings_a4_reset">%1$d হার্জে ফিরিয়ে নিন</string>
+    <string name="settings_precise_title">নিখুঁত টিউনিং</string>
+    <string name="settings_precise_summary">৫ সেন্টের বদলে ২ সেন্টের মধ্যে সুরে</string>
     <string name="settings_notation_title">নোটের নাম</string>
     <string name="settings_notation_sharps">শার্প: C, C♯, D …</string>
     <string name="settings_notation_flats">ফ্ল্যাট: C, D♭, D …</string>
@@ -18,7 +20,7 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">জার্মান: C, C♯, D … H</string>
     <string name="settings_theme_title">লাইট বা ডার্ক</string>
-    <string name="settings_theme_system">সিস্টেম ডিফল্ট</string>
+    <string name="settings_theme_system">ফোনের মতো</string>
     <string name="settings_theme_light">লাইট</string>
     <string name="settings_theme_dark">ডার্ক</string>
     <string name="settings_dynamic_color_title">ওয়ালপেপারের রং</string>
@@ -29,6 +31,9 @@
     <string name="settings_meter_strobe">স্ট্রোব</string>
     <string name="settings_left_handed_title">বাঁহাতি</string>
     <string name="settings_left_handed_summary">কর্ড চার্ট আর স্কেলের নেক উল্টো দিকে ধরা গিটারের জন্য আঁকা হয়</string>
+    <string name="settings_under_meter_title">মিটারের নিচে</string>
+    <string name="settings_under_meter_words">শব্দ: টাইট করুন বা ঢিলা করুন</string>
+    <string name="settings_under_meter_cents">সেন্ট: −১২</string>
     <string name="settings_keep_screen_on_title">স্ক্রিন চালু রাখুন</string>
     <string name="settings_keep_screen_on_summary">টিউন করার সময় স্ক্রিন চালু থাকে</string>
     <string name="settings_vibrate_in_tune_title">সুরে এলে ভাইব্রেট</string>
@@ -42,6 +47,8 @@
     <string name="settings_language_cancel">বাতিল</string>
     <string name="about_title">Twangle সম্পর্কে</string>
     <string name="settings_about_link_summary">ভার্সন %1$s, সাহায্য, গোপনীয়তা ও লাইসেন্স</string>
+    <string name="settings_about_name_title">নাম</string>
+    <string name="settings_about_name_meaning">Twang ইংরেজিতে টোকা দেওয়া তারের ঝংকারকে বলে।</string>
     <string name="settings_about_version">ভার্সন %1$s</string>
     <string name="settings_about_free_title">চিরকাল ফ্রি</string>
     <string name="settings_about_free_summary">কোনো বিজ্ঞাপন নেই, অ্যাকাউন্ট নেই, অ্যাপের ভেতরে কেনাকাটা নেই, ট্র্যাকিং নেই। এখনও না, পরেও না।</string>

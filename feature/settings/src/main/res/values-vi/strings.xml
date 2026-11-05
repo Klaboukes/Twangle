@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Giảm A4 1 Hz</string>
     <string name="settings_a4_raise">Tăng A4 1 Hz</string>
     <string name="settings_a4_reset">Đặt lại về %1$d Hz</string>
+    <string name="settings_precise_title">Lên dây chính xác</string>
+    <string name="settings_precise_summary">Chuẩn trong 2 cent thay vì 5</string>
 
     <string name="settings_notation_title">Tên nốt</string>
     <string name="settings_notation_sharps">Dấu thăng: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Sáng hoặc tối</string>
-    <string name="settings_theme_system">Theo hệ thống</string>
+    <string name="settings_theme_system">Theo điện thoại</string>
     <string name="settings_theme_light">Sáng</string>
     <string name="settings_theme_dark">Tối</string>
     <string name="settings_dynamic_color_title">Màu hình nền</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Tay trái</string>
     <string name="settings_left_handed_summary">Sơ đồ hợp âm và cần đàn ở Âm giai được vẽ cho đàn cầm ngược chiều</string>
+    <string name="settings_under_meter_title">Dưới đồng hồ đo</string>
+    <string name="settings_under_meter_words">Chữ: Căng lên hoặc Chùng xuống</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
 
     <string name="settings_keep_screen_on_title">Giữ màn hình luôn bật</string>
     <string name="settings_keep_screen_on_summary">Màn hình luôn sáng khi bạn lên dây</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Hủy</string>
     <string name="about_title">Giới thiệu Twangle</string>
     <string name="settings_about_link_summary">Phiên bản %1$s, trợ giúp, quyền riêng tư và giấy phép</string>
+    <string name="settings_about_name_title">Tên gọi</string>
+    <string name="settings_about_name_meaning">Twang là từ tiếng Anh chỉ tiếng ngân của dây đàn khi gảy.</string>
     <string name="settings_about_version">Phiên bản %1$s</string>
     <string name="settings_about_free_title">Miễn phí mãi mãi</string>
     <string name="settings_about_free_summary">Không quảng cáo, không tài khoản, không mua hàng trong ứng dụng và không theo dõi. Bây giờ cũng như sau này.</string>

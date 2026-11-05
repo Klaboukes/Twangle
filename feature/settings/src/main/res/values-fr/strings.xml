@@ -13,6 +13,8 @@
     <string name="settings_a4_lower">Baisser A4 de 1\u00A0Hz</string>
     <string name="settings_a4_raise">Monter A4 de 1\u00A0Hz</string>
     <string name="settings_a4_reset">Revenir à %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Accordage précis</string>
+    <string name="settings_precise_summary">Juste à 2 cents près au lieu de 5</string>
 
     <string name="settings_notation_title">Noms des notes</string>
     <string name="settings_notation_sharps">Dièses : C, C♯, D …</string>
@@ -24,7 +26,7 @@
 
 
     <string name="settings_theme_title">Clair ou sombre</string>
-    <string name="settings_theme_system">Selon le système</string>
+    <string name="settings_theme_system">Comme le téléphone</string>
     <string name="settings_theme_light">Clair</string>
     <string name="settings_theme_dark">Sombre</string>
     <string name="settings_dynamic_color_title">Couleurs du fond d\'écran</string>
@@ -36,6 +38,9 @@
 
     <string name="settings_left_handed_title">Gaucher</string>
     <string name="settings_left_handed_summary">Diagrammes d\'accords et manche des gammes dessinés pour une guitare tenue dans l\'autre sens</string>
+    <string name="settings_under_meter_title">Sous l\'affichage</string>
+    <string name="settings_under_meter_words">Mots : Tendez ou Détendez</string>
+    <string name="settings_under_meter_cents">Cents : −12</string>
 
     <string name="settings_keep_screen_on_title">Garder l\'écran allumé</string>
     <string name="settings_keep_screen_on_summary">L\'écran reste allumé pendant l\'accordage</string>
@@ -51,6 +56,8 @@
     <string name="settings_language_cancel">Annuler</string>
     <string name="about_title">À propos de Twangle</string>
     <string name="settings_about_link_summary">Version %1$s, aide, confidentialité et licences</string>
+    <string name="settings_about_name_title">Le nom</string>
+    <string name="settings_about_name_meaning">En anglais, un twang est le son vibrant d\'une corde pincée.</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_free_title">Gratuit pour toujours</string>
     <string name="settings_about_free_summary">Pas de pub, pas de compte, pas d\'achats intégrés, pas de pistage. Ni maintenant, ni plus tard.</string>

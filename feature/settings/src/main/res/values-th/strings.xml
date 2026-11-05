@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">ลด A4 ลง 1 Hz</string>
     <string name="settings_a4_raise">เพิ่ม A4 ขึ้น 1 Hz</string>
     <string name="settings_a4_reset">รีเซ็ตเป็น %1$d Hz</string>
+    <string name="settings_precise_title">จูนแบบละเอียด</string>
+    <string name="settings_precise_summary">ตรงเสียงภายใน 2 เซนต์ แทน 5 เซนต์</string>
 
     <string name="settings_notation_title">ชื่อโน้ต</string>
     <string name="settings_notation_sharps">ชาร์ป: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">สว่างหรือมืด</string>
-    <string name="settings_theme_system">ตามค่าเริ่มต้นของระบบ</string>
+    <string name="settings_theme_system">ตามโทรศัพท์</string>
     <string name="settings_theme_light">สว่าง</string>
     <string name="settings_theme_dark">มืด</string>
     <string name="settings_dynamic_color_title">สีจากวอลเปเปอร์</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">ถนัดซ้าย</string>
     <string name="settings_left_handed_summary">วาดตารางคอร์ดและคอกีตาร์ของสเกลสำหรับกีตาร์ที่ถือกลับด้าน</string>
+    <string name="settings_under_meter_title">ใต้มาตรวัด</string>
+    <string name="settings_under_meter_words">คำ: จูนขึ้นหรือจูนลง</string>
+    <string name="settings_under_meter_cents">เซนต์: −12</string>
 
     <string name="settings_keep_screen_on_title">เปิดหน้าจอค้างไว้</string>
     <string name="settings_keep_screen_on_summary">หน้าจอเปิดอยู่ตลอดขณะที่คุณจูน</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">ยกเลิก</string>
     <string name="about_title">เกี่ยวกับ Twangle</string>
     <string name="settings_about_link_summary">เวอร์ชัน %1$s ความช่วยเหลือ ความเป็นส่วนตัว และสัญญาอนุญาต</string>
+    <string name="settings_about_name_title">ที่มาของชื่อ</string>
+    <string name="settings_about_name_meaning">Twang เป็นคำภาษาอังกฤษ หมายถึงเสียงกังวานของสายที่ถูกดีด</string>
     <string name="settings_about_version">เวอร์ชัน %1$s</string>
     <string name="settings_about_free_title">ฟรีตลอดไป</string>
     <string name="settings_about_free_summary">ไม่มีโฆษณา ไม่ต้องมีบัญชี ไม่มีการซื้อในแอป และไม่มีการติดตาม ไม่ใช่แค่ตอนนี้ แต่ตลอดไป</string>

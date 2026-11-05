@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">Понизить A4 на 1\u00A0Гц</string>
     <string name="settings_a4_raise">Повысить A4 на 1\u00A0Гц</string>
     <string name="settings_a4_reset">Сбросить на %1$d\u00A0Гц</string>
+    <string name="settings_precise_title">Точная настройка</string>
+    <string name="settings_precise_summary">Настроено в пределах 2 центов, а не 5</string>
 
     <string name="settings_notation_title">Названия нот</string>
     <string name="settings_notation_sharps">Диезы: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Светлая или тёмная тема</string>
-    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_theme_system">Как на телефоне</string>
     <string name="settings_theme_light">Светлая</string>
     <string name="settings_theme_dark">Тёмная</string>
     <string name="settings_dynamic_color_title">Цвета обоев</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Для левши</string>
     <string name="settings_left_handed_summary">Аккордовые схемы и гриф в гаммах нарисованы для гитары, которую держат наоборот</string>
+    <string name="settings_under_meter_title">Под шкалой</string>
+    <string name="settings_under_meter_words">Слова: Подтяни или Ослабь</string>
+    <string name="settings_under_meter_cents">Центы: −12</string>
 
     <string name="settings_keep_screen_on_title">Не выключать экран</string>
     <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Отмена</string>
     <string name="about_title">О Twangle</string>
     <string name="settings_about_link_summary">Версия %1$s, помощь, конфиденциальность и лицензии</string>
+    <string name="settings_about_name_title">Название</string>
+    <string name="settings_about_name_meaning">Twang по-английски — звонкий звук защипнутой струны.</string>
     <string name="settings_about_version">Версия %1$s</string>
     <string name="settings_about_free_title">Бесплатно навсегда</string>
     <string name="settings_about_free_summary">Без рекламы, без аккаунта, без покупок в приложении и без слежки. Ни сейчас, ни потом.</string>

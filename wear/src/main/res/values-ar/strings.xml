@@ -38,6 +38,21 @@
     <string name="wear_mic_unavailable">تعذّر فتح الميكروفون.</string>
     <string name="wear_try_again">حاول مرة أخرى</string>
     <string name="wear_tile_tune">اضبط</string>
+    <string name="wear_tile_metronome">المترونوم</string>
+    <string name="wear_tile_open_metronome">افتح المترونوم، %1$s</string>
     <string name="wear_shortcut_tune">اضبط</string>
     <string name="wear_shortcut_open">افتح الموالف</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="zero">%1$d نبضة في الدقيقة</item>
+        <item quantity="one">نبضة واحدة في الدقيقة</item>
+        <item quantity="two">نبضتان في الدقيقة</item>
+        <item quantity="few">%1$d نبضات في الدقيقة</item>
+        <item quantity="many">%1$d نبضة في الدقيقة</item>
+        <item quantity="other">%1$d نبضة في الدقيقة</item>
+    </plurals>
+    <string name="wear_metronome_playing">قيد التشغيل</string>
+    <string name="wear_metronome_stopped">متوقف</string>
+    <string name="wear_metronome_start">ابدأ</string>
+    <string name="wear_metronome_stop">أوقف</string>
+    <string name="wear_metronome_click">صوت النقر</string>
 </resources>

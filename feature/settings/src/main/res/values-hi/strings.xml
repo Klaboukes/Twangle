@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">A4 को 1\u00A0Hz घटाएँ</string>
     <string name="settings_a4_raise">A4 को 1\u00A0Hz बढ़ाएँ</string>
     <string name="settings_a4_reset">%1$d\u00A0Hz पर रीसेट करें</string>
+    <string name="settings_precise_title">सटीक ट्यूनिंग</string>
+    <string name="settings_precise_summary">5 की जगह 2 सेंट के भीतर सुर में</string>
 
     <string name="settings_notation_title">नोट के नाम</string>
     <string name="settings_notation_sharps">शार्प: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">लाइट या डार्क</string>
-    <string name="settings_theme_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="settings_theme_system">फ़ोन के अनुसार</string>
     <string name="settings_theme_light">लाइट</string>
     <string name="settings_theme_dark">डार्क</string>
     <string name="settings_dynamic_color_title">वॉलपेपर के रंग</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">बाएँ हाथ वाले</string>
     <string name="settings_left_handed_summary">कॉर्ड चार्ट और स्केल का फ़िंगरबोर्ड उलटी तरफ़ पकड़े गिटार के लिए बनते हैं</string>
+    <string name="settings_under_meter_title">मीटर के नीचे</string>
+    <string name="settings_under_meter_words">शब्द: कसें या ढीला करें</string>
+    <string name="settings_under_meter_cents">सेंट: −12</string>
 
     <string name="settings_keep_screen_on_title">स्क्रीन चालू रखें</string>
     <string name="settings_keep_screen_on_summary">ट्यून करते समय स्क्रीन चालू रहती है</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">रद्द करें</string>
     <string name="about_title">Twangle के बारे में</string>
     <string name="settings_about_link_summary">वर्शन %1$s, सहायता, निजता और लाइसेंस</string>
+    <string name="settings_about_name_title">नाम</string>
+    <string name="settings_about_name_meaning">Twang अंग्रेज़ी में छेड़े गए तार की गूँजती आवाज़ को कहते हैं।</string>
     <string name="settings_about_version">वर्शन %1$s</string>
     <string name="settings_about_free_title">हमेशा के लिए मुफ़्त</string>
     <string name="settings_about_free_summary">न विज्ञापन, न अकाउंट, न इन-ऐप खरीदारी और न ट्रैकिंग। न अभी, न बाद में।</string>

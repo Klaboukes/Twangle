@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">A4 um 1\u00A0Hz senken</string>
     <string name="settings_a4_raise">A4 um 1\u00A0Hz erhöhen</string>
     <string name="settings_a4_reset">Auf %1$d\u00A0Hz zurücksetzen</string>
+    <string name="settings_precise_title">Genaues Stimmen</string>
+    <string name="settings_precise_summary">Gestimmt innerhalb von 2 Cent statt 5</string>
 
     <string name="settings_notation_title">Notennamen</string>
     <string name="settings_notation_sharps">Mit Kreuz: C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">Hell oder dunkel</string>
-    <string name="settings_theme_system">Systemstandard</string>
+    <string name="settings_theme_system">Wie das Handy</string>
     <string name="settings_theme_light">Hell</string>
     <string name="settings_theme_dark">Dunkel</string>
     <string name="settings_dynamic_color_title">Hintergrundfarben</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">Linkshänder</string>
     <string name="settings_left_handed_summary">Akkordbilder und das Griffbrett der Tonleitern für eine andersherum gehaltene Gitarre gezeichnet</string>
+    <string name="settings_under_meter_title">Unter der Anzeige</string>
+    <string name="settings_under_meter_words">Wörter: Spannen oder Lockern</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
 
     <string name="settings_keep_screen_on_title">Bildschirm anlassen</string>
     <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt beim Stimmen an</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">Abbrechen</string>
     <string name="about_title">Über Twangle</string>
     <string name="settings_about_link_summary">Version %1$s, Hilfe, Datenschutz und Lizenzen</string>
+    <string name="settings_about_name_title">Der Name</string>
+    <string name="settings_about_name_meaning">Twang ist Englisch für den Klang einer gezupften Saite.</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_free_title">Für immer kostenlos</string>
     <string name="settings_about_free_summary">Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Nicht jetzt, nicht später.</string>

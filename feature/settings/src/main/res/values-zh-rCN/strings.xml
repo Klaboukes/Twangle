@@ -12,6 +12,8 @@
     <string name="settings_a4_lower">A4 降低 1\u00A0Hz</string>
     <string name="settings_a4_raise">A4 升高 1\u00A0Hz</string>
     <string name="settings_a4_reset">重置为 %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">精确调音</string>
+    <string name="settings_precise_summary">2 音分内即算调准，而非 5 音分</string>
 
     <string name="settings_notation_title">音名</string>
     <string name="settings_notation_sharps">升号：C, C♯, D …</string>
@@ -23,7 +25,7 @@
 
 
     <string name="settings_theme_title">浅色或深色</string>
-    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_system">跟随手机</string>
     <string name="settings_theme_light">浅色</string>
     <string name="settings_theme_dark">深色</string>
     <string name="settings_dynamic_color_title">壁纸配色</string>
@@ -35,6 +37,9 @@
 
     <string name="settings_left_handed_title">左手持琴</string>
     <string name="settings_left_handed_summary">和弦图和音阶指板按反向持琴的吉他绘制</string>
+    <string name="settings_under_meter_title">仪表下方</string>
+    <string name="settings_under_meter_words">文字：调紧或调松</string>
+    <string name="settings_under_meter_cents">音分：−12</string>
 
     <string name="settings_keep_screen_on_title">屏幕常亮</string>
     <string name="settings_keep_screen_on_summary">调音时屏幕保持常亮</string>
@@ -50,6 +55,8 @@
     <string name="settings_language_cancel">取消</string>
     <string name="about_title">关于 Twangle</string>
     <string name="settings_about_link_summary">版本 %1$s、帮助、隐私和许可证</string>
+    <string name="settings_about_name_title">名称由来</string>
+    <string name="settings_about_name_meaning">Twang 是英语，指拨弦时琴弦发出的鸣响。</string>
     <string name="settings_about_version">版本 %1$s</string>
     <string name="settings_about_free_title">永久免费</string>
     <string name="settings_about_free_summary">无广告、无需账号、无应用内购买、无跟踪。现在没有，以后也不会有。</string>
