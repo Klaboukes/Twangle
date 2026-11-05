@@ -57,8 +57,8 @@ internal const val TILE_TUNE_ID = "tune"
 /** The mark's name in the tile's resources. */
 internal const val TILE_MARK_ID = "mark"
 
-/** Raised whenever [tileResources] changes, so watches fetch them again. */
-internal const val TILE_RESOURCES_VERSION = "2"
+/** Raised whenever [tileResources] or the mark's drawing changes, so watches fetch them again (3: the new overlap colours). */
+internal const val TILE_RESOURCES_VERSION = "3"
 
 private const val TILE_MARK_DP = 64f
 
