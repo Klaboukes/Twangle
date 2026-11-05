@@ -51,7 +51,7 @@ import kotlin.math.sqrt
  *
  * Not a test: run it with the benchmarks
  * (`./gradlew :core:dsp:benchmark --tests '*DroneCandidatesReport*'`). The output is the same on
- * every run, so the committed files can be made again byte for byte.
+ * every run, so the files (not committed, only listened to) can be made again byte for byte.
  */
 class DroneCandidatesReport {
 
