@@ -5,6 +5,7 @@ import android.os.LocaleList
 import android.text.TextUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,8 +51,8 @@ import java.util.Locale
 /**
  * The Play Store's feature graphic (docs/store-listing.md, *Icon and feature graphic*), one for each
  * store language: [FEATURE_WIDTH] × [FEATURE_HEIGHT] pixels on [BACKGROUND]'s quiet background. On
- * the start side the store [icon] beside the name "Twangle" in the app's display face (1.1 set it in
- * Retro's), and under them [line], what sets Twangle apart
+ * the start side the store [icon] (since Phase 79 the harmonics) over the name "Twangle" in the app's display
+ * face, Ink's light plain sans (1.1 set it in Retro's), and under them [line], what sets Twangle apart
  * in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set as the app sets
  * that language (its fonts, right to left for Arabic). On the end side three of the tuner's meters fanned
  * out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in each of the
@@ -97,7 +98,9 @@ private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
             modifier = Modifier
                 .size(ICON_SIZE)
                 .shadow(ICON_SHADOW, RoundedCornerShape(ICON_CORNER_PERCENT))
-                .clip(RoundedCornerShape(ICON_CORNER_PERCENT)),
+                .clip(RoundedCornerShape(ICON_CORNER_PERCENT))
+                // The icon's tile is Ink dark, the graphic's own background: a faint edge shows where it ends.
+                .border(EDGE_LINE, MaterialTheme.colorScheme.onBackground.copy(alpha = EDGE_ALPHA), RoundedCornerShape(ICON_CORNER_PERCENT)),
         )
         Spacer(Modifier.height(NAME_GAP))
         val ink = MaterialTheme.colorScheme.onBackground
@@ -156,8 +159,9 @@ private fun Fan() {
 }
 
 /**
- * The tuner's meter ([Lens], 2.0 Phases 71 and 78) in the card's look on a card of the app's background, light or
- * dark: a string in the in-tune zone and held there, the look and the glow green.
+ * The tuner's meter ([Lens], 2.0 Phases 71 and 78) in the card's look on a card, light or dark: a string in the
+ * in-tune zone and held there, the look and the glow green. A dark card is Ink dark's raised surface, as the
+ * frameless meter (Phase 78) on the app's own background would leave it unseen on the graphic's.
  */
 @Composable
 private fun MeterCard(card: FanCard, modifier: Modifier) {
@@ -168,7 +172,7 @@ private fun MeterCard(card: FanCard, modifier: Modifier) {
                 .size(CARD_WIDTH, CARD_HEIGHT)
                 .shadow(CARD_SHADOW, shape)
                 .clip(shape)
-                .background(MaterialTheme.colorScheme.background),
+                .background(if (card.dark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center,
         ) {
             Lens(
@@ -209,6 +213,8 @@ private val ICON_SIZE = 40.dp
 /** Play rounds its icons' corners by a fifth of their size. */
 private const val ICON_CORNER_PERCENT = 20
 private val ICON_SHADOW = 6.dp
+private val EDGE_LINE = 1.dp
+private const val EDGE_ALPHA = 0.16f
 private val NAME_GAP = 8.dp
 private const val NAME_SIZE = 30f
 private val LINE_GAP = 10.dp
