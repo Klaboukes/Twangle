@@ -197,6 +197,9 @@ def path_xml(colour, data, alpha=None):
 OPENING_MS = 1000                            # the opening animation, all of it: the string swings throughout
 SWINGS = 0.5                                 # how often the whole string swings in it (the halves twice that, the thirds three times)
 SWING_FRAMES = 40
+# The watch's opening screen slides in from the side (about half a second on the Galaxy Watch 5): the watch
+# holds the string at rest that long first, so the whole swing is seen (owner, 2026-11-05: "much faster").
+WATCH_HOLD_MS = 500
 
 
 def swing(n, q):
@@ -217,10 +220,10 @@ def relative_swing(k, outer, q):
     return swing(HARMONICS[k][0], q) / a
 
 
-def keyframes(prop, values):
+def keyframes(prop, values, duration):
     frames = "".join(f'\n                        <keyframe android:fraction="{f:.4f}" android:value="{v:.4f}" />'
                      for f, v in values)
-    return (f'\n            <objectAnimator\n                android:duration="{OPENING_MS}"\n'
+    return (f'\n            <objectAnimator\n                android:duration="{duration}"\n'
             f'                android:interpolator="@android:anim/linear_interpolator">\n'
             f'                <propertyValuesHolder\n                    android:propertyName="{prop}"\n'
             f'                    android:valueType="floatType">{frames}\n                </propertyValuesHolder>\n'
@@ -232,13 +235,14 @@ def target(name, animator):
             + animator + '        </aapt:attr>\n    </target>\n')
 
 
-def opening():
+def opening(hold_ms=0):
     """The opening screen's animated icon, every overlap in the icon's own colour while the harmonics swing (owner,
     2026-11-05). Each set of overlapping harmonics is painted as nested groups, each hinged on the string, the
     outer ones clipped to their harmonic's shape and the innermost holding the last one's shape in the set's
     colour (colour_of): its region is where they all cover. Each group's height is animated so the nested
     scales multiply to each harmonic's own swing (relative_swing). Painted singles, then pairs, then all three,
-    as the icon's regions are, so each point ends in the colour of everything that covers it."""
+    as the icon's regions are, so each point ends in the colour of everything that covers it. With hold_ms the
+    string first rests that long (the harmonics flat on it), then swings for OPENING_MS."""
     sets = [[0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2]]
     body, animated = "", []
     for i, members in enumerate(sets):
@@ -259,9 +263,13 @@ def opening():
     drawable = "".join("        " + line + "\n" if line else "\n" for line in drawable.rstrip("\n").split("\n"))
     targets = ""
     for name, k, outer in animated:
+        total = hold_ms + OPENING_MS
         frames = [i / SWING_FRAMES for i in range(SWING_FRAMES + 1)]
-        values = [(q, swing(HARMONICS[k][0], q) if outer is None else relative_swing(k, outer, q)) for q in frames]
-        targets += target(name, keyframes("scaleY", values))
+        values = [((hold_ms + q * OPENING_MS) / total,
+                   swing(HARMONICS[k][0], q) if outer is None else relative_swing(k, outer, q)) for q in frames]
+        if hold_ms:
+            values.insert(0, (0.0, values[0][1]))
+        targets += target(name, keyframes("scaleY", values, total))
     return (HEADER.format(what="The opening screen's icon: the string plucked, each harmonic swinging at its own speed into\n"
                                "     the icon's pose, its overlaps in the icon's colours throughout (ic_launcher_foreground.xml).\n"
                                "     Still, it is that icon.")
@@ -297,12 +305,12 @@ def main():
         (res / "ic_launcher_foreground.xml").write_text(foreground, encoding="utf-8", newline="\n")
         (res / "ic_launcher_monochrome.xml").write_text(monochrome, encoding="utf-8", newline="\n")
     (ROOT / "wear/src/main/res/drawable/ic_twangle_mark.xml").write_text(mark, encoding="utf-8", newline="\n")
-    for module, theme in (("app", "Theme.Twangle.Starting"), ("wear", "Theme.Twangle.Watch.Starting")):
-        (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(), encoding="utf-8", newline="\n")
+    for module, theme, hold in (("app", "Theme.Twangle.Starting", 0), ("wear", "Theme.Twangle.Watch.Starting", WATCH_HOLD_MS)):
+        (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(hold), encoding="utf-8", newline="\n")
         (ROOT / module / "src/main/res/values/opening_animation.xml").write_text(
             '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
             f'<resources>\n    <!-- How long the opening screen\'s icon animation lasts ({theme}). -->\n'
-            f'    <integer name="opening_animation_ms">{OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
+            f'    <integer name="opening_animation_ms">{hold + OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
     print(f"{len(painted)} shapes, {sum(d.count('L') + 1 for _, d in painted)} points")
 
     if "--preview" in sys.argv:
