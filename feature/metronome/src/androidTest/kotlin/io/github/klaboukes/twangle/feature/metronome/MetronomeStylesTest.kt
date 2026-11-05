@@ -153,7 +153,9 @@ class MetronomeStylesTest {
         show()
         for (header in listOf(true, false)) {
             shownHeader.value = header
-            for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
+            // As the app shows it: on its side the gear is on the rail, never in the column.
+            val sizes = listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE) + if (header) emptyList() else listOf(PHONE_LANDSCAPE to 1f)
+            for ((size, scale) in sizes) {
                 shownSize.value = size
                 shownFontScale.value = scale
                 for ((dark, navigation) in listOf(false to Navigation.BUTTONS, true to Navigation.GESTURES)) {

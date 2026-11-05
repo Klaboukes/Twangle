@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -135,7 +137,13 @@ internal fun TempoHeading(
                             .clearAndSetSemantics {},
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(localDigits(bpm, locale), style = style, maxLines = 1, softWrap = false, modifier = Modifier.testTag(MetronomeTestTags.BPM))
+                        Text(
+                            localDigits(bpm, locale),
+                            style = style,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.testTag(MetronomeTestTags.BPM).figuresHigh(figures),
+                        )
                     }
                     StepButton(faster = true, onClick = { onStep(+1) })
                 }
@@ -144,6 +152,18 @@ internal fun TempoHeading(
         Box(Modifier.height(WORDS_GAP))
         TempoWords(markingName(TempoMarking.of(bpm)))
     }
+}
+
+/**
+ * The figures' box [figures] high, the room they were sized for, the text's own line centred over it.
+ * That line is the face's ascent and descent whatever the line height asks (1.36 times the size in
+ * Nunito, 1.17 in the phone's font before it), so on its side the tempo took more than its room and
+ * pushed the row under the bars out of the window; the figures themselves stand in the middle of it.
+ */
+private fun Modifier.figuresHigh(figures: Dp): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+    val tall = figures.roundToPx()
+    layout(placeable.width, tall) { placeable.place(0, (tall - placeable.height) / 2) }
 }
 
 /** "beats per minute · Andante" under the figures, muted, one line, set smaller where a language or large text needs it. */
