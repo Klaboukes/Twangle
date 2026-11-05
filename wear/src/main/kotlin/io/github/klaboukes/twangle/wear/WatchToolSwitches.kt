@@ -29,7 +29,9 @@ data class WatchToolSwitches(
 /**
  * The tools a build of the watch app shows (docs/architecture/performance.md, *Release build*): every live
  * tool in every build; a tool still being built only in debug builds ([debugBuild], `BuildConfig.DEBUG`),
- * until the owner's check passes. Today that is the metronome (Phase 80).
+ * until the owner's check passes. Today every tool is live (the metronome, Phase 80, since its check passed
+ * on 2026-11-05), so debug and release builds show the same. A new tool while it is built is turned off
+ * here when [debugBuild] is false (`WatchToolSwitches.ALL_ON.copy(...)`).
  */
-fun watchToolSwitchesFor(debugBuild: Boolean): WatchToolSwitches =
-    if (debugBuild) WatchToolSwitches.ALL_ON else WatchToolSwitches.ALL_ON.copy(metronome = false)
+@Suppress("UNUSED_PARAMETER")
+fun watchToolSwitchesFor(debugBuild: Boolean): WatchToolSwitches = WatchToolSwitches.ALL_ON

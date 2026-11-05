@@ -6,7 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.lang.reflect.Modifier
 
-/** Which tools each build of the watch app shows: the metronome (Phase 80) only in debug builds until the owner's check passes. */
+/** Which tools each build of the watch app shows: every tool in both since the metronome's check passed (Phase 80, 2026-11-05). */
 class WatchToolSwitchesTest {
 
     @Test
@@ -27,7 +27,7 @@ class WatchToolSwitchesTest {
     }
 
     @Test
-    fun `a release build shows the tuner alone until the metronome's check passes`() {
-        assertEquals(WatchToolSwitches.ALL_ON.copy(metronome = false), watchToolSwitchesFor(debugBuild = false))
+    fun `a release build shows every tool too`() {
+        assertEquals(WatchToolSwitches.ALL_ON, watchToolSwitchesFor(debugBuild = false))
     }
 }
