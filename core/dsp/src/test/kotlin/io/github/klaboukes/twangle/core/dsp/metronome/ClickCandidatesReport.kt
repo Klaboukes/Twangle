@@ -29,7 +29,9 @@ import kotlin.math.sqrt
  *   of silence;
  * - `<sound>-with-guitar.wav`: the same click under two bars of a strummed steel-string guitar
  *   (down and up eighths, E minor then C, ending on E minor), the same guitar under every sound.
- * It prints each one's peak and RMS next to the wood block's.
+ * It prints each one's peak and RMS next to the wood block's. Those files are for listening (open
+ * the folder's `index.html`) and are not committed; the plain `<sound>.wav` ones also go into
+ * `src/test/resources/clicks/`, which is.
  *
  * Not a test: run it with the benchmarks
  * (`./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'`). The output is the same on
@@ -56,6 +58,7 @@ class ClickCandidatesReport {
     @Test
     fun writeCandidates() {
         val dir = File(repoRoot(), "docs/design/click-sounds-preview").apply { mkdirs() }
+        val approved = File(repoRoot(), "core/dsp/src/test/resources/clicks").apply { mkdirs() }
 
         val sounds = ClickSounds(RATE)
         val target = rms(barFromClickTrack(ClickSound.WOOD_BLOCK))
@@ -130,6 +133,7 @@ class ClickCandidatesReport {
             writeWav(File(dir, "$name.wav"), bar)
             if (bar.first() != 0f || bar.last() != 0f) failures += "$name doesn't start and end on silence"
             if (name.endsWith("-with-guitar")) continue
+            writeWav(File(approved, "$name.wav"), bar)
             if (peak > MAX_PEAK + 1e-6f) failures += "$name clips"
             if (abs(vsWood) > 1.0) failures += "$name is not within 1 dB of the wood block"
         }

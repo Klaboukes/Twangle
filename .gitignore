@@ -37,3 +37,7 @@ fastlane/metadata/android/*/images/*
 
 # Release bundles and their notes, made by scripts/release.sh bundle (docs/release.md)
 /release/
+
+# Sounds for the owner to listen to beside a mock-up, made again by core/dsp's reports
+# (ClickCandidatesReport, DroneCandidatesReport); the clicks a test checks are in core/dsp/src/test/resources/clicks/.
+docs/design/*/*.wav

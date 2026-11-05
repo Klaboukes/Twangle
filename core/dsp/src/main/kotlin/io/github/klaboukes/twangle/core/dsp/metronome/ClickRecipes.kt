@@ -15,7 +15,7 @@ import kotlin.math.sqrt
 
 /**
  * The recipes of the cowbell, claves and rim click (the owner's choice, Phase 45, 2026-10-25),
- * for [PercussionSynth]. The approved samples are in `docs/design/click-sounds-preview/`;
+ * for [PercussionSynth]. The approved samples are in `src/test/resources/clicks/`;
  * `ClickSoundsTest` checks these still make them sample for sample.
  */
 internal object ClickRecipes {

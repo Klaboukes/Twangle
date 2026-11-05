@@ -118,14 +118,15 @@ class ClickSoundsTest {
 
     @Test
     fun `at 48 kHz the app plays the approved samples sample for sample`() {
-        // docs/design/click-sounds-preview/<sound>.wav: one bar of 4/4 at 100 BPM, then a second
-        // of silence, 16-bit (ClickCandidatesReport). The app's clicks, through ClickTrack, give
-        // the same 16-bit samples, every one.
+        // src/test/resources/clicks/<sound>.wav, the sounds the owner approved: one bar of 4/4 at
+        // 100 BPM, then a second of silence, 16-bit (ClickCandidatesReport). The app's clicks,
+        // through ClickTrack, give the same 16-bit samples, every one.
         val rate = 48_000
         val beat = rate * 60 / 100
         for (sound in ClickSound.entries) {
             val name = sound.name.lowercase().replace('_', '-')
-            val approved = readWav(File(repoRoot(), "docs/design/click-sounds-preview/$name.wav"))
+            val wav = requireNotNull(javaClass.getResource("/clicks/$name.wav")) { "no clicks/$name.wav on the class path" }
+            val approved = readWav(File(wav.toURI()))
             val bar = FloatArray(4 * beat + rate)
             ClickTrack(rate, bpm = 100, meter = Meter.FOUR_FOUR, sound = sound).render(bar, 0, 4 * beat)
             assertEquals("$name.wav length", bar.size, approved.size)
@@ -202,12 +203,6 @@ class ClickSoundsTest {
         assertEquals("16-bit", 16, bytes.getShort(34).toInt())
         val size = bytes.getInt(40)
         return ShortArray(size / 2) { bytes.getShort(44 + 2 * it) }
-    }
-
-    private fun repoRoot(): File {
-        var dir: File? = File(System.getProperty("user.dir")).absoluteFile
-        while (dir != null && !File(dir, "settings.gradle.kts").exists()) dir = dir.parentFile
-        return checkNotNull(dir) { "no settings.gradle.kts above ${System.getProperty("user.dir")}" }
     }
 
     private companion object {
