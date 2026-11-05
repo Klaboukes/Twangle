@@ -652,6 +652,7 @@ class SettingsContentTest {
         show(AppSettings(), about = true)
         listOf(
             context.getString(R.string.settings_about_version, VERSION),
+            context.getString(R.string.settings_about_name_title),
             context.getString(R.string.settings_about_name_meaning),
             context.getString(R.string.settings_about_free_title),
             context.getString(R.string.settings_about_free_summary),
@@ -888,6 +889,7 @@ class SettingsContentTest {
         // The page title sits in the top bar, which doesn't scroll.
         assertWhollyShown(compose.onNodeWithText(res.getString(R.string.about_title), useUnmergedTree = true), "title", scroll = false)
         val texts = listOf(
+            R.string.settings_about_name_title,
             R.string.settings_about_free_title,
             R.string.settings_about_privacy_title,
             R.string.settings_about_credits_title,
