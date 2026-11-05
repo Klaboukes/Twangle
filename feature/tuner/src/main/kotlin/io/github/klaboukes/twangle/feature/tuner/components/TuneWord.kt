@@ -209,7 +209,11 @@ fun TuneWordLine(
                 textAlign = textAlign,
                 maxLines = 1,
                 softWrap = false,
-                autoSize = TextAutoSize.StepBased(minFontSize = SMALL_MIN_SIZE, maxFontSize = smallStyle.fontSize, stepSize = 1.sp),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = with(density) { SMALL_MIN_SIZE.toSp() },
+                    maxFontSize = smallStyle.fontSize,
+                    stepSize = 1.sp,
+                ),
                 modifier = Modifier
                     .keepLineHeight(smallLine)
                     .testTag(TunerTestTags.WORD_CENTS)
@@ -327,9 +331,12 @@ private val QUIET_SIZE = 20.sp
 private val COMPACT_QUIET_SIZE = 18.sp
 private val WORD_LINE_HEIGHT = 1.25.em
 
-/** A word or tip that doesn't fit one line is set smaller, down to these. */
+/**
+ * A word or tip that doesn't fit one line is set smaller, down to these, in dp so they hold at large text too
+ * (Indonesian "12 sen terlalu rendah" at 2× text beside the pegs of the wide layout, the overnight run of 2026-11-05).
+ */
 private val WORD_MIN_SIZE = 12.dp
-private val SMALL_MIN_SIZE = 10.sp
+private val SMALL_MIN_SIZE = 10.dp
 
 /** Between the word and the cents under it. */
 private val WORD_SPACING = 2.dp

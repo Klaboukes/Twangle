@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TopBar
@@ -193,10 +194,11 @@ private fun ToolRowWords(tool: PracticeTool) {
             softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = NAME_SIZE, stepSize = 0.5.sp),
         )
-        // Set smaller where a word wouldn't fit its line whole (large text), a line ending only between words.
+        // Set smaller where a word wouldn't fit its line whole (large text), a line ending only between words; its
+        // line height shrinks with it, so a line the row is a little short for fits (Hindi at 2x text, 2026-11-05).
         Text(
             wholeWords(stringResource(tool.cardLine)),
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = LINE_SIZE),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = LINE_SIZE, lineHeight = LINE_HEIGHT),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             autoSize = remember { WholeWordsAutoSize(LINE_SIZE, LINE_MIN_SIZE) },
             modifier = Modifier.padding(top = 2.dp),
@@ -323,6 +325,7 @@ private val NAME_SIZE = 19.sp
 private val NAME_MIN_SIZE = 6.sp
 private val LINE_SIZE = 13.5.sp
 private val LINE_MIN_SIZE = 7.sp
+private val LINE_HEIGHT = 1.2.em
 
 /** The "Last used" row, at least this high (a touch target and a little). */
 private val LAST_USED_HEIGHT = 56.dp

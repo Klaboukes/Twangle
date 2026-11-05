@@ -177,7 +177,8 @@ private val TWO_LINE_MARGIN = 3.dp
 private val LABEL_SIDE_ROOM = 6.dp
 
 /**
- * A label on two lines: from [LABEL_SIZE] down to [MIN_LABEL_SIZE], with [TWO_LINE_MARGIN] where it can.
+ * A label on two lines: from [LABEL_SIZE] down to [MIN_LABEL_SIZE], with [TWO_LINE_MARGIN] where it can, and below
+ * that to [LAST_RESORT_LABEL_SIZE] only where it would otherwise be cut off, as a one-line label.
  * Written after those sizes: top-level values are set in the order they are written.
  */
-private val LabelAutoSize = WholeWordsAutoSize(LABEL_SIZE, MIN_LABEL_SIZE, TWO_LINE_MARGIN, LABEL_SIDE_ROOM)
+private val LabelAutoSize = WholeWordsAutoSize(LABEL_SIZE, MIN_LABEL_SIZE, TWO_LINE_MARGIN, LABEL_SIDE_ROOM, LAST_RESORT_LABEL_SIZE)

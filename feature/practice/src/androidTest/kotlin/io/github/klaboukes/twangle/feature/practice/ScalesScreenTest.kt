@@ -29,6 +29,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
@@ -634,7 +635,11 @@ class ScalesScreenTest {
         assertTrue("$case the sounds in their order, one under the other $sounds", sounds.zipWithNext().all { (a, b) -> b > a })
         val firstNote = PracticeTestTags.droneVoicing(DroneVoicing.ROOT)
         if (wide) {
-            assertTrue("$case on its side the notes beside the sounds", left(firstNote) > left(PracticeTestTags.droneSound(DroneSound.TANPURA)))
+            // After the sounds as the language reads: to their left in a right-to-left one (Arabic, 2026-11-05).
+            val rtl = node(firstNote).fetchSemanticsNode().layoutInfo.layoutDirection == LayoutDirection.Rtl
+            val notes = left(firstNote)
+            val tanpura = left(PracticeTestTags.droneSound(DroneSound.TANPURA))
+            assertTrue("$case on its side the notes beside the sounds", if (rtl) notes < tanpura else notes > tanpura)
         } else {
             assertTrue("$case upright the notes under the sounds", top(firstNote) > sounds.last())
             if (under) assertPanelUnder(node(PracticeTestTags.DRONE_SOUND), node(PracticeTestTags.DRONE_PANEL), node(WINDOW), case)
