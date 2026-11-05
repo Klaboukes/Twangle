@@ -52,7 +52,7 @@ class WatchShortcutsDeviceTest {
         val resources = tileResources()
         assertEquals(TILE_RESOURCES_VERSION, resources.version)
         assertEquals(
-            R.drawable.ic_twangle_mark,
+            R.drawable.ic_twangle_mark_colour,
             resources.idToImageMapping[TILE_MARK_ID]!!.androidResourceByResId!!.resourceId,
         )
     }

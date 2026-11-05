@@ -15,7 +15,8 @@ so every edge inside the mark is a later shape's edge over an earlier one: no se
 Writes, for the phone app and the watch app:
   res/drawable/ic_launcher_foreground.xml   the icon (on @color/ic_launcher_background)
   res/drawable/ic_launcher_monochrome.xml   the themed icon: the three harmonics in one colour, three strengths
-wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark, and
+wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark,
+wear/src/main/res/drawable/ic_twangle_mark_colour.xml, the mark in its colours in the middle of the watch tile, and
 res/drawable/ic_opening_animated.xml in both, the opening screen's icon (Android 12 and up play it): the
 string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
 settling into the icon's pose, every overlap in the icon's own colour all the while. Android 8 to 11 show it
@@ -284,6 +285,13 @@ def main():
                   "Twangle's mark on its own for the watch tile and the watch face shortcut: the launcher icon's\n"
                   "     harmonics (ic_launcher_monochrome.xml) cropped to themselves, white so they can be tinted.",
                   translate=(-15, -11))
+    # The tile's mark: the launcher icon's harmonics in their own colours, cropped the same way (owner, 2026-11-05:
+    # tinted in the watch's accent, the mark showed all blue).
+    coloured_mark = vector(24, 78, "".join(path_xml(c, d) for c, d in painted),
+                           "Twangle's mark on its own for the watch tile: the launcher icon's harmonics in their own colours\n"
+                           "     (ic_launcher_foreground.xml) cropped to themselves, for the tile's black.",
+                           translate=(-15, -11))
+    (ROOT / "wear/src/main/res/drawable/ic_twangle_mark_colour.xml").write_text(coloured_mark, encoding="utf-8", newline="\n")
     for module in ("app", "wear"):
         res = ROOT / module / "src/main/res/drawable"
         (res / "ic_launcher_foreground.xml").write_text(foreground, encoding="utf-8", newline="\n")

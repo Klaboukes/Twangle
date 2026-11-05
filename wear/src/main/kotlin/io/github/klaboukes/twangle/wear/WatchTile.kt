@@ -8,6 +8,8 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.wear.protolayout.ActionBuilders.launchAction
 import androidx.wear.protolayout.DeviceParametersBuilders.DeviceParameters
 import androidx.wear.protolayout.DimensionBuilders.dp
+import androidx.wear.protolayout.LayoutElementBuilders.CONTENT_SCALE_MODE_FIT
+import androidx.wear.protolayout.LayoutElementBuilders.Image
 import androidx.wear.protolayout.LayoutElementBuilders.LayoutElement
 import androidx.wear.protolayout.ResourceBuilders.AndroidImageResourceByResId
 import androidx.wear.protolayout.ResourceBuilders.ImageResource
@@ -15,7 +17,6 @@ import androidx.wear.protolayout.ResourceBuilders.Resources
 import androidx.wear.protolayout.TimelineBuilders.Timeline
 import androidx.wear.protolayout.material3.ColorScheme
 import androidx.wear.protolayout.material3.MaterialScope
-import androidx.wear.protolayout.material3.icon
 import androidx.wear.protolayout.material3.materialScope
 import androidx.wear.protolayout.material3.primaryLayout
 import androidx.wear.protolayout.material3.text
@@ -57,7 +58,7 @@ internal const val TILE_TUNE_ID = "tune"
 internal const val TILE_MARK_ID = "mark"
 
 /** Raised whenever [tileResources] changes, so watches fetch them again. */
-internal const val TILE_RESOURCES_VERSION = "1"
+internal const val TILE_RESOURCES_VERSION = "2"
 
 private const val TILE_MARK_DP = 64f
 
@@ -73,24 +74,32 @@ internal fun tuneTile(context: Context, device: DeviceParameters): Tile = Tile.B
     )
     .build()
 
-/** The tile's one image, the mark ([R.drawable.ic_twangle_mark]), under [TILE_MARK_ID]. */
+/** The tile's one image, the mark in its colours ([R.drawable.ic_twangle_mark_colour]), under [TILE_MARK_ID]. */
 internal fun tileResources(): Resources = Resources.Builder()
     .setVersion(TILE_RESOURCES_VERSION)
     .addIdToImageMapping(
         TILE_MARK_ID,
         ImageResource.Builder()
             .setAndroidResourceByResId(
-                AndroidImageResourceByResId.Builder().setResourceId(R.drawable.ic_twangle_mark).build(),
+                AndroidImageResourceByResId.Builder().setResourceId(R.drawable.ic_twangle_mark_colour).build(),
             )
             .build(),
     )
     .build()
 
-/** The tile's layout: Twangle at the top, the mark in the middle, Tune along the bottom edge. */
+/**
+ * The tile's layout: Twangle at the top, the mark in the middle in the launcher icon's own colours (an image
+ * left as it is, not an icon tinted in the accent, which made it all blue), Tune along the bottom edge.
+ */
 internal fun MaterialScope.tuneTileLayout(): LayoutElement = primaryLayout(
     titleSlot = { text(LayoutString(context.getString(R.string.app_name))) },
     mainSlot = {
-        icon(TILE_MARK_ID, width = dp(TILE_MARK_DP), height = dp(TILE_MARK_DP), tintColor = colorScheme.primary)
+        Image.Builder()
+            .setResourceId(TILE_MARK_ID)
+            .setWidth(dp(TILE_MARK_DP))
+            .setHeight(dp(TILE_MARK_DP))
+            .setContentScaleMode(CONTENT_SCALE_MODE_FIT)
+            .build()
     },
     bottomSlot = {
         textEdgeButton(
@@ -105,7 +114,7 @@ internal fun MaterialScope.tuneTileLayout(): LayoutElement = primaryLayout(
 
 /**
  * The tile in the watch's colours ([WatchColors], the phone's Ink, dark), not the watch's
- * own dynamic theme: the accent for the mark and the button, ink for the name, on black.
+ * own dynamic theme: the accent for the button, ink for the name, on black.
  */
 internal fun watchTileColors(): ColorScheme = ColorScheme(
     primary = WatchColors.accent.layout,

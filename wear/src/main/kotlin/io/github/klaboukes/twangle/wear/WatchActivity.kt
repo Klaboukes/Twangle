@@ -7,6 +7,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.wear.tiles.TileService
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
 
 /** The watch app's only screen: the tuner, after the microphone permission. */
@@ -16,6 +17,9 @@ class WatchActivity : ComponentActivity() {
         // The opening screen (Theme.Twangle.Watch.Starting): the harmonics swinging into place, as on the phone.
         installSplashScreen().setOnExitAnimationListener { opening -> opening.fadeOutOnceStill() }
         super.onCreate(savedInstanceState)
+        // Asks the watch to fetch the tile again: one it fetched before an update stays as it was (the Galaxy
+        // Watch 5 kept the old mark after an install whose fetch timed out, 2026-11-05). Cheap; the tile never changes.
+        TileService.getUpdater(this).requestUpdate(WatchTileService::class.java)
         val factory = viewModelFactory {
             initializer { WatchTunerViewModel(AndroidAudioRecorder(applicationContext)) }
         }
