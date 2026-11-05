@@ -21,9 +21,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">德式：C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">音準精度</string>
-    <string name="settings_in_tune_precision_relaxed">寬鬆：5 音分以內</string>
-    <string name="settings_in_tune_precision_precise">精確：2 音分以內</string>
 
     <string name="settings_theme_title">淺色或深色</string>
     <string name="settings_theme_system">系統預設</string>

@@ -150,10 +150,8 @@ class SettingsStylesTest {
             R.string.settings_a4_title,
             // Note names is one row, its list in a dialog (2026-11-05); the picked one shows under its title.
             R.string.settings_notation_title,
-            R.string.settings_in_tune_precision_title,
-            R.string.settings_in_tune_precision_relaxed_summary,
-            R.string.settings_in_tune_precision_relaxed,
-            R.string.settings_in_tune_precision_precise,
+            R.string.settings_precise_title,
+            R.string.settings_precise_summary,
             R.string.settings_group_while_tuning,
             R.string.settings_under_meter_title,
             R.string.settings_under_meter_words,
@@ -163,10 +161,9 @@ class SettingsStylesTest {
             R.string.settings_string_tick_off_title,
             R.string.settings_show_signal_bars_title,
             R.string.settings_group_look,
+            // Light or dark's row shows the picked one; Light and Dark are in its list.
             R.string.settings_theme_title,
             R.string.settings_theme_system,
-            R.string.settings_theme_light,
-            R.string.settings_theme_dark,
             R.string.settings_meter_title,
             R.string.settings_meter_classic,
             R.string.settings_meter_light_arc,
@@ -214,11 +211,8 @@ class SettingsStylesTest {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"}:"
-            // Light or dark's segments (a switch since 2026-11-05) and Under the meter's choice rows alike.
+            // Under the meter's choice rows, the page's one list of them (2026-11-05).
             for ((id, selected) in listOf(
-                R.string.settings_theme_system to true,
-                R.string.settings_theme_light to false,
-                R.string.settings_theme_dark to false,
                 R.string.settings_under_meter_words to true,
                 R.string.settings_under_meter_cents to false,
             )) {

@@ -292,9 +292,6 @@ feature/settings settings_dynamic_color_title 8599705a
 feature/settings settings_group_look a0de5719
 feature/settings settings_group_tuning 2abeefba
 feature/settings settings_group_while_tuning d30f1d0c
-feature/settings settings_in_tune_precision_precise 35664437
-feature/settings settings_in_tune_precision_relaxed e2e7248f
-feature/settings settings_in_tune_precision_title 4c3fa9d5
 feature/settings settings_keep_screen_on_summary 9d43b861
 feature/settings settings_keep_screen_on_title 177d4076
 feature/settings settings_language_cancel 19766ed6

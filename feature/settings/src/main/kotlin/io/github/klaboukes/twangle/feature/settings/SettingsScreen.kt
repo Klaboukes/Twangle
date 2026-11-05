@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -68,7 +68,6 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.ChoiceDialogSetting
-import io.github.klaboukes.twangle.feature.settings.components.SegmentedSetting
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
@@ -295,8 +294,10 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
  * left-handed charts), While tuning (what the tuner does while it listens), Tuning (which note it is, what counts as
  * in tune and the reference pitch) and Twangle (the app's language and one
  * row that opens the About page: version, promise, privacy and licences, so those long texts don't crowd the
- * settings). A line divides two subjects; a setting that belongs to the one above stays with it. Rows, including
- * the card grids, keep 16 dp from the column's edges.
+ * settings). No lines inside or between the groups (the owner, 2026-11-05: they fell where a rule put them and looked
+ * random; the headings and the room above them mark the groups, each setting's title the rest). Rows, including the
+ * card grids, keep 16 dp from the column's edges. Four kinds of control and no more: the Meter cards, choice rows,
+ * switches, and rows that open a list.
  */
 @Composable
 private fun SettingsGroups(
@@ -334,7 +335,6 @@ private fun SettingsGroups(
                     onSelect = onLensLookChange,
                     precision = settings.inTunePrecision,
                 )
-                HorizontalDivider()
                 // What the tuner shows under its meter (2.0, Phase 78): the word, or the cents big in its place.
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_under_meter_title),
@@ -342,17 +342,18 @@ private fun SettingsGroups(
                     selected = settings.underMeter,
                     onSelect = onUnderMeterChange,
                 ) { stringResource(underMeterLabel(it)) }
-                HorizontalDivider()
-                // Phone · Light · Dark in one switch (three full rows until 2026-11-05).
-                SegmentedSetting(
+                // One row that opens the list, as Note names and Language: most players set it once, if ever (three
+                // full rows until 2026-11-05).
+                ChoiceDialogSetting(
                     title = stringResource(R.string.settings_theme_title),
                     options = ThemeMode.entries,
                     selected = settings.theme,
+                    label = { AnnotatedString(stringResource(themeLabel(it))) },
                     onSelect = onThemeChange,
-                    label = { stringResource(themeLabel(it)) },
-                    tag = ::themeOptionTag,
+                    rowTag = THEME_SETTING_TAG,
+                    optionTag = ::themeOptionTag,
                 )
-                // Android 12 and later only: older phones have no wallpaper colours to take. It goes with light or dark, no line between.
+                // Android 12 and later only: older phones have no wallpaper colours to take.
                 if (dynamicColorAvailable) {
                     SwitchSetting(
                         title = stringResource(R.string.settings_dynamic_color_title),
@@ -361,7 +362,6 @@ private fun SettingsGroups(
                         onCheckedChange = onDynamicColorChange,
                     )
                 }
-                HorizontalDivider()
                 // Mirrors the chord charts and the scale neck.
                 SwitchSetting(
                     title = stringResource(R.string.settings_left_handed_title),
@@ -426,18 +426,14 @@ private fun SettingsGroups(
                     rowTag = NOTATION_SETTING_TAG,
                     optionTag = ::notationOptionTag,
                 )
-                HorizontalDivider()
-                // Relaxed · Precise in one switch, what it means on the line under the title (two full rows until 2026-11-05).
-                SegmentedSetting(
-                    title = stringResource(R.string.settings_in_tune_precision_title),
-                    summary = stringResource(inTunePrecisionSummary(settings.inTunePrecision)),
-                    options = InTunePrecision.entries,
-                    selected = settings.inTunePrecision,
-                    onSelect = onInTunePrecisionChange,
-                    label = { stringResource(inTunePrecisionLabel(it)) },
-                    tag = ::inTunePrecisionOptionTag,
+                // Relaxed or Precise is a yes or no, so a switch like the others (two choice rows, then a segmented
+                // switch, until 2026-11-05): on means Precise.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_precise_title),
+                    summary = stringResource(R.string.settings_precise_summary),
+                    checked = settings.inTunePrecision == InTunePrecision.PRECISE,
+                    onCheckedChange = { onInTunePrecisionChange(if (it) InTunePrecision.PRECISE else InTunePrecision.RELAXED) },
                 )
-                HorizontalDivider()
                 A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
             }
         }
@@ -528,28 +524,17 @@ private fun notationSample(notation: Notation): String = stringResource(
     notation.nameOf(PitchClass.B),
 )
 
-private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precision) {
-    InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed
-    InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
-}
-
-/** What the picked precision means, on the line under its title. */
-private fun inTunePrecisionSummary(precision: InTunePrecision): Int = when (precision) {
-    InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed_summary
-    InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise_summary
-}
-
 /** Test tag of the Note names row in Settings. */
 const val NOTATION_SETTING_TAG = "settings_notation"
 
 /** Test tag of a choice in the Note names list: its notation's name, or "automatic". */
 fun notationOptionTag(notation: Notation?): String = "notation:${notation?.name ?: "automatic"}"
 
-/** Test tag of a segment of Light or dark. */
-fun themeOptionTag(theme: ThemeMode): String = "theme:${theme.name}"
+/** Test tag of the Light or dark row in Settings. */
+const val THEME_SETTING_TAG = "settings_theme"
 
-/** Test tag of a segment of In-tune precision. */
-fun inTunePrecisionOptionTag(precision: InTunePrecision): String = "precision:${precision.name}"
+/** Test tag of a choice in the Light or dark list: its mode's name. */
+fun themeOptionTag(theme: ThemeMode): String = "theme:${theme.name}"
 
 private fun underMeterLabel(choice: UnderMeter): Int = when (choice) {
     UnderMeter.WORDS -> R.string.settings_under_meter_words

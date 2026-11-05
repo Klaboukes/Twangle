@@ -21,9 +21,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">ドイツ式：C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">チューニングの精度</string>
-    <string name="settings_in_tune_precision_relaxed">ゆるめ：5 セント以内</string>
-    <string name="settings_in_tune_precision_precise">精密：2 セント以内</string>
 
     <string name="settings_theme_title">ライト / ダーク</string>
     <string name="settings_theme_system">システムに従う</string>

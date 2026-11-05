@@ -21,9 +21,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Deutsch: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Stimmgenauigkeit</string>
-    <string name="settings_in_tune_precision_relaxed">Locker: bis 5 Cent</string>
-    <string name="settings_in_tune_precision_precise">Genau: bis 2 Cent</string>
 
     <string name="settings_theme_title">Hell oder dunkel</string>
     <string name="settings_theme_system">Systemstandard</string>

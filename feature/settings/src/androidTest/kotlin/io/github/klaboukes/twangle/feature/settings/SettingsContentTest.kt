@@ -409,41 +409,57 @@ class SettingsContentTest {
         assertEquals(listOf(UnderMeter.WORDS), underMeterChanges)
     }
 
-    /** In-tune precision as a two-way switch (since 2026-11-05), what the picked one means on the line under its title. */
+    /**
+     * In-tune precision is one switch, "Precise tuning" (since 2026-11-05; two choice rows, then a segmented switch,
+     * until then): off is Relaxed, on is Precise, and its line says what it does, in Dutch too.
+     */
     @Test
-    fun inTunePrecisionShowsTheChoiceAndReportsANewOne() {
-        show(AppSettings())
-        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.RELAXED)).performScrollTo()
-            .assert(hasText(context.getString(R.string.settings_in_tune_precision_relaxed))).assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed_summary)).assertIsDisplayed()
-        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.PRECISE))
-            .assert(hasText(context.getString(R.string.settings_in_tune_precision_precise))).assertIsNotSelected().performClick()
+    fun preciseTuningIsASwitchOffByDefault() = assertPreciseSwitch("en", "Precise tuning", "In tune within 2 cents instead of 5")
+
+    @Test
+    fun dutchPreciseTuningIsASwitchOffByDefault() = assertPreciseSwitch("nl", "Precies stemmen", "Zuiver binnen 2 cent in plaats van 5")
+
+    private fun assertPreciseSwitch(locale: String, title: String, summary: String) {
+        show(AppSettings(), locale = locale)
+        val res = resourcesIn(locale)
+        assertEquals(listOf(title, summary), listOf(R.string.settings_precise_title, R.string.settings_precise_summary).map(res::getString))
+        val switch = compose.onNodeWithText(title)
+        switch.performScrollTo().assertIsOff()
+        compose.onNodeWithText(summary).assertIsDisplayed()
+        switch.performClick()
         assertEquals(listOf(InTunePrecision.PRECISE), precisionChanges)
     }
 
     @Test
-    fun inTunePrecisionSaysWhatPreciseMeans() {
+    fun preciseTuningShowsItIsOnAndTurnsBackToRelaxed() {
         show(AppSettings(inTunePrecision = InTunePrecision.PRECISE))
-        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.PRECISE)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise_summary)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed_summary)).assertDoesNotExist()
-        // The one already picked changes nothing.
-        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.PRECISE)).performClick()
-        assertEquals(emptyList<InTunePrecision>(), precisionChanges)
+        val switch = compose.onNodeWithText(context.getString(R.string.settings_precise_title))
+        switch.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(InTunePrecision.RELAXED), precisionChanges)
     }
 
-    /** Light or dark as a three-way switch (since 2026-11-05), Phone · Light · Dark, in one row. */
+    /**
+     * Light or dark is one row that opens its list (since 2026-11-05; three choice rows, then a segmented switch, until
+     * then), as Note names and Language: the picked one under its title, Same as the phone · Light · Dark in the list.
+     */
     @Test
-    fun themeShowsTheChoiceAndReportsANewOne() {
+    fun lightOrDarkIsOneRowThatOpensTheList() {
         show(AppSettings(theme = ThemeMode.SYSTEM))
         assertEquals(
-            listOf("Phone", "Light", "Dark"),
+            listOf("Same as the phone", "Light", "Dark"),
             listOf(R.string.settings_theme_system, R.string.settings_theme_light, R.string.settings_theme_dark).map(context::getString),
         )
-        compose.onNodeWithTag(themeOptionTag(ThemeMode.SYSTEM)).performScrollTo().assertIsSelected()
-        val tops = ThemeMode.entries.map { compose.onNodeWithTag(themeOptionTag(it)).getBoundsInRoot().top.value }
-        assertTrue("one row: $tops", tops.all { abs(it - tops[0]) < 0.5f })
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.DARK)).assertDoesNotExist()
+        compose.onNodeWithTag(THEME_SETTING_TAG)
+            .performScrollTo()
+            .assert(hasText(context.getString(R.string.settings_theme_title)))
+            .assert(hasText(context.getString(R.string.settings_theme_system)))
+            .assertHasClickAction()
+            .performClick()
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.SYSTEM)).assertIsSelected()
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.LIGHT)).assertIsNotSelected()
         compose.onNodeWithTag(themeOptionTag(ThemeMode.DARK)).assertIsNotSelected().performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
         assertEquals(listOf(ThemeMode.DARK), themeChanges)
     }
 
@@ -629,7 +645,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.settings_group_tuning)),
             top(context.getString(R.string.settings_notation_title)),
-            top(context.getString(R.string.settings_in_tune_precision_title)),
+            top(context.getString(R.string.settings_precise_title)),
             top(context.getString(R.string.settings_a4_title)),
             top(context.getString(R.string.settings_group_twangle)),
             top(context.getString(R.string.settings_language_title)),
@@ -929,14 +945,12 @@ class SettingsContentTest {
         val res = resourcesIn(locale)
         val texts = listOf(
             R.string.settings_group_tuning,
-            // Note names is one row (its list in a dialog), Light or dark and In-tune precision switches (2026-11-05).
+            // Note names and Light or dark are rows that open their lists, Precise tuning a switch (2026-11-05).
             R.string.settings_notation_title,
+            R.string.settings_theme_title,
             R.string.settings_theme_system,
-            R.string.settings_theme_light,
-            R.string.settings_theme_dark,
-            R.string.settings_in_tune_precision_relaxed_summary,
-            R.string.settings_in_tune_precision_relaxed,
-            R.string.settings_in_tune_precision_precise,
+            R.string.settings_precise_title,
+            R.string.settings_precise_summary,
             R.string.settings_group_while_tuning,
             R.string.settings_group_look,
             R.string.settings_group_twangle,

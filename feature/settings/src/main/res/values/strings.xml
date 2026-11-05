@@ -27,6 +27,10 @@
     <!-- Reference pitch: text button that puts it back to the standard. %1$d is 440. -->
     <string name="settings_a4_reset">Reset to %1$d\u00A0Hz</string>
 
+    <!-- Setting with an on/off switch, in the Tuning group: on, a note counts as in tune only very close to the target. -->
+    <string name="settings_precise_title">Precise tuning</string>
+    <!-- Under "Precise tuning": what the switch does; a cent is a hundredth of a semitone, and off a note counts as in tune within 5. -->
+    <string name="settings_precise_summary">In tune within 2 cents instead of 5</string>
     <!-- Notation. -->
     <string name="settings_notation_title">Note names</string>
     <!-- Note names choice (radio button): note names with sharps, a few shown as a sample. -->
@@ -42,25 +46,15 @@
     <!-- Note names choice (radio button): the German letters, where B is called H. Keep the letters. -->
     <string name="settings_notation_german">German: C, C♯, D … H</string>
 
-    <!-- In-tune precision: how close a note has to be to count as in tune. -->
-    <string name="settings_in_tune_precision_title">In-tune precision</string>
-    <!-- In-tune precision: a segment of a two-way switch (Relaxed · Precise): a note counts as in tune within 5 cents. One short word. -->
-    <string name="settings_in_tune_precision_relaxed">Relaxed</string>
-    <!-- In-tune precision: a segment of a two-way switch (Relaxed · Precise): a note counts as in tune only within 2 cents. One short word. -->
-    <string name="settings_in_tune_precision_precise">Precise</string>
-    <!-- In-tune precision: the line under its title while Relaxed is picked; a cent is a hundredth of a semitone. -->
-    <string name="settings_in_tune_precision_relaxed_summary">In tune within 5 cents</string>
-    <!-- In-tune precision: the line under its title while Precise is picked. -->
-    <string name="settings_in_tune_precision_precise_summary">In tune within 2 cents</string>
 
     <!-- Look. -->
     <!-- Setting title over the light, dark and system default choices. -->
     <string name="settings_theme_title">Light or dark</string>
-    <!-- Light or dark: a segment of a three-way switch (Phone · Light · Dark): follow the phone's own light or dark setting. One short word. -->
-    <string name="settings_theme_system">Phone</string>
-    <!-- Light or dark: a segment of a three-way switch (Phone · Light · Dark): always the light look. -->
+    <!-- Light or dark: the first choice in its list (and the value under the title when picked): follow the phone's own light or dark setting. -->
+    <string name="settings_theme_system">Same as the phone</string>
+    <!-- Light or dark: a choice in its list (and the value under the title when picked): always the light look. -->
     <string name="settings_theme_light">Light</string>
-    <!-- Light or dark: a segment of a three-way switch (Phone · Light · Dark): always the dark look. -->
+    <!-- Light or dark: a choice in its list (and the value under the title when picked): always the dark look. -->
     <string name="settings_theme_dark">Dark</string>
     <!-- Switch title (Android 12 and later): take the app's colours from the phone's wallpaper (Android's Material You); the in-tune green stays the app's own. -->
     <string name="settings_dynamic_color_title">Wallpaper colours</string>

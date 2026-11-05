@@ -21,9 +21,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">독일식: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">튜닝 정밀도</string>
-    <string name="settings_in_tune_precision_relaxed">여유: 5센트 이내</string>
-    <string name="settings_in_tune_precision_precise">정밀: 2센트 이내</string>
 
     <string name="settings_theme_title">라이트 또는 다크</string>
     <string name="settings_theme_system">시스템 기본값</string>

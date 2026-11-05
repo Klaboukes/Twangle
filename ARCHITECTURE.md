@@ -222,7 +222,7 @@ feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartrain
 
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel, AppLanguages, PlayPage
-    components/ A4Calibration, RadioGroupSetting, SegmentedSetting, ChoiceDialogSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
+    components/ A4Calibration, RadioGroupSetting, ChoiceDialogSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
                 LookCardGrid (+ LookDemo), MeterPicker (the lens's Meter cards + MeterDemo, Phase 72), LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/

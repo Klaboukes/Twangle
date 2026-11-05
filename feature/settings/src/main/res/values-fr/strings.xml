@@ -22,9 +22,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Allemand : C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Précision de justesse</string>
-    <string name="settings_in_tune_precision_relaxed">Souple : à 5 cents près</string>
-    <string name="settings_in_tune_precision_precise">Précise : à 2 cents près</string>
 
     <string name="settings_theme_title">Clair ou sombre</string>
     <string name="settings_theme_system">Selon le système</string>

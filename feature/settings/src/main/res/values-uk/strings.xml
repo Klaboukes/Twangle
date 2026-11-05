@@ -17,9 +17,6 @@
     <string name="settings_notation_automatic">Автоматично: %1$s</string>
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Німецькі: C, C♯, D … H</string>
-    <string name="settings_in_tune_precision_title">Точність налаштування</string>
-    <string name="settings_in_tune_precision_relaxed">Помірна: до 5 центів</string>
-    <string name="settings_in_tune_precision_precise">Висока: до 2 центів</string>
     <string name="settings_theme_title">Світла чи темна тема</string>
     <string name="settings_theme_system">Як у системі</string>
     <string name="settings_theme_light">Світла</string>

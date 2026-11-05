@@ -21,9 +21,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Jerman: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Ketelitian nada pas</string>
-    <string name="settings_in_tune_precision_relaxed">Longgar: dalam 5 sen</string>
-    <string name="settings_in_tune_precision_precise">Teliti: dalam 2 sen</string>
 
     <string name="settings_theme_title">Terang atau gelap</string>
     <string name="settings_theme_system">Default sistem</string>

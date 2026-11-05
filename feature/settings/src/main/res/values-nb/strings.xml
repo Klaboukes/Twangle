@@ -21,9 +21,6 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Tysk: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Margin for stemt</string>
-    <string name="settings_in_tune_precision_relaxed">Romslig: innenfor 5 cent</string>
-    <string name="settings_in_tune_precision_precise">Presis: innenfor 2 cent</string>
 
     <string name="settings_theme_title">Lyst eller mørkt</string>
     <string name="settings_theme_system">Systemstandard</string>
