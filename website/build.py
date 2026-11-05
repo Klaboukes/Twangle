@@ -27,6 +27,8 @@ from urllib.parse import unquote, urldefrag
 HERE = Path(__file__).resolve().parent
 PAGES = HERE / "pages"
 STATIC = HERE / "static"
+# The name on its string, plucked by CSS (scripts/wordmark.py writes it), in every page's top bar.
+RINGING_NAME = (HERE / "ringing-name.svg").read_text(encoding="utf-8").split("-->\n", 1)[1].strip()
 
 # English first: it is the root. Each language's folder under the site's root.
 LANGUAGES = {"en": "", "nl": "nl/"}
@@ -87,7 +89,7 @@ FRAME = """<!doctype html>
 <body>
 <a class="skip" href="#main">{skip}</a>
 <header><div class="wrap">
-  <a class="brand" href="{home_href}" aria-label="{home}"><img class="icon" src="{root}img/icon.png" alt="" width="32" height="32">Twangle</a>
+  <a class="brand" href="{home_href}" aria-label="{home}">{ringing_name}</a>
   <nav aria-label="{nav_label}">{nav}</nav>
   <a class="lang" href="{other_href}" hreflang="{other_lang}" lang="{other_lang}">{other_name}</a>
 </div></header>
@@ -206,6 +208,7 @@ def build(out):
                 skip=w["skip"],
                 home=w["home"],
                 home_href=href(root, folder, "index.html", folder),
+                ringing_name=RINGING_NAME,
                 nav_label=w["nav"],
                 nav=nav_links(lang, root, meta.get("nav"), lambda n: (PAGES / lang / n).exists()),
                 other_href=href(root, LANGUAGES[other], name),

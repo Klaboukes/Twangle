@@ -95,14 +95,16 @@ fun AboutSection(
 
 /**
  * The page's head: Twangle's name ringing, as on the store's banner and the website (Phase 79), centred over
- * the version. TalkBack reads it as the page's first heading, the name.
+ * the version, its string plucked as the page opens and again at a tap. TalkBack reads it as the page's first
+ * heading, the name.
  */
 @Composable
 private fun NameAndVersion(appVersion: String) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         val name = stringResource(R.string.settings_about_app_name)
         RingingName(
-            Modifier
+            plucked = true,
+            modifier = Modifier
                 .widthIn(max = NAME_WIDTH)
                 .fillMaxWidth()
                 .semantics {

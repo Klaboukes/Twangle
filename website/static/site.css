@@ -23,7 +23,8 @@ img { max-width: 100%; }
 header { border-bottom: 1px solid var(--line); }
 header .wrap { display: flex; align-items: center; gap: 16px; min-height: 60px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; color: var(--ink); text-decoration: none; margin-right: auto; }
-.brand .icon { width: 32px; height: 32px; border-radius: 9px; }
+/* The name ringing (Phase 79, website/ringing-name.svg): the word about 19 px tall, as the old name was. */
+.brand .ringing { display: block; height: 50px; width: auto; aspect-ratio: 340 / 110; }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 16px; top: 8px; background: var(--page); padding: 6px 12px; border-radius: 8px; z-index: 1; }
 nav { display: flex; gap: 18px; font-size: 16px; }

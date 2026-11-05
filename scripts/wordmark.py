@@ -1,4 +1,4 @@
-"""Draw Twangle's wordmark (2.0, Phase 79) as an Android vector drawable.
+"""Draw Twangle's wordmark (2.0, Phase 79) as an Android vector drawable, and the website's ringing name.
 
 The name "Twangle" in Comfortaa Bold, its letters spaced 0.06 em apart (the owner's pick, round 2's 4,
 "Bold, spaced", in docs/design/logo-v2-preview/wordmark.html), traced from the font into flat shapes so the
@@ -9,9 +9,14 @@ Needs fontTools (python -I -m pip install fonttools) and the font, kept beside t
 (scripts/fonts/comfortaa/, SIL Open Font License 1.1, from github.com/google/fonts ofl/comfortaa). The OFL
 covers the font; a drawing made with it is the app's own and needs no credit.
 
+It also writes website/ringing-name.svg, which website/build.py puts in every page's top bar: the word on its
+string with the icon's three harmonics behind it, as RingingName.kt draws them (the same frame, heights, colours
+and strengths), plucked when the page opens and again on hover or tap, in CSS alone (the site runs no script).
+
     python -I scripts/wordmark.py [--preview out.svg]
 """
 
+import math
 import pathlib
 import sys
 
@@ -23,6 +28,7 @@ from fontTools.varLib.instancer import instantiateVariableFont
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FONT = ROOT / "scripts/fonts/comfortaa/Comfortaa[wght].ttf"
 OUT = ROOT / "core/designsystem/src/main/res/drawable/twangle_wordmark.xml"
+WEBSITE_OUT = ROOT / "website/ringing-name.svg"
 
 NAME = "Twangle"
 WEIGHT = 700
@@ -30,6 +36,16 @@ SPACING = 0.06                               # em between letters, as CSS letter
 FRAME_W, FRAME_H = 340, 110                  # the ringing name's box (RingingName.kt)
 SIZE = 42.0                                  # the font size in frame units
 BASELINE = 56 + 16                           # the string at 56, the baseline 16 under it
+
+# The ringing name's harmonics, as RingingName.kt has them: the string from x 8 to 332 at y 56; (harmonic, peak
+# height, which way it swings first, light colour, dark colour, strength), the colours Ink's amber, blue, green.
+STRING_Y, STRING_START, STRING_END = 56, 8, 332
+HARMONICS = [
+    (1, 44.0, 1, "#D98400", "#FFB648", 0.30),
+    (2, 22.0, -1, "#1A6FC4", "#5FC4FF", 0.34),
+    (3, 44.0 / 3, 1, "#107E46", "#3DDC84", 0.42),
+]
+PLUCK_MS, SWINGS, PLUCK_FRAMES = 1000, 0.5, 25   # as RingingName.kt and the opening animation
 
 
 def kerning(font, left, right):
@@ -92,11 +108,47 @@ def main():
         f'    <path\n        android:fillColor="#FFFFFFFF"\n        android:pathData="{data}" />\n'
         "</vector>\n", encoding="utf-8", newline="\n")
     print(f"{NAME}: {width:.1f} wide from {left:.1f}, {len(data)} characters of path")
+    WEBSITE_OUT.write_text(website_name(data), encoding="utf-8", newline="\n")
     if "--preview" in sys.argv:
         out = pathlib.Path(sys.argv[sys.argv.index("--preview") + 1])
         out.write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="{FRAME_W * 3}" height="{FRAME_H * 3}" '
                        f'viewBox="0 0 {FRAME_W} {FRAME_H}"><rect width="{FRAME_W}" height="{FRAME_H}" fill="#0E1116"/>'
                        f'<path d="{data}" fill="#EEF1F5"/></svg>', encoding="utf-8")
+
+
+def swing(n, q):
+    """Harmonic n's height as a share of its resting one, q (0..1) into the pluck: RingingName.kt's swing."""
+    s = q * q * (3 - 2 * q)
+    return s + (1 - s) * math.sin(2 * math.pi * SWINGS * n * q)
+
+
+def website_name(word):
+    """The website's ringing name: an inline SVG with its own style, the harmonics plucked by CSS keyframes
+    (one set per harmonic, and a copy that :hover switches to, which starts the pluck again)."""
+    waves = []
+    for n, height, sign, _, _, _ in HARMONICS:
+        points = []
+        for i in range(97):
+            u = i / 96
+            x = STRING_START + (STRING_END - STRING_START) * u
+            points.append(f"{x:.1f},{STRING_Y - sign * height * math.sin(n * math.pi * u):.1f}")
+        waves.append(f'<path class="h{n}" d="M{STRING_START},{STRING_Y} L' + " ".join(points) + ' Z"/>')
+    css = []
+    for n, _, _, light, dark, strength in HARMONICS:
+        frames = " ".join(f"{100 * i / PLUCK_FRAMES:.0f}%{{transform:scaleY({swing(n, i / PLUCK_FRAMES):.3f})}}"
+                          for i in range(PLUCK_FRAMES + 1))
+        css.append(f"@keyframes pluck{n}{{{frames}}}@keyframes pluck{n}b{{{frames}}}")
+        css.append(f".ringing .h{n}{{fill:{light};opacity:{strength};animation:pluck{n} {PLUCK_MS}ms linear both}}")
+        css.append(f".brand:hover .ringing .h{n}{{animation-name:pluck{n}b}}")
+        css.append(f"@media (prefers-color-scheme:dark){{.ringing .h{n}{{fill:{dark}}}}}")
+    css.append(f".ringing path{{transform-box:view-box;transform-origin:0 {STRING_Y}px;mix-blend-mode:multiply}}")
+    css.append("@media (prefers-color-scheme:dark){.ringing path{mix-blend-mode:screen}}")
+    css.append(".ringing .word{fill:currentColor;mix-blend-mode:normal}")
+    css.append("@media (prefers-reduced-motion:reduce){.ringing path{animation:none!important}}")
+    return ("<!-- Drawn by scripts/wordmark.py: change that script and run it again rather than editing this file. -->\n"
+            f'<svg class="ringing" viewBox="0 0 {FRAME_W} {FRAME_H}" aria-hidden="true" focusable="false">'
+            f"<style>{''.join(css)}</style><g style=\"isolation:isolate\">{''.join(waves)}</g>"
+            f'<path class="word" d="{word}"/></svg>\n')
 
 
 if __name__ == "__main__":

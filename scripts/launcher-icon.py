@@ -16,7 +16,7 @@ Writes, for the phone app and the watch app:
   res/drawable/ic_launcher_foreground.xml   the icon (on @color/ic_launcher_background)
   res/drawable/ic_launcher_monochrome.xml   the themed icon: the three harmonics in one colour, three strengths
 wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark, and
-app/src/main/res/drawable/ic_opening_animated.xml, the opening screen's icon (Android 12 and up play it): the
+res/drawable/ic_opening_animated.xml in both, the opening screen's icon (Android 12 and up play it): the
 string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
 settling into the icon's pose, every overlap in the icon's own colour all the while. Android 8 to 11 show it
 still: its resting state is the icon.
@@ -289,11 +289,12 @@ def main():
         (res / "ic_launcher_foreground.xml").write_text(foreground, encoding="utf-8", newline="\n")
         (res / "ic_launcher_monochrome.xml").write_text(monochrome, encoding="utf-8", newline="\n")
     (ROOT / "wear/src/main/res/drawable/ic_twangle_mark.xml").write_text(mark, encoding="utf-8", newline="\n")
-    (ROOT / "app/src/main/res/drawable/ic_opening_animated.xml").write_text(opening(), encoding="utf-8", newline="\n")
-    (ROOT / "app/src/main/res/values/opening_animation.xml").write_text(
-        '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
-        '<resources>\n    <!-- How long the opening screen\'s icon animation lasts (Theme.Twangle.Starting). -->\n'
-        f'    <integer name="opening_animation_ms">{OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
+    for module, theme in (("app", "Theme.Twangle.Starting"), ("wear", "Theme.Twangle.Watch.Starting")):
+        (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(), encoding="utf-8", newline="\n")
+        (ROOT / module / "src/main/res/values/opening_animation.xml").write_text(
+            '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
+            f'<resources>\n    <!-- How long the opening screen\'s icon animation lasts ({theme}). -->\n'
+            f'    <integer name="opening_animation_ms">{OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
     print(f"{len(painted)} shapes, {sum(d.count('L') + 1 for _, d in painted)} points")
 
     if "--preview" in sys.argv:

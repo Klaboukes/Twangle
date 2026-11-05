@@ -20,7 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@style/Theme.Twangle.Watch">
 
         <!-- Works without the phone app: the watch tuner needs nothing from the phone. -->
         <meta-data
@@ -30,6 +30,7 @@
         <activity
             android:name=".WatchActivity"
             android:exported="true"
+            android:theme="@style/Theme.Twangle.Watch.Starting"
             android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

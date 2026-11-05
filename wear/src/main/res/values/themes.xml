@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; the real UI is Compose for Wear OS. -->
+    <style name="Theme.Twangle.Watch" parent="@android:style/Theme.DeviceDefault" />
+
+    <!-- Launch theme: the opening screen (androidx core-splashscreen), as on the phone: the icon's harmonics on the
+         watch's black, playing their opening animation (ic_opening_animated.xml) on Wear OS 4 and up (API 31+);
+         Wear OS 3 (API 30) shows the icon still. WatchActivity.installSplashScreen() switches to
+         Theme.Twangle.Watch afterwards. -->
+    <style name="Theme.Twangle.Watch.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_opening_animated</item>
+        <item name="windowSplashScreenAnimationDuration">@integer/opening_animation_ms</item>
+        <item name="postSplashScreenTheme">@style/Theme.Twangle.Watch</item>
+    </style>
+</resources>
