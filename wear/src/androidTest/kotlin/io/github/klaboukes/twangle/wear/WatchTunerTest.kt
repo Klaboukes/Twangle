@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -38,7 +37,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.math.hypot
 
-/** The watch tuner's screen on the Wear OS emulator (English): the note, the dot along the arc, the word (2.0, Phase 75). */
+/** The watch tuner's screen on a watch or the Wear OS emulator (English): the note, the dot along the arc, the word (2.0, Phase 75). */
 @RunWith(AndroidJUnit4::class)
 class WatchTunerTest {
 
@@ -49,13 +48,16 @@ class WatchTunerTest {
     private var dial by mutableStateOf(225.dp)
     private var retries = 0
 
+    /** The tuner's pacing of what TalkBack hears, kept here so a wait on the test's clock can read it. */
+    private val speech = WatchPacedSpeech()
+
     private fun show(first: WatchTunerState, language: String? = null) {
         state = first
         compose.setContent {
             val tuner = @Composable {
                 WatchTheme {
                     Box(Modifier.size(dial).background(Color.Black)) {
-                        WatchTuner(state, onRetry = { retries++ })
+                        WatchTuner(state, onRetry = { retries++ }, speech = speech)
                     }
                 }
             }
@@ -78,9 +80,15 @@ class WatchTunerTest {
         compose.onNodeWithTag(WatchDial.SPOKEN_TAG).fetchSemanticsNode().config
             .getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
 
-    /** TalkBack is given [text] within the throttle's longest wait, as a polite live region if [announced]. */
+    /**
+     * TalkBack is given [text] within the throttle's longest wait, as a polite live region if [announced]. The wait is
+     * on the test's clock, which the pacing's delays run on: counted in real time, a slow watch (the Galaxy Watch 5)
+     * took longer than that to step the clock through 1.5 s of frames. It watches [speech], since the screen can't be
+     * read from the main thread the clock's wait runs on, then checks the screen.
+     */
     private fun assertSpoken(text: String, announced: Boolean = true) {
-        compose.waitUntil(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000) { spoken() == text }
+        awaitSpoken(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000, text)
+        assertEquals(text, spoken())
         val node = compose.onNodeWithTag(WatchDial.SPOKEN_TAG)
         if (announced) node.assert(polite) else node.assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
     }
@@ -162,7 +170,8 @@ class WatchTunerTest {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
         assertSpoken("E 2, 12 cents flat, Tighten")
         state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), 6)
-        compose.waitUntil(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900) { spoken() == "E 2, 6 cents sharp, Loosen" }
+        awaitSpoken(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900, "E 2, 6 cents sharp, Loosen")
+        assertEquals("E 2, 6 cents sharp, Loosen", spoken())
     }
 
     /** "Play a note" is said at first, but not again after every note dies away: TalkBack reads it on touch. */
@@ -214,15 +223,17 @@ class WatchTunerTest {
     @Test
     fun theReadingFitsOnSmallAndLargeRoundScreens() {
         show(WatchTunerState.Detected(Note.of(PitchClass.C_SHARP, 3), -48))
-        // Up to 225 dp: the emulator's large round screen is 227 dp, and the box can't be bigger than it.
+        // Up to 225 dp: the emulator's large round screen is 227 dp. The box can't be bigger than the screen, so on a
+        // smaller one (the Galaxy Watch 5's 198 dp) the larger sizes are the screen's own, measured from the dial.
         for (size in listOf(170.dp, 192.dp, 210.dp, 225.dp)) {
             dial = size
             compose.waitForIdle()
+            val shown = compose.onNodeWithTag(WatchDial.TAG).fetchSemanticsNode().boundsInRoot
             for (text in listOf("C♯", "3")) {
-                assertInsideArc(compose.onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot, size, text)
+                assertInsideArc(compose.onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot, shown, text)
             }
             for (bounds in listOf(word.fetchSemanticsNode().boundsInRoot, compose.onNodeWithText("48 cents flat", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot)) {
-                assertBetweenTheArcsEnds(bounds, size)
+                assertBetweenTheArcsEnds(bounds, shown)
             }
         }
     }
@@ -240,12 +251,20 @@ class WatchTunerTest {
         for (place in places) assertEquals(places.first(), place)
     }
 
-    private fun centre(size: Dp): Offset = with(compose.density) { size.toPx() / 2f }.let { Offset(it, it) }
+    /** Steps the test's clock until the pacing has given TalkBack [text], at most [millis] of it. */
+    private fun awaitSpoken(millis: Long, text: String) {
+        compose.mainClock.advanceTimeUntil(millis) { speech.spoken == text }
+        compose.waitForIdle()
+    }
 
-    /** Every corner of [bounds] lies inside the arc's line, with room for the dot. */
-    private fun assertInsideArc(bounds: Rect, size: Dp, what: String) {
-        val px = with(compose.density) { size.toPx() }
-        val c = centre(size)
+    /** The dial's size as shown, in dp, for the messages. */
+    private fun Rect.dp(): Dp = with(compose.density) { minDimension.toDp() }
+
+    /** Every corner of [bounds] lies inside the arc's line on the [dial] as shown, with room for the dot. */
+    private fun assertInsideArc(bounds: Rect, dial: Rect, what: String) {
+        val px = dial.minDimension
+        val c = dial.center
+        val size = dial.dp()
         val inner = px * (0.5f - WatchDial.INSET - WatchDial.DOT)
         for (corner in listOf(bounds.topLeft, bounds.topRight, bounds.bottomLeft, bounds.bottomRight)) {
             val distance = hypot(corner.x - c.x, corner.y - c.y)
@@ -257,9 +276,10 @@ class WatchTunerTest {
      * [bounds] lies on the round screen (a small margin in from its edge) and, where it is beside the arc, inside it:
      * its corners are either in the arc's open bottom quarter or inside the arc with room for the dot.
      */
-    private fun assertBetweenTheArcsEnds(bounds: Rect, size: Dp) {
-        val px = with(compose.density) { size.toPx() }
-        val c = centre(size)
+    private fun assertBetweenTheArcsEnds(bounds: Rect, dial: Rect) {
+        val px = dial.minDimension
+        val c = dial.center
+        val size = dial.dp()
         val inner = px * (0.5f - WatchDial.INSET - WatchDial.DOT)
         for (corner in listOf(bounds.topLeft, bounds.topRight, bounds.bottomLeft, bounds.bottomRight)) {
             val dx = corner.x - c.x
