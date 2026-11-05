@@ -55,6 +55,9 @@ import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.isMusicSign
+import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -64,6 +67,8 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
+import io.github.klaboukes.twangle.feature.settings.components.ChoiceDialogSetting
+import io.github.klaboukes.twangle.feature.settings.components.SegmentedSetting
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
@@ -338,12 +343,15 @@ private fun SettingsGroups(
                     onSelect = onUnderMeterChange,
                 ) { stringResource(underMeterLabel(it)) }
                 HorizontalDivider()
-                RadioGroupSetting(
+                // Phone · Light · Dark in one switch (three full rows until 2026-11-05).
+                SegmentedSetting(
                     title = stringResource(R.string.settings_theme_title),
                     options = ThemeMode.entries,
                     selected = settings.theme,
                     onSelect = onThemeChange,
-                ) { stringResource(themeLabel(it)) }
+                    label = { stringResource(themeLabel(it)) },
+                    tag = ::themeOptionTag,
+                )
                 // Android 12 and later only: older phones have no wallpaper colours to take. It goes with light or dark, no line between.
                 if (dynamicColorAvailable) {
                     SwitchSetting(
@@ -396,27 +404,39 @@ private fun SettingsGroups(
         // the setting most players never change.
         SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
             Rows {
-                // Automatic (null) follows the app's language and shows what that gives.
+                // Automatic (null) follows the app's language and shows what that gives. One row that opens the list
+                // (five rows until 2026-11-05: hardly anyone changes it). Labels such as "Sharps: C, C♯, D …" set
+                // their signs like the rest of the app, and TalkBack says their note names in words ("C sharp").
                 val languageNotation = Notation.forLanguage(appLanguage())
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_notation_title),
-                    options = listOf(null) + Notation.entries,
-                    selected = settings.notationChoice,
-                    onSelect = onNotationChange,
-                ) {
+                val speech = rememberNoteNameSpeech()
+                val notationText: @Composable (Notation?) -> String = {
                     if (it == null) {
                         stringResource(R.string.settings_notation_automatic, notationSample(languageNotation))
                     } else {
                         stringResource(notationLabel(it))
                     }
                 }
+                ChoiceDialogSetting(
+                    title = stringResource(R.string.settings_notation_title),
+                    options = listOf(null) + Notation.entries,
+                    selected = settings.notationChoice,
+                    label = { musicText(notationText(it)) },
+                    spoken = { notationText(it).let { text -> if (text.any(::isMusicSign)) speech.text(text) else null } },
+                    onSelect = onNotationChange,
+                    rowTag = NOTATION_SETTING_TAG,
+                    optionTag = ::notationOptionTag,
+                )
                 HorizontalDivider()
-                RadioGroupSetting(
+                // Relaxed · Precise in one switch, what it means on the line under the title (two full rows until 2026-11-05).
+                SegmentedSetting(
                     title = stringResource(R.string.settings_in_tune_precision_title),
+                    summary = stringResource(inTunePrecisionSummary(settings.inTunePrecision)),
                     options = InTunePrecision.entries,
                     selected = settings.inTunePrecision,
                     onSelect = onInTunePrecisionChange,
-                ) { stringResource(inTunePrecisionLabel(it)) }
+                    label = { stringResource(inTunePrecisionLabel(it)) },
+                    tag = ::inTunePrecisionOptionTag,
+                )
                 HorizontalDivider()
                 A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
             }
@@ -512,6 +532,24 @@ private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precis
     InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed
     InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
 }
+
+/** What the picked precision means, on the line under its title. */
+private fun inTunePrecisionSummary(precision: InTunePrecision): Int = when (precision) {
+    InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed_summary
+    InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise_summary
+}
+
+/** Test tag of the Note names row in Settings. */
+const val NOTATION_SETTING_TAG = "settings_notation"
+
+/** Test tag of a choice in the Note names list: its notation's name, or "automatic". */
+fun notationOptionTag(notation: Notation?): String = "notation:${notation?.name ?: "automatic"}"
+
+/** Test tag of a segment of Light or dark. */
+fun themeOptionTag(theme: ThemeMode): String = "theme:${theme.name}"
+
+/** Test tag of a segment of In-tune precision. */
+fun inTunePrecisionOptionTag(precision: InTunePrecision): String = "precision:${precision.name}"
 
 private fun underMeterLabel(choice: UnderMeter): Int = when (choice) {
     UnderMeter.WORDS -> R.string.settings_under_meter_words

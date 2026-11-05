@@ -148,12 +148,10 @@ class SettingsStylesTest {
         val texts = listOf(
             R.string.settings_group_tuning,
             R.string.settings_a4_title,
+            // Note names is one row, its list in a dialog (2026-11-05); the picked one shows under its title.
             R.string.settings_notation_title,
-            R.string.settings_notation_sharps,
-            R.string.settings_notation_flats,
-            R.string.settings_notation_solfege,
-            R.string.settings_notation_german,
             R.string.settings_in_tune_precision_title,
+            R.string.settings_in_tune_precision_relaxed_summary,
             R.string.settings_in_tune_precision_relaxed,
             R.string.settings_in_tune_precision_precise,
             R.string.settings_group_while_tuning,
@@ -184,6 +182,8 @@ class SettingsStylesTest {
         // The page title sits in the top bar, which doesn't scroll.
         assertWhollyShown(compose.onNodeWithText(context.getString(R.string.settings_title), useUnmergedTree = true), "$case title", scroll = false)
         for (text in texts) assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), "$case $text")
+        // The picked note names ("Automatic: C, C♯, D … B") under the row's title.
+        assertWhollyShown(compose.onNodeWithTag(NOTATION_SETTING_TAG), "$case note names row")
     }
 
     @Test
@@ -214,14 +214,21 @@ class SettingsStylesTest {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"}:"
-            for ((id, selected) in listOf(R.string.settings_theme_system to true, R.string.settings_theme_light to false, R.string.settings_theme_dark to false)) {
+            // Light or dark's segments (a switch since 2026-11-05) and Under the meter's choice rows alike.
+            for ((id, selected) in listOf(
+                R.string.settings_theme_system to true,
+                R.string.settings_theme_light to false,
+                R.string.settings_theme_dark to false,
+                R.string.settings_under_meter_words to true,
+                R.string.settings_under_meter_cents to false,
+            )) {
                 val row = compose.onNodeWithText(context.getString(id)).performScrollTo()
                 row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 if (selected) row.assertIsSelected() else row.assertIsNotSelected()
             }
             // The app's one choice row (ui.md, *Shared controls*): at least 48 dp tall, and every
             // name starts at the same place, picked or not (the ✓'s room is kept on each row).
-            val starts = listOf(R.string.settings_theme_system, R.string.settings_theme_light, R.string.settings_theme_dark).map { id ->
+            val starts = listOf(R.string.settings_under_meter_words, R.string.settings_under_meter_cents).map { id ->
                 val height = compose.onNodeWithText(context.getString(id)).getBoundsInRoot().let { it.bottom - it.top }
                 assertTrue("$case row $height", height >= 47.5.dp)
                 compose.onNodeWithText(context.getString(id), useUnmergedTree = true).getBoundsInRoot().left.value

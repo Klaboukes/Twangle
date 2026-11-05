@@ -26,12 +26,14 @@
 
     <!-- In-tune precision: how close a note has to be to count as in tune. -->
     <string name="settings_in_tune_precision_title">Marge voor zuiver</string>
-    <string name="settings_in_tune_precision_relaxed">Ruim: binnen 5 cent</string>
-    <string name="settings_in_tune_precision_precise">Precies: binnen 2 cent</string>
+    <string name="settings_in_tune_precision_relaxed">Ruim</string>
+    <string name="settings_in_tune_precision_precise">Precies</string>
+    <string name="settings_in_tune_precision_relaxed_summary">Zuiver binnen 5 cent</string>
+    <string name="settings_in_tune_precision_precise_summary">Zuiver binnen 2 cent</string>
 
     <!-- Look. -->
     <string name="settings_theme_title">Licht of donker</string>
-    <string name="settings_theme_system">Systeemstandaard</string>
+    <string name="settings_theme_system">Telefoon</string>
     <string name="settings_theme_light">Licht</string>
     <string name="settings_theme_dark">Donker</string>
     <string name="settings_dynamic_color_title">Achtergrondkleuren</string>

@@ -11,6 +11,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -295,50 +296,88 @@ class SettingsContentTest {
         assertEquals(1, backs)
     }
 
+    /**
+     * Note names is one row (since 2026-11-05; five choice rows until then): the picked one under its title, the list
+     * in a dialog that a tap opens, Cancel closing it with nothing changed.
+     */
+    @Test
+    fun noteNamesIsOneRowThatOpensTheList() {
+        show(AppSettings(notationChoice = Notation.FLATS))
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assertDoesNotExist()
+        compose.onNodeWithTag(NOTATION_SETTING_TAG)
+            .performScrollTo()
+            .assert(hasText(context.getString(R.string.settings_notation_title)))
+            .assert(hasText(context.getString(R.string.settings_notation_flats)))
+            .assertHasClickAction()
+        openNoteNames()
+        (listOf(null) + Notation.entries).forEach { compose.onNodeWithTag(notationOptionTag(it)).assertIsDisplayed() }
+        compose.onNodeWithText(context.getString(R.string.settings_language_cancel)).performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        assertEquals(emptyList<Notation?>(), notationChanges)
+    }
+
+    private fun openNoteNames() {
+        compose.onNodeWithTag(NOTATION_SETTING_TAG).performScrollTo().performClick()
+        compose.onNode(isDialog()).assertExists()
+    }
+
     @Test
     fun talkBackSaysTheNotationChoicesSignsAsWords() {
         show(AppSettings())
-        compose.onNode(hasContentDescription("Sharps: C, C sharp, D …")).assertExists()
-        compose.onNode(hasContentDescription("Flats: C, D flat, D …")).assertExists()
-        compose.onNode(hasContentDescription("Do Re Mi: Do, Do sharp, Re …")).assertExists()
-        compose.onNode(hasContentDescription("German: C, C sharp, D … H")).assertExists()
-        // Never picked: Automatic, which in English is sharps.
-        compose.onNode(hasContentDescription("Automatic: C, C sharp, D … B")).assertExists().assertIsSelected()
+        // Never picked: Automatic, which in English is sharps; said in words under the row's title too.
+        compose.onNodeWithTag(NOTATION_SETTING_TAG).performScrollTo().assert(hasContentDescription("Automatic: C, C sharp, D … B", substring = true))
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assert(hasContentDescription("Sharps: C, C sharp, D …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).assert(hasContentDescription("Flats: C, D flat, D …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.SOLFEGE)).assert(hasContentDescription("Do Re Mi: Do, Do sharp, Re …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.GERMAN)).assert(hasContentDescription("German: C, C sharp, D … H"))
+        compose.onNodeWithTag(notationOptionTag(null)).assert(hasContentDescription("Automatic: C, C sharp, D … B")).assertIsSelected()
     }
 
     @Test
     fun germanAutomaticIsTheGermanNotationAndTalkBackSaysItTheGermanWay() {
         show(AppSettings(), locale = "de")
-        compose.onNode(hasContentDescription("Automatisch: C, Cis, D … H")).assertExists().assertIsSelected()
-        compose.onNode(hasContentDescription("Deutsch: C, Cis, D … H")).assertExists().assertIsNotSelected()
         compose.onNodeWithText("Automatisch: C, C♯, D … H").performScrollTo().assertIsDisplayed()
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(null)).assert(hasContentDescription("Automatisch: C, Cis, D … H")).assertIsSelected()
+        compose.onNodeWithTag(notationOptionTag(Notation.GERMAN)).assert(hasContentDescription("Deutsch: C, Cis, D … H")).assertIsNotSelected()
     }
 
     @Test
     fun frenchAutomaticIsDoReMi() {
         show(AppSettings(), locale = "fr")
         // French sets a no-break space before the colon.
-        compose.onNodeWithText("Automatique : Do, Do♯, Re … Si").assertIsSelected()
+        val automatic = "Automatique : Do, Do♯, Re … Si"
+        compose.onNodeWithTag(NOTATION_SETTING_TAG).performScrollTo().assert(hasText(automatic))
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(null)).assert(hasText(automatic)).assertIsSelected()
     }
 
     @Test
     fun dutchTalkBackSaysTheNotationChoicesTheDutchWay() {
         show(AppSettings(notationChoice = Notation.FLATS), locale = "nl")
-        compose.onNode(hasContentDescription("Kruisen: c, cis, d …")).assertExists()
-        compose.onNode(hasContentDescription("Mollen: c, des, d …")).assertExists().assertIsSelected()
-        compose.onNode(hasContentDescription("Do Re Mi: Do, Do kruis, Re …")).assertExists()
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assert(hasContentDescription("Kruisen: c, cis, d …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).assert(hasContentDescription("Mollen: c, des, d …")).assertIsSelected()
+        compose.onNodeWithTag(notationOptionTag(Notation.SOLFEGE)).assert(hasContentDescription("Do Re Mi: Do, Do kruis, Re …"))
         // What's on screen doesn't change.
-        compose.onNodeWithText("Kruisen: C, C♯, D …").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assert(hasText("Kruisen: C, C♯, D …"))
     }
 
     @Test
     fun notationShowsTheChoiceAndReportsANewOne() {
         show(AppSettings(notationChoice = Notation.FLATS))
-        compose.onNodeWithText(context.getString(R.string.settings_notation_flats)).assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_sharps)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_solfege)).performScrollTo().performClick()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_german)).performScrollTo().performClick()
-        compose.onNodeWithText("Automatic", substring = true).performScrollTo().performClick()
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).assertIsSelected()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assertIsNotSelected()
+        // A pick closes the list; the one already picked changes nothing.
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        for (notation in listOf(Notation.SOLFEGE, Notation.GERMAN, null)) {
+            openNoteNames()
+            compose.onNodeWithTag(notationOptionTag(notation)).performClick()
+            compose.onNode(isDialog()).assertDoesNotExist()
+        }
         assertEquals(listOf(Notation.SOLFEGE, Notation.GERMAN, null), notationChanges)
     }
 
@@ -370,20 +409,41 @@ class SettingsContentTest {
         assertEquals(listOf(UnderMeter.WORDS), underMeterChanges)
     }
 
+    /** In-tune precision as a two-way switch (since 2026-11-05), what the picked one means on the line under its title. */
     @Test
     fun inTunePrecisionShowsTheChoiceAndReportsANewOne() {
         show(AppSettings())
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise)).performScrollTo().assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise)).performClick()
+        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.RELAXED)).performScrollTo()
+            .assert(hasText(context.getString(R.string.settings_in_tune_precision_relaxed))).assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed_summary)).assertIsDisplayed()
+        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.PRECISE))
+            .assert(hasText(context.getString(R.string.settings_in_tune_precision_precise))).assertIsNotSelected().performClick()
         assertEquals(listOf(InTunePrecision.PRECISE), precisionChanges)
     }
 
     @Test
+    fun inTunePrecisionSaysWhatPreciseMeans() {
+        show(AppSettings(inTunePrecision = InTunePrecision.PRECISE))
+        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.PRECISE)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise_summary)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed_summary)).assertDoesNotExist()
+        // The one already picked changes nothing.
+        compose.onNodeWithTag(inTunePrecisionOptionTag(InTunePrecision.PRECISE)).performClick()
+        assertEquals(emptyList<InTunePrecision>(), precisionChanges)
+    }
+
+    /** Light or dark as a three-way switch (since 2026-11-05), Phone · Light · Dark, in one row. */
+    @Test
     fun themeShowsTheChoiceAndReportsANewOne() {
         show(AppSettings(theme = ThemeMode.SYSTEM))
-        compose.onNodeWithText(context.getString(R.string.settings_theme_system)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_theme_dark)).performScrollTo().performClick()
+        assertEquals(
+            listOf("Phone", "Light", "Dark"),
+            listOf(R.string.settings_theme_system, R.string.settings_theme_light, R.string.settings_theme_dark).map(context::getString),
+        )
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.SYSTEM)).performScrollTo().assertIsSelected()
+        val tops = ThemeMode.entries.map { compose.onNodeWithTag(themeOptionTag(it)).getBoundsInRoot().top.value }
+        assertTrue("one row: $tops", tops.all { abs(it - tops[0]) < 0.5f })
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.DARK)).assertIsNotSelected().performClick()
         assertEquals(listOf(ThemeMode.DARK), themeChanges)
     }
 
@@ -582,7 +642,7 @@ class SettingsContentTest {
     fun onAWideScreenTheSettingsStayInAReadableColumn() {
         show(AppSettings(), size = DpSize(1200.dp, 800.dp))
         val window = safeArea()
-        val row = compose.onNodeWithText(context.getString(R.string.settings_theme_dark)).performScrollTo().getBoundsInRoot()
+        val row = compose.onNodeWithText(context.getString(R.string.settings_under_meter_words)).performScrollTo().getBoundsInRoot()
         // 600 of the 1200 dp, in the middle.
         val share = (row.right - row.left) / (window.right - window.left)
         assertTrue("row takes $share of the width", share in 0.4f..0.51f)
@@ -869,17 +929,21 @@ class SettingsContentTest {
         val res = resourcesIn(locale)
         val texts = listOf(
             R.string.settings_group_tuning,
+            // Note names is one row (its list in a dialog), Light or dark and In-tune precision switches (2026-11-05).
             R.string.settings_notation_title,
-            R.string.settings_notation_sharps,
-            R.string.settings_notation_flats,
-            R.string.settings_notation_solfege,
-            R.string.settings_notation_german,
+            R.string.settings_theme_system,
+            R.string.settings_theme_light,
+            R.string.settings_theme_dark,
+            R.string.settings_in_tune_precision_relaxed_summary,
+            R.string.settings_in_tune_precision_relaxed,
+            R.string.settings_in_tune_precision_precise,
             R.string.settings_group_while_tuning,
             R.string.settings_group_look,
             R.string.settings_group_twangle,
             R.string.about_title,
         ).map { res.getString(it) } + res.getString(R.string.settings_about_link_summary, VERSION)
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
+        assertWhollyShown(compose.onNodeWithTag(NOTATION_SETTING_TAG), "the note names row")
     }
 
     /**

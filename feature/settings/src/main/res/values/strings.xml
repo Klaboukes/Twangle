@@ -44,19 +44,23 @@
 
     <!-- In-tune precision: how close a note has to be to count as in tune. -->
     <string name="settings_in_tune_precision_title">In-tune precision</string>
-    <!-- In-tune precision choice (radio button): a note counts as in tune within 5 cents (hundredths of a semitone). -->
-    <string name="settings_in_tune_precision_relaxed">Relaxed: within 5 cents</string>
-    <!-- In-tune precision choice (radio button): a note counts as in tune only within 2 cents. -->
-    <string name="settings_in_tune_precision_precise">Precise: within 2 cents</string>
+    <!-- In-tune precision: a segment of a two-way switch (Relaxed · Precise): a note counts as in tune within 5 cents. One short word. -->
+    <string name="settings_in_tune_precision_relaxed">Relaxed</string>
+    <!-- In-tune precision: a segment of a two-way switch (Relaxed · Precise): a note counts as in tune only within 2 cents. One short word. -->
+    <string name="settings_in_tune_precision_precise">Precise</string>
+    <!-- In-tune precision: the line under its title while Relaxed is picked; a cent is a hundredth of a semitone. -->
+    <string name="settings_in_tune_precision_relaxed_summary">In tune within 5 cents</string>
+    <!-- In-tune precision: the line under its title while Precise is picked. -->
+    <string name="settings_in_tune_precision_precise_summary">In tune within 2 cents</string>
 
     <!-- Look. -->
     <!-- Setting title over the light, dark and system default choices. -->
     <string name="settings_theme_title">Light or dark</string>
-    <!-- Light or dark choice (radio button): follow the phone's own light or dark setting. -->
-    <string name="settings_theme_system">System default</string>
-    <!-- Light or dark choice (radio button): always the light look. -->
+    <!-- Light or dark: a segment of a three-way switch (Phone · Light · Dark): follow the phone's own light or dark setting. One short word. -->
+    <string name="settings_theme_system">Phone</string>
+    <!-- Light or dark: a segment of a three-way switch (Phone · Light · Dark): always the light look. -->
     <string name="settings_theme_light">Light</string>
-    <!-- Light or dark choice (radio button): always the dark look. -->
+    <!-- Light or dark: a segment of a three-way switch (Phone · Light · Dark): always the dark look. -->
     <string name="settings_theme_dark">Dark</string>
     <!-- Switch title (Android 12 and later): take the app's colours from the phone's wallpaper (Android's Material You); the in-tune green stays the app's own. -->
     <string name="settings_dynamic_color_title">Wallpaper colours</string>
