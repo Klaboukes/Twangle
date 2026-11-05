@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Twangle Opening</title>
+<!--
+FINAL (owner, 2026-11-05): 2, "Half as many", with every overlap in the icon's own colour throughout (not only
+once it settles); built by scripts/launcher-icon.py.
+TWANGLE 2.0 OPENING ANIMATION, CALMER (2026-11-05). After the 1000 ms opening (Phase 79) the owner found "a lot of
+wobbling for just 1 second". The same animation as ic_opening_animated.xml (scripts/launcher-icon.py: each harmonic's
+height swinging on a hinge at the string, s + (1 - s) sin(2 pi c n q) with s the smoothstep of q, the icon's flat
+colours fading in over the last 10 %) with fewer swings: c is the whole string's number of swings in the second.
+-->
+<style>
+  :root { --bg:#F6F7F9; --card:#FFFFFF; --ink:#14181D; --muted:#4D5560; --line:#E1E5EA; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:1120px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:760px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:16px; margin-top:16px; }
+  .card { background:var(--card); border-radius:20px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .screen { background:#0E1116; border-radius:24px; aspect-ratio:9/12; display:flex; align-items:center; justify-content:center; }
+  .card h3 { margin:12px 0 2px; font-size:15px; }
+  .card p { margin:0; color:var(--muted); font-size:13px; }
+  button { font:inherit; font-size:14px; border:1px solid var(--line); background:var(--card); border-radius:999px;
+           padding:6px 16px; cursor:pointer; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The opening, calmer</h1>
+  <p class="lead">The opening screen's animation as it plays on the phone, with fewer swings. Each harmonic still swings
+    at its own speed (the halves twice as fast as the whole, the thirds three times), only less often. All last one
+    second. <button id="play">Play all again</button></p>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+const OPTIONS = [
+  { n:1, c:1, name:'As now', idea:'The whole string swings once, the halves twice, the thirds three times.' },
+  { n:2, c:.5, name:'Half as many', idea:'The whole swings half a time, the halves once, the thirds one and a half times.' },
+  { n:3, c:1 / 3, name:'One swing of the thirds', idea:'The thirds swing once, the halves two thirds of a swing, the whole a third: one calm rise.' },
+  { n:4, c:.5, ms:1400, name:'Half as many, slower', idea:'2 over 1.4 seconds: the gentlest, but the opening screen may stay up 0.4 s longer on a quick start.' },
+];
+const X0 = 17, X1 = 91, Y = 57;
+const HARMONICS = [[1, 28, 1, '#FFB648', .85], [2, 14, -1, '#5FC4FF', .78], [3, 28 / 3, 1, '#3DDC84', .95]];
+const LIGHT_FROM = .9;
+function outline([n, amp, sign]) {
+  let d = '';
+  for (let i = 0; i <= 160; i++) {
+    const u = i / 160, x = X0 + (X1 - X0) * u, y = Y - sign * amp * Math.sin(n * Math.PI * u);
+    d += (i ? 'L' : 'M') + x.toFixed(2) + ',' + y.toFixed(2);
+  }
+  return d + `L${X1},${Y}L${X0},${Y}Z`;
+}
+function swing(n, q, c) {
+  const s = q * q * (3 - 2 * q);
+  return s + (1 - s) * Math.sin(2 * Math.PI * c * n * q);
+}
+let flat = '';
+fetch('icon.svg').then(r => r.text()).then(t => {
+  // The icon's flat shapes without its background tile, as the animated drawable has them.
+  flat = t.replace(/^.*?<g clip-path="url\(#r\)">/s, '').replace(/<\/g><\/svg>\s*$/, '').replace(/<rect[^>]*\/>/, '');
+  render(); play();
+});
+function render() {
+  document.getElementById('grid').innerHTML = OPTIONS.map(o => `<div class="card">
+    <div class="screen"><svg width="150" height="150" viewBox="18 18 72 72" data-n="${o.n}">
+      ${HARMONICS.map((h, k) => `<g class="h${k}"><path d="${outline(h)}" fill="${h[3]}" fill-opacity="${h[4]}"/></g>`).join('')}
+      <g class="flat" opacity="0">${flat}</g></svg></div>
+    <h3>${o.n}. ${o.name}</h3><p>${o.idea}</p></div>`).join('');
+}
+let run = 0;
+function play() {
+  const mine = ++run, start = performance.now() + 300;
+  const frame = now => {
+    if (mine !== run) return;
+    let busy = false;
+    OPTIONS.forEach(o => {
+      const svg = document.querySelector(`svg[data-n="${o.n}"]`), ms = o.ms || 1000;
+      const q = Math.max(0, Math.min(1, (now - start) / ms));
+      if (q < 1) busy = true;
+      HARMONICS.forEach((h, k) => {
+        const v = swing(h[0], q, o.c);
+        svg.querySelector('.h' + k).setAttribute('transform', `translate(0 ${Y}) scale(1 ${v.toFixed(4)}) translate(0 ${-Y})`);
+        svg.querySelector('.h' + k).style.opacity = q >= 1 ? 0 : 1;
+      });
+      svg.querySelector('.flat').setAttribute('opacity', Math.max(0, (q - LIGHT_FROM) / (1 - LIGHT_FROM)).toFixed(3));
+    });
+    if (busy) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+document.getElementById('play').onclick = play;
+</script>
+</body>
+</html>

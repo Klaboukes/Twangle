@@ -18,9 +18,8 @@ Writes, for the phone app and the watch app:
 wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark, and
 app/src/main/res/drawable/ic_opening_animated.xml, the opening screen's icon (Android 12 and up play it): the
 string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
-settling into the icon's pose, the icon's own flat colours fading in over it as it comes to rest. While they
-swing the harmonics are see-through the plain way, not added up like light, which nobody can tell apart in
-motion. Android 8 to 11 show it still: its resting state is the icon.
+settling into the icon's pose, every overlap in the icon's own colour all the while. Android 8 to 11 show it
+still: its resting state is the icon.
 
     python -I scripts/launcher-icon.py [--preview out.svg]
 """
@@ -195,16 +194,26 @@ def path_xml(colour, data, alpha=None):
 
 
 OPENING_MS = 1000                            # the opening animation, all of it: the string swings throughout
-LIGHT_FROM = 0.9                             # from this share on the icon's colours fade in, the harmonics within a few % of rest
-SWING_FRAMES = 60
+SWINGS = 0.5                                 # how often the whole string swings in it (the halves twice that, the thirds three times)
+SWING_FRAMES = 40
 
 
 def swing(n, q):
     """How far harmonic n stands from the string, as a share of its resting height, q (0..1) into the swing:
-    plucked from rest, swinging n times as fast as the whole string (sin), easing into the resting pose
-    (smoothstep, so it arrives with no jolt) and never past it."""
+    plucked from rest, swinging n times as fast as the whole string (sin; SWINGS times in all for the whole),
+    easing into the resting pose (smoothstep, so it arrives with no jolt) and never past it."""
     s = q * q * (3 - 2 * q)
-    return s + (1 - s) * math.sin(2 * math.pi * n * q)
+    return s + (1 - s) * math.sin(2 * math.pi * SWINGS * n * q)
+
+
+def relative_swing(k, outer, q):
+    """Harmonic k's swing inside a group already scaled by harmonic `outer`'s, so the two multiply to k's own.
+    At the start both are 0; their ratio then is the limit, n_k / n_outer (sin x ~ x). The outer ones (the
+    whole, the halves) stay above 0 after the start with SWINGS at 0.5, so the ratio stays finite."""
+    a = swing(HARMONICS[outer][0], q)
+    if a < 1e-6:
+        return HARMONICS[k][0] / HARMONICS[outer][0]
+    return swing(HARMONICS[k][0], q) / a
 
 
 def keyframes(prop, values):
@@ -222,33 +231,42 @@ def target(name, animator):
             + animator + '        </aapt:attr>\n    </target>\n')
 
 
-def opening(painted):
-    """The opening screen's animated icon: the three harmonics swinging (each in a group hinged on the string,
-    its height animated) the whole time, under the icon's flat shapes, which stay clear until the harmonics are
-    nearly at rest and then fade in over them (owner, 2026-11-05: more time to settle, no stillness at the end)."""
-    moving = "".join(
-        f'\n    <group\n        android:name="h{k}"\n        android:pivotY="{STRING_Y}">\n'
-        f'        <path\n            android:name="m{k}"\n            android:fillColor="{HARMONICS[k][3]}"\n'
-        f'            android:fillAlpha="0"\n            android:pathData="{harmonic_outline(k)}" />\n    </group>\n'
-        for k in range(3))
-    resting = "".join(f'\n    <path\n        android:name="r{i}"\n        android:fillColor="{c}"\n        android:pathData="{d}" />\n'
-                      for i, (c, d) in enumerate(painted))
-    body = vector(108, 108, moving + resting, "").split("-->\n", 1)[1]       # the <vector> without the file header
-    body = "".join("        " + line + "\n" if line else "\n" for line in body.rstrip("\n").split("\n"))
+def opening():
+    """The opening screen's animated icon, every overlap in the icon's own colour while the harmonics swing (owner,
+    2026-11-05). Each set of overlapping harmonics is painted as nested groups, each hinged on the string, the
+    outer ones clipped to their harmonic's shape and the innermost holding the last one's shape in the set's
+    colour (colour_of): its region is where they all cover. Each group's height is animated so the nested
+    scales multiply to each harmonic's own swing (relative_swing). Painted singles, then pairs, then all three,
+    as the icon's regions are, so each point ends in the colour of everything that covers it."""
+    sets = [[0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2]]
+    body, animated = "", []
+    for i, members in enumerate(sets):
+        indent, close = "    ", ""
+        for depth, k in enumerate(members):
+            name = f"s{i}g{depth}"
+            animated.append((name, k, members[depth - 1] if depth else None))
+            body += f'\n{indent}<group\n{indent}    android:name="{name}"\n{indent}    android:pivotY="{STRING_Y}">\n'
+            if depth < len(members) - 1:
+                body += f'{indent}    <clip-path android:pathData="{harmonic_outline(k)}" />\n'
+            else:
+                body += (f'{indent}    <path\n{indent}        android:fillColor="{colour_of(members)}"\n'
+                         f'{indent}        android:pathData="{harmonic_outline(k)}" />\n')
+            close = f"{indent}</group>\n" + close
+            indent += "    "
+        body += close
+    drawable = vector(108, 108, body, "").split("-->\n", 1)[1]           # the <vector> without the file header
+    drawable = "".join("        " + line + "\n" if line else "\n" for line in drawable.rstrip("\n").split("\n"))
     targets = ""
-    for k in range(3):
-        n = HARMONICS[k][0]
-        frames = [(i / SWING_FRAMES, swing(n, i / SWING_FRAMES)) for i in range(SWING_FRAMES + 1)]
-        targets += target(f"h{k}", keyframes("scaleY", frames))
-        strength = HARMONICS[k][4]
-        targets += target(f"m{k}", keyframes("fillAlpha", [(0.0, strength), (0.999, strength), (1.0, 0.0)]))
-    for i in range(len(painted)):
-        targets += target(f"r{i}", keyframes("fillAlpha", [(0.0, 0.0), (LIGHT_FROM, 0.0), (1.0, 1.0)]))
+    for name, k, outer in animated:
+        frames = [i / SWING_FRAMES for i in range(SWING_FRAMES + 1)]
+        values = [(q, swing(HARMONICS[k][0], q) if outer is None else relative_swing(k, outer, q)) for q in frames]
+        targets += target(name, keyframes("scaleY", values))
     return (HEADER.format(what="The opening screen's icon: the string plucked, each harmonic swinging at its own speed into\n"
-                               "     the icon's pose, then the icon's colours lighting up (ic_launcher_foreground.xml). Still, it is that icon.")
+                               "     the icon's pose, its overlaps in the icon's colours throughout (ic_launcher_foreground.xml).\n"
+                               "     Still, it is that icon.")
             + '<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
             + '    xmlns:aapt="http://schemas.android.com/aapt">\n\n'
-            + '    <aapt:attr name="android:drawable">\n' + body + '    </aapt:attr>\n'
+            + '    <aapt:attr name="android:drawable">\n' + drawable + '    </aapt:attr>\n'
             + targets + '</animated-vector>\n')
 
 
@@ -271,7 +289,7 @@ def main():
         (res / "ic_launcher_foreground.xml").write_text(foreground, encoding="utf-8", newline="\n")
         (res / "ic_launcher_monochrome.xml").write_text(monochrome, encoding="utf-8", newline="\n")
     (ROOT / "wear/src/main/res/drawable/ic_twangle_mark.xml").write_text(mark, encoding="utf-8", newline="\n")
-    (ROOT / "app/src/main/res/drawable/ic_opening_animated.xml").write_text(opening(painted), encoding="utf-8", newline="\n")
+    (ROOT / "app/src/main/res/drawable/ic_opening_animated.xml").write_text(opening(), encoding="utf-8", newline="\n")
     (ROOT / "app/src/main/res/values/opening_animation.xml").write_text(
         '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
         '<resources>\n    <!-- How long the opening screen\'s icon animation lasts (Theme.Twangle.Starting). -->\n'
