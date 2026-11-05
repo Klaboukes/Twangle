@@ -56,9 +56,9 @@ fun musicText(text: String): AnnotatedString {
 internal val RaisedSign = raisedSign(RAISED_SIGN_SIZE, RAISED_SIGN_SHIFT)
 
 /**
- * A ♭ after a letter. The ♭ glyph is shorter than the ♯ (it doesn't reach below the line), so it
- * is set a little larger and lifted a little less, which puts the tops of both signs near the top
- * of the letter.
+ * A ♭ after a letter. The ♭ glyph is two thirds as tall as the ♯ (0.55 of the em against 0.82; it
+ * doesn't reach below the line), so it is set larger and lifted less, which puts the tops of both
+ * signs near the top of the letter and makes the ♭ nearly as tall as the ♯.
  */
 internal val RaisedFlat = raisedSign(RAISED_FLAT_SIZE, RAISED_FLAT_SHIFT)
 
@@ -76,12 +76,15 @@ internal val LoneSign = SpanStyle(fontFamily = MusicSignsFont)
 /** A ♭ on its own, grown like [RaisedFlat] so it matches a ♯ next to it, e.g. under the dial. */
 internal val LoneFlat = SpanStyle(fontFamily = MusicSignsFont, fontSize = (RAISED_FLAT_SIZE / RAISED_SIGN_SIZE).em)
 
-/** Size of a raised ♯ relative to its letter. */
-internal const val RAISED_SIGN_SIZE = 0.7f
+/**
+ * Size of a raised ♯ relative to its letter: about as tall as a capital, from just above the line to
+ * the letter's top (owner, 2026-11-05: at 0.7 it was very small, thin beside a bold letter).
+ */
+internal const val RAISED_SIGN_SIZE = 0.85f
 
 /** How far a raised ♯ is lifted, as a fraction of its own ascent (see [BaselineShift]). */
-internal const val RAISED_SIGN_SHIFT = 0.5f
+internal const val RAISED_SIGN_SHIFT = 0.44f
 
 /** Size and lift of a raised ♭ (see [RaisedFlat]). */
-internal const val RAISED_FLAT_SIZE = 0.8f
-internal const val RAISED_FLAT_SHIFT = 0.42f
+internal const val RAISED_FLAT_SIZE = 1.09f
+internal const val RAISED_FLAT_SHIFT = 0.24f

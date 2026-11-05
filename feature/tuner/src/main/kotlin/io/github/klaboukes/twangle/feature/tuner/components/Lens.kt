@@ -30,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -44,6 +43,7 @@ import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.LensLook
@@ -139,8 +139,9 @@ fun Lens(
             .drawWithCache {
                 // A drawing, like the ruler: the signs keep their size with the font size.
                 val signStyle = TextStyle(fontFamily = MusicSignsFont, fontSize = SIGN_SIZE.toSp())
-                val flat = measurer.measure(AnnotatedString("♭"), signStyle)
-                val sharp = measurer.measure(AnnotatedString("♯"), signStyle)
+                // Through musicText, which sets the ♭ larger: its glyph is a third shorter than the ♯'s.
+                val flat = measurer.measure(musicText("♭"), signStyle)
+                val sharp = measurer.measure(musicText("♯"), signStyle)
                 val signInset = SIGN_INSET.toPx()
                 val flatAt = Offset(signInset - flat.size.width / 2f, size.height - signInset - flat.size.height / 2f)
                 val sharpAt = Offset(size.width - signInset - sharp.size.width / 2f, size.height - signInset - sharp.size.height / 2f)
@@ -254,7 +255,7 @@ const val LENS_SHORT = 0.5f
 
 /** ♭ and ♯: their middles this far in from the bottom corners, this big. */
 private val SIGN_INSET = 16.dp
-private val SIGN_SIZE = 18.dp
+private val SIGN_SIZE = 24.dp
 
 /** The frame rate the moving look asks for: the S26's full rate. Phones without it pick the nearest they have. */
 private const val LENS_FRAME_RATE = 120f
