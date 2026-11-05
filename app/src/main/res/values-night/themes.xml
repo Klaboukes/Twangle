@@ -2,4 +2,14 @@
 <resources>
     <!-- Dark window in dark mode, so nothing white shows before Compose draws the first frame. -->
     <style name="Theme.Twangle" parent="Theme.AppCompat.NoActionBar" />
+
+    <!-- The opening screen in dark mode: the harmonics with no tile behind them, since the tile is Ink dark like the
+         screen and never showed. Without a tile Android draws the icon a fifth larger (192 dp across, not 160 dp;
+         owner, 2026-11-05). Light mode keeps the tile (values/themes.xml): the icon's colours are worked out on it. -->
+    <style name="Theme.Twangle.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_opening_animated</item>
+        <item name="windowSplashScreenAnimationDuration">@integer/opening_animation_ms</item>
+        <item name="postSplashScreenTheme">@style/Theme.Twangle</item>
+    </style>
 </resources>
