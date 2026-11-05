@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -27,7 +28,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.RingingName
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
 import io.github.klaboukes.twangle.feature.settings.headingStyle
@@ -37,7 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * The About rows: the app's name and [appVersion], the free-forever promise, the privacy statement,
+ * The About rows: the app's name ringing ([RingingName]) over its [appVersion], the free-forever promise, the privacy statement,
  * "Help and website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
  * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; Google's own
  * rating window is asked for once from the tuner, Phase 50), and a credit for
@@ -54,10 +59,7 @@ fun AboutSection(
     // The open licence is remembered by credit name, so it stays open when the phone is turned.
     var shown by rememberSaveable { mutableStateOf<String?>(null) }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        AboutText(
-            title = stringResource(R.string.settings_about_app_name),
-            body = stringResource(R.string.settings_about_version, appVersion),
-        )
+        NameAndVersion(appVersion)
         AboutText(
             title = stringResource(R.string.settings_about_free_title),
             body = stringResource(R.string.settings_about_free_summary),
@@ -90,6 +92,34 @@ fun AboutSection(
     }
     credits.firstOrNull { it.name == shown }?.let { LicenceDialog(it, onDismiss = { shown = null }) }
 }
+
+/**
+ * The page's head: Twangle's name ringing, as on the store's banner and the website (Phase 79), centred over
+ * the version. TalkBack reads it as the page's first heading, the name.
+ */
+@Composable
+private fun NameAndVersion(appVersion: String) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        val name = stringResource(R.string.settings_about_app_name)
+        RingingName(
+            Modifier
+                .widthIn(max = NAME_WIDTH)
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = name
+                    heading()
+                },
+        )
+        Text(
+            text = stringResource(R.string.settings_about_version, appVersion),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The ringing name's widest: the word about 150 dp across, a heading's size beside the rows under it. */
+private val NAME_WIDTH = 260.dp
 
 @Composable
 private fun AboutText(title: String, body: String) {

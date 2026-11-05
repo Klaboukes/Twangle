@@ -3,9 +3,7 @@ package io.github.klaboukes.twangle.app.store
 import android.content.res.Configuration
 import android.os.LocaleList
 import android.text.TextUtils
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -42,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import io.github.klaboukes.twangle.core.designsystem.RingingName
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.LensLook
@@ -51,17 +49,17 @@ import java.util.Locale
 /**
  * The Play Store's feature graphic (docs/store-listing.md, *Icon and feature graphic*), one for each
  * store language: [FEATURE_WIDTH] × [FEATURE_HEIGHT] pixels on [BACKGROUND]'s quiet background. On
- * the start side the store [icon] (since Phase 79 the harmonics) over the name "Twangle" in the app's display
- * face, Ink's light plain sans (1.1 set it in Retro's), and under them [line], what sets Twangle apart
- * in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set as the app sets
- * that language (its fonts, right to left for Arabic). On the end side three of the tuner's meters fanned
- * out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in each of the
- * meter's looks (since Phase 78: the Light arc, Classic in front, the strobe), each with a string brought into
- * tune and held there, in tune's green with its glow. No note names, so the line is
+ * the start side Twangle's name ringing ([RingingName], Phase 79: the word in Comfortaa on a string, the
+ * icon's three harmonics behind it; 1.1 showed the icon over the name in Retro's face), and under it [line],
+ * what sets Twangle apart in a few words ("Precise to a cent. Fully offline."), in [locale]'s language, set
+ * as the app sets that language (its fonts, right to left for Arabic). On the end side three of the tuner's
+ * meters fanned out ([FAN]), dark, light and dark (1.1 showed three of its six styles' Classic meters), one in
+ * each of the meter's looks (since Phase 78: the Light arc, Classic in front, the strobe), each with a string
+ * brought into tune and held there, in tune's green with its glow. No note names, so the line is
  * the one text to translate. Everything important keeps clear of the edges, which Play may crop.
  */
 @Composable
-fun FeatureGraphic(icon: ImageBitmap, line: String, locale: Locale) {
+fun FeatureGraphic(line: String, locale: Locale) {
     val configuration = LocalConfiguration.current
     val localized = remember(configuration, locale) { Configuration(configuration).apply { setLocales(LocaleList(locale)) } }
     val rtl = TextUtils.getLayoutDirectionFromLocale(locale) == android.view.View.LAYOUT_DIRECTION_RTL
@@ -79,49 +77,20 @@ fun FeatureGraphic(icon: ImageBitmap, line: String, locale: Locale) {
                 },
             ) {
                 StyleBackdrop(Modifier.fillMaxSize())
-                Box(Modifier.align(Alignment.CenterStart).padding(start = EDGE)) { NameAndLine(icon, line, locale) }
-                // The fan is decoration: it may come nearer the edge than the words.
+                // The word and the line start at TEXT_EDGE; the string's thin end is decoration and runs on nearer the edge.
+                Box(Modifier.align(Alignment.CenterStart).padding(start = TEXT_EDGE - WORD_INSET)) { NameAndLine(line, locale) }
+                // The fan is decoration too.
                 Box(Modifier.align(Alignment.CenterEnd).padding(end = FAN_EDGE)) { Fan() }
             }
         }
     }
 }
 
-/** The icon over the wordmark, the line under them, a sentence a line. */
+/** The name ringing, the line under it starting where the word does, a sentence a line. */
 @Composable
-private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
-    Column(Modifier.widthIn(max = TEXT_WIDTH)) {
-        Image(
-            bitmap = icon,
-            contentDescription = null,
-            filterQuality = FilterQuality.High,
-            modifier = Modifier
-                .size(ICON_SIZE)
-                .shadow(ICON_SHADOW, RoundedCornerShape(ICON_CORNER_PERCENT))
-                .clip(RoundedCornerShape(ICON_CORNER_PERCENT))
-                // The icon's tile is Ink dark, the graphic's own background: a faint edge shows where it ends.
-                .border(EDGE_LINE, MaterialTheme.colorScheme.onBackground.copy(alpha = EDGE_ALPHA), RoundedCornerShape(ICON_CORNER_PERCENT)),
-        )
-        Spacer(Modifier.height(NAME_GAP))
-        val ink = MaterialTheme.colorScheme.onBackground
-        // The name the same in every language (always Latin letters): the theme is told English, so
-        // it never takes another script's face.
-        val configuration = LocalConfiguration.current
-        val english = remember(configuration) { Configuration(configuration).apply { setLocales(LocaleList(Locale.ENGLISH)) } }
-        CompositionLocalProvider(LocalConfiguration provides english) {
-            TwangleTheme(darkTheme = true, animate = false) {
-                Text(
-                    APP_NAME,
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontSize = NAME_SIZE.sp,
-                        lineHeight = (NAME_SIZE * 1.15f).sp,
-                        localeList = TextLocaleList("en"),
-                    ),
-                    color = ink,
-                    maxLines = 1,
-                )
-            }
-        }
+private fun NameAndLine(line: String, locale: Locale) {
+    Column {
+        RingingName(Modifier.width(NAME_WIDTH))
         Spacer(Modifier.height(LINE_GAP))
         Text(
             remember(line) { sentencesOnTheirOwnLines(line) ?: line },
@@ -136,6 +105,7 @@ private fun NameAndLine(icon: ImageBitmap, line: String, locale: Locale) {
             maxLines = 2,
             // A long language's line a little smaller, never cut off.
             autoSize = TextAutoSize.StepBased(minFontSize = LINE_MIN_SIZE.sp, maxFontSize = LINE_SIZE.sp, stepSize = 0.5.sp),
+            modifier = Modifier.padding(start = WORD_INSET).widthIn(max = TEXT_WIDTH),
         )
     }
 }
@@ -202,22 +172,14 @@ private val FAN = listOf(
     FanCard(dark = true, look = LensLook.STROBE),
 )
 
-/** The name is the app's own, the same in every language. */
-private const val APP_NAME = "Twangle"
+/** About 100 px of the 1024 from the start edge, as Play may crop or cover it (379 dp in all): where the word and the line start. */
+private val TEXT_EDGE = 36.dp
+private val NAME_WIDTH = 160.dp
 
-/** About 100 px of the 1024 from the start edge, as Play may crop or cover it (379 dp in all). */
-private val EDGE = 36.dp
+/** Where the word starts in the name's box (scripts/wordmark.py centres it: 74.4 of the frame's 340). */
+private val WORD_INSET = NAME_WIDTH * (74.4f / 340f)
 private val TEXT_WIDTH = 124.dp
-private val ICON_SIZE = 40.dp
-
-/** Play rounds its icons' corners by a fifth of their size. */
-private const val ICON_CORNER_PERCENT = 20
-private val ICON_SHADOW = 6.dp
-private val EDGE_LINE = 1.dp
-private const val EDGE_ALPHA = 0.16f
-private val NAME_GAP = 8.dp
-private const val NAME_SIZE = 30f
-private val LINE_GAP = 10.dp
+private val LINE_GAP = 2.dp
 private const val LINE_SIZE = 14f
 private const val LINE_MIN_SIZE = 11f
 private const val LINE_ALPHA = 0.88f

@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.util.Base64
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.app.R
@@ -57,10 +56,9 @@ class StoreGraphics(private val picture: Picture) {
         val bitmap = if (locale == null) {
             icon()
         } else {
-            val icon = icon().asImageBitmap()
             // Play's Norwegian folder is no-NO; the language is Norwegian Bokmål.
             val language = Locale.forLanguageTag(if (locale == "no-NO") "nb-NO" else locale)
-            renderCanvas(FEATURE_WIDTH, FEATURE_HEIGHT) { FeatureGraphic(icon, picture.line, language) }.apply {
+            renderCanvas(FEATURE_WIDTH, FEATURE_HEIGHT) { FeatureGraphic(picture.line, language) }.apply {
                 // Opaque, so the PNG is written without an alpha channel.
                 setHasAlpha(false)
             }

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Twangle Wordmark</title>
+<!--
+TWANGLE 2.0 WORDMARK, ROUND 2 (2026-11-05). Of round 1 (wordmark-round1.html) the owner leans towards 3,
+Comfortaa: six takes on it here (FACES).
+ROUND 1 (2026-11-05). The owner liked the logo page's "The name ringing" (the name on a
+string, its first three harmonics behind the letters) for the store banner and the About screen, and asked first
+for a more characteristic face than the phone's plain sans. Eight faces (all SIL Open Font License, from Google
+Fonts for this page only) and one drawn touch. Whichever is picked, the app would carry the word as drawn shapes
+(a vector), not the font file.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Comfortaa:wght@300;400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,600,100,1&family=Instrument+Serif&family=Outfit:wght@500&family=Righteous&family=Space+Grotesk:wght@600&family=Syne:wght@700&family=Unbounded:wght@600&display=block">
+<style>
+  :root { --bg:#F6F7F9; --card:#FFFFFF; --ink:#14181D; --muted:#4D5560; --line:#E1E5EA; --accent:#1A6FC4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:1120px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  p.lead { color:var(--muted); margin:0 0 20px; max-width:760px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:16px; }
+  .card { background:var(--card); border-radius:20px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .card h3 { margin:12px 2px 2px; font-size:15px; }
+  .card p { margin:0 2px; color:var(--muted); font-size:13px; }
+  .ring { background:#0E1116; border-radius:14px; display:block; width:100%; height:auto; }
+  .small { display:flex; gap:10px; margin-top:8px; }
+  .small > div { flex:1; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:8px; }
+  .small .dark { background:#0E1116; color:#EEF1F5; }
+  .small .light { background:#F6F7F9; color:#14181D; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The name, round 2: Comfortaa</h1>
+  <p class="lead">Round 1's 3, Comfortaa, in six takes: its weights, its spacing, all lowercase, and with the plucked
+    T. Under each: the name small with the icon, as on the About screen, dark and light.
+    <a href="wordmark-round1.html">Round 1</a> ·
+    <a href="index.html">Back to the logo</a></p>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+const FACES = [
+  { n:1, name:'Bold, as in round 1', css:"700 44px 'Comfortaa'",
+    idea:'Your pick as it was: round, sturdy strokes that hold up small.' },
+  { n:2, name:'Regular', css:"400 44px 'Comfortaa'",
+    idea:'Two steps lighter: still easy to read small, calmer next to the icon.' },
+  { n:3, name:'Light', css:"300 46px 'Comfortaa'",
+    idea:'Fine, airy strokes, like the string itself: the most elegant, but it thins out at small sizes.' },
+  { n:4, name:'Bold, spaced', css:"700 42px 'Comfortaa'", extra:'letter-spacing:.06em',
+    idea:'The letters a little apart: more open, more like a logo than a word in a sentence.' },
+  { n:5, name:'All lowercase', css:"700 46px 'Comfortaa'", text:'twangle',
+    idea:'"twangle" with Comfortaa’s round little t: friendlier and softer, one shape from start to end.' },
+  { n:6, name:'With the plucked T', css:"700 44px 'Comfortaa'", pluckedT:true,
+    idea:'Comfortaa with the T’s bar drawn as the icon’s amber arch: the name and the icon tied together.' },
+];
+const lerp = (a, b, t) => a + (b - a) * t;
+const P = pts => pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(2) + ',' + q[1].toFixed(2)).join('');
+// One moment of harmonic n on a string from x0 to x1 at height y (mode n swings as sin(n*pi*u)).
+function wave(n, amp, sgn, col, op, x0, x1, y) {
+  const pts = [];
+  for (let i = 0; i <= 200; i++) { const u = i / 200; pts.push([lerp(x0, x1, u), y - amp * sgn * Math.sin(n * Math.PI * u)]); }
+  return `<path d="${P(pts)}L${x1},${y}L${x0},${y}Z" fill="${col}" opacity="${op}" style="mix-blend-mode:screen"/>`;
+}
+// "Twangle" with a drawn T: its stem in the letters' colour, its bar a shallow amber arch (the whole string's
+// swing), centred on cx with its baseline at base. Sizes follow the font's size and its own cap height.
+const measure = document.createElement('canvas').getContext('2d');
+function plucked(css, cx, base, ink) {
+  const px = parseFloat(css.match(/([\d.]+)px/)[1]);
+  measure.font = css;
+  const rest = measure.measureText('wangle').width, cap = measure.measureText('H').actualBoundingBoxAscent;
+  const stroke = px * .105, bar = px * .62, rise = px * .12, gap = px * .02;
+  const x0 = cx - (bar + gap + rest) / 2, top = base - cap + stroke / 2, pts = [];
+  for (let i = 0; i <= 40; i++) { const u = i / 40; pts.push([x0 + bar * u, top - rise * Math.sin(Math.PI * u)]); }
+  return `<path d="${P(pts)}" fill="none" stroke="#FFB648" stroke-width="${stroke.toFixed(2)}" stroke-linecap="round"/>
+    <rect x="${(x0 + bar / 2 - stroke / 2).toFixed(2)}" y="${(top - rise).toFixed(2)}" width="${stroke.toFixed(2)}" height="${(base - top + rise).toFixed(2)}" fill="${ink}"/>
+    <text x="${(x0 + bar + gap).toFixed(2)}" y="${base}" style="font:${css}" fill="${ink}">wangle</text>`;
+}
+function ringing(f) {
+  const w = 340, h = 110, y = 56;
+  const waves = wave(1, 44, 1, '#FFB648', .3, 8, w - 8, y) + wave(2, 22, -1, '#5FC4FF', .34, 8, w - 8, y)
+    + wave(3, 44 / 3, 1, '#3DDC84', .42, 8, w - 8, y);
+  const word = f.pluckedT ? plucked(f.css, w / 2, y + 16, '#EEF1F5')
+    : `<text x="${w / 2}" y="${y + 16}" text-anchor="middle" style="font:${f.css};${f.extra || ''}" fill="#EEF1F5">${f.text || 'Twangle'}</text>`;
+  return `<svg class="ring" viewBox="0 0 ${w} ${h}" style="isolation:isolate"><g style="isolation:isolate">${waves}</g>${word}</svg>`;
+}
+// The launcher icon as built (scripts/launcher-icon.py's preview).
+const ICON = `<img src="icon.svg" width="28" height="28" alt="">`;
+function small(f, cls) {
+  const size = parseFloat(f.css.match(/(\d+)px/)[1]) * 22 / 46;
+  const css = f.css.replace(/\d+px/, size.toFixed(1) + 'px');
+  if (f.pluckedT) {
+    const ink = cls === 'dark' ? '#EEF1F5' : '#14181D';
+    return `<div class="${cls}">${ICON}<svg width="116" height="28" viewBox="0 0 116 28">${plucked(css, 58, 21, ink)}</svg></div>`;
+  }
+  return `<div class="${cls}">${ICON}<span style="font:${css};${f.extra || ''}">${f.text || 'Twangle'}</span></div>`;
+}
+document.fonts.ready.then(() => {
+  document.getElementById('grid').innerHTML = FACES.map(f => `<div class="card">${ringing(f)}
+    <div class="small">${small(f, 'dark')}${small(f, 'light')}</div>
+    <h3>${f.n}. ${f.name}</h3><p>${f.idea}</p></div>`).join('');
+  document.title = 'Twangle Wordmark';
+});
+</script>
+</body>
+</html>
