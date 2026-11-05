@@ -33,8 +33,8 @@ The website is hosted by GitHub (GitHub Pages). Like any web host, GitHub sees t
 ## Settings stay on your phone
 Twangle remembers the choices you make in the app, and nothing else. These are stored only on your phone:
 - **Tuning:** the instrument and its tuning (and how far you lowered it), tunings you made yourself, whether Any note is on, the A4 reference pitch, how note names are written and how precise "in tune" is.
-- **Look:** the meter (trail, light arc or strobe), light or dark mode, wallpaper colours, whether signal bars are shown, and the app's language if you picked one.
-- **While tuning:** whether words or cents show under the meter, keep screen on, vibrate when in tune and whether tuned strings are ticked off.
+- **Look:** the meter (classic needle, light arc or strobe), whether words or cents show under the meter, light or dark mode, wallpaper colours, whether signal bars are shown, and the app's language if you picked one.
+- **While tuning:** keep screen on, vibrate when in tune and whether tuned strings are ticked off.
 - **Metronome:** its tempo, meter, click sound, the clicks between the beats and whether it vibrates on the beat; the speed trainer's start tempo, goal, step and number of bars per step, and whether it is on.
 - **Practice:** the tool you used last; the chord or scale you looked at last; the drone's sound, its notes and whether it plays an octave lower; the Capo helper's key and fret; whether the chord charts and the scale neck are drawn left-handed; and the Ear training exercise you used last with what it asks (which notes, how many in a row and whether any octave counts; which intervals, and whether they are played up, down or together; which chord types), never your answers or a score.
 - Whether you once said no to the microphone, so Twangle knows whether Android can still ask you.

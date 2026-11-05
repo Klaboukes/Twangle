@@ -221,13 +221,13 @@ class SettingsContentTest {
     @Test
     fun showsTheCurrentA4() {
         show(AppSettings(a4Hz = 442f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_value, 442)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_value, 442)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun plusAndMinusStepByOneHertz() {
         show(AppSettings(a4Hz = 442f))
-        compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_raise)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_raise)).performScrollTo().performClick()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_lower)).performClick()
         assertEquals(listOf(443f, 441f), a4Changes)
     }
@@ -235,7 +235,7 @@ class SettingsContentTest {
     @Test
     fun resetGoesBackTo440() {
         show(AppSettings(a4Hz = 432f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).performScrollTo().performClick()
         assertEquals(listOf(440f), a4Changes)
     }
 
@@ -243,7 +243,7 @@ class SettingsContentTest {
     fun resetStaysAButtonAt440AndChangesNothing() {
         // Never greyed out: too faint on a dimmed screen (owner, 2026-11-05).
         show(AppSettings(a4Hz = 440f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).assertIsEnabled().performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).performScrollTo().assertIsEnabled().performClick()
         assertEquals(emptyList<Float>(), a4Changes)
     }
 
@@ -311,7 +311,7 @@ class SettingsContentTest {
         show(AppSettings(), locale = "de")
         compose.onNode(hasContentDescription("Automatisch: C, Cis, D … H")).assertExists().assertIsSelected()
         compose.onNode(hasContentDescription("Deutsch: C, Cis, D … H")).assertExists().assertIsNotSelected()
-        compose.onNodeWithText("Automatisch: C, C♯, D … H").assertIsDisplayed()
+        compose.onNodeWithText("Automatisch: C, C♯, D … H").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -328,7 +328,7 @@ class SettingsContentTest {
         compose.onNode(hasContentDescription("Mollen: c, des, d …")).assertExists().assertIsSelected()
         compose.onNode(hasContentDescription("Do Re Mi: Do, Do kruis, Re …")).assertExists()
         // What's on screen doesn't change.
-        compose.onNodeWithText("Kruisen: C, C♯, D …").assertIsDisplayed()
+        compose.onNodeWithText("Kruisen: C, C♯, D …").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -336,14 +336,14 @@ class SettingsContentTest {
         show(AppSettings(notationChoice = Notation.FLATS))
         compose.onNodeWithText(context.getString(R.string.settings_notation_flats)).assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.settings_notation_sharps)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_solfege)).performClick()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_german)).performClick()
-        compose.onNodeWithText("Automatic", substring = true).performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_notation_solfege)).performScrollTo().performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_notation_german)).performScrollTo().performClick()
+        compose.onNodeWithText("Automatic", substring = true).performScrollTo().performClick()
         assertEquals(listOf(Notation.SOLFEGE, Notation.GERMAN, null), notationChanges)
     }
 
     /**
-     * What goes under the meter (2.0, Phase 78), first in While tuning: Words by default, Cents reported when picked;
+     * What goes under the meter (2.0, Phase 78), in Look under the Meter cards since 2026-11-05: Words by default, Cents reported when picked;
      * the words named as the tuner says them, in Dutch too.
      */
     @Test
@@ -481,7 +481,7 @@ class SettingsContentTest {
      * 1.1's meter look cards, Calm or Bold, "Below the note" and the wave look cards went in Phase 67 (one meter and
      * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left. Meter stands in the Look
      * group (Phase 75; the Tuner screen group's only row until then), first, over light or dark and Left-handed charts
-     * (the owner's review, 2026-11-03).
+     * (the owner's review, 2026-11-03), and Look is the page's first group (2026-11-05).
      */
     @Test
     fun meterOffersTheThreeLooksAsCardsWithTheSavedOnePicked() {
@@ -537,9 +537,9 @@ class SettingsContentTest {
     fun settingsComeInFourHeadedGroupsTheLastEndingInTheAboutLink() {
         show(AppSettings(), languages = listOf("de", "nl"))
         val headings = listOf(
-            R.string.settings_group_tuning,
-            R.string.settings_group_while_tuning,
             R.string.settings_group_look,
+            R.string.settings_group_while_tuning,
+            R.string.settings_group_tuning,
             R.string.settings_group_twangle,
         )
         val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
@@ -549,27 +549,28 @@ class SettingsContentTest {
         compose.onNodeWithText(context.getString(R.string.settings_title)).assert(isHeading)
         compose.onAllNodes(isHeading).assertCountEquals(headings.size + 1)
 
-        // Top to bottom: each heading, then the settings of its group (2.0, Phase 75, the first mock-up's four groups).
+        // Top to bottom: each heading, then the settings of its group (2.0, Phase 75, the first mock-up's four groups;
+        // Look first and the reference pitch last since the owner's look of 2026-11-05: what most players change first).
         // Unclipped positions: most of these rows are below the fold.
         fun top(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
         val order = listOf(
-            top(context.getString(R.string.settings_group_tuning)),
-            top(context.getString(R.string.settings_a4_title)),
-            top(context.getString(R.string.settings_notation_title)),
-            top(context.getString(R.string.settings_in_tune_precision_title)),
-            top(context.getString(R.string.settings_group_while_tuning)),
+            top(context.getString(R.string.settings_group_look)),
+            // The lens's cards first (the owner's review, 2026-11-03), then what goes under the meter, light or dark with
+            // the wallpaper colours, then the charts' hand.
+            top(context.getString(R.string.settings_meter_title)),
             top(context.getString(R.string.settings_under_meter_title)),
+            top(context.getString(R.string.settings_theme_title)),
+            top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_left_handed_title)),
+            top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
-            top(context.getString(R.string.settings_group_look)),
-            // The lens's cards first (the owner's review, 2026-11-03), then light or dark with the wallpaper colours, then
-            // the charts' hand.
-            top(context.getString(R.string.settings_meter_title)),
-            top(context.getString(R.string.settings_theme_title)),
-            top(context.getString(R.string.settings_dynamic_color_title)),
-            top(context.getString(R.string.settings_left_handed_title)),
+            top(context.getString(R.string.settings_group_tuning)),
+            top(context.getString(R.string.settings_notation_title)),
+            top(context.getString(R.string.settings_in_tune_precision_title)),
+            top(context.getString(R.string.settings_a4_title)),
             top(context.getString(R.string.settings_group_twangle)),
             top(context.getString(R.string.settings_language_title)),
             top(context.getString(R.string.about_title)),
@@ -607,7 +608,7 @@ class SettingsContentTest {
     private fun assertSettingsTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE)
         val title = compose.onNodeWithText(context.getString(R.string.settings_title)).getBoundsInRoot()
-        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_tuning)).getBoundsInRoot()
+        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_look)).getBoundsInRoot()
         assertEquals("$size: the first heading at the column's start", (columnStart() + ROW_INSET).value, heading.left.value, tolerance())
         assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
     }

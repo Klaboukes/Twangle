@@ -153,7 +153,7 @@ Every key `DataStoreSettingsRepository` reads today (`core/settings/DataStoreSet
 | `ear_exercise`, `ear_note_choice`, `ear_notes_in_row`, `ear_note_match`, `ear_intervals`, `ear_directions`, `ear_chord_types` | Ear training's choices | kept | |
 | `show_intonation_check` | 2.0 test builds only: Phase 71's switch for the 12th-fret check's way in | removed at every start where a test build left it (`forgetDroppedSettings()`), never read: the check is opened from the picker sheet (owner, 2026-11-03, *The two tools*) | 71 |
 | `string_tick_off` (new) | | the string tick-off and "In tune. Play.", off when missing, so a 1.1 player, who had the ticks always, starts without them (the owner's default); done in 71's fourth step, *Tick off tuned strings* in Settings' While tuning | 71 |
-| `under_meter` (new) | | what goes under the meter, `UnderMeter`'s name, `WORDS` or `CENTS`; missing: `show_tune_hint`'s rule (above); done in 78, *Under the meter* first in Settings' While tuning | 78 |
+| `under_meter` (new) | | what goes under the meter, `UnderMeter`'s name, `WORDS` or `CENTS`; missing: `show_tune_hint`'s rule (above); done in 78, *Under the meter* in Settings' Look, under the Meter cards (first in While tuning until 2026-11-05) | 78 |
 
 The in-app language is not a DataStore key (AppCompat's per-app locales) and is kept as it is.
 

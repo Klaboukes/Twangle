@@ -285,9 +285,10 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
         }
 
 /**
- * Every setting, in four short headed groups (2.0, Phase 75, as the first 2.0 mock-up draws them): Tuning (which
- * note it is and what counts as in tune), While tuning (what the tuner does while it listens), Look (light or dark
- * with the wallpaper colours, the lens's look, and left-handed charts) and Twangle (the app's language and one
+ * Every setting, in four short headed groups (2.0, Phase 75, as the first 2.0 mock-up draws them; Look first since
+ * 2026-11-05): Look (the lens's look, what goes under the meter, light or dark with the wallpaper colours, and
+ * left-handed charts), While tuning (what the tuner does while it listens), Tuning (which note it is, what counts as
+ * in tune and the reference pitch) and Twangle (the app's language and one
  * row that opens the About page: version, promise, privacy and licences, so those long texts don't crowd the
  * settings). A line divides two subjects; a setting that belongs to the one above stays with it. Rows, including
  * the card grids, keep 16 dp from the column's edges.
@@ -316,36 +317,19 @@ private fun SettingsGroups(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
-        // Which note it is and what counts as in tune ("Pitch and notes" until Phase 75).
-        SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
+        // What the player sees first (the owner, 2026-11-05: the settings most players change come first, Tuning's big
+        // slider last): the lens's cards, the one look a player picks (the owner's review, 2026-11-03), what goes under
+        // the meter, then light or dark, then how the charts are drawn.
+        SettingsGroup(title = stringResource(R.string.settings_group_look)) {
             Rows {
-                A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
+                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
+                MeterPicker(
+                    looks = LensLook.entries,
+                    selected = settings.lensLook,
+                    onSelect = onLensLookChange,
+                    precision = settings.inTunePrecision,
+                )
                 HorizontalDivider()
-                // Automatic (null) follows the app's language and shows what that gives.
-                val languageNotation = Notation.forLanguage(appLanguage())
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_notation_title),
-                    options = listOf(null) + Notation.entries,
-                    selected = settings.notationChoice,
-                    onSelect = onNotationChange,
-                ) {
-                    if (it == null) {
-                        stringResource(R.string.settings_notation_automatic, notationSample(languageNotation))
-                    } else {
-                        stringResource(notationLabel(it))
-                    }
-                }
-                HorizontalDivider()
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_in_tune_precision_title),
-                    options = InTunePrecision.entries,
-                    selected = settings.inTunePrecision,
-                    onSelect = onInTunePrecisionChange,
-                ) { stringResource(inTunePrecisionLabel(it)) }
-            }
-        }
-        SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
-            Rows {
                 // What the tuner shows under its meter (2.0, Phase 78): the word, or the cents big in its place.
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_under_meter_title),
@@ -354,6 +338,33 @@ private fun SettingsGroups(
                     onSelect = onUnderMeterChange,
                 ) { stringResource(underMeterLabel(it)) }
                 HorizontalDivider()
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_theme_title),
+                    options = ThemeMode.entries,
+                    selected = settings.theme,
+                    onSelect = onThemeChange,
+                ) { stringResource(themeLabel(it)) }
+                // Android 12 and later only: older phones have no wallpaper colours to take. It goes with light or dark, no line between.
+                if (dynamicColorAvailable) {
+                    SwitchSetting(
+                        title = stringResource(R.string.settings_dynamic_color_title),
+                        summary = stringResource(R.string.settings_dynamic_color_summary),
+                        checked = settings.dynamicColor,
+                        onCheckedChange = onDynamicColorChange,
+                    )
+                }
+                HorizontalDivider()
+                // Mirrors the chord charts and the scale neck.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_left_handed_title),
+                    summary = stringResource(R.string.settings_left_handed_summary),
+                    checked = settings.leftHanded,
+                    onCheckedChange = onLeftHandedChange,
+                )
+            }
+        }
+        SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
+            Rows {
                 SwitchSetting(
                     title = stringResource(R.string.settings_keep_screen_on_title),
                     summary = stringResource(R.string.settings_keep_screen_on_summary),
@@ -381,41 +392,33 @@ private fun SettingsGroups(
                 )
             }
         }
-        // The lens's cards first, the one look a player picks (the owner's review, 2026-11-03), then light or dark, then
-        // how the charts are drawn.
-        SettingsGroup(title = stringResource(R.string.settings_group_look)) {
+        // Which note it is and what counts as in tune ("Pitch and notes" until Phase 75); the reference pitch last,
+        // the setting most players never change.
+        SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
             Rows {
-                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
-                MeterPicker(
-                    looks = LensLook.entries,
-                    selected = settings.lensLook,
-                    onSelect = onLensLookChange,
-                    precision = settings.inTunePrecision,
-                )
-                HorizontalDivider()
+                // Automatic (null) follows the app's language and shows what that gives.
+                val languageNotation = Notation.forLanguage(appLanguage())
                 RadioGroupSetting(
-                    title = stringResource(R.string.settings_theme_title),
-                    options = ThemeMode.entries,
-                    selected = settings.theme,
-                    onSelect = onThemeChange,
-                ) { stringResource(themeLabel(it)) }
-                // Android 12 and later only: older phones have no wallpaper colours to take. It goes with light or dark, no line between.
-                if (dynamicColorAvailable) {
-                    SwitchSetting(
-                        title = stringResource(R.string.settings_dynamic_color_title),
-                        summary = stringResource(R.string.settings_dynamic_color_summary),
-                        checked = settings.dynamicColor,
-                        onCheckedChange = onDynamicColorChange,
-                    )
+                    title = stringResource(R.string.settings_notation_title),
+                    options = listOf(null) + Notation.entries,
+                    selected = settings.notationChoice,
+                    onSelect = onNotationChange,
+                ) {
+                    if (it == null) {
+                        stringResource(R.string.settings_notation_automatic, notationSample(languageNotation))
+                    } else {
+                        stringResource(notationLabel(it))
+                    }
                 }
                 HorizontalDivider()
-                // Mirrors the chord charts and the scale neck.
-                SwitchSetting(
-                    title = stringResource(R.string.settings_left_handed_title),
-                    summary = stringResource(R.string.settings_left_handed_summary),
-                    checked = settings.leftHanded,
-                    onCheckedChange = onLeftHandedChange,
-                )
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_in_tune_precision_title),
+                    options = InTunePrecision.entries,
+                    selected = settings.inTunePrecision,
+                    onSelect = onInTunePrecisionChange,
+                ) { stringResource(inTunePrecisionLabel(it)) }
+                HorizontalDivider()
+                A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
             }
         }
         // The app itself: its language and About ("App" until Phase 75).
