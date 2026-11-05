@@ -64,6 +64,7 @@
     <string name="settings_language_cancel">Annuleren</string>
     <string name="about_title">Over Twangle</string>
     <string name="settings_about_link_summary">Versie %1$s, hulp, privacy en licenties</string>
+    <string name="settings_about_name_meaning">Twang is Engels voor de klank van een getokkelde snaar. Twangle helpt je die zuiver te stemmen.</string>
     <string name="settings_about_version">Versie %1$s</string>
     <string name="settings_about_free_title">Voor altijd gratis</string>
     <string name="settings_about_free_summary">Geen advertenties, geen account, geen aankopen in de app en geen tracking. Nu niet en later ook niet.</string>

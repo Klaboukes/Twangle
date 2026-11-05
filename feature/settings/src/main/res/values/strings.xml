@@ -113,6 +113,10 @@
     <!-- The line under About Twangle in Settings. %1$s is the version, e.g. "1.0.2". -->
     <string name="settings_about_link_summary">Version %1$s, help, privacy and licences</string>
     <string name="settings_about_app_name" translatable="false">Twangle</string>
+    <!-- About page: one line under the app's name and icon that says where the name comes from. "Twang" is the English word
+         for the ringing sound of a plucked string: keep the word "twang" as it is, and in other languages say that it is English
+         (e.g. Dutch: "Twang is Engels voor de klank van een getokkelde snaar."). -->
+    <string name="settings_about_name_meaning">A twang is the ringing sound of a plucked string. Twangle helps you bring yours in tune.</string>
     <!-- About page: the version line under the app's name. %1$s is the version, e.g. "1.0.2". -->
     <string name="settings_about_version">Version %1$s</string>
     <!-- About page: heading of the promise that the app stays free. -->

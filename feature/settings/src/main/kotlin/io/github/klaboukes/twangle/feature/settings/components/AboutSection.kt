@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleName
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
@@ -42,7 +43,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * The About rows: the app's name with its icon ([TwangleName]) over its [appVersion], the free-forever promise, the privacy statement,
+ * The About rows: the app's name with its icon ([TwangleName]) over its [appVersion] and where the name comes from, the
+ * free-forever promise, the privacy statement,
  * "Help and website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
  * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; Google's own
  * rating window is asked for once from the tuner, Phase 50), and a credit for
@@ -95,8 +97,8 @@ fun AboutSection(
 
 /**
  * The page's head: Twangle's icon and name, as on the store's banner and the website (Phase 79), centred over
- * the version, the icon's string plucked as the page opens and again at a tap. TalkBack reads it as the page's
- * first heading, the name.
+ * the version and a line on where the name comes from, the icon's string plucked as the page opens and again at a tap.
+ * TalkBack reads it as the page's first heading, the name.
  */
 @Composable
 private fun NameAndVersion(appVersion: String) {
@@ -116,6 +118,13 @@ private fun NameAndVersion(appVersion: String) {
             text = stringResource(R.string.settings_about_version, appVersion),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        // Where the name comes from: "twang" is English, so most languages need it said.
+        Text(
+            text = stringResource(R.string.settings_about_name_meaning),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 12.dp),
         )
     }
 }

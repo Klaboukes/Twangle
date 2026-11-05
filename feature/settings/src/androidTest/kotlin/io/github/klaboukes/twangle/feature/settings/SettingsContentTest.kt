@@ -648,10 +648,11 @@ class SettingsContentTest {
     private fun columnMiddle(): Dp = safeArea().let { (it.left + it.right) / 2 }
 
     @Test
-    fun aboutShowsTheVersionThePromiseAndThePrivacyStatement() {
+    fun aboutShowsTheVersionTheNamesMeaningThePromiseAndThePrivacyStatement() {
         show(AppSettings(), about = true)
         listOf(
             context.getString(R.string.settings_about_version, VERSION),
+            context.getString(R.string.settings_about_name_meaning),
             context.getString(R.string.settings_about_free_title),
             context.getString(R.string.settings_about_free_summary),
             context.getString(R.string.settings_about_privacy_title),
@@ -894,7 +895,12 @@ class SettingsContentTest {
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
         // The long About texts are taller than a phone on its side at 2×, but they wrap inside the window.
         val window = safeArea()
-        listOf(R.string.settings_about_free_summary, R.string.settings_about_privacy_summary, R.string.settings_about_credits_summary)
+        listOf(
+            R.string.settings_about_name_meaning,
+            R.string.settings_about_free_summary,
+            R.string.settings_about_privacy_summary,
+            R.string.settings_about_credits_summary,
+        )
             .map { res.getString(it) }
             .forEach {
                 val bounds = compose.onNodeWithText(it).performScrollTo().assertIsDisplayed().getBoundsInRoot()
