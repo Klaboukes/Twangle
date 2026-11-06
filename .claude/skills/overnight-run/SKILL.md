@@ -39,7 +39,8 @@ main folder on a branch, wait for it or ask in the morning summary; never switch
 ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"   # adb is not on PATH (CLAUDE.md)
 git status --short && git switch <branch> && git pull
 gh run list --branch main --limit 3          # main only: a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
-"$ADB" devices                                # f813c98c or R3GL502L08P, "device"; more than one: export ANDROID_SERIAL
+"$ADB" devices                                # the phone (f813c98c or R3GL502L08P) "device"; the watch too, when left on
+export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run picks the phone and the watch itself
 "$ADB" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
 "$ADB" shell settings get system font_scale   # 1.0
 "$ADB" shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
@@ -48,6 +49,13 @@ gh run list --branch main --limit 3          # main only: a failed nightly run i
   cost the night, and on 2026-10-27 again, as the keep-awake never loaded until it was fixed that
   day). It prints a warning in its first ten seconds when it can't; then put that in the summary.
   A closed laptop lid still sleeps it, so the laptop stays open.
+- **The devices** (owner, 2026-11-06): the run picks its phone (else the tablet) and the Galaxy Watch 5
+  once at the start (`scripts/devices.sh`), so a device that comes or goes during the night changes
+  nothing (on 2026-11-05 the watch came on over Wi-Fi a minute in and every phone install stopped on
+  "more than one device"). With the watch connected, the watch app's tests run on it first
+  (`scripts/ui-tests.sh :wear --thorough`, a few minutes, its screen kept on and its time-out put back).
+  No watch: the stage is skipped, which is no failure; a watch that drops off mid-stage isn't either.
+  The summary names the phone and what the watch did.
 - A Twangle on the phone signed by the owner's other machine is uninstalled and installed again by
   `scripts/ui-tests.sh` (the owner's rule); it says so in the log.
 - The run works on either test phone, the Xiaomi 12X or the Galaxy S26 (`R3GL502L08P`, API 37):
@@ -162,6 +170,6 @@ For each failure decide first: **app bug or outdated test?**
 ## 5. The morning summary
 
 Its first line says which branch the night checked and why (`--which`'s reason, or "you asked for
-it"). Then plain language, short: what ran and how long, what it found (app bugs first), what was fixed and
+it"), then which phone, and what the watch did (the summary's *Phone* and *Watch* lines). Then plain language, short: what ran and how long, what it found (app bugs first), what was fixed and
 how it was checked, what is left, and every choice made on the owner's behalf as a question to
 double-check ("I picked X because Y — fine?"). Picture-worthy changes get a phone screenshot.

@@ -6,7 +6,7 @@ argument-hint: "[optional: test-name regex, a :module, --all, --since-pass, --th
 
 # UI tests on the phone
 
-Always go through `scripts/ui-tests.sh`, never `./gradlew connectedDebugAndroidTest`. Gradle's task is slower, uninstalls the app (wiping the owner's settings) and floods the session with log lines. The script builds once, runs each module with `am instrument` under a time limit, and prints one line per module. The phones, their serials, setup and quirks are in [docs/devices.md](../../../docs/devices.md).
+Always go through `scripts/ui-tests.sh`, never `./gradlew connectedDebugAndroidTest`. Gradle's task is slower, uninstalls the app (wiping the owner's settings) and floods the session with log lines. The script builds once, runs each module with `am instrument` under a time limit, and prints one line per module. The phones, their serials, setup and quirks are in [docs/devices.md](../../../docs/devices.md). With more than one device connected it picks its own (a phone, else the tablet; `ANDROID_SERIAL` names one instead), and `scripts/ui-tests.sh :wear`, named on its own, runs the watch app's tests on the Galaxy Watch 5.
 
 **As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--since-pass`, `--thorough`, `--cool`, `--languages`, `--all-languages` or `--dry-run` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
 

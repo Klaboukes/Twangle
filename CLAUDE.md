@@ -45,7 +45,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
-scripts/overnight-ui-tests.sh           # the overnight run: every UI test in every style, then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
+scripts/overnight-ui-tests.sh           # the overnight run: the watch app's tests on the watch when it is connected, every UI test in every style, then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
 scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2 min a language, ~50 for all; before a listing is sent, release.sh listing refuses older ones; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
 scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
@@ -64,7 +64,7 @@ scripts/style-screens.sh                # pictures of the tuner in every style, 
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
 ```
-`scripts/ui-test-scope.py`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
+`scripts/ui-test-scope.py`, `scripts/devices.sh`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
 - Java is Android Studio's bundled JDK (JBR, JDK 25), with no separate install (owner, 2026-10-28). Each PC has it as a Windows user variable,
   `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`, so commands don't set it themselves.
@@ -74,7 +74,7 @@ scripts/record-plucks.sh                # records plucked strings on the phone i
   The foojay plugin auto-provisions JDK 17 for compilation.
 - Android SDK: `%LOCALAPPDATA%\Android\Sdk`. `adb` is at `<sdk>/platform-tools/adb.exe` and is not on PATH.
 - `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
-- **Devices:** the Xiaomi 12X (main test phone, `f813c98c`), the Galaxy S26 (the owner's daily phone, `R3GL502L08P`, not always there), the Lenovo Tab M11 (tablet checks, `HA244V49`), the Galaxy Watch 5 (over Wi-Fi) and the emulators. **Read [docs/devices.md](docs/devices.md) before any step that uses one**: serials, setup, quirks, the watch's pairing. The owner's rules for every device, in short: uninstalling Twangle is fine, but put back every other setting a check changes; on Play Protect's "Send app for a security check?" tap **Don't send**; with more than one device plugged in, pick one with `export ANDROID_SERIAL=<serial>`.
+- **Devices:** the Xiaomi 12X (main test phone, `f813c98c`), the Galaxy S26 (the owner's daily phone, `R3GL502L08P`, not always there), the Lenovo Tab M11 (tablet checks, `HA244V49`), the Galaxy Watch 5 (over Wi-Fi) and the emulators. **Read [docs/devices.md](docs/devices.md) before any step that uses one**: serials, setup, quirks, the watch's pairing. The owner's rules for every device, in short: uninstalling Twangle is fine, but put back every other setting a check changes; on Play Protect's "Send app for a security check?" tap **Don't send**; with more than one device connected the UI test scripts pick their own (a phone for the phone's tests, the watch for `:wear`); for anything else pick one with `export ANDROID_SERIAL=<serial>`.
 
 ### CI
 `.github/workflows/android.yml` runs `test`, `lint`, `assembleDebug` and an unsigned `assembleRelease bundleRelease` (the watch app included) **once a night** at 03:00 UTC on `main`, plus by hand through *Run workflow*, never per push or PR: the local run is the gate. A run per merge repeated that check and used up the free plan's 2,000 minutes a month in one week (2026-10-16). The nightly run covers everything merged since the last successful run and skips the build when only `*.md`, `docs/`, `.claude/` or `scripts/` changed. A run GitHub refused to start (spending limit, storage quota) is not a code failure. It uploads no APK (nobody downloaded it, and the free plan's artifact storage is small), only build reports when it fails (kept 3 days).

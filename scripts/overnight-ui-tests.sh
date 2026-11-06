@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# The overnight run: every on-device UI test in every style, then every language at 2× text, kept
-# cool, with one summary at the end. Run it while nobody needs the phone. See
+# The overnight run: the watch app's tests on the watch when one is connected, every on-device UI test
+# in every style, then every language at 2× text, kept cool, with one summary at the end. Run it while nobody needs the phone. See
 # .claude/skills/overnight-run/SKILL.md.
 #
-#   scripts/overnight-ui-tests.sh             the sweep and the languages
+#   scripts/overnight-ui-tests.sh             the watch, the sweep and the languages
+#   scripts/overnight-ui-tests.sh --watch     only the watch app's tests, on the watch
 #   scripts/overnight-ui-tests.sh --sweep     only the thorough sweep of every module
 #   scripts/overnight-ui-tests.sh --languages only the every-language checks
 #   scripts/overnight-ui-tests.sh --store     only the Play Store screenshots (scripts/store-screenshots.sh)
 #   scripts/overnight-ui-tests.sh --full ...  the languages of every module in every style, none skipped
 #   scripts/overnight-ui-tests.sh --dry-run   only say which every-language checks would run (no phone)
 #   scripts/overnight-ui-tests.sh --which     only say which branch tonight's run checks, and why
-# (--sweep, --languages and --store may be combined.)
+# (--watch, --sweep, --languages and --store may be combined.)
 #
 # The every-language checks of a module in a style that passed whole are noted at that commit, like a
 # module's pass (scripts/ui-tests.sh): build/ui-tests-passed/languages/feature-tuner-ANCIENT holds
@@ -25,6 +26,12 @@
 # where a language didn't fit go to each module's build/outputs/connected_android_test_additional_output,
 # the store screenshots to fastlane/metadata/android/<locale>/images/phoneScreenshots/. Each module the
 # sweep passes is noted as passed at this commit (scripts/ui-tests.sh, --since-pass), for the release.
+#
+# The devices (scripts/devices.sh): the phone's stages run on a phone (else the tablet), the watch's
+# on the watch (the Galaxy Watch 5 over Wi-Fi, docs/devices.md), each named once at the start, so a
+# device that comes or goes during the night changes nothing for the others; ANDROID_SERIAL names the
+# phone instead. No watch connected: its stage is skipped, and the summary says so. A watch that drops
+# off during its stage (its Wi-Fi went) says nothing about the app either: not counted as a failure.
 #
 # One branch a night (CLAUDE.md, *The v2 branch*): main, or v2 while 2.0 is built there. A run on v2
 # keeps its records apart, the logs in build/overnight/v2/ and the passes in build/ui-tests-passed/v2/,
@@ -70,19 +77,20 @@ which_branch() {
     fi
 }
 
-sweep=0 languages=0 store=0 full=0 dry_run=0 picked=0
+watch=0 sweep=0 languages=0 store=0 full=0 dry_run=0 picked=0
 for arg in "$@"; do
     case "$arg" in
+        --watch) watch=1 picked=1 ;;
         --sweep) sweep=1 picked=1 ;;
         --languages) languages=1 picked=1 ;;
         --store) store=1 picked=1 ;;
         --full) full=1 ;;
         --dry-run) dry_run=1 ;;
         --which) which_branch; exit 0 ;;
-        *) sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+        *) sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
     esac
 done
-[ $picked = 1 ] || { sweep=1; languages=1; }
+[ $picked = 1 ] || { watch=1; sweep=1; languages=1; }
 mkdir -p "$OUT"
 
 # Where the passes of the every-language checks are noted: next to the modules' (scripts/ui-tests.sh),
@@ -133,6 +141,13 @@ if [ $dry_run = 1 ]; then
 fi
 
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
+. "$ROOT/scripts/devices.sh"
+
+# The phone and the watch for tonight, picked once (the phone's stages, and wait_cool, use ANDROID_SERIAL).
+PHONE="${ANDROID_SERIAL:-$(first_device phone tablet)}"
+WATCH="$(first_device watch)"
+[ -n "$PHONE" ] && export ANDROID_SERIAL="$PHONE"
+phone_name="$([ -n "$PHONE" ] && device_name "$PHONE" || echo "no phone")"
 
 # Keeps Windows from sleeping while the run lasts: on 2026-10-19 the PC went to sleep after an idle
 # hour, the phone's connection went with it, and one test seemed to hang for 8 hours. A PowerShell
@@ -177,6 +192,30 @@ status=0
 tested_commit="$(git rev-parse HEAD)"
 [ -z "$(git status --porcelain)" ] && clean=1 || clean=0
 logs=()
+watch_result=""
+if [ $watch = 1 ]; then
+    # First, while the watch's Wi-Fi link is fresh.
+    echo "== The watch ($(date +%H:%M))" | tee "$OUT/watch.txt"
+    if [ -z "$WATCH" ]; then
+        watch_result="not connected, so its tests didn't run (wake it on its charger before the run)"
+        echo "No watch connected: $watch_result" | tee -a "$OUT/watch.txt"
+    else
+        watch_name="$(device_name "$WATCH")"
+        echo "On the $watch_name" | tee -a "$OUT/watch.txt"
+        ANDROID_SERIAL="$WATCH" MODULE_TIMEOUT=1200 scripts/ui-tests.sh :wear --thorough 2>&1 | tee -a "$OUT/watch.txt"
+        if [ "${PIPESTATUS[0]}" = 0 ]; then
+            watch_result="passed on the $watch_name"
+            logs+=("$OUT/watch.txt")
+        elif ready_devices | grep -qxF -- "$WATCH"; then
+            watch_result="failures below, on the $watch_name"
+            logs+=("$OUT/watch.txt")
+            status=1
+        else
+            watch_result="the $watch_name dropped off during its run, so its results say nothing (log: ${OUT#"$ROOT"/}/watch.txt)"
+            echo "The watch dropped off during its run: its results say nothing" | tee -a "$OUT/watch.txt"
+        fi
+    fi
+fi
 if [ $sweep = 1 ]; then
     logs+=("$OUT/sweep.txt")
     echo "== Thorough sweep of every module ($(date +%H:%M))" | tee "$OUT/sweep.txt"
@@ -222,6 +261,8 @@ tested="at $(git rev-parse --short HEAD)"
 [ $clean = 1 ] || tested="$tested with uncommitted changes"
 {
     echo "Overnight run on $line: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
+    [ $sweep = 1 ] || [ $languages = 1 ] || [ $store = 1 ] && echo "Phone: the $phone_name"
+    [ $watch = 1 ] && echo "Watch: $watch_result"
     [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module-and-style checks ran; $skipped passed earlier with nothing they show changed since"
     cat "${logs[@]}" 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off" || true
 } > "$OUT/summary.txt"
