@@ -150,7 +150,7 @@ listing isn't tied to a version.
 - **Texts, then pictures:** Play takes a language's pictures only once that language has a listing,
   so `listing` sends the texts and app details first, then everything (two passes).
 - **Screenshots first:** they are git-ignored, so they exist only on the PC that made them
-  (`scripts/store-screenshots.sh`, phone connected, about 2 minutes a language). `listing` refuses,
+  (`scripts/store-screenshots.sh`, phone connected, about 80 seconds a language, 37 minutes for all). `listing` refuses,
   naming the languages and the command to run, unless every language has its eight: Play shows the
   English screenshots in a language without its own, so a half-finished set is never sent. It says
   when the oldest was made, to make them again if the app has changed since.

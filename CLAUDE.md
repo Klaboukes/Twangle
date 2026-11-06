@@ -46,7 +46,7 @@ scripts/ui-tests.sh                     # on-device UI tests, only the modules t
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
 scripts/full-check.sh                   # the full check, whenever the owner starts it: the watch app's tests on the watch when it is connected, every UI test (Ink light and dark), then every language where a screen changed since it passed (~35 min when every screen changed, 2.0 on 2026-11-05, 1.1's six styles took ~3 h; --dry-run says what it would run; see /full-check)
-scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2 min a language, ~50 for all; before a listing is sent, release.sh listing refuses older ones; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
+scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~80 s a language, ~37 min for all; before a listing is sent, release.sh listing refuses older ones; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
 scripts/meter-frames.sh                 # frame times of the meter and the pitch trail on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)

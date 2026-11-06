@@ -167,7 +167,7 @@ moves on.
   or pictures, a new language, and the app's screen changes since (do the screenshots still show the
   app as it looks?). Nothing changed: there is nothing to send.
 - Every language needs its eight screenshots of the app as it is now: `scripts/store-screenshots.sh`
-  (phone connected, about 2 minutes a language, 50 for all; [docs/store-listing.md](../../../docs/store-listing.md)).
+  (phone connected, about 80 seconds a language, 37 minutes for all; [docs/store-listing.md](../../../docs/store-listing.md)).
   They are no longer made every night (owner, 2026-10-30), so make them when `listing-changes` says
   the app's screens changed since they were made: `listing` refuses them then (it reads the commit
   the last run of every language noted, `build/phone-screenshots.made-at`). Look them over as the

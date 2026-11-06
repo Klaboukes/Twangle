@@ -9,7 +9,7 @@
 # the shots in TABLET_SHOTS only, to images/tenInchScreenshots/. Which one it makes follows from the
 # device; there is no switch.
 #
-#   scripts/store-screenshots.sh                 every language (before a listing is sent; ~2 min a language)
+#   scripts/store-screenshots.sh                 every language (before a listing is sent; ~80 s a language, built once)
 #   scripts/store-screenshots.sh en-US nl-NL     only these Play locales
 #
 # The finished pictures go where fastlane and F-Droid look for them,
@@ -101,6 +101,8 @@ mkdir -p build "$RAW"
 # Shared on GitHub with the pictures (share-store-screenshots.sh). A run of some languages leaves it.
 made_at="$(git rev-parse HEAD) $([ -z "$(git status --porcelain)" ] && echo clean || echo uncommitted) $(date '+%Y-%m-%d %H:%M')"
 status=0
+# Built on the first language, the same tests for the rest (--no-build: 22 s less a language, 2026-11-06).
+built=()
 for locale in "${locales[@]}"; do
     captions="$LISTINGS/$locale/screenshot_captions.txt"
     printf '%-6s ' "$locale"
@@ -118,8 +120,9 @@ for locale in "${locales[@]}"; do
     for attempt in 1 2; do
         # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
         rm -rf "$PULLED"
-        scripts/ui-tests.sh :app -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet > "$log" 2>&1
+        scripts/ui-tests.sh :app "${built[@]}" -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet > "$log" 2>&1
         code=$?
+        grep -q "^build " "$log" && built=(--no-build)
         if [ $code -ge 3 ]; then
             tail -3 "$log"
             exit $code

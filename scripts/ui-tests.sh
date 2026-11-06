@@ -22,6 +22,8 @@
 #                                                ships (long; the full check)
 #   scripts/ui-tests.sh --dry-run ...            only say which modules would run, and why (no build,
 #                                                no phone)
+#   scripts/ui-tests.sh --no-build ...           use the APKs the last run built: for a script that runs
+#                                                the same tests again and again (store-screenshots.sh)
 #
 # With more than one device connected the run picks its own (scripts/devices.sh): a phone (else the
 # tablet) for the phone's modules, the watch for :wear; ANDROID_SERIAL names one instead.
@@ -54,7 +56,7 @@ COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
-usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
@@ -102,7 +104,7 @@ unproven_modules() {
     done
 }
 
-modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0 since_pass=0 dry_run=0
+modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0 since_pass=0 dry_run=0 no_build=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
@@ -113,6 +115,7 @@ while [ $# -gt 0 ]; do
         --languages) languages=1 ;;
         --all-languages) languages=2 ;;
         --dry-run) dry_run=1 ;;
+        --no-build) no_build=1 ;;
         -f | --filter) filter="$2"; shift ;;
         -c | --class) class="$2"; shift ;;
         -a | --arg) extra+=("$2"); shift ;;
@@ -271,7 +274,7 @@ tested="$(git rev-parse HEAD)"
 
 # Notes that [module] passed whole at this commit (pass_file above).
 note_pass() {
-    [ $clean = 1 ] && [ -z "$filter$class" ] && [ ${#extra[@]} -eq 0 ] || return 0
+    [ $clean = 1 ] && [ $no_build = 0 ] && [ -z "$filter$class" ] && [ ${#extra[@]} -eq 0 ] || return 0
     mkdir -p "$PASSED"
     echo "$tested $(date '+%Y-%m-%d %H:%M')" > "$(pass_file "$1")"
 }
@@ -283,12 +286,16 @@ for module in "${modules[@]}"; do tasks+=("$module:assembleDebugAndroidTest"); d
 [[ " ${modules[*]} " == *" :app "* ]] && tasks+=(":app:assembleDebug")
 [ $on_watch = 1 ] && tasks+=(":wear:assembleDebug")
 start=$SECONDS
-if ! timeout "$BUILD_TIMEOUT" ./gradlew "${tasks[@]}" --console=plain > "$ROOT/build/ui-tests-build.log" 2>&1; then
+# --no-build: a script running the same tests over and over (one language at a time) built them on
+# its first call; Gradle's up-to-date check alone took 22 s a call (2026-11-06). Never noted as a pass.
+if [ $no_build = 1 ]; then
+    :
+elif ! timeout "$BUILD_TIMEOUT" ./gradlew "${tasks[@]}" --console=plain > "$ROOT/build/ui-tests-build.log" 2>&1; then
     echo "Build failed (log: build/ui-tests-build.log)"
     grep -E "What went wrong|^e: |error:" -A3 "$ROOT/build/ui-tests-build.log" | head -15
     exit 1
 fi
-printf '%-18s %3ds\n' "build" $((SECONDS - start))
+[ $no_build = 1 ] || printf '%-18s %3ds\n' "build" $((SECONDS - start))
 
 # One run at a time on the phone. Two runs (say, from two Claude sessions) break each other: an
 # install stops the other run's tests ("Process crashed"), and their windows push each other into the
