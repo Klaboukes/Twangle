@@ -236,7 +236,11 @@ say yes.
       Unlike the internal track, the closed test is reviewed by Google (a few hours, sometimes a day
       or two); the internal track has no review and is live within minutes. The store listing sent by
       `scripts/release.sh listing` the same evening wasn't in that list: with managed publishing off,
-      what the API sends seems to go to review by itself (*Submission activity* shows it).
+      what the API sends goes to review by itself. *Submit* then asked *"Do you want to restart your
+      review?"*: **Restart review** puts the listing and the release in one review (*Changes in
+      review* lists both), so testers get the app and its store page together; *Cancel* would leave
+      the release unsent until the listing's review ends. Sending the listing first, the release right
+      after, loses only the hour between them.
 - [ ] After the promotion to production Google reviews it (a few hours to a few days); Play then
       updates phones by itself, starting with 20 % of people.
 - [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;
