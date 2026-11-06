@@ -229,7 +229,14 @@ say yes.
 - [ ] Tell Claude it passed, or what is wrong. Nothing is promoted before.
 
 **4. Watch the rollout**
-- [ ] A promotion to the closed test made as a draft: start it in *Closed testing* as in step 2.
+- [ ] A promotion to the closed test made as a draft (as the owner did it for 2.0, 2026-11-06): in
+      *Closed testing*, *Edit track*, *Next*, *Save*, and *Go to overview* in the popup; then in
+      *Publishing overview*, under *Changes not yet submitted for review*, *Submit 1 change for
+      review*. Play first runs its quick checks (up to about 15 minutes) and sends it once they pass.
+      Unlike the internal track, the closed test is reviewed by Google (a few hours, sometimes a day
+      or two); the internal track has no review and is live within minutes. The store listing sent by
+      `scripts/release.sh listing` the same evening wasn't in that list: with managed publishing off,
+      what the API sends seems to go to review by itself (*Submission activity* shows it).
 - [ ] After the promotion to production Google reviews it (a few hours to a few days); Play then
       updates phones by itself, starting with 20 % of people.
 - [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;

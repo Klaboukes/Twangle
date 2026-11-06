@@ -418,7 +418,7 @@ promote() {
     echo
     echo "$APP_NAME $v is on $name on Google Play, as $status."
     if [[ "$status" == draft ]]; then
-        echo "It is a draft: open it in the Play Console under Test and release, then Next and Save and publish."
+        echo "It is a draft: in the Play Console, Edit track, Next, Save, Go to overview, then Submit for review (docs/release.md)."
     elif [[ "$to" == "$PRODUCTION" ]]; then
         echo "Google reviews it first (a few hours to a few days). After two or three quiet days, raise it"
         echo "with scripts/release.sh rollout ${WATCH_ARG}50, later rollout ${WATCH_ARG}100; something wrong: scripts/release.sh halt${WATCH_ARG:+ watch}."
