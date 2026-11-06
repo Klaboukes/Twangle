@@ -2,66 +2,94 @@
 title: Twangle: een gratis gitaarstemmer
 description: Een rustige, precieze stemmer voor gitaar, bas, ukelele en meer, met akkoordnamen, akkoordschema's, toonladders, de capo, gehoortraining en een metronoom. Alles gratis, geen reclame, geen account en geen toestemming voor internet.
 nav: home
+layout: full
 -->
-  <section class="hero">
-    <div>
-      <h1>Een rustige, precieze stemmer. Gratis, zonder aanmelden.</h1>
-      <p class="lead">Speel een snaar en Twangle laat zien welke noot het is en hoe ver die van zuiver zit, tot op de cent. Daarna helpt het je spelen: akkoordnamen, akkoordschema's, toonladders, de capo, gehoortraining en een metronoom.</p>
-      <a class="play" href="{play}"><img src="{root}img/play-badge-nl.png" alt="Ontdek het op Google Play" width="203" height="60"></a>
-    </div>
+  <section class="stage"><div class="wrap">
+    <input type="checkbox" id="pluck" class="pluck" tabindex="-1" aria-hidden="true">
+    <label for="pluck" class="mark" aria-hidden="true">
+      <span class="burst"><span class="glow"></span><i></i><i></i><i></i></span>
+      {hero}
+    </label>
+    <p class="hint" aria-hidden="true">Tik op de snaar om hem opnieuw te tokkelen.</p>
+    <h1>Een rustige, precieze stemmer. Gratis, zonder aanmelden.</h1>
+    <p class="lead">Speel een snaar en Twangle laat zien welke noot het is en hoe ver die van zuiver zit, tot op de cent. Daarna helpt het je spelen: akkoordnamen, akkoordschema's, toonladders, de capo, gehoortraining en een metronoom.</p>
+    <a class="play" href="{play}"><img src="{root}img/play-badge-nl.png" alt="Ontdek het op Google Play" width="203" height="60"></a>
+  </div></section>
+
+  <section><div class="wrap">
+    <ul class="promise">
+      <li><b>Alles gratis</b>Geen aankopen in de app, geen abonnement.</li>
+      <li><b>Geen reclame</b>Nu niet en later ook niet.</li>
+      <li><b>Geen account</b>Openen en stemmen.</li>
+      <li><b>Niets verlaat je telefoon</b>Twangle heeft geen toestemming om internet te gebruiken.</li>
+    </ul>
+  </div></section>
+
+  <section class="showcase"><div class="wrap">
     <img class="shot" src="{root}shots/nl/1.jpg" alt="De stemmer: de A-snaar zuiver, de naald rechtop, Zuiver en 0 cent" width="540" height="1157">
-  </section>
+    <div>
+      <p class="kicker">De stemmer</p>
+      <h2>Stem elk instrument</h2>
+      <p>Gitaar (6, 7, 8 of 12 snaren), bas (4 of 5 snaren), ukelele, 5-snarige banjo, viool, altviool, cello en mandoline, in de gangbare stemmingen of je eigen. De chromatische stemmer doet elk ander instrument, of je stem.</p>
+      <p>Een woord onder de meter zegt welke kant je de stemknop op draait, <i>Strakker</i> of <i>Losser</i>, en het scherm kleurt rustig van amber naar groen zodra de snaar zuiver komt.</p>
+      <p>Twangle werkt met TalkBack en met grote tekst, in 25 talen.</p>
+      <p><a href="tuner.html">Zo werkt de stemmer</a> · <a href="instruments.html">Alle instrumenten en stemmingen</a></p>
+    </div>
+  </div></section>
 
-  <ul class="promise">
-    <li><b>Alles gratis</b>Geen aankopen in de app, geen abonnement.</li>
-    <li><b>Geen reclame</b>Nu niet en later ook niet.</li>
-    <li><b>Geen account</b>Openen en stemmen.</li>
-    <li><b>Niets verlaat je telefoon</b>Twangle heeft geen toestemming om internet te gebruiken.</li>
-  </ul>
+  <section id="tools"><div class="wrap">
+    <h2>De functies</h2>
+    <p>Twangle heeft drie tabbladen: <i>Stemmen</i>, <i>Metronoom</i> en <i>Oefenen</i>. Oefenen opent op een lijst van zijn onderdelen, Akkoorden, Toonladders, Capo, Gehoortraining en Toonlijn, met de laatst gebruikte bovenaan. Instellingen is het tandwiel linksboven.</p>
+    <p class="group tuning">Stemmen</p>
+    <div class="tools tuning">
+      <div data-page="tuner.html"><b>De stemmer</b>Speel een snaar en zie hoe ver die van zuiver zit.</div>
+      <div data-page="strum-check.html"><b>Strumcheck</b>Sla alle snaren aan en zie welke niet goed staan.</div>
+      <div data-page="12th-fret-check.html"><b>12e-fretcheck</b>Ontdek of het zadel van een snaar moet verschuiven.</div>
+    </div>
+    <p class="group listening">Meeluisteren</p>
+    <div class="tools listening">
+      <div data-page="chord-name.html"><b>Akkoordnaam</b>Sla een akkoord aan en zie hoe het heet.</div>
+    </div>
+    <p class="group practice">Oefenen</p>
+    <div class="tools practice">
+      <div data-page="metronome.html"><b>Metronoom</b>Strak de maat, van 30 tot 250 tellen per minuut.</div>
+      <div data-page="chords.html"><b>Akkoorden</b>Akkoordschema's voor je instrument en stemming.</div>
+      <div data-page="scales.html"><b>Toonladders</b>Elke noot op de hals, met een bourdon om over te spelen.</div>
+      <div data-page="capo.html"><b>Capo</b>Kies de toonsoort van het nummer en zie waar de capo moet.</div>
+      <div data-page="ear-training.html"><b>Gehoortraining</b>Speel een toon na die je hoort; herken intervallen en akkoorden.</div>
+      <div data-page="pitch-trail.html"><b>Toonlijn</b>Zie hoe stabiel een noot, een bend of je vibrato is.</div>
+    </div>
+    <p class="group more">Instrumenten en meer</p>
+    <div class="tools more">
+      <div data-page="instruments.html"><b>Instrumenten en stemmingen</b>Twaalf instrumenten, lagere stemmingen, je eigen stemmingen.</div>
+      <div data-page="left-handed.html"><b>Linkshandig</b>Akkoordschema's en de hals bij Toonladders andersom.</div>
+      <div data-page="widget.html"><b>De widget</b>Je stemming op het startscherm; één tik opent de stemmer.</div>
+      <div data-page="watch.html"><b>Op het horloge</b>Een stemmer om je pols die niets van je telefoon nodig heeft.</div>
+    </div>
+  </div></section>
 
-  <h2>Stem elk instrument</h2>
-  <p>Gitaar (6, 7, 8 of 12 snaren), bas (4 of 5 snaren), ukelele, 5-snarige banjo, viool, altviool, cello en mandoline, in de gangbare stemmingen of je eigen. De chromatische stemmer doet elk ander instrument, of je stem. <a href="instruments.html">Alle instrumenten en stemmingen</a></p>
-  <p>Twangle werkt met TalkBack en met grote tekst, in 25 talen.</p>
+  <section><div class="wrap">
+    <h2>Een kijkje binnen</h2>
+    <ul class="shots">
+      <li><img class="shot" src="{root}shots/nl/7.jpg" alt="Wat ga je stemmen?: de instrumenten bovenaan, de gitaarstemmingen van Standaard tot DADGAD, Lager met, Elke noot en de 12e-fretcheck" width="540" height="1157" loading="lazy">Je instrument en stemming</li>
+      <li><img class="shot" src="{root}shots/nl/6.jpg" alt="Akkoorden met Luister aan: een aangeslagen A mineur bij naam en in een schema voor gitaar in standaardstemming, greep 1 van 6" width="540" height="1157" loading="lazy">Het akkoord dat je aanslaat, bij naam en in een schema</li>
+      <li><img class="shot" src="{root}shots/nl/metronome.jpg" alt="De metronoom op 120 tellen per minuut in 4/4, de eerste tel licht op" width="540" height="1157" loading="lazy">Een metronoom die de maat houdt</li>
+      <li><img class="shot" src="{root}shots/nl/5.jpg" alt="Oefenen: Laatst gebruikt, Akkoorden · C majeur, bovenaan, dan Akkoorden, Toonladders, Capo, Gehoortraining en Toonlijn" width="540" height="1157" loading="lazy">Alles om te oefenen op één tab</li>
+    </ul>
+  </div></section>
 
-  <h2 id="tools">De functies</h2>
-  <p>Twangle heeft drie tabbladen: <i>Stemmen</i>, <i>Metronoom</i> en <i>Oefenen</i>. Oefenen opent op een lijst van zijn onderdelen, Akkoorden, Toonladders, Capo, Gehoortraining en Toonlijn, met de laatst gebruikte bovenaan. Instellingen is het tandwiel linksboven.</p>
-  <p class="group">Stemmen</p>
-  <div class="tools">
-    <div data-page="tuner.html"><b>De stemmer</b>Speel een snaar en zie hoe ver die van zuiver zit.</div>
-    <div data-page="strum-check.html"><b>Strumcheck</b>Sla alle snaren aan en zie welke niet goed staan.</div>
-    <div data-page="12th-fret-check.html"><b>12e-fretcheck</b>Ontdek of het zadel van een snaar moet verschuiven.</div>
-  </div>
-  <p class="group">Meeluisteren</p>
-  <div class="tools">
-    <div data-page="chord-name.html"><b>Akkoordnaam</b>Sla een akkoord aan en zie hoe het heet.</div>
-  </div>
-  <p class="group">Oefenen</p>
-  <div class="tools">
-    <div data-page="metronome.html"><b>Metronoom</b>Strak de maat, van 30 tot 250 tellen per minuut.</div>
-    <div data-page="chords.html"><b>Akkoorden</b>Akkoordschema's voor je instrument en stemming.</div>
-    <div data-page="scales.html"><b>Toonladders</b>Elke noot op de hals, met een bourdon om over te spelen.</div>
-    <div data-page="capo.html"><b>Capo</b>Kies de toonsoort van het nummer en zie waar de capo moet.</div>
-    <div data-page="ear-training.html"><b>Gehoortraining</b>Speel een toon na die je hoort; herken intervallen en akkoorden.</div>
-    <div data-page="pitch-trail.html"><b>Toonlijn</b>Zie hoe stabiel een noot, een bend of je vibrato is.</div>
-  </div>
-  <p class="group">Instrumenten en meer</p>
-  <div class="tools">
-    <div data-page="instruments.html"><b>Instrumenten en stemmingen</b>Twaalf instrumenten, lagere stemmingen, je eigen stemmingen.</div>
-    <div data-page="left-handed.html"><b>Linkshandig</b>Akkoordschema's en de hals bij Toonladders andersom.</div>
-    <div data-page="widget.html"><b>De widget</b>Je stemming op het startscherm; één tik opent de stemmer.</div>
-    <div data-page="watch.html"><b>Op het horloge</b>Een stemmer om je pols die niets van je telefoon nodig heeft.</div>
-  </div>
+  <section class="story" id="story"><div class="wrap"><div>
+    <p class="kicker">Het verhaal</p>
+    <h2>Waarom ik Twangle maakte</h2>
+    <p>Ik speel gitaar en schrijf al meer dan twintig jaar software. Stemmen zou het makkelijke deel moeten zijn: gitaar pakken, snaar aanslaan, stemknop draaien. Toch vragen de bekende stemapps eerst iets terug. Ze zetten stemmingen, de metronoom of de stroboscoop achter reclame of een abonnement, en elke app die ik vergeleek verzamelt gegevens, voor een taak waarbij alleen geluisterd hoeft te worden.</p>
+    <p>Dus maakte ik de stemmer die ik zelf wilde gebruiken. Hij luistert alleen zolang hij op het scherm staat, bewaart niets van wat hij hoort en heeft geen toestemming om online te gaan, dus hij kán niets versturen, ook niet als hij het zou willen. Alles zit er vanaf het begin in, voor iedereen, en dat blijft zo.</p>
+    <p>Ik had nog nooit een Android-app gemaakt. Twangle is geschreven samen met Claude, een AI: ik bepaalde wat het moest doen en hoe het moest voelen en probeerde het uit op echte gitaren, Claude schreef de code. Stap voor stap groeide het van een stemmer uit tot een klein oefenlokaal.</p>
+    <p class="name-note">En de naam? <i>Twang</i> is Engels voor de klank van een getokkelde snaar. Het logo is één moment van die klank: de eerste drie boventonen van een snaar, de hele snaar in amber, de helften in blauw, de derden in groen, en waar ze elkaar raken de kleuren die ze samen maken. Tik er bovenaan deze pagina op, en hij klinkt opnieuw.</p>
+  </div></div></section>
 
-  <h2>Een kijkje binnen</h2>
-  <ul class="shots">
-    <li><img class="shot" src="{root}shots/nl/7.jpg" alt="Wat ga je stemmen?: de instrumenten bovenaan, de gitaarstemmingen van Standaard tot DADGAD, Lager met, Elke noot en de 12e-fretcheck" width="540" height="1157" loading="lazy">Je instrument en stemming</li>
-    <li><img class="shot" src="{root}shots/nl/6.jpg" alt="Akkoorden met Luister aan: een aangeslagen A mineur bij naam en in een schema voor gitaar in standaardstemming, greep 1 van 6" width="540" height="1157" loading="lazy">Het akkoord dat je aanslaat, bij naam en in een schema</li>
-    <li><img class="shot" src="{root}shots/nl/metronome.jpg" alt="De metronoom op 120 tellen per minuut in 4/4, de eerste tel licht op" width="540" height="1157" loading="lazy">Een metronoom die de maat houdt</li>
-    <li><img class="shot" src="{root}shots/nl/5.jpg" alt="Oefenen: Laatst gebruikt, Akkoorden · C majeur, bovenaan, dan Akkoorden, Toonladders, Capo, Gehoortraining en Toonlijn" width="540" height="1157" loading="lazy">Alles om te oefenen op één tab</li>
-  </ul>
-  <p><a class="play" href="{play}"><img src="{root}img/play-badge-nl.png" alt="Ontdek het op Google Play" width="203" height="60" loading="lazy"></a></p>
-
-  <h2>Waarom “Twangle”?</h2>
-  <p><i>Twang</i> is Engels voor de klank van een getokkelde snaar.</p>
-
-  <p class="support" data-coffee>Twangle is gratis en blijft gratis: geen reclame, geen aankopen, niets om je voor aan te melden. Helpt het je bij het spelen, dan kun je me <a href="{coffee}">op een koffie trakteren</a>. Dank je wel.</p>
+  <section class="finale"><div class="wrap">
+    <h2>Klaar als jij het bent</h2>
+    <p>Twangle is gratis op Google Play, voor Android 8 en nieuwer.</p>
+    <a class="play" href="{play}"><img src="{root}img/play-badge-nl.png" alt="Ontdek het op Google Play" width="203" height="60" loading="lazy"></a>
+    <p class="support" data-coffee>Twangle is gratis en blijft gratis: geen reclame, geen aankopen, niets om je voor aan te melden. Helpt het je bij het spelen, dan kun je me <a href="{coffee}">op een koffie trakteren</a>. Dank je wel.</p>
+  </div></section>

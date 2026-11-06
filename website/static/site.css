@@ -1,108 +1,272 @@
-/* The Twangle website (Phase 54, docs/architecture/website.md). Contemporary colours
-   (core/designsystem StylePalettes.kt), light or dark as the visitor's device is set, the device's
-   own font (Contemporary uses Roboto), nothing loaded from another site (website/build.py checks).
-   Since Phase 79 the text is in the app's own face, Nunito: nunito.woff2, a cut of its Latin letters with its
-   weights (SIL OFL 1.1, nunito-OFL.txt beside it; docs/architecture/website.md says how it was cut). */
+/* The Twangle website (docs/architecture/website.md). Since Phase 83 in 2.0's one look, Ink (core/designsystem
+   StylePalettes.kt), light or dark as the visitor's device is set; the home page opens on a dark stage with the
+   logo plucked large. Nothing is loaded from another site and nothing runs (website/build.py checks).
+   The text is in the app's own face, Nunito: nunito.woff2, a cut of its Latin letters with its weights
+   (SIL OFL 1.1, nunito-OFL.txt beside it; docs/architecture/website.md says how it was cut). */
 @font-face { font-family: Nunito; src: url("nunito.woff2") format("woff2"); font-weight: 200 1000; font-display: swap; }
+
+/* Ink light and dark. The three harmonics of the logo are Ink's own colours: the whole string amber (far off), the
+   halves blue (the accent), the thirds green (in tune). The site gives one to each group of tools. */
 :root {
-  --page: #F5F7FC; --surface: #EFF2FA; --line: #D9DEEA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
-  --container: color-mix(in srgb, #3A4FD6 14%, #F5F7FC);
+  --page: #F6F7F9; --surface: #FFFFFF; --ink: #14181D; --muted: #4D5560; --track: #E1E5EA; --accent: #1A6FC4;
+  --amber: #A86400; --blue: #1A6FC4; --green: #107E46; /* the amber a shade deeper than the app's, for white on it */
+  --soft: 0 1px 2px rgba(20, 24, 29, .05), 0 6px 24px rgba(20, 24, 29, .06);
+  --lift: 0 2px 4px rgba(20, 24, 29, .06), 0 14px 36px rgba(20, 24, 29, .10);
   --ui: Nunito, Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The dark stage the logo plays on, in both themes: Ink dark, the background the logo's colours were made for. */
+  --stage: #0E1116; --stage-ink: #EEF1F5; --stage-muted: #A8B0BC;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --page: #0E1220; --surface: #171D2E; --line: #2A3146; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
-    --container: color-mix(in srgb, #A6ADFF 18%, #0E1220); color-scheme: dark;
+    --page: #0E1116; --surface: #171B22; --ink: #EEF1F5; --muted: #A8B0BC; --track: #262C35; --accent: #5FC4FF;
+    --amber: #FFB648; --blue: #5FC4FF; --green: #3DDC84;
+    --soft: 0 0 0 1px rgba(238, 241, 245, .05); --lift: 0 0 0 1px rgba(238, 241, 245, .10), 0 14px 36px rgba(0, 0, 0, .35);
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
 html { background: var(--page); }
-body { margin: 0; color: var(--ink); font: 400 17px/1.6 var(--ui); }
-a { color: var(--accent); }
+body { margin: 0; color: var(--ink); font: 400 17px/1.65 var(--ui); overflow-x: clip; }
+a { color: var(--accent); text-underline-offset: .18em; }
 img { max-width: 100%; }
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
-/* Top bar: name on the left, three links on the right, a language link at the end */
-header { border-bottom: 1px solid var(--line); }
-header .wrap { display: flex; align-items: center; gap: 16px; min-height: 60px; flex-wrap: wrap; }
+/* The harmonics as small marks: n lobes of a string, the whole, the halves, the thirds (sin(n·pi·u), as the logo),
+   and all three together for the group that is a bit of everything. Masks, so each takes its group's colour. */
+:root {
+  --h1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 14'%3E%3Cpath d='M1 7Q12 -4 23 7Z'/%3E%3C/svg%3E");
+  --h2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 14'%3E%3Cpath d='M1 7Q6.5 -2 12 7Q17.5 16 23 7Z'/%3E%3C/svg%3E");
+  --h3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 14'%3E%3Cpath d='M1 7Q4.67 -1 8.33 7Q12 15 15.67 7Q19.33 -1 23 7Z'/%3E%3C/svg%3E");
+  --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 14'%3E%3Cpath d='M2 7h15M11.5 1.5L17 7l-5.5 5.5' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --hall: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 14'%3E%3Cpath fill-opacity='.45' d='M1 7Q12 -4 23 7Z'/%3E%3Cpath fill-opacity='.7' d='M1 7Q6.5 -2 12 7Q17.5 16 23 7Z'/%3E%3Cpath d='M1 7Q4.67 -1 8.33 7Q12 15 15.67 7Q19.33 -1 23 7Z'/%3E%3C/svg%3E");
+}
+.tuning { --g: var(--amber); --gm: var(--h1); }
+.listening { --g: var(--blue); --gm: var(--h2); }
+.practice { --g: var(--green); --gm: var(--h3); }
+.more { --g: var(--muted); --gm: var(--hall); }
+.g-tuning { --g: var(--amber); --gm: var(--h1); }
+.g-listening { --g: var(--blue); --gm: var(--h2); }
+.g-practice { --g: var(--green); --gm: var(--h3); }
+.g-more { --g: var(--muted); --gm: var(--hall); }
+.emblem::before, .group::before, .crumb::before {
+  content: ""; display: inline-block; width: 2.1em; height: 1.2em; vertical-align: -.25em; margin-right: .55em;
+  background: var(--g, var(--accent)); -webkit-mask: var(--gm, var(--hall)) center / contain no-repeat; mask: var(--gm, var(--hall)) center / contain no-repeat;
+}
+
+/* Top bar: the icon and name on the left, three links on the right, a language link at the end */
+header .wrap { display: flex; align-items: center; gap: 18px; min-height: 68px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; color: var(--ink); text-decoration: none; margin-right: auto; }
 /* The icon and name (Phase 79, website/twangle-icon.svg and twangle-name.svg, TwangleName.kt's proportions): the
    capitals about 15 px tall, the icon 2.5 times that, the word's capitals level with the icon's middle. */
 .brand .twangle-icon { display: block; height: 38px; width: 38px; flex: none; }
 .brand .twangle-name { display: block; height: 19.4px; margin-left: -2.5px; width: auto; aspect-ratio: 449.7 / 100.8; align-self: flex-start; margin-top: 11.5px; }
 .skip { position: absolute; left: -9999px; }
-.skip:focus { left: 16px; top: 8px; background: var(--page); padding: 6px 12px; border-radius: 8px; z-index: 1; }
-nav { display: flex; gap: 18px; font-size: 16px; }
+.skip:focus { left: 16px; top: 8px; background: var(--page); padding: 6px 12px; border-radius: 8px; z-index: 3; }
+nav { display: flex; gap: 22px; font-size: 16px; font-weight: 600; }
 nav a { color: var(--muted); text-decoration: none; }
-nav a[aria-current] { color: var(--ink); font-weight: 600; }
-.lang { font-size: 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; text-decoration: none; }
+nav a:hover { color: var(--ink); }
+nav a[aria-current] { color: var(--ink); }
+.lang { font-size: 14px; font-weight: 600; color: var(--muted); background: var(--track); border-radius: 99px; padding: 3px 12px; text-decoration: none; }
 
-main { padding: 40px 0 56px; }
-h1 { font-size: clamp(30px, 5.4vw, 46px); line-height: 1.15; font-weight: 600; margin: 0 0 14px; letter-spacing: -0.01em; }
-h2 { font-size: 24px; line-height: 1.3; font-weight: 600; margin: 48px 0 12px; }
+main { display: block; padding: 44px 0 64px; }
+h1 { font-size: clamp(32px, 5.4vw, 52px); line-height: 1.1; font-weight: 800; margin: 0 0 16px; letter-spacing: -0.02em; }
+h2 { font-size: clamp(24px, 3vw, 30px); line-height: 1.25; font-weight: 800; margin: 52px 0 14px; letter-spacing: -0.01em; }
 h3 { font-size: 18px; margin: 0 0 4px; }
 p { margin: 0 0 14px; }
 .lead { font-size: 19px; color: var(--muted); max-width: 34em; }
 
-/* Home: words on the left, the phone on the right; one column on a phone */
-.hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
-/* Google's own badge, as Google's badge rules ask: unchanged, at least 40 px high, room around it */
-.play { display: inline-block; margin-top: 10px; line-height: 0; }
-.play img { height: 60px; width: auto; }
-.shot { display: block; margin: 0 auto; width: 100%; max-width: 270px; height: auto; aspect-ratio: 540 / 1157; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); font-size: 14px; }
-/* A row of screenshots, each with a short line under it */
-.shots { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.shots li { margin: 0; font-size: 15px; color: var(--muted); text-align: center; }
-.shots .shot { border-radius: 18px; margin-bottom: 10px; }
-.promise { list-style: none; padding: 0; margin: 40px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.promise li { background: var(--surface); border-radius: 14px; padding: 14px 16px; font-size: 15px; color: var(--muted); }
-.promise b { display: block; color: var(--ink); font-size: 17px; }
-.tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-/* A tool card is a link once the tool's page exists, a plain box until then */
-.tools > * { display: block; background: var(--surface); border-radius: 14px; padding: 16px; text-decoration: none; color: var(--muted); font-size: 15px; line-height: 1.45; }
-.tools b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 2px; }
-.tools a b::after { content: " →"; color: var(--accent); }
-.tools a:hover, .tools a:focus-visible { background: var(--container); }
-.group { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 26px 0 10px; }
-/* Home, at the end: the line about buying the maker a coffee (build.py leaves it out until the owner's page exists) */
-.support { background: var(--container); border-radius: 14px; padding: 16px 18px; margin-top: 36px; }
+/* ---- Home ---------------------------------------------------------------------------------------------------- */
+/* The top bar on the home page sits on the stage, dark in both themes. */
+.home header { background: var(--stage); --ink: var(--stage-ink); --muted: var(--stage-muted); --track: #262C35; color-scheme: dark; }
+.home main { padding: 0 0 24px; }
+.home section { padding: 72px 0 0; }
 
-/* Tool page: text column with the screenshot beside it */
-.crumb { font-size: 15px; color: var(--muted); margin-bottom: 10px; }
+/* The stage: the logo, large, plucked once as the page opens (the app's opening animation, its maths from
+   scripts/launcher-icon.py), and again on each tap. A tap on the mark toggles a hidden checkbox, which switches
+   every animation to its twin of another name, so each starts over; nothing runs. With less motion asked for,
+   it stands still. */
+.home .stage {
+  position: relative; padding: 24px 0 88px; text-align: center; color: var(--stage-ink); overflow: clip;
+  background:
+    radial-gradient(60% 50% at 50% 38%, rgba(95, 196, 255, .10), transparent 70%),
+    radial-gradient(40% 40% at 30% 30%, rgba(255, 182, 72, .07), transparent 70%),
+    radial-gradient(40% 40% at 72% 52%, rgba(61, 220, 132, .06), transparent 70%),
+    var(--stage);
+  --ink: var(--stage-ink); --muted: var(--stage-muted); --accent: #5FC4FF; color-scheme: dark;
+}
+.stage .pluck { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+.stage .mark {
+  position: relative; display: block; width: min(100%, 560px); margin: 0 auto; aspect-ratio: 76 / 44;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+}
+.stage .twangle-hero { position: relative; z-index: 1; display: block; width: 100%; height: 100%; overflow: visible; }
+/* The string itself, at rest, running out past the mark to the stage's edges (57 of the mark's 28..72 units) */
+.stage .mark::before {
+  content: ""; position: absolute; top: 65.9%; left: -100vw; right: -100vw; height: 1px; z-index: 0;
+  background: linear-gradient(90deg, transparent 20%, rgba(238, 241, 245, .22) 46%, rgba(238, 241, 245, .22) 54%, transparent 80%);
+}
+/* What the pluck sends out: a soft glow under the string and three rings in the harmonics' colours */
+.stage .burst { position: absolute; inset: 0; pointer-events: none; }
+.stage .burst .glow {
+  position: absolute; left: 50%; top: 65.9%; width: 90%; aspect-ratio: 2.2; transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(255, 182, 72, .22), rgba(95, 196, 255, .12) 55%, transparent);
+  animation: glow 2600ms ease-out 150ms both;
+}
+.stage .burst i {
+  position: absolute; left: 50%; top: 65.9%; width: 42%; aspect-ratio: 1; border-radius: 50%;
+  border: 2px solid var(--c); opacity: 0; transform: translate(-50%, -50%) scale(.2);
+  animation: ring 2400ms cubic-bezier(.2, .7, .3, 1) both;
+}
+.stage .burst i:nth-of-type(1) { --c: rgba(255, 182, 72, .7); animation-delay: 220ms; }
+.stage .burst i:nth-of-type(2) { --c: rgba(95, 196, 255, .6); animation-delay: 420ms; }
+.stage .burst i:nth-of-type(3) { --c: rgba(61, 220, 132, .55); animation-delay: 620ms; }
+.stage .pluck:checked + .mark .glow { animation-name: glow-b; }
+.stage .pluck:checked + .mark .burst i { animation-name: ring-b; }
+@keyframes glow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
+@keyframes glow-b { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
+@keyframes ring { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 12% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); } }
+@keyframes ring-b { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 12% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); } }
+.stage .hint { font-size: 14px; color: var(--stage-muted); margin: 4px 0 28px; opacity: 0; animation: arrive 900ms ease-out 2300ms both; }
+.stage h1 { max-width: 15em; margin: 0 auto 18px; animation: arrive 800ms ease-out 700ms both; }
+.stage .lead { margin: 0 auto 26px; color: var(--stage-muted); animation: arrive 800ms ease-out 900ms both; }
+.stage .play { animation: arrive 800ms ease-out 1100ms both; }
+@keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Google's own badge, as Google's badge rules ask: unchanged, at least 40 px high, room around it */
+.play { display: inline-block; margin-top: 6px; line-height: 0; border-radius: 10px; }
+.play img { height: 60px; width: auto; }
+
+/* The four promises, each with a check in the in-tune green */
+.promise { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.promise li { background: var(--surface); box-shadow: var(--soft); border-radius: 20px; padding: 20px 20px 18px; font-size: 15px; color: var(--muted); line-height: 1.5; }
+.promise b { display: block; color: var(--ink); font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.promise b::before {
+  content: ""; display: block; width: 26px; height: 26px; border-radius: 50%; margin-bottom: 12px;
+  background: var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat;
+}
+
+/* The tuner beside the words on what it tunes */
+.showcase .wrap { display: grid; grid-template-columns: 300px 1fr; gap: 64px; align-items: center; }
+.showcase h2 { margin-top: 0; }
+.kicker { font-size: 14px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+
+/* A screenshot as a phone: round corners, a soft shadow, no frame */
+.shot { display: block; margin: 0 auto; width: 100%; max-width: 280px; height: auto; aspect-ratio: 540 / 1157; border-radius: 30px; background: var(--surface); box-shadow: var(--lift); color: var(--muted); font-size: 14px; }
+
+/* The tools in their groups, each group with its harmonic */
+.group { font-size: 14px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); margin: 34px 0 12px; }
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* A tool card is a link once the tool's page exists, a plain box until then */
+.tools > * {
+  position: relative; display: block; background: var(--surface); box-shadow: var(--soft); border-radius: 20px; padding: 18px 20px;
+  text-decoration: none; color: var(--muted); font-size: 15px; line-height: 1.5; transition: transform .2s ease, box-shadow .2s ease;
+}
+.tools b { display: block; color: var(--ink); font-size: 18px; font-weight: 800; margin-bottom: 3px; }
+.tools a b::after { /* an arrow of its own: Nunito's cut has none */
+  content: ""; display: inline-block; width: .95em; height: .7em; margin-left: .4em; vertical-align: .02em; background: var(--g, var(--accent));
+  -webkit-mask: var(--arrow) center / contain no-repeat; mask: var(--arrow) center / contain no-repeat; transition: transform .2s ease;
+}
+.tools a:hover b::after, .tools a:focus-visible b::after { transform: translateX(3px); }
+.tools a:hover, .tools a:focus-visible { transform: translateY(-2px); box-shadow: var(--lift), inset 0 0 0 2px color-mix(in srgb, var(--g, var(--accent)) 55%, transparent); outline: none; }
+
+/* A row of screenshots, each with a short line under it */
+.shots { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.shots li { margin: 0; font-size: 15px; color: var(--muted); text-align: center; line-height: 1.45; }
+.shots .shot { border-radius: 24px; margin-bottom: 16px; }
+
+/* Why I made it: the maker's own words, in a card of its own */
+.story .wrap > div {
+  position: relative; max-width: 780px; margin: 0 auto; background: var(--surface); box-shadow: var(--soft);
+  border-radius: 28px; padding: 44px 48px 36px; overflow: hidden;
+}
+.story .wrap > div::before { /* the three harmonics, faint, along the card's top */
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--amber), var(--blue) 50%, var(--green));
+}
+.story h2 { margin-top: 0; }
+.story p { font-size: 18px; line-height: 1.7; }
+.story .name-note { font-size: 16px; color: var(--muted); border-top: 1px solid var(--track); padding-top: 18px; margin-top: 24px; }
+
+/* The end of the home page: the badge once more, on the stage */
+.home .finale { margin-top: 80px; padding: 64px 0 72px; background: var(--stage); color: var(--stage-ink); text-align: center; --ink: var(--stage-ink); --muted: var(--stage-muted); --accent: #5FC4FF; color-scheme: dark; }
+.finale h2 { margin: 0 0 10px; }
+.finale p { color: var(--stage-muted); margin: 0 auto 22px; max-width: 30em; }
+/* Home, at the end: the line about buying the maker a coffee (build.py leaves it out until the owner's page exists) */
+.support { margin: 26px auto 0; max-width: 34em; font-size: 15px; }
+
+/* ---- Tool pages ---------------------------------------------------------------------------------------------- */
+/* A soft wash at the top in the group's colour, and the crumb carrying its harmonic */
+body[class*="g-"] main { background: radial-gradient(70% 380px at 12% 0, color-mix(in srgb, var(--g) 11%, transparent), transparent 75%); }
+.crumb { display: inline-block; font-size: 14px; font-weight: 700; color: var(--muted); background: var(--surface); box-shadow: var(--soft); border-radius: 99px; padding: 5px 14px 5px 12px; margin-bottom: 18px; }
+.crumb::before { margin-right: .55em; }
 .crumb a { color: var(--muted); }
-.tool { display: grid; grid-template-columns: 1fr 260px; gap: 48px; align-items: start; }
-.tool .shot { position: sticky; top: 20px; }
-.tool.solo { grid-template-columns: 1fr; max-width: 720px; } /* a tool page without a picture */
-.wide { display: block; width: 100%; height: auto; aspect-ratio: 960 / 448; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); margin: 8px 0 0; } /* a screenshot on its side, across the column */ol.steps { padding-left: 1.3em; margin: 0 0 14px; }
-ol.steps li { margin-bottom: 8px; }
-details { background: var(--surface); border-radius: 14px; padding: 4px 18px; margin: 0 0 10px; }
-summary { cursor: pointer; font-weight: 600; padding: 12px 0; }
+.tool { display: grid; grid-template-columns: 1fr 270px; gap: 56px; align-items: start; }
+.tool .shot { position: sticky; top: 24px; }
+.tool.solo { grid-template-columns: 1fr; max-width: 740px; } /* a tool page without a picture */
+.tool h2 { font-size: 24px; margin-top: 40px; }
+.wide { display: block; width: 100%; height: auto; aspect-ratio: 960 / 448; border-radius: 22px; box-shadow: var(--lift); background: var(--surface); margin: 8px 0 0; } /* a screenshot on its side, across the column */
+ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 18px; }
+ol.steps li { counter-increment: step; position: relative; padding-left: 44px; margin-bottom: 12px; min-height: 30px; }
+ol.steps li::before {
+  content: counter(step); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: 15px; color: var(--page); background: var(--g, var(--accent));
+}
+details { background: var(--surface); box-shadow: var(--soft); border-radius: 18px; padding: 4px 20px; margin: 0 0 10px; }
+summary { cursor: pointer; font-weight: 700; padding: 13px 0; }
 details > :not(summary) { margin-top: 0; }
-details[open] { padding-bottom: 8px; }
-.curious { background: var(--container); }
-.nextprev { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; font-size: 16px; }
+details[open] { padding-bottom: 10px; }
+.curious { background: color-mix(in srgb, var(--g, var(--accent)) 9%, var(--surface)); }
+.nextprev { display: flex; justify-content: space-between; gap: 12px; margin-top: 48px; font-size: 16px; font-weight: 700; }
+.nextprev a { text-decoration: none; background: var(--surface); box-shadow: var(--soft); border-radius: 99px; padding: 8px 18px; }
+.nextprev a:hover { box-shadow: var(--lift); }
 
 /* Help page */
-.help { max-width: 720px; }
+.help { max-width: 740px; }
 /* A link to help.html#octave opens that answer; its question stays in view above it. */
 .help details [id] { scroll-margin-top: 4em; }
-.ask { background: var(--container); border-radius: 14px; padding: 16px 18px; margin-top: 36px; }
+.ask { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border-radius: 18px; padding: 18px 20px; margin-top: 36px; }
 
-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; padding-top: 22px; padding-bottom: 28px; }
+footer { color: var(--muted); font-size: 15px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; padding-top: 26px; padding-bottom: 32px; border-top: 1px solid var(--track); }
+.home footer .wrap { border-top: 0; }
 footer span { margin-right: auto; }
 footer small { flex-basis: 100%; font-size: 13px; }
 footer a { overflow-wrap: anywhere; }
 
+/* Less motion asked for: everything stands still, the logo in its resting pose, nothing to tap for */
+@media (prefers-reduced-motion: reduce) {
+  .stage .burst, .stage .hint { display: none; }
+  .stage .mark { cursor: default; }
+  .stage h1, .stage .lead, .stage .play { animation: none; }
+  .tools > * { transition: none; }
+  .tools a:hover, .tools a:focus-visible { transform: none; }
+}
+
+@media (max-width: 860px) {
+  .promise { grid-template-columns: 1fr 1fr; }
+  .tools { grid-template-columns: 1fr 1fr; }
+  .shots { grid-template-columns: 1fr 1fr; gap: 28px 18px; }
+  .showcase .wrap { grid-template-columns: 220px 1fr; gap: 36px; }
+}
 @media (max-width: 720px) {
   body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
   main { padding-top: 28px; }
-  nav { gap: 14px; }
+  nav { gap: 16px; }
   header .lang { display: none; } /* on a phone the language link is in the footer only */
-  .hero, .tool { grid-template-columns: 1fr; gap: 28px; }
-  .tool .shot { position: static; max-width: 160px; order: -1; }
-  .promise { grid-template-columns: 1fr 1fr; }
+  .home section { padding-top: 56px; }
+  .home .stage { padding: 12px 0 64px; }
+  .stage .hint { margin-bottom: 20px; }
+  .lead { font-size: 18px; }
+  .tool { grid-template-columns: 1fr; gap: 28px; }
+  .tool .shot { position: static; max-width: 170px; order: -1; }
+  .showcase .wrap { grid-template-columns: 1fr; gap: 32px; }
+  .showcase .shot { max-width: 230px; }
   .tools { grid-template-columns: 1fr; }
-  .shots { grid-template-columns: 1fr 1fr; gap: 24px 16px; }
+  .promise li { padding: 16px; }
+  .story .wrap > div { padding: 32px 22px 26px; border-radius: 22px; }
+  .story p { font-size: 17px; }
   .play img { height: 56px; }
 }

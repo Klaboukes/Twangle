@@ -3,7 +3,8 @@
     python -I website/build.py [output folder]      (default: website/build)
 
 Each page in website/pages/<language>/ is the inside of one page's <main>, with a short
-header comment (title, description, nav). This script wraps each in the shared frame
+header comment (title, description, nav; a tool page's group, the home page's layout: full).
+This script wraps each in the shared frame
 (head, top bar, footer) in its language, copies website/static/ beside them, and checks
 the result:
   - nothing is loaded from another host: no src, srcset, poster or data, no <link> and no
@@ -31,6 +32,11 @@ STATIC = HERE / "static"
 # The top bar's icon and name (Phase 79): scripts/launcher-icon.py and scripts/wordmark.py draw them.
 TWANGLE_NAME = "".join((HERE / f).read_text(encoding="utf-8").split("-->\n", 1)[1].strip()
                        for f in ("twangle-icon.svg", "twangle-name.svg"))
+# The home page's large plucked mark (Phase 83, scripts/launcher-icon.py), where a page has {hero}.
+HERO = (HERE / "twangle-hero.svg").read_text(encoding="utf-8").split("-->\n", 1)[1].strip()
+# A tool page's group (its header's `group:`), drawn with the harmonic the home page gives the group's heading:
+# its crumb and the wash at the page's top (site.css).
+GROUPS = ("tuning", "listening", "practice", "more")
 
 # English first: it is the root. Each language's folder under the site's root.
 LANGUAGES = {"en": "", "nl": "nl/"}
@@ -88,7 +94,7 @@ FRAME = """<!doctype html>
 <link rel="icon" type="image/png" href="{root}img/icon.png">
 <link rel="stylesheet" href="{root}site.css">
 </head>
-<body>
+<body{body_class}>
 <a class="skip" href="#main">{skip}</a>
 <header><div class="wrap">
   <a class="brand" href="{home_href}" aria-label="{home}">{twangle_name}</a>
@@ -96,9 +102,7 @@ FRAME = """<!doctype html>
   <a class="lang" href="{other_href}" hreflang="{other_lang}" lang="{other_lang}">{other_name}</a>
 </div></header>
 
-<main id="main"><div class="wrap">
-{body}
-</div></main>
+<main id="main">{body}</main>
 
 <footer><div class="wrap">
   <span>{made_by}{coffee}</span>
@@ -197,6 +201,15 @@ def build(out):
         root = "../" * depth
         for name in names[lang]:
             meta, body = read_page(PAGES / lang / name)
+            if meta.get("group") and meta["group"] not in GROUPS:
+                raise Problem(f"pages/{lang}/{name}: group {meta['group']} is none of {', '.join(GROUPS)}")
+            classes = (["home"] if name == "index.html" else []) + ([f"g-{meta['group']}"] if meta.get("group") else [])
+            body = coffee_line(tool_cards(body, lambda n: (PAGES / lang / n).exists())) \
+                .replace("{play}", PLAY_URL).replace("{root}", root).replace("{hero}", HERO)
+            # A page made of sections (`layout: full`, the home page) has a .wrap inside each, so a section
+            # can run the window's full width; any other page sits in one.
+            if meta.get("layout") != "full":
+                body = f'<div class="wrap">\n{body}</div>'
             w = WORDS[lang]
             footer = []
             if (PAGES / lang / "help.html").exists():
@@ -216,8 +229,8 @@ def build(out):
                 other_href=href(root, LANGUAGES[other], name),
                 other_lang=other,
                 other_name=WORDS[other]["language_name"],
-                body=coffee_line(tool_cards(body, lambda n: (PAGES / lang / n).exists()))
-                .replace("{play}", PLAY_URL).replace("{root}", root),
+                body_class=f' class="{" ".join(classes)}"' if classes else "",
+                body=body,
                 made_by=w["made_by"],
                 coffee=' <a href="{}">{}</a>'.format(COFFEE_URL, w["coffee"]) if COFFEE_URL else "",
                 footer_links="".join(footer),

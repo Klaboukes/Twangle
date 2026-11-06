@@ -18,7 +18,8 @@ Writes, for the phone app and the watch app:
 wear/src/main/res/drawable/ic_twangle_mark.xml, the watch tile's and watch face shortcut's white mark,
 wear/src/main/res/drawable/ic_twangle_mark_colour.xml, the mark in its colours in the middle of the watch tile,
 core/designsystem/src/main/res/drawable/twangle_icon_plucked.xml and website/twangle-icon.svg, the icon beside the
-name (TwangleName.kt, the website's top bar), plucked as the opening screen's, and
+name (TwangleName.kt, the website's top bar), plucked as the opening screen's, website/twangle-hero.svg, the home
+page's large mark, plucked the same way but slower, and
 res/drawable/ic_opening_animated.xml in both, the opening screen's icon (Android 12 and up play it): the
 string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
 settling into the icon's pose, every overlap in the icon's own colour all the while. Android 8 to 11 show it
@@ -408,6 +409,52 @@ def website_icon():
             f'<g transform="{scale}">{copy("first")}{copy("again")}</g></svg>\n')
 
 
+# The home page's large mark (Phase 83): the harmonics alone, cropped to themselves (MARK_CROP), plucked by the same
+# swing as the opening screen's but slower, as befits its size, and after a short rest so the page is seen first.
+HERO_MS = 1800
+HERO_DELAY_MS = 150
+HERO_FRAMES = 36
+
+
+def website_hero():
+    """The home page's plucked mark (website/build.py puts it in the hero), drawn once, as website_icon()'s groups.
+    Each group has its pluck twice under two names, and the page's hidden checkbox, toggled by a tap on the mark's
+    label (`.pluck:checked + .mark`, website/static/site.css), switches between them: a new animation name starts
+    the pluck over, so every tap plucks it again; no script. (Showing a second hidden copy, as the top bar's icon
+    does, doesn't restart it here: the browser keeps a hidden SVG group's animation running.) Its ids and keyframes
+    are its own, apart from the top bar's icon."""
+    shapes = "".join(f'<path id="th-p{k}" d="{harmonic_outline(k)}"/>' for k in range(3))
+    clips = "".join(f'<clipPath id="th-h{k}"><use href="#th-p{k}"/></clipPath>' for k in range(3))
+    sets = [[0], [1], [2], [0, 1], [0, 2], [1, 2], [0, 1, 2]]
+    body = ""
+    for i, members in enumerate(sets):
+        close = ""
+        for depth, k in enumerate(members):
+            clip = f' clip-path="url(#th-h{k})"' if depth < len(members) - 1 else ""
+            body += f'<g class="s{i}g{depth}"{clip}>'
+            if depth == len(members) - 1:
+                body += f'<use href="#th-p{k}" fill="{colour_of(members)}"/>'
+            close += "</g>"
+        body += close
+
+    css = []
+    for i, members in enumerate(sets):
+        for depth, k in enumerate(members):
+            outer = members[depth - 1] if depth else None
+            name = f"th-s{i}g{depth}"
+            frames = " ".join(f"{100 * f:.1f}%{{transform:scaleY({v:.3f})}}"
+                              for f, v in pluck_values(k, outer, frames=HERO_FRAMES))
+            css.append(f"@keyframes {name}{{{frames}}}@keyframes {name}b{{{frames}}}")
+            css.append(f".twangle-hero .s{i}g{depth}{{animation:{name} {HERO_MS}ms linear {HERO_DELAY_MS}ms both}}")
+            css.append(f".pluck:checked+.mark .twangle-hero .s{i}g{depth}{{animation-name:{name}b;animation-delay:0s}}")
+    css.append(f".twangle-hero g{{transform-box:view-box;transform-origin:0 {STRING_Y}px}}")
+    css.append("@media (prefers-reduced-motion:reduce){.twangle-hero g{animation:none!important}}")
+    x, y, w, h = MARK_CROP
+    return ("<!-- Drawn by scripts/launcher-icon.py: change that script and run it again rather than editing this file. -->\n"
+            f'<svg class="twangle-hero" viewBox="{x:g} {y:g} {w:g} {h:g}" aria-hidden="true" focusable="false">'
+            f"<style>{''.join(css)}</style><defs>{shapes}{clips}</defs>{body}</svg>\n")
+
+
 def main():
     painted = regions()
     foreground = vector(108, 108, "".join(path_xml(c, d) for c, d in painted),
@@ -439,6 +486,7 @@ def main():
     (ROOT / "core/designsystem/src/main/res/drawable/twangle_icon_plucked.xml").write_text(
         icon_beside_name(), encoding="utf-8", newline="\n")
     (ROOT / "website/twangle-icon.svg").write_text(website_icon(), encoding="utf-8", newline="\n")
+    (ROOT / "website/twangle-hero.svg").write_text(website_hero(), encoding="utf-8", newline="\n")
     for module, theme, hold in (("app", "Theme.Twangle.Starting", 0), ("wear", "Theme.Twangle.Watch.Starting", WATCH_HOLD_MS)):
         (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(hold), encoding="utf-8", newline="\n")
         (ROOT / module / "src/main/res/values/opening_animation.xml").write_text(
