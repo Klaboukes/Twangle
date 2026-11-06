@@ -21,7 +21,7 @@ NARZĘDZIA, KTÓRE SŁUCHAJĄ
 • Skale na gryfie: durowa, molowa, pentatonika i bluesowa, z nazwą każdego dźwięku
 • Kapodaster: wybierz tonację piosenki i chwyty, które lubisz, i zobacz, gdzie założyć kapodaster
 • Trening słuchu: Zagraj ze słuchu (zagraj na instrumencie dźwięki, które słyszysz), Interwały i Rodzaj akordu
-• Metronom: od 30 do 250 uderzeń na minutę na okrągłym pokrętle tempa, z wystukiwaniem tempa
+• Metronom: od 30 do 250 uderzeń na minutę na przesuwanej linijce tempa, z wystukiwaniem tempa
 • 2/4, 3/4, 4/4, 5/4, 6/8 i 7/8, z akcentem na pierwszym uderzeniu i światełkami, za którymi łatwo nadążyć
 • Słychać go ponad twoją muzyką lub podkładem, a do tego może wibrować w rytm
 • Między uderzeniami: dodatkowe kliknięcia w ósemkach, triolach lub szesnastkach
@@ -35,10 +35,9 @@ DLA KAŻDEGO
 • Nazwy dźwięków po twojemu: C D E … H, z B zamiast H albo Do Re Mi
 
 DOPASUJ DO SIEBIE
-• Sześć stylów, od Starożytnego po Erę kosmiczną, każdy z własnymi kolorami, literami i tłem
-• Sześć wskaźników i sześć wyglądów fali, w tym stroboskop
 • Jasny, ciemny lub jak w telefonie, z kolorami tapety na Androidzie 12 i nowszym
-• Tryb skupienia: jeden duży wskaźnik na telefonie obróconym poziomo, łatwy do odczytania z daleka
+• Trzy wskaźniki do wyboru: ślad, łuk świetlny albo stroboskop
+• Tryb skupienia: stroik na całym ekranie telefonu obróconego poziomo, łatwy do odczytania z daleka
 
 PONADTO
 • Widżet na ekran główny, który otwiera stroik jednym dotknięciem

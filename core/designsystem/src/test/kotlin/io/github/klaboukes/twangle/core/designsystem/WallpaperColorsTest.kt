@@ -4,7 +4,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -12,7 +11,7 @@ import org.junit.Test
 
 /**
  * With "Wallpaper colours" on, a green wallpaper must not make the accent look "in tune" (Phase 43):
- * within [IN_TUNE_HUE_GUARD] of the in-tune hue the accent falls back to Contemporary's blue, light and
+ * within [IN_TUNE_HUE_GUARD] of the in-tune hue the accent falls back to Ink's blue, light and
  * dark, and the rest of the wallpaper scheme stays.
  */
 class WallpaperColorsTest {
@@ -36,9 +35,9 @@ class WallpaperColorsTest {
     )
 
     @Test
-    fun `a green wallpaper's accent falls back to contemporary's blue, light and dark`() {
+    fun `a green wallpaper's accent falls back to Ink's blue, light and dark`() {
         for ((dark, green) in listOf(false to greenLight, true to greenDark)) {
-            val own = paletteFor(VisualStyle.CONTEMPORARY, dark)
+            val own = paletteFor(dark)
             val scheme = green.keepingInTuneApart(dark)
             assertEquals("primary, dark=$dark", own.accent, scheme.primary)
             assertEquals("onPrimary, dark=$dark", own.onAccent, scheme.onPrimary)
@@ -89,7 +88,7 @@ class WallpaperColorsTest {
         val accents = mapOf("yellow-green" to Color(0xFF55682A), "teal" to Color(0xFF006A60), "mint" to Color(0xFF006C4F))
         for ((name, accent) in accents) {
             for (dark in listOf(false, true)) {
-                val own = paletteFor(VisualStyle.CONTEMPORARY, dark).accent
+                val own = paletteFor(dark).accent
                 assertEquals("$name, dark=$dark", own, scheme(dark, accent).keepingInTuneApart(dark).primary)
             }
         }

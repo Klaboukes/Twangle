@@ -16,8 +16,8 @@
         <item quantity="one">%1$d सेंट ऊपर</item>
         <item quantity="other">%1$d सेंट ऊपर</item>
     </plurals>
-    <string name="wear_spoken_tune_up">ऊपर ट्यून करें</string>
-    <string name="wear_spoken_tune_down">नीचे ट्यून करें</string>
+    <string name="wear_word_tighten">कसें</string>
+    <string name="wear_word_loosen">ढीला करें</string>
     <string name="wear_spoken_sharp">%1$s शार्प</string>
     <string name="wear_mic_needed">Twangle घड़ी के माइक्रोफ़ोन से आपका वाद्य सुनता है।</string>
     <string name="wear_allow_mic">माइक्रोफ़ोन की अनुमति दें</string>
@@ -26,6 +26,17 @@
     <string name="wear_mic_unavailable">माइक्रोफ़ोन नहीं खुल सका।</string>
     <string name="wear_try_again">फिर से कोशिश करें</string>
     <string name="wear_tile_tune">ट्यून करें</string>
+    <string name="wear_tile_metronome">मेट्रोनोम</string>
+    <string name="wear_tile_open_metronome">मेट्रोनोम खोलें, %1$s</string>
     <string name="wear_shortcut_tune">ट्यून</string>
     <string name="wear_shortcut_open">ट्यूनर खोलें</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d बीट प्रति मिनट</item>
+        <item quantity="other">%1$d बीट प्रति मिनट</item>
+    </plurals>
+    <string name="wear_metronome_playing">चल रहा है</string>
+    <string name="wear_metronome_stopped">रुका हुआ</string>
+    <string name="wear_metronome_start">शुरू करें</string>
+    <string name="wear_metronome_stop">रोकें</string>
+    <string name="wear_metronome_click">क्लिक साउंड</string>
 </resources>

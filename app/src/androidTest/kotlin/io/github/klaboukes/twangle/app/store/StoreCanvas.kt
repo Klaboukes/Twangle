@@ -68,7 +68,6 @@ import kotlinx.coroutines.cancel
 import androidx.test.core.app.ActivityScenario
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -114,37 +113,34 @@ enum class CanvasSpec(
 class Window(val screen: ImageBitmap, val focus: ClosedFloatingPointRange<Float> = 0f..1f)
 
 /**
- * One store screenshot as Play shows it: [spec]'s pixels in the style's (quiet) background, the
+ * One store screenshot as Play shows it: [spec]'s pixels in the app's (quiet) background, the
  * caption in large type above, and below it [rows] of app screens ([Window]), each in a slim dark
  * frame with round corners and a soft shadow. One screen takes the whole space under the caption;
- * rows share its height and the screens of a row its width (the six styles' grid). Two screens alone
+ * rows share its height and the screens of a row its width (the six tiles' grid). Two screens alone
  * in a row, [staggered], stand side by side whole, the second lower, as two phones.
  *
- * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in the style's display face
- * with its fallbacks for other scripts (`StyleTypography`: Arabic, Devanagari, CJK and Cyrillic get the
- * phone's own font, Polish and Turkish in Futuristic get Space Age's), right to left where the
- * language is. [bubble] (the TalkBack screenshot) is what TalkBack says, in a speech bubble between
+ * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in its display face, the
+ * phone's own sans in every script (`StyleTypography`), right to left where the language is. [bubble] (the TalkBack screenshot) is what TalkBack says, in a speech bubble between
  * the caption and the phone, pointing at the phone: drawn here, since a picture can't show speech.
  */
 @Composable
 fun StoreCanvas(
     caption: String,
     rows: List<List<Window>>,
-    style: VisualStyle,
     dark: Boolean,
     spec: CanvasSpec = CanvasSpec.PORTRAIT,
     bubble: SpeechBubble? = null,
     staggered: Boolean = false,
 ) {
     CompositionLocalProvider(LocalDensity provides Density(spec.density, fontScale = 1f)) {
-        TwangleTheme(style = style, darkTheme = dark, animate = false) {
+        TwangleTheme(darkTheme = dark, animate = false) {
             Box(
                 Modifier.layout { measurable, _ ->
                     val placeable = measurable.measure(Constraints.fixed(spec.width, spec.height))
                     layout(spec.width, spec.height) { placeable.place(0, 0) }
                 },
             ) {
-                StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
+                StyleBackdrop(Modifier.fillMaxSize())
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Caption(
                         caption,
@@ -216,24 +212,20 @@ private fun Caption(caption: String, modifier: Modifier) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val widthPx = constraints.maxWidth
         val heightPx = constraints.maxHeight
-        // The largest size that fits in two lines, else the largest in three: a short caption stays large.
-        val style = remember(text, base, widthPx, heightPx) {
-            fun fits(candidate: TextStyle, lines: Int): Boolean {
-                val layout = measurer.measure(text, candidate, constraints = Constraints(maxWidth = widthPx))
-                return layout.lineCount <= lines && layout.size.height <= heightPx
+        // Two sentences ("Strum once. See every string.") get a line each, at the largest size where both fit so (also
+        // in the height: the landscape band holds one line at the largest size, two only just), rather than a larger
+        // one that breaks a sentence in two ("No / sign-up"). Otherwise the largest size that fits in two lines, else
+        // the largest in three: a short caption stays large.
+        val (shown, style) = remember(text, base, widthPx, heightPx) {
+            fun fits(candidate: String, style: TextStyle, lines: Int, exactly: Boolean = false): Boolean {
+                val layout = measurer.measure(candidate, style, constraints = Constraints(maxWidth = widthPx))
+                return (if (exactly) layout.lineCount == lines else layout.lineCount <= lines) && layout.size.height <= heightPx
             }
             val sizes = CAPTION_SIZES.map { base.captionStyle(it) }
-            sizes.filter { it.fontSize.value >= TWO_LINE_MIN_SIZE }.firstOrNull { fits(it, 2) }
-                ?: sizes.firstOrNull { fits(it, CAPTION_MAX_LINES) }
-                ?: sizes.last()
-        }
-        // Two short sentences ("Play a string. See it in tune.") get a line each, where they fit so
-        // (also in the height: the landscape band holds one line at the largest size, two only just).
-        val shown = remember(text, style, widthPx, heightPx) {
-            sentencesOnTheirOwnLines(text)?.takeIf { split ->
-                measurer.measure(split, style, constraints = Constraints(maxWidth = widthPx))
-                    .let { it.lineCount == 2 && it.size.height <= heightPx }
-            } ?: text
+            val twoLineSizes = sizes.filter { it.fontSize.value >= TWO_LINE_MIN_SIZE }
+            val split = sentencesOnTheirOwnLines(text)
+            split?.let { lines -> twoLineSizes.firstOrNull { fits(lines, it, 2, exactly = true) }?.let { lines to it } }
+                ?: (text to (twoLineSizes.firstOrNull { fits(text, it, 2) } ?: sizes.firstOrNull { fits(text, it, CAPTION_MAX_LINES) } ?: sizes.last()))
         }
         Text(shown, style = style, color = MaterialTheme.colorScheme.onBackground)
     }

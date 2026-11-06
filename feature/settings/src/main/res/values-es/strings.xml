@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Ajustes</string>
     <string name="settings_back">Atrás</string>
+    <string name="settings_group_tuning">Afinación</string>
 
-    <string name="settings_group_pitch">Tono y notas</string>
     <string name="settings_group_look">Aspecto</string>
-    <string name="settings_group_tuner_screen">Pantalla del afinador</string>
     <string name="settings_group_while_tuning">Al afinar</string>
-    <string name="settings_group_app">Aplicación</string>
 
     <string name="settings_a4_title">Tono de referencia (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">Bajar A4 1\u00A0Hz</string>
     <string name="settings_a4_raise">Subir A4 1\u00A0Hz</string>
     <string name="settings_a4_reset">Volver a %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Afinación precisa</string>
+    <string name="settings_precise_summary">Afinado con margen de 2 cents en vez de 5</string>
 
     <string name="settings_notation_title">Nombres de las notas</string>
     <string name="settings_notation_sharps">Sostenidos: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Alemán: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Precisión de afinación</string>
-    <string name="settings_in_tune_precision_relaxed">Relajada: hasta 5 cents</string>
-    <string name="settings_in_tune_precision_precise">Precisa: hasta 2 cents</string>
 
-    <string name="settings_style_title">Estilo</string>
     <string name="settings_theme_title">Claro u oscuro</string>
-    <string name="settings_theme_system">Según el sistema</string>
+    <string name="settings_theme_system">Igual que el teléfono</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
     <string name="settings_dynamic_color_title">Colores del fondo</string>
     <string name="settings_dynamic_color_summary">Usar los colores de tu fondo de pantalla</string>
+    <string name="settings_meter_title">Indicador</string>
+    <string name="settings_meter_classic">Clásico</string>
+    <string name="settings_meter_light_arc">Arco de luces</string>
+    <string name="settings_meter_strobe">Estroboscopio</string>
 
-    <string name="settings_meter_look_title">Indicador</string>
-    <string name="settings_meter_look_classic">Clásico</string>
-    <string name="settings_meter_look_light_arc">Arco de luz</string>
-    <string name="settings_meter_look_pointers">Punteros</string>
-    <string name="settings_meter_look_loupe">Lupa</string>
-    <string name="settings_meter_look_arrows">Flechas</string>
-    <string name="settings_meter_look_light_bars">Barras de luz</string>
-    <string name="settings_in_tune_effect_title">Efecto al afinar</string>
-    <string name="settings_in_tune_effect_summary">Cuánto brilla el indicador cuando una nota está afinada</string>
-    <string name="settings_in_tune_effect_calm">Suave</string>
-    <string name="settings_in_tune_effect_bold">Intenso</string>
-
-    <string name="settings_display_title">Bajo la nota</string>
-    <string name="settings_display_numbers">Números: cuántos cents de desvío</string>
-    <string name="settings_display_wave">Onda: una imagen en movimiento, con el estilo que elijas</string>
-    <string name="settings_wave_look_title">Estilo de onda</string>
-    <string name="settings_wave_look_strobe">Estroboscopio</string>
-    <string name="settings_wave_look_ribbon">Cinta</string>
-    <string name="settings_wave_look_dots">Puntos</string>
-    <string name="settings_wave_look_fireflies">Luciérnagas</string>
-    <string name="settings_wave_look_loop">Bucle</string>
-    <string name="settings_wave_look_ripples">Ondas</string>
-    <string name="settings_focus_mode_title">Modo concentración</string>
-    <string name="settings_focus_mode_summary">Pone Twangle en horizontal con un gran indicador, fácil de leer a distancia</string>
     <string name="settings_left_handed_title">Zurdo</string>
     <string name="settings_left_handed_summary">Diagramas de acordes y mástil de las escalas dibujados para una guitarra sostenida al revés</string>
+    <string name="settings_under_meter_title">Bajo el indicador</string>
+    <string name="settings_under_meter_words">Palabras: Tensa o Afloja</string>
+    <string name="settings_under_meter_cents">Cents: −12</string>
 
     <string name="settings_keep_screen_on_title">Mantener la pantalla encendida</string>
     <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
     <string name="settings_vibrate_in_tune_title">Vibrar al estar afinado</string>
     <string name="settings_vibrate_in_tune_summary">Una vibración breve cuando la nota queda afinada</string>
-    <string name="settings_show_tune_hint_title">Mostrar ayuda de afinación</string>
-    <string name="settings_show_tune_hint_summary">Indica si subir o bajar, y marca cada cuerda en cuanto está afinada</string>
+    <string name="settings_string_tick_off_title">Marcar las cuerdas afinadas</string>
+    <string name="settings_string_tick_off_summary">Una marca en cada cuerda afinada, y «Todo afinado. ¡A tocar!» cuando lo estén todas</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
-    <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
+    <string name="settings_show_signal_bars_summary">Para curiosos: unas barras sobre las cuerdas muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
 
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_phone">Idioma del teléfono</string>
     <string name="settings_language_cancel">Cancelar</string>
-    <string name="settings_show_tour_title">Hacer un recorrido</string>
-    <string name="settings_show_tour_summary">Un breve recorrido por el afinador</string>
     <string name="about_title">Acerca de Twangle</string>
     <string name="settings_about_link_summary">Versión %1$s, ayuda, privacidad y licencias</string>
+    <string name="settings_about_name_title">El nombre</string>
+    <string name="settings_about_name_meaning">En inglés, twang es el sonido vibrante de una cuerda pulsada.</string>
     <string name="settings_about_version">Versión %1$s</string>
     <string name="settings_about_free_title">Gratis para siempre</string>
     <string name="settings_about_free_summary">Sin anuncios, sin cuenta, sin compras en la app y sin rastreo. Ni ahora ni más adelante.</string>

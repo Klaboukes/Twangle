@@ -16,6 +16,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -42,28 +43,40 @@ import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.Screen
 import io.github.klaboukes.twangle.app.navigation.back
 import io.github.klaboukes.twangle.app.navigation.destination
+import io.github.klaboukes.twangle.app.navigation.destinationsFor
+import io.github.klaboukes.twangle.app.navigation.practiceTool
+import io.github.klaboukes.twangle.app.navigation.reselected
 import io.github.klaboukes.twangle.app.navigation.screen
+import io.github.klaboukes.twangle.app.navigation.screenFrom
+import io.github.klaboukes.twangle.app.navigation.shownScreen
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.LocalScreenTint
+import io.github.klaboukes.twangle.core.designsystem.ScreenTint
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
+import io.github.klaboukes.twangle.core.dsp.chord.ChordInstruments
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
+import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.eartraining.EarTrainingScreen
+import io.github.klaboukes.twangle.feature.tuner.trail.PitchTrailScreen
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
 import io.github.klaboukes.twangle.feature.practice.DroneChoice
-import io.github.klaboukes.twangle.feature.practice.PracticeToolButton
-import io.github.klaboukes.twangle.feature.practice.ToolAndTuningRow
-import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
+import io.github.klaboukes.twangle.feature.practice.BackAndTuningRow
+import io.github.klaboukes.twangle.feature.practice.PracticeCards
+import io.github.klaboukes.twangle.feature.practice.lastTimeTool
 import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
@@ -71,15 +84,10 @@ import io.github.klaboukes.twangle.feature.settings.openPlayPage
 import io.github.klaboukes.twangle.feature.settings.openWebsite
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
-import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTextOf
-import io.github.klaboukes.twangle.feature.tuner.tunerToolsFor
 import kotlinx.coroutines.launch
 
 /**
@@ -95,18 +103,24 @@ class MainActivity : AppCompatActivity() {
     private var openTunerRequests by mutableIntStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The opening screen (Theme.Twangle.Starting): the icon on gold, or on dark brown in dark mode.
-        installSplashScreen().setKeepOnScreenCondition { !ready }
+        // The opening screen (Theme.Twangle.Starting): the icon on Ink light, or on Ink dark in dark mode, its
+        // harmonics swinging into place on Android 12 and up.
+        installSplashScreen().apply {
+            setKeepOnScreenCondition { !ready }
+            setOnExitAnimationListener { opening -> opening.fadeOutOnceStill() }
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
-        // A fresh install is due the first-start tour; an update from before the tour is not. Decided once.
-        // Then the first use is noted once (after the tour's decision, which looks for saved settings):
-        // Google's rating window never comes on the first day.
-        lifecycleScope.launch {
-            container.settingsRepository.decideTourOnce()
-            container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis())
+        // The first use is noted once: Google's rating window never comes on the first day.
+        lifecycleScope.launch { container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis()) }
+        // 1.1's focus mode switch, read once (2.0, Phase 73): on, the first start of 2.0 opens in focus mode.
+        if (savedInstanceState == null) {
+            lifecycleScope.launch { if (container.settingsRepository.takeOldFocusMode()) container.focusMode.value = true }
         }
+        // What a 2.0 test build saved for a setting that went before release (the 12th-fret check's switch).
+        lifecycleScope.launch { container.settingsRepository.forgetDroppedSettings() }
+        takeLensLook(intent)
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
             // never flashes the wrong theme. The opening screen covers that gap.
@@ -122,30 +136,45 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == TuningWidget.ACTION_OPEN_TUNER) openTunerRequests++
+        takeLensLook(intent)
     }
 
     /**
-     * The app in the user's style and theme, showing the tuner, the metronome, settings, About or the
-     * tuning editor over the style's background, with the navigation bar (Tuner · Metronome · Settings)
-     * at the bottom, or the rail at the start edge on its side. The instrument and tuning panel opens
-     * over the tuner, or over the Practice tools, from their instrument button. Back leads from About to Settings, from
-     * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
+     * In a debug build and the frame-time build (`scripts/meter-frames.sh`) only: saves the lens's look named by
+     * the launch's [EXTRA_LENS_LOOK] (`adb shell am start -S --activity-clear-task -n …/.app.MainActivity --es
+     * lensLook STROBE`; without a new task the old task's first launch comes back, with its look), for
+     * checks on the phone and the frame-time runs. Every other build ignores it (both flags false, so R8 drops it).
+     */
+    private fun takeLensLook(intent: Intent?) {
+        if (!BuildConfig.DEBUG && !BuildConfig.SYNTHETIC_AUDIO) return
+        val name = intent?.getStringExtra(EXTRA_LENS_LOOK) ?: return
+        val look = runCatching { LensLook.valueOf(name) }.getOrNull() ?: return
+        val settings = (application as TwangleApplication).container.settingsRepository
+        lifecycleScope.launch { settings.setLensLook(look) }
+    }
+
+    /**
+     * The app in the user's theme, showing the tuner, the metronome, Practice, settings, About or the
+     * tuning editor over the app's background, with the navigation bar (Tune · Metronome · Practice) at
+     * the bottom, or the rail at the start edge on its side. The gear in the top start corner of every
+     * tab (upright in the tab's own top row, on its side at the rail's top) opens Settings over the whole
+     * window, without the bar; Settings' back arrow and Back return to the screen that opened it, About's to
+     * Settings. The Practice tab shows its cards ([PracticeCards]), one per tool, and a card opens its tool
+     * under the bar ([PracticeToolScreen]); the tool's back arrow, Back and a tap on the Practice tab return
+     * to the cards, and the tab, opened again from another, comes back to the tool it was left on. The
+     * instrument and tuning panel opens
+     * over the tuner, or over the Practice tools, from their instrument button. Back leads from the
+     * metronome, Practice's cards and the tuning editor to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
      * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
-     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner; so
-     * does "Show me around", so the tour always shows the plain tuner.
-     *
-     * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
-     * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
-     * Back or Done end it for good. Its strings step ("tap one to lock it") is how people find the
-     * string lock.
+     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner.
      */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
 
         // Status and navigation bar icons follow the app's theme, not just the phone's. Both bars are
-        // see-through, so the style's background runs to every edge, under the gesture handle and under
+        // see-through, so the app's background runs to every edge, under the gesture handle and under
         // the three navigation buttons too, upright and on its side (Phase 65; until then the buttons
         // stood on the system's white or dark strip). Their icons stay readable: dark on a light style,
         // light on a dark one, and the navigation bar's calm field lies under them upright.
@@ -164,14 +193,16 @@ class MainActivity : AppCompatActivity() {
 
         // Focus mode keeps the whole app on its side, every tab (Phase 36); off, the screen follows the
         // phone again, turned back upright first where auto-rotate is off (see FocusTurn), except on a
-        // large screen, which goes back to its rotation lock.
+        // large screen, which goes back to its rotation lock. Since 2.0 (Phase 73) the tuner's button alone
+        // turns it on, and nothing saves it: the app holds it ([AppContainer.focusMode]).
+        val focusMode by container.focusMode.collectAsStateWithLifecycle()
         val configuration = LocalConfiguration.current
         val upright = configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
         val largeScreen = configuration.smallestScreenWidthDp >= LARGE_SCREEN_DP
         var focusTurn by rememberSaveable(stateSaver = FocusTurn.Saver) {
-            mutableStateOf(FocusTurn(focusMode = settings.focusMode, uprightBefore = upright))
+            mutableStateOf(FocusTurn(focusMode = focusMode, uprightBefore = upright))
         }
-        val nextTurn = focusTurn.next(settings.focusMode, upright, largeScreen, autoRotate = ::autoRotateOn)
+        val nextTurn = focusTurn.next(focusMode, upright, largeScreen, autoRotate = ::autoRotateOn)
         SideEffect { if (nextTurn != focusTurn) focusTurn = nextTurn }
         val orientation = nextTurn.orientation
         DisposableEffect(orientation) {
@@ -181,89 +212,118 @@ class MainActivity : AppCompatActivity() {
 
         // Which music tools show (Phase 28): every one since they went live (Phase 34).
         val tools = container.toolSwitches
-        TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
+        // Practice's tools; with none (its switch off) there is no Practice tab, and the metronome keeps its own.
+        val practiceTools = practiceToolsFor(tools)
+        val screenTint = remember { ScreenTint() }
+        TwangleTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
             Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
-                var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
-                // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
-                var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
-                var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
-                // Where the tuning editor goes back to: the tuner, or Practice when its panel opened it.
-                var editorReturn by rememberSaveable { mutableStateOf(Screen.TUNER) }
-                // Whether the instrument and tuning panel shows over the tuner (its instrument button opens it).
-                var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
-                // The first-start tour: asked for again from Settings, ended in this session, and whether the tuner itself shows.
-                var tourRequested by rememberSaveable { mutableStateOf(false) }
-                var tourEnded by rememberSaveable { mutableStateOf(false) }
-                var tunerShown by remember { mutableStateOf(false) }
-                // Focus mode's tuner without its controls: the meter takes the whole screen, so the rail
-                // and the system bars go (a swipe from the edge shows the system bars for a moment).
-                var tunerFullScreen by remember { mutableStateOf(false) }
-                val fullScreen = tunerFullScreen && screen == Screen.TUNER
-                DisposableEffect(fullScreen) {
-                    val bars = WindowCompat.getInsetsController(window, window.decorView)
-                    if (fullScreen) {
-                        bars.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                        bars.hide(WindowInsetsCompat.Type.systemBars())
-                    } else {
-                        bars.show(WindowInsetsCompat.Type.systemBars())
+                // The tuner tints the whole screen toward its reading (Phase 71): the backdrop and the bar's and rail's fields read it.
+                CompositionLocalProvider(LocalScreenTint provides screenTint) {
+                    var picked by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                    // Practice without a tool is no tab (its switch off): the metronome then, never an empty screen;
+                    // a tool whose switch is off shows the cards.
+                    val screen = shownScreen(picked, practiceTools)
+                    // Whether the capo helper opened Chords (a row of its table), so Back from Chords returns to it.
+                    var chordsFromCapo by rememberSaveable { mutableStateOf(false) }
+                    // The chord the capo helper opened in Chords, until the saved settings have caught up with it.
+                    var openedChord by remember { mutableStateOf<Chord?>(null) }
+                    // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
+                    var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
+                    var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
+                    // Where the tuning editor goes back to: the tuner, or Practice when its panel opened it.
+                    var editorReturn by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                    // The screen whose gear opened Settings, where Settings goes back to: a tab, or on its side a
+                    // Practice tool (the rail's gear).
+                    var settingsOpener by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                    val openSettings = {
+                        settingsOpener = if (screen.destination != null) screen else Screen.TUNER
+                        picked = Screen.SETTINGS
                     }
-                    onDispose {}
-                }
-                // Taps on the bar's Tuner tab (also while the tuner shows) and "Show me around": each
-                // closes the tuner's tools, so the tab and the tour lead to the plain tuner.
-                var closeTunerToolsRequests by rememberSaveable { mutableIntStateOf(0) }
-                val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
-                val tourOpen = tourShown(tourDue, screen == Screen.TUNER, tunerShown)
-                // Every screen but the tuner gets the quiet version of the style's background.
-                StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
-                // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
-                val saveableState = rememberSaveableStateHolder()
-                val closeEditor = {
-                    // Each opening starts afresh, not from the last draft.
-                    saveableState.removeState(Screen.TUNING_EDITOR.name)
-                    screen = editorReturn
-                }
-                val openTuningEditor: (Instrument, String?, Screen) -> Unit = { instrument, customTuningId, from ->
-                    editorInstrumentId = instrument.id
-                    editorTuningId = customTuningId
-                    editorReturn = from
-                    screen = Screen.TUNING_EDITOR
-                }
-                // A tap on the home-screen widget: back to the tuner. The tuning editor handles it itself,
-                // as it does Back: it asks before dropping a draft with edits.
-                LaunchedEffect(openTunerRequest) {
-                    if (openTunerRequest == 0 || screen == Screen.TUNING_EDITOR) return@LaunchedEffect
-                    screen = Screen.TUNER
-                }
-                // From the tuner, Back is Android's own: it leaves the app.
-                if (screen != Screen.TUNING_EDITOR) {
-                    screen.back?.let { target -> BackHandler { screen = target } }
-                }
-                TourHost(
-                    open = tourOpen,
-                    steps = TourPart.stepsFor(settings.mode, toolsButton = tunerToolsFor(tools, settings.instrument).isNotEmpty()),
-                    // Where the tuner offers anything but the strum check alone, its "more tools" button stands in the switch's place.
-                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument) != listOf(TunerTool.STRUM_CHECK)) },
-                    onEnd = {
-                        tourEnded = true
-                        tourRequested = false
-                        // For good: it doesn't come back by itself.
-                        lifecycleScope.launch { container.settingsRepository.setTourSeen(true) }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                ) {
+                    // Where the Practice tab was left, the cards or a tool, so the tab comes back to it.
+                    var practiceLeftOn by rememberSaveable { mutableStateOf(Screen.PRACTICE) }
+                    SideEffect { if (screen.destination == Destination.PRACTICE) practiceLeftOn = screen }
+                    // Whether the instrument and tuning panel shows over the tuner (its instrument button opens it).
+                    var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
+                    // Focus mode's tuner without its controls: the meter takes the whole screen, so the rail
+                    // and the system bars go (a swipe from the edge shows the system bars for a moment).
+                    var tunerFullScreen by remember { mutableStateOf(false) }
+                    val fullScreen = tunerFullScreen && screen == Screen.TUNER
+                    DisposableEffect(fullScreen) {
+                        val bars = WindowCompat.getInsetsController(window, window.decorView)
+                        if (fullScreen) {
+                            bars.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                            bars.hide(WindowInsetsCompat.Type.systemBars())
+                        } else {
+                            bars.show(WindowInsetsCompat.Type.systemBars())
+                        }
+                        onDispose {}
+                    }
+                    // Taps on the bar's Tuner tab (also while the tuner shows) close the tuner's tools, so
+                    // the tab leads to the plain tuner.
+                    var closeTunerToolsRequests by rememberSaveable { mutableIntStateOf(0) }
+                    // Ink's plain background behind every screen, tinted by the tuner's reading while it hears a note.
+                    StyleBackdrop(Modifier.fillMaxSize())
+                    // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
+                    val saveableState = rememberSaveableStateHolder()
+                    val closeEditor = {
+                        // Each opening starts afresh, not from the last draft.
+                        saveableState.removeState(Screen.TUNING_EDITOR.name)
+                        picked = editorReturn
+                    }
+                    val openTuningEditor: (Instrument, String?, Screen) -> Unit = { instrument, customTuningId, from ->
+                        editorInstrumentId = instrument.id
+                        editorTuningId = customTuningId
+                        editorReturn = from
+                        picked = Screen.TUNING_EDITOR
+                    }
+                    // A tap on the home-screen widget: back to the tuner. The tuning editor handles it itself,
+                    // as it does Back: it asks before dropping a draft with edits.
+                    LaunchedEffect(openTunerRequest) {
+                        if (openTunerRequest == 0 || screen == Screen.TUNING_EDITOR) return@LaunchedEffect
+                        picked = Screen.TUNER
+                    }
+                    // From the tuner, Back is Android's own: it leaves the app.
+                    if (screen != Screen.TUNING_EDITOR) {
+                        screen.back(settingsOpener, chordsFromCapo)?.let { target -> BackHandler { picked = target } }
+                    }
+                    // A card or the "last time" row opens its tool full screen, and it is the tool used last from then on.
+                    val openTool: (PracticeTool) -> Unit = { tool ->
+                        chordsFromCapo = false
+                        openedChord = null
+                        picked = tool.screen
+                        lifecycleScope.launch { container.settingsRepository.setPracticeTool(tool) }
+                    }
+                    // A row of the capo helper's table opens its chord in Chords: Chords' saved state is dropped, so it
+                    // opens afresh on that chord (saved too, as if picked there), and Back leads back to the capo helper.
+                    val openChordFromCapo: (Chord) -> Unit = { chord ->
+                        openedChord = chord
+                        saveableState.removeState(CHORDS_STATE)
+                        lifecycleScope.launch {
+                            container.settingsRepository.setPracticeRoot(chord.root)
+                            container.settingsRepository.setPracticeChordQuality(chord.quality)
+                            container.settingsRepository.setPracticeTool(PracticeTool.CHORDS)
+                        }
+                        chordsFromCapo = true
+                        picked = Screen.PRACTICE_CHORDS
+                    }
+                    val backFromTool: () -> Unit = { screen.back(settingsOpener, chordsFromCapo)?.let { picked = it } }
                     AppNavigationFrame(
                         selected = screen.destination,
                         onSelect = {
                             if (it == Destination.TUNER) closeTunerToolsRequests++
-                            screen = it.screen
+                            picked = it.screenFrom(practiceLeftOn)
                         },
-                        onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
-                        practice = practiceToolsFor(tools).isNotEmpty(),
+                        onReselect = {
+                            if (it == Destination.TUNER) closeTunerToolsRequests++
+                            screen.reselected()?.let { target -> picked = target }
+                        },
+                        destinations = destinationsFor(practice = practiceTools.isNotEmpty()),
                         navigationHidden = fullScreen,
-                    ) {
-                        saveableState.SaveableStateProvider(screen.name) {
+                        onOpenSettings = openSettings,
+                    ) { gear ->
+                        // Chords and Scales are one screen ([ChordsScreen]) that keeps its saved state across them.
+                        saveableState.SaveableStateProvider(if (screen == Screen.PRACTICE_SCALES) CHORDS_STATE else screen.name) {
                             when (screen) {
                                 Screen.TUNER -> {
                                     // The volume keys set the reference tone's loudness (the media volume)
@@ -280,34 +340,52 @@ class MainActivity : AppCompatActivity() {
                                         },
                                         pickerOpen = tuningPanelOpen,
                                         onPickerOpenChange = { tuningPanelOpen = it },
-                                        tourOpen = tourOpen,
-                                        onMicGrantedChange = { tunerShown = it },
                                         closeToolsRequest = closeTunerToolsRequests,
                                         onFullScreenChange = { tunerFullScreen = it },
                                         ratingWindow = container.ratingWindow,
+                                        settingsButton = gear,
+                                        // Its top row names the tab, as the metronome's and Practice's do (Phase 77).
+                                        title = stringResource(R.string.nav_tuner),
+                                        focusMode = focusMode,
+                                        onFocusModeChange = { container.focusMode.value = it },
                                     )
                                 }
-                                Screen.METRONOME -> PracticeTab(container, settings, tools) { instrument, customTuningId ->
-                                    openTuningEditor(instrument, customTuningId, Screen.METRONOME)
-                                }
+                                Screen.METRONOME -> MetronomeTab(container, settings, tools, gear)
+                                Screen.PRACTICE -> PracticeCards(
+                                    title = stringResource(R.string.nav_practice),
+                                    tools = practiceTools,
+                                    lastTime = lastTimeTool(settings.practiceTool, practiceTools),
+                                    notation = settings.notationFor(appLanguage()),
+                                    savedRoot = settings.practiceRoot,
+                                    savedQuality = settings.practiceChordQuality,
+                                    savedScaleType = settings.practiceScaleType,
+                                    onOpen = openTool,
+                                    settingsButton = gear,
+                                )
+                                Screen.PRACTICE_CHORDS, Screen.PRACTICE_SCALES, Screen.PRACTICE_CAPO, Screen.PRACTICE_EAR_TRAINING, Screen.PRACTICE_PITCH_TRAIL ->
+                                    PracticeToolScreen(
+                                        container = container,
+                                        settings = settings,
+                                        tool = checkNotNull(screen.practiceTool),
+                                        openedChord = openedChord,
+                                        onOpenChord = openChordFromCapo,
+                                        onBack = backFromTool,
+                                        onOpenTuningEditor = { instrument, customTuningId -> openTuningEditor(instrument, customTuningId, screen) },
+                                    )
                                 Screen.SETTINGS -> SettingsScreen(
                                     settingsRepository = container.settingsRepository,
                                     appVersion = BuildConfig.VERSION_NAME,
-                                    onOpenAbout = { screen = Screen.ABOUT },
+                                    onOpenAbout = { picked = Screen.ABOUT },
                                     languages = BuildConfig.LANGUAGES.split(","),
                                     // Android 13+ redraws the widget itself on the new configuration.
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
-                                    onShowTour = {
-                                        tourRequested = true
-                                        closeTunerToolsRequests++
-                                        screen = Screen.TUNER
-                                    },
+                                    onBack = { picked = settingsOpener },
                                 )
                                 Screen.ABOUT -> AboutScreen(
                                     appVersion = BuildConfig.VERSION_NAME,
                                     onOpenWebsite = { openWebsite(this@MainActivity, it) },
                                     onRate = { openPlayPage(this@MainActivity, BuildConfig.APPLICATION_ID) },
-                                    onBack = { screen = Screen.SETTINGS },
+                                    onBack = { picked = Screen.SETTINGS },
                                 )
                                 Screen.TUNING_EDITOR -> TuningEditorScreen(
                                     settingsRepository = container.settingsRepository,
@@ -326,26 +404,53 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab]), or
-     * every Practice tool's switch off, it is the metronome alone. Otherwise it is Practice
-     * (Phase 32): the tool button at the top of each tool (Phase 47) picks the metronome and, each with
-     * its own switch, chords, scales or the capo helper (Phase 33; [practiceToolsFor]), and the tab
-     * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
-     * tool keeps its own saved UI state while another shows, but for Chords and Scales, one screen that
-     * shares it (one root for both); leaving the metronome stops it, as
-     * leaving the tab does. A chord tapped in the capo helper opens in Chords: its saved state is
-     * dropped, so Chords opens afresh on that chord (saved too, as if picked there). The instrument
-     * button in Chords and the capo helper opens the instrument and tuning panel over the tool
-     * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
-     * Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its saved choices; it stops the
-     * drone itself when it goes. Ear training (Phase 55, behind its own switch) gets the reference tones and its own microphone through the tuner's pipeline
-     * ([AppContainer.earTrainingListener]), and the same top row as Chords and Capo.
+     * The bar's Metronome tab (2.0, Phase 69: a tab of its own, no longer a Practice tool): the metronome
+     * alone, with no tool button over it; upright the [gear] that opens Settings at its top start.
+     * Leaving the tab stops it.
      */
     @Composable
-    private fun PracticeTab(
+    private fun MetronomeTab(container: AppContainer, settings: AppSettings, tools: ToolSwitches, gear: (@Composable () -> Unit)?) {
+        // The volume keys set the clicks' loudness (the media volume).
+        MediaVolumeKeys()
+        MetronomeScreen(
+            player = container.metronomePlayer,
+            settingsRepository = container.settingsRepository,
+            recorder = container.listenRecorder,
+            tools = tools,
+            savedBpm = settings.metronomeBpm,
+            savedMeter = settings.metronomeMeter,
+            savedVibrate = settings.metronomeVibrate,
+            savedSound = settings.metronomeClickSound,
+            savedSubdivision = settings.metronomeSubdivision,
+            savedMicRefused = settings.micRefused,
+            savedTrainer = settings.metronomeTrainer,
+            savedTrainerOn = settings.metronomeTrainerOn,
+            header = gear,
+            title = stringResource(R.string.nav_metronome),
+        )
+    }
+
+    /**
+     * A Practice tool under the bar (2.0, Phase 69; full screen until 2026-11-03), opened from its card on the Practice tab or the "last
+     * time" row: chords, scales, the capo helper or Ear training, each with its own switch (Phase 33, 55).
+     * Its back arrow in the top start corner ([onBack]) and Back lead back to the cards (Chords opened from
+     * the capo helper back to it). Each tool keeps its own saved UI state while another shows, but for Chords
+     * and Scales, one screen that shares it (one root for both). A chord tapped in the capo helper opens in
+     * Chords ([onOpenChord]), which then opens on [openedChord]. The picker chip in each tool opens the
+     * "What are you tuning?" sheet over it ([PracticeTuningPanel]); its New tuning and Edit open the tuning
+     * editor ([onOpenTuningEditor]). Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its
+     * saved choices; it stops the drone itself when it goes. Ear training (Phase 55) gets the reference tones
+     * and its own microphone through the tuner's pipeline ([AppContainer.earTrainingListener]), and the same
+     * top row as Chords and Capo.
+     */
+    @Composable
+    private fun PracticeToolScreen(
         container: AppContainer,
         settings: AppSettings,
-        tools: ToolSwitches,
+        tool: PracticeTool,
+        openedChord: Chord?,
+        onOpenChord: (Chord) -> Unit,
+        onBack: () -> Unit,
         onOpenTuningEditor: (Instrument, String?) -> Unit,
     ) {
         var panelOpen by rememberSaveable { mutableStateOf(false) }
@@ -356,125 +461,95 @@ class MainActivity : AppCompatActivity() {
                 onOpenTuningEditor(instrument, id)
             })
         }
-        val offered = practiceToolsFor(tools)
-        var tool by rememberSaveable { mutableStateOf(practiceToolToOpen(settings.practiceTool, offered)) }
-        // The chord the capo helper opened in Chords, until the saved settings have caught up with it.
-        var opened by remember { mutableStateOf<Chord?>(null) }
-        val pickTool: (PracticeTool) -> Unit = { picked ->
-            if (picked != tool) {
-                tool = picked
-                lifecycleScope.launch { container.settingsRepository.setPracticeTool(picked) }
-            }
-        }
-        val header: (@Composable () -> Unit)? = if (offered.isEmpty()) {
-            null
-        } else {
-            { PracticeToolButton(tool = tool, onToolChange = pickTool, tools = offered) }
-        }
-        val toolState = rememberSaveableStateHolder()
-        // Chords and Scales are one screen ([ChordsScreen]) that keeps its saved state across them.
-        toolState.SaveableStateProvider(if (tool == PracticeTool.SCALES) PracticeTool.CHORDS.name else tool.name) {
-            when (if (header == null) PracticeTool.METRONOME else tool) {
-                PracticeTool.METRONOME -> {
-                    // The volume keys set the clicks' loudness (the media volume).
-                    MediaVolumeKeys()
-                    MetronomeScreen(
-                        player = container.metronomePlayer,
-                        settingsRepository = container.settingsRepository,
-                        recorder = container.listenRecorder,
-                        tools = tools,
-                        savedBpm = settings.metronomeBpm,
-                        savedMeter = settings.metronomeMeter,
-                        savedVibrate = settings.metronomeVibrate,
-                        savedSound = settings.metronomeClickSound,
-                        savedSubdivision = settings.metronomeSubdivision,
-                        savedMicRefused = settings.micRefused,
-                        savedTrainer = settings.metronomeTrainer,
-                        savedTrainerOn = settings.metronomeTrainerOn,
-                        header = header,
-                    )
-                }
-                PracticeTool.CHORDS, PracticeTool.SCALES -> {
-                    // On Scales the volume keys set the drone's loudness (the media volume).
-                    if (tool == PracticeTool.SCALES) MediaVolumeKeys()
-                    ChordsScreen(
-                        tuning = settings.tuning,
-                        tuningName = practiceTuningName(settings),
-                        spokenTuningName = spokenTuning(settings),
-                        notation = settings.notationFor(appLanguage()),
-                        savedRoot = opened?.root ?: settings.practiceRoot,
-                        savedQuality = opened?.quality ?: settings.practiceChordQuality,
-                        onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
-                        onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
-                        header = header ?: {},
-                        scales = tool == PracticeTool.SCALES,
-                        savedScaleType = settings.practiceScaleType,
-                        onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
-                        onPickInstrument = openPanel,
-                        drone = container.dronePlayer,
-                        a4Hz = settings.a4Hz,
-                        savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
-                        onDroneChange = { picked ->
-                            lifecycleScope.launch {
-                                with(container.settingsRepository) {
-                                    setDroneSound(picked.sound)
-                                    setDroneVoicing(picked.voicing)
-                                    setDroneLower(picked.lower)
-                                }
-                            }
-                        },
-                        leftHanded = settings.leftHanded,
-                    )
-                }
-                PracticeTool.CAPO -> CapoScreen(
+        when (tool) {
+            PracticeTool.CHORDS, PracticeTool.SCALES -> {
+                // On Scales the volume keys set the drone's loudness (the media volume).
+                if (tool == PracticeTool.SCALES) MediaVolumeKeys()
+                ChordsScreen(
+                    tuning = settings.tuning,
                     tuningName = practiceTuningName(settings),
                     spokenTuningName = spokenTuning(settings),
                     notation = settings.notationFor(appLanguage()),
-                    savedShapes = settings.practiceCapoShapes,
-                    savedFret = settings.practiceCapoFret,
-                    onShapesChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoShapes(it) } },
-                    onFretChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoFret(it) } },
-                    onOpenChord = { chord ->
-                        opened = chord
-                        toolState.removeState(PracticeTool.CHORDS.name)
-                        lifecycleScope.launch {
-                            container.settingsRepository.setPracticeRoot(chord.root)
-                            container.settingsRepository.setPracticeChordQuality(chord.quality)
-                        }
-                        pickTool(PracticeTool.CHORDS)
-                    },
-                    header = header ?: {},
+                    savedRoot = openedChord?.root ?: settings.practiceRoot,
+                    savedQuality = openedChord?.quality ?: settings.practiceChordQuality,
+                    onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
+                    onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
+                    onBack = onBack,
+                    scales = tool == PracticeTool.SCALES,
+                    savedScaleType = settings.practiceScaleType,
+                    onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
                     onPickInstrument = openPanel,
-                    // The banjo's short fifth string needs a capo of its own, so the capo table's sums don't hold for it.
-                    shortString = settings.tuning.hasShortString,
+                    drone = container.dronePlayer,
+                    a4Hz = settings.a4Hz,
+                    savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
+                    onDroneChange = { picked ->
+                        lifecycleScope.launch {
+                            with(container.settingsRepository) {
+                                setDroneSound(picked.sound)
+                                setDroneVoicing(picked.voicing)
+                                setDroneLower(picked.lower)
+                            }
+                        }
+                    },
+                    leftHanded = settings.leftHanded,
+                    // Listen (2.0, Phase 74): the chord name, behind its switch, for the instruments it reads.
+                    chordListener = container.chordListener.takeIf { container.toolSwitches.chordNaming && ChordInstruments.offers(settings.instrument) },
+                    listenRange = PitchRange.forLowestNote(NoteMapper(settings.a4Hz).frequencyOf(settings.tuning.lowestNote)),
+                    micRefused = settings.micRefused,
+                    onMicRefused = { if (!settings.micRefused) lifecycleScope.launch { container.settingsRepository.setMicRefused(true) } },
                 )
-                PracticeTool.EAR_TRAINING -> {
-                    // The volume keys set the questions' loudness (the media volume).
-                    MediaVolumeKeys()
-                    EarTrainingScreen(
-                        listener = container.earTrainingListener,
-                        tonePlayer = container.tonePlayer,
-                        settingsRepository = container.settingsRepository,
-                        notation = settings.notationFor(appLanguage()),
-                        header = {
-                            ToolAndTuningRow(
-                                toolButton = header ?: {},
-                                tuningName = practiceTuningName(settings),
-                                spokenTuningName = spokenTuning(settings),
-                                onPickInstrument = openPanel,
-                            )
-                        },
-                        savedSettings = settings,
-                    )
-                }
             }
+            PracticeTool.CAPO -> CapoScreen(
+                tuningName = practiceTuningName(settings),
+                spokenTuningName = spokenTuning(settings),
+                notation = settings.notationFor(appLanguage()),
+                savedShapes = settings.practiceCapoShapes,
+                savedFret = settings.practiceCapoFret,
+                onShapesChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoShapes(it) } },
+                onFretChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoFret(it) } },
+                onOpenChord = onOpenChord,
+                onBack = onBack,
+                onPickInstrument = openPanel,
+                // The banjo's short fifth string needs a capo of its own, so the capo table's sums don't hold for it.
+                shortString = settings.tuning.hasShortString,
+            )
+            PracticeTool.EAR_TRAINING -> {
+                // The volume keys set the questions' loudness (the media volume).
+                MediaVolumeKeys()
+                EarTrainingScreen(
+                    listener = container.earTrainingListener,
+                    tonePlayer = container.tonePlayer,
+                    settingsRepository = container.settingsRepository,
+                    notation = settings.notationFor(appLanguage()),
+                    header = { end ->
+                        BackAndTuningRow(
+                            tool = PracticeTool.EAR_TRAINING,
+                            onBack = onBack,
+                            tuningName = practiceTuningName(settings),
+                            spokenTuningName = spokenTuning(settings),
+                            onPickInstrument = openPanel,
+                            end = end,
+                        )
+                    },
+                    savedSettings = settings,
+                )
+            }
+            PracticeTool.PITCH_TRAIL -> PitchTrailScreen(
+                audioRecorder = container.pitchTrailRecorder,
+                settingsRepository = container.settingsRepository,
+                // It listens for any note: no instrument under the top row.
+                header = {
+                    BackAndTuningRow(tool = PracticeTool.PITCH_TRAIL, onBack = onBack, tuningName = null, spokenTuningName = "", onPickInstrument = null)
+                },
+                saved = settings,
+            )
         }
     }
 
     /**
-     * The instrument and tuning panel over a Practice tool: the same panel as the tuner's, saving what is
-     * picked as the tuner does. A pick also switches the tuner to guitar mode, where the strings show,
-     * as a pick in the tuner's panel does.
+     * The "What are you tuning?" sheet over a Practice tool (Phase 70): the same sheet as the tuner's, saving
+     * what is picked as the tuner does, but without its Any note switch, as the charts need an instrument.
+     * A pick also switches the tuner to guitar mode, where the strings show, as a pick in the tuner's sheet does.
      */
     @Composable
     private fun PracticeTuningPanel(
@@ -520,7 +595,7 @@ class MainActivity : AppCompatActivity() {
     private fun practiceTuningName(settings: AppSettings): String =
         stringResource(TunerR.string.tuner_tuning_name, instrumentLabel(settings.instrument), tuningName(settings))
 
-    /** The picked instrument and tuning as TalkBack says them on the instrument button, e.g. "Guitar, Standard" or a custom tuning's name. */
+    /** The picked instrument and tuning as TalkBack says them on the picker chip, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable
     private fun spokenTuning(settings: AppSettings): String =
         stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), rememberNoteNameSpeech().text(tuningName(settings)))
@@ -546,5 +621,11 @@ class MainActivity : AppCompatActivity() {
     private companion object {
         // From this short side on, a screen may letterbox an orientation request instead of turning (FocusTurn).
         const val LARGE_SCREEN_DP = 600
+
+        // The saved UI state Chords and Scales share (one screen, one root for both).
+        val CHORDS_STATE = Screen.PRACTICE_CHORDS.name
+
+        /** The launch extra a debug or frame-time build takes the lens's look from ([takeLensLook]). */
+        const val EXTRA_LENS_LOOK = "lensLook"
     }
 }

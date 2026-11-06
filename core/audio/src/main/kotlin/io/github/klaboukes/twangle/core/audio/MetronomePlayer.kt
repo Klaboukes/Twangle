@@ -61,6 +61,15 @@ interface MetronomePlayer {
     val beats: SharedFlow<MetronomeBeat>
 
     /**
+     * The same beats as [beats], each told as soon as its heard moment is known, ahead of it (about
+     * one buffer, 0.1–0.3 s; at once if it is already due), for what must start before a beat to
+     * land on it: the watch's wrist taps (Phase 80), whose motor takes ~10 ms to start. A beat told
+     * here may never be heard if the metronome stops first, so check [isPlaying] at its moment.
+     * Nothing is replayed to a new collector.
+     */
+    val upcomingBeats: SharedFlow<MetronomeBeat>
+
+    /**
      * Starts clicking at [bpm] (clamped to 30–250) in [meter] with [sound] and [subdivision], beat 0
      * a downbeat, the first click at once; a preview still sounding ends. With a [trainer] (Phase 62)
      * it starts at the trainer's start tempo instead and climbs, as [setTrainer]. While already
@@ -104,6 +113,15 @@ interface MetronomePlayer {
      * Ignored while stopped (and during a preview).
      */
     fun setSubdivision(subdivision: Subdivision)
+
+    /**
+     * Whether the clicks are silent (Phase 80, the watch's taps-only metronome): silent, the track
+     * plays silence in their place, so the clock, the [beats] and their heard moments go on exactly as
+     * with the clicks, and switching either way mid-play never moves a beat. Heard or silent from
+     * about one buffer later (≈ 0.12 s); kept across [stop] and [start], playing or not. A preview
+     * always sounds. Heard until set.
+     */
+    fun setSilent(silent: Boolean)
 
     /**
      * While stopped: plays one bar of [sound] at [bpm] in [meter] with [subdivision], once (never

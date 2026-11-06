@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Das Mikrofon ließ sich nicht öffnen. Schließe andere Apps, die es nutzen, und tippe auf „Erneut versuchen“, oder starte dein Gerät neu.</string>
     <string name="error_mic_stopped">Das Mikrofon wurde gestoppt, vielleicht für einen Anruf oder eine andere App. Tippe auf „Erneut versuchen“, um weiter zu stimmen.</string>
     <string name="error_retry">Erneut versuchen</string>
+    <string name="tuner_any_note">Jeder Ton</string>
+    <string name="tuner_any_note_summary">Der nächstliegende Ton, ohne Saiten</string>
 
-    <string name="tuner_mode_strings">Saiten</string>
-    <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_show_controls">Bedienelemente zeigen</string>
     <string name="tuner_focus_mode">Fokusmodus</string>
     <string name="tuner_exit_focus_mode">Fokusmodus beenden</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">Spiel einen Ton</string>
     <string name="tuner_hint_play_locked_string">Spiel die %1$s-Saite</string>
     <string name="tuner_hint_playing">Spielt %1$s</string>
+    <string name="tuner_hint_all_in_tune">Gestimmt. Spiel los.</string>
     <string name="tuner_string_lock">Auf diese Saite festlegen</string>
     <string name="tuner_string_unlock">Saiten automatisch wählen</string>
     <string name="tuner_string_locked">Festgelegt</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">Festgelegt, spielt</string>
     <string name="tuner_string_tuned">Gestimmt</string>
     <string name="tuner_string_locked_tuned">Festgelegt, gestimmt</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">Festgelegt, %1$s</string>
     <!-- Nach einer Zahl bleibt „Cent“ in der Einzahl: „12 Cent“. -->
     <string name="tuner_cents_zero">0 Cent</string>
     <plurals name="tuner_cents_flat">
@@ -97,8 +98,14 @@
         <item quantity="other">%1$d Cent zu hoch</item>
     </plurals>
     <string name="tuner_in_tune">gestimmt</string>
-    <string name="tuner_tune_up">Höher stimmen ↑</string>
-    <string name="tuner_tune_down">Tiefer stimmen ↓</string>
+    <string name="tuner_word_tighten">Spannen</string>
+    <string name="tuner_word_loosen">Lockern</string>
+    <string name="tuner_word_too_low">Zu tief</string>
+    <string name="tuner_word_too_high">Zu hoch</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d Cent</item>
+        <item quantity="other">%1$d Cent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Spiel etwas lauter</string>
     <string name="tuner_tip_too_noisy">Zu viel Lärm, Handy näher ran</string>
     <string name="tuner_tip_too_loud">Zu laut, Handy weiter weg</string>
@@ -112,15 +119,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">höher stimmen</string>
-    <string name="tuner_spoken_tune_down">tiefer stimmen</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, mit Oktavsaite</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrument und Stimmung</string>
+    <string name="tuner_picker_title">Was stimmst du?</string>
 
     <string name="tuner_new_tuning">Neue Stimmung</string>
 
@@ -149,34 +154,20 @@
     <string name="tuner_delete_tuning_cancel">Abbrechen</string>
     <string name="tuner_strum_check">Anschlag-Check</string>
     <string name="tuner_strum_waiting">Schlag alle leeren Saiten an</string>
-    <string name="tuner_strum_waiting_detail">Jede Saite zeigt zu tief, gestimmt oder zu hoch</string>
-    <string name="tuner_strum_hearing">Höre zu…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">%1$d Saite zu stimmen</item>
-        <item quantity="other">%1$d Saiten zu stimmen</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Nicht jede Saite war zu hören</string>
-    <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
-    <string name="tuner_strum_tap_to_tune">Tippe auf eine Saite, um sie zu stimmen</string>
-    <string name="tuner_strum_again">Schlag erneut an oder tippe auf eine Saite, um sie zu stimmen</string>
-    <string name="tuner_strum_tune_string">%1$s stimmen</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, nicht gehört</string>
     <string name="tuner_strum_spoken_waiting">%1$s, noch nicht angeschlagen</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, nicht gehört</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, weniger sicher</string>
-    <string name="tour_title">Rundgang</string>
-    <string name="tour_step_count">%1$d von %2$d</string>
-    <string name="tour_step_spoken">Schritt %1$d von %2$d. %3$s.</string>
-    <string name="tour_readout">Wie weit daneben und welcher Ton</string>
-    <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
-    <string name="tour_strings">Tippen: nur diese Saite stimmen. Halten: anhören</string>
-    <string name="tour_picker">Instrument und Stimmung wählen</string>
-    <string name="tour_skip">Überspringen</string>
-    <string name="tour_next">Weiter</string>
-    <string name="tour_done">Fertig</string>
-    <string name="tuner_more_tools">Weitere Werkzeuge</string>
-    <string name="tuner_tool_on">%1$s an</string>
+    <string name="tuner_strum_close">Anschlag-Check schließen</string>
+    <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d von %2$d gestimmt</item>
+        <item quantity="other">%1$d von %2$d gestimmt</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Nicht gehört</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Check am 12. Bund</string>
+    <string name="tuner_intonation_check_summary">Sitzt der Saitenreiter richtig?</string>
+    <string name="tuner_intonation_close">Check am 12. Bund schließen</string>
     <string name="tuner_intonation_step_open">Leer</string>
     <string name="tuner_intonation_step_fret">12. Bund</string>
     <string name="tuner_intonation_choose_string">Wähl eine Saite</string>
@@ -213,37 +204,9 @@
     <string name="tuner_intonation_mark_back">Saitenreiter nach hinten</string>
     <string name="tuner_intonation_mark_forward">Saitenreiter nach vorn</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, noch nicht geprüft</string>
-    <string name="tour_more_tools">Weitere Werkzeuge, etwa der Anschlag-Check</string>
-    <string name="tuner_chord_name">Akkordname</string>
-    <string name="tuner_chord_major">%1$s-Dur</string>
-    <string name="tuner_chord_minor">%1$s-Moll</string>
-    <string name="tuner_chord_seventh">%1$s-Septakkord</string>
-    <string name="tuner_chord_major_seventh">%1$s-Dur mit großer Septime</string>
-    <string name="tuner_chord_minor_seventh">%1$s-Moll-Septakkord</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s-Powerchord</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s-Septakkord mit übermäßiger None</string>
-    <string name="tuner_chord_minor_ninth">%1$s-Moll-Nonenakkord</string>
-    <string name="tuner_chord_major_ninth">%1$s-Dur mit großer Septime und None</string>
-    <string name="tuner_chord_slash">%1$s, %2$s im Bass</string>
-    <string name="tuner_chord_bass">Bass</string>
-    <string name="tuner_chord_strum">Schlag einen Akkord an</string>
-    <string name="tuner_chord_strum_detail">Lass alle Saiten klingen</string>
-    <string name="tuner_chord_next">Schlag den nächsten Akkord an</string>
-    <string name="tuner_chord_let_ring">Lass ihn klingen</string>
-    <string name="tuner_chord_unclear">Kein klarer Akkord</string>
-    <string name="tuner_chord_unclear_detail">Schlag alle Saiten des Akkords an</string>
-    <string name="tuner_chord_none">Noch kein Akkord</string>
-    <string name="tuner_chord_spoken_notes">Töne %1$s</string>
-    <string name="tuner_chord_spoken_recent">davor %1$s</string>
-    <string name="tuner_pitch_trail">Tonverlauf</string>
-    <string name="tuner_trail_spoken">Tonverlauf, %1$s</string>
-    <string name="tuner_trail_no_note">kein Ton</string>
-    <string name="tuner_trail_steady">stabil, %1$s</string>
-    <string name="tuner_trail_wavering">schwankend, %1$s</string>
     <string name="tuner_trail_bending_up">zieht nach oben</string>
     <string name="tuner_trail_bending_down">zieht nach unten</string>
+    <string name="tuner_spoken_wavering">schwankend</string>
     <string name="tuner_screen_off_soon">Bildschirm geht gleich aus</string>
     <string name="tuner_screen_off_keep_on">Tippe, damit er anbleibt</string>
 </resources>

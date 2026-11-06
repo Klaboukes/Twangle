@@ -2,7 +2,7 @@
 # Runs the on-device UI tests, only for the modules a change touches, and prints a short summary per
 # module. See .claude/skills/ui-test/SKILL.md.
 #
-#   scripts/ui-tests.sh                          modules affected by this branch (vs main or v2) + uncommitted work
+#   scripts/ui-tests.sh                          modules affected by this branch (vs main) + uncommitted work
 #   scripts/ui-tests.sh --all                    every module with UI tests
 #   scripts/ui-tests.sh --since-pass             every module changed since it last passed whole on
 #                                                this PC (or never did): before a release
@@ -10,10 +10,10 @@
 #   scripts/ui-tests.sh :feature:tuner -f Tip    only tests whose Class#method name matches a regex
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #   scripts/ui-tests.sh :wear                    the watch app's tests, on the watch (named on its own)
-#   scripts/ui-tests.sh :feature:tuner -c MeterLookScreenshots -a meterScreenshots=true
+#   scripts/ui-tests.sh :feature:tuner -c StyleScreenshots -a styleScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
-#   scripts/ui-tests.sh --thorough ...           also the double checks: every style, and the @Thorough
-#                                                tests (other font sizes, languages, orientations)
+#   scripts/ui-tests.sh --thorough ...           also the double checks: the @Thorough tests (other
+#                                                font sizes, languages, orientations)
 #   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
 #                                                warmer than COOL_BELOW (default 37 °C): long runs
 #   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests, in the testers'
@@ -26,13 +26,13 @@
 # With more than one device connected the run picks its own (scripts/devices.sh): a phone (else the
 # tablet) for the phone's modules, the watch for :wear; ANDROID_SERIAL names one instead.
 #
-# A normal run is quick and leaves out the double checks: the style tests run in the default style
-# only, and tests marked @Thorough (:core:testing) are skipped. The overnight run
+# A normal run is quick and leaves out the double checks: tests marked @Thorough (:core:testing) are
+# skipped. The overnight run
 # (scripts/overnight-ui-tests.sh) passes --thorough and checks everything. --quick is accepted and
 # changes nothing.
 #
 # A module that passes whole (no -f, -c or -a) from a clean working tree is noted as passed at that
-# commit in build/ui-tests-passed/ (this PC only, main's and v2's apart; the overnight run notes every
+# commit in build/ui-tests-passed/ (this PC only; the overnight run notes every
 # module it passes).
 # --since-pass reads those notes, so a release runs only what changed since the last good run.
 #
@@ -60,20 +60,12 @@ usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
-# The line this checkout is on (CLAUDE.md, *The v2 branch*): v2 when it holds a commit of origin/v2
-# that main lacks (its merge-base with v2 is no ancestor of main), otherwise main, also once v2 is gone.
-on_v2() {
-    local v
-    v="$(git merge-base HEAD origin/v2 2>/dev/null)" && ! git merge-base --is-ancestor "$v" origin/main 2>/dev/null
-}
-
-# Where this branch left its line: on v2 the merge-base with origin/v2, otherwise with main. (With
-# main's alone, a 2.0 branch got the day v2 was made, and so every module v2 had changed.)
+# Where this branch left main.
 branch_base() {
-    if on_v2; then git merge-base HEAD origin/v2; else git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main; fi
+    git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main
 }
 
-# The UI test modules a change since commit [base] (by default where this branch left its line) can
+# The UI test modules a change since commit [base] (by default where this branch left main) can
 # reach, uncommitted work included: scripts/ui-test-scope.py follows what changed in the core modules
 # to the modules that use it. Docs, CI files, the Play Store texts and JVM unit tests need no device
 # run. With --why, each module comes with its reason. If the helper fails, every module.
@@ -89,12 +81,7 @@ affected_modules() {
 
 # A module's last whole pass on this PC: build/ui-tests-passed/feature-tuner holds "<commit> <date>".
 # Kept in the main folder, so a pass in a session's own worktree counts for every checkout of this PC.
-# Each line keeps its own notes, main's in build/ui-tests-passed/ and v2's in build/ui-tests-passed/v2/,
-# and a run reads only its own line's: a night on v2 then never overwrites the notes a release of main
-# counts on, and a pass on main's code never vouches for 2.0 code. (The look at a change is a plain
-# diff from the noted commit to this tree, which would be right across the lines too.)
 PASSED="$(cd "$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed"
-on_v2 && PASSED="$PASSED/v2"
 pass_file() { local m="${1#:}"; echo "$PASSED/${m//:/-}"; }
 
 # The UI test modules no pass vouches for: never passed whole on this PC, passed at a commit this
@@ -149,7 +136,7 @@ if [ $since_pass = 1 ]; then
     fi
     echo "To run: ${modules[*]}"
 elif [ ${#modules[@]} -eq 0 ] && [ $dry_run = 1 ]; then
-    echo "Would run, for the change since $(git rev-parse --short "$(branch_base)"), where this left $(on_v2 && echo v2 || echo main) (uncommitted work included):"
+    echo "Would run, for the change since $(git rev-parse --short "$(branch_base)"), where this left main (uncommitted work included):"
     affected_modules "" --why | grep . || echo "nothing (only docs, CI or unit tests changed, or nothing a UI test uses)"
     exit 0
 elif [ ${#modules[@]} -eq 0 ]; then
@@ -262,7 +249,7 @@ if time:
     t = re.sub(r'[.,]', '', t[:dec]) + '.' + t[dec + 1:] if dec >= 0 else t
     secs = f", {float(t):.0f}s on the phone"
 if tests == 0 and running is None:
-    # A class whose tests all wait for an argument (MeterLookScreenshots) runs none.
+    # A class whose tests all wait for an argument runs none.
     if re.search(r'^OK \(0 tests\)', text, re.M):
         print('0 tests')
         sys.exit(0)
@@ -387,7 +374,7 @@ trap 'exit 130' INT TERM
 # setting it during the whole run. Needs "USB debugging (Security settings)" on (see CLAUDE.md).
 # The loop runs only while the lock is there, and at most LOCK_MAX_AGE seconds: one left running
 # after its run costs the phone about a third of a core, and they used to pile up, one a run, until
-# the tests ran out of time (the first test of a --thorough run, an Ancient one, first).
+# the tests ran out of time (the first test of a --thorough run first).
 if [ -n "$(adb shell getprop ro.miui.ui.version.name 2>/dev/null | tr -d '\r')" ]; then
     guard='echo $$ > LOCK/guard.pid; end=$(($(date +%s) + MAX)); while [ -d LOCK ] && [ $(date +%s) -lt $end ]; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done'
     guard="${guard//LOCK/$LOCK}"
@@ -397,8 +384,8 @@ fi
 # Tests can only draw while the phone's screen is on and unlocked. With the screen off (its power
 # button) or the lock screen up, the test window is stopped: the first test of the run, the only one
 # that opens it, waits for it until its time is up ("test timed out" in waitForComposeRoots) and the
-# rest find "No compose hierarchies". In a --thorough run that first test is always an Ancient one
-# (the first style), so it looks as if Ancient were slow. So wake the screen before each module, stop
+# rest find "No compose hierarchies". In 1.1's --thorough runs that first test was always one in the
+# first style, so it looked as if Ancient were slow. So wake the screen before each module, stop
 # if the phone is locked, and say so if the screen went off during a run.
 wake_phone() {
     adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
@@ -503,7 +490,7 @@ for module in "${modules[@]}"; do
     wake_phone
     runner="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:\($package/[^ ]*\) .*|\1|p" | head -1)"
 
-    # Extra files a test writes (MeterLookScreenshots' pictures, a language check's failing screen) go
+    # Extra files a test writes (StyleScreenshots' pictures, a language check's failing screen) go
     # where Gradle's own run would put them, so scripts that read them work either way: the media
     # folder of the package the tests run in (:app's tests run in the app itself).
     target="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:$package/.*(target=\(.*\))|\1|p" | head -1)"

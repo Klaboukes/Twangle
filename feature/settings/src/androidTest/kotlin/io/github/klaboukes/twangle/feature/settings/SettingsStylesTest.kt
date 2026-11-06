@@ -11,29 +11,20 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -41,31 +32,25 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
-import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
-import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
-import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import java.util.concurrent.TimeUnit
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
- * Settings and About in each of the six styles, with that style picked: each style brings its own
- * fonts (Michroma and Orbitron are wide, Forum narrow), so rows differ in size. At 2× text,
+ * Settings and About in Ink (1.1 checked them in each of its six styles, whose fonts made rows
+ * differ in size). At 2× text,
  * upright (light) and on its side (dark), every title, choice and card name can be scrolled to and
  * is then wholly shown; About's titles, version and credits too. TalkBack, light and dark, hears every
- * style, meter and wave card and every light-or-dark choice as a radio button with its name and which
- * one is picked, and the back arrow by name. [SettingsContentTest] covers each behaviour in one style.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
+ * light-or-dark choice as a radio button with its name and which one is picked, and the back arrow by
+ * name. The lens's Meter cards (Phase 72) and their names are among the texts checked, every language's too
+ * (`@EveryLanguage`, overnight). [SettingsContentTest] covers each behaviour.
  */
-@RunWith(Parameterized::class)
-class SettingsStylesTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class SettingsStylesTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -86,33 +71,29 @@ class SettingsStylesTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf<String?>(null)
 
-    /** Settings (with the wave display, so its rows show too) or, with [about], the About page. */
+    /** Settings or, with [about], the About page. */
     private fun show(about: Boolean = false) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     if (about) {
                         AboutScreen(appVersion = VERSION, onOpenWebsite = {}, onRate = {}, onBack = {}, modifier = Modifier.testTag(WINDOW))
                     } else {
                         SettingsContent(
-                            AppSettings(style = style, display = TunerDisplay.WAVE, meterLook = MeterLook.POINTERS, waveLook = WaveLook.LOOP),
+                            AppSettings(),
                             appVersion = VERSION,
                             onOpenAbout = {},
                             onA4Change = {},
                             onNotationChange = {},
                             onInTunePrecisionChange = {},
-                            onStyleChange = {},
                             onThemeChange = {},
                             onDynamicColorChange = {},
                             onKeepScreenOnChange = {},
                             onVibrateInTuneChange = {},
-                            onShowTuneHintChange = {},
+                            onStringTickOffChange = {},
+                            onUnderMeterChange = {},
                             onShowSignalBarsChange = {},
-                            onDisplayChange = {},
-                            onMeterLookChange = {},
-                            onInTuneEffectChange = {},
-                            onWaveLookChange = {},
-                            onFocusModeChange = {},
+                            onLensLookChange = {},
                             onLeftHandedChange = {},
                             modifier = Modifier.testTag(WINDOW),
                             dynamicColorAvailable = true,
@@ -133,7 +114,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
         shownSize.value = size
         shownDark.value = dark
         show(about)
-        check("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${fontScale}x:")
+        check("${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${fontScale}x:")
     }
 
     /**
@@ -156,7 +137,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
     fun onATabletOnItsSideAboutIsWhollyShownAtItsTextSize() =
         atTextSize(TABLET_FONT_SCALE, TABLET_ON_ITS_SIDE, dark = true, about = true, check = ::assertAboutWhollyShown)
 
-    /** Upright in the light theme; on its side in the dark one (a style's fonts are the same in both). */
+    /** Upright in the light theme; on its side in the dark one (the fonts are the same in both). */
     @Test
     fun uprightEverySettingIsWhollyShownAtTwiceTheTextSize() = atTwiceTheTextSize(PHONE_UPRIGHT, dark = false, check = ::assertEverySettingWhollyShown)
 
@@ -165,51 +146,41 @@ class SettingsStylesTest(private val style: VisualStyle) {
 
     private fun assertEverySettingWhollyShown(case: String) {
         val texts = listOf(
-            R.string.settings_group_pitch,
+            R.string.settings_group_tuning,
             R.string.settings_a4_title,
+            // Note names is one row, its list in a dialog (2026-11-05); the picked one shows under its title.
             R.string.settings_notation_title,
-            R.string.settings_notation_sharps,
-            R.string.settings_notation_flats,
-            R.string.settings_notation_solfege,
-            R.string.settings_notation_german,
-            R.string.settings_in_tune_precision_title,
-            R.string.settings_in_tune_precision_relaxed,
-            R.string.settings_in_tune_precision_precise,
-            R.string.settings_group_look,
-            R.string.settings_style_title,
-            R.string.settings_theme_title,
-            R.string.settings_theme_system,
-            R.string.settings_theme_light,
-            R.string.settings_theme_dark,
-            R.string.settings_group_tuner_screen,
-            R.string.settings_meter_look_title,
-            R.string.settings_in_tune_effect_title,
-            R.string.settings_in_tune_effect_summary,
-            R.string.settings_in_tune_effect_calm,
-            R.string.settings_in_tune_effect_bold,
-            R.string.settings_display_title,
-            R.string.settings_display_numbers,
-            R.string.settings_display_wave,
-            R.string.settings_wave_look_title,
+            R.string.settings_precise_title,
+            R.string.settings_precise_summary,
             R.string.settings_group_while_tuning,
+            R.string.settings_under_meter_title,
+            R.string.settings_under_meter_words,
+            R.string.settings_under_meter_cents,
             R.string.settings_keep_screen_on_title,
             R.string.settings_vibrate_in_tune_title,
-            R.string.settings_show_tune_hint_title,
+            R.string.settings_string_tick_off_title,
             R.string.settings_show_signal_bars_title,
-            R.string.settings_focus_mode_title,
-            R.string.settings_group_app,
+            R.string.settings_group_look,
+            // Light or dark's row shows the picked one; Light and Dark are in its list.
+            R.string.settings_theme_title,
+            R.string.settings_theme_system,
+            R.string.settings_meter_title,
+            R.string.settings_meter_classic,
+            R.string.settings_meter_light_arc,
+            R.string.settings_meter_strobe,
+            R.string.settings_left_handed_title,
+            R.string.settings_group_twangle,
             R.string.about_title,
         ).map { context.getString(it) } +
             context.getString(R.string.settings_a4_value, 440) +
             context.getString(R.string.settings_about_link_summary, VERSION) +
-            // Wallpaper colours are offered only in Contemporary.
-            if (style == VisualStyle.CONTEMPORARY) listOf(context.getString(R.string.settings_dynamic_color_title)) else emptyList()
+            // Wallpaper colours (dynamicColorAvailable here).
+            context.getString(R.string.settings_dynamic_color_title)
         // The page title sits in the top bar, which doesn't scroll.
         assertWhollyShown(compose.onNodeWithText(context.getString(R.string.settings_title), useUnmergedTree = true), "$case title", scroll = false)
         for (text in texts) assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), "$case $text")
-        for ((tag, name) in cardNames()) {
-            assertWhollyShown(compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(tag)), useUnmergedTree = true), "$case $name card")
-        }
+        // The picked note names ("Automatic: C, C♯, D … B") under the row's title.
+        assertWhollyShown(compose.onNodeWithTag(NOTATION_SETTING_TAG), "$case note names row")
     }
 
     @Test
@@ -234,28 +205,24 @@ class SettingsStylesTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun talkBackHearsEveryCardAndChoiceByName() {
+    fun talkBackHearsEveryChoiceByName() {
         show()
         for (dark in listOf(false, true)) {
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"}:"
-            val picked = mapOf(styleCardTag(style) to true, meterLookCardTag(MeterLook.POINTERS) to true, waveLookCardTag(WaveLook.LOOP) to true)
-            for ((tag, name) in cardNames()) {
-                val card = compose.onNodeWithTag(tag).performScrollTo()
-                card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-                if (picked[tag] == true) card.assertIsSelected() else card.assertIsNotSelected()
-                // The card says its name and nothing else: the picture inside is silent.
-                assertEquals("$case $tag", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            }
-            for ((id, selected) in listOf(R.string.settings_theme_system to true, R.string.settings_theme_light to false, R.string.settings_theme_dark to false)) {
+            val case = "${if (dark) "dark" else "light"}:"
+            // Under the meter's choice rows, the page's one list of them (2026-11-05).
+            for ((id, selected) in listOf(
+                R.string.settings_under_meter_words to true,
+                R.string.settings_under_meter_cents to false,
+            )) {
                 val row = compose.onNodeWithText(context.getString(id)).performScrollTo()
                 row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 if (selected) row.assertIsSelected() else row.assertIsNotSelected()
             }
             // The app's one choice row (ui.md, *Shared controls*): at least 48 dp tall, and every
             // name starts at the same place, picked or not (the ✓'s room is kept on each row).
-            val starts = listOf(R.string.settings_theme_system, R.string.settings_theme_light, R.string.settings_theme_dark).map { id ->
+            val starts = listOf(R.string.settings_under_meter_words, R.string.settings_under_meter_cents).map { id ->
                 val height = compose.onNodeWithText(context.getString(id)).getBoundsInRoot().let { it.bottom - it.top }
                 assertTrue("$case row $height", height >= 47.5.dp)
                 compose.onNodeWithText(context.getString(id), useUnmergedTree = true).getBoundsInRoot().left.value
@@ -264,43 +231,9 @@ class SettingsStylesTest(private val style: VisualStyle) {
         }
     }
 
-    /** Each card's test tag with the name it shows. */
-    private fun cardNames(): List<Pair<String, String>> = buildList {
-        styleNames.forEach { (it, id) -> add(styleCardTag(it) to context.getString(id)) }
-        meterLookNames.forEach { (it, id) -> add(meterLookCardTag(it) to context.getString(id)) }
-        waveLookNames.forEach { (it, id) -> add(waveLookCardTag(it) to context.getString(id)) }
-    }
-
-    private val styleNames = mapOf(
-        VisualStyle.ANCIENT to DesignR.string.style_ancient,
-        VisualStyle.CLASSIC to DesignR.string.style_classic,
-        VisualStyle.RETRO to DesignR.string.style_retro,
-        VisualStyle.CONTEMPORARY to DesignR.string.style_contemporary,
-        VisualStyle.FUTURISTIC to DesignR.string.style_futuristic,
-        VisualStyle.SPACE_AGE to DesignR.string.style_space_age,
-    )
-
-    private val meterLookNames = mapOf(
-        MeterLook.CLASSIC to R.string.settings_meter_look_classic,
-        MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
-        MeterLook.POINTERS to R.string.settings_meter_look_pointers,
-        MeterLook.LOUPE to R.string.settings_meter_look_loupe,
-        MeterLook.ARROWS to R.string.settings_meter_look_arrows,
-        MeterLook.LIGHT_BARS to R.string.settings_meter_look_light_bars,
-    )
-
-    private val waveLookNames = mapOf(
-        WaveLook.STROBE to R.string.settings_wave_look_strobe,
-        WaveLook.RIBBON to R.string.settings_wave_look_ribbon,
-        WaveLook.DOTS to R.string.settings_wave_look_dots,
-        WaveLook.FIREFLIES to R.string.settings_wave_look_fireflies,
-        WaveLook.LOOP to R.string.settings_wave_look_loop,
-        WaveLook.RIPPLES to R.string.settings_wave_look_ripples,
-    )
-
     /**
      * Every language at 2× text, upright and on its side: every text of Settings, and of About, wholly
-     * shown (every style in a thorough run). Only with `--languages`.
+     * shown. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -318,16 +251,12 @@ class SettingsStylesTest(private val style: VisualStyle) {
             for (size in listOf(PHONE_UPRIGHT, PHONE_ON_ITS_SIDE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x:")
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} at 2x:")
             }
         }
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val WINDOW = "window"
         private const val VERSION = "1.2.3-test"
 

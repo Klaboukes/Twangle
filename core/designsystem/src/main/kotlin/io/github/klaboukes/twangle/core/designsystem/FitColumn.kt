@@ -26,12 +26,21 @@ interface FitColumnScope {
      */
     @Composable
     fun Shrinking(content: @Composable (room: Dp) -> Unit)
+
+    /**
+     * A part that grows into what is left over, as a gap does (the metronome's beat bars): at least [min]
+     * tall, plus [weight] shares of the left-over height with the gaps' shares; [content] is told the height
+     * it got and fills it (across, the column's width).
+     */
+    @Composable
+    fun Growing(weight: Float, min: Dp, content: @Composable (height: Dp) -> Unit)
 }
 
 /**
  * A column of [content] that fits a screen [height] tall: each child in its own height, centred
- * across, the [FitColumnScope.Shrinking] part in what the rest leave, and the [FitColumnScope.gap]s
- * sharing what is still left by their weights. Only where the shrinking part can't get small enough
+ * across, the [FitColumnScope.Shrinking] part in what the rest leave, and the [FitColumnScope.gap]s and
+ * [FitColumnScope.Growing] parts sharing what is still left by their weights (a growing part's least
+ * height counting as used). Only where the shrinking part can't get small enough
  * (very large text) is it taller than [height]; in a scrolling column it then scrolls.
  */
 @Composable
@@ -45,6 +54,10 @@ fun FitColumn(height: Dp, modifier: Modifier = Modifier, content: @Composable Fi
         measurables.forEachIndexed { index, measurable ->
             when (val part = measurable.layoutId) {
                 is Gap -> totalWeight += part.weight
+                is GrowingPart -> {
+                    totalWeight += part.weight
+                    used += part.min.roundToPx()
+                }
                 ShrinkingPart -> {
                     check(shrinking < 0) { "A FitColumn has at most one shrinking part" }
                     shrinking = index
@@ -63,11 +76,21 @@ fun FitColumn(height: Dp, modifier: Modifier = Modifier, content: @Composable Fi
         var weightLeft = totalWeight
         var freeLeft = free
         measurables.forEachIndexed { index, measurable ->
-            val part = measurable.layoutId as? Gap ?: return@forEachIndexed
-            val gap = if (part.weight >= weightLeft) freeLeft else (freeLeft * part.weight / weightLeft).roundToInt()
-            weightLeft -= part.weight
-            freeLeft -= gap
-            placeables[index] = measurable.measure(Constraints.fixed(0, gap))
+            val part = measurable.layoutId
+            val weight = when (part) {
+                is Gap -> part.weight
+                is GrowingPart -> part.weight
+                else -> return@forEachIndexed
+            }
+            val share = if (weight >= weightLeft) freeLeft else (freeLeft * weight / weightLeft).roundToInt()
+            weightLeft -= weight
+            freeLeft -= share
+            placeables[index] = if (part is GrowingPart) {
+                val tall = part.min.roundToPx() + share
+                measurable.measure(Constraints(maxWidth = constraints.maxWidth, minHeight = tall, maxHeight = tall))
+            } else {
+                measurable.measure(Constraints.fixed(0, share))
+            }
         }
         val width = (placeables.maxOfOrNull { it?.width ?: 0 } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
         val total = placeables.sumOf { it?.measuredHeight ?: 0 }
@@ -85,6 +108,8 @@ fun FitColumn(height: Dp, modifier: Modifier = Modifier, content: @Composable Fi
 
 private class Gap(val weight: Float)
 
+private class GrowingPart(val weight: Float, val min: Dp)
+
 private object ShrinkingPart
 
 private object FitColumnScopeInstance : FitColumnScope {
@@ -101,6 +126,19 @@ private object FitColumnScopeInstance : FitColumnScope {
             val width = placeables.maxOfOrNull { it.width } ?: 0
             layout(width, placeables.maxOfOrNull { it.height } ?: 0) {
                 placeables.forEach { it.placeRelative((width - it.width) / 2, 0) }
+            }
+        }
+    }
+
+    @Composable
+    override fun Growing(weight: Float, min: Dp, content: @Composable (height: Dp) -> Unit) {
+        require(weight > 0f) { "A growing part's weight must be above zero" }
+        SubcomposeLayout(Modifier.layoutId(GrowingPart(weight, min))) { constraints ->
+            val tall = constraints.maxHeight
+            val placeables = subcompose(Unit) { content(tall.toDp()) }.map { it.measure(Constraints(maxWidth = constraints.maxWidth, maxHeight = tall)) }
+            val width = placeables.maxOfOrNull { it.width } ?: 0
+            layout(width, tall) {
+                placeables.forEach { it.placeRelative((width - it.width) / 2, (tall - it.height) / 2) }
             }
         }
     }

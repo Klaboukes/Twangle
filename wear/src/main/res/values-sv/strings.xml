@@ -15,8 +15,8 @@
         <item quantity="one">%1$d cent för högt</item>
         <item quantity="other">%1$d cent för högt</item>
     </plurals>
-    <string name="wear_spoken_tune_up">stäm upp</string>
-    <string name="wear_spoken_tune_down">stäm ner</string>
+    <string name="wear_word_tighten">Spänn</string>
+    <string name="wear_word_loosen">Slacka</string>
     <string name="wear_spoken_sharp">%1$s med kors</string>
     <string name="wear_mic_needed">Twangle lyssnar på ditt instrument med klockans mikrofon.</string>
     <string name="wear_allow_mic">Tillåt mikrofon</string>
@@ -25,6 +25,17 @@
     <string name="wear_mic_unavailable">Mikrofonen kan inte öppnas.</string>
     <string name="wear_try_again">Försök igen</string>
     <string name="wear_tile_tune">Stäm</string>
+    <string name="wear_tile_metronome">Metronom</string>
+    <string name="wear_tile_open_metronome">Öppna metronomen, %1$s</string>
     <string name="wear_shortcut_tune">Stäm</string>
     <string name="wear_shortcut_open">Öppna stämmaren</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d slag per minut</item>
+        <item quantity="other">%1$d slag per minut</item>
+    </plurals>
+    <string name="wear_metronome_playing">Spelar</string>
+    <string name="wear_metronome_stopped">Stoppad</string>
+    <string name="wear_metronome_start">Starta</string>
+    <string name="wear_metronome_stop">Stoppa</string>
+    <string name="wear_metronome_click">Klickljud</string>
 </resources>

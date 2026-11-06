@@ -1,44 +1,41 @@
 <!--
 title: Pitch trail · Twangle
-description: Twangle's pitch trail draws the last seconds of your note as a line, so you can see how steady a long note is, how far a bend goes and how wide your vibrato is.
+description: The pitch trail, in Practice: the last seconds of your note fall down the screen as a line, so you can see how steady a long note is, how far a bend goes and how wide your vibrato is.
 nav: tools
 -->
-  <div class="crumb"><a href="./#tools">Tools</a> · Listening</div>
+  <div class="crumb"><a href="./#tools">Tools</a> · Practice</div>
   <div class="tool solo">
     <div>
       <h1>Pitch trail</h1>
-      <p class="lead">The meter shows where your note is now. The pitch trail shows where it has been: the last four seconds as a line, so you can see how steady a long note is, how far a bend goes, and how wide your vibrato is.</p>
+      <p class="lead">The pitch trail draws your note as you sing or play it. The dot at the top shows where your note is now; under it, the last seconds fall down as a line, so you can see how steady a long note is, how far a bend goes, and how wide your vibrato is.</p>
 
       <img class="wide" src="{root}shots/en/8.jpg" alt="The pitch trail across the screen on its side: a held A4 that starts steady in the in-tune band, then waves with vibrato" width="960" height="448">
 
       <h2>Draw your note</h2>
       <ol class="steps">
-        <li>Tap the tools button above the strings (three tiles and a plus) and pick <i>Pitch trail</i>. The line takes the meter's place.</li>
-        <li>Play or sing a note and hold it.</li>
-        <li>The line runs from right to left, the newest moment at the right. Up is sharp, down is flat. The soft band in the middle is in tune, within 5 cents; the faint lines above and below it are a quarter of a semitone off, and the top and bottom edges half a semitone.</li>
+        <li>Open <i>Practice</i> and tap <i>Pitch trail</i>. Sing or play a note and hold it: the row of note names at the top names it, and the trail runs under it.</li>
+        <li>The newest moment is the dot at the top, and the line falls away under it. Left is flat (♭), right is sharp (♯), and the edges are half a semitone off. The soft band down the middle is in tune: 5 cents either way, or 2 with <i>Settings → Precise tuning</i> on. The middle is drawn wider than the edges, so the last few cents are easy to see.</li>
       </ol>
-      <p>The parts of the line that were in tune take the in-tune colour. Between notes, and when the note changes, the line breaks.</p>
+      <p>The dot and the word under the trail turn from amber to green as the note comes close, and green when it is in tune; the parts of the line that were in tune stay green. Between notes, and when the note changes, the line breaks.</p>
 
       <h2>What to try</h2>
       <ul>
         <li><b>A long note.</b> Hold it and keep the line in the band. Good practice for singers and for bowed strings, where your finger, not a fret, sets the pitch.</li>
-        <li><b>A bend.</b> Bend a note slowly and watch the line rise. The trail shows half a semitone either way, so on a longer bend the line climbs to the top and goes on around the next note. A good bend ends steady in its target note's band. <i>Chromatic</i> suits this best.</li>
-        <li><b>Vibrato.</b> The line becomes a wave: its height is how wide your vibrato is, the waves' spacing how fast. An even wave is an even vibrato.</li>
-        <li><b>A plucked string.</b> Pluck hard and the line starts a little high, then settles: a string sounds sharp for a moment when it is struck hard. Tune to where it settles.</li>
+        <li><b>A bend.</b> Bend a note slowly and watch the dot move right. The trail shows half a semitone either way, so on a longer bend the line reaches the right edge and goes on around the next note. A good bend ends steady in its target note's band. <i>Any note</i> suits this best.</li>
+        <li><b>Vibrato.</b> The line becomes a wave: its width is how wide your vibrato is, the waves' spacing how fast. An even wave is an even vibrato.</li>
+        <li><b>A plucked string.</b> Pluck hard and the line starts a little sharp, then settles: a string sounds sharp for a moment when it is struck hard. Tune to where it settles.</li>
       </ul>
 
       <h2>Good to know</h2>
       <ul>
-        <li>The pitch trail works for every instrument and for your voice. The tools button is in <i>Strings</i>; turn the trail on there, then switch to <i>Chromatic</i> if you like, and the trail stays.</li>
-        <li>A tap on a string picks it, as on the tuner.</li>
-        <li>For a bigger trail, turn on <i>Settings → Focus mode</i>: Twangle turns on its side with one big meter, and the trail fills its place, as in the picture.</li>
-        <li>With TalkBack on, Twangle says how the line runs: <i>steady, in tune</i>, <i>wavering, 10 cents sharp</i>, <i>bending up</i>.</li>
-        <li>Picking <i>Pitch trail</i> again, or tapping the <i>Tuner</i> tab, brings the meter back.</li>
+        <li>The pitch trail listens for any note, on every instrument and for your voice: there is nothing to pick.</li>
+        <li>It was the tuner's meter in early versions of Twangle 2.0. The tuner now shows a needle; <i>Settings → Meter</i> also offers the <i>Light arc</i> and the <i>Strobe</i>.</li>
+        <li>With TalkBack on, Twangle adds how the line runs to the reading: <i>E 2, 10 cents sharp, wavering</i>, or <i>bending up</i>.</li>
       </ul>
 
       <details class="curious">
         <summary>For the curious: what the line is made of</summary>
-        <p>It is the tuner's own reading, about 47 a second, drawn as it comes in, so it is exactly as precise as the tuner. Up and down are cents from the note or string the tuner is showing, the same as on the meter. The words TalkBack says come from the last second and a half: a straight line through the readings that rises or falls at least 15 cents is a bend; readings that stay within about 3½ cents of each other are steady; anything else wavers.</p>
+        <p>It is the tuner's own reading, about 47 a second, drawn as it comes in, so it is exactly as precise as the tuner. Left and right are cents from the nearest note, and the line falls 80 dp a second, so a phone upright shows a few seconds. The words TalkBack says come from the last second and a half: a straight line through the readings that rises or falls at least 15 cents is a bend; readings that stay within about 3½ cents of each other are steady; anything else wavers.</p>
       </details>
 
       <div class="nextprev"><a href="chord-name.html">← Chord name</a><a href="metronome.html">Metronome →</a></div>

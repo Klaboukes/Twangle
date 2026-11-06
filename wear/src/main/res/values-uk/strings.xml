@@ -21,8 +21,8 @@
         <item quantity="many">%1$d центів вище</item>
         <item quantity="other">%1$d цента вище</item>
     </plurals>
-    <string name="wear_spoken_tune_up">підтягни</string>
-    <string name="wear_spoken_tune_down">послаб</string>
+    <string name="wear_word_tighten">Підтягни</string>
+    <string name="wear_word_loosen">Послаб</string>
     <string name="wear_spoken_sharp">%1$s дієз</string>
     <string name="wear_mic_needed">Twangle слухає твій інструмент через мікрофон годинника.</string>
     <string name="wear_allow_mic">Дозволити мікрофон</string>
@@ -31,6 +31,19 @@
     <string name="wear_mic_unavailable">Не вдається відкрити мікрофон.</string>
     <string name="wear_try_again">Повторити</string>
     <string name="wear_tile_tune">Тюнер</string>
+    <string name="wear_tile_metronome">Метроном</string>
+    <string name="wear_tile_open_metronome">Відкрити метроном, %1$s</string>
     <string name="wear_shortcut_tune">Тюнер</string>
     <string name="wear_shortcut_open">Відкрити тюнер</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d удар за хвилину</item>
+        <item quantity="few">%1$d удари за хвилину</item>
+        <item quantity="many">%1$d ударів за хвилину</item>
+        <item quantity="other">%1$d удару за хвилину</item>
+    </plurals>
+    <string name="wear_metronome_playing">Грає</string>
+    <string name="wear_metronome_stopped">Зупинено</string>
+    <string name="wear_metronome_start">Старт</string>
+    <string name="wear_metronome_stop">Стоп</string>
+    <string name="wear_metronome_click">Звук клацання</string>
 </resources>

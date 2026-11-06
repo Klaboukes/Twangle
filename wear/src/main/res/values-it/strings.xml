@@ -19,8 +19,8 @@
         <item quantity="many">%1$d cent crescente</item>
         <item quantity="other">%1$d cent crescente</item>
     </plurals>
-    <string name="wear_spoken_tune_up">alza</string>
-    <string name="wear_spoken_tune_down">abbassa</string>
+    <string name="wear_word_tighten">Tendi</string>
+    <string name="wear_word_loosen">Allenta</string>
     <string name="wear_spoken_sharp">%1$s diesis</string>
     <string name="wear_mic_needed">Twangle ascolta il tuo strumento con il microfono dell\'orologio.</string>
     <string name="wear_allow_mic">Consenti microfono</string>
@@ -29,6 +29,18 @@
     <string name="wear_mic_unavailable">Impossibile aprire il microfono.</string>
     <string name="wear_try_again">Riprova</string>
     <string name="wear_tile_tune">Accorda</string>
+    <string name="wear_tile_metronome">Metronomo</string>
+    <string name="wear_tile_open_metronome">Apri il metronomo, %1$s</string>
     <string name="wear_shortcut_tune">Tuner</string>
     <string name="wear_shortcut_open">Apri l\'accordatore</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d battito al minuto</item>
+        <item quantity="many">%1$d battiti al minuto</item>
+        <item quantity="other">%1$d battiti al minuto</item>
+    </plurals>
+    <string name="wear_metronome_playing">In funzione</string>
+    <string name="wear_metronome_stopped">Fermo</string>
+    <string name="wear_metronome_start">Avvia</string>
+    <string name="wear_metronome_stop">Ferma</string>
+    <string name="wear_metronome_click">Suono del clic</string>
 </resources>

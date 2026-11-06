@@ -121,7 +121,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setTheme(theme: ThemeMode) = write { it.copy(theme = theme) }
 
-    override suspend fun setStyle(style: VisualStyle) = write { it.copy(style = style) }
 
     override suspend fun setDynamicColor(enabled: Boolean) = write { it.copy(dynamicColor = enabled) }
 
@@ -129,25 +128,21 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setVibrateInTune(enabled: Boolean) = write { it.copy(vibrateInTune = enabled) }
 
-    override suspend fun setShowTuneHint(enabled: Boolean) = write { it.copy(showTuneHint = enabled) }
+    override suspend fun setStringTickOff(enabled: Boolean) = write { it.copy(stringTickOff = enabled) }
+
+    override suspend fun setUnderMeter(choice: UnderMeter) = write { it.copy(underMeter = choice) }
 
     override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
 
-    override suspend fun setDisplay(display: TunerDisplay) = write { it.copy(display = display) }
+    override suspend fun setLensLook(look: LensLook) = write { it.copy(lensLook = look) }
 
-    override suspend fun setWaveLook(look: WaveLook) = write { it.copy(waveLook = look) }
+    /** 1.1's saved focus mode switch, null without one; [takeOldFocusMode] hands it over once. */
+    var oldFocusMode: Boolean? = null
 
-    override suspend fun setMeterLook(look: MeterLook) = write { it.copy(meterLook = look) }
+    override suspend fun takeOldFocusMode(): Boolean = (oldFocusMode ?: false).also { oldFocusMode = null }
 
-    override suspend fun setInTuneEffect(effect: InTuneEffect) = write { it.copy(inTuneEffect = effect) }
-
-    override suspend fun setFocusMode(enabled: Boolean) =
-        write { it.copy(focusMode = enabled) }
-
-    override suspend fun setTourSeen(seen: Boolean) = write { it.copy(tourSeen = seen) }
-
-    /** Nothing to decide: the fake starts from the settings it is given. */
-    override suspend fun decideTourOnce() = Unit
+    /** Nothing is left to forget in memory. */
+    override suspend fun forgetDroppedSettings() = Unit
 
     override suspend fun setMicRefused(refused: Boolean) = write { it.copy(micRefused = refused) }
 
@@ -170,7 +165,7 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setMetronomeTrainerOn(on: Boolean) = write { it.copy(metronomeTrainerOn = on) }
 
-    override suspend fun setPracticeTool(tool: PracticeTool) = write { it.copy(practiceTool = tool) }
+    override suspend fun setPracticeTool(tool: PracticeTool?) = write { it.copy(practiceTool = tool) }
 
     override suspend fun setPracticeRoot(root: PitchClass) = write { it.copy(practiceRoot = root) }
 

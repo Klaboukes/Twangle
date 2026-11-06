@@ -8,12 +8,12 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -24,22 +24,22 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
- * Pictures of the whole tuner screen in each style, light and dark, for the owner: the style's
- * background behind the A string in tune (the low E and the A ticked off as tuned), on a 393 × 825 dp phone (the Xiaomi 12X inside its bars),
- * so a change to a background or an in-tune colour can be looked at in every style at once.
+ * Pictures of the whole tuner screen in Ink, light and dark, for the owner: the background behind
+ * the A string in tune (the low E and the A ticked off as tuned), on a 393 × 825 dp phone (the Xiaomi 12X inside its bars),
+ * so a change to the background or an in-tune colour can be looked at in both at once. (1.1 took
+ * them in each of its six styles; 2.0 has one look.)
  *
- * Opt-in, as it only makes files: without the instrumentation argument `styleScreenshots=true` it has
- * no cases at all, so the normal suite pays nothing for it. `scripts/style-screens.sh` sets it, collects
+ * Opt-in, as it only makes files: without the instrumentation argument `styleScreenshots=true` it is
+ * skipped at once, so the normal suite pays nothing for it. `scripts/style-screens.sh` sets it, collects
  * the PNGs that `scripts/ui-tests.sh` pulls into `feature/tuner/build/outputs/connected_android_test_additional_output/`
  * and builds the contact sheet in `build/owner-screens/styles/`.
  */
-@RunWith(Parameterized::class)
-class StyleScreenshots(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class StyleScreenshots {
 
     val compose = createSharedActivityComposeRule()
 
@@ -54,12 +54,13 @@ class StyleScreenshots(private val style: VisualStyle) {
 
     @Test
     fun theTunerInTuneLightAndDark() {
+        assumeTrue("Only with $ARGUMENT=true", arguments.getString(ARGUMENT) == "true")
         val dir = arguments.getString(OUTPUT_DIR_ARGUMENT)
         assumeTrue("Gradle gives no $OUTPUT_DIR_ARGUMENT", dir != null)
         val out = File(dir!!).apply { mkdirs() }
         compose.setContent {
             PhoneScreen(PHONE, SystemBars.NONE) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerContent(
                         state = IN_TUNE,
@@ -71,8 +72,8 @@ class StyleScreenshots(private val style: VisualStyle) {
                         modifier = Modifier.fillMaxSize(),
                         animationsOff = true,
                         tunedStrings = TunedStrings(Tunings.STANDARD, 0b11L),
-                        // As in the app by default: "Show tuning help" on, so the ticks show.
-                        showTuneHint = true,
+                        // The string tick-off on (off by default), so the pictures show the ticks.
+                        stringTickOff = true,
                     )
                 }
             }
@@ -82,17 +83,12 @@ class StyleScreenshots(private val style: VisualStyle) {
             // The background's cross-fade, the in-tune colour and the glow all settle before the picture.
             compose.waitForIdle()
             val bitmap = compose.onPhoneScreen().captureToImage().asAndroidBitmap()
-            val name = "style-${style.name}-${if (dark) "dark" else "light"}".lowercase().replace('_', '-')
+            val name = "ink-${if (dark) "dark" else "light"}"
             File(out, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> =
-            if (InstrumentationRegistry.getArguments().getString(ARGUMENT) == "true") VisualStyle.entries else emptyList()
-
         /** The instrumentation argument that turns these pictures on. */
         const val ARGUMENT = "styleScreenshots"
 

@@ -38,11 +38,12 @@ class IntonationFlowTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
+    // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
     private val settings = FakeSettingsRepository()
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
-        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), tools = tools)
+        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), saved = settings.settings.value, tools = tools)
 
     private fun TunerViewModel.check(): TunerUiState.IntonationCheck {
         val state = state.value
@@ -109,20 +110,10 @@ class IntonationFlowTest {
     }
 
     @Test
-    fun `one tool at a time, and chromatic mode turns the check off`() = runTest(dispatcher) {
+    fun `chromatic mode turns the check off, and the check turns guitar mode on`() = runTest(dispatcher) {
         val vm = viewModel(FakeAudioRecorder.silence())
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
-        vm.setStrumCheck(true)
-        vm.setIntonationCheck(true)
-        advanceTimeBy(100)
-        assertFalse(vm.strumCheck.value)
-        assertTrue(vm.intonationCheck.value)
-        vm.setStrumCheck(true)
-        advanceTimeBy(100)
-        assertFalse(vm.intonationCheck.value)
-        assertTrue(vm.state.value is TunerUiState.StrumCheck)
-
         vm.setIntonationCheck(true)
         vm.setMode(TunerMode.CHROMATIC)
         advanceTimeBy(100)
@@ -145,7 +136,7 @@ class IntonationFlowTest {
         assertTrue(vm.intonationCheck.value)
         vm.setInstrument(Instruments.VIOLIN)
         advanceTimeBy(100)
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.PITCH_TRAIL), vm.tunerTools.value)
+        assertEquals(listOf(TunerTool.STRUM_CHECK), vm.tunerTools.value)
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)
         vm.setIntonationCheck(true)
@@ -160,6 +151,32 @@ class IntonationFlowTest {
         backgroundScope.launch { vm.state.collect {} }
         assertEquals(emptyList<TunerTool>(), vm.tunerTools.value)
         vm.setIntonationCheck(true)
+        advanceTimeBy(100)
+        assertFalse(vm.intonationCheck.value)
+        assertTrue(vm.state.value is TunerUiState.Listening)
+    }
+
+    @Test
+    fun `an instrument without the check is not offered it, and picking one turns a check that is on off`() = runTest(dispatcher) {
+        settings.setInstrument(Instruments.VIOLIN)
+        val vm = viewModel(FakeAudioRecorder.silence())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(100)
+        assertFalse(TunerTool.INTONATION_CHECK in vm.tunerTools.value)
+        vm.setIntonationCheck(true)
+        advanceTimeBy(100)
+        assertFalse(vm.intonationCheck.value)
+        assertTrue(vm.state.value is TunerUiState.Listening)
+
+        settings.setInstrument(Instruments.GUITAR)
+        advanceTimeBy(100)
+        assertTrue(TunerTool.INTONATION_CHECK in vm.tunerTools.value)
+        vm.setIntonationCheck(true)
+        advanceTimeBy(100)
+        assertTrue(vm.state.value is TunerUiState.IntonationCheck)
+
+        settings.setInstrument(Instruments.VIOLIN)
         advanceTimeBy(100)
         assertFalse(vm.intonationCheck.value)
         assertTrue(vm.state.value is TunerUiState.Listening)

@@ -1,0 +1,268 @@
+<!doctype html>
+<!--
+  Rough mock-up, 2026-11-03, after the owner's review of v2: the ruler as the tuning needle, and where the
+  signal bars go. Ink dark only. Part 1: today, A (a bigger ruler) and B (a bigger ruler that zooms in near the
+  note, with cent marks), each with the lens moved down into the empty band. Part 2: three places for the signal
+  bars. Part 3: the top bar on each tab. All three phones also show the new tone: amber until the note is close, green only in tune.
+  Decisions (owner, 2026-11-03): B, the ruler bigger and zooming in near the note with its cent marks (built big
+  only where the column is at least 640 dp tall; plain but zooming elsewhere). The signal bars: none of 1-3, but at
+  the start of the strum check's row over the pegs, on the left (the chip's row where there are no pegs). The strum
+  check's icon keeps no label. The top bars (2026-11-04): 1, one rhythm on every tab (TopBar), the
+  buttons one size in one place.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Ruler as needle</title>
+<style>
+  :root { --page: #F2F3F5; --text: #1B1F24; --muted: #5A6370; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 4px; }
+  p.lead { margin: 0 0 16px; color: var(--muted); max-width: 70ch; }
+  .row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  figure { margin: 0; width: 300px; }
+  canvas { display: block; border-radius: 22px; box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+  figcaption { margin-top: 8px; font-size: 14px; }
+  figcaption b { display: block; font-size: 15px; }
+  .controls { margin: 8px 0 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: inherit; padding: 6px 14px; border-radius: 16px; border: 1px solid #B8BEC7; background: #fff; cursor: pointer; }
+  button.on { background: #1E7FE0; color: #fff; border-color: #1E7FE0; }
+</style>
+</head>
+<body>
+<h1>The ruler as the tuning needle</h1>
+<p class="lead">The tone sweeps slowly from 40 cents flat to in tune and back. Each phone moves the lens down
+into the empty band. <b>A</b> only makes the ruler bigger. <b>B</b> also zooms in near the note: the last
+20 cents get three times the room, and small marks every 5 cents fade in around the pointer.</p>
+<div class="controls">
+  <button id="sweep" class="on">Slow sweep</button>
+  <button id="hold">Hold at 8 cents flat</button>
+  <button id="tune">Hold in tune</button>
+</div>
+<div class="row">
+  <figure><canvas id="today" width="300" height="640"></canvas>
+    <figcaption><b>Today</b>The small ruler, the empty band above the pegs.</figcaption></figure>
+  <figure><canvas id="a" width="300" height="640"></canvas>
+    <figcaption><b>A · Bigger ruler</b>Taller notes and more room between them, the lens lower.</figcaption></figure>
+  <figure><canvas id="b" width="300" height="640"></canvas>
+    <figcaption><b>B · Bigger, zooms in near the note</b>The ruler becomes a needle for the last few cents.</figcaption></figure>
+</div>
+
+<h2>Where the signal bars go</h2>
+<p class="lead">Today they stand over the next note to the right (F), as if they belonged to it.</p>
+<div class="row">
+  <figure><canvas id="s1" width="300" height="330"></canvas>
+    <figcaption><b>1 · Top bar, by the gear</b>Where the strum check and the 12th-fret check already put them: one place on every tuner screen, never over a note.</figcaption></figure>
+  <figure><canvas id="s2" width="300" height="330"></canvas>
+    <figcaption><b>2 · Under the word</b>Beside the cents, in the empty band: "12 cents flat" and the bars read together.</figcaption></figure>
+  <figure><canvas id="s3" width="300" height="330"></canvas>
+    <figcaption><b>3 · Under the pointer</b>Small bars under the ruler's triangle, between the ruler and the lens.</figcaption></figure>
+</div>
+
+<h2>The top bar on each tab</h2>
+<p class="lead">The gear is already the same on every tab. What differs is the middle and the right.</p>
+<div class="row">
+  <figure><canvas id="t0" width="300" height="230"></canvas>
+    <figcaption><b>Today</b>Tune has the chip, Metronome a sliders button beside the gear (two "settings" signs), Practice a title at the start.</figcaption></figure>
+  <figure><canvas id="t1" width="300" height="230"></canvas>
+    <figcaption><b>1 · Same rhythm everywhere</b>Gear left, the tab's name or chip in the middle, the tab's own button right. The metronome's options get a "more" sign (⋯).</figcaption></figure>
+  <figure><canvas id="t2" width="300" height="230"></canvas>
+    <figcaption><b>2 · Only the sign changes</b>As today, but the metronome's sliders become ⋯, so no two settings signs stand side by side.</figcaption></figure>
+</div>
+
+<script>
+const C = { bg: "#0E1116", face: "#171B22", ink: "#EEF1F5", muted: "#8D96A3", line: "#262C35",
+            amber: "#FFB648", green: "#3DDC84" };
+const NAMES = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+const W = 300, H = 640;           // the phone, in dp-ish units (a 360 dp phone at 0.83)
+const WINDOW = 5;                 // the in-tune zone, cents
+
+function hex(c){ return [1,3,5].map(i => parseInt(c.slice(i,i+2),16)); }
+function mix(a,b,t){ const x=hex(a), y=hex(b); return "rgb(" + x.map((v,i)=>Math.round(v+(y[i]-v)*t)).join(",") + ")"; }
+function alpha(c,a){ const x=hex(c); return `rgba(${x[0]},${x[1]},${x[2]},${a})`; }
+// The new tone: amber until 3 cents outside the zone, then a quick blend, green only in tune.
+function tone(cents){
+  const off = Math.abs(cents);
+  if (off <= WINDOW) return C.green;
+  const t = Math.max(0, Math.min(1, 1 - (off - WINDOW) / 3));
+  return mix(C.amber, C.green, 0.45 * t);
+}
+// The lens's stretched scale (k = 1.5), as on the phone.
+function stretch(c){ const k = 1.5, r = 50; return Math.sign(c) * r * Math.log1p(k * Math.abs(c) / r * 4) / Math.log1p(k * 4); }
+
+function roundRect(g,x,y,w,h,r){ g.beginPath(); g.roundRect(x,y,w,h,r); }
+
+function topBar(g, bars){
+  g.strokeStyle = alpha(C.muted,.6); g.lineWidth = 1.2;
+  g.beginPath(); g.arc(30, 40, 17, 0, 7); g.stroke();
+  g.beginPath(); g.arc(270, 40, 17, 0, 7); g.stroke();
+  g.fillStyle = C.ink; g.font = "13px system-ui"; g.textAlign = "center"; g.textBaseline = "middle";
+  roundRect(g, 85, 25, 130, 30, 15); g.stroke(); g.fillText("Guitar · Standard ▾", 150, 40);
+  g.fillStyle = C.muted; g.font = "16px system-ui"; g.fillText("⚙", 30, 41); g.fillText("⛶", 270, 41);
+  if (bars) drawBars(g, 56, 48, 14);
+}
+function drawBars(g, x, base, h){
+  for (let i = 0; i < 4; i++) {
+    g.fillStyle = i < 3 ? alpha(C.ink,.75) : alpha(C.muted,.35);
+    const bh = h * (i + 1) / 4; roundRect(g, x + i * 5, base - bh, 3, bh, 1.5); g.fill();
+  }
+}
+
+// The ruler. pitch: the reading in semitones (MIDI). opts: sizes, zoom.
+function ruler(g, top, pitch, target, o){
+  const cx = W / 2, cents = (pitch - target) * 100, col = tone(cents);
+  const place = d => cx + o.step * (o.zoom ? d + o.zoom * 0.22 * Math.tanh(d / 0.22) : d);
+  const base = top + o.height - 14;
+  g.save(); g.beginPath(); g.rect(0, top, W, o.height + 14); g.clip();
+  g.strokeStyle = alpha(C.muted,.55); g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(8, base); g.lineTo(W - 8, base); g.stroke();
+  for (let n = Math.floor(pitch) - 6; n <= Math.ceil(pitch) + 6; n++) {
+    const x = place(n - pitch); if (x < -30 || x > W + 30) continue;
+    const heard = n === target, edge = Math.min(1, Math.min(x, W - x) / 40);
+    g.globalAlpha = Math.max(0, edge);
+    g.strokeStyle = alpha(C.muted,.6); g.beginPath(); g.moveTo(x, base); g.lineTo(x, base - 7); g.stroke();
+    g.fillStyle = heard ? C.ink : alpha(C.ink,.6); g.textAlign = "center"; g.textBaseline = "alphabetic";
+    g.font = (heard ? "600 " + o.big : o.small) + "px system-ui";
+    g.fillText(NAMES[((n % 12) + 12) % 12], x, base - 12);
+    g.globalAlpha = 1;
+  }
+  if (o.zoom) {
+    // Cent marks round the target, fading in as the note comes near.
+    const near = Math.max(0, Math.min(1, 1 - (Math.abs(cents) - 5) / 25));
+    for (let c = -30; c <= 30; c += 5) {
+      if (c === 0) continue;
+      const x = place((target - pitch) + c / 100);
+      g.strokeStyle = alpha(C.muted, .75 * near); g.lineWidth = 1;
+      const len = c % 10 === 0 ? 6 : 3.5;
+      g.beginPath(); g.moveTo(x, base); g.lineTo(x, base - len); g.stroke();
+    }
+    // The zone under the target note, as on the lens.
+    const z0 = place((target - pitch) - WINDOW / 100), z1 = place((target - pitch) + WINDOW / 100);
+    g.fillStyle = alpha(C.green, .18 * near); g.fillRect(z0, base - 3, z1 - z0, 6);
+  }
+  g.restore();
+  // The pointer.
+  g.fillStyle = col; g.beginPath(); g.moveTo(cx, base + 2); g.lineTo(cx - 6, base + 12); g.lineTo(cx + 6, base + 12); g.fill();
+  return base + 12;
+}
+
+function lens(g, top, h, cents, hist){
+  const x = 16, w = W - 32, col = tone(cents), inTune = Math.abs(cents) <= WINDOW;
+  g.fillStyle = C.face; roundRect(g, x, top, w, h, 18); g.fill();
+  g.save(); roundRect(g, x, top, w, h, 18); g.clip();
+  const cx = x + w / 2, half = w / 2 - 20, px = c => cx + stretch(Math.max(-50, Math.min(50, c))) / 50 * half;
+  g.fillStyle = alpha(C.green, .12); g.fillRect(px(-WINDOW), top, px(WINDOW) - px(-WINDOW), h);
+  g.strokeStyle = alpha(C.muted,.35); g.lineWidth = 1; g.beginPath(); g.moveTo(cx, top); g.lineTo(cx, top + h); g.stroke();
+  g.strokeStyle = col; g.lineWidth = 2.4; g.beginPath();
+  hist.forEach((c, i) => { const y = top + 26 + i * 2.2; if (y > top + h) return; i ? g.lineTo(px(c), y) : g.moveTo(px(c), y); });
+  g.stroke();
+  g.fillStyle = col; g.beginPath(); g.arc(px(cents), top + 26, 7, 0, 7); g.fill();
+  g.restore();
+  g.strokeStyle = alpha(col, .75); g.lineWidth = 2; roundRect(g, x, top, w, h, 18); g.stroke();
+  g.fillStyle = C.muted; g.font = "15px system-ui"; g.textAlign = "center";
+  g.fillText("♭", x + 18, top + h - 14); g.fillText("♯", x + w - 18, top + h - 14);
+  return inTune;
+}
+
+function wordAndPegs(g, y, cents, opts = {}){
+  const inTune = Math.abs(cents) <= WINDOW, col = tone(cents);
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  g.fillStyle = col; g.font = "600 28px system-ui"; g.fillText(inTune ? "In tune" : cents < 0 ? "Tighten" : "Loosen", W / 2, y);
+  g.fillStyle = "#B9C0CA"; g.font = "15px system-ui";
+  const sub = inTune ? "0 cents" : Math.round(Math.abs(cents)) + " cents " + (cents < 0 ? "flat" : "sharp");
+  g.fillText(sub, W / 2, y + 24);
+  if (opts.bars) drawBars(g, W / 2 + g.measureText(sub).width / 2 + 8, y + 22, 12);
+}
+function pegs(g, y, ringed){
+  ["E","A","D","G","B","E"].forEach((n, i) => {
+    const x = 32 + i * 47; g.strokeStyle = i === ringed ? tone(cents) : alpha(C.muted,.55); g.lineWidth = i === ringed ? 2.2 : 1.2;
+    g.beginPath(); g.arc(x, y, 17, 0, 7); g.stroke(); g.fillStyle = C.ink; g.font = "15px system-ui"; g.textAlign = "center"; g.fillText(n, x - 2, y + 5);
+  });
+  g.strokeStyle = alpha(C.muted,.55); g.lineWidth = 1.2; g.beginPath(); g.arc(258, y - 50, 17, 0, 7); g.stroke();
+  g.fillStyle = C.muted; g.font = "14px system-ui"; g.fillText("⦀", 258, y - 45);
+}
+function nav(g){
+  g.fillStyle = C.muted; g.font = "12px system-ui"; g.textAlign = "center";
+  [["Tune",50],["Metronome",150],["Practice",250]].forEach(([t,x],i) => { g.fillStyle = i ? C.muted : "#5FC4FF"; g.fillText(t, x, H - 22); });
+}
+function tint(g, cents){ g.fillStyle = C.bg; g.fillRect(0,0,W,H); g.fillStyle = alpha(Math.abs(cents) <= WINDOW ? C.green : C.amber, .09); g.fillRect(0,0,W,H); }
+
+const TARGET = 64; // E4
+let mode = "sweep", t0 = performance.now(), cents = -40, hist = [];
+function readingAt(t){
+  if (mode === "hold") return -8 + Math.sin(t / 300) * 0.6;
+  if (mode === "tune") return 0.4 + Math.sin(t / 400) * 0.8;
+  const p = (t / 9000) % 2, s = p < 1 ? p : 2 - p;   // 9 s each way
+  return -40 + 40 * (1 - Math.pow(1 - s, 1.6)) + Math.sin(t / 250) * 0.5;
+}
+
+function drawPhone(id, kind){
+  const g = document.getElementById(id).getContext("2d");
+  tint(g, cents); topBar(g, false);
+  const pitch = TARGET + cents / 100;
+  if (kind === "today") {
+    ruler(g, 90, pitch, TARGET, { height: 62, step: 48, big: 30, small: 14 });
+    drawBars(g, W / 2 + 26, 108, 18);
+    lens(g, 172, 225, cents, hist);
+    wordAndPegs(g, 438, cents);
+  } else {
+    const zoom = kind === "b" ? 2 : 0;
+    ruler(g, 78, pitch, TARGET, { height: 104, step: 66, big: 54, small: 20, zoom });
+    lens(g, 214, 225, cents, hist);
+    wordAndPegs(g, 482, cents);
+  }
+  pegs(g, 580, 5); nav(g);
+}
+function drawBarsOption(id, which){
+  const g = document.getElementById(id).getContext("2d");
+  g.fillStyle = C.bg; g.fillRect(0, 0, W, 330); topBar(g, which === 1);
+  const pitch = TARGET - 0.12;
+  ruler(g, 74, pitch, TARGET, { height: 104, step: 66, big: 54, small: 20 });
+  if (which === 3) drawBars(g, W / 2 - 9, 214, 12);
+  if (which === 2) {
+    g.fillStyle = C.face; roundRect(g, 16, 222, W - 32, 50, 18); g.fill();
+    wordAndPegs(g, 306, -12, { bars: true });
+  } else {
+    g.fillStyle = C.face; roundRect(g, 16, 222, W - 32, 90, 18); g.fill();
+  }
+}
+
+function frame(t){
+  cents = readingAt(t - t0);
+  hist.unshift(cents); if (hist.length > 110) hist.pop();
+  drawPhone("today", "today"); drawPhone("a", "a"); drawPhone("b", "b");
+  requestAnimationFrame(frame);
+}
+for (const [id, m] of [["sweep","sweep"],["hold","hold"],["tune","tune"]]) {
+  document.getElementById(id).onclick = () => { mode = m; t0 = performance.now();
+    document.querySelectorAll(".controls button").forEach(b => b.classList.toggle("on", b.id === id)); };
+}
+drawBarsOption("s1", 1); drawBarsOption("s2", 2); drawBarsOption("s3", 3);
+
+function bar(g, y, label, mid, right, start){
+  g.fillStyle = alpha(C.muted,.8); g.font = "11px system-ui"; g.textAlign = "left"; g.fillText(label, 12, y - 30);
+  g.strokeStyle = alpha(C.muted,.6); g.lineWidth = 1.2;
+  g.beginPath(); g.arc(30, y, 17, 0, 7); g.stroke();
+  g.fillStyle = C.muted; g.font = "16px system-ui"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("⚙", 30, y + 1);
+  if (mid === "chip") { roundRect(g, 85, y - 15, 130, 30, 15); g.stroke(); g.fillStyle = C.ink; g.font = "13px system-ui"; g.fillText("Guitar · Standard ▾", 150, y); }
+  else if (mid) { g.fillStyle = C.ink; g.font = "600 16px system-ui"; if (start) { g.textAlign = "left"; g.fillText(mid, 56, y); } else g.fillText(mid, 150, y); }
+  if (right) { g.strokeStyle = alpha(C.muted,.6); g.beginPath(); g.arc(270, y, 17, 0, 7); g.stroke(); g.fillStyle = C.muted; g.font = "16px system-ui"; g.textAlign = "center"; g.fillText(right, 270, y + 1); }
+  g.textBaseline = "alphabetic";
+}
+function drawBarsSet(id, which){
+  const g = document.getElementById(id).getContext("2d");
+  g.fillStyle = C.bg; g.fillRect(0, 0, W, 230);
+  if (which === 0) { bar(g, 50, "Tune", "chip", "⛶"); bar(g, 120, "Metronome", null, "⚟"); bar(g, 190, "Practice", "Practice", null, true); }
+  if (which === 1) { bar(g, 50, "Tune", "chip", "⛶"); bar(g, 120, "Metronome", "Metronome", "⋯"); bar(g, 190, "Practice", "Practice", null); }
+  if (which === 2) { bar(g, 50, "Tune", "chip", "⛶"); bar(g, 120, "Metronome", null, "⋯"); bar(g, 190, "Practice", "Practice", null, true); }
+}
+drawBarsSet("t0", 0); drawBarsSet("t1", 1); drawBarsSet("t2", 2);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

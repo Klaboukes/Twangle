@@ -6,9 +6,10 @@
         <item quantity="one">%1$d बीट प्रति मिनट, %2$s</item>
         <item quantity="other">%1$d बीट प्रति मिनट, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">बीट प्रति मिनट · %1$s</string>
     <string name="metronome_slower">धीमा</string>
     <string name="metronome_faster">तेज़</string>
-    <string name="metronome_tap">टैप टेम्पो</string>
+    <string name="metronome_tap">बीट पर टैप करें</string>
     <string name="metronome_start">शुरू करें</string>
     <string name="metronome_stop">रोकें</string>
     <string name="metronome_vibrate">बीट पर वाइब्रेट करें</string>
@@ -22,12 +23,8 @@
     <string name="metronome_subdivision_eighths">आठवें नोट</string>
     <string name="metronome_subdivision_triplets">ट्रिप्लेट</string>
     <string name="metronome_subdivision_sixteenths">सोलहवें नोट</string>
-    <string name="metronome_subdivision_eighths_on">बीटों के बीच आठवें नोट</string>
-    <string name="metronome_subdivision_triplets_on">बीटों के बीच ट्रिप्लेट</string>
-    <string name="metronome_subdivision_sixteenths_on">बीटों के बीच सोलहवें नोट</string>
     <string name="metronome_options">विकल्प</string>
     <string name="metronome_trainer">स्पीड ट्रेनर</string>
-    <string name="metronome_trainer_back">विकल्पों पर वापस</string>
     <string name="metronome_trainer_start">शुरुआती टेम्पो</string>
     <string name="metronome_trainer_goal">लक्ष्य</string>
     <string name="metronome_trainer_start_slower">शुरुआती टेम्पो घटाएँ</string>
@@ -65,7 +62,6 @@
     <string name="metronome_listen">सुनें</string>
     <string name="metronome_listen_stop_spoken">सुनना बंद करें</string>
     <string name="metronome_listening">सुन रहा है…</string>
-    <string name="metronome_listen_line_stop">रोकें</string>
     <string name="metronome_heard">सुना गया</string>
     <string name="metronome_use">इस्तेमाल करें</string>
     <string name="metronome_not_now">अभी नहीं</string>

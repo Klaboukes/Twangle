@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Inställningar</string>
     <string name="settings_back">Tillbaka</string>
+    <string name="settings_group_tuning">Stämning</string>
 
-    <string name="settings_group_pitch">Tonhöjd och tonnamn</string>
     <string name="settings_group_look">Utseende</string>
-    <string name="settings_group_tuner_screen">Stämmarskärmen</string>
     <string name="settings_group_while_tuning">Medan du stämmer</string>
-    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Stämton (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">Sänk A4 med 1 Hz</string>
     <string name="settings_a4_raise">Höj A4 med 1 Hz</string>
     <string name="settings_a4_reset">Återställ till %1$d Hz</string>
+    <string name="settings_precise_title">Exakt stämning</string>
+    <string name="settings_precise_summary">Stämd inom 2 cent i stället för 5</string>
 
     <string name="settings_notation_title">Tonnamn</string>
     <string name="settings_notation_sharps">Korsförtecken: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Tyska: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Noggrannhet</string>
-    <string name="settings_in_tune_precision_relaxed">Generös: inom 5 cent</string>
-    <string name="settings_in_tune_precision_precise">Exakt: inom 2 cent</string>
 
-    <string name="settings_style_title">Stil</string>
     <string name="settings_theme_title">Ljust eller mörkt</string>
-    <string name="settings_theme_system">Systemstandard</string>
+    <string name="settings_theme_system">Som telefonen</string>
     <string name="settings_theme_light">Ljust</string>
     <string name="settings_theme_dark">Mörkt</string>
     <string name="settings_dynamic_color_title">Bakgrundsfärger</string>
     <string name="settings_dynamic_color_summary">Använd färgerna från din bakgrundsbild</string>
+    <string name="settings_meter_title">Mätare</string>
+    <string name="settings_meter_classic">Klassisk</string>
+    <string name="settings_meter_light_arc">LED-båge</string>
+    <string name="settings_meter_strobe">Stroboskop</string>
 
-    <string name="settings_meter_look_title">Mätare</string>
-    <string name="settings_meter_look_classic">Klassisk</string>
-    <string name="settings_meter_look_light_arc">Ljusbåge</string>
-    <string name="settings_meter_look_pointers">Visare</string>
-    <string name="settings_meter_look_loupe">Lupp</string>
-    <string name="settings_meter_look_arrows">Pilar</string>
-    <string name="settings_meter_look_light_bars">Ljusstaplar</string>
-    <string name="settings_in_tune_effect_title">Effekt vid stämd ton</string>
-    <string name="settings_in_tune_effect_summary">Hur starkt mätaren lyser när en ton är stämd</string>
-    <string name="settings_in_tune_effect_calm">Lugn</string>
-    <string name="settings_in_tune_effect_bold">Kraftig</string>
-
-    <string name="settings_display_title">Under tonen</string>
-    <string name="settings_display_numbers">Siffror: hur många cent fel</string>
-    <string name="settings_display_wave">Våg: en rörlig bild, i det utseende du väljer</string>
-    <string name="settings_wave_look_title">Vågens utseende</string>
-    <string name="settings_wave_look_strobe">Stroboskop</string>
-    <string name="settings_wave_look_ribbon">Slinga</string>
-    <string name="settings_wave_look_dots">Prickar</string>
-    <string name="settings_wave_look_fireflies">Eldflugor</string>
-    <string name="settings_wave_look_loop">Ring</string>
-    <string name="settings_wave_look_ripples">Krusningar</string>
-    <string name="settings_focus_mode_title">Fokusläge</string>
-    <string name="settings_focus_mode_summary">Vänder Twangle på sidan med en stor mätare, lätt att läsa på avstånd</string>
     <string name="settings_left_handed_title">Vänsterhänt</string>
     <string name="settings_left_handed_summary">Ackordscheman och halsen i Skalor ritade för en gitarr som hålls åt andra hållet</string>
+    <string name="settings_under_meter_title">Under mätaren</string>
+    <string name="settings_under_meter_words">Ord: Spänn eller Slacka</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
 
     <string name="settings_keep_screen_on_title">Håll skärmen tänd</string>
     <string name="settings_keep_screen_on_summary">Skärmen hålls tänd medan du stämmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrera vid stämd ton</string>
     <string name="settings_vibrate_in_tune_summary">En kort vibration när tonen når rätt tonhöjd</string>
-    <string name="settings_show_tune_hint_title">Visa stämhjälp</string>
-    <string name="settings_show_tune_hint_summary">Säger om du ska stämma upp eller ner och bockar av varje sträng när den är stämd</string>
+    <string name="settings_string_tick_off_title">Bocka av stämda strängar</string>
+    <string name="settings_string_tick_off_summary">En bock på varje sträng när den är stämd, och ”Stämd. Spela på.” när alla är det</string>
     <string name="settings_show_signal_bars_title">Visa signalstaplar</string>
-    <string name="settings_show_signal_bars_summary">För nyfikna: små staplar vid tonen visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
+    <string name="settings_show_signal_bars_summary">För nyfikna: små staplar ovanför strängarna visar hur väl stämmaren hör dig. Tryck på dem för siffrorna</string>
 
     <string name="settings_language_title">Språk</string>
     <string name="settings_language_phone">Telefonens språk</string>
     <string name="settings_language_cancel">Avbryt</string>
-    <string name="settings_show_tour_title">Rundtur</string>
-    <string name="settings_show_tour_summary">En kort rundtur i stämmaren</string>
     <string name="about_title">Om Twangle</string>
     <string name="settings_about_link_summary">Version %1$s, hjälp, integritet och licenser</string>
+    <string name="settings_about_name_title">Namnet</string>
+    <string name="settings_about_name_meaning">Twang är engelska för klangen av en knäppt sträng.</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_free_title">Gratis för alltid</string>
     <string name="settings_about_free_summary">Ingen reklam, inget konto, inga köp i appen och ingen spårning. Varken nu eller senare.</string>

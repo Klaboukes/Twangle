@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Twangle 2.0 Logo</title>
+<!--
+TWANGLE 2.0 LOGO, ROUND 2 (2026-11-04). Round 1 (round1.html) only recoloured 1.1's "twang to tune" mark; the
+owner wants a whole new logo. Six new drawings, none of them round 1 of October's ideas (pluck, twang, settle,
+pick, T, loop). Every one keeps the adaptive-icon rules: 108-unit canvas, ink within 33 units of the centre,
+one-colour version for the themed icon. Colours are Ink's (StylePalettes.kt on v2); green is "in tune".
+-->
+<style>
+  :root { --bg:#F6F7F9; --card:#FFFFFF; --ink:#14181D; --muted:#4D5560; --line:#E1E5EA; --accent:#1A6FC4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:1120px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  h2 { font-size:18px; margin:36px 0 12px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:760px; }
+  .controls { display:flex; gap:6px; align-items:center; margin-bottom:18px; flex-wrap:wrap; }
+  .controls span { color:var(--muted); font-size:14px; margin-right:6px; }
+  .chip { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:5px 14px;
+          font:inherit; font-size:14px; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:14px; }
+  .card { background:var(--card); border:2px solid transparent; border-radius:20px; padding:16px; cursor:pointer;
+          box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .card:hover { border-color:var(--line); }
+  .card.picked { border-color:var(--accent); }
+  .card h3 { margin:10px 0 2px; font-size:15px; }
+  .card p { margin:0; color:var(--muted); font-size:13px; }
+  .card svg, .sizes svg, .apps svg, .lock svg.icon { filter:drop-shadow(0 1px 2px rgba(0,0,0,.22)); }
+  .row { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; }
+  .cap { color:var(--muted); font-size:13px; margin-top:8px; text-align:center; }
+  .phone { width:280px; border-radius:32px; padding:24px 18px 28px; }
+  .wall-dark { background:linear-gradient(160deg,#2b3a4d 0%,#4c5b6b 50%,#8a7a6a 100%); }
+  .wall-light { background:linear-gradient(160deg,#eef1f4 0%,#dfe6ee 100%); }
+  .apps { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 6px; }
+  .app { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:11px; color:#fff;
+         text-shadow:0 1px 2px rgba(0,0,0,.5); }
+  .wall-light .app { color:#222; text-shadow:none; }
+  .ph { width:48px; height:48px; border-radius:16px; }
+  .sizes { display:flex; gap:18px; align-items:flex-end; background:var(--card); padding:16px 20px; border-radius:18px; }
+  .splash { width:200px; height:360px; border-radius:30px; display:flex; align-items:center; justify-content:center; }
+  button.replay { font:inherit; font-size:13px; border:1px solid var(--line); background:var(--card); border-radius:999px;
+                  padding:5px 14px; cursor:pointer; }
+  .lock { border-radius:18px; padding:22px 28px; display:flex; align-items:center; justify-content:center; gap:14px; min-height:120px; }
+  .watch { width:190px; height:190px; border-radius:50%; background:#000; display:flex; flex-direction:column;
+           align-items:center; justify-content:center; gap:8px; box-shadow:0 0 0 10px #2a2d33; color:#fff; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>A new Twangle logo</h1>
+  <p class="lead">Six new drawings, each from a different idea, all in Ink's quiet style. Green always means
+    "in tune", the colour the app uses for it. Pick a background to compare them all in it, then tap one to see it on
+    home screens, as a themed icon, opening the app, with the name and on the watch.
+    <a href="round1.html">Round 1</a> · <a href="round3.html">Round 3</a> · <a href="round4.html">Round 4</a> · <a href="round5.html">Round 5</a> · <a href="round6.html">Round 6</a> · <a href="round7.html">Round 7</a> · <a href="index.html">Round 8</a></p>
+
+  <div class="controls" id="bgs"><span>Background</span></div>
+  <div class="grid" id="options"></div>
+
+  <h2>On the home screen</h2>
+  <div class="row" id="home"></div>
+
+  <h2>Shapes and sizes</h2>
+  <div class="row" id="sizes"></div>
+
+  <h2>Themed icon (Android 13 and later, when the player turns it on)</h2>
+  <div class="row" id="themed"></div>
+
+  <h2>Opening the app</h2>
+  <div class="row" id="splash"></div>
+
+  <h2>The name with the mark</h2>
+  <div class="row" id="lockups"></div>
+
+  <h2>On the watch</h2>
+  <div class="row" id="watch"></div>
+</main>
+
+<script>
+// Ink (StylePalettes.kt, v2). Each background brings its own ink, green and faint line colours.
+const BGS = {
+  dark:  { label:'Ink dark',  bg:'#0E1116', ink:'#EEF1F5', green:'#3DDC84', faint:'#8D96A3' },
+  light: { label:'Ink light', bg:'#FFFFFF', ink:'#14181D', green:'#107E46', faint:'#8D96A3' },
+  blue:  { label:'Ink blue',  bg:'#1A6FC4', ink:'#FFFFFF', green:'#3DDC84', faint:'#B9D6F2' },
+};
+let bgKey = 'dark';
+
+// ---- The marks: each draws on the 108-unit canvas with c = { bg, ink, green, faint }. ----
+// Elements with class "late" appear last when the app opens.
+const OPTIONS = [
+  { id:'hole', n:'A', name:'The sound hole',
+    idea:'The view down at an acoustic guitar: three strings over the round sound hole, the middle one green, in tune.',
+    mark: c => {
+      const str = (x, col, w, late) =>
+        `<line x1="${x}" y1="23" x2="${x}" y2="85" stroke="${c.bg}" stroke-width="${w + 3.5}" stroke-linecap="round"/>
+         <line class="${late ? 'late' : ''}" x1="${x}" y1="23" x2="${x}" y2="85" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+      return `<circle cx="54" cy="54" r="25" fill="none" stroke="${c.ink}" stroke-width="5"/>
+        <circle cx="54" cy="54" r="19.5" fill="none" stroke="${c.faint}" stroke-width="1.3" opacity=".6"/>
+        ${str(47, c.ink, 2.4)}${str(61, c.ink, 2.4)}${str(54, c.green, 3.4, true)}`;
+    } },
+  { id:'strobe', n:'B', name:'The strobe',
+    idea:'A strobe disc, the pro tuner\'s symbol and one of 2.0\'s meter looks: the outer ring turns, the green ring stands still, in tune.',
+    mark: c => {
+      const ring = (r, w, n, col, cls) => {
+        const seg = (2 * Math.PI * r / n / 2).toFixed(3);
+        return `<circle class="${cls}" cx="54" cy="54" r="${r}" fill="none" stroke="${col}" stroke-width="${w}"
+                 stroke-dasharray="${seg} ${seg}"/>`;
+      };
+      return ring(27.5, 7.5, 20, c.ink, 'spin') + ring(17.5, 6.5, 12, c.green, 'late')
+        + `<circle cx="54" cy="54" r="6.5" fill="${c.ink}"/>`;
+    } },
+  { id:'head', n:'C', name:'The headstock',
+    idea:'The top of a guitar neck with six pegs, the universal "this is a guitar" shape. One peg green: the one you\'re tuning.',
+    mark: c => {
+      let s = `<path d="M41,28 L67,28 Q70,28 69.6,31 L65,62 Q64.5,65 62,65.5 L61,66 L61,82 Q61,84 59,84 L49,84 Q47,84 47,82
+               L47,66 L46,65.5 Q43.5,65 43,62 L38.4,31 Q38,28 41,28 Z" fill="${c.ink}"/>`;
+      [35, 45.5, 56].forEach((y, i) => {
+        s += `<line x1="32" y1="${y}" x2="44" y2="${y}" stroke="${c.ink}" stroke-width="3"/>
+              <line x1="64" y1="${y}" x2="76" y2="${y}" stroke="${c.ink}" stroke-width="3"/>
+              <circle cx="30.5" cy="${y}" r="4.6" fill="${c.ink}"/>
+              <circle class="${i === 0 ? 'late' : ''}" cx="77.5" cy="${y}" r="4.6" fill="${i === 0 ? c.green : c.ink}"/>
+              <circle cx="47.6" cy="${y}" r="2.2" fill="${c.bg}"/><circle cx="60.4" cy="${y}" r="2.2" fill="${c.bg}"/>`;
+      });
+      return s + `<line x1="47" y1="68" x2="61" y2="68" stroke="${c.bg}" stroke-width="1.6"/>`;
+    } },
+  { id:'unison', n:'D', name:'Unison',
+    idea:'Two notes nearly one: a ring sliding over a green disc. Abstract and calm, the way Ink is; it says "match", not "guitar".',
+    mark: c => `<circle class="late" cx="62" cy="54" r="17" fill="${c.green}"/>
+      <circle cx="46" cy="54" r="17" fill="none" stroke="${c.ink}" stroke-width="5.5"/>` },
+  { id:'fan', n:'E', name:'The neck',
+    idea:'Six strings running up the neck to the nut, thick to thin, the third one green. Reads as strings even at the smallest size.',
+    mark: c => {
+      // Frets across the neck first, faint, so the strings read as strings over a fretboard.
+      const yTop = x => 34 + (47.5 - 34) * (x - 28) / 50, yBot = x => 74 + (60.5 - 74) * (x - 28) / 50;
+      let s = [40, 53, 65].map(x =>
+        `<line x1="${x}" y1="${yTop(x).toFixed(1)}" x2="${x}" y2="${yBot(x).toFixed(1)}" stroke="${c.faint}" stroke-width="2" opacity=".75"/>`).join('');
+      for (let i = 0; i < 6; i++) {
+        const y1 = 34 + i * 8, y2 = 47.5 + i * 2.6, w = 4.6 - i * 0.48;
+        s += `<line class="${i === 2 ? 'late' : ''}" x1="28" y1="${y1}" x2="78" y2="${y2.toFixed(1)}"
+               stroke="${i === 2 ? c.green : c.ink}" stroke-width="${w.toFixed(2)}" stroke-linecap="round"/>`;
+      }
+      return s + `<line x1="80.5" y1="44" x2="80.5" y2="64" stroke="${c.ink}" stroke-width="5" stroke-linecap="round"/>`;
+    } },
+  { id:'fork', n:'F', name:'The tuning fork',
+    idea:'The oldest tuning tool there is, drawn plain, ringing in green. Timeless, and not used by the big tuner apps.',
+    mark: c => `
+      <path d="M43,26 L43,48 Q43,61 54,61 Q65,61 65,48 L65,26" fill="none" stroke="${c.ink}" stroke-width="6.5" stroke-linecap="round"/>
+      <line x1="54" y1="61" x2="54" y2="83" stroke="${c.ink}" stroke-width="6.5" stroke-linecap="round"/>
+      <g class="late" fill="none" stroke="${c.green}" stroke-width="3" stroke-linecap="round">
+        <path d="M33,29 Q28,37 33,45"/><path d="M75,29 Q80,37 75,45"/>
+        <path d="M26.5,26 Q19.5,37 26.5,48" opacity=".55"/><path d="M81.5,26 Q88.5,37 81.5,48" opacity=".55"/></g>` },
+];
+
+// Launcher masks over the visible 72 units (18..90) of the 108 canvas.
+function squirclePath() {
+  let d = '';
+  for (let i = 0; i <= 64; i++) {
+    const a = i / 64 * 2 * Math.PI, co = Math.cos(a), si = Math.sin(a);
+    d += (i ? ' L' : 'M') + (54 + 36 * Math.sign(co) * Math.sqrt(Math.abs(co))).toFixed(2) + ','
+                          + (54 + 36 * Math.sign(si) * Math.sqrt(Math.abs(si))).toFixed(2);
+  }
+  return d + 'Z';
+}
+const SHAPES = { squircle:`<path d="${squirclePath()}"/>`, circle:'<circle cx="54" cy="54" r="36"/>',
+                 rounded:'<rect x="18" y="18" width="72" height="72" rx="16"/>' };
+
+let uid = 0;
+function icon(o, size, shape = 'squircle', c = BGS[bgKey], cls = '') {
+  const id = 'c' + (uid++);
+  return `<svg class="${cls}" width="${size}" height="${size}" viewBox="18 18 72 72" style="display:block">
+    <defs><clipPath id="${id}">${SHAPES[shape]}</clipPath></defs>
+    <g clip-path="url(#${id})"><rect width="108" height="108" fill="${c.bg}"/>${o.mark(c)}</g></svg>`;
+}
+const mono = (bg, fg) => ({ bg, ink:fg, green:fg, faint:fg });
+
+let picked = OPTIONS[0];
+
+function renderControls() {
+  document.getElementById('bgs').innerHTML = '<span>Background</span>' + Object.entries(BGS).map(([k, b]) =>
+    `<button class="chip" data-k="${k}" aria-pressed="${k === bgKey}">${b.label}</button>`).join('');
+  document.querySelectorAll('#bgs .chip').forEach(b => b.onclick = () => { bgKey = b.dataset.k; render(); });
+}
+
+function renderOptions() {
+  document.getElementById('options').innerHTML = OPTIONS.map(o => `
+    <div class="card ${o === picked ? 'picked' : ''}" data-id="${o.id}">
+      ${icon(o, 120)}<h3>${o.n}. ${o.name}</h3><p>${o.idea}</p></div>`).join('');
+  document.querySelectorAll('.card').forEach(el => el.onclick = () => {
+    picked = OPTIONS.find(o => o.id === el.dataset.id); render(); });
+}
+
+const FILLER = ['#d9534f','#3a7bd5','#f0ad4e','#5cb85c','#8e6cc9','#2bb3a3','#e07a5f'];
+function homeScreen(cls) {
+  const names = ['Camera','Mail','Maps','Photos','Twangle','Music','Clock','Notes'];
+  return `<div class="phone ${cls}"><div class="apps">${names.map((n, i) => `<div class="app">${
+    n === 'Twangle' ? icon(picked, 48) : `<div class="ph" style="background:${FILLER[i % FILLER.length]}"></div>`
+  }<span>${n}</span></div>`).join('')}</div></div>`;
+}
+
+function themedRow(cls, bg, fg) {
+  const other = `<svg width="48" height="48"><circle cx="24" cy="24" r="24" fill="${bg}"/><circle cx="24" cy="24" r="9" fill="${fg}" opacity=".7"/></svg>`;
+  return `<div class="phone ${cls}"><div class="apps">${[0,1,2,3].map(i => `<div class="app">${
+    i === 1 ? icon(picked, 48, 'circle', mono(bg, fg)) : other}<span>${i === 1 ? 'Twangle' : ''}</span></div>`).join('')}</div></div>`;
+}
+
+function renderDetail() {
+  const o = picked, c = BGS[bgKey];
+  document.getElementById('home').innerHTML =
+    `<div>${homeScreen('wall-dark')}<div class="cap">Dark wallpaper</div></div>
+     <div>${homeScreen('wall-light')}<div class="cap">Light wallpaper</div></div>`;
+
+  document.getElementById('sizes').innerHTML = ['squircle','circle','rounded'].map(s => `
+    <div><div class="sizes">${icon(o,96,s)}${icon(o,48,s)}${icon(o,32,s)}${icon(o,24,s)}</div>
+    <div class="cap">${{squircle:'Squircle (Xiaomi, Samsung)', circle:'Circle (Pixel)', rounded:'Rounded square'}[s]}</div></div>`).join('');
+
+  document.getElementById('themed').innerHTML =
+    `<div>${themedRow('wall-light', '#D6E3FF', '#2A4678')}<div class="cap">Themed, light</div></div>
+     <div>${themedRow('wall-dark', '#2A3A55', '#C9DAFF')}<div class="cap">Themed, dark</div></div>`;
+
+  // Opening the app: the mark fades in and grows a little, then its green part arrives (about 0.7 s).
+  document.getElementById('splash').innerHTML = `
+    <div><div class="splash" style="background:${c.bg}">
+      <svg width="140" height="140" viewBox="18 18 72 72" id="splashArt">${o.mark(c)}</svg></div>
+      <div class="cap"><button class="replay" id="replay">Play again</button></div></div>`;
+  const play = () => {
+    const svg = document.getElementById('splashArt');
+    svg.animate([{ opacity:0, transform:'scale(.9)' }, { opacity:1, transform:'scale(1)' }],
+      { duration:420, easing:'cubic-bezier(.3,.6,.3,1)', fill:'both' });
+    svg.querySelectorAll('.spin').forEach(e => {
+      e.style.transformBox = 'view-box'; e.style.transformOrigin = '54px 54px';
+      e.animate([{ transform:'rotate(-40deg)' }, { transform:'rotate(0deg)' }], { duration:900, easing:'cubic-bezier(.2,.7,.3,1)', fill:'both' });
+    });
+    svg.querySelectorAll('.late').forEach(e =>
+      e.animate([{ opacity:0 }, { opacity:1 }], { duration:260, delay:440, easing:'ease-out', fill:'both' }));
+  };
+  document.getElementById('replay').onclick = play; play();
+
+  const word = (fill, weight, size) =>
+    `<span style="font:${weight} ${size}px system-ui, sans-serif; color:${fill}; letter-spacing:-.01em">Twangle</span>`;
+  const bare = (cc, size) => `<svg width="${size}" height="${size}" viewBox="18 18 72 72">${o.mark(cc)}</svg>`;
+  document.getElementById('lockups').innerHTML = `
+    <div><div class="lock" style="background:${c.bg === '#FFFFFF' ? '#F6F7F9' : c.bg}">${icon(o, 64, 'squircle', c, 'icon')}${word(c.ink, 600, 40)}</div>
+      <div class="cap">Icon and name (store, website)</div></div>
+    <div><div class="lock" style="background:#FFFFFF">${bare(BGS.light, 60)}${word(BGS.light.ink, 600, 40)}</div>
+      <div class="cap">The mark alone, light</div></div>
+    <div><div class="lock" style="background:#0E1116">${bare(BGS.dark, 60)}${word(BGS.dark.ink, 400, 40)}</div>
+      <div class="cap">The mark alone, dark</div></div>
+    <div><div class="lock" style="background:#0E1116; flex-direction:column; gap:6px">${bare(BGS.dark, 84)}${word(BGS.dark.ink, 300, 30)}</div>
+      <div class="cap">Stacked (About, opening a press kit)</div></div>`;
+
+  document.getElementById('watch').innerHTML = `
+    <div><div class="watch">${icon(o, 64, 'circle')}<span>Twangle</span></div><div class="cap">Galaxy Watch app list</div></div>`;
+}
+
+function render() { renderControls(); renderOptions(); renderDetail(); }
+render();
+</script>
+</body>
+</html>

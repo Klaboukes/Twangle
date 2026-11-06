@@ -2,8 +2,9 @@ package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -13,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -37,15 +39,17 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
- * Twangle's segmented switch: one of [options], [selected] in the style's main accent container (the
+ * Twangle's segmented switch: one of [options], [selected] in the accent container (the
  * fill alone tells it, with no check mark: the owner's choice, 2026-10-18), a tap on another calls
  * [onSelect]. The tuner's mode switch (Strings · Chromatic) is this switch (the Practice tab's tool switch was too, until Phase 47 gave it a tool button). Each
  * segment shows [label] on one line, all of them shrinking to one size where the widest must, and carries the test tag [tag].
  * TalkBack hears the segments as radio buttons by their labels, the picked one selected, or by [spoken]
- * where a short word stands for a longer name (Ear training's exercises: "Play back" for "Play it back").
+ * where a label is said otherwise than written (the metronome's meters: "Six-eight time" for "6/8"; Ear training's
+ * exercises, "Play back" for "Play it back", until Phase 77 gave them a name pill).
+ * With [icon] each segment shows its icon in place of the label (the metronome's click sounds, Phase 75),
+ * [ICON_SIZE] across, and TalkBack hears the label as its name.
  */
 @Composable
 fun <T> SegmentedSwitch(
@@ -56,12 +60,12 @@ fun <T> SegmentedSwitch(
     tag: (T) -> String,
     modifier: Modifier = Modifier,
     spoken: (@Composable (T) -> String)? = null,
+    icon: (@Composable (T) -> Painter)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
-    // Futuristic's buttons are neon outlines in the accent, the unpicked one on a solid tint.
-    val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
     val crowded = options.size >= CROWDED_SEGMENTS
-    val base = segmentedShapeFor(MaterialTheme.styleTokens.style, MaterialTheme.shapes.small)
+    // A capsule, as the round buttons beside it (Phase 63's review).
+    val base = CircleShape
     val measurer = rememberTextMeasurer()
     val smallest = lastResortLabelSize(LocalDensity.current)
     // The press effect in place of Material's ripple, the light over the segment's own fill; the
@@ -71,7 +75,7 @@ fun <T> SegmentedSwitch(
             options.forEachIndexed { index, option ->
                 val shape = SegmentedButtonDefaults.itemShape(index, options.size, base)
                 val press = remember { MutableInteractionSource() }
-                val name = spoken?.invoke(option)
+                val name = spoken?.invoke(option) ?: if (icon != null) label(option) else null
                 SegmentedButton(
                     selected = option == selected,
                     onClick = {
@@ -80,15 +84,14 @@ fun <T> SegmentedSwitch(
                     },
                     shape = shape,
                     interactionSource = press,
-                    // The selected segment takes the style's main accent (Material's default is the
-                    // secondary colour, e.g. purple beside Futuristic's cyan). The unselected one gets a
-                    // backing, so it reads on any style's background.
+                    // The selected segment takes the accent (Material's default is the secondary
+                    // colour). The unselected one gets a backing, so it reads on the background.
                     colors = SegmentedButtonDefaults.colors(
                         activeContainerColor = scheme.primaryContainer,
                         activeContentColor = scheme.onPrimaryContainer,
-                        inactiveContainerColor = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = 0.6f),
-                        activeBorderColor = if (neon) scheme.primary else scheme.outline,
-                        inactiveBorderColor = if (neon) controlOutline(scheme, neon = true) else scheme.outline,
+                        inactiveContainerColor = scheme.surface.copy(alpha = 0.6f),
+                        activeBorderColor = scheme.outline,
+                        inactiveBorderColor = scheme.outline,
                     ),
                     // Three segments (Practice's tool switch until Phase 47; none today) keep less padding, so Dutch
                     // "Metronoom" still fits a 320 dp phone at 2× text. Two keep Material's 12 dp where
@@ -104,6 +107,10 @@ fun <T> SegmentedSwitch(
                         .pressFeedback(press, shape, above = true)
                         .then(if (name != null) Modifier.semantics { contentDescription = name } else Modifier),
                 ) {
+                    if (icon != null) {
+                        Icon(icon(option), contentDescription = null, modifier = Modifier.size(ICON_SIZE))
+                        return@SegmentedButton
+                    }
                     // One line, its whole width counted as its minimum ([segmentLabel]): the row sizes every
                     // segment by the largest minimum width, and Chinese, Japanese and Korean text may break
                     // between any two characters, so otherwise "クロマチック" stood one character wide, three
@@ -112,7 +119,7 @@ fun <T> SegmentedSwitch(
                     // segment is too narrow (Dutch "Chromatisch" at 2× text on a 360 dp phone) it shrinks
                     // as far as it must to fit, rather than be cut off. One line needs no line spacing
                     // above and below it, which at 2× text is taller than the button (the letters fit):
-                    // its line is 1.2 times the style's own size, in sp, so a shrunk label keeps the
+                    // its line is 1.2 times the label's own size, in sp, so a shrunk label keeps the
                     // height of a whole one. The label's size as the row asks for it before laying it out
                     // (its intrinsic size) is its one line at full size, measured here: asked of the
                     // shrinking text itself, it came out differently before and after a tap, and the
@@ -155,24 +162,13 @@ fun <T> SegmentedSwitch(
                         // says why).
                         maxLines = 1,
                         softWrap = false,
-                        // The largest size at which the widest label fits, from the style's own down (lastResortLabelSize), each tried in turn.
+                        // The largest size at which the widest label fits, from the label's own down (lastResortLabelSize), each tried in turn.
                         autoSize = remember(style.fontSize, smallest, widestFits) { OneLineAutoSize(style.fontSize, smallest, sizedBy = widestFits) },
                     )
                 }
             }
         }
     }
-}
-
-/**
- * The joined bar's outer shape in [style] (Phase 63's review): the round ends of a capsule where the
- * style's buttons are round (Contemporary, Space Age), else the style's [small] corners, as the
- * buttons and faces beside it: Classic's square, Retro's soft, Futuristic's cut, Ancient's uneven ones.
- * Until then it was a capsule in every style, beside Classic's square and Futuristic's eight-sided buttons.
- */
-internal fun segmentedShapeFor(style: VisualStyle, small: CornerBasedShape): CornerBasedShape = when (style) {
-    VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> CircleShape
-    VisualStyle.ANCIENT, VisualStyle.CLASSIC, VisualStyle.RETRO, VisualStyle.FUTURISTIC -> small
 }
 
 /**
@@ -232,14 +228,15 @@ private fun lastResortLabelSize(density: Density): TextUnit =
 
 private val LAST_RESORT_LABEL_DP = 5.dp
 
+/** A segment's icon ([SegmentedSwitch]'s `icon`), as the buttons' icons. */
+private val ICON_SIZE = 24.dp
+
 /** From this many segments, each keeps [CROWDED_PADDING] at its sides instead of Material's 12 dp. */
 private const val CROWDED_SEGMENTS = 3
 private val CROWDED_PADDING = PaddingValues(horizontal = 6.dp)
 
 /** With two segments, what the label holds on top of [CROWDED_PADDING]: Material's 12 dp a side in all, while the labels fit. */
 private val GIVING_PADDING = 12.dp
-
-/** Futuristic's unpicked button outline: the accent at 55 %, as the mock-up's neon. */
 
 /** A segment's line, as a multiple of the label style's own font size: the letters at full size fit it. */
 private const val LABEL_LINE_HEIGHT = 1.2f

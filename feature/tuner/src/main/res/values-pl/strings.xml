@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Nie udało się otworzyć mikrofonu. Zamknij inne aplikacje, które go używają, i dotknij Spróbuj ponownie albo uruchom urządzenie ponownie.</string>
     <string name="error_mic_stopped">Mikrofon przestał działać, może przez rozmowę lub inną aplikację. Dotknij Spróbuj ponownie, aby dalej stroić.</string>
     <string name="error_retry">Spróbuj ponownie</string>
+    <string name="tuner_any_note">Dowolny dźwięk</string>
+    <string name="tuner_any_note_summary">Najbliższy dźwięk, bez strun</string>
 
-    <string name="tuner_mode_strings">Struny</string>
-    <string name="tuner_mode_chromatic">Chromatyczny</string>
     <string name="tuner_show_controls">Pokaż sterowanie</string>
     <string name="tuner_focus_mode">Tryb skupienia</string>
     <string name="tuner_exit_focus_mode">Wyjdź z trybu skupienia</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">Zagraj dźwięk</string>
     <string name="tuner_hint_play_locked_string">Zagraj na strunie %1$s</string>
     <string name="tuner_hint_playing">Brzmi %1$s</string>
+    <string name="tuner_hint_all_in_tune">Nastrojone. Graj.</string>
     <string name="tuner_string_lock">Zablokuj tę strunę</string>
     <string name="tuner_string_unlock">Wybieraj struny automatycznie</string>
     <string name="tuner_string_locked">Zablokowana</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">Zablokowana, brzmi</string>
     <string name="tuner_string_tuned">Nastrojona</string>
     <string name="tuner_string_locked_tuned">Zablokowana, nastrojona</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">Zablokowana, %1$s</string>
     <!-- 1 cent; 2–4, 22–24 … centy (ale 12–14 centów); 0, 5–21, 25 … centów. -->
     <string name="tuner_cents_zero">0 centów</string>
     <plurals name="tuner_cents_flat">
@@ -101,8 +102,16 @@
         <item quantity="other">%1$d centa za wysoko</item>
     </plurals>
     <string name="tuner_in_tune">nastrojone</string>
-    <string name="tuner_tune_up">Podciągnij ↑</string>
-    <string name="tuner_tune_down">Popuść ↓</string>
+    <string name="tuner_word_tighten">Podciągnij</string>
+    <string name="tuner_word_loosen">Popuść</string>
+    <string name="tuner_word_too_low">Za nisko</string>
+    <string name="tuner_word_too_high">Za wysoko</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d cent</item>
+        <item quantity="few">%1$d centy</item>
+        <item quantity="many">%1$d centów</item>
+        <item quantity="other">%1$d centa</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Graj trochę głośniej</string>
     <string name="tuner_tip_too_noisy">Za dużo hałasu, przysuń telefon</string>
     <string name="tuner_tip_too_loud">Za głośno, odsuń telefon</string>
@@ -116,15 +125,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">podciągnij</string>
-    <string name="tuner_spoken_tune_down">popuść</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, ze struną oktawową</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrument i strój</string>
+    <string name="tuner_picker_title">Co stroisz?</string>
 
     <string name="tuner_new_tuning">Nowy strój</string>
 
@@ -153,36 +160,22 @@
     <string name="tuner_delete_tuning_cancel">Anuluj</string>
     <string name="tuner_strum_check">Test strun</string>
     <string name="tuner_strum_waiting">Uderz we wszystkie puste struny</string>
-    <string name="tuner_strum_waiting_detail">Każda struna pokaże: za nisko, nastrojona lub za wysoko</string>
-    <string name="tuner_strum_hearing">Słucham…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">%1$d struna do nastrojenia</item>
-        <item quantity="few">%1$d struny do nastrojenia</item>
-        <item quantity="many">%1$d strun do nastrojenia</item>
-        <item quantity="other">%1$d struny do nastrojenia</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Nie wszystkie struny było słychać</string>
-    <string name="tuner_strum_all_in_tune">Wszystkie struny nastrojone</string>
-    <string name="tuner_strum_tap_to_tune">Dotknij struny, aby ją nastroić</string>
-    <string name="tuner_strum_again">Uderz jeszcze raz lub dotknij struny, aby ją nastroić</string>
-    <string name="tuner_strum_tune_string">Nastrój %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
     <string name="tuner_strum_spoken_waiting">%1$s, jeszcze nie zagrana</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, odczyt niepewny</string>
-    <string name="tour_title">Oprowadź mnie</string>
-    <string name="tour_step_count">%1$d z %2$d</string>
-    <string name="tour_step_spoken">Krok %1$d z %2$d. %3$s.</string>
-    <string name="tour_readout">Odchylenie i jaki to dźwięk</string>
-    <string name="tour_strum">Uderz, by sprawdzić wszystkie struny</string>
-    <string name="tour_strings">Dotknij, by stroić tylko tę strunę, przytrzymaj, by posłuchać</string>
-    <string name="tour_picker">Wybierz instrument i strój</string>
-    <string name="tour_skip">Pomiń</string>
-    <string name="tour_next">Dalej</string>
-    <string name="tour_done">Gotowe</string>
-    <string name="tuner_more_tools">Więcej narzędzi</string>
-    <string name="tuner_tool_on">Włączone: %1$s</string>
+    <string name="tuner_strum_close">Zamknij test strun</string>
+    <string name="tuner_strum_all_in_tune">Wszystkie struny nastrojone</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">Nastrojona: %1$d z %2$d</item>
+        <item quantity="few">Nastrojone: %1$d z %2$d</item>
+        <item quantity="many">Nastrojone: %1$d z %2$d</item>
+        <item quantity="other">Nastrojone: %1$d z %2$d</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Nie słychać</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Test 12. progu</string>
+    <string name="tuner_intonation_check_summary">Czy siodełko stoi dobrze?</string>
+    <string name="tuner_intonation_close">Zamknij test 12. progu</string>
     <string name="tuner_intonation_step_open">Pusta</string>
     <string name="tuner_intonation_step_fret">12. próg</string>
     <string name="tuner_intonation_choose_string">Wybierz strunę</string>
@@ -221,37 +214,9 @@
     <string name="tuner_intonation_mark_back">siodełko do tyłu</string>
     <string name="tuner_intonation_mark_forward">siodełko do przodu</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, jeszcze nie sprawdzona</string>
-    <string name="tour_more_tools">Więcej narzędzi, np. test strun</string>
-    <string name="tuner_chord_name">Nazwa akordu</string>
-    <string name="tuner_chord_major">%1$s-dur</string>
-    <string name="tuner_chord_minor">%1$s-moll</string>
-    <string name="tuner_chord_seventh">%1$s septymowy</string>
-    <string name="tuner_chord_major_seventh">%1$s-dur z septymą wielką</string>
-    <string name="tuner_chord_minor_seventh">%1$s-moll septymowy</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s power chord</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s septymowy z noną zwiększoną</string>
-    <string name="tuner_chord_minor_ninth">%1$s-moll nonowy</string>
-    <string name="tuner_chord_major_ninth">%1$s-dur nonowy z septymą wielką</string>
-    <string name="tuner_chord_slash">%1$s, w basie %2$s</string>
-    <string name="tuner_chord_bass">bas</string>
-    <string name="tuner_chord_strum">Zagraj akord</string>
-    <string name="tuner_chord_strum_detail">Niech brzmią wszystkie struny</string>
-    <string name="tuner_chord_next">Uderz znowu, by zobaczyć następny akord</string>
-    <string name="tuner_chord_let_ring">Niech wybrzmi</string>
-    <string name="tuner_chord_unclear">Niewyraźny akord</string>
-    <string name="tuner_chord_unclear_detail">Uderz we wszystkie struny akordu</string>
-    <string name="tuner_chord_none">Jeszcze brak akordu</string>
-    <string name="tuner_chord_spoken_notes">dźwięki %1$s</string>
-    <string name="tuner_chord_spoken_recent">wcześniej %1$s</string>
-    <string name="tuner_pitch_trail">Ślad wysokości</string>
-    <string name="tuner_trail_spoken">Ślad wysokości, %1$s</string>
-    <string name="tuner_trail_no_note">brak dźwięku</string>
-    <string name="tuner_trail_steady">stabilnie, %1$s</string>
-    <string name="tuner_trail_wavering">faluje, %1$s</string>
     <string name="tuner_trail_bending_up">wznosi się</string>
     <string name="tuner_trail_bending_down">opada</string>
+    <string name="tuner_spoken_wavering">faluje</string>
     <string name="tuner_screen_off_soon">Ekran zaraz zgaśnie</string>
     <string name="tuner_screen_off_keep_on">Dotknij, aby nie gasł</string>
 </resources>

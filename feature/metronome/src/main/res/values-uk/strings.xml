@@ -7,9 +7,10 @@
         <item quantity="many">%1$d ударів за хвилину, %2$s</item>
         <item quantity="other">%1$d удару за хвилину, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">ударів за хвилину · %1$s</string>
     <string name="metronome_slower">Повільніше</string>
     <string name="metronome_faster">Швидше</string>
-    <string name="metronome_tap">Тап-темп</string>
+    <string name="metronome_tap">Відстукай темп</string>
     <string name="metronome_start">Старт</string>
     <string name="metronome_stop">Стоп</string>
     <string name="metronome_vibrate">Вібрація в такт</string>
@@ -23,12 +24,8 @@
     <string name="metronome_subdivision_eighths">Восьмі</string>
     <string name="metronome_subdivision_triplets">Тріолі</string>
     <string name="metronome_subdivision_sixteenths">Шістнадцяті</string>
-    <string name="metronome_subdivision_eighths_on">Восьмі між долями</string>
-    <string name="metronome_subdivision_triplets_on">Тріолі між долями</string>
-    <string name="metronome_subdivision_sixteenths_on">Шістнадцяті між долями</string>
     <string name="metronome_options">Параметри</string>
     <string name="metronome_trainer">Тренажер темпу</string>
-    <string name="metronome_trainer_back">Назад до параметрів</string>
     <string name="metronome_trainer_start">Початковий темп</string>
     <string name="metronome_trainer_goal">Ціль</string>
     <string name="metronome_trainer_start_slower">Знизити початковий темп</string>
@@ -70,7 +67,6 @@
     <string name="metronome_listen">Слухати</string>
     <string name="metronome_listen_stop_spoken">Припинити слухати</string>
     <string name="metronome_listening">Слухаю…</string>
-    <string name="metronome_listen_line_stop">Стоп</string>
     <string name="metronome_heard">Почуто</string>
     <string name="metronome_use">Застосувати</string>
     <string name="metronome_not_now">Не зараз</string>

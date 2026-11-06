@@ -1,37 +1,39 @@
 <!--
 title: Strum check · Twangle
-description: Strum all the open strings once and Twangle shows every string at the same time: flat, in tune or sharp. Then tap a string to tune it.
+description: Tap the strum button on the tuner, strum all the open strings once, and every string shows at the same time which way to turn it: up, down or in tune.
 nav: tools
 -->
   <div class="crumb"><a href="./#tools">Tools</a> · Tuning</div>
   <div class="tool solo">
     <div>
       <h1>Strum check</h1>
-      <p class="lead">Strum all the open strings once. Twangle shows every string at the same time: flat, in tune or sharp.</p>
+      <p class="lead">Strum all the open strings once. Every string shows at the same time which way to turn it. A quick check first, then you tune the strings that are off one by one.</p>
 
       <h2>Check every string at once</h2>
       <ol class="steps">
-        <li>Tap the tools button above the strings (three tiles and a plus) and pick <i>Strum check</i>.</li>
+        <li>On the tuner, tap the strum button above the strings' buttons, at the right. In the lens's place a column stands for every string, in the same order as the strings' buttons below, and under it it says <i>Strum all the open strings</i>.</li>
         <li>Strum all the open strings, without pressing any, and let them ring.</li>
-        <li>Each string gets a short scale with a marker: up is sharp, down is flat, the middle is in tune. Under it, how many cents it is off, a check mark when it is in tune, or a dash when Twangle didn't hear it.</li>
-        <li>The line under it says how many strings to tune, or <i>All strings in tune</i>.</li>
+        <li>After about half a second each column shows its string: a marker on a short scale, up for sharp and down for flat, and under it the cents off (<i>−20</i>, <i>+15</i>), a check mark for a string in tune, or a dash when Twangle didn't hear it.</li>
+        <li>Under the columns it says how many are in tune, for example <i>4 of 6 in tune</i>, or <i>All strings in tune</i>.</li>
       </ol>
 
       <h2>Then tune the ones that are off</h2>
-      <p>Tap a string, on the row along the bottom or its column in the check, and Twangle goes back to the tuner with that string picked, so you can tune it. Pick <i>Strum check</i> again from the tools button to check the whole instrument once more.</p>
-      <p>It is the quickest way to see whether your instrument is still in tune between songs, or which string slipped.</p>
+      <p>Once the strum has rung out, the strum button turns itself off and the tuner is back to one string at a time, inside the columns. Just play a string that is off and tune it: its column's marker moves as you turn the peg, the word says which way, and once the string is in tune it gets its check mark and the count goes up, <i>5 of 6 in tune</i>. The other columns keep the strum's reading until you have tuned them too, so you always see which strings are left.</p>
+      <p>Tap the button and strum again any time to check the whole instrument once more. The small × above the columns, or Back, brings the tuner's own lens back.</p>
 
       <h2>Good to know</h2>
       <ul>
         <li>Strum firmly and let the strings ring: the first, loud moment of a strum counts most.</li>
-        <li>A string with a hollow marker is <i>less sure</i>. In standard tuning that is often the B and the high E: their notes overlap with the low E's harmonics, so Twangle can't hear them as clearly. If one looks off, tap it and tune it on its own.</li>
-        <li>A strum check counts a string as in tune by the same rule as the tuner: within 5 cents, or 2 when <i>Settings → In-tune precision</i> is set to <i>Precise</i>.</li>
-        <li>It works with your tuning, whatever it is, on every instrument but the 12-string guitar: its twelve strings ring too close together to tell apart.</li>
-        <li>Switching to <i>Chromatic</i>, or tapping the <i>Tuner</i> tab, ends the strum check.</li>
+        <li>A hollow, paler marker is <i>less sure</i>. In standard tuning that is often the B and the high E: their notes overlap with the low E's harmonics, so Twangle can't hear them as clearly. If one looks off, play it on its own: its column follows the tuner.</li>
+        <li>A strum counts a string as in tune by the same rule as the tuner: within 5 cents, or 2 when <i>Settings → Precise tuning</i> is on.</li>
+        <li>Without the button the tuner reads one string at a time, also when you strum. If too few strings rang in the strum, nothing shows and the button stays on: strum again. Tap it once more to turn it off.</li>
+        <li>The columns go after half a minute without a sound, and when you pick another tuning.</li>
+        <li>It works with your tuning, whatever it is, on every instrument but the 12-string guitar (its twelve strings ring too close together to tell apart), with the instrument's strings: not in <i>Any note</i>.</li>
       </ul>
 
       <details class="curious">
         <summary>For the curious: hearing six strings at once</summary>
+        <p>Why a button? Guessing from the sound alone whether you played one string, a strum or a chord turned out to be unreliable: a chord of mostly open strings, or a string plucked while others still ring, sounds a lot like a strum. With the button you tell Twangle a strum comes, so it reads the next sudden sound as one.</p>
         <p>A single string is easy: its wave repeats, and the time it takes gives the note. In a strum all the waves are on top of each other. But a string's sound is more than one note: it is a row of harmonics at one, two, three, four times its pitch. Twangle knows which strings your tuning has, so for each string it looks in the sound's spectrum for that row of harmonics near where the string should be, and measures exactly where they are. It does this on about a third of a second of sound, ten times a second while the strings ring, and weighs the readings by how loud they were.</p>
         <p>Some harmonics of different strings land on almost the same pitch. In standard tuning the B string is almost exactly three times the low E's pitch, and the high E four times, so every harmonic of theirs is also one of the low E's. Where two strings share a harmonic, Twangle leans on the ones that don't, and when none are left, it reads the shared one and marks the string <i>less sure</i>.</p>
       </details>

@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">설정</string>
     <string name="settings_back">뒤로</string>
+    <string name="settings_group_tuning">튜닝</string>
 
-    <string name="settings_group_pitch">음높이와 음이름</string>
     <string name="settings_group_look">디자인</string>
-    <string name="settings_group_tuner_screen">튜너 화면</string>
     <string name="settings_group_while_tuning">튜닝하는 동안</string>
-    <string name="settings_group_app">앱</string>
 
     <string name="settings_a4_title">기준음 (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">A4를 1\u00A0Hz 낮추기</string>
     <string name="settings_a4_raise">A4를 1\u00A0Hz 높이기</string>
     <string name="settings_a4_reset">%1$d\u00A0Hz로 초기화</string>
+    <string name="settings_precise_title">정밀 튜닝</string>
+    <string name="settings_precise_summary">5센트 대신 2센트 이내에서 음이 맞음</string>
 
     <string name="settings_notation_title">음이름</string>
     <string name="settings_notation_sharps">샵: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">독일식: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">튜닝 정밀도</string>
-    <string name="settings_in_tune_precision_relaxed">여유: 5센트 이내</string>
-    <string name="settings_in_tune_precision_precise">정밀: 2센트 이내</string>
 
-    <string name="settings_style_title">스타일</string>
     <string name="settings_theme_title">라이트 또는 다크</string>
-    <string name="settings_theme_system">시스템 기본값</string>
+    <string name="settings_theme_system">휴대폰과 같음</string>
     <string name="settings_theme_light">라이트</string>
     <string name="settings_theme_dark">다크</string>
     <string name="settings_dynamic_color_title">배경화면 색상</string>
     <string name="settings_dynamic_color_summary">배경화면의 색상 사용</string>
+    <string name="settings_meter_title">게이지</string>
+    <string name="settings_meter_classic">클래식</string>
+    <string name="settings_meter_light_arc">라이트 아크</string>
+    <string name="settings_meter_strobe">스트로브</string>
 
-    <string name="settings_meter_look_title">미터</string>
-    <string name="settings_meter_look_classic">클래식</string>
-    <string name="settings_meter_look_light_arc">빛의 호</string>
-    <string name="settings_meter_look_pointers">포인터</string>
-    <string name="settings_meter_look_loupe">돋보기</string>
-    <string name="settings_meter_look_arrows">화살표</string>
-    <string name="settings_meter_look_light_bars">빛 막대</string>
-    <string name="settings_in_tune_effect_title">음이 맞을 때 효과</string>
-    <string name="settings_in_tune_effect_summary">음이 맞을 때 미터가 빛나는 정도</string>
-    <string name="settings_in_tune_effect_calm">차분하게</string>
-    <string name="settings_in_tune_effect_bold">화려하게</string>
-
-    <string name="settings_display_title">음이름 아래</string>
-    <string name="settings_display_numbers">숫자: 몇 센트 벗어났는지</string>
-    <string name="settings_display_wave">물결: 고른 모양으로 움직이는 그림</string>
-    <string name="settings_wave_look_title">물결 모양</string>
-    <string name="settings_wave_look_strobe">스트로브</string>
-    <string name="settings_wave_look_ribbon">리본</string>
-    <string name="settings_wave_look_dots">점</string>
-    <string name="settings_wave_look_fireflies">반딧불이</string>
-    <string name="settings_wave_look_loop">루프</string>
-    <string name="settings_wave_look_ripples">잔물결</string>
-    <string name="settings_focus_mode_title">집중 모드</string>
-    <string name="settings_focus_mode_summary">Twangle을 가로로 돌려 큰 미터 하나만 보여줘요. 멀리서도 읽기 쉬워요</string>
     <string name="settings_left_handed_title">왼손잡이</string>
     <string name="settings_left_handed_summary">코드표와 스케일 지판을 반대로 잡은 기타에 맞게 그려요</string>
+    <string name="settings_under_meter_title">게이지 아래</string>
+    <string name="settings_under_meter_words">단어: 조이기 또는 풀기</string>
+    <string name="settings_under_meter_cents">센트: −12</string>
 
     <string name="settings_keep_screen_on_title">화면 켜짐 유지</string>
     <string name="settings_keep_screen_on_summary">튜닝하는 동안 화면이 꺼지지 않아요</string>
     <string name="settings_vibrate_in_tune_title">음이 맞으면 진동</string>
     <string name="settings_vibrate_in_tune_summary">음이 맞으면 짧게 진동해요</string>
-    <string name="settings_show_tune_hint_title">튜닝 도우미 표시</string>
-    <string name="settings_show_tune_hint_summary">올릴지 내릴지 알려주고, 음이 맞은 줄에 체크 표시를 해요</string>
+    <string name="settings_string_tick_off_title">맞춘 줄 체크 표시</string>
+    <string name="settings_string_tick_off_summary">음이 맞은 줄에 체크 표시, 모두 맞으면 “음이 맞아요. 연주하세요.”</string>
     <string name="settings_show_signal_bars_title">신호 막대 표시</string>
-    <string name="settings_show_signal_bars_summary">궁금한 분을 위해: 음이름 옆의 작은 막대가 튜너가 얼마나 잘 듣는지 보여줘요. 탭하면 수치를 볼 수 있어요</string>
+    <string name="settings_show_signal_bars_summary">궁금한 분을 위해: 줄 위의 작은 막대가 튜너가 얼마나 잘 듣는지 보여줘요. 탭하면 수치를 볼 수 있어요</string>
 
     <string name="settings_language_title">언어</string>
     <string name="settings_language_phone">휴대폰 언어</string>
     <string name="settings_language_cancel">취소</string>
-    <string name="settings_show_tour_title">둘러보기</string>
-    <string name="settings_show_tour_summary">튜너를 짧게 둘러봐요</string>
     <string name="about_title">Twangle 정보</string>
     <string name="settings_about_link_summary">버전 %1$s, 도움말, 개인정보 보호 및 라이선스</string>
+    <string name="settings_about_name_title">이름의 유래</string>
+    <string name="settings_about_name_meaning">Twang은 영어로, 뜯은 줄이 울리는 소리를 뜻해요.</string>
     <string name="settings_about_version">버전 %1$s</string>
     <string name="settings_about_free_title">영원히 무료</string>
     <string name="settings_about_free_summary">광고, 계정, 인앱 구매, 추적이 없어요. 지금도, 앞으로도.</string>

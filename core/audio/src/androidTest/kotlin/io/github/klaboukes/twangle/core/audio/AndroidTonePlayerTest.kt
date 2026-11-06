@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.SystemClock
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.synth.StringSynth
@@ -15,12 +16,17 @@ import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** Plays real tones through the speaker (at media volume), so it needs a device. */
 @RunWith(AndroidJUnit4::class)
 class AndroidTonePlayerTest {
+
+    /** A screen in the foreground: Android 15 (the Lenovo tablet) refuses audio focus to an app without one. */
+    @get:Rule
+    val foreground = ActivityScenarioRule(ForegroundActivity::class.java)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val player = AndroidTonePlayer(context)

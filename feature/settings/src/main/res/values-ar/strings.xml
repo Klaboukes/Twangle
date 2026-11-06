@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">الإعدادات</string>
     <string name="settings_back">رجوع</string>
+    <string name="settings_group_tuning">الضبط</string>
 
-    <string name="settings_group_pitch">طبقة الصوت والنغمات</string>
     <string name="settings_group_look">المظهر</string>
-    <string name="settings_group_tuner_screen">شاشة الموالف</string>
     <string name="settings_group_while_tuning">أثناء الضبط</string>
-    <string name="settings_group_app">التطبيق</string>
 
     <string name="settings_a4_title">النغمة المرجعية (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0هرتز</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">اخفض A4 هرتزًا واحدًا</string>
     <string name="settings_a4_raise">ارفع A4 هرتزًا واحدًا</string>
     <string name="settings_a4_reset">أعِد إلى %1$d\u00A0هرتز</string>
+    <string name="settings_precise_title">الضبط الدقيق</string>
+    <string name="settings_precise_summary">مضبوط ضمن سنتين بدلًا من ٥</string>
 
     <string name="settings_notation_title">أسماء النغمات</string>
     <string name="settings_notation_sharps">دييز: C، C♯، D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s، %2$s، %3$s … %4$s</string>
     <string name="settings_notation_german">ألماني: C، C♯، D … H</string>
 
-    <string name="settings_in_tune_precision_title">دقة الضبط</string>
-    <string name="settings_in_tune_precision_relaxed">مرنة: في حدود ٥ سنتات</string>
-    <string name="settings_in_tune_precision_precise">دقيقة: في حدود سنتين</string>
 
-    <string name="settings_style_title">النمط</string>
     <string name="settings_theme_title">فاتح أو داكن</string>
-    <string name="settings_theme_system">حسب النظام</string>
+    <string name="settings_theme_system">حسب الهاتف</string>
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
     <string name="settings_dynamic_color_title">ألوان الخلفية</string>
     <string name="settings_dynamic_color_summary">استخدم ألوانًا من خلفية شاشتك</string>
+    <string name="settings_meter_title">المؤشر</string>
+    <string name="settings_meter_classic">كلاسيكي</string>
+    <string name="settings_meter_light_arc">قوس ضوئي</string>
+    <string name="settings_meter_strobe">ستروب</string>
 
-    <string name="settings_meter_look_title">المقياس</string>
-    <string name="settings_meter_look_classic">كلاسيكي</string>
-    <string name="settings_meter_look_light_arc">قوس ضوئي</string>
-    <string name="settings_meter_look_pointers">مؤشران</string>
-    <string name="settings_meter_look_loupe">عدسة مكبّرة</string>
-    <string name="settings_meter_look_arrows">أسهم</string>
-    <string name="settings_meter_look_light_bars">أشرطة ضوئية</string>
-    <string name="settings_in_tune_effect_title">تأثير الضبط</string>
-    <string name="settings_in_tune_effect_summary">مدى توهّج المقياس عندما تكون النغمة مضبوطة</string>
-    <string name="settings_in_tune_effect_calm">هادئ</string>
-    <string name="settings_in_tune_effect_bold">قوي</string>
-
-    <string name="settings_display_title">تحت النغمة</string>
-    <string name="settings_display_numbers">أرقام: مقدار الانحراف بالسنتات</string>
-    <string name="settings_display_wave">موجة: صورة متحركة بالشكل الذي تختاره</string>
-    <string name="settings_wave_look_title">شكل الموجة</string>
-    <string name="settings_wave_look_strobe">ستروب</string>
-    <string name="settings_wave_look_ribbon">شريط</string>
-    <string name="settings_wave_look_dots">نقاط</string>
-    <string name="settings_wave_look_fireflies">يراعات</string>
-    <string name="settings_wave_look_loop">حلقة</string>
-    <string name="settings_wave_look_ripples">تموّجات</string>
-    <string name="settings_focus_mode_title">وضع التركيز</string>
-    <string name="settings_focus_mode_summary">يُدير Twangle أفقيًا مع مقياس واحد كبير، تسهل قراءته من بعيد</string>
     <string name="settings_left_handed_title">وضع الأعسر</string>
     <string name="settings_left_handed_summary">مخططات الكوردات وزند السلالم مرسومة لجيتار يُمسك بالاتجاه المعاكس</string>
+    <string name="settings_under_meter_title">تحت المؤشر</string>
+    <string name="settings_under_meter_words">كلمات: شُدّ أو أرخِ</string>
+    <string name="settings_under_meter_cents">سنتات: −١٢</string>
 
     <string name="settings_keep_screen_on_title">إبقاء الشاشة مضاءة</string>
     <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة أثناء الدوزنة</string>
     <string name="settings_vibrate_in_tune_title">اهتزاز عند الضبط</string>
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
-    <string name="settings_show_tune_hint_title">إظهار مساعدة الضبط</string>
-    <string name="settings_show_tune_hint_summary">يبيّن هل تشدّ أم ترخي، ويضع علامة على كل وتر حين يصبح مضبوطًا</string>
+    <string name="settings_string_tick_off_title">وضع علامة على الأوتار المضبوطة</string>
+    <string name="settings_string_tick_off_summary">علامة على كل وتر حين يُضبط، و«مضبوط. اعزف.» حين تُضبط كلها</string>
     <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
-    <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة بجانب النغمة تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
+    <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة فوق الأوتار تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
 
     <string name="settings_language_title">اللغة</string>
     <string name="settings_language_phone">لغة الهاتف</string>
     <string name="settings_language_cancel">إلغاء</string>
-    <string name="settings_show_tour_title">جولة تعريفية</string>
-    <string name="settings_show_tour_summary">جولة قصيرة في الموالف</string>
     <string name="about_title">حول Twangle</string>
     <string name="settings_about_link_summary">الإصدار %1$s، المساعدة والخصوصية والتراخيص</string>
+    <string name="settings_about_name_title">الاسم</string>
+    <string name="settings_about_name_meaning">كلمة twang الإنجليزية تعني رنين الوتر المنقور.</string>
     <string name="settings_about_version">الإصدار %1$s</string>
     <string name="settings_about_free_title">مجاني إلى الأبد</string>
     <string name="settings_about_free_summary">بلا إعلانات ولا حساب ولا مشتريات داخل التطبيق ولا تتبّع. لا الآن ولا لاحقًا.</string>

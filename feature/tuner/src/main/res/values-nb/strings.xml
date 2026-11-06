@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Mikrofonen kunne ikke åpnes. Lukk andre apper som bruker den, og trykk på «Prøv igjen», eller start enheten på nytt.</string>
     <string name="error_mic_stopped">Mikrofonen stoppet, kanskje på grunn av en samtale eller en annen app. Trykk på «Prøv igjen» for å stemme videre.</string>
     <string name="error_retry">Prøv igjen</string>
+    <string name="tuner_any_note">Alle toner</string>
+    <string name="tuner_any_note_summary">Nærmeste tone, uten strenger</string>
 
-    <string name="tuner_mode_strings">Strenger</string>
-    <string name="tuner_mode_chromatic">Kromatisk</string>
     <string name="tuner_show_controls">Vis kontroller</string>
     <string name="tuner_focus_mode">Fokusmodus</string>
     <string name="tuner_exit_focus_mode">Avslutt fokusmodus</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">Spill en tone</string>
     <string name="tuner_hint_play_locked_string">Spill %1$s-strengen</string>
     <string name="tuner_hint_playing">Spiller %1$s</string>
+    <string name="tuner_hint_all_in_tune">Stemt. Spill i vei.</string>
     <string name="tuner_string_lock">Lås til denne strengen</string>
     <string name="tuner_string_unlock">Velg strenger automatisk</string>
     <string name="tuner_string_locked">Låst</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">Låst, spiller</string>
     <string name="tuner_string_tuned">Stemt</string>
     <string name="tuner_string_locked_tuned">Låst, stemt</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">Låst, %1$s</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent for lavt</item>
@@ -96,8 +97,14 @@
         <item quantity="other">%1$d cent for høyt</item>
     </plurals>
     <string name="tuner_in_tune">stemt</string>
-    <string name="tuner_tune_up">Stem opp ↑</string>
-    <string name="tuner_tune_down">Stem ned ↓</string>
+    <string name="tuner_word_tighten">Stram</string>
+    <string name="tuner_word_loosen">Slakk</string>
+    <string name="tuner_word_too_low">For lav</string>
+    <string name="tuner_word_too_high">For høy</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d cent</item>
+        <item quantity="other">%1$d cent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Spill litt sterkere</string>
     <string name="tuner_tip_too_noisy">For mye støy, flytt telefonen nærmere</string>
     <string name="tuner_tip_too_loud">For høyt, flytt telefonen unna</string>
@@ -111,15 +118,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">stem opp</string>
-    <string name="tuner_spoken_tune_down">stem ned</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, med oktavstreng</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrument og stemming</string>
+    <string name="tuner_picker_title">Hva skal du stemme?</string>
 
     <string name="tuner_new_tuning">Ny stemming</string>
 
@@ -148,34 +153,20 @@
     <string name="tuner_delete_tuning_cancel">Avbryt</string>
     <string name="tuner_strum_check">Strumsjekk</string>
     <string name="tuner_strum_waiting">Slå an alle de åpne strengene</string>
-    <string name="tuner_strum_waiting_detail">Hver streng viser for lavt, stemt eller for høyt</string>
-    <string name="tuner_strum_hearing">Lytter…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">%1$d streng å stemme</item>
-        <item quantity="other">%1$d strenger å stemme</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Ikke alle strengene ble hørt</string>
-    <string name="tuner_strum_all_in_tune">Alle strengene er stemt</string>
-    <string name="tuner_strum_tap_to_tune">Velg en streng for å stemme den</string>
-    <string name="tuner_strum_again">Slå an igjen, eller velg en streng for å stemme den</string>
-    <string name="tuner_strum_tune_string">Stem %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, ikke hørt</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ikke slått an ennå</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, ikke hørt</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre sikker</string>
-    <string name="tour_title">Vis meg rundt</string>
-    <string name="tour_step_count">%1$d av %2$d</string>
-    <string name="tour_step_spoken">Steg %1$d av %2$d. %3$s.</string>
-    <string name="tour_readout">Hvor mye den er unna, og hvilken tone</string>
-    <string name="tour_strum">Slå an for å sjekke alle strengene</string>
-    <string name="tour_strings">Velg: stem bare denne strengen. Hold: hør den</string>
-    <string name="tour_picker">Velg instrument og stemming</string>
-    <string name="tour_skip">Hopp over</string>
-    <string name="tour_next">Neste</string>
-    <string name="tour_done">Ferdig</string>
-    <string name="tuner_more_tools">Flere verktøy</string>
-    <string name="tuner_tool_on">%1$s på</string>
+    <string name="tuner_strum_close">Lukk strumsjekken</string>
+    <string name="tuner_strum_all_in_tune">Alle strengene er stemt</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d av %2$d stemt</item>
+        <item quantity="other">%1$d av %2$d stemte</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Ikke hørt</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Sjekk på 12. bånd</string>
+    <string name="tuner_intonation_check_summary">Står salen på rett sted?</string>
+    <string name="tuner_intonation_close">Lukk sjekken på 12. bånd</string>
     <string name="tuner_intonation_step_open">Åpen</string>
     <string name="tuner_intonation_step_fret">12. bånd</string>
     <string name="tuner_intonation_choose_string">Velg en streng</string>
@@ -212,37 +203,9 @@
     <string name="tuner_intonation_mark_back">flytt salen bakover</string>
     <string name="tuner_intonation_mark_forward">flytt salen framover</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ikke sjekket ennå</string>
-    <string name="tour_more_tools">Flere verktøy, som strumsjekken</string>
-    <string name="tuner_chord_name">Akkordnavn</string>
-    <string name="tuner_chord_major">%1$s-dur</string>
-    <string name="tuner_chord_minor">%1$s-moll</string>
-    <string name="tuner_chord_seventh">%1$s septim</string>
-    <string name="tuner_chord_major_seventh">%1$s stor septim</string>
-    <string name="tuner_chord_minor_seventh">%1$s-moll med septim</string>
-    <string name="tuner_chord_sus2">%1$s sus2</string>
-    <string name="tuner_chord_sus4">%1$s sus4</string>
-    <string name="tuner_chord_power_chord">%1$s powerakkord</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s septim med forhøyet none</string>
-    <string name="tuner_chord_minor_ninth">%1$s-moll med none</string>
-    <string name="tuner_chord_major_ninth">%1$s stor none</string>
-    <string name="tuner_chord_slash">%1$s, %2$s i bassen</string>
-    <string name="tuner_chord_bass">bass</string>
-    <string name="tuner_chord_strum">Slå an en akkord</string>
-    <string name="tuner_chord_strum_detail">La alle strengene klinge</string>
-    <string name="tuner_chord_next">Slå an igjen for neste akkord</string>
-    <string name="tuner_chord_let_ring">La den klinge</string>
-    <string name="tuner_chord_unclear">Ingen tydelig akkord</string>
-    <string name="tuner_chord_unclear_detail">Slå an alle strengene i akkorden</string>
-    <string name="tuner_chord_none">Ingen akkord ennå</string>
-    <string name="tuner_chord_spoken_notes">toner %1$s</string>
-    <string name="tuner_chord_spoken_recent">før det %1$s</string>
-    <string name="tuner_pitch_trail">Tonespor</string>
-    <string name="tuner_trail_spoken">Tonespor, %1$s</string>
-    <string name="tuner_trail_no_note">ingen tone</string>
-    <string name="tuner_trail_steady">stødig, %1$s</string>
-    <string name="tuner_trail_wavering">ustødig, %1$s</string>
     <string name="tuner_trail_bending_up">bøyes opp</string>
     <string name="tuner_trail_bending_down">bøyes ned</string>
+    <string name="tuner_spoken_wavering">ustø</string>
     <string name="tuner_screen_off_soon">Skjermen slås snart av</string>
     <string name="tuner_screen_off_keep_on">Trykk for å holde den på</string>
 </resources>

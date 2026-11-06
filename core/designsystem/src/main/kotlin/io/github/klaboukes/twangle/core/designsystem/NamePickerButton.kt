@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.material3.Icon
@@ -40,9 +41,10 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Twangle's one picker face for a name (Phase 63, docs/architecture/ui.md *Shared controls*): the chord
- * on Chords, the scale on Scales, the shapes on the Capo helper. One wide box, as wide as [modifier]
- * makes it, on the see-through face of the style's pickers ([faceFill], [faceOutline] in the style's
- * `shapes.small`, as the Practice tool button above it) with Twangle's press effect, the full [name] on
+ * on Chords, the scale on Scales, the shapes on the Capo helper, Ear training's exercise (Phase 77). One wide pill, as wide as [modifier]
+ * makes it, on the see-through face of Twangle's buttons ([faceFill], [faceOutline]) in their round shape
+ * (Phase 75: the one look's capsule, as the picker chip above it and the metronome's big buttons; until
+ * then the style's `shapes.small`, a rounded box) with Twangle's press effect, the full [name] on
  * one line ("C major ⌄"): `titleLarge`, semi-bold where the style's face has it, the ⌄ right after it,
  * the two centred. One steady height ([NAME_PICKER_HEIGHT]) whatever the name, the language and the
  * text size: a name too long for one line is set smaller (down to 7 sp), and only where even that
@@ -50,8 +52,9 @@ import androidx.compose.ui.unit.sp
  * button) on two or three lines, whole words, smaller still, down to 5 sp ([NameAutoSize]; German
  * "G♯ harmonisches Moll" in Space Age's wide letters, the overnight run of 2026-11-01). Never taller.
  *
- * With [caption] a small muted line stands above the box ("Shapes I play"), hidden from TalkBack, so
- * [spoken] should say it. TalkBack hears the box as a drop-down list called [spoken], a [heading]
+ * With [caption] a small muted line stands under the box (Capo's "Shapes I play"; above it until Phase 77, when the
+ * name pills came to stand in one place under the top row: under it, the box's top is where every other pill's is),
+ * hidden from TalkBack, so [spoken] should say it. TalkBack hears the box as a drop-down list called [spoken], a [heading]
  * where it names what the screen shows, a polite [live] region where a new pick isn't said otherwise.
  * The name's text stays in the semantics tree for the tests. [faceModifier] goes on the box (a test tag).
  */
@@ -69,21 +72,6 @@ fun NamePickerButton(
     val source = remember { MutableInteractionSource() }
     val title = MaterialTheme.typography.titleLarge
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        if (caption != null) {
-            val label = MaterialTheme.typography.labelMedium
-            Text(
-                caption,
-                style = label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                // Never wrapped, so the auto-size sees a caption too wide (Ear training's AnswerButton says why).
-                softWrap = false,
-                autoSize = TextAutoSize.StepBased(minFontSize = SMALLEST_NAME, maxFontSize = label.fontSize, stepSize = 0.5.sp),
-                // The box says it with what is picked.
-                modifier = Modifier.semantics { hideFromAccessibility() },
-            )
-        }
         Row(
             faceModifier
                 .fillMaxWidth()
@@ -98,7 +86,7 @@ fun NamePickerButton(
                     if (heading) heading()
                     if (live) liveRegion = LiveRegionMode.Polite
                 }
-                .pressFeedback(source, MaterialTheme.shapes.small, fill = faceFill(picked = false), outline = faceOutline(picked = false))
+                .pressFeedback(source, CircleShape, fill = faceFill(picked = false), outline = faceOutline(picked = false))
                 .padding(horizontal = NAME_PICKER_PADDING),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -123,6 +111,21 @@ fun NamePickerButton(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 2.dp).size(20.dp),
+            )
+        }
+        if (caption != null) {
+            val label = MaterialTheme.typography.labelMedium
+            Text(
+                caption,
+                style = label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                // Never wrapped, so the auto-size sees a caption too wide (Ear training's AnswerButton says why).
+                softWrap = false,
+                autoSize = TextAutoSize.StepBased(minFontSize = SMALLEST_NAME, maxFontSize = label.fontSize, stepSize = 0.5.sp),
+                // The box says it with what is picked.
+                modifier = Modifier.padding(top = CAPTION_GAP).semantics { hideFromAccessibility() },
             )
         }
     }
@@ -165,7 +168,18 @@ internal class NameAutoSize(
  * Phase 63, the Capo helper's 40 dp in a 48 dp touch area.
  */
 val NAME_PICKER_HEIGHT = 56.dp
-private val NAME_PICKER_PADDING = 16.dp
+
+/**
+ * A name pill under a top row is as wide as the row, at most this wide (a tablet), centred, its panel as wide: Chords'
+ * and Scales' name, Ear training's exercise (Phase 77), so switching between the Practice tools moves nothing.
+ */
+val NAME_PICKER_MAX_WIDTH = 400.dp
+
+/** A [NamePickerButton]'s caption keeps this far under its box. */
+private val CAPTION_GAP = 2.dp
+
+/** The name keeps this far from the pill's ends, clear of their curve. */
+private val NAME_PICKER_PADDING = 20.dp
 private val SMALLEST_NAME = 7.sp
 private val LAST_RESORT_NAME = 5.sp
 private const val MOST_LINES = 3

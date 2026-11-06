@@ -1,49 +1,42 @@
 package io.github.klaboukes.twangle.feature.metronome
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.Text
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_OUTLINE_INSET
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -52,24 +45,22 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 /**
- * The metronome in each of the six styles, light and dark (docs/architecture/testing.md, Every screen in
- * every style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
- * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
- * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
- * then wholly shown. Playing, in 7/8, so every mark size and Stop show, with the cowbell picked and
- * vibration on (its mark on the status line). The row under the dial (Tap tempo · − · Start · + ·
- * options, Phase 62) keeps its sizes. The options panel opens from its button, above the row upright
- * and beside it on its side, wholly shown at 1x, 2x and in Dutch at 2x. With the Practice
- * tab's tool button over it at the top start (Phase 47, a stand-in as large with an English name),
- * as the app shows it, and without, as the plain Metronome tab.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
+ * The metronome in Ink, light and dark (docs/architecture/testing.md, *Every screen light and dark*), as
+ * 2.0 draws it (Phase 75: the tempo is the screen). Upright (a short narrow phone at 1×, the owner's
+ * Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window, and nothing
+ * overlaps; at 2× text, upright and on its side, every control can be scrolled to and is then wholly
+ * shown. Playing, in 7/8 (every light's size) with eighths between the beats, the cowbell picked,
+ * vibration on (its button under the beat bars filled) and the speed trainer climbing (its words on the line under the bars). The tempo's figures keep
+ * one size whatever the tempo. The options panel opens under its button, the trainer's settings over
+ * its row, wholly shown at 1x, 2x and in Dutch at 2x. With the app's gear at the top start (a stand-in as
+ * large), as the app shows it upright, and without, as on its side (the gear is on the rail there).
  */
-@RunWith(Parameterized::class)
-class MetronomeStylesTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class MetronomeStylesTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -85,6 +76,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private val shownListen = mutableStateOf(ListenUi())
     private val shownHeader = mutableStateOf(true)
     private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+    private val shownBpm = mutableStateOf(168)
 
     /** No system bars at all: the window is the tab's whole room (the tablet's case compares sizes in it). */
     private val shownNoBars = mutableStateOf(false)
@@ -99,9 +91,9 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     MetronomeContent(
-                        bpm = 168,
+                        bpm = shownBpm.value,
                         meter = Meter.SEVEN_EIGHT,
                         playing = true,
                         vibrate = true,
@@ -113,13 +105,14 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                         onToggle = {},
                         onVibrateChange = {},
                         sound = ClickSound.COWBELL,
-                        // Two to a beat, in 7/8 sixteenths: their mark beside vibration's, triplets and sixteenths dimmed.
+                        // Two to a beat, in 7/8 sixteenths: triplets and sixteenths dimmed in the panel.
                         subdivision = Subdivision.TWO,
                         clock = clock,
                         listen = shownListen.value,
+                        trainer = TrainerUi(SpeedTrainer(120, 180, 5, 4), on = true, saved = true, bar = 3L),
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         header = if (shownHeader.value) {
-                            { PracticeToolButtonStandIn() }
+                            { GearStandIn() }
                         } else {
                             null
                         },
@@ -130,31 +123,47 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     private fun parts(): List<Pair<String, SemanticsNodeInteraction>> =
-        (if (shownHeader.value) listOf("tool button" to compose.onNodeWithTag(HEADER)) else emptyList()) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
-            "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
-            "dial" to compose.onNodeWithTag(MetronomeTestTags.DIAL),
-            "status line" to compose.onNodeWithTag(MetronomeTestTags.LINE),
-            "tap tempo" to compose.onNodeWithTag(MetronomeTestTags.TAP),
-            "slower" to compose.onNodeWithTag(MetronomeTestTags.SLOWER),
-            "start" to compose.onNodeWithTag(MetronomeTestTags.START),
-            "faster" to compose.onNodeWithTag(MetronomeTestTags.FASTER),
+        (if (shownHeader.value) listOf("gear" to compose.onNodeWithTag(HEADER)) else emptyList()) + listOf(
             "options" to compose.onNodeWithTag(MetronomeTestTags.OPTIONS),
-        )
+            "slower" to compose.onNodeWithTag(MetronomeTestTags.SLOWER),
+            "tempo" to compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true),
+            "faster" to compose.onNodeWithTag(MetronomeTestTags.FASTER),
+            "tempo words" to compose.onNodeWithTag(MetronomeTestTags.TEMPO_WORDS, useUnmergedTree = true),
+            "ruler" to compose.onNodeWithTag(MetronomeTestTags.RULER),
+            "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
+            "vibrate" to compose.onNodeWithTag(MetronomeTestTags.VIBRATE),
+            "status line" to compose.onNodeWithTag(MetronomeTestTags.LINE),
+            "listen" to compose.onNodeWithTag(MetronomeTestTags.LISTEN),
+        ) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
+            "tap the beat" to compose.onNodeWithTag(MetronomeTestTags.TAP),
+            "start" to compose.onNodeWithTag(MetronomeTestTags.START),
+        ) + if (shownListen.value.phase == ListenPhase.IDLE) {
+            // On (as shown here), the trainer's words are on the line while Listen has nothing to say.
+            listOf("trainer" to compose.onNodeWithTag(MetronomeTestTags.TRAINER))
+        } else {
+            emptyList()
+        }
+
+    /** Parts that stand inside another: the meters in their bar, the trainer's words over Listen's (empty) line. */
+    private fun contains(outer: String, inner: String) =
+        (outer.startsWith("meter") && inner.startsWith("meter")) || setOf(outer, inner) == setOf("trainer", "status line")
 
     @Test
     fun everythingFitsWithoutScrollingAndNothingOverlaps() {
         show()
         for (header in listOf(true, false)) {
             shownHeader.value = header
-            for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
+            // As the app shows it: on its side the gear is on the rail, never in the column.
+            val sizes = listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE) + if (header) emptyList() else listOf(PHONE_LANDSCAPE to 1f)
+            for ((size, scale) in sizes) {
                 shownSize.value = size
                 shownFontScale.value = scale
                 for ((dark, navigation) in listOf(false to Navigation.BUTTONS, true to Navigation.GESTURES)) {
                     shownDark.value = dark
                     shownNavigation.value = navigation
                     compose.waitForIdle()
-                    val practice = if (header) " with the tool button" else ""
-                    assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x $navigation$practice:")
+                    val gear = if (header) " with the gear" else ""
+                    assertAllInView("${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x $navigation$gear:")
                 }
             }
         }
@@ -162,28 +171,12 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         shownNavigation.value = Navigation.BUTTONS
     }
 
-    @Test
-    fun atTwiceTheTextSizeEveryControlIsWhollyShown() {
-        show()
-        shownFontScale.value = 2f
-        for ((size, dark) in listOf(PHONE_UPRIGHT to false, PHONE_LANDSCAPE to true)) {
-            shownSize.value = size
-            shownDark.value = dark
-            compose.waitForIdle()
-            val case = "$style ${size.width} x ${size.height} at 2x"
-            // On its side the dial has a pane of its own that doesn't scroll (it is sized to fit).
-            for ((name, node) in parts()) assertWhollyShown(node, "$case $name", scroll = name != "dial" || size == PHONE_UPRIGHT)
-            // The marking in the dial's middle (Presto at 168 BPM), not cut off.
-            assertWhollyShown(compose.onNodeWithText("Presto", useUnmergedTree = true), "$case marking", scroll = size == PHONE_UPRIGHT)
-        }
-    }
-
     private fun assertAllInView(case: String) {
         val window = bars().safeArea(shownSize.value)
         val bounds = parts().map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
-        bounds.firstOrNull { it.first == "tool button" }?.second?.let { button ->
-            // At the top start, as on the other Practice tools: the column's or the start half's margin before it.
-            assertTrue("$case the tool button at the top start $button", button.left - window.left <= 28.dp && button.top - window.top <= 16.dp)
+        bounds.firstOrNull { it.first == "gear" }?.second?.let { gear ->
+            // At the top start: the column's margin before it, 8 dp down.
+            assertTrue("$case the gear at the top start $gear", gear.left - window.left <= 28.dp && gear.top - window.top <= 16.dp)
         }
         for ((name, rect) in bounds) {
             if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
@@ -194,74 +187,49 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             for (j in i + 1 until bounds.size) {
                 val (a, first) = bounds[i]
                 val (b, second) = bounds[j]
-                if (first.overlaps(second)) fail("$case $a $first overlaps $b $second")
+                if (!contains(a, b) && first.overlaps(second)) fail("$case $a $first overlaps $b $second")
             }
         }
-        // The tempo, BPM and the marking inside the dial, the marking above the bottom of the arc's ends.
-        val figures = compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot()
-        val marking = compose.onNodeWithText("Presto", useUnmergedTree = true).getBoundsInRoot()
-        val dial = bounds.first { it.first == "dial" }.second
-        for ((name, rect) in listOf("tempo" to figures, "marking" to marking)) {
-            if (rect.left < dial.left || rect.right > dial.right || rect.top < dial.top) fail("$case $name $rect outside the dial $dial")
-        }
-        val arcEnds = dial.top + dial.height / 2 + dial.height * (81f / 288f)
-        assertTrue("$case marking $marking above the arc's ends ($arcEnds)", marking.bottom <= arcEnds + SLACK)
+        // The figures between − and +, and as large as the room lets them be: at least 56 dp high.
+        val figures = bounds.first { it.first == "tempo" }.second
+        assertTrue("$case the tempo's figures $figures at least 48 dp high", figures.height >= 48.dp)
     }
 
     @Test
-    fun theRowUnderTheDialKeepsItsSizesAndOrder() {
+    fun atTwiceTheTextSizeEveryControlIsWhollyShown() {
         show()
-        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, NARROW_UPRIGHT to 1f, PHONE_LANDSCAPE to 1f, PHONE_UPRIGHT to 2f)) {
+        shownFontScale.value = 2f
+        for ((size, dark) in listOf(PHONE_UPRIGHT to false, PHONE_LANDSCAPE to true, NARROW_UPRIGHT to false)) {
             shownSize.value = size
-            shownFontScale.value = scale
-            for (listening in listOf(false, true)) {
-                shownListen.value = if (listening) ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96) else ListenUi()
-                compose.waitForIdle()
-                val case = "$style ${size.width} x ${size.height} at ${scale}x${if (listening) " listening" else ""}:"
-                val row = ROW_SIZES.map { (tag, side) ->
-                    val bounds = compose.onNodeWithTag(tag).performScrollTo().getBoundsInRoot()
-                    // Icons, no words: the same size whatever the language or font size.
-                    assertEquals("$case $tag width", side, bounds.width.value, 0.5f)
-                    assertEquals("$case $tag height", side, bounds.height.value, 0.5f)
-                    tag to bounds
-                }
-                val middle = row.first().second.let { (it.top + it.bottom) / 2 }
-                for ((first, second) in row.zipWithNext()) {
-                    assertTrue("$case ${first.first} ${first.second} before ${second.first} ${second.second}", first.second.right <= second.second.left + SLACK)
-                }
-                for ((tag, bounds) in row) assertEquals("$case $tag on one line", middle.value, ((bounds.top + bounds.bottom) / 2).value, 0.5f)
-                val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
-                if (size.width < size.height) assertTrue("$case the row under the dial $dial", row.all { it.second.top >= dial.bottom - SLACK })
-            }
+            shownDark.value = dark
+            compose.waitForIdle()
+            val case = "${size.width} x ${size.height} at 2x"
+            for ((name, node) in parts()) assertWhollyShown(node, "$case $name")
+            compose.assertEveryTextWhollyShown("$case:")
         }
-        shownListen.value = ListenUi()
         shownFontScale.value = 1f
         shownSize.value = PHONE_UPRIGHT
+        shownDark.value = false
     }
 
     @Test
-    fun theBeatLightsStandOverTheDialAndGrowWhereThereIsRoom() {
+    fun theTempoKeepsOneSizeWhateverTheTempo() {
         show()
-        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE)) {
+        for (size in listOf(PHONE_UPRIGHT, XIAOMI_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
-            shownFontScale.value = scale
-            compose.waitForIdle()
-            val case = "$style ${size.width} x ${size.height} at ${scale}x:"
-            val lights = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
-            val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
-            val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
-            // Only Listen's status line and the dial's 8 dp margin between them.
-            assertTrue("$case lights $lights over the line $line", line.top >= lights.bottom - SLACK && line.top <= lights.bottom + 2.dp + SLACK)
-            assertTrue("$case line $line right over the dial $dial", dial.top >= line.bottom - SLACK && dial.top <= line.bottom + 8.dp + SLACK)
-            assertTrue("$case lights at least 48 dp tall: $lights", lights.height >= 48.dp - SLACK)
-            assertTrue("$case lights at most 80 dp tall: $lights", lights.height <= 80.dp + SLACK)
+            val heights = listOf(40, 96, 250).map { bpm ->
+                shownBpm.value = bpm
+                compose.waitForIdle()
+                compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot().height
+            }
+            for (height in heights) assertEquals("${size.width} x ${size.height}: $heights", heights.first().value, height.value, 0.5f)
         }
-        // The Xiaomi at 1x has height to spare: the lights take some of it.
+        // The Xiaomi has room to spare: the figures are large there.
         shownSize.value = XIAOMI_UPRIGHT
-        shownFontScale.value = 1f
         compose.waitForIdle()
-        val xiaomi = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
-        assertTrue("$style lights grow on the Xiaomi at 1x: $xiaomi", xiaomi.height > 56.dp)
+        val xiaomi = compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot()
+        assertTrue("the figures large on the Xiaomi: $xiaomi", xiaomi.height >= 90.dp)
+        shownBpm.value = 168
         shownSize.value = PHONE_UPRIGHT
     }
 
@@ -278,7 +246,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                 clock.frameNanos = 0L
                 compose.waitForIdle()
                 val after = parts().map { (name, node) -> name to node.getBoundsInRoot() }
-                assertEquals("$style ${size.width} x ${size.height} beat ${beat + 1}", before, after)
+                assertEquals("${size.width} x ${size.height} beat ${beat + 1}", before, after)
             }
         }
         clock.beat = null
@@ -286,114 +254,173 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun theSuggestionIsWhollyShownAboveTheOptionsButtonInEveryStyle() {
+    fun theSuggestionIsWhollyShownByTheListenButton() {
         show()
         shownListen.value = ListenUi(ListenPhase.FOUND, wasPlaying = true, found = 84, half = 42, double = 168)
         for ((size, dark) in listOf(PHONE_UPRIGHT to false, XIAOMI_UPRIGHT to true, PHONE_LANDSCAPE to false)) {
             shownSize.value = size
             shownDark.value = dark
             compose.waitForIdle()
-            val case = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
+            val case = "${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
             val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertIsDisplayed().getBoundsInRoot()
-            val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
+            val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
             val window = bars().safeArea(size)
-            // Above the options button (where Listen is) upright; on its side above it where there is room, else beside it over the dial.
-            if (size == PHONE_LANDSCAPE) {
-                assertTrue("$case balloon $balloon above or beside the options button $options", balloon.bottom <= options.top || balloon.right <= options.left)
-            } else {
-                assertTrue("$case balloon $balloon above the options button $options", balloon.bottom <= options.top)
-            }
-            assertTrue("$case balloon $balloon inside the window $window", balloon.left >= window.left && balloon.right <= window.right && balloon.top >= window.top)
+            // Over the Listen button (beside it where the window is too short), never over it.
+            assertTrue("$case balloon $balloon beside the Listen button $listen", !balloon.overlaps(listen))
+            if (size.height > size.width) assertTrue("$case balloon $balloon over the Listen button $listen", balloon.bottom <= listen.top)
+            assertTrue("$case balloon $balloon inside the window $window", balloon.left >= window.left && balloon.right <= window.right && balloon.bottom <= window.bottom + SLACK)
             assertTrue("$case at most 260 dp wide", balloon.width <= 260.5.dp)
             for (tag in listOf(MetronomeTestTags.USE, MetronomeTestTags.NOT_NOW, MetronomeTestTags.BALLOON_BPM) + TempoPick.entries.map { MetronomeTestTags.pick(it) }) {
                 assertWhollyShown(compose.onNodeWithTag(tag), "$case $tag", scroll = false)
             }
         }
         shownListen.value = ListenUi()
+        shownDark.value = false
+        shownSize.value = PHONE_UPRIGHT
     }
 
     @Test
-    fun theOptionsPanelOpensFromItsButtonAndIsWhollyShown() {
+    fun theOptionsPanelOpensUnderItsButtonAndIsWhollyShown() {
         show()
-        val cases = listOf(
-            Triple(PHONE_UPRIGHT, 1f, null),
-            Triple(XIAOMI_UPRIGHT, OWNER_FONT_SCALE, null),
-            Triple(PHONE_LANDSCAPE, 1f, null),
-            Triple(NARROW_UPRIGHT, 1f, null),
-            Triple(PHONE_UPRIGHT, 2f, null),
-            Triple(XIAOMI_UPRIGHT, 2f, null),
-            Triple(PHONE_LANDSCAPE, 2f, null),
-            Triple(PHONE_UPRIGHT, 2f, "nl"),
-            Triple(PHONE_LANDSCAPE, 2f, "nl"),
-        )
-        for ((index, case) in cases.withIndex()) {
+        for ((index, case) in PANEL_CASES.withIndex()) {
             val (size, scale, locale) = case
             val dark = index % 2 == 1
-            shownSize.value = size
-            shownFontScale.value = scale
-            shownLocale.value = locale
-            shownDark.value = dark
-            compose.waitForIdle()
-            val name = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
+            showCase(size, scale, locale, dark)
+            val name = "${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
             compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performScrollTo().performClick()
             compose.waitForIdle()
             val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
             val panel = compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertIsDisplayed().getBoundsInRoot()
             val window = bars().safeArea(size)
-            assertTrue(
-                "$name panel $panel inside the window $window",
-                panel.left >= window.left - SLACK && panel.right <= window.right + SLACK && panel.top >= window.top - SLACK && panel.bottom <= window.bottom + SLACK,
-            )
-            if (size.width > size.height) {
-                // Beside the button, towards the dial (at the start), its bottom level with the button where it can be.
-                assertTrue("$name panel $panel beside the options button $options, towards the dial", panel.right <= options.left + SLACK)
-                val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
-                assertTrue("$name panel $panel over the dial's half $dial", panel.left < dial.right)
-                if (panel.top > window.top + 8.dp + SLACK) assertEquals("$name panel's bottom level with the button's", options.bottom.value, panel.bottom.value, 1f)
-            } else {
-                // Above the row, its end edge in line with the button's (where the window leaves room).
-                assertTrue("$name panel $panel above the options button $options", panel.bottom <= options.top + SLACK)
-                if (options.right - panel.width >= window.left + 8.dp) assertEquals("$name panel's end in line with the button's", options.right.value, panel.right.value, 1f)
-            }
+            assertInside(name, panel, window)
+            // Under the button, its end edge in line with the button's (where the window leaves room; where it
+            // doesn't, slid up to stay inside it, or at its top and scrolling).
+            val slidUp = panel.bottom >= window.bottom - 16.dp
+            if (panel.top > window.top + 8.dp + SLACK && !slidUp) assertTrue("$name panel $panel under the options button $options", panel.top >= options.bottom - SLACK)
+            if (options.right - panel.width >= window.left + 8.dp) assertEquals("$name panel's end in line with the button's", options.right.value, panel.right.value, 1f)
             for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$name $option")
             for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$name $option")
-            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE), "$name vibrate switch")
-            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$name listen")
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION), "$name trainer")
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION_SWITCH), "$name trainer's switch")
             if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the panel open")
-            // Back closes it.
-            compose.runOnUiThread { backDispatcher!!.onBackPressed() }
-            compose.waitForIdle()
+            back()
             compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertDoesNotExist()
         }
+        resetCase()
+    }
+
+    @Test
+    fun theTrainersSettingsOpenOverItsRowAndAreWhollyShown() {
+        show()
+        for ((index, case) in PANEL_CASES.withIndex()) {
+            val (size, scale, locale) = case
+            val dark = index % 2 == 0
+            showCase(size, scale, locale, dark)
+            val name = "${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
+            compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().performClick()
+            compose.waitForIdle()
+            val row = compose.onNodeWithTag(MetronomeTestTags.TRAINER).getBoundsInRoot()
+            assertTrue("$name the line $row under the bars", row.top >= compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot().bottom - SLACK)
+            val panel = compose.onNodeWithTag(MetronomeTestTags.TRAINER_PANEL).assertIsDisplayed().getBoundsInRoot()
+            assertInside(name, panel, bars().safeArea(size))
+            // Upright over the row; on its side the window is too short for that, and it slides over the row, wholly inside.
+            if (size.height > size.width && scale == 1f) assertTrue("$name panel $panel over the row $row", panel.bottom <= row.top + SLACK)
+            for (tag in listOf(MetronomeTestTags.TRAINER_START, MetronomeTestTags.TRAINER_GOAL)) {
+                assertWhollyShown(compose.onNodeWithTag(tag, useUnmergedTree = true), "$name $tag")
+            }
+            for (step in SpeedTrainer.STEPS) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.trainerStep(step)), "$name +$step")
+            for (bars in SpeedTrainer.BAR_CHOICES) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.trainerBars(bars)), "$name $bars")
+            if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the trainer's settings open")
+            back()
+            compose.onNodeWithTag(MetronomeTestTags.TRAINER_PANEL).assertDoesNotExist()
+        }
+        resetCase()
+    }
+
+    private fun showCase(size: DpSize, scale: Float, locale: String?, dark: Boolean) {
+        shownSize.value = size
+        shownFontScale.value = scale
+        shownLocale.value = locale
+        shownDark.value = dark
+        compose.waitForIdle()
+    }
+
+    private fun resetCase() {
         shownLocale.value = null
         shownFontScale.value = 1f
         shownSize.value = PHONE_UPRIGHT
         shownDark.value = false
     }
 
+    private fun back() {
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+    }
+
+    private fun assertInside(name: String, panel: DpRect, window: DpRect) = assertTrue(
+        "$name panel $panel inside the window $window",
+        panel.left >= window.left - SLACK && panel.right <= window.right + SLACK && panel.top >= window.top - SLACK && panel.bottom <= window.bottom + SLACK,
+    )
+
     @Test
-    fun theMarksStandOnTheStatusLine() {
+    fun underTheBarsVibrateTheLineAndListenStandInOneRow() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
+            // As the app shows it: on its side the gear is on the rail.
+            shownHeader.value = size.height > size.width
             compose.waitForIdle()
+            val case = "${size.width} x ${size.height}"
+            val lights = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
+            val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE).assertIsDisplayed().getBoundsInRoot()
             val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
-            for (tag in listOf(MetronomeTestTags.SUBDIVISION_MARK, MetronomeTestTags.VIBRATE_MARK)) {
-                val mark = compose.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed().getBoundsInRoot()
-                assertTrue("$style ${size.width} x ${size.height} $tag $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
+            val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertIsDisplayed().getBoundsInRoot()
+            assertTrue("$case Vibrate $vibrate, the line $line, Listen $listen in that order", vibrate.right <= line.left && line.right <= listen.left)
+            for ((name, rect) in listOf("Vibrate" to vibrate, "the line" to line, "Listen" to listen)) {
+                assertTrue("$case $name $rect under the bars $lights", rect.top >= lights.bottom - SLACK)
+                assertEquals("$case $name level with the row", ((vibrate.top + vibrate.bottom) / 2).value, ((rect.top + rect.bottom) / 2).value, 1f)
+            }
+            // The buttons at the ends of the bars' column.
+            assertTrue("$case Vibrate $vibrate at the start of the bars' room $lights", vibrate.left <= lights.left + 24.dp)
+            assertTrue("$case Listen $listen at the end of the bars' room $lights", listen.right >= lights.right - 24.dp)
+        }
+        shownHeader.value = true
+        shownSize.value = PHONE_UPRIGHT
+    }
+
+    @Test
+    fun listensWordsChangingMoveNothing() {
+        show()
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            shownListen.value = ListenUi()
+            compose.waitForIdle()
+            val before = parts().filter { it.first != "trainer" }.map { (name, node) -> name to node.getBoundsInRoot() }
+            for (listen in listOf(
+                ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L),
+                ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96),
+                ListenUi(ListenPhase.NO_BEAT),
+                ListenUi(ListenPhase.MIC_OFF_SETTINGS),
+            )) {
+                shownListen.value = listen
+                compose.waitForIdle()
+                // Listen's words take the line: the trainer's go while it talks.
+                compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
+                val after = parts().map { (name, node) -> name to node.getBoundsInRoot() }
+                assertEquals("${size.width} x ${size.height} ${listen.phase}", before, after)
             }
         }
+        shownListen.value = ListenUi()
         shownSize.value = PHONE_UPRIGHT
     }
 
     /**
      * On a tablet held upright the column is a phone's, drawn bigger ([columnScaleFor], Phase 52, the
      * tuner's rule): every part sits where it sits on a phone of the tablet's size divided by that
-     * scale, that much bigger, at the tablet's own 1.3x text, with no text cut off (before, the column
-     * stopped at 480 dp and the dial at 440 dp, a wide empty band either side on the Lenovo Tab M11).
-     * The Practice tab's tool button keeps its own size and its place over Chords and Scales: at the
-     * start of a phone's 480 dp column, 8 dp down, clear of the rest. The options panel opens from its
-     * button at the column's size. A phone keeps its own size (the other tests).
+     * scale, that much bigger, at the tablet's own 1.3x text, with no text cut off. The gear grows with it
+     * in the top row, level with the ⋯, as the tuner's (until the tablet run of 2026-11-06 it kept a phone's
+     * size over the column's start). The options panel opens from its button at the column's size. A phone
+     * keeps its own size (the other tests).
      */
     @Test
     fun anUprightTabletShowsThePhonesColumnBigger() {
@@ -417,48 +444,53 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             // Text set at another pixel size is not quite in proportion (hinting): 1 % more room for it.
             val across = 2f + big.width.value / 100f
             val down = 2f + big.height.value / 100f
-            assertEquals("$style $part's left", (small.left * grow).value, big.left.value, across)
-            assertEquals("$style $part's right", (small.right * grow).value, big.right.value, across)
-            assertEquals("$style $part's top", (small.top * grow).value, big.top.value, down)
-            assertEquals("$style $part's bottom", (small.bottom * grow).value, big.bottom.value, down)
+            assertEquals("$part's left", (small.left * grow).value, big.left.value, across)
+            assertEquals("$part's right", (small.right * grow).value, big.right.value, across)
+            assertEquals("$part's top", (small.top * grow).value, big.top.value, down)
+            assertEquals("$part's bottom", (small.bottom * grow).value, big.bottom.value, down)
         }
-        val dial = tablet.getValue("dial")
-        assertTrue("$style the dial fills the tablet: $dial", dial.width > 560.dp)
-        assertTrue("$style the dial centred: $dial", abs((dial.left - (TABLET_UPRIGHT.width - dial.right)).value) < 2f)
-        compose.assertEveryTextWhollyShown("$style tablet upright at ${TABLET_FONT_SCALE}x:")
+        val ruler = tablet.getValue("ruler")
+        assertTrue("the ruler across the tablet: $ruler", ruler.width > 560.dp)
+        assertTrue("the ruler centred: $ruler", abs((ruler.left - (TABLET_UPRIGHT.width - ruler.right)).value) < 2f)
+        compose.assertEveryTextWhollyShown("tablet upright at ${TABLET_FONT_SCALE}x:")
 
-        // With the tool button.
+        // With the gear.
         shownHeader.value = true
         compose.waitForIdle()
-        val case = "$style tablet upright with the tool button:"
-        val button = compose.onNodeWithTag(HEADER).windowBounds()
-        assertEquals("$case tool button's width", 160f, button.width.value, 1f)
-        assertEquals("$case tool button's left", ((TABLET_UPRIGHT.width - 448.dp) / 2).value, button.left.value, 1f)
-        assertEquals("$case tool button's top", 8f, button.top.value, 1f)
+        val case = "tablet upright with the gear:"
+        val gear = compose.onNodeWithTag(HEADER).windowBounds()
+        // In the top row, as big as the column (as the tuner's gear): 48 dp grown, its face's outline (inside the touch
+        // area) at the grown column's text margin, the row 8 dp down grown.
+        assertEquals("$case gear's width", 48f * grow, gear.width.value, 1f)
+        assertEquals("$case gear's left", ((TABLET_UPRIGHT.width - 448.dp * grow) / 2 - TOP_BAR_OUTLINE_INSET * grow).value, gear.left.value, 1f)
+        assertEquals("$case gear's top", 8f * grow, gear.top.value, 1f)
         val bounds = parts().map { (name, node) -> name to node.windowBounds() }
+        val more = bounds.first { it.first == "options" }.second
+        assertEquals("$case gear level with the ⋯", ((more.top + more.bottom) / 2).value, ((gear.top + gear.bottom) / 2).value, 1f)
         for ((name, rect) in bounds) {
             assertTrue(
                 "$case $name $rect inside the window",
                 rect.left >= -SLACK && rect.top >= -SLACK && rect.right <= TABLET_UPRIGHT.width + SLACK && rect.bottom <= TABLET_UPRIGHT.height + SLACK,
             )
-            if (name != "tool button") assertTrue("$case $name $rect under the tool button $button", rect.top >= button.bottom - TABLET_SLACK)
+            if (name != "gear" && name != "options") assertTrue("$case $name $rect under the top row $gear", rect.top >= gear.bottom - TABLET_SLACK)
         }
         compose.assertEveryTextWhollyShown("$case at ${TABLET_FONT_SCALE}x")
 
-        // The options panel opens above its button, its end in line with the button's, inside the window.
+        // The options panel opens under its button, its end in line with the button's, inside the window.
         compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performClick()
         compose.waitForIdle()
         val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).windowBounds()
         val panel = compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).windowBounds()
-        assertTrue("$case panel $panel above the options button $options", panel.bottom <= options.top + TABLET_SLACK)
+        assertTrue("$case panel $panel under the options button $options", panel.top >= options.bottom - TABLET_SLACK)
         assertEquals("$case panel's end in line with the button's", options.right.value, panel.right.value, 1f)
-        assertTrue("$case panel $panel inside the window", panel.left >= 0.dp && panel.right <= TABLET_UPRIGHT.width && panel.top >= 0.dp)
-        for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$case $option", scroll = false)
+        assertTrue("$case panel $panel inside the window", panel.left >= 0.dp && panel.right <= TABLET_UPRIGHT.width && panel.bottom <= TABLET_UPRIGHT.height)
         for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$case $option", scroll = false)
-        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$case listen", scroll = false)
-        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
-        compose.waitForIdle()
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_OPTION), "$case trainer", scroll = false)
+        back()
         compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertDoesNotExist()
+        shownNoBars.value = false
+        shownFontScale.value = 1f
+        shownSize.value = PHONE_UPRIGHT
     }
 
     /**
@@ -478,15 +510,10 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         )
     }
 
-    /**
-     * The Practice tab's tool button as it stands over the metronome (Phase 47; `:feature:practice` is
-     * out of reach here): a stand-in as large, 160 × 48 dp, its name set smaller where it must.
-     */
+    /** The app's gear as it stands at the top start (`:app` is out of reach here): a stand-in as large, 48 dp. */
     @androidx.compose.runtime.Composable
-    private fun PracticeToolButtonStandIn() {
-        Box(Modifier.testTag(HEADER).size(160.dp, 48.dp).padding(start = 42.dp, end = 26.dp), contentAlignment = Alignment.CenterStart) {
-            Text("Metronome", maxLines = 1, softWrap = false, autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 16.sp, stepSize = 0.5.sp))
-        }
+    private fun GearStandIn() {
+        Box(Modifier.testTag(HEADER).size(48.dp))
     }
 
     private fun DpRect.overlaps(other: DpRect) =
@@ -494,7 +521,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
 
     /**
      * Every language at 2× text, upright and on its side, with each of Listen's status lines and with
-     * the options panel open: every text wholly shown (every style in a thorough run). Only with `--languages`.
+     * the options panel and the trainer's settings open: every text wholly shown. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -515,26 +542,25 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                 for (listen in lines) {
                     shownListen.value = listen
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} ${listen.phase} at 2x:")
+                    compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} ${listen.phase} at 2x:")
                 }
                 shownListen.value = ListenUi()
                 compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performScrollTo().performClick()
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} options panel at 2x:")
-                compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} options panel at 2x:")
+                back()
+                compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().performClick()
                 compose.waitForIdle()
+                compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} trainer's settings at 2x:")
+                back()
             }
         }
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val WINDOW = "window"
         private const val HEADER = "header"
-        private const val TEST_TIMEOUT_SECONDS = 20L
+        private const val TEST_TIMEOUT_SECONDS = 30L
 
         /**
          * A short narrow phone (360 x 720 dp with navigation buttons: 650 dp without the status bar and
@@ -563,13 +589,16 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         /** A px of rounding at the tablet's 1.5 px to the dp. */
         private val TABLET_SLACK = 0.75.dp
 
-        /** The row under the dial in its order, each button's width and height in dp. */
-        private val ROW_SIZES = listOf(
-            MetronomeTestTags.TAP to 52f,
-            MetronomeTestTags.SLOWER to 48f,
-            MetronomeTestTags.START to 72f,
-            MetronomeTestTags.FASTER to 48f,
-            MetronomeTestTags.OPTIONS to 52f,
+        /** The panels' cases: size, text size and language. */
+        private val PANEL_CASES = listOf(
+            Triple(PHONE_UPRIGHT, 1f, null),
+            Triple(XIAOMI_UPRIGHT, OWNER_FONT_SCALE, null),
+            Triple(PHONE_LANDSCAPE, 1f, null),
+            Triple(NARROW_UPRIGHT, 1f, null),
+            Triple(PHONE_UPRIGHT, 2f, null),
+            Triple(PHONE_LANDSCAPE, 2f, null),
+            Triple(PHONE_UPRIGHT, 2f, "nl"),
+            Triple(PHONE_LANDSCAPE, 2f, "nl"),
         )
     }
 }

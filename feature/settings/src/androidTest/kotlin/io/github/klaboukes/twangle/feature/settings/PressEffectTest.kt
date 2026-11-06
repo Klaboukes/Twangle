@@ -28,8 +28,6 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,20 +37,18 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.concurrent.TimeUnit
 
 /**
  * Phase 27's press effect on the buttons outside the metronome: Material's text, filled and icon
- * buttons through the Twangle buttons, and a plain row through the theme's light. Each, in each
- * style, light and dark: held down it lights up (in place of Material's ripple), released it fades
+ * buttons through the Twangle buttons, and a plain row through the theme's light. Each, in Ink,
+ * light and dark: held down it lights up (in place of Material's ripple), released it fades
  * back to how it was; a tap and TalkBack's double tap (a click without a touch) each click once; the
  * buttons keep Material's 48 dp touch area, and a text button's light stays on its 40 dp pill.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class PressEffectTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class PressEffectTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -66,7 +62,7 @@ class PressEffectTest(private val style: VisualStyle) {
 
     private fun show() {
         compose.setContent {
-            TwangleTheme(style = style, darkTheme = dark.value, animate = false) {
+            TwangleTheme(darkTheme = dark.value, animate = false) {
                 Column(Modifier.padding(16.dp)) {
                     // Each button in a slot of its own: the room it takes, its touch area round it. (The
                     // button's own node is its face, as with Material's buttons.)
@@ -96,7 +92,7 @@ class PressEffectTest(private val style: VisualStyle) {
         for (isDark in listOf(false, true)) {
             dark.value = isDark
             compose.waitForIdle()
-            for (tag in listOf(TEXT, FILLED, ICON, ROW)) check(tag, "$style ${if (isDark) "dark" else "light"} $tag:")
+            for (tag in listOf(TEXT, FILLED, ICON, ROW)) check(tag, "${if (isDark) "dark" else "light"} $tag:")
         }
     }
 
@@ -144,17 +140,16 @@ class PressEffectTest(private val style: VisualStyle) {
         show()
         for (tag in listOf(TEXT, FILLED, ICON)) {
             val bounds = compose.onNodeWithTag(slot(tag)).getUnclippedBoundsInRoot()
-            assertTrue("$style $tag: ${bounds.height} tall", bounds.height >= 48.dp - 0.5.dp)
-            assertTrue("$style $tag: ${bounds.width} wide", bounds.width >= 48.dp - 0.5.dp)
+            assertTrue("$tag: ${bounds.height} tall", bounds.height >= 48.dp - 0.5.dp)
+            assertTrue("$tag: ${bounds.width} wide", bounds.width >= 48.dp - 0.5.dp)
         }
         val icon = compose.onNodeWithTag(slot(ICON)).getUnclippedBoundsInRoot()
-        assertEquals("$style icon button's height", 48f, icon.height.value, 0.5f)
+        assertEquals("icon button's height", 48f, icon.height.value, 0.5f)
     }
 
-    /** The light lies on the 40 dp pill, not across the 48 dp touch area round it (Futuristic's glow reaches past it). */
+    /** The light lies on the 40 dp pill, not across the 48 dp touch area round it. */
     @Test
     fun aTextButtonsLightStaysOnItsPill() {
-        if (style == VisualStyle.FUTURISTIC) return
         show()
         compose.mainClock.autoAdvance = false
         try {
@@ -167,7 +162,7 @@ class PressEffectTest(private val style: VisualStyle) {
             // The top 2 dp of the touch area stay as they were.
             val margin = (2 * compose.density.density).toInt()
             for (y in 0 until margin) for (x in 0 until idle.width) {
-                assertEquals("$style pixel $x, $y above the pill", idle[x, y], held[x, y])
+                assertEquals("pixel $x, $y above the pill", idle[x, y], held[x, y])
             }
         } finally {
             compose.mainClock.autoAdvance = true
@@ -175,10 +170,6 @@ class PressEffectTest(private val style: VisualStyle) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val TEXT = "text"
         private const val FILLED = "filled"
         private const val ICON = "icon"

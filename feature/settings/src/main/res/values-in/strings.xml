@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Setelan</string>
     <string name="settings_back">Kembali</string>
+    <string name="settings_group_tuning">Penyeteman</string>
 
-    <string name="settings_group_pitch">Nada dan notasi</string>
     <string name="settings_group_look">Tampilan</string>
-    <string name="settings_group_tuner_screen">Layar tuner</string>
     <string name="settings_group_while_tuning">Saat menyetem</string>
-    <string name="settings_group_app">Aplikasi</string>
 
     <string name="settings_a4_title">Nada acuan (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">Turunkan A4 1\u00A0Hz</string>
     <string name="settings_a4_raise">Naikkan A4 1\u00A0Hz</string>
     <string name="settings_a4_reset">Kembalikan ke %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Stem presisi</string>
+    <string name="settings_precise_summary">Pas dalam 2 sen, bukan 5</string>
 
     <string name="settings_notation_title">Nama nada</string>
     <string name="settings_notation_sharps">Kres: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Jerman: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Ketelitian nada pas</string>
-    <string name="settings_in_tune_precision_relaxed">Longgar: dalam 5 sen</string>
-    <string name="settings_in_tune_precision_precise">Teliti: dalam 2 sen</string>
 
-    <string name="settings_style_title">Gaya</string>
     <string name="settings_theme_title">Terang atau gelap</string>
-    <string name="settings_theme_system">Default sistem</string>
+    <string name="settings_theme_system">Ikuti ponsel</string>
     <string name="settings_theme_light">Terang</string>
     <string name="settings_theme_dark">Gelap</string>
     <string name="settings_dynamic_color_title">Warna wallpaper</string>
     <string name="settings_dynamic_color_summary">Gunakan warna dari wallpaper Anda</string>
+    <string name="settings_meter_title">Meter</string>
+    <string name="settings_meter_classic">Klasik</string>
+    <string name="settings_meter_light_arc">Busur cahaya</string>
+    <string name="settings_meter_strobe">Strobo</string>
 
-    <string name="settings_meter_look_title">Meter</string>
-    <string name="settings_meter_look_classic">Klasik</string>
-    <string name="settings_meter_look_light_arc">Busur cahaya</string>
-    <string name="settings_meter_look_pointers">Penunjuk</string>
-    <string name="settings_meter_look_loupe">Kaca pembesar</string>
-    <string name="settings_meter_look_arrows">Panah</string>
-    <string name="settings_meter_look_light_bars">Batang cahaya</string>
-    <string name="settings_in_tune_effect_title">Efek saat pas</string>
-    <string name="settings_in_tune_effect_summary">Seberapa terang meter menyala saat nada pas</string>
-    <string name="settings_in_tune_effect_calm">Tenang</string>
-    <string name="settings_in_tune_effect_bold">Mencolok</string>
-
-    <string name="settings_display_title">Di bawah nada</string>
-    <string name="settings_display_numbers">Angka: selisih berapa sen</string>
-    <string name="settings_display_wave">Gelombang: gambar bergerak, dengan gaya pilihan Anda</string>
-    <string name="settings_wave_look_title">Gaya gelombang</string>
-    <string name="settings_wave_look_strobe">Strobo</string>
-    <string name="settings_wave_look_ribbon">Pita</string>
-    <string name="settings_wave_look_dots">Titik</string>
-    <string name="settings_wave_look_fireflies">Kunang-kunang</string>
-    <string name="settings_wave_look_loop">Lingkaran</string>
-    <string name="settings_wave_look_ripples">Riak</string>
-    <string name="settings_focus_mode_title">Mode fokus</string>
-    <string name="settings_focus_mode_summary">Memutar Twangle ke samping dengan satu meter besar, mudah dibaca dari jauh</string>
     <string name="settings_left_handed_title">Kidal</string>
     <string name="settings_left_handed_summary">Diagram akor dan leher di Tangga nada digambar untuk gitar yang dipegang terbalik</string>
+    <string name="settings_under_meter_title">Di bawah meter</string>
+    <string name="settings_under_meter_words">Kata: Kencangkan atau Kendurkan</string>
+    <string name="settings_under_meter_cents">Sen: −12</string>
 
     <string name="settings_keep_screen_on_title">Layar tetap menyala</string>
     <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>
     <string name="settings_vibrate_in_tune_title">Bergetar saat pas</string>
     <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah pas</string>
-    <string name="settings_show_tune_hint_title">Tampilkan bantuan menyetem</string>
-    <string name="settings_show_tune_hint_summary">Memberi tahu perlu dinaikkan atau diturunkan, dan mencentang tiap senar begitu pas</string>
+    <string name="settings_string_tick_off_title">Centang senar yang sudah pas</string>
+    <string name="settings_string_tick_off_summary">Centang di tiap senar begitu pas, dan “Sudah pas. Ayo main.” jika semuanya pas</string>
     <string name="settings_show_signal_bars_title">Tampilkan bar sinyal</string>
-    <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di samping nada menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
+    <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di atas senar menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
 
     <string name="settings_language_title">Bahasa</string>
     <string name="settings_language_phone">Bahasa ponsel</string>
     <string name="settings_language_cancel">Batal</string>
-    <string name="settings_show_tour_title">Tur aplikasi</string>
-    <string name="settings_show_tour_summary">Tur singkat tuner</string>
     <string name="about_title">Tentang Twangle</string>
     <string name="settings_about_link_summary">Versi %1$s, bantuan, privasi, dan lisensi</string>
+    <string name="settings_about_name_title">Nama</string>
+    <string name="settings_about_name_meaning">Twang adalah kata Inggris untuk dengung senar yang dipetik.</string>
     <string name="settings_about_version">Versi %1$s</string>
     <string name="settings_about_free_title">Gratis selamanya</string>
     <string name="settings_about_free_summary">Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Tidak sekarang, tidak nanti.</string>

@@ -7,7 +7,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Configurator
-import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
@@ -18,26 +17,22 @@ import java.util.Locale
 import java.util.regex.Pattern
 
 /**
- * Frame times and main-thread work of every meter look in chromatic mode, with the meter moving
+ * Frame times and main-thread work of the tuner's lens in chromatic mode, with the reading moving
  * all the time. The `benchmarkRelease` app hears a synthetic tone that sweeps across about ±30
- * cents (`SyntheticAudioRecorder` in `:app`), so every look and every run gets the same input.
+ * cents (`SyntheticAudioRecorder` in `:app`), so every run gets the same input. Since Phase 72
+ * (2.0) it measures each of the meter's three looks (Classic, the Light arc, the strobe since Phase 78):
+ * for each it starts the app afresh with the look in the launch (`--es lensLook CLASSIC`, which only
+ * this build and debug builds take, `MainActivity`).
  *
- * For each look it picks the look in settings (below the note: numbers, so only the meter
- * moves), switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
+ * For each look it switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
  * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in docs/architecture/performance.md.
  * No tracing runs meanwhile, so the numbers compare with the S26 table there.
  *
- * The pitch trail (Phase 31) is measured the same way, as one more "look", [PITCH_TRAIL], always
- * last: the app is started afresh, the trail is picked from the
- * "more tools" menu above the strings, and the tuner switched to chromatic mode (the trail stays on),
- * so the line follows the sweep in the meter's place.
- *
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.
- * Instrumentation arguments: `meterLooks` (`MeterLook` names separated by colons, as Gradle cuts
- * arguments at commas; `CURRENT` keeps the look set in the app, e.g. an older build without
- * looks; `PITCH_TRAIL` the pitch trail), `runs`, `seconds`.
+ * Instrumentation arguments: `meterLooks` (names separated by colons, as Gradle cuts arguments at
+ * commas: `CLASSIC`, `LIGHT_ARC`, `STROBE`, or `CURRENT`, the look the app shows), `runs`, `seconds`.
  */
 @RunWith(AndroidJUnit4::class)
 class MeterFramesBenchmark {
@@ -48,7 +43,6 @@ class MeterFramesBenchmark {
     private val runs = args.getString("runs")?.toInt() ?: RUNS
     private val windowSeconds = args.getString("seconds")?.toInt() ?: WINDOW_SECONDS
     private val looks = (args.getString("meterLooks") ?: ALL_LOOKS).split(':').map { it.trim().uppercase(Locale.ROOT) }
-        .sortedBy { it == PITCH_TRAIL }
 
     @Test
     fun meterLooksInChromaticMode() {
@@ -57,51 +51,20 @@ class MeterFramesBenchmark {
         check(device.isNaturalOrientation) { "Hold the phone upright (portrait) for the measurement" }
         shell("input keyevent KEYCODE_WAKEUP")
         shell("pm grant $TARGET_PACKAGE android.permission.RECORD_AUDIO")
-        shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-        // A fresh install shows the first-start tour over the tuner first.
-        waitFor(By.res(Pattern.compile("$MODE_CHROMATIC_TAG|$TOUR_SKIP_TAG")), "Tuner screen")
-        device.findObject(By.res(TOUR_SKIP_TAG))?.let(::click)
-        waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
+        looks.forEach { check(it in KNOWN_LOOKS) { "No lens look $it: ${KNOWN_LOOKS.joinToString(":")}" } }
 
-        // Only the meter moves: the cents display instead of the wave view.
-        openSettings()
-        click(findInSettings(By.text(NUMBERS_DISPLAY)))
-        device.pressBack()
-        waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
-
-        var pid = pidOfApp()
-        var renderTid = renderThreadOf(pid)
         val rows = mutableListOf<Window>()
-        log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()} pid=$pid renderThread=$renderTid")
+        log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()}")
         for (look in looks) {
-            if (look == PITCH_TRAIL) {
-                // Afresh; the trail in chromatic mode.
-                shell("am force-stop $TARGET_PACKAGE")
-                shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-                // The menu sits above the strings, so it is picked in guitar mode; the trail stays on in chromatic.
-                waitFor(By.res(MODE_GUITAR_TAG), "Guitar button")
-                // A tap while the opening screen still covers the tuner is lost: tap until the button shows.
-                var moreTools: UiObject2? = null
-                repeat(TAP_TRIES) {
-                    if (moreTools == null) {
-                        click(waitFor(By.res(MODE_GUITAR_TAG), "Guitar button"))
-                        moreTools = device.wait(Until.findObject(By.res(MORE_TOOLS_TAG)), SETTLE_MS)
-                    }
-                }
-                click(moreTools ?: error("More tools button didn't appear"))
-                click(waitFor(By.res(PITCH_TRAIL_TOOL_TAG), "Pitch trail in the more-tools menu"))
-                click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
-                waitFor(By.res(TRAIL_PANEL_TAG), "Pitch trail")
-                pid = pidOfApp()
-                renderTid = renderThreadOf(pid)
-                log("pitch trail: pid=$pid renderThread=$renderTid")
-            } else if (look != CURRENT) {
-                openSettings()
-                val card = findInSettings(By.res(CARD_TAG_PREFIX + look.lowercase(Locale.ROOT)))
-                click(card)
-                device.pressBack()
-            }
-            if (look != PITCH_TRAIL) click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
+            // Afresh (-S) with the look in the launch, so each look is measured from the same start. A new task: a
+            // stopped app started into its old task gets that task's first launch again, with the look it had.
+            val extra = if (look == CURRENT) "" else " --es $LENS_LOOK_EXTRA $look"
+            shell("am start -S -W --activity-clear-task -n $TARGET_PACKAGE/$ACTIVITY$extra")
+            waitFor(By.res(PICKER_CHIP_TAG), "Tuner screen")
+            val pid = pidOfApp()
+            val renderTid = renderThreadOf(pid)
+            log("$look: pid=$pid renderThread=$renderTid")
+            setAnyNote(true)
             SystemClock.sleep(SETTLE_MS)
             repeat(runs) { run -> rows += measure(look, run + 1, pid, renderTid).also { log(it.row()) } }
         }
@@ -183,25 +146,37 @@ class MeterFramesBenchmark {
         dir?.let { File(it.apply { mkdirs() }, "meter-frames.tsv").writeText(out.toString()) }
     }
 
-    private fun openSettings() {
-        click(waitFor(By.res(SETTINGS_TAB_TAG), "Settings tab"))
-        check(device.wait(Until.gone(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
-    }
-
-    /** Finds [selector] in the settings, scrolling up and then down to it (settings keep their scroll place). */
-    private fun findInSettings(selector: BySelector): UiObject2 {
-        device.wait(Until.findObject(selector), SHORT_WAIT_MS)?.let { return it }
-        val list = waitFor(By.scrollable(true), "Settings list")
-        list.scrollUntil(Direction.UP, Until.findObject(selector))?.let { return it }
-        return list.scrollUntil(Direction.DOWN, Until.findObject(selector)) ?: error("No $selector in settings")
-    }
-
     private fun waitFor(selector: BySelector, what: String): UiObject2 =
         device.wait(Until.findObject(selector), TIMEOUT_MS) ?: error("$what didn't appear")
 
     private fun click(node: UiObject2) {
         node.click()
         SystemClock.sleep(TAP_SETTLE_MS)
+    }
+
+    /**
+     * Turns the picker sheet's Any note switch (chromatic mode) [on] or off: the chip opens the sheet,
+     * a tap on the switch closes it, and Back closes it when the switch is already right. The sheet is a
+     * window of its own, whose parts UI Automator can't find by tag, so the switch is found as its last
+     * row (the lowest checkable item: the instrument pills and the tunings are above it; Compose shows the
+     * row as a checkable View, not an android.widget.Switch). A tap while the opening screen still covers
+     * the tuner is lost: it taps again.
+     */
+    private fun setAnyNote(on: Boolean) {
+        var switch: UiObject2? = null
+        repeat(TAP_TRIES) {
+            if (switch == null) {
+                device.findObject(By.res(PICKER_CHIP_TAG))?.let(::click)
+                switch = device.wait(Until.findObjects(By.checkable(true)), SETTLE_MS)
+                    ?.takeIf { it.size > 1 }
+                    ?.maxByOrNull { it.visibleBounds.bottom }
+            }
+        }
+        val found = switch ?: error("The picker sheet's Any note switch didn't appear")
+        if (found.isChecked != on) click(found) else device.pressBack()
+        // In Any note the tuner screen has nothing checkable (no pegs): the sheet's rows going means it closed.
+        check(device.wait(Until.gone(By.checkable(true)), TIMEOUT_MS)) { "The picker sheet didn't close" }
+        SystemClock.sleep(SETTLE_MS)
     }
 
     private fun shell(command: String): String = device.executeShellCommand(command)
@@ -243,25 +218,22 @@ class MeterFramesBenchmark {
     private companion object {
         const val TAG = "MeterFrames"
         const val ACTIVITY = "io.github.klaboukes.twangle.app.MainActivity"
-        const val SETTINGS_TAB_TAG = "nav_settings"
-        const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
-        const val MODE_GUITAR_TAG = "tuner_mode_auto"
-        const val CARD_TAG_PREFIX = "meter_look_card_"
+        const val PICKER_CHIP_TAG = "tuner_picker_chip"
         const val CURRENT = "CURRENT"
-        const val PITCH_TRAIL = "PITCH_TRAIL"
-        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:POINTERS:LOUPE:ARROWS:LIGHT_BARS:$PITCH_TRAIL"
 
-        const val MORE_TOOLS_TAG = "tuner_more_tools"
-        const val PITCH_TRAIL_TOOL_TAG = "tuner_tool_pitch_trail"
-        const val TRAIL_PANEL_TAG = "tuner_trail_panel"
+        /** The meter's looks (`LensLook`'s names), measured in this order by default. */
+        val LENS_LOOKS = listOf("CLASSIC", "LIGHT_ARC", "STROBE")
+        val ALL_LOOKS = LENS_LOOKS.joinToString(":")
+        val KNOWN_LOOKS = LENS_LOOKS.toSet() + CURRENT
+
+        /** The launch extra the frame-time build takes the lens's look from (`MainActivity.EXTRA_LENS_LOOK`). */
+        const val LENS_LOOK_EXTRA = "lensLook"
+
         const val SUMMARY_HEADER = "look\tfps\tjanky\tdeadlineMissed\tworst p50/p90/p95/p99 ms\tmain%\tmainMs/frame\trender%\tapp%"
 
         /** The gfxinfo lines that say why frames were late ("Number Slow UI thread: 2", GPU percentiles). */
         val JANK_CAUSE: Pattern = Pattern.compile("^\\s*(Number [A-Z].*|.*gpu percentile.*): ")
         const val JANK_CAUSE_LINES = 16
-
-        /** The display choice "Numbers: how many cents off", in English or Dutch (the meter on its own). */
-        val NUMBERS_DISPLAY: Pattern = Pattern.compile("(Numbers|Getallen): .*")
 
         const val RUNS = 3
         const val WINDOW_SECONDS = 7
@@ -269,7 +241,6 @@ class MeterFramesBenchmark {
         const val TAP_SETTLE_MS = 700L
         const val TAP_TRIES = 3
         const val TIMEOUT_MS = 10_000L
-        const val SHORT_WAIT_MS = 1_000L
         const val IDLE_TIMEOUT_MS = 100L
 
         /** /proc reports CPU time in clock ticks of 10 ms (USER_HZ = 100 on Android). */

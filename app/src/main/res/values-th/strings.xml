@@ -1,5 +1,5 @@
 <resources>
-    <string name="nav_tuner">จูนเนอร์</string>
+    <string name="nav_tuner">จูน</string>
     <string name="nav_metronome">เมโทรนอม</string>
     <string name="nav_practice">ฝึกซ้อม</string>
     <string name="nav_settings">การตั้งค่า</string>

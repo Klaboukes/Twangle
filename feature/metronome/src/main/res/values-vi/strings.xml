@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d phách mỗi phút, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">phách mỗi phút · %1$s</string>
     <string name="metronome_slower">Chậm hơn</string>
     <string name="metronome_faster">Nhanh hơn</string>
-    <string name="metronome_tap">Gõ nhịp</string>
+    <string name="metronome_tap">Gõ theo nhịp</string>
     <string name="metronome_start">Bắt đầu</string>
     <string name="metronome_stop">Dừng</string>
     <string name="metronome_vibrate">Rung theo phách</string>
@@ -21,12 +22,8 @@
     <string name="metronome_subdivision_eighths">Móc đơn</string>
     <string name="metronome_subdivision_triplets">Liên ba</string>
     <string name="metronome_subdivision_sixteenths">Móc kép</string>
-    <string name="metronome_subdivision_eighths_on">Móc đơn giữa các phách</string>
-    <string name="metronome_subdivision_triplets_on">Liên ba giữa các phách</string>
-    <string name="metronome_subdivision_sixteenths_on">Móc kép giữa các phách</string>
     <string name="metronome_options">Tùy chọn</string>
     <string name="metronome_trainer">Luyện tốc độ</string>
-    <string name="metronome_trainer_back">Quay lại tùy chọn</string>
     <string name="metronome_trainer_start">Nhịp độ đầu</string>
     <string name="metronome_trainer_goal">Mục tiêu</string>
     <string name="metronome_trainer_start_slower">Nhịp độ đầu thấp hơn</string>
@@ -61,7 +58,6 @@
     <string name="metronome_listen">Nghe</string>
     <string name="metronome_listen_stop_spoken">Dừng nghe</string>
     <string name="metronome_listening">Đang nghe…</string>
-    <string name="metronome_listen_line_stop">Dừng</string>
     <string name="metronome_heard">Nghe được</string>
     <string name="metronome_use">Dùng</string>
     <string name="metronome_not_now">Để sau</string>

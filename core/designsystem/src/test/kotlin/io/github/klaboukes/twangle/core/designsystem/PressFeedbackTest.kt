@@ -2,13 +2,12 @@ package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.RectangleShape
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
-/** The press effect's timing (docs/design/metronome-listen-preview.html, "Press" and "Tap tempo's press"). */
+/** The press effect's timing (docs/design/1.x/metronome-listen-preview.html, "Press" and "Tap tempo's press"). */
 class PressFeedbackTest {
 
     private fun ms(millis: Int) = millis * 1_000_000L
@@ -53,13 +52,8 @@ class PressFeedbackTest {
     }
 
     @Test
-    fun `each style sinks by its own amount`() {
-        assertEquals(0.03f, sinkFor(VisualStyle.CONTEMPORARY), 0f)
-        assertEquals(0.03f, sinkFor(VisualStyle.SPACE_AGE), 0f)
-        assertEquals(0.03f, sinkFor(VisualStyle.FUTURISTIC), 0f)
-        assertEquals(0.02f, sinkFor(VisualStyle.ANCIENT), 0f)
-        assertEquals(0.02f, sinkFor(VisualStyle.RETRO), 0f)
-        assertEquals(0.015f, sinkFor(VisualStyle.CLASSIC), 0f)
+    fun `a pressed button sinks by 3 %`() {
+        assertEquals(0.03f, PRESS_SINK, 0f)
     }
 
     @Test
@@ -76,12 +70,11 @@ class PressFeedbackTest {
     @Test
     fun `equal press lights are one light, so Compose keeps its node, and a row's is calm`() {
         assertEquals(PressIndication(), PressIndication.Row)
-        assertEquals(PressIndication(CircleShape, face = true), PressIndication(CircleShape, face = true))
-        assertNotEquals(PressIndication(CircleShape, face = true), PressIndication(CircleShape))
+        assertEquals(PressIndication(CircleShape), PressIndication(CircleShape))
+        assertNotEquals(PressIndication(CircleShape), PressIndication())
         assertNotEquals(PressIndication(above = true), PressIndication.Row)
-        // A row lights up flat: no neon frame, no glow, under its text, across its whole bounds.
+        // A row lights up flat, under its text, across its whole bounds.
         with(PressIndication.Row) {
-            assertFalse(face)
             assertFalse(above)
             assertEquals(RectangleShape, shape)
             assertEquals(PressTone.PLAIN, tone)

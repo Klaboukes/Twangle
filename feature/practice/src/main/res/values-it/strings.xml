@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Metronomo</string>
     <string name="practice_tool_chords">Accordi</string>
     <string name="practice_tool_scales">Scale</string>
+    <string name="practice_card_chords">Ogni diteggiatura, anche per mancini</string>
+    <string name="practice_card_scales">Con un bordone per suonarci sopra</string>
+    <string name="practice_card_capo">Quale tasto per la tonalità voluta</string>
+    <string name="practice_card_ear_training">Ascolta una nota e risuonala</string>
+    <string name="practice_last_time">Ultimo utilizzo</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Indietro</string>
     <string name="practice_tool_ear_training">Orecchio musicale</string>
-    <string name="practice_tool_button">Funzione</string>
-    <string name="practice_tool_list">Funzioni</string>
+    <string name="practice_tool_pitch_trail">Traccia dell\'intonazione</string>
+    <string name="practice_card_pitch_trail">Quanto è stabile la tua nota?</string>
     <string name="practice_root">Fondamentale</string>
     <string name="practice_chord_type">Tipo di accordo</string>
     <string name="practice_chord_major">%1$s maggiore</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">Diteggiatura di %1$s, suona %2$s</string>
     <string name="practice_capo_open_chord">aprire in Accordi</string>
     <string name="practice_drone">Bordone</string>
+    <string name="practice_chords_listen">Ascolta</string>
+    <string name="practice_chords_listening">In ascolto</string>
     <string name="practice_drone_play">Suona il bordone</string>
     <string name="practice_drone_stop">Ferma il bordone</string>
     <string name="practice_drone_sound_spoken">Suono del bordone: %1$s</string>

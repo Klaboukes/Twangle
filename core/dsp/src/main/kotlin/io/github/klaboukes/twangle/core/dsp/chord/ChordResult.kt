@@ -35,6 +35,14 @@ class ChordResult {
     val noteStrength = FloatArray(ChordDetector.MAX_NOTES)
 
     /**
+     * Each note's salience as found (the weighted harmonic sum of what was left at its partials, in the
+     * frame's own amplitude units): unlike [noteStrength] it compares one frame with another, so
+     * [io.github.klaboukes.twangle.core.dsp.strum.StrumWatcher] can tell a string just struck from one
+     * still ringing from before.
+     */
+    val noteSalience = FloatArray(ChordDetector.MAX_NOTES)
+
+    /**
      * Strength of each pitch class (index 0 = C): its strongest note's [noteStrength], 0 when no
      * note of it was found.
      */

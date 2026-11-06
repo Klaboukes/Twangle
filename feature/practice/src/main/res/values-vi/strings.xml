@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Máy đếm nhịp</string>
     <string name="practice_tool_chords">Hợp âm</string>
     <string name="practice_tool_scales">Âm giai</string>
+    <string name="practice_card_chords">Mọi thế bấm, cả cho tay trái</string>
+    <string name="practice_card_scales">Có âm nền để đàn theo</string>
+    <string name="practice_card_capo">Kẹp phím nào cho giọng bạn muốn</string>
+    <string name="practice_card_ear_training">Nghe một nốt, đàn lại</string>
+    <string name="practice_last_time">Dùng gần đây</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Quay lại</string>
     <string name="practice_tool_ear_training">Luyện tai</string>
-    <string name="practice_tool_button">Công cụ</string>
-    <string name="practice_tool_list">Các công cụ</string>
+    <string name="practice_tool_pitch_trail">Đường cao độ</string>
+    <string name="practice_card_pitch_trail">Nốt của bạn vững đến đâu?</string>
     <string name="practice_root">Nốt gốc</string>
     <string name="practice_chord_type">Loại hợp âm</string>
     <string name="practice_chord_major">%1$s trưởng</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">Thế bấm %1$s, nghe thành %2$s</string>
     <string name="practice_capo_open_chord">mở trong Hợp âm</string>
     <string name="practice_drone">Âm nền</string>
+    <string name="practice_chords_listen">Nghe</string>
+    <string name="practice_chords_listening">Đang nghe</string>
     <string name="practice_drone_play">Phát âm nền</string>
     <string name="practice_drone_stop">Dừng âm nền</string>
     <string name="practice_drone_sound_spoken">Tiếng âm nền: %1$s</string>

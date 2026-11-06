@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Настройки</string>
     <string name="settings_back">Назад</string>
+    <string name="settings_group_tuning">Строй</string>
 
-    <string name="settings_group_pitch">Высота и ноты</string>
     <string name="settings_group_look">Внешний вид</string>
-    <string name="settings_group_tuner_screen">Экран тюнера</string>
     <string name="settings_group_while_tuning">Во время настройки</string>
-    <string name="settings_group_app">Приложение</string>
 
     <string name="settings_a4_title">Камертон (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Гц</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">Понизить A4 на 1\u00A0Гц</string>
     <string name="settings_a4_raise">Повысить A4 на 1\u00A0Гц</string>
     <string name="settings_a4_reset">Сбросить на %1$d\u00A0Гц</string>
+    <string name="settings_precise_title">Точная настройка</string>
+    <string name="settings_precise_summary">Настроено в пределах 2 центов, а не 5</string>
 
     <string name="settings_notation_title">Названия нот</string>
     <string name="settings_notation_sharps">Диезы: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Немецкие: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Точность настройки</string>
-    <string name="settings_in_tune_precision_relaxed">Нестрого: до 5 центов</string>
-    <string name="settings_in_tune_precision_precise">Строго: до 2 центов</string>
 
-    <string name="settings_style_title">Стиль</string>
     <string name="settings_theme_title">Светлая или тёмная тема</string>
-    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_theme_system">Как на телефоне</string>
     <string name="settings_theme_light">Светлая</string>
     <string name="settings_theme_dark">Тёмная</string>
     <string name="settings_dynamic_color_title">Цвета обоев</string>
     <string name="settings_dynamic_color_summary">Брать цвета из обоев</string>
+    <string name="settings_meter_title">Шкала</string>
+    <string name="settings_meter_classic">Классический</string>
+    <string name="settings_meter_light_arc">Световая дуга</string>
+    <string name="settings_meter_strobe">Строб</string>
 
-    <string name="settings_meter_look_title">Индикатор</string>
-    <string name="settings_meter_look_classic">Классический</string>
-    <string name="settings_meter_look_light_arc">Световая дуга</string>
-    <string name="settings_meter_look_pointers">Указатели</string>
-    <string name="settings_meter_look_loupe">Лупа</string>
-    <string name="settings_meter_look_arrows">Стрелки</string>
-    <string name="settings_meter_look_light_bars">Световые полосы</string>
-    <string name="settings_in_tune_effect_title">Эффект «настроено»</string>
-    <string name="settings_in_tune_effect_summary">Насколько ярко светится индикатор, когда нота настроена</string>
-    <string name="settings_in_tune_effect_calm">Спокойный</string>
-    <string name="settings_in_tune_effect_bold">Яркий</string>
-
-    <string name="settings_display_title">Под нотой</string>
-    <string name="settings_display_numbers">Числа: отклонение в центах</string>
-    <string name="settings_display_wave">Волна: движущаяся картинка в выбранном виде</string>
-    <string name="settings_wave_look_title">Вид волны</string>
-    <string name="settings_wave_look_strobe">Строб</string>
-    <string name="settings_wave_look_ribbon">Лента</string>
-    <string name="settings_wave_look_dots">Точки</string>
-    <string name="settings_wave_look_fireflies">Светлячки</string>
-    <string name="settings_wave_look_loop">Петля</string>
-    <string name="settings_wave_look_ripples">Рябь</string>
-    <string name="settings_focus_mode_title">Режим фокуса</string>
-    <string name="settings_focus_mode_summary">Поворачивает Twangle горизонтально с одним большим индикатором, который легко читать издалека</string>
     <string name="settings_left_handed_title">Для левши</string>
     <string name="settings_left_handed_summary">Аккордовые схемы и гриф в гаммах нарисованы для гитары, которую держат наоборот</string>
+    <string name="settings_under_meter_title">Под шкалой</string>
+    <string name="settings_under_meter_words">Слова: Подтяни или Ослабь</string>
+    <string name="settings_under_meter_cents">Центы: −12</string>
 
     <string name="settings_keep_screen_on_title">Не выключать экран</string>
     <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>
     <string name="settings_vibrate_in_tune_title">Вибрация, когда настроено</string>
     <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
-    <string name="settings_show_tune_hint_title">Подсказки тюнера</string>
-    <string name="settings_show_tune_hint_summary">Подсказывает, подтянуть или ослабить, и отмечает каждую струну, когда она настроена</string>
+    <string name="settings_string_tick_off_title">Отмечать настроенные струны</string>
+    <string name="settings_string_tick_off_summary">Галочка на каждой струне, когда она настроена, и «Настроено. Играй.», когда все</string>
     <string name="settings_show_signal_bars_title">Индикатор сигнала</string>
-    <string name="settings_show_signal_bars_summary">Для любопытных: полоски у ноты показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
+    <string name="settings_show_signal_bars_summary">Для любопытных: полоски над струнами показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
 
     <string name="settings_language_title">Язык</string>
     <string name="settings_language_phone">Язык телефона</string>
     <string name="settings_language_cancel">Отмена</string>
-    <string name="settings_show_tour_title">Экскурсия</string>
-    <string name="settings_show_tour_summary">Короткий обзор тюнера</string>
     <string name="about_title">О Twangle</string>
     <string name="settings_about_link_summary">Версия %1$s, помощь, конфиденциальность и лицензии</string>
+    <string name="settings_about_name_title">Название</string>
+    <string name="settings_about_name_meaning">Twang по-английски — звонкий звук защипнутой струны.</string>
     <string name="settings_about_version">Версия %1$s</string>
     <string name="settings_about_free_title">Бесплатно навсегда</string>
     <string name="settings_about_free_summary">Без рекламы, без аккаунта, без покупок в приложении и без слежки. Ни сейчас, ни потом.</string>

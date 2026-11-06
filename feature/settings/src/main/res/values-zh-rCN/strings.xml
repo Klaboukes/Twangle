@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">设置</string>
     <string name="settings_back">返回</string>
+    <string name="settings_group_tuning">调音</string>
 
-    <string name="settings_group_pitch">音高与音名</string>
     <string name="settings_group_look">外观</string>
-    <string name="settings_group_tuner_screen">调音器界面</string>
     <string name="settings_group_while_tuning">调音时</string>
-    <string name="settings_group_app">应用</string>
 
     <string name="settings_a4_title">标准音高 (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">A4 降低 1\u00A0Hz</string>
     <string name="settings_a4_raise">A4 升高 1\u00A0Hz</string>
     <string name="settings_a4_reset">重置为 %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">精确调音</string>
+    <string name="settings_precise_summary">2 音分内即算调准，而非 5 音分</string>
 
     <string name="settings_notation_title">音名</string>
     <string name="settings_notation_sharps">升号：C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">德式：C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">音准精度</string>
-    <string name="settings_in_tune_precision_relaxed">宽松：5 音分以内</string>
-    <string name="settings_in_tune_precision_precise">精确：2 音分以内</string>
 
-    <string name="settings_style_title">风格</string>
     <string name="settings_theme_title">浅色或深色</string>
-    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_system">跟随手机</string>
     <string name="settings_theme_light">浅色</string>
     <string name="settings_theme_dark">深色</string>
     <string name="settings_dynamic_color_title">壁纸配色</string>
     <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
+    <string name="settings_meter_title">仪表</string>
+    <string name="settings_meter_classic">经典</string>
+    <string name="settings_meter_light_arc">光弧</string>
+    <string name="settings_meter_strobe">频闪</string>
 
-    <string name="settings_meter_look_title">表盘</string>
-    <string name="settings_meter_look_classic">经典</string>
-    <string name="settings_meter_look_light_arc">光弧</string>
-    <string name="settings_meter_look_pointers">双指针</string>
-    <string name="settings_meter_look_loupe">放大镜</string>
-    <string name="settings_meter_look_arrows">箭头</string>
-    <string name="settings_meter_look_light_bars">光柱</string>
-    <string name="settings_in_tune_effect_title">调准效果</string>
-    <string name="settings_in_tune_effect_summary">音准时表盘发光的强弱</string>
-    <string name="settings_in_tune_effect_calm">柔和</string>
-    <string name="settings_in_tune_effect_bold">醒目</string>
-
-    <string name="settings_display_title">音名下方</string>
-    <string name="settings_display_numbers">数字：偏差多少音分</string>
-    <string name="settings_display_wave">波形：动态画面，样式由你选</string>
-    <string name="settings_wave_look_title">波形样式</string>
-    <string name="settings_wave_look_strobe">频闪</string>
-    <string name="settings_wave_look_ribbon">丝带</string>
-    <string name="settings_wave_look_dots">圆点</string>
-    <string name="settings_wave_look_fireflies">萤火虫</string>
-    <string name="settings_wave_look_loop">环形</string>
-    <string name="settings_wave_look_ripples">涟漪</string>
-    <string name="settings_focus_mode_title">专注模式</string>
-    <string name="settings_focus_mode_summary">将 Twangle 横过来，只显示一个大表盘，远处也能看清</string>
     <string name="settings_left_handed_title">左手持琴</string>
     <string name="settings_left_handed_summary">和弦图和音阶指板按反向持琴的吉他绘制</string>
+    <string name="settings_under_meter_title">仪表下方</string>
+    <string name="settings_under_meter_words">文字：调紧或调松</string>
+    <string name="settings_under_meter_cents">音分：−12</string>
 
     <string name="settings_keep_screen_on_title">屏幕常亮</string>
     <string name="settings_keep_screen_on_summary">调音时屏幕保持常亮</string>
     <string name="settings_vibrate_in_tune_title">调准时振动</string>
     <string name="settings_vibrate_in_tune_summary">音准到位时短促振动一下</string>
-    <string name="settings_show_tune_hint_title">显示调音提示</string>
-    <string name="settings_show_tune_hint_summary">提示该调高还是调低，弦调准后打上对勾</string>
+    <string name="settings_string_tick_off_title">为调准的弦打勾</string>
+    <string name="settings_string_tick_off_summary">每根弦调准后打勾，全部调准时显示“已调准。开弹吧。”</string>
     <string name="settings_show_signal_bars_title">显示信号条</string>
-    <string name="settings_show_signal_bars_summary">给好奇的你：音名旁的小信号条显示调音器听得有多清楚。点按可查看数值</string>
+    <string name="settings_show_signal_bars_summary">给好奇的你：琴弦上方的小信号条显示调音器听得有多清楚。点按可查看数值</string>
 
     <string name="settings_language_title">语言</string>
     <string name="settings_language_phone">手机语言</string>
     <string name="settings_language_cancel">取消</string>
-    <string name="settings_show_tour_title">带我看看</string>
-    <string name="settings_show_tour_summary">调音器简短导览</string>
     <string name="about_title">关于 Twangle</string>
     <string name="settings_about_link_summary">版本 %1$s、帮助、隐私和许可证</string>
+    <string name="settings_about_name_title">名称由来</string>
+    <string name="settings_about_name_meaning">Twang 是英语，指拨弦时琴弦发出的鸣响。</string>
     <string name="settings_about_version">版本 %1$s</string>
     <string name="settings_about_free_title">永久免费</string>
     <string name="settings_about_free_summary">无广告、无需账号、无应用内购买、无跟踪。现在没有，以后也不会有。</string>

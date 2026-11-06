@@ -6,7 +6,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
@@ -20,7 +19,7 @@ class WidgetStateTest {
     private val strings = mapOf(
         AppR.string.widget_title to "%1\$s · %2\$s",
         TunerR.string.tuner_spoken_picker to "%1\$s, %2\$s",
-        TunerR.string.tuner_mode_chromatic to "Chromatic",
+        TunerR.string.tuner_any_note to "Any note",
         TunerR.string.instrument_guitar to "Guitar",
         TunerR.string.instrument_bass_4 to "Bass (4)",
         TunerR.string.tuning_standard to "Standard",
@@ -70,10 +69,10 @@ class WidgetStateTest {
     }
 
     @Test
-    fun chromaticModeSaysChromatic() {
+    fun chromaticModeSaysAnyNote() {
         val state = WidgetState.from(AppSettings(mode = TunerMode.CHROMATIC))
-        assertEquals("Chromatic", state.title(string))
-        assertEquals("Chromatic", state.spoken(string))
+        assertEquals("Any note", state.title(string))
+        assertEquals("Any note", state.spoken(string))
     }
 
     @Test
@@ -81,7 +80,7 @@ class WidgetStateTest {
         val base = WidgetState.from(AppSettings())
         // A4, the meter's look and the metronome don't change the widget.
         assertEquals(base, WidgetState.from(AppSettings(a4Hz = 442f, metronomeBpm = 90)))
-        assertNotEquals(base, WidgetState.from(AppSettings(style = VisualStyle.RETRO)))
+        assertNotEquals(base, WidgetState.from(AppSettings(dynamicColor = true)))
         assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.DROP_D)))
         assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.STANDARD.lowered(2))))
     }

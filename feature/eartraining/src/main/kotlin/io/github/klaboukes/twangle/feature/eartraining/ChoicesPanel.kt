@@ -1,63 +1,30 @@
 package io.github.klaboukes.twangle.feature.eartraining
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.SheetUnderNavigationBar
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_FACE_GAP
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
+import io.github.klaboukes.twangle.core.designsystem.PanelLabel
+import io.github.klaboukes.twangle.core.designsystem.PickGrid
+import io.github.klaboukes.twangle.core.designsystem.SwitchRow
 import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.appLocale
-import io.github.klaboukes.twangle.core.designsystem.faceFill
-import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.localDigits
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
@@ -65,25 +32,29 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * "What is asked" (the owner's pick A: questions start at once, and this panel opens any time): the
- * choices of the [exercise] shown, in a panel from the bottom as the instrument and tuning panel. A
+ * choices of the exercise shown, while [open], in the app's floating panel ([FloatingPanel], as the metronome's
+ * options) under the ⋯ that opened it ([anchor]), their ends in line, [width] wide (the top row's); it scrolls where
+ * the window is short. Until Phase 77 a sheet from the bottom, as the instrument and tuning sheet. A
  * pick takes effect at once ([onNoteChoice]: a question the new choice doesn't offer gives way to a new
- * one) and the panel stays open for more; a tap beside it, a swipe down or Back closes it ([onDismiss]).
+ * one) and the panel stays open for more; a tap beside it or Back closes it ([onDismiss]). TalkBack hears it by
+ * its name, "What is asked"; it shows no title of its own, as the metronome's.
  *
  * Play it back picks its notes (the open strings, the natural notes to the 5th fret, or every note to
  * the 12th, on the instrument and tuning picked), how many in a row (1 to 4, [onNotesInRow]) and whether
  * any octave counts ([onNoteMatch]), as the mock-up's panel. Intervals picks its intervals, minor
- * second to octave, from twelve chips ([onToggleInterval]) and how they are played, up, down or
+ * second to octave, from twelve buttons ([onToggleInterval]) and how they are played, up, down or
  * together ([onToggleDirection]): a tap adds or takes away, and the last one picked stays. Chord type
  * picks its types from the Chords tool's twenty, in its order ([onToggleChordType]), the same way.
  * Everything picked here is saved ([EarTrainingViewModel]).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ChoicesPanel(
+    open: Boolean,
+    anchor: Rect?,
+    width: Dp,
     state: EarTrainingState,
     onNoteChoice: (NoteChoice) -> Unit,
     onNotesInRow: (Int) -> Unit,
@@ -94,40 +65,20 @@ internal fun ChoicesPanel(
     onDismiss: () -> Unit,
 ) {
     val exercise = state.exercise
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scheme = MaterialTheme.colorScheme
-    // The whole panel, with its handle and the room for the navigation bar under it.
-    val density = LocalDensity.current
-    val window = LocalWindowInfo.current.containerSize.height
-    val navigationBar = WindowInsets.navigationBars.getBottom(density)
-    val maxHeight = with(density) { (window * PANEL_MAX_HEIGHT - navigationBar).toDp() - HANDLE_HEIGHT }
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = panelShape(MaterialTheme.styleTokens.style),
-        containerColor = scheme.surface,
-        contentColor = scheme.onSurface,
-        modifier = Modifier.testTag(EarTrainingTestTags.CHOICES_PANEL),
+    FloatingPanel(
+        open = open,
+        anchor = anchor,
+        onDismiss = onDismiss,
+        title = stringResource(R.string.ear_choices),
+        width = width,
+        tag = EarTrainingTestTags.CHOICES_PANEL,
     ) {
-        // The sheet's colour under the gesture bar too, no white strip there.
-        SheetUnderNavigationBar()
-        Column(
-            Modifier
-                .heightIn(max = maxHeight)
-                .verticalScroll(rememberScrollState())
-                .padding(start = LIST_PADDING, end = LIST_PADDING, bottom = 22.dp),
-        ) {
-            Text(
-                stringResource(R.string.ear_choices),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .padding(start = PANEL_PADDING - LIST_PADDING, end = PANEL_PADDING - LIST_PADDING, top = 4.dp, bottom = 6.dp)
-                    .semantics { heading() },
-            )
+        Column(Modifier.padding(bottom = 4.dp)) {
             when (exercise) {
                 Exercise.PLAY_IT_BACK -> {
-                    GroupHeading(stringResource(R.string.ear_notes))
-                    Column(Modifier.selectableGroup()) {
+                    val notes = stringResource(R.string.ear_notes)
+                    GroupLabel(notes, first = true)
+                    Column(Modifier.selectableGroup().semantics { contentDescription = notes }) {
                         for (choice in NoteChoice.entries) {
                             ChoiceRow(
                                 stringResource(choice.label),
@@ -138,13 +89,15 @@ internal fun ChoicesPanel(
                         }
                     }
                     // A count, so separate faces as the metronome's values, not a switch (ui.md, *Shared controls*).
-                    GroupHeading(stringResource(R.string.ear_notes_in_row))
+                    val inRow = stringResource(R.string.ear_notes_in_row)
+                    GroupLabel(inRow)
                     val locale = appLocale()
                     Row(
                         Modifier
-                            .padding(start = PANEL_PADDING - LIST_PADDING, top = 2.dp)
+                            .padding(top = 2.dp)
                             .fillMaxWidth()
-                            .selectableGroup(),
+                            .selectableGroup()
+                            .semantics { contentDescription = inRow },
                         horizontalArrangement = Arrangement.spacedBy(CHOICE_FACE_GAP),
                     ) {
                         for (count in NOTES_IN_ROW) {
@@ -161,37 +114,46 @@ internal fun ChoicesPanel(
                     SwitchRow(
                         text = stringResource(R.string.ear_any_octave),
                         checked = state.noteMatch == NoteMatch.ANY_OCTAVE,
-                        tag = EarTrainingTestTags.ANY_OCTAVE,
-                    ) { onNoteMatch(if (it) NoteMatch.ANY_OCTAVE else NoteMatch.EXACT) }
+                        onCheckedChange = { onNoteMatch(if (it) NoteMatch.ANY_OCTAVE else NoteMatch.EXACT) },
+                        modifier = Modifier.padding(top = GROUP_GAP).testTag(EarTrainingTestTags.ANY_OCTAVE),
+                    )
                 }
                 Exercise.INTERVALS -> {
-                    GroupHeading(stringResource(R.string.ear_exercise_intervals))
-                    ChipGrid(Interval.entries) { interval ->
-                        Chip(
-                            text = AnnotatedString(stringResource(interval.sign)),
-                            spoken = stringResource(interval.label),
-                            on = interval in state.intervals,
-                            tag = EarTrainingTestTags.askInterval(interval),
-                        ) { onToggleInterval(interval) }
-                    }
-                    GroupHeading(stringResource(R.string.ear_played))
-                    ChipGrid(IntervalDirection.entries) { direction ->
-                        val name = stringResource(direction.label)
-                        Chip(text = AnnotatedString(name), spoken = name, on = direction in state.directions, tag = EarTrainingTestTags.direction(direction)) {
-                            onToggleDirection(direction)
-                        }
-                    }
+                    val intervals = stringResource(R.string.ear_exercise_intervals)
+                    GroupLabel(intervals, first = true)
+                    ToggleGrid(
+                        options = Interval.entries,
+                        on = { it in state.intervals },
+                        onToggle = onToggleInterval,
+                        groupLabel = intervals,
+                        label = { stringResource(it.sign) },
+                        spoken = { stringResource(it.label) },
+                        tag = EarTrainingTestTags::askInterval,
+                    )
+                    val played = stringResource(R.string.ear_played)
+                    GroupLabel(played)
+                    ToggleGrid(
+                        options = IntervalDirection.entries,
+                        on = { it in state.directions },
+                        onToggle = onToggleDirection,
+                        groupLabel = played,
+                        label = { stringResource(it.label) },
+                        spoken = { stringResource(it.label) },
+                        tag = EarTrainingTestTags::direction,
+                    )
                 }
                 Exercise.CHORD_TYPE -> {
-                    GroupHeading(stringResource(R.string.ear_exercise_chord_type))
-                    ChipGrid(ChordQuality.inPanel) { type ->
-                        Chip(
-                            text = chordSign(type),
-                            spoken = stringResource(type.words),
-                            on = type in state.chordTypes,
-                            tag = EarTrainingTestTags.askChordType(type),
-                        ) { onToggleChordType(type) }
-                    }
+                    val types = stringResource(R.string.ear_exercise_chord_type)
+                    GroupLabel(types, first = true)
+                    ToggleGrid(
+                        options = ChordQuality.inPanel,
+                        on = { it in state.chordTypes },
+                        onToggle = onToggleChordType,
+                        groupLabel = types,
+                        label = { chordSign(it).text },
+                        spoken = { stringResource(it.words) },
+                        tag = EarTrainingTestTags::askChordType,
+                    )
                 }
             }
         }
@@ -206,128 +168,47 @@ private val NoteChoice.label: Int
         NoteChoice.ALL_TO_12TH -> R.string.ear_notes_all
     }
 
-/** A group's heading in the panel, small in the accent (as the mock-up's). */
-@Composable
-private fun GroupHeading(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .padding(start = PANEL_PADDING - LIST_PADDING, top = 10.dp, bottom = 2.dp)
-            .semantics { heading() },
-    )
-}
-
-/** A choice that is on or off: its [text] with a switch at the end; the whole row toggles it (as the drone's Lower). */
-@Composable
-private fun SwitchRow(text: String, checked: Boolean, tag: String, onCheckedChange: (Boolean) -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    Row(
-        Modifier
-            .testTag(tag)
-            .padding(top = 10.dp)
-            .fillMaxWidth()
-            .heightIn(min = ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium)
-            .toggleable(value = checked, interactionSource = source, indication = null, role = Role.Switch) {
-                source.pressFlash()
-                onCheckedChange(it)
-            }
-            .padding(start = 12.dp, end = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f).padding(vertical = 6.dp),
-        )
-        Spacer(Modifier.width(12.dp))
-        Switch(checked = checked, onCheckedChange = null)
-    }
-}
-
-/** [items] as chips three to a row, every chip the same width and each row as high as its tallest. */
-@Composable
-private fun <T> ChipGrid(items: List<T>, chip: @Composable (T) -> Unit) {
-    Column(
-        Modifier.padding(start = PANEL_PADDING - LIST_PADDING, top = 6.dp).fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(CHIP_GAP),
-    ) {
-        for (row in items.chunked(CHIPS_PER_ROW)) {
-            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(CHIP_GAP)) {
-                for (item in row) Box(Modifier.weight(1f).fillMaxHeight()) { chip(item) }
-                repeat(CHIPS_PER_ROW - row.size) { Spacer(Modifier.weight(1f)) }
-            }
-        }
-    }
-}
-
 /**
- * One choice that is [on] or off among several (an interval, up, down or together), as the mock-up's
- * chips: picked ones with the accent's 2 dp outline on the container colour, the others muted on the
- * see-through face. Its [text] on one line, set smaller where it is long. TalkBack hears a checkbox
- * named [spoken].
+ * A group's name in the panel: the shared small label ([PanelLabel]; until Phase 77 a heading of its own in the accent),
+ * [GROUP_GAP] under the group above it, or at the panel's top where it is the [first], as the metronome's.
  */
 @Composable
-private fun Chip(text: AnnotatedString, spoken: String, on: Boolean, tag: String, onClick: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    val scheme = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.small
-    val style = MaterialTheme.typography.labelLarge
-    Box(
-        Modifier
-            .testTag(tag)
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .heightIn(min = ROW_HEIGHT)
-            .pressFeedback(
-                source,
-                shape,
-                fill = if (on) scheme.primaryContainer else faceFill(),
-                outline = if (on) BorderStroke(2.dp, scheme.primary) else faceOutline(),
-            )
-            .toggleable(value = on, interactionSource = source, indication = null, role = Role.Checkbox) {
-                source.pressFlash()
-                onClick()
-            }
-            .semantics { contentDescription = spoken }
-            .padding(horizontal = 6.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text,
-            style = style.copy(fontWeight = FontWeight.Medium),
-            color = if (on) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
-            maxLines = 1,
-            // Never wrapped, so the auto-size sees a text too wide (IntervalsPart's AnswerButton says why).
-            softWrap = false,
-            autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = style.fontSize, stepSize = 0.5.sp),
-        )
-    }
-}
+private fun GroupLabel(text: String, first: Boolean = false) =
+    PanelLabel(text, Modifier.padding(top = if (first) 0.dp else GROUP_GAP - 4.dp))
+
+/**
+ * Choices that are [on] or off among several (an interval, up, down or together, a chord type): the shared pick
+ * buttons as checkboxes ([PickGrid] with toggles, until Phase 77 chips of their own), three to a row, every one the
+ * same width. A tap adds or takes away ([onToggle]); TalkBack hears a group named [groupLabel], each a checkbox named
+ * by [spoken].
+ */
+@Composable
+private fun <T> ToggleGrid(
+    options: List<T>,
+    on: (T) -> Boolean,
+    onToggle: (T) -> Unit,
+    groupLabel: String,
+    label: @Composable (T) -> String,
+    spoken: @Composable (T) -> String,
+    tag: (T) -> String,
+) = PickGrid(
+    options = options,
+    picked = on,
+    onPick = onToggle,
+    perRow = CHOICES_PER_ROW,
+    groupLabel = groupLabel,
+    label = label,
+    spoken = spoken,
+    tag = tag,
+    modifier = Modifier.padding(top = 2.dp),
+    toggles = true,
+)
 
 /** Play it back's choice of notes in a row: one to four. */
 private val NOTES_IN_ROW = (1..NoteQuestions.MAX_LENGTH).toList()
 
-/** The panel's top corners, as the instrument and tuning panel's: the style's card corners, at least 14 dp. */
-private fun panelShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.FUTURISTIC -> CutCornerShape(topStart = 14.dp, topEnd = 14.dp)
-    VisualStyle.RETRO -> RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
-    VisualStyle.SPACE_AGE -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-    else -> RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)
-}
+/** Above each group's name, and above Any octave. */
+private val GROUP_GAP = 10.dp
 
-/** The panel is at most this share of the window's height, so the question shows above it. */
-private const val PANEL_MAX_HEIGHT = 0.74f
-
-/** Material's drag handle at the panel's top: 4 dp with 22 dp above and below. */
-private val HANDLE_HEIGHT = 48.dp
-private val PANEL_PADDING = 20.dp
-private val LIST_PADDING = 12.dp
-private val ROW_HEIGHT = 48.dp
-
-/** The chips, three to a row (twelve intervals in four rows, up · down · together in one, twenty chord types in seven), this far apart. */
-private const val CHIPS_PER_ROW = 3
-private val CHIP_GAP = 6.dp
+/** The toggles three to a row: twelve intervals in four rows, up · down · together in one, twenty chord types in seven. */
+private const val CHOICES_PER_ROW = 3

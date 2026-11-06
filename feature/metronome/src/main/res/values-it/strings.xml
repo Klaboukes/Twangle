@@ -7,9 +7,10 @@
         <item quantity="many">%1$d battiti al minuto, %2$s</item>
         <item quantity="other">%1$d battiti al minuto, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">battiti al minuto · %1$s</string>
     <string name="metronome_slower">Più lento</string>
     <string name="metronome_faster">Più veloce</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Batti il tempo</string>
     <string name="metronome_start">Avvia</string>
     <string name="metronome_stop">Ferma</string>
     <string name="metronome_vibrate">Vibra a tempo</string>
@@ -23,12 +24,8 @@
     <string name="metronome_subdivision_eighths">Ottavi</string>
     <string name="metronome_subdivision_triplets">Terzine</string>
     <string name="metronome_subdivision_sixteenths">Sedicesimi</string>
-    <string name="metronome_subdivision_eighths_on">Ottavi tra i battiti</string>
-    <string name="metronome_subdivision_triplets_on">Terzine tra i battiti</string>
-    <string name="metronome_subdivision_sixteenths_on">Sedicesimi tra i battiti</string>
     <string name="metronome_options">Opzioni</string>
     <string name="metronome_trainer">Allenatore di tempo</string>
-    <string name="metronome_trainer_back">Torna alle opzioni</string>
     <string name="metronome_trainer_start">Tempo iniziale</string>
     <string name="metronome_trainer_goal">Obiettivo</string>
     <string name="metronome_trainer_start_slower">Tempo iniziale più basso</string>
@@ -68,7 +65,6 @@
     <string name="metronome_listen">Ascolta</string>
     <string name="metronome_listen_stop_spoken">Smetti di ascoltare</string>
     <string name="metronome_listening">In ascolto…</string>
-    <string name="metronome_listen_line_stop">Ferma</string>
     <string name="metronome_heard">Sentito</string>
     <string name="metronome_use">Usa</string>
     <string name="metronome_not_now">Non ora</string>

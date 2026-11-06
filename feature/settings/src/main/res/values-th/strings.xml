@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">การตั้งค่า</string>
     <string name="settings_back">กลับ</string>
+    <string name="settings_group_tuning">การจูน</string>
 
-    <string name="settings_group_pitch">ระดับเสียงและโน้ต</string>
     <string name="settings_group_look">รูปลักษณ์</string>
-    <string name="settings_group_tuner_screen">หน้าจอจูนเนอร์</string>
     <string name="settings_group_while_tuning">ขณะจูน</string>
-    <string name="settings_group_app">แอป</string>
 
     <string name="settings_a4_title">ระดับเสียงอ้างอิง (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">ลด A4 ลง 1 Hz</string>
     <string name="settings_a4_raise">เพิ่ม A4 ขึ้น 1 Hz</string>
     <string name="settings_a4_reset">รีเซ็ตเป็น %1$d Hz</string>
+    <string name="settings_precise_title">จูนแบบละเอียด</string>
+    <string name="settings_precise_summary">ตรงเสียงภายใน 2 เซนต์ แทน 5 เซนต์</string>
 
     <string name="settings_notation_title">ชื่อโน้ต</string>
     <string name="settings_notation_sharps">ชาร์ป: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">แบบเยอรมัน: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">ความแม่นยำของการตรงเสียง</string>
-    <string name="settings_in_tune_precision_relaxed">ยืดหยุ่น: ภายใน 5 เซนต์</string>
-    <string name="settings_in_tune_precision_precise">แม่นยำ: ภายใน 2 เซนต์</string>
 
-    <string name="settings_style_title">สไตล์</string>
     <string name="settings_theme_title">สว่างหรือมืด</string>
-    <string name="settings_theme_system">ตามค่าเริ่มต้นของระบบ</string>
+    <string name="settings_theme_system">ตามโทรศัพท์</string>
     <string name="settings_theme_light">สว่าง</string>
     <string name="settings_theme_dark">มืด</string>
     <string name="settings_dynamic_color_title">สีจากวอลเปเปอร์</string>
     <string name="settings_dynamic_color_summary">ใช้สีจากวอลเปเปอร์ของคุณ</string>
+    <string name="settings_meter_title">มาตรวัด</string>
+    <string name="settings_meter_classic">คลาสสิก</string>
+    <string name="settings_meter_light_arc">ไฟโค้ง</string>
+    <string name="settings_meter_strobe">สโตรบ</string>
 
-    <string name="settings_meter_look_title">มาตรวัด</string>
-    <string name="settings_meter_look_classic">คลาสสิก</string>
-    <string name="settings_meter_look_light_arc">โค้งไฟ</string>
-    <string name="settings_meter_look_pointers">ตัวชี้</string>
-    <string name="settings_meter_look_loupe">แว่นขยาย</string>
-    <string name="settings_meter_look_arrows">ลูกศร</string>
-    <string name="settings_meter_look_light_bars">แถบไฟ</string>
-    <string name="settings_in_tune_effect_title">เอฟเฟกต์เมื่อตรงเสียง</string>
-    <string name="settings_in_tune_effect_summary">มาตรวัดเรืองแสงแรงแค่ไหนเมื่อโน้ตตรงเสียง</string>
-    <string name="settings_in_tune_effect_calm">นุ่มนวล</string>
-    <string name="settings_in_tune_effect_bold">เด่นชัด</string>
-
-    <string name="settings_display_title">ใต้โน้ต</string>
-    <string name="settings_display_numbers">ตัวเลข: เพี้ยนกี่เซนต์</string>
-    <string name="settings_display_wave">คลื่น: ภาพเคลื่อนไหวในแบบที่คุณเลือก</string>
-    <string name="settings_wave_look_title">แบบคลื่น</string>
-    <string name="settings_wave_look_strobe">สโตรบ</string>
-    <string name="settings_wave_look_ribbon">ริบบิ้น</string>
-    <string name="settings_wave_look_dots">จุด</string>
-    <string name="settings_wave_look_fireflies">หิ่งห้อย</string>
-    <string name="settings_wave_look_loop">ห่วง</string>
-    <string name="settings_wave_look_ripples">ระลอกน้ำ</string>
-    <string name="settings_focus_mode_title">โหมดโฟกัส</string>
-    <string name="settings_focus_mode_summary">หมุน Twangle เป็นแนวนอนพร้อมมาตรวัดใหญ่หนึ่งอัน อ่านง่ายจากระยะไกล</string>
     <string name="settings_left_handed_title">ถนัดซ้าย</string>
     <string name="settings_left_handed_summary">วาดตารางคอร์ดและคอกีตาร์ของสเกลสำหรับกีตาร์ที่ถือกลับด้าน</string>
+    <string name="settings_under_meter_title">ใต้มาตรวัด</string>
+    <string name="settings_under_meter_words">คำ: จูนขึ้นหรือจูนลง</string>
+    <string name="settings_under_meter_cents">เซนต์: −12</string>
 
     <string name="settings_keep_screen_on_title">เปิดหน้าจอค้างไว้</string>
     <string name="settings_keep_screen_on_summary">หน้าจอเปิดอยู่ตลอดขณะที่คุณจูน</string>
     <string name="settings_vibrate_in_tune_title">สั่นเมื่อตรงเสียง</string>
     <string name="settings_vibrate_in_tune_summary">สั่นสั้นๆ เมื่อโน้ตตรงเสียง</string>
-    <string name="settings_show_tune_hint_title">แสดงตัวช่วยจูน</string>
-    <string name="settings_show_tune_hint_summary">บอกว่าควรจูนขึ้นหรือจูนลง และติ๊กถูกที่แต่ละสายเมื่อตรงเสียงแล้ว</string>
+    <string name="settings_string_tick_off_title">ติ๊กสายที่จูนแล้ว</string>
+    <string name="settings_string_tick_off_summary">ติ๊กที่สายแต่ละสายเมื่อตรงเสียง และขึ้น “ตรงเสียงแล้ว เล่นได้เลย” เมื่อครบทุกสาย</string>
     <string name="settings_show_signal_bars_title">แสดงแถบสัญญาณ</string>
-    <string name="settings_show_signal_bars_summary">สำหรับคนที่อยากรู้: แถบเล็กๆ ข้างโน้ตบอกว่าจูนเนอร์ได้ยินคุณชัดแค่ไหน แตะเพื่อดูตัวเลข</string>
+    <string name="settings_show_signal_bars_summary">สำหรับคนที่อยากรู้: แถบเล็กๆ เหนือสายบอกว่าจูนเนอร์ได้ยินคุณชัดแค่ไหน แตะเพื่อดูตัวเลข</string>
 
     <string name="settings_language_title">ภาษา</string>
     <string name="settings_language_phone">ภาษาของโทรศัพท์</string>
     <string name="settings_language_cancel">ยกเลิก</string>
-    <string name="settings_show_tour_title">แนะนำการใช้งาน</string>
-    <string name="settings_show_tour_summary">พาชมจูนเนอร์แบบสั้นๆ</string>
     <string name="about_title">เกี่ยวกับ Twangle</string>
     <string name="settings_about_link_summary">เวอร์ชัน %1$s ความช่วยเหลือ ความเป็นส่วนตัว และสัญญาอนุญาต</string>
+    <string name="settings_about_name_title">ที่มาของชื่อ</string>
+    <string name="settings_about_name_meaning">Twang เป็นคำภาษาอังกฤษ หมายถึงเสียงกังวานของสายที่ถูกดีด</string>
     <string name="settings_about_version">เวอร์ชัน %1$s</string>
     <string name="settings_about_free_title">ฟรีตลอดไป</string>
     <string name="settings_about_free_summary">ไม่มีโฆษณา ไม่ต้องมีบัญชี ไม่มีการซื้อในแอป และไม่มีการติดตาม ไม่ใช่แค่ตอนนี้ แต่ตลอดไป</string>

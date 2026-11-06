@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akkorder</string>
     <string name="practice_tool_scales">Skalaer</string>
+    <string name="practice_card_chords">Alle grep, også for venstrehendte</string>
+    <string name="practice_card_scales">Med bordun å spille til</string>
+    <string name="practice_card_capo">Hvilket bånd for tonearten din</string>
+    <string name="practice_card_ear_training">Hør en tone, spill den etter</string>
+    <string name="practice_last_time">Sist brukt</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Tilbake</string>
     <string name="practice_tool_ear_training">Gehørtrening</string>
-    <string name="practice_tool_button">Verktøy</string>
-    <string name="practice_tool_list">Verktøy</string>
+    <string name="practice_tool_pitch_trail">Tonespor</string>
+    <string name="practice_card_pitch_trail">Hvor stødig er tonen din?</string>
     <string name="practice_root">Grunntone</string>
     <string name="practice_chord_type">Akkordtype</string>
     <string name="practice_chord_major">%1$s-dur</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">%1$s-grep, klinger %2$s</string>
     <string name="practice_capo_open_chord">åpne i Akkorder</string>
     <string name="practice_drone">Bordun</string>
+    <string name="practice_chords_listen">Lytt</string>
+    <string name="practice_chords_listening">Lytter</string>
     <string name="practice_drone_play">Spill borduntonen</string>
     <string name="practice_drone_stop">Stopp borduntonen</string>
     <string name="practice_drone_sound_spoken">Bordunlyd: %1$s</string>

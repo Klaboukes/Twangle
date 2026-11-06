@@ -23,17 +23,21 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -43,19 +47,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -78,15 +82,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
+import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
+import io.github.klaboukes.twangle.core.designsystem.FLOATING_PANEL_WIDTH
+import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
+import io.github.klaboukes.twangle.core.designsystem.MoreButton
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_MAX_WIDTH
+import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
+import io.github.klaboukes.twangle.core.designsystem.PanelEdge
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
-import io.github.klaboukes.twangle.core.designsystem.OptionsButton
-import io.github.klaboukes.twangle.core.designsystem.OPTIONS_FACE
-import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
+import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
@@ -101,7 +116,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 
 /**
- * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/ear-training-preview.html
+ * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/1.x/ear-training-preview.html
  * (all option A, 2026-10-28): the three exercises as three icons in a row, the questions starting at
  * once, the "What is asked" button opening the choices any time, and Play it back showing the note
  * the tuner hears as the player plays. Intervals is answered with buttons and never asks for the
@@ -113,8 +128,8 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
  * microphone is held only while this screen is shown. The question stops sounding when the screen is
  * hidden, and no next question comes until it shows again, when a microphone that stopped meanwhile
  * listens again too; leaving the tool ends the visit (its tally and questions are dropped, never saved), while a
- * turned phone keeps it. [header] is the top row (the tool button, the instrument button and the
- * tuning line), which `:app` builds; note names follow [notation].
+ * turned phone keeps it. [header] is the top row (the back arrow and the picker chip), which `:app` builds, putting
+ * the end it is given (the "What is asked" ⋯) at the row's end; note names follow [notation].
  */
 @Composable
 fun EarTrainingScreen(
@@ -122,7 +137,7 @@ fun EarTrainingScreen(
     tonePlayer: TonePlayer,
     settingsRepository: SettingsRepository,
     notation: Notation,
-    header: @Composable () -> Unit,
+    header: @Composable (end: @Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
     savedSettings: AppSettings = AppSettings(),
 ) {
@@ -166,17 +181,20 @@ fun EarTrainingScreen(
 
 /**
  * The Ear training screen as it is drawn, from [state] alone (stateless, for the tests): the top row
- * ([header]), the exercise row (the switch of the three exercises, the "What is asked" button), the
- * ▶ that sounds the question again with this visit's tally beside it, and the exercise's own part under it. Play
+ * ([header], given the "What is asked" ⋯ for its end), the exercise's name pill under it ("Intervals ⌄", [ExercisePill],
+ * opening the three exercises in the floating panel, [ExercisePanel]; the joined switch of their short words until
+ * Phase 77), the ▶ that sounds the question again with this visit's tally beside it, and the exercise's own part under it. Play
  * it back's part is the note [heard] (in [notation]), or in its place what to do; with the microphone not allowed ([mic]),
  * "Microphone is off" with a button that asks again ([onAllowMic]) or, refused for good, opens
  * Settings ([onOpenSettings]). Intervals' part is the question and its answer buttons ([onPickInterval],
  * [IntervalsPart]), Chord type's the same with a button per chord type ([onPickChordType],
- * [ChordTypePart]), or on the banjo the Chords tool's quiet line in its place. The choices panel opens over it and keeps open across a turned phone.
+ * [ChordTypePart]), or on the banjo the Chords tool's quiet line in its place. The ⋯ opens the choices in the app's
+ * floating panel under it ([ChoicesPanel], as the metronome's options; a sheet from the bottom until Phase 77), which
+ * keeps open across a turned phone.
  *
  * One column, at most [COLUMN_MAX_WIDTH] wide in the middle; on its side (at least [HALVES_MIN_WIDTH]
- * wide and wider than tall) the top rows fill the start half and the question stands in the middle of
- * the end half. Each scrolls only where the window is too short (large text); Chord type's answers
+ * wide and wider than tall) the top row stands at the top of the start half with the pill in the middle of the height
+ * it leaves (as Chords' name), and the question in the middle of the end half. Each scrolls only where the window is too short (large text); Chord type's answers
  * instead scroll in their own box, which takes the room under its question. Nothing moves when the tally appears or the heard note
  * changes: the tally stands beside the ▶ in room its row keeps, the note in a box of steady height.
  */
@@ -198,19 +216,34 @@ fun EarTrainingContent(
     onToggleChordType: (ChordQuality) -> Unit,
     onAllowMic: () -> Unit,
     onOpenSettings: () -> Unit,
-    header: @Composable () -> Unit,
+    header: @Composable (end: @Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Kept when the phone turns: the panel opens again under the ⋯ in its new place.
     var choicesOpen by rememberSaveable { mutableStateOf(false) }
-    if (choicesOpen) {
-        ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onToggleInterval, onToggleDirection, onToggleChordType, onDismiss = { choicesOpen = false })
+    var choicesBounds by remember { mutableStateOf<Rect?>(null) }
+    // The top row's width, which the panel takes (CHOICES_PANEL_MAX_WIDTH at most), its end under the ⋯'s.
+    var topRowWidth by remember { mutableIntStateOf(0) }
+    val more = @Composable {
+        // TalkBack hears "What is asked" as a drop-down list, as the metronome's ⋯.
+        MoreButton(
+            open = choicesOpen,
+            onClick = { choicesOpen = true },
+            label = stringResource(R.string.ear_choices),
+            role = Role.DropdownList,
+            // The panel's end in line with the button's outline, not its touch area.
+            faceModifier = Modifier.testTag(EarTrainingTestTags.CHOICES).panelAnchor { choicesBounds = it },
+        )
     }
-    val topRows = @Composable {
-        Spacer(Modifier.height(HEADER_TOP))
-        header()
-        Spacer(Modifier.height(8.dp))
-        ExerciseRow(state.exercise, onPickExercise, choicesOpen = choicesOpen, onOpenChoices = { choicesOpen = true })
+    val topRow = @Composable {
+        Spacer(Modifier.height(TOP_BAR_TOP))
+        Box(Modifier.fillMaxWidth().onSizeChanged { topRowWidth = it.width }) { header(more) }
     }
+    // The exercise's pill and its panel, as Chords' name; open across a turned phone, as the choices.
+    var exercisesOpen by rememberSaveable { mutableStateOf(false) }
+    var pillBounds by remember { mutableStateOf<Rect?>(null) }
+    var startHalf by remember { mutableStateOf<Rect?>(null) }
+    val pill = @Composable { ExercisePill(state.exercise, onClick = { exercisesOpen = true }, onPlaced = { pillBounds = it }) }
     // Chord type's answers scroll in their own box, which takes the room left under the question, so
     // the ▶ and the question stay put; its column doesn't scroll then.
     val answersFillRoom = state.exercise == Exercise.CHORD_TYPE && state.chord != null && state.chordsUnavailable == null
@@ -243,10 +276,29 @@ fun EarTrainingContent(
     ) {
         val questionScroll = rememberScrollState()
         val scrolls = if (answersFillRoom) Modifier else Modifier.verticalScroll(questionScroll)
-        if (maxWidth > maxHeight && maxWidth >= HALVES_MIN_WIDTH) {
-            // On its side: the top rows in the start half, the question in the middle of the end half.
-            Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-                Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { topRows() }
+        val height = maxHeight
+        val sideways = maxWidth > maxHeight && maxWidth >= HALVES_MIN_WIDTH
+        if (sideways) {
+            // On its side, as Chords: the top row at the top of the start half, the pill in the middle of the height it
+            // leaves; the question in the middle of the end half.
+            Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        // The exercises' panel opens from the top of this half, as Chords' does, over the top row and the pill.
+                        .panelAnchor { startHalf = Rect(it.left, it.top, it.right, it.top) }
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = height),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    topRow()
+                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(12.dp))
+                    pill()
+                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(8.dp))
+                }
                 Spacer(Modifier.width(16.dp))
                 Column(
                     Modifier.weight(1f).fillMaxHeight().then(scrolls),
@@ -261,18 +313,54 @@ fun EarTrainingContent(
         } else {
             Column(
                 Modifier
-                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    // The scroll across the window, the column in its middle: a scroll clips its sides, and upright on a
+                    // tablet the top row reaches past the column (TabletTop).
                     .fillMaxWidth()
                     .then(if (answersFillRoom) Modifier.fillMaxHeight() else scrolls)
+                    .wrapContentWidth()
+                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                topRows()
+                // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+                CompositionLocalProvider(LocalTopScale provides topScaleFor(this@BoxWithConstraints.maxWidth.value, height.value)) { topRow() }
+                Spacer(Modifier.height(8.dp))
+                pill()
                 Spacer(Modifier.height(QUESTION_TOP))
                 question()
                 Spacer(Modifier.height(16.dp))
             }
         }
+        // Last, on its own layer over the screen: under the ⋯, as wide as the top row.
+        val panelWidth = with(LocalDensity.current) { topRowWidth.toDp() }.coerceIn(FLOATING_PANEL_WIDTH, CHOICES_PANEL_MAX_WIDTH)
+        ChoicesPanel(
+            open = choicesOpen,
+            anchor = choicesBounds,
+            width = panelWidth,
+            state = state,
+            onNoteChoice = onNoteChoice,
+            onNotesInRow = onNotesInRow,
+            onNoteMatch = onNoteMatch,
+            onToggleInterval = onToggleInterval,
+            onToggleDirection = onToggleDirection,
+            onToggleChordType = onToggleChordType,
+            onDismiss = { choicesOpen = false },
+        )
+        // Under the pill from its start and as wide as it; on its side from the top of the start half (as Chords').
+        val pillAt = pillBounds
+        val exercisesAnchor = if (sideways) startHalf?.let { half -> pillAt?.let { Rect(it.left, half.top, it.right, half.top) } } else pillAt
+        ExercisePanel(
+            open = exercisesOpen,
+            anchor = exercisesAnchor,
+            width = with(LocalDensity.current) { (pillAt?.width ?: 0f).toDp() },
+            picked = state.exercise,
+            onPick = {
+                exercisesOpen = false
+                if (it != state.exercise) onPickExercise(it)
+            },
+            onDismiss = { exercisesOpen = false },
+        )
     }
 }
 
@@ -281,13 +369,17 @@ object EarTrainingTestTags {
     /** The Ear training tool's screen. */
     const val SCREEN = "ear_training"
 
-    /** An exercise's icon in the row, e.g. "ear_exercise_play_it_back". */
+    /** The exercise's name pill under the top row ("Intervals ⌄", its face), and the panel it opens. */
+    const val EXERCISE = "ear_exercise_picker"
+    const val EXERCISE_PANEL = "ear_exercise_panel"
+
+    /** An exercise's row in that panel, e.g. "ear_exercise_play_it_back". */
     fun exercise(exercise: Exercise): String = "ear_exercise_" + exercise.name.lowercase()
 
-    /** This visit's tally ("7 of 9"), at the end of the exercise row. */
+    /** This visit's tally ("7 of 9"), at the end of the ▶'s row. */
     const val TALLY = "ear_tally"
 
-    /** The "What is asked" button (sliders), and the panel it opens. */
+    /** The "What is asked" button (the ⋯ at the end of the top row, its face), and the panel it opens. */
     const val CHOICES = "ear_choices"
     const val CHOICES_PANEL = "ear_choices_panel"
 
@@ -339,66 +431,64 @@ object EarTrainingTestTags {
 }
 
 /**
- * The exercise row: the three exercises in one switch of words ([ExerciseSwitch]) across the row, and the "What is
- * asked" button at its end: the shared options button ([OptionsButton], the metronome's), picked while its sheet is
- * open ([choicesOpen]). The switch's width depends only on the row's ([exerciseSwitchWidth]), so the words and the
- * button never move. This visit's tally stands beside the ▶ ([ReplayRow]).
+ * The exercise picked as a name pill, as Chords' name (Phase 77: until then the three exercises' short words in the app's
+ * joined switch, `SegmentedSwitch`, across the row): its full name on Twangle's one picker face ([NamePickerButton],
+ * "Intervals ⌄"), as wide as the row up to [NAME_PICKER_MAX_WIDTH] and centred, so switching between the Practice
+ * tools moves nothing. A tap calls [onClick] to open the [ExercisePanel]; [onPlaced] says where the pill is. TalkBack
+ * hears a drop-down list "Exercise: Intervals", a heading as Chords' name (it names what the screen asks), and a new
+ * pick politely.
  */
 @Composable
-private fun ExerciseRow(exercise: Exercise, onPick: (Exercise) -> Unit, choicesOpen: Boolean, onOpenChoices: () -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val switchWidth = exerciseSwitchWidth(maxWidth)
-        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-            ExerciseSwitch(exercise, onPick, Modifier.width(switchWidth))
-            Spacer(Modifier.weight(1f))
-            OptionsButton(
-                open = choicesOpen,
-                onClick = onOpenChoices,
-                label = stringResource(R.string.ear_choices),
-                modifier = Modifier.testTag(EarTrainingTestTags.CHOICES),
-            )
+private fun ExercisePill(exercise: Exercise, onClick: () -> Unit, onPlaced: (Rect) -> Unit) {
+    val name = stringResource(exercise.label)
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        NamePickerButton(
+            name = name,
+            spoken = stringResource(R.string.ear_exercise_spoken, name),
+            onClick = onClick,
+            heading = true,
+            live = true,
+            faceModifier = Modifier.testTag(EarTrainingTestTags.EXERCISE).panelAnchor(onPlaced),
+            modifier = Modifier.width(minOf(maxWidth, NAME_PICKER_MAX_WIDTH)),
+        )
+    }
+}
+
+/**
+ * The three exercises while [open], on the app's floating panel ([FloatingPanel]) from [anchor] (under the pill, from
+ * its start), [width] wide: one row each by its full name on the shared choice rows ([ChoiceRow]: [picked] tinted with
+ * the accent outline and a ✓), radio buttons in the group "Exercise". A pick calls [onPick], which closes it; Back or a
+ * tap beside it calls [onDismiss].
+ */
+@Composable
+private fun ExercisePanel(open: Boolean, anchor: Rect?, width: Dp, picked: Exercise, onPick: (Exercise) -> Unit, onDismiss: () -> Unit) {
+    val group = stringResource(R.string.ear_exercises)
+    FloatingPanel(
+        open = open,
+        anchor = anchor,
+        onDismiss = onDismiss,
+        title = group,
+        width = width,
+        edge = PanelEdge.START,
+        tag = EarTrainingTestTags.EXERCISE_PANEL,
+    ) {
+        Column(
+            Modifier.selectableGroup().semantics { contentDescription = group },
+            verticalArrangement = Arrangement.spacedBy(CHOICE_ROW_GAP),
+        ) {
+            for (exercise in Exercise.entries) {
+                ChoiceRow(
+                    stringResource(exercise.label),
+                    selected = exercise == picked,
+                    onClick = { onPick(exercise) },
+                    modifier = Modifier.testTag(EarTrainingTestTags.exercise(exercise)),
+                )
+            }
         }
     }
 }
 
-/**
- * The exercise switch's width in a row [row] wide: the whole row but the options button's face and [SWITCH_GAP]
- * before it (Phase 65: until then at most 252 dp, which left it ending a third of the way along the tool button's
- * row, its words small; a switch only as wide as the tool button's 160 dp would set them at about 9 sp). The same
- * whatever the language, the font size and the exercise picked, so nothing moves; the words are set smaller only
- * where they don't fit.
- */
-internal fun exerciseSwitchWidth(row: Dp): Dp = (row - OPTIONS_FACE - SWITCH_GAP).coerceAtLeast(0.dp)
-
-/**
- * The three exercises in the app's switch of words ([SegmentedSwitch], as the tuner's Strings · Chromatic; Phase 63:
- * three note-symbol icons were hard to tell apart): a short word each ("Play back · Intervals · Chord type"; until
- * Phase 65 "Chords", the Chords tool's name), TalkBack
- * hearing its whole name ("Play it back", "Chord type") in the group "Exercise".
- */
-@Composable
-private fun ExerciseSwitch(selected: Exercise, onPick: (Exercise) -> Unit, modifier: Modifier = Modifier) {
-    val group = stringResource(R.string.ear_exercises)
-    SegmentedSwitch(
-        options = Exercise.entries,
-        selected = selected,
-        onSelect = onPick,
-        label = { stringResource(it.word) },
-        tag = EarTrainingTestTags::exercise,
-        spoken = { stringResource(it.label) },
-        modifier = modifier.semantics { contentDescription = group },
-    )
-}
-
-/** Each exercise's short word on the switch. A new exercise needs its word here (the `when` says so). */
-internal val Exercise.word: Int
-    get() = when (this) {
-        Exercise.PLAY_IT_BACK -> R.string.ear_exercise_word_play_back
-        Exercise.INTERVALS -> R.string.ear_exercise_word_intervals
-        Exercise.CHORD_TYPE -> R.string.ear_exercise_word_chord_type
-    }
-
-/** Each exercise's name, as TalkBack says its word on the switch. A new exercise needs its name here (the `when` says so). */
+/** Each exercise's name, on its pill and its row in the panel. A new exercise needs its name here (the `when` says so). */
 internal val Exercise.label: Int
     get() = when (this) {
         Exercise.PLAY_IT_BACK -> R.string.ear_exercise_play_back
@@ -408,7 +498,7 @@ internal val Exercise.label: Int
 
 /**
  * The ▶ ([ReplayButton]) in the middle of its row, and this visit's [tally] once a question was answered, quiet, at
- * the row's end, under the "What is asked" button (Phase 65: until then between the switch and that button, which
+ * the row's end (Phase 65: until then between the switch and that button, which
  * kept the switch short). The ▶ never moves when the tally appears; a long tally is set smaller to fit its room.
  */
 @Composable
@@ -455,7 +545,7 @@ private fun ReplayButton(onReplay: () -> Unit) {
         main = true,
     ) {
         // Nudged right, so the triangle looks centred in the face.
-        Icon(PLAY_ICON, contentDescription = null, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
+        Icon(painterResource(DesignR.drawable.ic_play), contentDescription = null, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
     }
 }
 
@@ -692,25 +782,14 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     else -> null
 }
 
-/** ▶, filled, its corners softened (as the drone button's). */
-private val PLAY_ICON: ImageVector = ImageVector.Builder(
-    name = "ear_replay",
-    defaultWidth = 24.dp,
-    defaultHeight = 24.dp,
-    viewportWidth = 24f,
-    viewportHeight = 24f,
-).addPath(
-    pathData = addPathNodes("M8,5.5L19,12L8,18.5z"),
-    fill = SolidColor(Color.Black),
-    stroke = SolidColor(Color.Black),
-    strokeLineWidth = 2f,
-    strokeLineJoin = StrokeJoin.Round,
-).build()
+/**
+ * Under the exercise's pill (56 dp): the ▶ where it was under the 48 dp switch (24 dp from Phase 77's second step to its
+ * third, 20 dp before, while the options button's 52 dp face made that row 4 dp taller).
+ */
+private val QUESTION_TOP = 16.dp
 
-
-private val HEADER_TOP = 8.dp
-/** Under the exercise row: 24 dp less the 4 dp the options button's 52 dp face adds to the row, so the ▶ keeps its place. */
-private val QUESTION_TOP = 20.dp
+/** The What is asked panel as wide as the top row (a phone's whole column), up to this on a tablet: its twenty chord types three to a row. */
+private val CHOICES_PANEL_MAX_WIDTH = 400.dp
 
 /** The column at most this wide, in the middle of a tablet. */
 private val COLUMN_MAX_WIDTH = 480.dp
@@ -718,8 +797,6 @@ private val COLUMN_MAX_WIDTH = 480.dp
 /** From this wide, a window wider than tall is laid out in two halves (as the Practice tools on their side). */
 private val HALVES_MIN_WIDTH = 600.dp
 
-/** Between the exercise switch and the options button. */
-private val SWITCH_GAP = 12.dp
 
 /** Between the tally and the ▶ at least. */
 private val TALLY_GAP = 8.dp

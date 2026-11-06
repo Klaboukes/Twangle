@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Métronome</string>
     <string name="practice_tool_chords">Accords</string>
     <string name="practice_tool_scales">Gammes</string>
+    <string name="practice_card_chords">Tous les doigtés, pour gauchers aussi</string>
+    <string name="practice_card_scales">Avec un bourdon pour jouer dessus</string>
+    <string name="practice_card_capo">Quelle case pour la tonalité voulue</string>
+    <string name="practice_card_ear_training">Écoutez une note, rejouez-la</string>
+    <string name="practice_last_time">Dernière utilisation</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Retour</string>
     <string name="practice_tool_ear_training">Oreille musicale</string>
-    <string name="practice_tool_button">Outil</string>
-    <string name="practice_tool_list">Outils</string>
+    <string name="practice_tool_pitch_trail">Trace de hauteur</string>
+    <string name="practice_card_pitch_trail">Votre note est-elle stable ?</string>
     <string name="practice_root">Fondamentale</string>
     <string name="practice_chord_type">Type d\'accord</string>
     <string name="practice_chord_major">%1$s majeur</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">Doigté de %1$s, sonne %2$s</string>
     <string name="practice_capo_open_chord">ouvrir dans Accords</string>
     <string name="practice_drone">Bourdon</string>
+    <string name="practice_chords_listen">Écouter</string>
+    <string name="practice_chords_listening">À l\'écoute</string>
     <string name="practice_drone_play">Jouer le bourdon</string>
     <string name="practice_drone_stop">Arrêter le bourdon</string>
     <string name="practice_drone_sound_spoken">Son du bourdon : %1$s</string>

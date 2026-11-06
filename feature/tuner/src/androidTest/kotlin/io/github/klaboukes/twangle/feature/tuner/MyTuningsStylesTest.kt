@@ -18,16 +18,15 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.tuner.components.MyTunings
@@ -37,19 +36,16 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * The player's own tunings in the instrument-and-tuning panel, in each of the six styles, in Dutch at
+ * The player's own tunings in the instrument-and-tuning panel, in Ink, in Dutch at
  * 2× text (the longest words at the largest size): the heading, the longest name a tuning may have
- * and its ⋮ button are wholly shown, the button beside the name and inside its row.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
+ * and its ⋯ button are wholly shown, the button beside the name and inside its row.
  */
-@RunWith(Parameterized::class)
-class MyTuningsStylesTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class MyTuningsStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -81,7 +77,7 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
     private fun show(lowered: Int = 0) {
         compose.setContent {
             PhoneScreen(DpSize(360.dp, 730.dp), SystemBars.NONE, fontScale = 2f, locale = "nl") {
-                TwangleTheme(style = style, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     Column(
                         Modifier
                             .fillMaxSize()
@@ -100,16 +96,16 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
     fun ownTuningsAndTheirMenuButtonsFitAtTwiceTheTextSizeInDutch() {
         show()
         val heading = dutch.getString(R.string.tuner_my_tunings)
-        assertWhollyShown(compose.onNode(hasContentDescription(heading), useUnmergedTree = true), "$style: $heading")
+        assertWhollyShown(compose.onNode(hasContentDescription(heading), useUnmergedTree = true), "$heading")
         for (mine in listOf(longest, other)) {
             val name = compose.onNode(hasText(mine.name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(mine.id))), useUnmergedTree = true)
-            assertWhollyShown(name, "$style: ${mine.name}")
+            assertWhollyShown(name, "${mine.name}")
             val menu = compose.onNodeWithTag(TunerTestTags.customTuningMenu(mine.id))
-            assertWhollyShown(menu, "$style: ⋮ of ${mine.name}")
+            assertWhollyShown(menu, "⋯ of ${mine.name}")
             val row = compose.onNodeWithTag(TunerTestTags.customTuning(mine.id)).getBoundsInRoot()
             val button = menu.getBoundsInRoot()
-            if (button.left < row.left - SLACK || button.right > row.right + SLACK) fail("$style: ⋮ $button is outside its row $row")
-            if (name.getBoundsInRoot().right > button.left + SLACK) fail("$style: ${mine.name} runs under its ⋮ button")
+            if (button.left < row.left - SLACK || button.right > row.right + SLACK) fail("⋯ $button is outside its row $row")
+            if (name.getBoundsInRoot().right > button.left + SLACK) fail("${mine.name} runs under its ⋯ button")
         }
     }
 
@@ -118,16 +114,12 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
         show(lowered = 5)
         val name = dutch.getString(R.string.tuning_lowered_5, longest.name)
         val shown = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(longest.id))), useUnmergedTree = true)
-        assertWhollyShown(shown, "$style: $name")
+        assertWhollyShown(shown, "$name")
         val button = compose.onNodeWithTag(TunerTestTags.customTuningMenu(longest.id)).getBoundsInRoot()
-        if (shown.getBoundsInRoot().right > button.left + SLACK) fail("$style: $name runs under its ⋮ button")
+        if (shown.getBoundsInRoot().right > button.left + SLACK) fail("$name runs under its ⋯ button")
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp
     }

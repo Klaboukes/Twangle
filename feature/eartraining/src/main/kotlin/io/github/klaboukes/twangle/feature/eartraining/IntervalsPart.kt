@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
@@ -130,7 +131,8 @@ private fun AnswerGrid(intervals: List<Interval>, question: IntervalQuestion, st
 
 /**
  * One answer (an interval, a chord type): its [sign] large and its [name] small, on the Practice
- * tools' see-through face, [ANSWER_HEIGHT] high whatever the name (both set smaller on one line where
+ * tools' see-through face in the one look's pill (Phase 75, as the metronome's big buttons; until then the
+ * style's rounded box), [ANSWER_HEIGHT] high whatever the name (both set smaller on one line where
  * they are long); TalkBack says [spoken]. [lit]: the right answer, a soft in-tune glow around it and
  * its outline and words in the in-tune colour; [quiet]: the wrong pick, faded. Both ease in and out as
  * the tuner's glow (the halo, outline and fade read in the draw phase).
@@ -148,7 +150,7 @@ internal fun AnswerButton(
     modifier: Modifier = Modifier,
 ) {
     val source = remember { MutableInteractionSource() }
-    val shape = MaterialTheme.shapes.small
+    val shape = CircleShape
     val glow by animateFloatAsState(if (lit) 1f else 0f, meterGlowSpec(lit), label = "ear_answer_glow")
     val fade by animateFloatAsState(if (quiet) QUIET_ALPHA else 1f, tween(if (quiet) 400 else 600), label = "ear_answer_quiet")
     val inTune = MaterialTheme.styleTokens.inTune
@@ -186,7 +188,8 @@ internal fun AnswerButton(
             }
             // TalkBack says the name; the sign and name stay in the tree for the tests' checks.
             .semantics { contentDescription = spoken }
-            .padding(horizontal = 6.dp, vertical = 6.dp),
+            // Clear of the pill's round ends.
+            .padding(horizontal = ANSWER_SIDE_PADDING, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -264,6 +267,9 @@ internal val ANSWER_GAP = 8.dp
 
 /** Every answer this high at least (the mock-up's), whatever its name. */
 internal val ANSWER_HEIGHT = 56.dp
+
+/** An answer's words keep this far from the pill's ends. */
+private val ANSWER_SIDE_PADDING = 14.dp
 
 /** The right answer's outline in the in-tune colour, this wide. */
 private val LIT_OUTLINE = 2.dp

@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka. Tutup aplikasi lain yang memakainya lalu ketuk Coba lagi, atau mulai ulang perangkat Anda.</string>
     <string name="error_mic_stopped">Mikrofon berhenti, mungkin karena panggilan atau aplikasi lain. Ketuk Coba lagi untuk terus menyetem.</string>
     <string name="error_retry">Coba lagi</string>
+    <string name="tuner_any_note">Nada apa saja</string>
+    <string name="tuner_any_note_summary">Nada terdekat, tanpa senar</string>
 
-    <string name="tuner_mode_strings">Senar</string>
-    <string name="tuner_mode_chromatic">Kromatik</string>
     <string name="tuner_show_controls">Tampilkan kontrol</string>
     <string name="tuner_focus_mode">Mode fokus</string>
     <string name="tuner_exit_focus_mode">Keluar dari mode fokus</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">Mainkan nada</string>
     <string name="tuner_hint_play_locked_string">Petik senar %1$s</string>
     <string name="tuner_hint_playing">Memutar %1$s</string>
+    <string name="tuner_hint_all_in_tune">Sudah pas. Ayo main.</string>
     <string name="tuner_string_lock">Kunci ke senar ini</string>
     <string name="tuner_string_unlock">Pilih senar otomatis</string>
     <string name="tuner_string_locked">Terkunci</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">Terkunci, sedang diputar</string>
     <string name="tuner_string_tuned">Sudah pas</string>
     <string name="tuner_string_locked_tuned">Terkunci, sudah pas</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">Terkunci, %1$s</string>
     <string name="tuner_cents_zero">0 sen</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">%1$d sen terlalu rendah</item>
@@ -94,8 +95,13 @@
         <item quantity="other">%1$d sen terlalu tinggi</item>
     </plurals>
     <string name="tuner_in_tune">pas</string>
-    <string name="tuner_tune_up">Naikkan ↑</string>
-    <string name="tuner_tune_down">Turunkan ↓</string>
+    <string name="tuner_word_tighten">Kencangkan</string>
+    <string name="tuner_word_loosen">Kendurkan</string>
+    <string name="tuner_word_too_low">Terlalu rendah</string>
+    <string name="tuner_word_too_high">Terlalu tinggi</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d sen</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Mainkan lebih keras</string>
     <string name="tuner_tip_too_noisy">Terlalu bising, dekatkan ponsel</string>
     <string name="tuner_tip_too_loud">Terlalu keras, jauhkan ponsel</string>
@@ -109,15 +115,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">naikkan</string>
-    <string name="tuner_spoken_tune_down">turunkan</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, dengan senar oktaf</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrumen dan stem</string>
+    <string name="tuner_picker_title">Apa yang Anda setem?</string>
 
     <string name="tuner_new_tuning">Stem baru</string>
 
@@ -146,33 +150,19 @@
     <string name="tuner_delete_tuning_cancel">Batal</string>
     <string name="tuner_strum_check">Cek genjreng</string>
     <string name="tuner_strum_waiting">Genjreng semua senar lepas</string>
-    <string name="tuner_strum_waiting_detail">Setiap senar menunjukkan rendah, pas, atau tinggi</string>
-    <string name="tuner_strum_hearing">Mendengarkan…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="other">%1$d senar perlu disetem</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Tidak semua senar terdengar</string>
-    <string name="tuner_strum_all_in_tune">Semua senar sudah pas</string>
-    <string name="tuner_strum_tap_to_tune">Ketuk senar untuk menyetemnya</string>
-    <string name="tuner_strum_again">Genjreng lagi, atau ketuk senar untuk menyetemnya</string>
-    <string name="tuner_strum_tune_string">Setem %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, tidak terdengar</string>
     <string name="tuner_strum_spoken_waiting">%1$s, belum digenjreng</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, tidak terdengar</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, kurang pasti</string>
-    <string name="tour_title">Tur aplikasi</string>
-    <string name="tour_step_count">%1$d dari %2$d</string>
-    <string name="tour_step_spoken">Langkah %1$d dari %2$d. %3$s.</string>
-    <string name="tour_readout">Nada dan selisihnya</string>
-    <string name="tour_strum">Genjreng untuk cek semua senar</string>
-    <string name="tour_strings">Ketuk: stem senar ini saja. Tahan: dengarkan</string>
-    <string name="tour_picker">Pilih instrumen dan stem</string>
-    <string name="tour_skip">Lewati tur</string>
-    <string name="tour_next">Berikutnya</string>
-    <string name="tour_done">Selesai</string>
-    <string name="tuner_more_tools">Alat lainnya</string>
-    <string name="tuner_tool_on">%1$s aktif</string>
+    <string name="tuner_strum_close">Tutup cek genjreng</string>
+    <string name="tuner_strum_all_in_tune">Semua senar sudah pas</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">%1$d dari %2$d pas</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Tidak terdengar</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Cek fret ke-12</string>
+    <string name="tuner_intonation_check_summary">Apakah posisi sadel sudah tepat?</string>
+    <string name="tuner_intonation_close">Tutup cek fret ke-12</string>
     <string name="tuner_intonation_step_open">Lepas</string>
     <string name="tuner_intonation_step_fret">Fret ke-12</string>
     <string name="tuner_intonation_choose_string">Pilih satu senar</string>
@@ -208,37 +198,9 @@
     <string name="tuner_intonation_mark_back">sadel ke belakang</string>
     <string name="tuner_intonation_mark_forward">sadel ke depan</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, belum dicek</string>
-    <string name="tour_more_tools">Alat lainnya, seperti cek genjreng</string>
-    <string name="tuner_chord_name">Nama akor</string>
-    <string name="tuner_chord_major">%1$s mayor</string>
-    <string name="tuner_chord_minor">%1$s minor</string>
-    <string name="tuner_chord_seventh">%1$s septim</string>
-    <string name="tuner_chord_major_seventh">%1$s mayor septim</string>
-    <string name="tuner_chord_minor_seventh">%1$s minor septim</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s power chord</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s septim nona kres</string>
-    <string name="tuner_chord_minor_ninth">%1$s minor nona</string>
-    <string name="tuner_chord_major_ninth">%1$s mayor nona</string>
-    <string name="tuner_chord_slash">%1$s, bas %2$s</string>
-    <string name="tuner_chord_bass">bas</string>
-    <string name="tuner_chord_strum">Genjreng satu akor</string>
-    <string name="tuner_chord_strum_detail">Biarkan semua senar berbunyi</string>
-    <string name="tuner_chord_next">Genjreng lagi untuk akor berikutnya</string>
-    <string name="tuner_chord_let_ring">Biarkan berbunyi</string>
-    <string name="tuner_chord_unclear">Bukan akor yang jelas</string>
-    <string name="tuner_chord_unclear_detail">Genjreng semua senar akornya</string>
-    <string name="tuner_chord_none">Belum ada akor</string>
-    <string name="tuner_chord_spoken_notes">nada %1$s</string>
-    <string name="tuner_chord_spoken_recent">sebelumnya %1$s</string>
-    <string name="tuner_pitch_trail">Jejak nada</string>
-    <string name="tuner_trail_spoken">Jejak nada, %1$s</string>
-    <string name="tuner_trail_no_note">tidak ada nada</string>
-    <string name="tuner_trail_steady">stabil, %1$s</string>
-    <string name="tuner_trail_wavering">goyah, %1$s</string>
     <string name="tuner_trail_bending_up">naik</string>
     <string name="tuner_trail_bending_down">turun</string>
+    <string name="tuner_spoken_wavering">naik-turun</string>
     <string name="tuner_screen_off_soon">Layar akan segera mati</string>
     <string name="tuner_screen_off_keep_on">Ketuk agar tetap menyala</string>
 </resources>

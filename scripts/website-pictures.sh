@@ -14,10 +14,12 @@ JAVA="$JAVA_HOME/bin/java"
 SHRINK="$ROOT/website/tools/ShrinkImage.java"
 STATIC="$ROOT/website/static"
 
-# The screens the pages show, by their number in docs/store-listing.md's table: the home page
-# 1, 3, 5, 6 and 7a, the tuner's page 2, the chord name's 5, the pitch trail's 8, the metronome's 6,
-# Chords' 7a, the Capo helper's 7b, the instruments' 3.
-SHOTS="1 2 3 5 6 7a 7b 8"
+# The screens the pages show, by their number in docs/store-listing.md's table (Phase 69, after
+# Phase 65 renumbered the store's; Phase 76: 2 is the Practice cards, 5 two screens, 5a and 5b): the home page
+# 1, 2, 4, 5b, metronome and 6a, the tuner's page 3, the strum check's 5a, the chord name's 5b, the
+# pitch trail's 8, the metronome's page "metronome" (saved with store screenshot 2, no store picture
+# of its own), Chords' 6a, the Capo helper's 6b, the instruments' 4.
+SHOTS="1 2 3 4 5a 5b 6a 6b 8 metronome"
 # Play locale -> the site's language folder.
 LOCALES="en-US:en nl-NL:nl"
 

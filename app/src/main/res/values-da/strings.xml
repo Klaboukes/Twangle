@@ -1,5 +1,5 @@
 <resources>
-    <string name="nav_tuner">Tuner</string>
+    <string name="nav_tuner">Stemning</string>
     <string name="nav_metronome">Metronom</string>
     <string name="nav_practice">Øvelse</string>
     <string name="nav_settings">Indstillinger</string>

@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">मेट्रोनोम</string>
     <string name="practice_tool_chords">कॉर्ड</string>
     <string name="practice_tool_scales">स्केल</string>
+    <string name="practice_card_chords">हर शेप, बाएँ हाथ के लिए भी</string>
+    <string name="practice_card_scales">ड्रोन के साथ बजाएँ</string>
+    <string name="practice_card_capo">मनचाहे स्केल के लिए कौन-सा फ़्रेट</string>
+    <string name="practice_card_ear_training">नोट सुनें, फिर बजाएँ</string>
+    <string name="practice_last_time">पिछली बार इस्तेमाल</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">वापस</string>
     <string name="practice_tool_ear_training">कान की ट्रेनिंग</string>
-    <string name="practice_tool_button">टूल</string>
-    <string name="practice_tool_list">सभी टूल</string>
+    <string name="practice_tool_pitch_trail">सुर की रेखा</string>
+    <string name="practice_card_pitch_trail">आपका सुर कितना स्थिर है?</string>
     <string name="practice_root">रूट</string>
     <string name="practice_chord_type">कॉर्ड का प्रकार</string>
     <string name="practice_chord_major">%1$s मेजर</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">%1$s शेप, बजता है %2$s</string>
     <string name="practice_capo_open_chord">कॉर्ड में खोलें</string>
     <string name="practice_drone">ड्रोन</string>
+    <string name="practice_chords_listen">सुनें</string>
+    <string name="practice_chords_listening">सुन रहा है</string>
     <string name="practice_drone_play">ड्रोन बजाएँ</string>
     <string name="practice_drone_stop">ड्रोन रोकें</string>
     <string name="practice_drone_sound_spoken">ड्रोन का साउंड: %1$s</string>

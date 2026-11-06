@@ -33,54 +33,47 @@ class CloseToolsTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
+    // The 12th-fret check's way in is on (its Settings switch, off on a fresh install).
     private val settings = FakeSettingsRepository()
     private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel() =
-        TunerViewModel(FakeAudioRecorder.silence(), settings, tones, StandardTestDispatcher(testScheduler), tools = ToolSwitches.ALL_ON)
+        TunerViewModel(FakeAudioRecorder.silence(), settings, tones, StandardTestDispatcher(testScheduler), saved = settings.settings.value, tools = ToolSwitches.ALL_ON)
 
     @Test
-    fun `each new request turns the tool that is on off, and the tuner listens again`() = runTest(dispatcher) {
+    fun `each new request turns the 12th-fret check off, and the tuner listens again`() = runTest(dispatcher) {
         val vm = viewModel()
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
-        vm.setStrumCheck(true)
+        vm.setIntonationCheck(true)
         advanceTimeBy(100)
-        assertTrue(vm.state.value is TunerUiState.StrumCheck)
+        assertTrue(vm.state.value is TunerUiState.IntonationCheck)
 
         vm.closeToolsOnRequest(1)
         advanceTimeBy(100)
-        assertFalse(vm.strumCheck.value)
+        assertFalse(vm.intonationCheck.value)
         val state = vm.state.value
         // Back on the plain tuner, still in guitar mode.
         assertTrue("was $state", state is TunerUiState.Listening)
         assertEquals(TunerMode.AUTO, vm.mode.value)
 
-        vm.setChordName(true)
-        vm.closeToolsOnRequest(2)
-        assertFalse(vm.chordName.value)
         vm.setIntonationCheck(true)
-        vm.closeToolsOnRequest(3)
+        vm.closeToolsOnRequest(2)
         assertFalse(vm.intonationCheck.value)
-        // The pitch trail too, also in chromatic mode, where it stays on.
-        vm.setMode(TunerMode.CHROMATIC)
-        vm.setPitchTrail(true)
-        vm.closeToolsOnRequest(4)
-        assertFalse(vm.pitchTrail.value)
     }
 
     @Test
     fun `a request already acted on keeps the tool`() = runTest(dispatcher) {
         val vm = viewModel()
         vm.closeToolsOnRequest(1)
-        vm.setStrumCheck(true)
+        vm.setIntonationCheck(true)
         // The tuner shown again without a new tap (back from the tuning editor, the phone turned).
         vm.closeToolsOnRequest(1)
-        assertTrue(vm.strumCheck.value)
+        assertTrue(vm.intonationCheck.value)
         // Before the first tap there is nothing to act on.
         val fresh = viewModel()
-        fresh.setChordName(true)
+        fresh.setIntonationCheck(true)
         fresh.closeToolsOnRequest(0)
-        assertTrue(fresh.chordName.value)
+        assertTrue(fresh.intonationCheck.value)
     }
 }

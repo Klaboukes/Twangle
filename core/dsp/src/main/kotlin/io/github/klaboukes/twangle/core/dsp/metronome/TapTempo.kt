@@ -54,7 +54,7 @@ class TapTempo {
 /**
  * The Italian tempo marking a tempo is usually given, from the slowest: each covers the tempos from
  * the previous one's [below] up to just under its own. The bounds are those of the approved mock-up
- * (docs/design/metronome-nav-preview.html), close to a common metronome's printed scale (Grave under
+ * (docs/design/1.x/metronome-nav-preview.html), close to a common metronome's printed scale (Grave under
  * 40, Largo 40–59, Larghetto 60–65, Adagio 66–75, Andante 76–107, Moderato 108–119, Allegro 120–167,
  * Presto 168–199, Prestissimo 200 and up). The words are the same in every language.
  */

@@ -4,14 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -37,10 +34,6 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setInTunePrecision(precision) }
     }
 
-    fun setStyle(style: VisualStyle) {
-        viewModelScope.launch { repository.setStyle(style) }
-    }
-
     fun setTheme(theme: ThemeMode) {
         viewModelScope.launch { repository.setTheme(theme) }
     }
@@ -57,32 +50,20 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setVibrateInTune(enabled) }
     }
 
-    fun setShowTuneHint(enabled: Boolean) {
-        viewModelScope.launch { repository.setShowTuneHint(enabled) }
+    fun setStringTickOff(enabled: Boolean) {
+        viewModelScope.launch { repository.setStringTickOff(enabled) }
+    }
+
+    fun setUnderMeter(choice: UnderMeter) {
+        viewModelScope.launch { repository.setUnderMeter(choice) }
     }
 
     fun setShowSignalBars(enabled: Boolean) {
         viewModelScope.launch { repository.setShowSignalBars(enabled) }
     }
 
-    fun setDisplay(display: TunerDisplay) {
-        viewModelScope.launch { repository.setDisplay(display) }
-    }
-
-    fun setMeterLook(look: MeterLook) {
-        viewModelScope.launch { repository.setMeterLook(look) }
-    }
-
-    fun setInTuneEffect(effect: InTuneEffect) {
-        viewModelScope.launch { repository.setInTuneEffect(effect) }
-    }
-
-    fun setWaveLook(look: WaveLook) {
-        viewModelScope.launch { repository.setWaveLook(look) }
-    }
-
-    fun setFocusMode(enabled: Boolean) {
-        viewModelScope.launch { repository.setFocusMode(enabled) }
+    fun setLensLook(look: LensLook) {
+        viewModelScope.launch { repository.setLensLook(look) }
     }
 
     fun setLeftHanded(enabled: Boolean) {

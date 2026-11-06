@@ -8,6 +8,7 @@
         <item quantity="many">%1$d uderzeń na minutę, %2$s</item>
         <item quantity="other">%1$d uderzenia na minutę, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">uderzeń na minutę · %1$s</string>
     <string name="metronome_slower">Wolniej</string>
     <string name="metronome_faster">Szybciej</string>
     <string name="metronome_tap">Wystukaj tempo</string>
@@ -24,12 +25,8 @@
     <string name="metronome_subdivision_eighths">Ósemki</string>
     <string name="metronome_subdivision_triplets">Triole</string>
     <string name="metronome_subdivision_sixteenths">Szesnastki</string>
-    <string name="metronome_subdivision_eighths_on">Ósemki między uderzeniami</string>
-    <string name="metronome_subdivision_triplets_on">Triole między uderzeniami</string>
-    <string name="metronome_subdivision_sixteenths_on">Szesnastki między uderzeniami</string>
     <string name="metronome_options">Opcje</string>
     <string name="metronome_trainer">Trener tempa</string>
-    <string name="metronome_trainer_back">Wróć do opcji</string>
     <string name="metronome_trainer_start">Tempo startowe</string>
     <string name="metronome_trainer_goal">Cel</string>
     <string name="metronome_trainer_start_slower">Niższe tempo startowe</string>
@@ -72,7 +69,6 @@
     <string name="metronome_listen">Słuchaj</string>
     <string name="metronome_listen_stop_spoken">Przestań słuchać</string>
     <string name="metronome_listening">Słucham…</string>
-    <string name="metronome_listen_line_stop">Stop</string>
     <string name="metronome_heard">Usłyszane</string>
     <string name="metronome_use">Użyj</string>
     <string name="metronome_not_now">Nie teraz</string>

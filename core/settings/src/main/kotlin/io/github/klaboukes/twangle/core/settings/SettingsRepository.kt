@@ -89,53 +89,44 @@ interface SettingsRepository {
 
     suspend fun setTheme(theme: ThemeMode)
 
-    suspend fun setStyle(style: VisualStyle)
-
     suspend fun setDynamicColor(enabled: Boolean)
 
     suspend fun setKeepScreenOn(enabled: Boolean)
 
     suspend fun setVibrateInTune(enabled: Boolean)
 
-    suspend fun setShowTuneHint(enabled: Boolean)
+    suspend fun setStringTickOff(enabled: Boolean)
+
+    /** What goes under the meter. Also removes 1.1's `show_tune_hint`, which decides only until one is picked. */
+    suspend fun setUnderMeter(choice: UnderMeter)
 
     suspend fun setShowSignalBars(enabled: Boolean)
 
     /**
-     * Numbers ([TunerDisplay.NEEDLE]) or wave. Replaces the old wave-view switch, which counts only until this is first
-     * saved, and carries an old saved strobe display over to the wave's strobe look.
+     * The lens's look. Also removes 1.1's display, wave-view switch and wave look, which the lens look's rule reads
+     * only until a look is picked (docs/architecture/v2-plan.md, *Settings from 1.1*).
      */
-    suspend fun setDisplay(display: TunerDisplay)
-
-    /** Also turns an old saved strobe display into the wave, so the picked look shows. */
-    suspend fun setWaveLook(look: WaveLook)
-
-    suspend fun setMeterLook(look: MeterLook)
-
-    /** Calm (the soft glow) or Bold (a stronger, larger one) when the note is reached. */
-    suspend fun setInTuneEffect(effect: InTuneEffect)
-
-    /** Focus mode: true shows the compact layout (one big meter) on its side; false (the default) the full one. */
-    suspend fun setFocusMode(enabled: Boolean)
-
-    /** Remembers that the first-start tour was skipped or finished (or brings it back with false). */
-    suspend fun setTourSeen(seen: Boolean)
+    suspend fun setLensLook(look: LensLook)
 
     /**
-     * Decides once, at the app's start, whether this install is due the first-start tour, and saves
-     * that: an install that already has saved settings (an update from a version before the tour)
-     * counts as having seen it, a fresh one hasn't. Once decided, later saves of other settings don't
-     * change it; only [setTourSeen] does.
+     * 1.1's focus mode switch, read once (2.0, Phase 73: focus mode is the tuner's button alone, not saved): removes
+     * the saved choice and says whether it was on, so the tuner opens in focus mode that first time; false ever after,
+     * and on an install that never had it (docs/architecture/v2-plan.md, *Settings from 1.1*).
      */
-    suspend fun decideTourOnce()
+    suspend fun takeOldFocusMode(): Boolean
+
+    /**
+     * Removes what is left of settings that went before 2.0 reached players: `show_intonation_check`, Phase 71's
+     * switch for the 12th-fret check's way in, which went when the owner put the check in the picker sheet
+     * (2026-11-03). Called at every start; writes nothing where none is left (docs/architecture/v2-plan.md, *Settings
+     * from 1.1*).
+     */
+    suspend fun forgetDroppedSettings()
 
     /** Remembers that the player refused the microphone in Android's dialog ([AppSettings.micRefused]). */
     suspend fun setMicRefused(refused: Boolean)
 
-    /**
-     * Notes [nowMillis] as the first use ([AppSettings.firstUseMillis]) unless one is noted already.
-     * Called at the app's start after [decideTourOnce], so a fresh install still gets its tour.
-     */
+    /** Notes [nowMillis] as the first use ([AppSettings.firstUseMillis]) unless one is noted already. Called at the app's start. */
     suspend fun noteFirstUseOnce(nowMillis: Long)
 
     /** Remembers that Google's rating window was asked for ([AppSettings.ratingAsked]). */
@@ -160,8 +151,8 @@ interface SettingsRepository {
     /** Whether the speed trainer is on ([AppSettings.metronomeTrainerOn]). */
     suspend fun setMetronomeTrainerOn(on: Boolean)
 
-    /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
-    suspend fun setPracticeTool(tool: PracticeTool)
+    /** The Practice tab's tool picked last ([AppSettings.practiceTool]); null forgets it (nothing used yet). */
+    suspend fun setPracticeTool(tool: PracticeTool?)
 
     /** The root picked last in the chord charts and scales, one for both ([AppSettings.practiceRoot]). */
     suspend fun setPracticeRoot(root: PitchClass)

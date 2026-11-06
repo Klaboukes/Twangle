@@ -1,16 +1,6 @@
 <resources>
-    <string name="style_ancient">Antik</string>
-    <string name="style_classic">Klassisk</string>
-    <string name="style_retro">Retro</string>
-    <string name="style_contemporary">Moderne</string>
-    <string name="style_futuristic">Futuristisk</string>
-    <string name="style_space_age">Rumalder</string>
-
     <string name="spoken_sharp">%1$s med kryds</string>
     <string name="spoken_flat">%1$s med b</string>
 
-    <string name="meter_cents_label">CENT</string>
-
-    <string name="instrument_button">Instrument</string>
     <string name="instrument_button_action">Skifte instrument eller stemning</string>
 </resources>

@@ -1,17 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Practice tab (Phase 32): the tools' names on the tool button at its top and in its list (Phase 47). -->
-    <string name="practice_tool_metronome">Metronome</string>
-    <!-- Practice tab: the Chords tool's name (chord charts) on the tool button at the top and in its list. One or two words. -->
+    <!-- Practice tab: the Chords tool's name (chord charts) on its card and in the "Last time" row. One or two words. -->
     <string name="practice_tool_chords">Chords</string>
-    <!-- Practice tab: the Scales tool's name (scales on the neck, with the drone) on the tool button at the top and in its list. One or two words. -->
+    <!-- Practice tab: the Scales tool's name (scales on the neck, with the drone) on its card and in the "Last time" row. One or two words. -->
     <string name="practice_tool_scales">Scales</string>
+    <!-- Practice tab (2.0): the line under "Chords" on its big card, saying what the tool does. Short, about five words; it may wrap to two lines. -->
+    <string name="practice_card_chords">Every shape, left-handed too</string>
+    <!-- Practice tab: the line under "Scales" on its card (scales on the neck; a drone is a held note to play along with). About five words. -->
+    <string name="practice_card_scales">With a drone to play along</string>
+    <!-- Practice tab: the line under "Capo" on its card (the capo helper says on which fret to put the capo for the key you want). About five words. -->
+    <string name="practice_card_capo">Which fret for the key you want</string>
+    <!-- Practice tab: the line under "Ear training" on its card (it plays a note, you play it back on the instrument). About five words. -->
+    <string name="practice_card_ear_training">Hear a note, play it back</string>
+    <!-- Practice tab: small heading of the shortcut above the tools that reopens the tool used most recently, over its name (e.g. "Chords · C major"). -->
+    <string name="practice_last_time">Last used</string>
+    <!-- Practice tab, the "Last used" row: the tool's name and what was picked in it, e.g. "Chords · C major" or "Scales · A minor pentatonic". -->
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <!-- TalkBack: the back arrow in the top corner of a Practice tool (Chords, Scales, Capo, Ear training), which leads back to the Practice cards. -->
+    <string name="practice_back">Back</string>
     <!-- Phase 55: Ear training, a Practice tool of its own (Play it back, Intervals, Chord type). -->
     <string name="practice_tool_ear_training">Ear training</string>
-    <!-- TalkBack (Phase 47): the tool button at the top of Practice, said before the tool picked ("Tool, Chords, drop-down list"), and the list of tools it opens. -->
-    <string name="practice_tool_button">Tool</string>
-    <!-- TalkBack: the list of Practice tools that the tool button opens. -->
-    <string name="practice_tool_list">Tools</string>
+    <!-- Phase 78: the pitch trail, a Practice tool of its own (a held note drawn as a line, its last seconds falling under it), its name on its card, its top row and the "Last time" row. One or two words. -->
+    <string name="practice_tool_pitch_trail">Pitch trail</string>
+    <!-- Practice tab: the line under "Pitch trail" on its card (sing or play a long note and see how steady it is, a bend or a vibrato). About five words. -->
+    <string name="practice_card_pitch_trail">How steady is your note?</string>
     <!-- Chords (Phase 32): TalkBack, the group of root buttons (C, C♯, D …) the chord is built on. -->
     <string name="practice_root">Root</string>
     <!-- TalkBack, the group of chord type buttons (C, Cm, C7 …). -->
@@ -154,7 +166,7 @@
     <string name="practice_spoken_scale_root">%1$s, root</string>
     <!-- TalkBack, the neck: a place of the scale's colour note, ringed on the neck (Dorian's 6th, Lydian's ♯4 …). -->
     <string name="practice_spoken_scale_colour">%1$s, colour note</string>
-    <!-- Capo helper (Phase 33): its name on the tool button and in its list. -->
+    <!-- Capo helper (Phase 33): its name on its card in the Practice tab and in the "Last time" row. -->
     <string name="practice_tool_capo">Capo</string>
     <!-- Over the button that picks the chord shapes the player knows (C, D, E, G, A, Dm, Em, Am). -->
     <string name="practice_capo_shapes">Shapes I play</string>
@@ -182,6 +194,10 @@
     <string name="practice_capo_open_chord">open in Chords</string>
     <!-- The drone under Scales (Phase 48), a steady low note on the scale's root: TalkBack's name for its panel. -->
     <string name="practice_drone">Drone</string>
+    <!-- Chords: TalkBack's name for the round microphone button beside the chord's name; a tap listens, and each chord the player strums is named and charted. -->
+    <string name="practice_chords_listen">Listen</string>
+    <!-- TalkBack, the state of that Listen button while it listens to the chords strummed. -->
+    <string name="practice_chords_listening">Listening</string>
     <!-- TalkBack, the ▶ / ■ half of the drone button. -->
     <string name="practice_drone_play">Play the drone</string>
     <!-- TalkBack, the ■ half of the drone button while the drone plays: stops it. -->

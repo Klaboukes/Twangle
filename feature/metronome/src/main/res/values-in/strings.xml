@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d ketukan per menit, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">ketukan per menit · %1$s</string>
     <string name="metronome_slower">Lebih lambat</string>
     <string name="metronome_faster">Lebih cepat</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Ketuk irama</string>
     <string name="metronome_start">Mulai</string>
     <string name="metronome_stop">Hentikan</string>
     <string name="metronome_vibrate">Bergetar mengikuti ketukan</string>
@@ -21,12 +22,8 @@
     <string name="metronome_subdivision_eighths">Not seperdelapan</string>
     <string name="metronome_subdivision_triplets">Triol</string>
     <string name="metronome_subdivision_sixteenths">Not seperenam belas</string>
-    <string name="metronome_subdivision_eighths_on">Not seperdelapan di antara ketukan</string>
-    <string name="metronome_subdivision_triplets_on">Triol di antara ketukan</string>
-    <string name="metronome_subdivision_sixteenths_on">Not seperenam belas di antara ketukan</string>
     <string name="metronome_options">Opsi</string>
     <string name="metronome_trainer">Pelatih tempo</string>
-    <string name="metronome_trainer_back">Kembali ke opsi</string>
     <string name="metronome_trainer_start">Tempo awal</string>
     <string name="metronome_trainer_goal">Target</string>
     <string name="metronome_trainer_start_slower">Tempo awal lebih rendah</string>
@@ -60,7 +57,6 @@
     <string name="metronome_listen">Dengarkan</string>
     <string name="metronome_listen_stop_spoken">Berhenti mendengarkan</string>
     <string name="metronome_listening">Mendengarkan…</string>
-    <string name="metronome_listen_line_stop">Hentikan</string>
     <string name="metronome_heard">Terdengar</string>
     <string name="metronome_use">Gunakan</string>
     <string name="metronome_not_now">Nanti saja</string>

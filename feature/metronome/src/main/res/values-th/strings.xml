@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">%1$d จังหวะต่อนาที, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">จังหวะต่อนาที · %1$s</string>
     <string name="metronome_slower">ช้าลง</string>
     <string name="metronome_faster">เร็วขึ้น</string>
-    <string name="metronome_tap">แตะจังหวะ</string>
+    <string name="metronome_tap">แตะตามจังหวะ</string>
     <string name="metronome_start">เริ่ม</string>
     <string name="metronome_stop">หยุด</string>
     <string name="metronome_vibrate">สั่นตามจังหวะ</string>
@@ -21,12 +22,8 @@
     <string name="metronome_subdivision_eighths">เขบ็ต 1 ชั้น</string>
     <string name="metronome_subdivision_triplets">โน้ตสามพยางค์</string>
     <string name="metronome_subdivision_sixteenths">เขบ็ต 2 ชั้น</string>
-    <string name="metronome_subdivision_eighths_on">เขบ็ต 1 ชั้นระหว่างจังหวะ</string>
-    <string name="metronome_subdivision_triplets_on">โน้ตสามพยางค์ระหว่างจังหวะ</string>
-    <string name="metronome_subdivision_sixteenths_on">เขบ็ต 2 ชั้นระหว่างจังหวะ</string>
     <string name="metronome_options">ตัวเลือก</string>
     <string name="metronome_trainer">ฝึกเร่งความเร็ว</string>
-    <string name="metronome_trainer_back">กลับไปที่ตัวเลือก</string>
     <string name="metronome_trainer_start">เทมโปเริ่มต้น</string>
     <string name="metronome_trainer_goal">เป้าหมาย</string>
     <string name="metronome_trainer_start_slower">ลดเทมโปเริ่มต้น</string>
@@ -61,7 +58,6 @@
     <string name="metronome_listen">ฟัง</string>
     <string name="metronome_listen_stop_spoken">หยุดฟัง</string>
     <string name="metronome_listening">กำลังฟัง…</string>
-    <string name="metronome_listen_line_stop">หยุด</string>
     <string name="metronome_heard">ได้ยิน</string>
     <string name="metronome_use">ใช้</string>
     <string name="metronome_not_now">ไว้ทีหลัง</string>

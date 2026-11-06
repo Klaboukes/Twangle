@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.util.Log
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
@@ -24,6 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.math.abs
@@ -31,6 +33,10 @@ import kotlin.math.abs
 /** Plays real clicks through the speaker (at media volume), so it needs a device. */
 @RunWith(AndroidJUnit4::class)
 class AndroidMetronomePlayerTest {
+
+    /** A screen in the foreground: Android 15 (the Lenovo tablet) refuses audio focus to an app without one. */
+    @get:Rule
+    val foreground = ActivityScenarioRule(ForegroundActivity::class.java)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val player = AndroidMetronomePlayer(context)
@@ -203,6 +209,43 @@ class AndroidMetronomePlayerTest {
             audioManager.abandonAudioFocusRequest(other)
         }
         assertTrue(player.isPlaying.value)
+    }
+
+    @Test
+    fun upcomingBeatsAreToldAheadOfTheirSound() = runBlocking<Unit> {
+        val upcoming = async(start = CoroutineStart.UNDISPATCHED) {
+            player.upcomingBeats.map { Heard(it, System.nanoTime()) }.take(8).toList()
+        }
+        val heard = async(start = CoroutineStart.UNDISPATCHED) { player.beats.take(8).toList() }
+        player.start(240, Meter.FOUR_FOUR)
+        val early = withTimeout(8 * 250L + SLACK_MILLIS) { upcoming.await() }
+        val beats = withTimeout(SLACK_MILLIS) { heard.await() }
+
+        assertEquals(beats, early.map { it.beat })
+        // Once the output's timestamps run, each is told well before it is heard.
+        for (h in early.drop(3)) {
+            val aheadMillis = (h.beat.heardAtNanos - h.emittedAtNanos) / 1e6
+            assertTrue("beat ${h.beat.index} told $aheadMillis ms ahead", aheadMillis > 20)
+        }
+    }
+
+    @Test
+    fun silentClicksKeepTheBeatsOnTimeEitherWay() = runBlocking<Unit> {
+        player.setSilent(true)
+        val heard = async(start = CoroutineStart.UNDISPATCHED) { player.beats.take(12).toList() }
+        player.start(240, Meter.FOUR_FOUR)
+        player.beats.first { it.index == 5L }
+        player.setSilent(false) // heard again mid-play: the clock doesn't move
+        val beats = try {
+            withTimeout(12 * 250L + SLACK_MILLIS) { heard.await() }
+        } finally {
+            player.setSilent(false)
+        }
+
+        assertEquals((0L until 12L).toList(), beats.map { it.index })
+        for ((a, b) in beats.drop(3).zipWithNext()) {
+            assertEquals("beats ${a.index} to ${b.index}", 250.0, (b.heardAtNanos - a.heardAtNanos) / 1e6, 2.0)
+        }
     }
 
     @Test

@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Asetukset</string>
     <string name="settings_back">Takaisin</string>
+    <string name="settings_group_tuning">Viritys</string>
 
-    <string name="settings_group_pitch">Vire ja sävelnimet</string>
     <string name="settings_group_look">Ulkoasu</string>
-    <string name="settings_group_tuner_screen">Viritinnäkymä</string>
     <string name="settings_group_while_tuning">Viritettäessä</string>
-    <string name="settings_group_app">Sovellus</string>
 
     <string name="settings_a4_title">Vertailusävel (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">A4 1 Hz alemmas</string>
     <string name="settings_a4_raise">A4 1 Hz ylemmäs</string>
     <string name="settings_a4_reset">Palauta %1$d Hz</string>
+    <string name="settings_precise_title">Tarkka viritys</string>
+    <string name="settings_precise_summary">Vireessä 2 sentin tarkkuudella 5:n sijaan</string>
 
     <string name="settings_notation_title">Sävelnimet</string>
     <string name="settings_notation_sharps">Ylennykset: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Saksalainen: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Vireen tarkkuus</string>
-    <string name="settings_in_tune_precision_relaxed">Väljä: 5 sentin sisällä</string>
-    <string name="settings_in_tune_precision_precise">Tarkka: 2 sentin sisällä</string>
 
-    <string name="settings_style_title">Tyyli</string>
     <string name="settings_theme_title">Vaalea vai tumma</string>
-    <string name="settings_theme_system">Järjestelmän oletus</string>
+    <string name="settings_theme_system">Kuten puhelimessa</string>
     <string name="settings_theme_light">Vaalea</string>
     <string name="settings_theme_dark">Tumma</string>
     <string name="settings_dynamic_color_title">Taustakuvan värit</string>
     <string name="settings_dynamic_color_summary">Käytä taustakuvasi värejä</string>
+    <string name="settings_meter_title">Mittari</string>
+    <string name="settings_meter_classic">Klassinen</string>
+    <string name="settings_meter_light_arc">Valokaari</string>
+    <string name="settings_meter_strobe">Strobo</string>
 
-    <string name="settings_meter_look_title">Mittari</string>
-    <string name="settings_meter_look_classic">Klassinen</string>
-    <string name="settings_meter_look_light_arc">Valokaari</string>
-    <string name="settings_meter_look_pointers">Osoittimet</string>
-    <string name="settings_meter_look_loupe">Luuppi</string>
-    <string name="settings_meter_look_arrows">Nuolet</string>
-    <string name="settings_meter_look_light_bars">Valopalkit</string>
-    <string name="settings_in_tune_effect_title">Vire-efekti</string>
-    <string name="settings_in_tune_effect_summary">Kuinka voimakkaasti mittari hehkuu, kun sävel on vireessä</string>
-    <string name="settings_in_tune_effect_calm">Hillitty</string>
-    <string name="settings_in_tune_effect_bold">Voimakas</string>
-
-    <string name="settings_display_title">Sävelen alla</string>
-    <string name="settings_display_numbers">Luvut: montako senttiä heittää</string>
-    <string name="settings_display_wave">Aalto: liikkuva kuva valitsemassasi ulkoasussa</string>
-    <string name="settings_wave_look_title">Aallon ulkoasu</string>
-    <string name="settings_wave_look_strobe">Strobo</string>
-    <string name="settings_wave_look_ribbon">Nauha</string>
-    <string name="settings_wave_look_dots">Pisteet</string>
-    <string name="settings_wave_look_fireflies">Tulikärpäset</string>
-    <string name="settings_wave_look_loop">Rengas</string>
-    <string name="settings_wave_look_ripples">Väreet</string>
-    <string name="settings_focus_mode_title">Keskittymistila</string>
-    <string name="settings_focus_mode_summary">Kääntää näkymän kyljelleen: yksi iso mittari, helppo lukea kaukaa</string>
     <string name="settings_left_handed_title">Vasenkätinen</string>
     <string name="settings_left_handed_summary">Sointukaaviot ja asteikkokaula piirretään toisin päin pidetylle kitaralle</string>
+    <string name="settings_under_meter_title">Mittarin alla</string>
+    <string name="settings_under_meter_words">Sanat: Kiristä tai Löysää</string>
+    <string name="settings_under_meter_cents">Sentit: −12</string>
 
     <string name="settings_keep_screen_on_title">Pidä näyttö päällä</string>
     <string name="settings_keep_screen_on_summary">Näyttö pysyy päällä, kun virität</string>
     <string name="settings_vibrate_in_tune_title">Värinä vireessä</string>
     <string name="settings_vibrate_in_tune_summary">Lyhyt värähdys, kun sävel osuu vireeseen</string>
-    <string name="settings_show_tune_hint_title">Näytä viritysapu</string>
-    <string name="settings_show_tune_hint_summary">Kertoo, pitääkö kiristää vai löysätä, ja merkitsee kielen valmiiksi, kun se on vireessä</string>
+    <string name="settings_string_tick_off_title">Merkitse viritetyt kielet</string>
+    <string name="settings_string_tick_off_summary">Merkki kieleen, kun se on vireessä, ja ”Vireessä. Soita.”, kun kaikki ovat</string>
     <string name="settings_show_signal_bars_title">Näytä signaalipalkit</string>
-    <string name="settings_show_signal_bars_summary">Uteliaille: pienet palkit sävelen vieressä näyttävät, kuinka hyvin viritin kuulee sinut. Napauta niitä, niin näet luvut</string>
+    <string name="settings_show_signal_bars_summary">Uteliaille: pienet palkit kielten yläpuolella näyttävät, kuinka hyvin viritin kuulee sinut. Napauta niitä, niin näet luvut</string>
 
     <string name="settings_language_title">Kieli</string>
     <string name="settings_language_phone">Puhelimen kieli</string>
     <string name="settings_language_cancel">Peruuta</string>
-    <string name="settings_show_tour_title">Esittele sovellus</string>
-    <string name="settings_show_tour_summary">Lyhyt esittely virittimestä</string>
     <string name="about_title">Tietoja Twanglesta</string>
     <string name="settings_about_link_summary">Versio %1$s, ohjeet, tietosuoja ja lisenssit</string>
+    <string name="settings_about_name_title">Nimi</string>
+    <string name="settings_about_name_meaning">Twang on englantia ja tarkoittaa näppäillyn kielen helähdystä.</string>
     <string name="settings_about_version">Versio %1$s</string>
     <string name="settings_about_free_title">Ilmainen ikuisesti</string>
     <string name="settings_about_free_summary">Ei mainoksia, ei tiliä, ei sovelluksen sisäisiä ostoja eikä seurantaa. Ei nyt eikä myöhemmin.</string>

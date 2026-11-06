@@ -14,7 +14,9 @@ import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.eartraining.PitchListener
+import io.github.klaboukes.twangle.feature.practice.ChordListener
 import io.github.klaboukes.twangle.feature.tuner.RatingWindow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * Manual dependency injection: the only place where concrete implementations are created and wired together.
@@ -71,6 +73,32 @@ class AppContainer(private val appContext: Context) {
     val earTrainingListener: PitchListener
         get() = TunerPitchListener(earTrainingRecorder)
 
+    /**
+     * The microphone for Listen in Chords (2.0, Phase 74), open only while it listens. Its own recorder, as the
+     * metronome's Listen's: the tuner's keeps the microphone 5 s after the tuner leaves, and one recorder reads on a
+     * single thread.
+     */
+    private val chordsRecorder: AudioRecorder by lazy {
+        if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
+    }
+
+    /**
+     * The microphone for the pitch trail (2.0, Phase 78), open only while it is shown. Its own recorder, as Ear
+     * training's: the tuner's keeps the microphone 5 s after the tuner leaves, and one recorder reads on a single thread.
+     */
+    val pitchTrailRecorder: AudioRecorder
+        get() = testAudioRecorder ?: trailMicRecorder
+
+    private val trailMicRecorder: AudioRecorder by lazy {
+        if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
+    }
+
+    /** Listen in Chords: each strummed chord named from [chordsRecorder], or from a test's [testAudioRecorder]. */
+    val chordListener: ChordListener
+        get() = testAudioRecorder?.let { ChordListener(it) } ?: micChordListener
+
+    private val micChordListener: ChordListener by lazy { ChordListener(chordsRecorder) }
+
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
     val tonePlayer: TonePlayer
         get() = testTonePlayer ?: referenceTonePlayer
@@ -116,6 +144,14 @@ class AppContainer(private val appContext: Context) {
     /** A test's stand-in for Google's rating window, or null for the real one (see [testAudioRecorder]). */
     @VisibleForTesting
     var testRatingWindow: RatingWindow? = null
+
+    /**
+     * Focus mode (Phase 36; 2.0, Phase 73: the tuner's button alone turns it on, and nothing saves it): on, the whole
+     * app keeps on its side and the tuner shows the wide layout with nothing but the ruler, the lens and the word.
+     * Held here, once per process, so it outlasts the activity turning; a new start opens without it (but the first
+     * start of 2.0 after 1.1's switch was on, `SettingsRepository.takeOldFocusMode`).
+     */
+    val focusMode = MutableStateFlow(false)
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

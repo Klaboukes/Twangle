@@ -24,7 +24,8 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -46,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
@@ -78,34 +81,37 @@ import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.stringChipShading
-import io.github.klaboukes.twangle.core.designsystem.stringChipShape
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import kotlinx.coroutines.launch
 
 /**
- * The instrument and tuning panel, as the approved mock-up docs/design/combined-picker-preview.html,
- * opened from the navigation bar's Instrument item: a sheet from the bottom with the instruments along
- * the top and [instrument]'s tunings below, [tuning] ticked. Picking an instrument calls
- * [onInstrumentChange] (the tuner switches to its standard tuning) and keeps the panel open; picking a
- * tuning calls [onTuningChange] and closes it. [onDismiss] is called once it has closed (a pick, a tap
- * outside, a swipe down or Back). [customTunings] are the player's own tunings; the panel lists the
- * instrument's under its presets ([MyTunings]), each with a ⋮ menu: Edit closes the panel and calls
- * [onEditTuning], Delete asks first and then calls [onDeleteTuning] (no menu entry without its lambda).
- * With [onNewTuning], the list ends in "New tuning", which closes the panel and calls it with the
- * instrument shown. With [onLoweredByChange], a quiet "Lower by" row at the panel's bottom, under the
- * list, lowers the picked tuning a semitone at a time (as the owner chose in
- * docs/design/lower-tuning.html), calling it with the new amount and keeping the panel open; the
+ * The one picker, "What are you tuning?" (2.0, Phase 70; docs/design/v2-one-look-preview.html, *Where
+ * the picker went*), opened from the picker chip (`PickerChip`) at the top of the tuner and of the
+ * Practice tools (there without the Any note switch, as the charts need an instrument): a sheet from the bottom with the instruments as pills along the top
+ * and [instrument]'s tunings below, [tuning] ticked. Picking an instrument calls [onInstrumentChange]
+ * (the tuner switches to its standard tuning) and keeps the sheet open; picking a tuning calls
+ * [onTuningChange] and closes it. [onDismiss] is called once it has closed (a pick, a tap outside, a
+ * swipe down or Back). [customTunings] are the player's own tunings; the sheet lists the instrument's
+ * under its presets ([MyTunings]), each with a ⋯ menu: Edit closes the sheet and calls [onEditTuning]
+ * (the tuning editor), Delete asks first and then calls [onDeleteTuning] (no menu entry without its
+ * lambda). With [onNewTuning], the list ends in "New tuning", which closes the sheet and calls it with
+ * the instrument shown (the tuning editor again). With [onLoweredByChange], a quiet "Lower by" row
+ * under the list lowers the picked tuning a semitone at a time (as the owner chose in
+ * docs/design/1.x/lower-tuning.html), calling it with the new amount and keeping the sheet open; the
  * ticked row then shows the lowered tuning. [tuning] comes lowered ([Tuning.loweredBy]); a tap on its
- * row keeps it so, another row picks that tuning as written.
+ * row keeps it so, another row picks that tuning as written. With [onAnyNoteChange] (the tuner's, not
+ * the Practice tools'), the sheet ends in the Any note switch ([AnyNoteRow]), on while [anyNote]: the
+ * tuner's chromatic mode (`TunerMode.CHROMATIC`), set here since the mode switch went; a tap on it
+ * calls [onAnyNoteChange] and closes the sheet, as a pick does. With [onIntonationCheck] (the tuner's in guitar mode,
+ * for an instrument the 12th-fret check is offered for, in a build with the check; 2.0, Phase 71, the owner's pick B of
+ * docs/design/v2-intonation-way-in-preview.html, 2026-11-03) the sheet's last row is the 12th-fret check
+ * ([IntonationCheckRow]): a tap closes the sheet and calls it, which starts the check on the tuner.
  */
 @Composable
 fun InstrumentTuningPanel(
@@ -120,6 +126,9 @@ fun InstrumentTuningPanel(
     onEditTuning: ((CustomTuning) -> Unit)? = null,
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
     onLoweredByChange: ((Int) -> Unit)? = null,
+    anyNote: Boolean = false,
+    onAnyNoteChange: ((Boolean) -> Unit)? = null,
+    onIntonationCheck: (() -> Unit)? = null,
 ) {
     PickerPanel(
         instrument,
@@ -130,14 +139,20 @@ fun InstrumentTuningPanel(
         TuningActions(customTunings.filter { it.instrument == instrument }, onNewTuning, onEditTuning, onDeleteTuning),
         onDismiss = onDismiss,
         onLoweredByChange = onLoweredByChange,
+        anyNote = anyNote,
+        onAnyNoteChange = onAnyNoteChange,
+        onIntonationCheck = onIntonationCheck,
     )
 }
 
 /**
- * The panel from the bottom (a Material 3 modal bottom sheet over the dimmed tuner): its title, the
- * instruments in one row that scrolls sideways ([instrument] picked), then [instrument]'s tunings
- * with their strings ([tuning] ticked): the presets, then the player's own ([mine]). The list scrolls
- * when it is taller than the room, and opens scrolled to the ticked tuning.
+ * The sheet from the bottom (a Material 3 modal bottom sheet over the dimmed tuner): its title, the
+ * instruments as pills in one row that scrolls sideways ([instrument] picked; twelve of them would take
+ * three or four rows wrapped, so they scroll as before rather than wrap as the mock-up's five did), then
+ * [instrument]'s tunings with their strings ([tuning] ticked): the presets, then the player's own
+ * ([mine]). The list scrolls when it is taller than the room, and opens scrolled to the ticked tuning.
+ * "Lower by", Any note and the 12th-fret check stay under it, always in view; in a short window (a phone on its
+ * side) the first two side by side and the check at the list's end, so the list keeps its rows.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,6 +165,9 @@ private fun PickerPanel(
     mine: TuningActions,
     onDismiss: () -> Unit,
     onLoweredByChange: ((Int) -> Unit)?,
+    anyNote: Boolean,
+    onAnyNoteChange: ((Boolean) -> Unit)?,
+    onIntonationCheck: (() -> Unit)?,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -184,7 +202,7 @@ private fun PickerPanel(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = panelShape(MaterialTheme.styleTokens.style),
+        shape = PANEL_SHAPE,
         containerColor = scheme.surface,
         contentColor = scheme.onSurface,
         modifier = Modifier.testTag(TunerTestTags.PICKER_PANEL),
@@ -197,6 +215,11 @@ private fun PickerPanel(
             // Once they have been laid out.
             withFrameNanos { }
             ticked.bringIntoView()
+        }
+        // Last, as the check is used now and then, by those who set up their own guitar (owner, 2026-11-03); in a short
+        // window at the list's end, since a row of its own under the list left a tuning and a half in view there.
+        val intonationRow = onIntonationCheck?.let { start ->
+            @Composable { inList: Boolean -> IntonationCheckRow(onClick = { close(start) }, inList = inList) }
         }
         Column(Modifier.heightIn(max = maxHeight)) {
             val titleStyle = MaterialTheme.typography.titleLarge
@@ -244,13 +267,41 @@ private fun PickerPanel(
                 mine.onNew?.let { onNew -> NewTuningRow(onClick = { close { onNew(instrument) } }) }
                 // What the tuner can't do for this instrument, so nobody looks for it (the 12-string's strum check).
                 instrumentNoteRes(instrument.id)?.let { InstrumentNote(stringResource(it)) }
+                if (short && intonationRow != null) {
+                    HorizontalDivider(Modifier.padding(top = 10.dp), color = scheme.outlineVariant)
+                    intonationRow(true)
+                }
             }
             // The tuning as written can go this far down; the row is left out where it can't go at all
             // (a five-string bass's B0) and while another instrument's tunings are shown.
             val lowest = tuning.loweredBy + tuning.lowerableBy
-            if (onLoweredByChange != null && lowest > 0 && instrument.ownsTuning(tuning, mine.tunings)) {
+            val lowerBy: (@Composable () -> Unit)? = if (onLoweredByChange != null && lowest > 0 && instrument.ownsTuning(tuning, mine.tunings)) {
+                { LowerByRow(tuning.loweredBy, lowest, onLoweredByChange) }
+            } else {
+                null
+            }
+            val anyNoteRow = onAnyNoteChange?.let { change ->
+                @Composable {
+                    AnyNoteRow(anyNote, onChange = { on ->
+                        change(on)
+                        close {}
+                    })
+                }
+            }
+            val lastRow = intonationRow?.takeIf { !short }?.let { row -> @Composable { row(false) } }
+            if (short && lowerBy != null && anyNoteRow != null) {
+                // A short window (a phone on its side): the two side by side, so the list keeps its rows
+                // (one above the other they left a tuning and a half in view).
                 HorizontalDivider(color = scheme.outlineVariant)
-                LowerByRow(tuning.loweredBy, lowest, onLoweredByChange)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.weight(1f)) { lowerBy() }
+                    Box(Modifier.weight(1f)) { anyNoteRow() }
+                }
+            } else {
+                for (row in listOfNotNull(lowerBy, anyNoteRow, lastRow)) {
+                    HorizontalDivider(color = scheme.outlineVariant)
+                    row()
+                }
             }
         }
     }
@@ -333,6 +384,84 @@ internal fun LowerByRow(loweredBy: Int, lowest: Int, onChange: (Int) -> Unit) {
                 )
             }
         }
+    }
+}
+
+/**
+ * The sheet's last row: "Any note" over "The nearest note, no strings", and a switch, on while [on]
+ * (the tuner's chromatic mode, which shows any note and no strings). The whole row toggles it, as a
+ * Settings switch does; TalkBack hears one switch with both lines.
+ */
+@Composable
+internal fun AnyNoteRow(on: Boolean, onChange: (Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = ROW_HEIGHT)
+            .toggleable(value = on, onValueChange = onChange, role = Role.Switch)
+            .testTag(TunerTestTags.ANY_NOTE)
+            .padding(start = PANEL_PADDING, end = PANEL_PADDING, top = 6.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(R.string.tuner_any_note),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = scheme.onSurface,
+            )
+            Text(
+                stringResource(R.string.tuner_any_note_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+        // The row handles the tap, so the switch itself doesn't.
+        Switch(checked = on, onCheckedChange = null)
+    }
+}
+
+/**
+ * The sheet's last row in guitar mode: "12th-fret check" over "Is the saddle in the right place?", and a chevron at its
+ * end (pointing the way the text reads), as the row opens something rather than switching. The whole row is one button
+ * ([onClick]); TalkBack hears both lines. [inList]: at the end of the tunings' list (a short window), its text in line
+ * with theirs.
+ */
+@Composable
+internal fun IntonationCheckRow(onClick: () -> Unit, inList: Boolean = false) {
+    val scheme = MaterialTheme.colorScheme
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = ROW_HEIGHT)
+            .clickable(role = Role.Button, onClick = onClick)
+            .testTag(TunerTestTags.INTONATION_ROW)
+            .padding(horizontal = if (inList) TUNING_TEXT_INSET else PANEL_PADDING)
+            .padding(top = 6.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(R.string.tuner_intonation_check),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = scheme.onSurface,
+            )
+            Text(
+                stringResource(R.string.tuner_intonation_check_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+        // The ▾ icon turned to point along the line: › in left-to-right languages, ‹ in right-to-left ones.
+        Icon(
+            painterResource(DesignR.drawable.ic_expand_more),
+            contentDescription = null,
+            tint = scheme.onSurfaceVariant,
+            modifier = Modifier.size(CHECK_SIZE).rotate(if (rtl) 90f else -90f),
+        )
     }
 }
 
@@ -428,12 +557,11 @@ private fun InstrumentRow(selected: Instrument, onSelect: (Instrument) -> Unit) 
         horizontalArrangement = Arrangement.spacedBy(CHIP_GAP),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Instruments.all.forEachIndexed { index, instrument ->
+        Instruments.all.forEach { instrument ->
             val isSelected = instrument == selected
             InstrumentChip(
                 name = instrumentLabel(instrument),
                 selected = isSelected,
-                index = index,
                 onClick = { onSelect(instrument) },
                 modifier = if (isSelected) Modifier.bringIntoViewRequester(picked) else Modifier,
             )
@@ -442,27 +570,15 @@ private fun InstrumentRow(selected: Instrument, onSelect: (Instrument) -> Unit) 
 }
 
 /**
- * An instrument in the panel's row: its name in a thin outline in the style's button shape (Ancient's
- * pebbles alternate, Retro's push buttons are shaded, Futuristic's are neon outlines); the [selected]
- * one in the container colour with a 2 dp outline in the accent.
+ * An instrument in the sheet's row, a pill (Ink's, docs/design/v2-one-look-preview.html): its name in
+ * a thin outline; the [selected] one filled in the text colour, its name in the sheet's.
  */
 @Composable
-private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun InstrumentChip(name: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape: Shape = if (style == VisualStyle.ANCIENT) stringChipShape(style, index % 2) else MaterialTheme.shapes.small
-    val fill = when {
-        neon -> if (selected) scheme.primary.copy(alpha = NEON_PICKED_ALPHA) else Color.Transparent
-        selected -> scheme.primaryContainer
-        style == VisualStyle.RETRO -> scheme.surface.copy(alpha = RETRO_BACKING_ALPHA)
-        else -> Color.Transparent
-    }
-    val outline = when {
-        selected -> scheme.primary
-        neon -> scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA)
-        else -> scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
-    }
+    val shape: Shape = CircleShape
+    val fill = if (selected) scheme.onSurface else Color.Transparent
+    val outline = if (selected) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
     // The press effect: the chip sinks, and the light lies over its fill, under its name.
     val press = remember { MutableInteractionSource() }
     Box(
@@ -472,9 +588,8 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
             .pressSink(press)
             .clip(shape)
             .background(fill, shape)
-            .then(if (style == VisualStyle.RETRO) Modifier.stringChipShading(style, shape, scheme.onSurface) else Modifier)
-            .border(if (selected) PICKED_BORDER else BORDER, outline, shape)
-            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape, face = true), role = Role.RadioButton) {
+            .border(BORDER, outline, shape)
+            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape), role = Role.RadioButton) {
                 press.pressFlash()
                 onClick()
             }
@@ -484,7 +599,7 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
         Text(
             name,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected && !neon) scheme.onPrimaryContainer else scheme.onSurface,
+            color = if (selected) scheme.surface else scheme.onSurface,
             maxLines = 1,
         )
     }
@@ -493,7 +608,7 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
 /**
  * A tuning in the panel: its [name] over its open strings on the shared [ChoiceRow], the [selected]
  * one in the container colour with the accent outline and ticked. TalkBack says the name and the strings ("Half step down, E flat, A flat …"). The
- * player's own tunings put their ⋮ button in [trailing], at the end, outside the part that picks it.
+ * player's own tunings put their ⋯ button in [trailing], at the end, outside the part that picks it.
  */
 @Composable
 internal fun TuningRow(
@@ -533,26 +648,13 @@ internal fun TuningRow(
     }
 }
 
-/** The panel's top corners: the style's card corners, at least 14 dp (Futuristic's cut, Space Age's 20 dp). */
-private fun panelShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.FUTURISTIC -> CutCornerShape(topStart = 14.dp, topEnd = 14.dp)
-    VisualStyle.RETRO -> RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
-    VisualStyle.SPACE_AGE -> RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-    else -> RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)
-}
+/** The panel's top corners: 22 dp, Ink's large shape. */
+private val PANEL_SHAPE: Shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
 
 private val BORDER = 1.dp
-private val PICKED_BORDER = 2.dp
 
-/** The thin outline: the muted text colour at 60 %; Futuristic's neon: the accent at 55 %. */
+/** The thin outline: the muted text colour at 60 %. */
 private const val OUTLINE_ALPHA = 0.6f
-private const val NEON_OUTLINE_ALPHA = 0.55f
-
-/** Futuristic's picked instrument: the accent at 12 % behind it. */
-private const val NEON_PICKED_ALPHA = 0.12f
-
-/** Retro's push buttons stand on the surface colour at 85 %. */
-private const val RETRO_BACKING_ALPHA = 0.85f
 
 /** The panel is at most this share of the window's height, so the tuner shows above it. */
 private const val PANEL_MAX_HEIGHT = 0.74f

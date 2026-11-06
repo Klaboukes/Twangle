@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">माइक्रोफ़ोन नहीं खुल सका। उसे इस्तेमाल करने वाले दूसरे ऐप बंद करें और फिर से कोशिश करें पर टैप करें, या अपना डिवाइस रीस्टार्ट करें।</string>
     <string name="error_mic_stopped">माइक्रोफ़ोन रुक गया, शायद किसी कॉल या दूसरे ऐप के लिए। ट्यूनिंग जारी रखने के लिए फिर से कोशिश करें पर टैप करें।</string>
     <string name="error_retry">फिर से कोशिश करें</string>
+    <string name="tuner_any_note">कोई भी नोट</string>
+    <string name="tuner_any_note_summary">सबसे पास का नोट, बिना तारों के</string>
 
-    <string name="tuner_mode_strings">तार</string>
-    <string name="tuner_mode_chromatic">क्रोमैटिक</string>
     <string name="tuner_show_controls">कंट्रोल दिखाएँ</string>
     <string name="tuner_focus_mode">फ़ोकस मोड</string>
     <string name="tuner_exit_focus_mode">फ़ोकस मोड से बाहर निकलें</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">कोई नोट बजाएँ</string>
     <string name="tuner_hint_play_locked_string">%1$s तार बजाएँ</string>
     <string name="tuner_hint_playing">%1$s बज रहा है</string>
+    <string name="tuner_hint_all_in_tune">सुर में। अब बजाएँ।</string>
     <string name="tuner_string_lock">इसी तार पर लॉक करें</string>
     <string name="tuner_string_unlock">तार अपने-आप चुनें</string>
     <string name="tuner_string_locked">लॉक है</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">लॉक है, बज रहा है</string>
     <string name="tuner_string_tuned">ट्यून हो गया</string>
     <string name="tuner_string_locked_tuned">लॉक है, ट्यून हो गया</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">लॉक है, %1$s</string>
     <string name="tuner_cents_zero">0 सेंट</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d सेंट नीचे</item>
@@ -96,8 +97,14 @@
         <item quantity="other">%1$d सेंट ऊपर</item>
     </plurals>
     <string name="tuner_in_tune">सुर में</string>
-    <string name="tuner_tune_up">ऊपर ट्यून करें ↑</string>
-    <string name="tuner_tune_down">नीचे ट्यून करें ↓</string>
+    <string name="tuner_word_tighten">कसें</string>
+    <string name="tuner_word_loosen">ढीला करें</string>
+    <string name="tuner_word_too_low">बहुत नीचा</string>
+    <string name="tuner_word_too_high">बहुत ऊँचा</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d सेंट</item>
+        <item quantity="other">%1$d सेंट</item>
+    </plurals>
     <string name="tuner_tip_too_soft">थोड़ा ज़ोर से बजाएँ</string>
     <string name="tuner_tip_too_noisy">बहुत शोर है, फ़ोन को पास रखें</string>
     <string name="tuner_tip_too_loud">बहुत तेज़ है, फ़ोन को दूर रखें</string>
@@ -111,15 +118,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">ऊपर ट्यून करें</string>
-    <string name="tuner_spoken_tune_down">नीचे ट्यून करें</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, ऑक्टेव तार के साथ</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">वाद्य और ट्यूनिंग</string>
+    <string name="tuner_picker_title">आप क्या ट्यून कर रहे हैं?</string>
 
     <string name="tuner_new_tuning">नई ट्यूनिंग</string>
 
@@ -148,34 +153,20 @@
     <string name="tuner_delete_tuning_cancel">रद्द करें</string>
     <string name="tuner_strum_check">स्ट्रम चेक</string>
     <string name="tuner_strum_waiting">सभी खुले तार एक साथ स्ट्रम करें</string>
-    <string name="tuner_strum_waiting_detail">हर तार नीचे, सुर में या ऊपर दिखता है</string>
-    <string name="tuner_strum_hearing">सुन रहा है…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">%1$d तार ट्यून करना है</item>
-        <item quantity="other">%1$d तार ट्यून करने हैं</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">हर तार सुनाई नहीं दिया</string>
-    <string name="tuner_strum_all_in_tune">सभी तार सुर में हैं</string>
-    <string name="tuner_strum_tap_to_tune">ट्यून करने के लिए किसी तार पर टैप करें</string>
-    <string name="tuner_strum_again">फिर से स्ट्रम करें, या ट्यून करने के लिए किसी तार पर टैप करें</string>
-    <string name="tuner_strum_tune_string">%1$s ट्यून करें</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, सुनाई नहीं दिया</string>
     <string name="tuner_strum_spoken_waiting">%1$s, अभी स्ट्रम नहीं हुआ</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, सुनाई नहीं दिया</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, कम पक्का</string>
-    <string name="tour_title">ऐप का टूर</string>
-    <string name="tour_step_count">%2$d में से %1$d</string>
-    <string name="tour_step_spoken">%2$d में से चरण %1$d। %3$s।</string>
-    <string name="tour_readout">आप कितना हटकर हैं, और कौन-सा नोट</string>
-    <string name="tour_strum">हर तार जाँचने के लिए स्ट्रम करें</string>
-    <string name="tour_strings">टैप: सिर्फ़ यह तार ट्यून करें। दबाए रखें: सुनें</string>
-    <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
-    <string name="tour_skip">टूर छोड़ें</string>
-    <string name="tour_next">आगे</string>
-    <string name="tour_done">हो गया</string>
-    <string name="tuner_more_tools">और टूल</string>
-    <string name="tuner_tool_on">%1$s चालू</string>
+    <string name="tuner_strum_close">स्ट्रम चेक बंद करें</string>
+    <string name="tuner_strum_all_in_tune">सभी तार सुर में हैं</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%2$d में से %1$d सुर में</item>
+        <item quantity="other">%2$d में से %1$d सुर में</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">सुनाई नहीं दिया</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12वें फ़्रेट की जाँच</string>
+    <string name="tuner_intonation_check_summary">क्या सैडल सही जगह पर है?</string>
+    <string name="tuner_intonation_close">12वें फ़्रेट की जाँच बंद करें</string>
     <string name="tuner_intonation_step_open">खुला</string>
     <string name="tuner_intonation_step_fret">12वाँ फ़्रेट</string>
     <string name="tuner_intonation_choose_string">कोई तार चुनें</string>
@@ -212,37 +203,9 @@
     <string name="tuner_intonation_mark_back">सैडल पीछे करें</string>
     <string name="tuner_intonation_mark_forward">सैडल आगे करें</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, अभी जाँचा नहीं</string>
-    <string name="tour_more_tools">स्ट्रम चेक जैसे और टूल</string>
-    <string name="tuner_chord_name">कॉर्ड का नाम</string>
-    <string name="tuner_chord_major">%1$s मेजर</string>
-    <string name="tuner_chord_minor">%1$s माइनर</string>
-    <string name="tuner_chord_seventh">%1$s सेवन्थ</string>
-    <string name="tuner_chord_major_seventh">%1$s मेजर सेवन्थ</string>
-    <string name="tuner_chord_minor_seventh">%1$s माइनर सेवन्थ</string>
-    <string name="tuner_chord_sus2">%1$s सस 2</string>
-    <string name="tuner_chord_sus4">%1$s सस 4</string>
-    <string name="tuner_chord_power_chord">%1$s पावर कॉर्ड</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s सेवन्थ शार्प नाइन्थ</string>
-    <string name="tuner_chord_minor_ninth">%1$s माइनर नाइन्थ</string>
-    <string name="tuner_chord_major_ninth">%1$s मेजर नाइन्थ</string>
-    <string name="tuner_chord_slash">%1$s, बेस में %2$s</string>
-    <string name="tuner_chord_bass">बेस</string>
-    <string name="tuner_chord_strum">एक कॉर्ड स्ट्रम करें</string>
-    <string name="tuner_chord_strum_detail">हर तार बजने दें</string>
-    <string name="tuner_chord_next">अगले कॉर्ड के लिए फिर स्ट्रम करें</string>
-    <string name="tuner_chord_let_ring">उसे बजने दें</string>
-    <string name="tuner_chord_unclear">साफ़ कॉर्ड नहीं</string>
-    <string name="tuner_chord_unclear_detail">कॉर्ड के सभी तार स्ट्रम करें</string>
-    <string name="tuner_chord_none">अभी कोई कॉर्ड नहीं</string>
-    <string name="tuner_chord_spoken_notes">सुर %1$s</string>
-    <string name="tuner_chord_spoken_recent">उससे पहले %1$s</string>
-    <string name="tuner_pitch_trail">सुर की रेखा</string>
-    <string name="tuner_trail_spoken">सुर की रेखा, %1$s</string>
-    <string name="tuner_trail_no_note">कोई सुर नहीं</string>
-    <string name="tuner_trail_steady">स्थिर, %1$s</string>
-    <string name="tuner_trail_wavering">डगमगाता, %1$s</string>
     <string name="tuner_trail_bending_up">ऊपर खिंच रहा</string>
     <string name="tuner_trail_bending_down">नीचे जा रहा</string>
+    <string name="tuner_spoken_wavering">डगमगाता हुआ</string>
     <string name="tuner_screen_off_soon">स्क्रीन जल्द ही बंद हो जाएगी</string>
     <string name="tuner_screen_off_keep_on">चालू रखने के लिए टैप करें</string>
 </resources>

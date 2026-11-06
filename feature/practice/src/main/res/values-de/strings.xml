@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akkorde</string>
     <string name="practice_tool_scales">Tonleitern</string>
+    <string name="practice_card_chords">Jeder Griff, auch für Linkshänder</string>
+    <string name="practice_card_scales">Mit Bordun zum Mitspielen</string>
+    <string name="practice_card_capo">Welcher Bund für deine Wunschtonart</string>
+    <string name="practice_card_ear_training">Hör einen Ton, spiel ihn nach</string>
+    <string name="practice_last_time">Zuletzt genutzt</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Zurück</string>
     <string name="practice_tool_ear_training">Gehörbildung</string>
-    <string name="practice_tool_button">Werkzeug</string>
-    <string name="practice_tool_list">Werkzeuge</string>
+    <string name="practice_tool_pitch_trail">Tonverlauf</string>
+    <string name="practice_card_pitch_trail">Wie stabil ist dein Ton?</string>
     <string name="practice_root">Grundton</string>
     <string name="practice_chord_type">Akkordart</string>
     <string name="practice_chord_major">%1$s-Dur</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">Griff %1$s, klingt als %2$s</string>
     <string name="practice_capo_open_chord">in Akkorde öffnen</string>
     <string name="practice_drone">Bordun</string>
+    <string name="practice_chords_listen">Zuhören</string>
+    <string name="practice_chords_listening">Hört zu</string>
     <string name="practice_drone_play">Bordun abspielen</string>
     <string name="practice_drone_stop">Bordun stoppen</string>
     <string name="practice_drone_sound_spoken">Bordunklang: %1$s</string>

@@ -173,25 +173,25 @@ class IntonationInterpreterTest {
 
     @Test
     fun `the tools offered follow the switches and the instrument`() {
-        val trail = TunerTool.PITCH_TRAIL
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.UKULELE))
-        // Basses aren't strummed in chords; the violin has neither frets nor chords; the pitch trail draws any note.
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BASS_4))
-        assertEquals(listOf(TunerTool.STRUM_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.VIOLIN))
+        val both = listOf(TunerTool.INTONATION_CHECK, TunerTool.STRUM_CHECK)
+        assertEquals(both, tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR))
+        assertEquals(both, tunerToolsFor(ToolSwitches.ALL_ON, Instruments.UKULELE))
+        assertEquals(both, tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BASS_4))
+        // The violin has no frets: only the strum check (as in 1.1).
+        assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.VIOLIN))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR))
-        // The 12-string's octave strings blur a strum and a chord: only the 12th-fret check and the trail.
-        assertEquals(listOf(TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR_12))
+        // The 12-string's octave strings blur a strum: only the 12th-fret check.
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR_12))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR_12))
-        // The banjo: a strum and a chord read well; no 12th-fret check (its short string's octave is at the 17th).
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BANJO_5))
-        // Each tool follows its own switch.
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(intonationCheck = false), Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(chordNaming = false), Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON.copy(pitchTrail = false), Instruments.GUITAR))
-        assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_ON.copy(pitchTrail = false), Instruments.VIOLIN))
-        assertEquals(listOf(TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false), Instruments.GUITAR))
-        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false, pitchTrail = false), Instruments.VIOLIN))
+        // The banjo: a strum reads well; no 12th-fret check (its short string's octave is at the 17th).
+        assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BANJO_5))
+        // Each tool follows its own switch; the chord name's is no tuner tool.
+        assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_ON.copy(intonationCheck = false), Instruments.GUITAR))
+        assertEquals(listOf(TunerTool.INTONATION_CHECK), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false), Instruments.GUITAR))
+        assertEquals(both, tunerToolsFor(ToolSwitches.ALL_ON.copy(chordNaming = false), Instruments.GUITAR))
+        // The pitch trail is no tool since 2.0's Phase 71 (the trail is the lens's look): its switch offers nothing here.
+        assertEquals(tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR), tunerToolsFor(ToolSwitches.ALL_ON.copy(pitchTrail = false), Instruments.GUITAR))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF.copy(pitchTrail = true), Instruments.VIOLIN))
     }
 
     @Test

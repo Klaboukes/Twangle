@@ -1,16 +1,6 @@
 <resources>
-    <string name="style_ancient">โบราณ</string>
-    <string name="style_classic">คลาสสิก</string>
-    <string name="style_retro">เรโทร</string>
-    <string name="style_contemporary">ร่วมสมัย</string>
-    <string name="style_futuristic">ล้ำอนาคต</string>
-    <string name="style_space_age">ยุคอวกาศ</string>
-
     <string name="spoken_sharp">%1$s ชาร์ป</string>
     <string name="spoken_flat">%1$s แฟลต</string>
 
-    <string name="meter_cents_label">เซนต์</string>
-
-    <string name="instrument_button">เครื่องดนตรี</string>
     <string name="instrument_button_action">เปลี่ยนเครื่องดนตรีหรือการตั้งสาย</string>
 </resources>

@@ -7,9 +7,10 @@
         <item quantity="many">%1$d batidas por minuto, %2$s</item>
         <item quantity="other">%1$d batidas por minuto, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">batidas por minuto · %1$s</string>
     <string name="metronome_slower">Mais lento</string>
     <string name="metronome_faster">Mais rápido</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Bata o tempo</string>
     <string name="metronome_start">Iniciar</string>
     <string name="metronome_stop">Parar</string>
     <string name="metronome_vibrate">Vibrar na batida</string>
@@ -23,12 +24,8 @@
     <string name="metronome_subdivision_eighths">Colcheias</string>
     <string name="metronome_subdivision_triplets">Tercinas</string>
     <string name="metronome_subdivision_sixteenths">Semicolcheias</string>
-    <string name="metronome_subdivision_eighths_on">Colcheias entre os tempos</string>
-    <string name="metronome_subdivision_triplets_on">Tercinas entre os tempos</string>
-    <string name="metronome_subdivision_sixteenths_on">Semicolcheias entre os tempos</string>
     <string name="metronome_options">Opções</string>
     <string name="metronome_trainer">Treino de andamento</string>
-    <string name="metronome_trainer_back">Voltar às opções</string>
     <string name="metronome_trainer_start">Andamento inicial</string>
     <string name="metronome_trainer_goal">Meta</string>
     <string name="metronome_trainer_start_slower">Andamento inicial mais baixo</string>
@@ -68,7 +65,6 @@
     <string name="metronome_listen">Ouvir</string>
     <string name="metronome_listen_stop_spoken">Parar de ouvir</string>
     <string name="metronome_listening">Ouvindo…</string>
-    <string name="metronome_listen_line_stop">Parar</string>
     <string name="metronome_heard">Detectado</string>
     <string name="metronome_use">Usar</string>
     <string name="metronome_not_now">Agora não</string>

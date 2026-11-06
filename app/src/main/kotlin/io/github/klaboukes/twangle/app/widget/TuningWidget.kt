@@ -27,8 +27,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
- * The home-screen widget (Phase 20): the instrument and tuning the tuner is set to ("Guitar ·
- * Standard", or "Chromatic") in the user's style, and one tap opens the tuner. It is plain
+ * The home-screen widget (Phase 20; 2.0's look in Phase 75): the instrument and tuning the tuner is set to
+ * ("Guitar · Standard", or "Any note") in a chip like the tuner's picker chip, "Open the tuner" under it in the quiet
+ * face of the tuner's word, in the app's colours, and one tap opens the tuner. It is plain
  * [RemoteViews] (no Glance): one small layout, no extra library. It never touches the microphone;
  * the tuner it opens does that, as when opened from the launcher.
  *
@@ -110,19 +111,27 @@ object TuningWidget {
     }
 
     /**
-     * The style's colours: its background on the tile, ink for the tuning, the muted colour under it
-     * and the accent on the tuning fork. With the theme set to follow the phone (Android 12+), the
-     * launcher picks the light or dark set itself, so a switch of the phone's dark mode needs no redraw.
+     * The app's colours (Ink, or the wallpaper's), as the tuner's top: its background on the tile, the chip as the
+     * picker chip (the surface, a fine line in the outline colour, the tuning in ink) and the muted colour under it.
+     * With the theme set to follow the phone (Android 12+), the launcher picks the light or dark set itself, so a
+     * switch of the phone's dark mode needs no redraw.
      */
     private fun RemoteViews.paint(context: Context, state: WidgetState) {
-        fun colors(dark: Boolean) = colorSchemeFor(context, state.style, dark, state.dynamicColor).let {
-            intArrayOf(it.background.toArgb(), it.onBackground.toArgb(), it.onSurfaceVariant.toArgb(), it.primary.toArgb())
+        fun colors(dark: Boolean) = colorSchemeFor(context, dark, state.dynamicColor).let {
+            intArrayOf(
+                it.background.toArgb(),
+                it.outlineVariant.toArgb(),
+                it.surface.toArgb(),
+                it.onSurface.toArgb(),
+                it.onSurfaceVariant.toArgb(),
+            )
         }
         val targets = listOf(
             R.id.widget_backdrop to "setColorFilter",
+            R.id.widget_chip_line to "setColorFilter",
+            R.id.widget_chip to "setColorFilter",
             R.id.widget_title to "setTextColor",
             R.id.widget_subtitle to "setTextColor",
-            R.id.widget_icon to "setColorFilter",
         )
         if (state.theme == ThemeMode.SYSTEM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val light = colors(dark = false)

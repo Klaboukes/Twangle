@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akorlar</string>
     <string name="practice_tool_scales">Gamlar</string>
+    <string name="practice_card_chords">Her basış, solak için de</string>
+    <string name="practice_card_scales">Dem eşliğinde çal</string>
+    <string name="practice_card_capo">İstediğin ton için hangi perde</string>
+    <string name="practice_card_ear_training">Notayı dinle, sen de çal</string>
+    <string name="practice_last_time">Son kullanılan</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">Geri</string>
     <string name="practice_tool_ear_training">Kulak eğitimi</string>
-    <string name="practice_tool_button">Araç</string>
-    <string name="practice_tool_list">Araçlar</string>
+    <string name="practice_tool_pitch_trail">Ses izi</string>
+    <string name="practice_card_pitch_trail">Notan ne kadar sabit?</string>
     <string name="practice_root">Kök nota</string>
     <string name="practice_chord_type">Akor türü</string>
     <string name="practice_chord_major">%1$s majör</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">%1$s basışı, %2$s olarak duyulur</string>
     <string name="practice_capo_open_chord">Akorlar\'da aç</string>
     <string name="practice_drone">Dem</string>
+    <string name="practice_chords_listen">Dinle</string>
+    <string name="practice_chords_listening">Dinliyor</string>
     <string name="practice_drone_play">Demi çal</string>
     <string name="practice_drone_stop">Demi durdur</string>
     <string name="practice_drone_sound_spoken">Dem sesi: %1$s</string>

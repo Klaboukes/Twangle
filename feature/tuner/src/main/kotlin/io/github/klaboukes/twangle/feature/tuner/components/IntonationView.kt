@@ -1,20 +1,10 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
-import io.github.klaboukes.twangle.core.designsystem.faceFill
-import io.github.klaboukes.twangle.core.designsystem.faceOutline
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
+import io.github.klaboukes.twangle.core.designsystem.controlOutline
+import io.github.klaboukes.twangle.core.designsystem.stringChipFill
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,14 +30,9 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
@@ -64,7 +48,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -72,19 +55,19 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.progressBarRangeInfo
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -92,16 +75,12 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.numberFontFor
-import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
@@ -109,15 +88,11 @@ import io.github.klaboukes.twangle.core.dsp.intonation.IntonationVerdict
 import io.github.klaboukes.twangle.core.dsp.intonation.SaddleMove
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.IntonationSnag
 import io.github.klaboukes.twangle.feature.tuner.IntonationStep
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import java.text.NumberFormat
 import kotlin.math.roundToInt
 
@@ -150,19 +125,23 @@ fun spokenMark(mark: StringMark): String = stringResource(
  * The 12th-fret check's readout, in the meter's place and at its 2:1 shape (like the strum check's
  * panel), drawn in the style's colours and faces on a calm field and sized by its width, not the font
  * size. Its top says where the check is (Open · 12th fret). Then, by [TunerUiState.IntonationCheck.step]:
- * - choosing: the two steps and an empty ring (the line under it asks for a string), or once a string has a result, one column per string (its name, its
- *   mark, its cents), each a button for its string, as on the string row ([onStringClick]);
+ * - choosing: the two steps and an empty ring (the line under it asks for a string), or once a string has a result, every
+ *   string as a small peg in the pegs' order (2.0, Phase 71): its name in a round face ringed in its result's colour,
+ *   its mark on the face's corner as on the peg below, its cents under it. The pegs below the panel pick the string
+ *   (a tap on one checks it, again), so the panel itself has nothing else to tap;
  * - the open string and the 12th fret: a ring that fills while the steady note is taken, round the
  *   note asked for (A₂, then A₃);
  * - the verdict: the string from the neck to its saddle, an arrow for the move (a check mark when
  *   fine), and how far the 12th fret is from the octave ("8 cents sharp").
+ *
+ * With [onClose], a small × in its top end corner ends the check ([IntonationCloseButton]; 2.0, Phase 71: the check is
+ * opened from the picker sheet, so the panel carries its own way out, as Back does).
  */
 @Composable
 fun IntonationPanel(
     state: TunerUiState.IntonationCheck,
     modifier: Modifier = Modifier,
-    onStringClick: ((Int) -> Unit)? = null,
-    toneSounding: Boolean = false,
+    onClose: (() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
@@ -173,6 +152,10 @@ fun IntonationPanel(
         accent = scheme.primary,
         inTune = tokens.inTune,
         background = scheme.background,
+        onAccent = scheme.onPrimary,
+        onInTune = tokens.onInTune,
+        face = stringChipFill(scheme),
+        edge = controlOutline(scheme),
     )
     val summary = state.step == IntonationStep.CHOOSE && state.results.any { it != null }
     Box(
@@ -193,10 +176,12 @@ fun IntonationPanel(
             },
     ) {
         if (summary) {
-            IntonationSummary(state, colours, onStringClick, toneSounding)
+            IntonationSummary(state, colours)
         } else {
             IntonationStepView(state, colours)
         }
+        // In a box of its own: the tooltip's wrapper doesn't hand the alignment on.
+        if (onClose != null) Box(Modifier.align(Alignment.TopEnd)) { IntonationCloseButton(onClose) }
     }
 }
 
@@ -212,7 +197,7 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
     val saddle = stringResource(R.string.tuner_intonation_saddle)
     val labelStyle = MaterialTheme.typography.labelLarge.copy(lineHeight = TextUnit.Unspecified)
     val displayStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
-    val numberStyle = TextStyle(fontFamily = numberFontFor(tokens.style), fontFeatureSettings = "lnum")
+    val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
     val result = state.result
     val figure = result?.let { centsPhrase(it.offsetCents) }.orEmpty()
     val stringNote = state.string?.let { state.tuning.strings[it] }
@@ -359,28 +344,21 @@ private fun arrowPath(from: Offset, to: Offset, head: Float): Path = Path().appl
 }
 
 /**
- * Every string's result once one has been checked: a column per string in the string row's order,
- * its name, its mark (or "–" not checked yet) and its cents. Each column is a button that checks its
- * string (again); TalkBack hears "A 2, move saddle back, 8 cents sharp".
+ * Every string's result once one has been checked, drawn as the pegs (2.0, Phase 71): a column per string in the
+ * pegs' order, its name in a round face whose ring is its result's colour (the "in tune" colour when fine, the
+ * accent when its saddle moves, the plain edge not checked yet), its mark on the face's top end corner as the peg
+ * below carries it, and its cents under it ("–" not checked yet). Nothing here is a button: the pegs below pick the
+ * string. TalkBack hears each column: "A 2, move saddle back, 8 cents sharp".
  */
 @Composable
-private fun IntonationSummary(
-    state: TunerUiState.IntonationCheck,
-    colours: IntonationColours,
-    onStringClick: ((Int) -> Unit)?,
-    toneSounding: Boolean,
-) {
-    val tokens = MaterialTheme.styleTokens
+private fun IntonationSummary(state: TunerUiState.IntonationCheck, colours: IntonationColours) {
     val measurer = rememberTextMeasurer()
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
-    val nameStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
-    val numberStyle = TextStyle(fontFamily = numberFontFor(tokens.style), fontFeatureSettings = "lnum")
-    val numberScale = if (tokens.style == VisualStyle.FUTURISTIC || tokens.style == VisualStyle.SPACE_AGE) WIDE_FACE_SCALE else 1f
-    val checkLabel = stringResource(R.string.tuner_intonation_check_string)
-    val stopLabel = stringResource(R.string.tuner_string_stop_tone)
+    val nameStyle = MaterialTheme.typography.titleMedium.copy(lineHeight = TextUnit.Unspecified)
+    val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
     val notChecked = stringResource(R.string.tuner_intonation_spoken_not_checked)
-    val pressShape = pickerButtonShape(tokens.style, MaterialTheme.shapes.medium)
+    val separator = stringResource(R.string.tuner_spoken_separator)
     Row(Modifier.fillMaxSize().testTag(TunerTestTags.INTONATION_PANEL), horizontalArrangement = Arrangement.SpaceEvenly) {
         state.tuning.strings.forEachIndexed { index, note ->
             val name = state.notation.nameIn(state.tuning, note.pitchClass)
@@ -390,12 +368,9 @@ private fun IntonationSummary(
             val spoken = if (mark == null || result == null) {
                 notChecked.format(spokenName)
             } else {
-                stringResource(R.string.tuner_strum_spoken_string, spokenName, spokenMark(mark) + stringResource(R.string.tuner_spoken_separator) + centsPhrase(result.offsetCents))
+                stringResource(R.string.tuner_strum_spoken_string, spokenName, spokenMark(mark) + separator + centsPhrase(result.offsetCents))
             }
-            val click: (() -> Unit)? = onStringClick?.let { { it(index) } }
-            val clickLabel = if (toneSounding) stopLabel else checkLabel.format(spokenName)
             val label = result?.let { signedCents(it.offsetCents) } ?: NOT_CHECKED_MARK
-            val interactions = remember { MutableInteractionSource() }
             Box(
                 Modifier
                     .weight(1f)
@@ -403,57 +378,45 @@ private fun IntonationSummary(
                     .clearAndSetSemantics {
                         contentDescription = spoken
                         testTag = TunerTestTags.intonationString(index)
-                        if (click != null) {
-                            role = Role.Button
-                            onClick(label = clickLabel) {
-                                click()
-                                true
-                            }
-                        }
                     }
                     .drawWithCache {
                         val u = size.height / UNITS_HIGH
-                        val maxText = size.width * 0.9f
+                        // As round as the pegs, as big as the column lets it be.
+                        val radius = minOf(PEG_RADIUS * u, size.width * PEG_WIDTH_SHARE / 2f)
                         val nameLayout = measurer.fitted(
                             buildAnnotatedString {
                                 append(musicText(name))
                                 withStyle(SpanStyle(fontSize = OCTAVE_SIZE.em, baselineShift = BaselineShift(OCTAVE_DROP))) { append(note.octave.toString()) }
                             },
-                            nameStyle.copy(color = colours.ink, fontSize = (COLUMN_NAME_UNITS * u).toSpNoScale(this)),
-                            maxText,
+                            nameStyle.copy(color = colours.ink, fontSize = (radius * PEG_NAME_SHARE).toSpNoScale(this)),
+                            radius * 1.6f,
                         )
-                        val labelColour = when (mark) {
+                        val resultColour = when (mark) {
                             null -> colours.muted
                             StringMark.FINE -> colours.inTune
                             else -> colours.accent
                         }
                         val labelLayout = measurer.fitted(
                             AnnotatedString(label),
-                            numberStyle.copy(color = labelColour, fontSize = (COLUMN_LABEL_UNITS * u * numberScale).toSpNoScale(this)),
-                            maxText,
+                            numberStyle.copy(color = resultColour, fontSize = (COLUMN_LABEL_UNITS * u).toSpNoScale(this)),
+                            size.width * 0.9f,
                         )
-                        val x = size.width / 2f
+                        val centre = Offset(size.width / 2f, PEG_Y * u)
+                        val ring = if (mark == null) 1.dp.toPx() else PEG_RING * u
                         onDrawBehind {
-                            drawText(nameLayout, topLeft = Offset(x - nameLayout.size.width / 2f, COLUMN_NAME_Y * u - nameLayout.size.height / 2f))
-                            val centre = Offset(x, COLUMN_MARK_Y * u)
-                            if (mark == null) {
-                                drawCircle(colours.track, COLUMN_MARK_RADIUS * u, centre, style = Stroke(1.6f * u))
-                            } else {
-                                drawMark(mark, centre, COLUMN_MARK_RADIUS * u, if (mark == StringMark.FINE) colours.inTune else colours.accent, colours.background)
+                            drawCircle(colours.face, radius, centre)
+                            drawCircle(if (mark == null) colours.edge else resultColour, radius - ring / 2f, centre, style = Stroke(ring))
+                            drawText(nameLayout, topLeft = Offset(centre.x - nameLayout.size.width / 2f, centre.y - nameLayout.size.height / 2f))
+                            if (mark != null) {
+                                // On the face's top end corner, as on the peg (stringMarkBadge), ringed in the background.
+                                val badge = radius * BADGE_SHARE
+                                val at = Offset(centre.x + radius * 0.7f, centre.y - radius * 0.7f)
+                                drawCircle(colours.background, badge + 1.5.dp.toPx(), at)
+                                drawMark(mark, at, badge, resultColour, if (mark == StringMark.FINE) colours.onInTune else colours.onAccent)
                             }
-                            drawText(labelLayout, topLeft = Offset(x - labelLayout.size.width / 2f, COLUMN_LABEL_Y * u - labelLayout.size.height / 2f))
+                            drawText(labelLayout, topLeft = Offset(centre.x - labelLayout.size.width / 2f, COLUMN_LABEL_Y * u - labelLayout.size.height / 2f))
                         }
-                    }
-                    .then(
-                        if (click == null) {
-                            Modifier
-                        } else {
-                            Modifier
-                                .clickable(interactions, indication = null, onClickLabel = clickLabel, role = Role.Button, onClick = click)
-                                .clip(pressShape)
-                                .indication(interactions, LocalIndication.current)
-                        },
-                    ),
+                    },
             )
         }
     }
@@ -694,130 +657,34 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 }
 
 /**
- * The tuner's tools (strum check, the 12th-fret check, the chord name, the pitch trail; later ones join) behind one small "more tools"
- * button above the strings (three tiles and a plus, Material Symbols `dashboard_customize`, no word), where the strum
- * check's switch sits when it is the only tool: the style's button ([StyleButton]), picked (the container colour with
- * a 2 dp accent outline) while a tool is on. A tap opens a small menu that lifts softly off the screen (no outline):
- * each tool with its icon and name, the one that is on marked as Practice's tool menu marks its tool (the container
- * colour with a 2 dp accent outline; Phase 63, never green, which means in tune); picking one turns it on (and the
- * other off), picking the one that is on turns it off. TalkBack: "More tools, 12th-fret check on, button" (just
- * "More tools" with none on), and each tool in the menu as a switch, on or off, since one can be turned off and
- * leave none; a long-press shows its name in a tooltip. With [inTour] its outline is the tour's step.
+ * The 12th-fret check's way out (2.0, Phase 71; owner, 2026-11-03): a small × in the panel's top end corner, the
+ * style's button ([StyleButton]) with a [CLOSE_FACE] outline in a 48 dp touch target. A tap ends the check and the
+ * tuner is back; Back does the same. TalkBack hears "Close the 12th-fret check"; a long-press shows it in a tooltip.
+ * The strum check's panel has the same × with its own [label] and [tag].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoreToolsButton(
-    tools: List<TunerTool>,
-    active: TunerTool?,
-    onToolChange: (TunerTool, Boolean) -> Unit,
+internal fun IntonationCloseButton(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    inTour: Boolean = false,
+    label: String = stringResource(R.string.tuner_intonation_close),
+    tag: String = TunerTestTags.INTONATION_CLOSE,
 ) {
-    val scheme = MaterialTheme.colorScheme
-    val label = stringResource(R.string.tuner_more_tools)
-    val state = active?.let { stringResource(R.string.tuner_tool_on, toolName(it)) }
-    var open by remember { mutableStateOf(false) }
-    // The menu ends in line with the button wherever it opens (Phase 52): Material opens it from the button's start
-    // where it fits, which on a tablet upright pushed it against the screen's edge (3 dp from it), and from its end
-    // elsewhere. Moved by the button's width less its own, its start-aligned place is the end-aligned one, so
-    // Material keeps it there. Its width is known once it has been measured: the first frame of the first opening,
-    // still faded out, may stand elsewhere.
-    var buttonWidth by remember { mutableIntStateOf(0) }
-    var menuWidth by remember { mutableIntStateOf(0) }
-    Box(modifier.onSizeChanged { buttonWidth = it.width }) {
-        TooltipBox(
-            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-            tooltip = { PlainTooltip { Text(label) } },
-            state = rememberTooltipState(),
-        ) {
-            StyleButton(
-                onClick = { open = true },
-                label = label,
-                face = STRUM_TOGGLE_SIZE,
-                picked = active != null,
-                state = state,
-                faceModifier = Modifier
-                    .testTag(TunerTestTags.MORE_TOOLS)
-                    .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier),
-            ) {
-                Icon(painterResource(R.drawable.ic_more_tools), contentDescription = null, modifier = Modifier.size(MORE_ICON_SIZE))
-            }
-        }
-        val density = LocalDensity.current
-        DropdownMenu(
-            expanded = open,
-            onDismissRequest = { open = false },
-            shape = MaterialTheme.shapes.medium,
-            containerColor = scheme.surfaceContainerHigh,
-            tonalElevation = 0.dp,
-            shadowElevation = MENU_LIFT,
-            offset = with(density) { DpOffset((buttonWidth - menuWidth).toDp(), 0.dp) },
-            // The menu is a window of its own: UI Automator finds its rows by tag only when it says so too (as MainActivity's root does).
-            modifier = Modifier
-                .onSizeChanged { menuWidth = it.width }
-                .testTag(TunerTestTags.MORE_TOOLS_MENU)
-                .semantics { testTagsAsResourceId = true },
-        ) {
-            ScreenDensity(density) {
-                // As wide as the longest name, every row as wide as the menu, so each mark is the same width.
-                Column(Modifier.width(IntrinsicSize.Max).padding(horizontal = MENU_PADDING)) {
-                    for (tool in tools) {
-                        val picked = tool == active
-                        ToolRow(tool, picked) {
-                            open = false
-                            onToolChange(tool, !picked)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * One tool in the "more tools" menu, as a row of Practice's tool menu: its icon and name in a 48 dp row, the one
- * that is on ([picked]) in the container colour with a 2 dp accent outline. TalkBack hears it as a switch.
- */
-@Composable
-private fun ToolRow(tool: TunerTool, picked: Boolean, onToggle: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        Modifier
-            .testTag(TunerTestTags.tool(tool))
-            .fillMaxWidth()
-            .heightIn(min = MENU_ROW_HEIGHT)
-            .pressFeedback(source, MaterialTheme.shapes.medium, fill = if (picked) faceFill(picked = true) else Color.Transparent, outline = if (picked) faceOutline(picked = true) else null)
-            .toggleable(value = picked, interactionSource = source, indication = null, role = Role.Switch) {
-                source.pressFlash()
-                onToggle()
-            }
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below),
+        tooltip = { PlainTooltip { Text(label) } },
+        state = rememberTooltipState(),
+        modifier = modifier,
     ) {
-        val color = if (picked) scheme.onPrimaryContainer else scheme.onSurface
-        Icon(painterResource(toolIcon(tool)), contentDescription = null, tint = color, modifier = Modifier.size(MENU_ICON_SIZE))
-        Spacer(Modifier.width(12.dp))
-        Text(toolName(tool), color = color, style = MaterialTheme.typography.labelLarge.copy(fontSize = MENU_NAME_SIZE), modifier = Modifier.padding(end = 8.dp))
+        StyleButton(
+            onClick = onClick,
+            label = label,
+            face = CLOSE_FACE,
+            faceModifier = Modifier.testTag(tag),
+        ) {
+            Icon(painterResource(R.drawable.ic_close), contentDescription = null, modifier = Modifier.size(CLOSE_ICON_SIZE))
+        }
     }
-}
-
-/** A tool's name: "Strum check", "12th-fret check", "Chord name", "Pitch trail". */
-@Composable
-fun toolName(tool: TunerTool): String = stringResource(
-    when (tool) {
-        TunerTool.STRUM_CHECK -> R.string.tuner_strum_check
-        TunerTool.INTONATION_CHECK -> R.string.tuner_intonation_check
-        TunerTool.CHORD_NAME -> R.string.tuner_chord_name
-        TunerTool.PITCH_TRAIL -> R.string.tuner_pitch_trail
-    },
-)
-
-private fun toolIcon(tool: TunerTool): Int = when (tool) {
-    TunerTool.STRUM_CHECK -> R.drawable.ic_strum
-    TunerTool.INTONATION_CHECK -> R.drawable.ic_twelfth_fret
-    TunerTool.CHORD_NAME -> R.drawable.ic_chord_name
-    TunerTool.PITCH_TRAIL -> R.drawable.ic_pitch_trail
 }
 
 /**
@@ -856,6 +723,10 @@ private class IntonationColours(
     val accent: Color,
     val inTune: Color,
     val background: Color,
+    val onAccent: Color,
+    val onInTune: Color,
+    val face: Color,
+    val edge: Color,
 )
 
 private const val PANEL_ASPECT_RATIO = 2f
@@ -898,24 +769,60 @@ private const val DRAWING_LABEL_UNITS = 12f
 private const val FIGURE_Y = 152f
 private const val FIGURE_UNITS = 22f
 
-private const val COLUMN_NAME_Y = 30f
-private const val COLUMN_NAME_UNITS = 24f
-private const val COLUMN_MARK_Y = 88f
-private const val COLUMN_MARK_RADIUS = 16f
+/** The summary's pegs: their centre, their radius at most (in units), at most this share of a column's width, the name this share of the radius, the result's ring, the mark's disc this share of the radius. */
+private const val PEG_Y = 72f
+private const val PEG_RADIUS = 34f
+private const val PEG_WIDTH_SHARE = 0.8f
+private const val PEG_NAME_SHARE = 0.75f
+private const val PEG_RING = 3.5f
+private const val BADGE_SHARE = 0.42f
 private const val COLUMN_LABEL_Y = 140f
 private const val COLUMN_LABEL_UNITS = 19f
 private const val NOT_CHECKED_MARK = "–"
-private const val WIDE_FACE_SCALE = 0.82f
 
 private val BUTTON_WIDTH = 148.dp
 private val BUTTON_GAP = 12.dp
 private val BUTTON_ROW_TOP_GAP = 6.dp
-private val MORE_ICON_SIZE = 24.dp
-private val MENU_ICON_SIZE = 24.dp
-private val MENU_LIFT = 8.dp
 
-/** The menu's rows: this far in from its sides, at least this tall, their names this big (as Practice's tool menu). */
-private val MENU_PADDING = 6.dp
-private val MENU_ROW_HEIGHT = 48.dp
-private val MENU_NAME_SIZE = 16.sp
+/** The close button's outline in the panel's corner, smaller than the tuner's round buttons, and its ×. */
+private val CLOSE_FACE = 36.dp
+private val CLOSE_ICON_SIZE = 20.dp
 private val BADGE_RADIUS = 8.dp
+
+/** The tuner's round buttons' outline (focus mode's): 44 dp like the style's buttons, in a 48 dp touch target. */
+internal val TUNER_BUTTON_FACE = 44.dp
+
+/**
+ * Every one of [texts] drawn by [text] is measured, and this takes the widest width and the tallest
+ * height of them, but only the one at [shown] is placed (centred) and heard by TalkBack. So a
+ * line that changes its words never changes its size.
+ */
+@Composable
+internal fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String) -> Unit) {
+    Layout(
+        content = {
+            texts.forEachIndexed { index, value ->
+                Box(if (index == shown) Modifier else Modifier.clearAndSetSemantics {}) { text(value) }
+            }
+        },
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+        val width = placeables.maxOf { it.width }.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = placeables.maxOf { it.height }.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            val placeable = placeables[shown]
+            placeable.placeRelative((width - placeable.width) / 2, 0)
+        }
+    }
+}
+
+/** [text] laid out on one line in [style], set smaller where it would be wider than [maxWidth] px. */
+internal fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidth: Float): TextLayoutResult {
+    val full = measure(text, style, maxLines = 1, softWrap = false)
+    if (full.size.width <= maxWidth || full.size.width == 0) return full
+    val scale = maxWidth / full.size.width
+    return measure(text, style.copy(fontSize = style.fontSize * scale), maxLines = 1, softWrap = false)
+}
+
+/** [this] px as a font size that ignores the font scale: the panel is sized by its width, like the lens. */
+internal fun Float.toSpNoScale(density: Density): TextUnit = (this / density.density).sp

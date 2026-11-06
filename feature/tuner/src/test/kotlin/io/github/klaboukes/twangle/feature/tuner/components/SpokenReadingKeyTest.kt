@@ -8,7 +8,7 @@ import org.junit.Test
 class SpokenReadingKeyTest {
 
     private fun readout(cents: Float, inTune: Boolean = false, note: String = "E") =
-        NoteReadout(noteName = note, octave = 2, frequencyHz = 82f, cents = cents, inTune = inTune)
+        NoteReadout(noteName = note, octave = 2, cents = cents, inTune = inTune)
 
     @Test
     fun `flat, sharp and in tune are three situations`() {

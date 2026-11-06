@@ -1,49 +1,43 @@
 package io.github.klaboukes.twangle.feature.practice
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.hideFromAccessibility
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
-import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.BackButton
+import io.github.klaboukes.twangle.core.designsystem.PickerChip
+import io.github.klaboukes.twangle.core.designsystem.PickerLine
+import io.github.klaboukes.twangle.core.designsystem.TabletTop
+import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.pressSink
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 
 /**
- * The Practice tools' line naming the instrument and tuning ("Guitar · Standard", [tuningName], heard
- * as [spokenTuningName]), centred. With [onPickInstrument] the instrument button (a headstock, as above
- * the tuner's strings) stands before it, and a tap on either opens the instrument and tuning panel
- * over the tool (a press on either lights both, as one control); TalkBack hears the button ("Instrument, Guitar, Standard") and skips the name, which
- * says the same. Without it, the name alone, heard as [spokenTuningName]. Centred, or at the [start].
+ * The Practice tools' instrument and tuning ("Guitar · Standard", [tuningName], heard as [spokenTuningName]).
+ * With [onPickInstrument] it is the picker chip (2.0, Phase 70; [PickerChip], as at the top of the tuner),
+ * whose tap opens the same sheet as the tuner's, "What are you tuning?", over the tool; TalkBack hears
+ * "Guitar, Standard, button, double-tap to change instrument or tuning", and a long name ends in "…" on
+ * its one line. Without it, the name alone as a quiet line, heard as [spokenTuningName]. Centred.
  */
 @Composable
 internal fun TuningLine(
@@ -51,108 +45,69 @@ internal fun TuningLine(
     spokenTuningName: String,
     onPickInstrument: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    start: Boolean = false,
 ) {
-    // One press for the button and the name: a tap on either sinks and lights both.
-    val press = remember { MutableInteractionSource() }
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = if (start) Arrangement.Start else Arrangement.Center) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
         if (onPickInstrument != null) {
-            InstrumentButton(
-                interactionSource = press,
-                current = spokenTuningName,
+            PickerChip(
+                label = tuningName,
+                spoken = spokenTuningName,
                 onClick = onPickInstrument,
-                faceModifier = Modifier.testTag(PracticeTestTags.INSTRUMENT_BUTTON),
+                modifier = Modifier.weight(1f, fill = false).testTag(PracticeTestTags.TUNING),
             )
-            Spacer(Modifier.width(NAME_GAP))
+        } else {
+            Text(
+                musicText(tuningName),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                // One line, ending in "…" where the name is longer than its room (Phase 65).
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .testTag(PracticeTestTags.TUNING)
+                    .clearAndSetSemantics { contentDescription = spokenTuningName },
+            )
         }
-        val shape = MaterialTheme.shapes.small
-        Text(
-            musicText(tuningName),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = if (onPickInstrument != null) TextAlign.Start else TextAlign.Center,
-            // One line (Phase 65), ending in "…" where the name is longer than its room: two lines
-            // made the header taller than the tool button for a long custom tuning's name.
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .weight(1f, fill = false)
-                .then(
-                    if (onPickInstrument != null) {
-                        Modifier
-                            .pressSink(press)
-                            .clip(shape)
-                            .clickable(press, PressIndication(shape)) {
-                                press.pressFlash()
-                                onPickInstrument()
-                            }
-                            // Clear of the shape's corners, which cut into the letters in the styles with cut corners (Futuristic).
-                            .padding(horizontal = NAME_PADDING)
-                            .testTag(PracticeTestTags.TUNING)
-                            // The instrument button before it says the same to TalkBack.
-                            .clearAndSetSemantics {
-                                hideFromAccessibility()
-                                onClick {
-                                    onPickInstrument()
-                                    true
-                                }
-                            }
-                    } else {
-                        Modifier.testTag(PracticeTestTags.TUNING).clearAndSetSemantics { contentDescription = spokenTuningName }
-                    },
-                ),
-        )
     }
 }
 
 /**
- * The top row of the Chords and Capo tools (Phase 47, the owner's pick A in
- * docs/design/tool-button-preview.html): the tool button ([toolButton], [TOOL_BUTTON_WIDTH] wide)
- * at the start, then the instrument and tuning line ([TuningLine]) in the room left, its name on one
- * line ending in "…" where it is longer (Phase 65; up to two lines before). Only where the room left
- * is too narrow for a few letters ([MIN_NAME_EMS] wide, a 320 dp phone at a very large text size) does
- * the tuning line go on a line of its own under the button, at the start too. Public for the tools of
- * other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
+ * The top of every Practice tool (2.0, Phase 69; until then the tool button, Phase 47): every tab's [TopBar], the back
+ * arrow ([BackButton], [onBack], back to the Practice cards) at its start, where the cards page has the app's gear, the
+ * [tool]'s name in its middle ([TopBarTitle], "Chords", a heading, as the tabs name themselves there), and a tool's own
+ * button at its [end] (Ear training's ⋯, Phase 77), where the tabs have theirs. Under the row, on its own centred line
+ * ([PickerLine]), the instrument and tuning ([TuningLine]; the picker chip since Phase 70), in the same place as the
+ * tuner's chip, its name on one line ending in "…" where it is longer. Until 2026-11-04 (the owner: "each screen should
+ * just have the screen's name there") the chip stood in the row's middle, on a 320 dp phone at a very large text size
+ * on a line of its own; beside the arrow before that. Without [onPickInstrument] the plain line stands in the chip's
+ * place; without [tuningName] no line at all (the pitch trail, which listens for any note). Public for the tools of
+ * other modules (Ear training, `:feature:eartraining`; the pitch trail, `:feature:tuner`), whose top `:app` builds with it.
  */
 @Composable
-fun ToolAndTuningRow(
-    toolButton: @Composable () -> Unit,
-    tuningName: String,
+fun BackAndTuningRow(
+    tool: PracticeTool,
+    onBack: () -> Unit,
+    tuningName: String?,
     spokenTuningName: String,
     onPickInstrument: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    end: (@Composable () -> Unit)? = null,
 ) {
-    val style = MaterialTheme.typography.bodyMedium
-    BoxWithConstraints(modifier.fillMaxWidth()) {
-        val beforeName = TOOL_BUTTON_WIDTH + ROW_GAP + if (onPickInstrument != null) INSTRUMENT_TOUCH + NAME_GAP + NAME_PADDING * 2 else 0.dp
-        // A few letters of the name at its size, however large the text is set.
-        val minRoom = with(LocalDensity.current) { style.fontSize.toDp() } * MIN_NAME_EMS
-        if (maxWidth - beforeName >= minRoom) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                toolButton()
-                Spacer(Modifier.width(ROW_GAP))
-                TuningLine(tuningName, spokenTuningName, onPickInstrument, Modifier.weight(1f), start = true)
-            }
-        } else {
-            Column {
-                toolButton()
-                TuningLine(tuningName, spokenTuningName, onPickInstrument, start = true)
-            }
+    // Upright on a tablet drawn as the tuner's top, as big and in its place, by the tool's LocalTopScale.
+    TabletTop {
+        Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            TopBar(
+                middle = { TopBarTitle(stringResource(tool.label), Modifier.testTag(PracticeTestTags.TITLE)) },
+                modifier = Modifier.fillMaxWidth(),
+                start = { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) },
+                end = end,
+            )
+            if (tuningName != null) PickerLine { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
         }
     }
 }
-
-/** The name stays beside the tool button where its room holds about this many letters' widths (in ems) or more. */
-private const val MIN_NAME_EMS = 4f
-
-/** Between the instrument button's touch target and the name's pressable box; the name this far in from that box's ends. */
-private val NAME_GAP = 2.dp
-private val NAME_PADDING = 4.dp
-
-/** Between the tool button and the instrument button's touch target; the instrument button's touch target. */
-private val ROW_GAP = 8.dp
-private val INSTRUMENT_TOUCH = 48.dp
 
 /**
  * The quiet line in the capo table's place for a tuning with a short string (the banjo's fifth,

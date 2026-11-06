@@ -8,7 +8,7 @@ package io.github.klaboukes.twangle.core.settings
  * hands them down to the screens and ViewModels. Every tool keeps its switch once
  * live (owner, 2026-10-28): if a tool goes wrong on players' phones, a quick release with its switch
  * off hides it while the fix is made. A tool whose switch is off leaves no trace on screen: no mode,
- * tab, setting, tour step or text; the JVM tests check that with [ALL_OFF]. What lives only inside a
+ * tab, setting or text; the JVM tests check that with [ALL_OFF]. What lives only inside a
  * tool goes with it (the Practice tools with [practiceTab], the capo helper with [chords], whose charts
  * its rows open). A new tool still being built gets a switch here, off in release builds until it
  * goes live (docs/architecture/performance.md, *Release build*).
@@ -16,15 +16,25 @@ package io.github.klaboukes.twangle.core.settings
  * Not a saved setting: nothing here is stored, and the player can't change it.
  */
 data class ToolSwitches(
-    /** Phase 18: the strum check, a mode in the tuner. */
+    /**
+     * Phase 18: the strum check, the tuner's button above the pegs (2.0, Phase 74): off, the button isn't there and
+     * no strum is listened for.
+     */
     val strumCheck: Boolean,
     /** Phase 29: the intonation check, a mode in the tuner. */
     val intonationCheck: Boolean,
-    /** Phase 30: "What chord is this?", a mode in the tuner. */
+    /**
+     * Phase 30: "What chord is this?", a mode in the tuner until 2.0's Phase 74; since then Listen in Practice's
+     * Chords: off, Chords has no Listen button.
+     */
     val chordNaming: Boolean,
-    /** Phase 31: the pitch trail, a mode in the tuner. */
+    /**
+     * Phase 31: the pitch trail, a mode in the tuner until 2.0 made it the lens's default look (Phase 71), then the
+     * trail look's brake; since Phase 78 the switch of its Practice tool ([PracticeTool.PITCH_TRAIL]), so only with
+     * [practiceTab] (the tuner draws no trail).
+     */
     val pitchTrail: Boolean,
-    /** Phase 32: the Metronome tab becomes Practice, with chord and scale charts. Off: the plain Metronome tab. */
+    /** Phase 32: the Practice tab, with its tools' cards (2.0: beside the Metronome tab). Off: no Practice tab. */
     val practiceTab: Boolean,
     /** Phase 32: Chords, in Practice, so only with [practiceTab]. */
     val chords: Boolean,

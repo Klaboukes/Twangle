@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -43,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -62,7 +64,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.klaboukes.twangle.core.audio.DronePlayer
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
+import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
@@ -73,16 +81,18 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleFinder
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
+import io.github.klaboukes.twangle.core.settings.PracticeTool
 import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
  * The Practice tab's Chords tool (Phase 32, the owner's picks D, G and I in
- * docs/design/practice-preview.html): pick a root and a chord type, see its finger shapes on the
+ * docs/design/1.x/practice-preview.html): pick a root and a chord type, see its finger shapes on the
  * instrument and [tuning] picked with the instrument button (the player's own tunings too), one big
  * chart at a time, easiest first, with ‹ "2 of 3" › under it and a swipe across the chart for the
  * others. With [scales] it is the Scales tool (a tool of its own since Phase 47, before that a second view
@@ -90,11 +100,11 @@ import kotlinx.coroutines.withContext
  * to 12, every note named and the root in the accent ([ScaleNeck]). The two are one screen, so they
  * share their saved UI state: the root picked in one is the other's root too.
  *
- * Upright, one column: the tool button ([header]) 8 dp from the top at the start, the instrument and tuning
- * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
+ * Upright, one column: the back arrow to the Practice cards ([onBack]) 8 dp from the top at the start, the tool's name in
+ * the row's middle and the instrument and tuning on their own line under it ([BackAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the picker chip, which opens the instrument and tuning sheet),
  * the chord's or the scale's full name on the one picker face as wide as the row ("C minor seventh ⌄",
  * "D Dorian ⌄", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
- * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
+ * docs/design/1.x/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
  * pager. On its side (≥ 600 dp wide and wider than tall) the top row is at the top of the start
  * half and the name button in the middle of the rest of it, and the panel opens over that half; the chart or
@@ -121,6 +131,11 @@ import kotlinx.coroutines.withContext
  * With [leftHanded] (Phase 57, a setting) the chart and the neck are drawn mirrored ([ChordChart], [ScaleNeck]) for a
  * guitar held the other way round; nothing else moves and TalkBack hears the same words.
  *
+ * On Chords with a [chordListener] (2.0, Phase 74: the chord name, moved here from the tuner) the name shares its row
+ * with Listen ([ChordsListenButton]): a tap listens through the microphone (asked for as the metronome's Listen asks,
+ * [micRefused] and [onMicRefused] as the tuner's), each chord strummed becomes the chord picked, named and charted (and
+ * saved as a pick is), heard in [listenRange] at [a4Hz]; a tap again stops it, and so does leaving Chords.
+ *
  * On Scales with a [drone] player (Phase 48) the name shares its row with the drone button ([DroneButton]): play
  * sounds the scale's root ([droneRootHz], following [a4Hz]) as [savedDrone] says, stop stops it; the drone follows a
  * new root at once (a crossfade) and stops when Scales goes (another tool, another tab, the app or the screen off),
@@ -138,7 +153,7 @@ fun ChordsScreen(
     savedQuality: ChordQuality,
     onRootChange: (PitchClass) -> Unit,
     onQualityChange: (ChordQuality) -> Unit,
-    header: @Composable () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     scales: Boolean = false,
     savedScaleType: ScaleType = ScaleType.MAJOR,
@@ -149,6 +164,10 @@ fun ChordsScreen(
     savedDrone: DroneChoice = DroneChoice(),
     onDroneChange: (DroneChoice) -> Unit = {},
     leftHanded: Boolean = false,
+    chordListener: ChordListener? = null,
+    listenRange: PitchRange = PitchRange.STANDARD,
+    micRefused: Boolean = false,
+    onMicRefused: () -> Unit = {},
 ) {
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
@@ -165,6 +184,8 @@ fun ChordsScreen(
 
     // The drone: only on Scales, and only while it shows.
     val droning = scales && drone != null
+    // Listen: only on Chords, where the build and the instrument have the chord name.
+    val listens = !scales && chordListener != null
     var droneChoice by rememberSaveable(stateSaver = DroneChoice.Saver) { mutableStateOf(savedDrone) }
     var dronePanelOpen by remember { mutableStateOf(false) }
     val dronePlaying = if (drone != null) drone.isPlaying.collectAsStateWithLifecycle().value else false
@@ -176,10 +197,11 @@ fun ChordsScreen(
         }
         if (dronePlaying) KeepScreenOnWhileDroning()
     }
-    val dronePanel = @Composable { wide: Boolean, width: Dp ->
+    val dronePanel = @Composable { anchor: Rect?, wide: Boolean, width: Dp ->
         DronePanel(
             expanded = dronePanelOpen,
             onDismiss = { dronePanelOpen = false },
+            anchor = anchor,
             wide = wide,
             width = width,
             choice = droneChoice,
@@ -192,12 +214,17 @@ fun ChordsScreen(
         )
     }
 
-    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { BackAndTuningRow(if (scales) PracticeTool.SCALES else PracticeTool.CHORDS, onBack, tuningName, spokenTuningName, onPickInstrument) }
     var panelOpen by remember { mutableStateOf(false) }
-    val panel = @Composable { width: Dp ->
+    // Where the panels open from: the name's row (upright, and on a tablet on its side) or the top of the start half
+    // (a phone on its side), in the root's coordinates.
+    var nameRow by remember { mutableStateOf<Rect?>(null) }
+    var startHalf by remember { mutableStateOf<Rect?>(null) }
+    val panel = @Composable { anchor: Rect?, width: Dp ->
         ChordPanel(
             expanded = panelOpen,
             onDismiss = { panelOpen = false },
+            anchor = anchor,
             width = width,
             scales = scales,
             root = root,
@@ -228,8 +255,8 @@ fun ChordsScreen(
             },
         )
     }
-    // Upright the panel opens right under the name; on its side over the start half ([wide]), so it hides neither the name nor the chart.
-    val name = @Composable { wide: Boolean ->
+    // Upright the panel opens right under the name; on its side over the start half, so it hides neither the name nor the chart.
+    val name = @Composable {
         ChordNameButton(
             scales = scales,
             root = root,
@@ -239,12 +266,31 @@ fun ChordsScreen(
             onClick = { panelOpen = true },
             // Upright both panels drop under the whole row, as wide as it, so nothing of the neck shows beside them
             // (the owner's report of 2026-10-26); on its side they open over the start half.
-            panel = if (wide) { _ -> } else { rowWidth ->
-                panel(rowWidth)
-                if (droning) dronePanel(false, rowWidth)
-            },
-            endWidth = DRONE_BUTTON_WIDTH,
-            end = if (droning && drone != null) {
+            onRowPlaced = { nameRow = it },
+            endWidth = if (listens) NAME_PICKER_HEIGHT else DRONE_BUTTON_WIDTH,
+            end = if (listens && chordListener != null) {
+                { height, _ ->
+                    ChordsListenButton(
+                        listener = chordListener,
+                        a4Hz = a4Hz,
+                        range = listenRange,
+                        micRefused = micRefused,
+                        onMicRefused = onMicRefused,
+                        // The chord heard is the one picked: its name and chart show, and it is saved as a pick is.
+                        onChord = { heard ->
+                            if (heard.root != root) {
+                                root = heard.root
+                                onRootChange(heard.root)
+                            }
+                            if (heard.quality != quality) {
+                                quality = heard.quality
+                                onQualityChange(heard.quality)
+                            }
+                        },
+                        height = height,
+                    )
+                }
+            } else if (droning && drone != null) {
                 { height, _ ->
                     DroneButton(
                         playing = dronePlaying,
@@ -283,19 +329,21 @@ fun ChordsScreen(
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(if (scales) PracticeTestTags.SCALES else PracticeTestTags.CHORDS)) {
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
         val height = maxHeight
+        // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+        val topScale = topScaleFor(maxWidth.value, maxHeight.value)
         if (layout == PracticeLayout.LARGE_SIDE) {
-            // A tablet on its side: the tool button's row and the name share the top row (the panels drop under the
+            // A tablet on its side: the top row and the name share one row (the panels drop under the
             // name, as upright), and the chart or the neck runs the whole width under it.
             FillColumn(
                 viewport = height,
                 minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = TOP_BAR_MARGIN),
                 top = {
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     Row(Modifier.fillMaxWidth()) {
                         Box(Modifier.weight(1f)) { topRow() }
                         Spacer(Modifier.width(16.dp))
-                        Box(Modifier.weight(1f)) { name(false) }
+                        Box(Modifier.weight(1f)) { name() }
                     }
                     Spacer(Modifier.height(8.dp))
                 },
@@ -306,22 +354,23 @@ fun ChordsScreen(
             // A phone on its side, both halves used as the metronome and Capo use them (Phase 63's review; until then
             // the start half held only the top row): the top row at the top of the start half and the name (with
             // Scales' drone button) in the middle of the height it leaves, the chart or the neck in the end half.
-            Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+            Row(Modifier.fillMaxSize().padding(horizontal = TOP_BAR_MARGIN)) {
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        // The panels' place: from the top of the start half down, over the top row and the name, with
+                        // all the height for their choices; the chart beside them shows each pick.
+                        .panelAnchor { startHalf = Rect(it.left, it.top, it.right, it.top) }
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    // The panels' place: from the top of the start half down, over the top row and the name, with
-                    // all the height for their choices; the chart beside them shows each pick.
-                    BoxWithConstraints(Modifier.fillMaxWidth()) {
-                        panel(maxWidth)
-                        if (droning) dronePanel(true, maxWidth)
-                    }
-                    Spacer(Modifier.height(HEADER_TOP))
+                    Spacer(Modifier.height(TOP_BAR_TOP))
                     topRow()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(12.dp))
-                    name(true)
+                    name()
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp))
                 }
@@ -330,7 +379,7 @@ fun ChordsScreen(
                     viewport = height,
                     minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                    top = { Spacer(Modifier.height(HEADER_TOP)) },
+                    top = { Spacer(Modifier.height(TOP_BAR_TOP)) },
                     fill = fill,
                     bottom = bottom(1f),
                 )
@@ -351,10 +400,10 @@ fun ChordsScreen(
                         .padding(horizontal = 16.dp),
                     rowsMaxWidth = if (large) COLUMN_MAX_WIDTH - 32.dp else null,
                     top = {
-                        Spacer(Modifier.height(HEADER_TOP))
-                        topRow()
+                        Spacer(Modifier.height(TOP_BAR_TOP))
+                        CompositionLocalProvider(LocalTopScale provides topScale) { topRow() }
                         Spacer(Modifier.height(8.dp * gap))
-                        name(false)
+                        name()
                         Spacer(Modifier.height(4.dp * gap))
                     },
                     fill = fill,
@@ -362,6 +411,12 @@ fun ChordsScreen(
                 )
             }
         }
+        // The panels float on their own layer over the screen (the shared FloatingPanel).
+        val sideways = layout == PracticeLayout.HALVES
+        val anchor = if (sideways) startHalf else nameRow
+        val anchorWidth = with(LocalDensity.current) { (anchor?.width ?: 0f).toDp() }
+        panel(anchor, anchorWidth)
+        if (droning) dronePanel(anchor, sideways, anchorWidth)
     }
 }
 
@@ -564,8 +619,6 @@ private fun FillColumn(
     }
 }
 
-/** The tool button stands this far down from the top, as on the metronome and as the tuner's mode switch. */
-private val HEADER_TOP = 8.dp
 
 /** Upright, as the metronome's column. */
 private val COLUMN_MAX_WIDTH = 480.dp

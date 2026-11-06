@@ -17,18 +17,19 @@ Topic files:
 - §3 Signal pipeline:
   - **[Signal pipeline](docs/architecture/signal-pipeline.md)**: Pipeline · Key numbers · Other sample rates · Frame assembly · Low notes · Signal gate · Sustain check (ticks and clicks) · Noise floor, SNR and clarity · Reception · Tips · Signal bars (optional) · Pitch detection (YIN) · Smoothing · Edge cases (measured, EdgeCaseTest)
   - **[Notes, tunings and audio](docs/architecture/notes-and-audio.md)**: Note math · Tunings · Instruments · Chord shapes and scales · Capo · Ear training questions · Intonation check · Strobe model · Pitch history · Audio source selection · Audio capture · Reference tone · Drone
-  - **[Strum check and metronome](docs/architecture/strum-and-metronome.md)**: Strum check (polyphonic) · Chord naming · Metronome · Tempo from music
+  - **[Strum check and metronome](docs/architecture/strum-and-metronome.md)**: Strum check (polyphonic) · Chord naming · The strum check's button · Metronome · Tempo from music
 - §4 **[Threading and performance](docs/architecture/performance.md)**: Threads and the main thread · Measured on the Galaxy S26 · Low-note window on the Xiaomi 12X · Watch CPU and the native detector · Meter looks · Baseline Profile · Release build: shrinking and signing
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
-  - **[Tuner screen and tour](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Pitch trail view · Tour · Display
-  - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Wave view · Strobe look · Wave looks · Visual styles
+  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · The strum check · 12th-fret check view · Lens · Under the lens
+  - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Strobe · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
   - **[Translation glossary](docs/architecture/glossary.md)**: the app's words for its recurring terms, per language
-- §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Any phone · Every screen in every style · Every language · Quick and thorough UI runs
+- §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Any phone · Every screen light and dark · Every language · Quick and thorough UI runs
 - **[Website](docs/architecture/website.md)** (klaboukes.github.io, Phase 54): Where it lives · Pages and the frame · Nothing from another site · Languages · Pictures · Publishing
+- **[The 2.0 plan](docs/architecture/v2-plan.md)** (on the `v2` branch only, Phases 66–76): Modules: kept, changed, gone · The lens · Settings from 1.1 · The two tools · Order and size · Tests
 - **[History](docs/architecture/history.md)**: Overview · Threading and performance · Lifecycle, permissions and settings · UI basics · Tuner screen · Meter, wave and styles · Metronome, widget and watch · Strum check and metronome · Languages · Testing
 
 ## 1. Tech stack
@@ -52,8 +53,9 @@ Topic files:
 ### Name, app ID and icon
 - **Name:** Twangle (InTune until October 2026, which clashed with Microsoft Intune). Names with "free" in them are out: Google Play bans price words in titles.
 - **App ID:** `io.github.klaboukes.twangle`; packages and module namespaces live under it.
-- **Launcher icon:** "twang to tune": a near-black (`#24260F`) string on mustard (`#E3B23C`, the Retro style's colours) whose wobble dies away into a straight line ending in a dot, as a plucked string settles in tune. The owner's pick on 2026-10-15 from five ideas and thirteen colour schemes (`docs/design/logo-preview.html`, `logo-round2-preview.html`). Adaptive icon (`res/drawable/ic_launcher_foreground.xml` + `ic_launcher_background`); the same one-colour foreground is the monochrome layer for themed icons. The phone's launcher picks the outline (circle, squircle, rounded square; the Xiaomi's is a squircle), so the artwork stays within 33 dp of the centre, the safe zone, and no mask clips it.
-- **Opening screen:** `androidx.core:core-splashscreen` (`installSplashScreen()`, theme `Theme.Twangle.Starting`), so Android 8–11 look like 12+: the icon's string on a mustard tile, on mustard (light) or `#1C1510` (dark, `values-night`). It follows the phone's dark mode, because the app's theme setting isn't read yet, and stays up until the settings are read and the first frame is composed (`setKeepOnScreenCondition`).
+- **Launcher icon (2.0, Phase 79):** *Harmonics*: one moment of a plucked string's first three harmonics, the whole string's swing in amber, its halves in blue, its thirds in green (Ink's far-off, accent and in-tune colours), with no string line, on Ink dark (`#0E1116`). The halves are half as tall as the whole and the thirds a third, so neither ever rises above the whole's arch (|sin nx| ≤ n sin x). The owner's pick on 2026-11-04 after eight rounds, its colours refined in two more on 2026-11-05 (`docs/design/logo-v2-preview/`: colours only, objects, abstract marks, then refinements of *Harmonics*, *One moment* and *Colour only*). In the mock-up the colours are see-through and add up like light, each overlap then made more colourful and a little deeper (round 10's *Richer overlaps*, 2026-11-05: added up alone, the overlaps above the string came out nearly white and the halves and the thirds were hard to tell apart in a small icon; solid colours or gaps lost what the owner liked, an overlap with a colour of its own); three overlaps then got colours of their own, since their added-up ones hardly showed in a small icon (owner, 2026-11-05, `OVERLAP_COLOURS`: the whole and the halves in the light mint all three added up to, all three in a stronger pink `#F48FB1`, the halves and the thirds under the string a paler cyan `#A6FAFF`); a vector drawable can't blend, so `scripts/launcher-icon.py` works out each overlap's colour on the tile and writes flat shapes, the ones that overlap more painted later so no seam shows where two colours meet: `res/drawable/ic_launcher_foreground.xml` (on `@color/ic_launcher_background`), `ic_launcher_monochrome.xml` (the themed icon: the three harmonics in one colour at three strengths) and the watch's white `ic_twangle_mark.xml` (tile, watch-face shortcut), in `:app` and `:wear` alike (the watch's circle is a lighter slate, `#262D38`, so it shows on the app list's black). Change the script, not the files. The string runs nearly the canvas's width (17 to 91 of 108 units); the launcher icon and the themed icon draw it at three quarters of that about the centre (`MARK_SCALE`, owner, 2026-11-05), so the whole mark sits inside the 66-unit safe zone with room around it, as other apps' symbols have: at full width its ends ran to the edge of the watch's round icon and a round launcher cut them off. The opening screen keeps it at full width, its ends meeting the circle as the string swings.
+- **The icon beside the name (Phase 79):** Twangle's name is shown as the launcher icon (its dark tile with round corners, the harmonics on it) and the word "Twangle" beside it, never mirrored or reversed in right-to-left languages (`TwangleName`, `:core:designsystem`). The owner's pick of 2026-11-05 after a branding review (the mark and the name apart): the name ringing before it squashed the harmonics flat and faint behind the letters, so the banner's logo no longer looked like the home screen's ([history](docs/architecture/history.md)). Sized by the word's capitals: the icon two and a half of them tall, its middle level with theirs, half a capital between them; on Ink dark the tile is the page's own colour and the mark stands alone, on light it reads as the app icon. The word is Comfortaa Bold with its letters 0.06 em apart (the owner's pick of two rounds, `docs/design/logo-v2-preview/wordmark.html`), traced into a vector drawable cropped to the letters by `scripts/wordmark.py` (fontTools, from the font kept with its licence in `scripts/fonts/comfortaa/`), so the app carries no font file: a drawing made with an OFL font is the app's own and needs no credit. The icon is `twangle_icon_plucked.xml`, written by `scripts/launcher-icon.py` with the opening screen's animation (the same groups and timing, the tile added and the whole cropped to it), played through Compose's animated vectors (`animation-graphics`). It heads the About page over the version, the icon plucked as the page opens and again at a tap (`plucked = true`; the word stays still; at rest with Android's *Remove animations* on), the store banner over its line (at rest), and every website page's top bar (`website/twangle-icon.svg` from `scripts/launcher-icon.py` and `website/twangle-name.svg` from `scripts/wordmark.py`: the icon plucked by CSS keyframes when the page opens and again when the pointer comes onto the name or it is tapped, never cut short by leaving, as the site runs no script; at rest for a visitor who asks for reduced motion; on the site from 2.0, as the website follows `main`). The opening screen shows no name: the launcher has just shown it under the icon, and Android 12's branding picture is advised against.
+- **Opening screen:** `androidx.core:core-splashscreen` (`installSplashScreen()`, theme `Theme.Twangle.Starting`), so Android 8–11 look like 12+: the icon on its dark tile on Ink light's `#F6F7F9` (light), or on Ink dark with no tile (dark, `values-night`: the tile was the screen's own colour and never showed, and without one Android draws the icon a fifth larger, 192 dp across instead of 160 dp; owner, 2026-11-05). It follows the phone's dark mode, because the app's theme setting isn't read yet, and stays up until the settings are read and the first frame is composed (`setKeepOnScreenCondition`). On Android 12 and up the icon plays its opening animation (Phase 79, `ic_opening_animated.xml`, written by `scripts/launcher-icon.py` with `@integer/opening_animation_ms`, 1000 ms): the string is plucked, each harmonic swinging at its own speed the whole second (the whole half a swing, the halves one, the thirds one and a half, easing into the icon's pose with no jolt and never past it), every overlap in the icon's own colour throughout. Each set of overlapping harmonics is nested groups hinged on the string, the outer ones clipped to their harmonic's shape and the innermost holding the last one's shape in the set's colour, each group's height animated so the nested scales multiply to each harmonic's own swing; painted singles, then pairs, then all three, as the icon's regions are. (On 2026-11-05 the owner asked, in turn, for more time to settle and less stillness at the end, which took it from a 600 ms swing and a 200 ms fade of the colours on a still icon to 1000 ms; for calmer, which halved the swings, picked from `docs/design/logo-v2-preview/opening.html`; and for the overlaps' colours throughout, where the harmonics had swung see-through the plain way under the icon's colours fading in at the end.) While they swing the harmonics are see-through the plain way, not added up like light, which can't be told apart in motion. The screen then fades into the app in 200 ms (`fadeOutOnceStill`), waiting for the animation if the app is ready sooner, so a fast start never cuts the string off mid-swing; at most 1000 ms after the screen appeared, and only on a start that would have been quicker. What stillness remains is the app getting ready: on the Xiaomi 12X about 0.3 s in a release build, about 1.5 s in a debug build, which draws its first screen far more slowly. Android 8–11 show the animated icon's resting state, which is the icon. The watch app has the same opening screen (Phase 79: `Theme.Twangle.Watch.Starting`, core-splashscreen, `ic_opening_animated.xml` on the watch's black, `fadeOutOnceStill` of its own). The Galaxy Watch 5 plays the swing (the owner's look, 2026-11-05) but slides the screen in from the side for about half a second first, so the watch's copy rests the string flat for 500 ms (`WATCH_HOLD_MS`) before the same 1000 ms swing, 1500 ms in all; before that the owner saw it "much faster", most of it gone under the slide. A debug build then stays still for seconds (the debug watch app's first screen took about 5 s to start on the watch, 152 frames skipped); a release build should start much sooner, as on the phone, but that is not yet measured on the watch.
 
 ### Rejected alternatives
 - **Flutter / React Native:** microphone DSP through platform channels adds latency and complexity for a single-platform app.
@@ -66,17 +68,17 @@ Topic files:
 :app               Android application: Activity, Application, AppContainer (DI), navigation bar and screen switching,
                    home-screen widget
 :wear              Wear OS application (same app ID): the watch tuner, with its own mic and its own small UI
-:feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
+:feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
-:feature:practice  Practice tab (Phase 32, behind its switch): the tool button, Chords and Scales (charts, the neck, the
+:feature:practice  Practice tab (Phase 32, behind its switch): the cards (Phase 69), Chords and Scales (charts, the neck, the
                    drone button), the Capo helper
 :feature:eartraining Ear training (Phase 55, a Practice tool behind its switch): Play it back, Intervals, Chord type;
                    EarTrainingViewModel, the screen, the choices panel; the one Practice tool that listens
 :core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones, metronome clicks and the drone
                    (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
-:core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
+:core:designsystem The one look (Ink): TwangleTheme, palettes, fonts, background, the meter
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing,
                    strum check, chord naming, chord/scale/capo charts, string synthesis (the reference tone in
                    each instrument's voice), the drone's synthesis, metronome click track and tempo
@@ -97,7 +99,7 @@ Dependencies ("→" = depends on):
 :feature:practice  → :core:audio (only DronePlayer, playback: no microphone), :core:settings, :core:designsystem, :core:dsp
 :feature:eartraining → :core:audio (TonePlayer, MicPermissionRules; the microphone through PitchListener, which :app
                      backs with the tuner's PitchPipeline), :core:settings, :core:designsystem, :core:dsp
-:core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
+:core:designsystem → :core:settings (ThemeMode), :core:dsp (StrobeMotion, for the lens's strobe; PitchHistory, for its trail)
 :core:settings     → :core:dsp
 :core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's,
                      DroneSynth the drone's;
@@ -111,7 +113,7 @@ Dependencies ("→" = depends on):
 Rules:
 - `:core:dsp` is a plain `kotlin("jvm")` module and never imports `android.*`, so the most important code stays fast to test and portable.
 - `:core:audio` knows Android audio, nothing about notes or UI (a tone is asked for in Hz). `:core:settings` knows how settings are saved, nothing about audio or UI.
-- `:core:designsystem` holds everything both screens draw with (including the meter and wave art, so the settings previews draw exactly what the tuner draws), and nothing about audio.
+- `:core:designsystem` holds everything both screens draw with (including the meter art, so the lens's Meter cards in Settings (Phase 72) can draw exactly what the tuner draws), and nothing about audio.
 - `:feature:*` modules never depend on each other, and `:wear` uses none of them. Only `:app` wires implementations together (`AppContainer`) and switches screens (`MainActivity`).
 - `:baselineprofile` runs only on demand with a phone connected ([Threading and performance](docs/architecture/performance.md)). CI never runs it.
 
@@ -162,23 +164,24 @@ core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
 core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer, FakeDronePlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
-    AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),
+    AppSettings (+ TunerMode, InTunePrecision, ThemeMode, LensLook, …),
     SettingsRepository (interface), DataStoreSettingsRepository, CustomTuning, ToolSwitches (music tools shown)
 core/settings/src/testFixtures/…/core/settings/   FakeSettingsRepository
 
 core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
-    TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop, StyleMood,
+    TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop,
     MusicSigns, NoteNameSpeech (rememberNoteNameSpeech), PacedSpeech, FontCredits,
     PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
-    SegmentedSwitch, InstrumentButton, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
+    SegmentedSwitch, PickerChip, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
-    dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
-    meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat,
-                Pointers, Loupe, Arrows, LightBars, MeterFinish
-    metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
+    dial/       DialGeometry, Strobe (drawStrobeBand, the lens's strobe's stripes)
+    lens/       LensReading, LensLookArt, TrailLook, StrobeLook (the lens's looks, Phases 71 and 72)
+    meter/      MeterReading, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat
+                (LightArcLook: the lens's Light arc, FanGeometry fitted to the lens, Phase 72)
+    metronome/  BeatLightsArt (round beat lights, + beatSpacing)
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
-    SharedActivityComposeRule, SharedActivityTestRunner, Thorough (+ allIfThorough), EveryLanguage, WhollyShown,
+    SharedActivityComposeRule, SharedActivityTestRunner, Thorough, EveryLanguage, WhollyShown,
     PhoneScreen, MenuPosition
 
 feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
@@ -186,27 +189,31 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     PitchPipeline (+ PitchReading), TunerError, MicPermission, InTunePrecisionDetector (forPrecision),
     InTuneGlowRule, TunerHint (+ TuningCue), SteadyHint, ReceptionTip (+ TipCue),
     SignalBars (+ SignalFigures),
-    StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
-    IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake
-    components/ MeterFrame, NoteDisplay, WaveView, ChromaticReadout, StringSelector (+ StringRowFit),
-                InstrumentTuningPanel (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
-                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
-                IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint, LiveFloat (a per-frame reading, unboxed)
+    StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter),
+    HeardStrum (HeardReading, HeardStrumInterpreter, HeardShown: what was heard besides one string, and how long it shows),
+    IntonationCheck (+ TunerTool), PitchTrailFeed, PitchTrailDescription, ScreenAwake
+    components/ Lens, Ruler (+ RulerGeometry), TuneWord, ReadingTone, StringSelector (the pegs, + StringRowFit),
+                InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
+                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumCheckButton, StrumMark, strumCountText), StrumPanel,
+                IntonationView, FocusModeButton, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
-    tour/       TourHost + TourOverlay (dim, spotlight, balloon), TourTargets (+ tourTarget), TourPart, TourGeometry (pure)
 
 feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
-    MetronomeScreen (+ MetronomeContent, BeatClock), MetronomeViewModel
-    ListenPermission (rememberListenPermission)
-    components/ TempoDial (with − / + in its corners), MetronomeControls (MeterPicker, StepButton, TempoRow with
-    Sound, Tap tempo and Listen, StartStopButton), SoundParts (SoundButton, SoundPanel with the vibrate switch),
-    ListenParts (ListenLine, ListenBalloon)
+    MetronomeScreen (+ MetronomeContent, BeatClock, TempoMotion), MetronomeViewModel
+    ListenPermission (rememberListenPermission), BetweenLights
+    components/ TempoParts (TempoHeading: − tempo + and its words, markingName), TempoRuler (the ruler to drag),
+    MetronomeControls (MeterChoice, BigButtons: Tap the beat and Start),
+    OptionsParts (SoundChoice, SubdivisionChoice; the panel is :core:designsystem's FloatingPanel),
+    UnderBarsRow (Vibrate, the line: Listen's words or the trainer's, and Listen under the beat bars),
+    TrainerParts (TrainerRow, TrainerLine, TrainerSettings, trainerStatus), ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
-    PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolButton, PracticeToolIcons,
+    PracticeTools (practiceToolsFor, lastTimeTool, PracticeTestTags), PracticeCards (the cards, the last time row),
+    PracticeToolIcons (practiceToolIcon, practiceToolPicture),
     ChordsScreen (root and type pickers, chart, ‹ › pager), ChordPicker (RootPicker, ChordTypePicker),
     ChordChart (+ ChartGeometry), ChordSpeech (chordWords, spokenChart),
-    ScaleNeck, ScaleSpeech, DroneButton, TuningLine, PracticeLayout (practiceLayoutFor),
+    ScaleNeck, ScaleSpeech, DroneButton, TuningLine (TuningLine, BackAndTuningRow, PracticeBackButton),
+    PracticeLayout (practiceLayoutFor),
     CapoScreen (shapes list, capo ‹ ›, the shape → sounds table), CapoTable (CAPO_SHAPES, capoChordsOf, capoPlanOf)
 
 feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartraining/
@@ -215,19 +222,23 @@ feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartrain
 
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel, AppLanguages, PlayPage
-    components/ A4Calibration, RadioGroupSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
-                LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker, LanguageSetting
+    components/ A4Calibration, RadioGroupSetting, ChoiceDialogSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
+                LookCardGrid (+ LookDemo), MeterPicker (the lens's Meter cards + MeterDemo, Phase 72), LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour,
+    TwangleApplication, AppContainer, MainActivity (+ PracticeToolScreen), FocusMode,
     BuildToolSwitches (toolSwitchesFor), TunerPitchListener (Ear training's ears: the tuner's PitchPipeline),
     SyntheticAudioRecorder (benchmark build only)
-    navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
+    navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons,
+                SettingsGear (the gear that opens Settings)
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState
 
 wear/src/main/kotlin/io/github/klaboukes/twangle/wear/
     WatchActivity, WatchTunerViewModel, WatchPitchPipeline, WatchTunerState (+ WatchTunerError),
-    WatchTunerScreen (WatchTunerApp, WatchTuner, WatchDial, WatchNoteName), WatchTheme (WatchColors),
+    WatchTunerScreen (WatchApp, WatchTunerPage, WatchTuner, WatchDial, WatchNoteName), WatchTheme (WatchColors),
+    WatchPages (WatchPage, the pager and its dots), WatchToolSwitches (watchToolSwitchesFor),
+    WatchMetronomeScreen (WatchMetronomePage, WatchMetronome, WatchMetronomeDial, RotarySteps),
+    WatchMetronomeViewModel (+ WatchMetronomeState), WatchMetronomeStore (DataStore), WatchBeatTap (WatchBeatTaps),
     ScreenState (ScreenOnEffect), WatchScreenAwake (rememberWatchScreenAwake), MicPermission (rememberWatchMicPermission),
     WatchInTuneTap (WatchInTuneTapEffect, rememberWristTap), WatchSpokenReading (WatchPacedSpeech, spokenWatchReading)
 
@@ -236,8 +247,8 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 ```
 
 ## 9. Privacy
-Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. The home-screen widget ([Metronome, widget and watch](docs/architecture/ui-other-screens.md)) adds none: it shows the saved instrument and tuning on the home screen and holds no mic. The watch app (`:wear`) asks only for `RECORD_AUDIO`, has no `INTERNET` either and stores only whether the microphone was ever refused.
+Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. The home-screen widget ([Metronome, widget and watch](docs/architecture/ui-other-screens.md)) adds none: it shows the saved instrument and tuning on the home screen and holds no mic. The watch app (`:wear`) asks only for `RECORD_AUDIO`, has no `INTERNET` either and stores only whether the microphone was ever refused and, since Phase 80, its metronome's tempo and click choice.
 
-The privacy policy is [PRIVACY.md](PRIVACY.md), with a Dutch copy in [PRIVACY.nl.md](PRIVACY.nl.md); keep the two in sync. Settings stay in DataStore on the device, and because `android:allowBackup="true"` Android's own backup and device transfer may include them; the backup rules (`res/xml/backup_rules.xml` up to Android 11, `data_extraction_rules.xml` from 12, in `:app` and `:wear`) leave out only whether the microphone was refused, which belongs to the device (since Phase 65; [Lifecycle](docs/architecture/lifecycle.md), *Saved settings*). If a change touches permissions, stored data, backup or anything that leaves the device, update the policy (and its effective date) in the same change. The About page shows the gist; the data-safety form will say no data is collected or shared.
+The privacy policy is [PRIVACY.md](PRIVACY.md), with a Dutch copy in [PRIVACY.nl.md](PRIVACY.nl.md); keep the two in sync. Settings stay in DataStore on the device, and because `android:allowBackup="true"` Android's own backup and device transfer may include them; the backup rules (`res/xml/backup_rules.xml` up to Android 11, `data_extraction_rules.xml` from 12, in `:app` and `:wear`) leave out only whether the microphone was refused, which belongs to the device, and on the watch also the metronome's two choices, which the policy says stay on the watch (since Phase 65 and Phase 80; [Lifecycle](docs/architecture/lifecycle.md), *Saved settings*). If a change touches permissions, stored data, backup or anything that leaves the device, update the policy (and its effective date) in the same change. The About page shows the gist; the data-safety form will say no data is collected or shared.
 
 **The public copy** (Phase 23) is what Play links to: https://klaboukes.github.io/twangle-privacy/ (Dutch at `nl.html`), GitHub Pages of the small public repo `Klaboukes/twangle-privacy`, because this repo stays private until after release and Pages needs a public repo on the free plan. That repo holds `index.md` and `nl.md` (copies of the two policies with their links rewritten), `_layouts/default.html` (the page frame, from `website/privacy-layout.html`: the GitHub Pages theme's own frame loaded a script from cdnjs.cloudflare.com, and the policy's page keeps the website's promise of nothing from another site, Phase 54), a `_config.yml`, a README and the closed testers' invitation page (`test/`). After a policy change has landed on `main`, run `scripts/publish-privacy.sh`: it copies the policies and the frame, and commits and pushes only if something changed. Commits there use GitHub's no-reply address, since the repo is public. The URL stays the same when this repo goes public later.

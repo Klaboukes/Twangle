@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.eartraining
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -53,13 +55,12 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
+import io.github.klaboukes.twangle.core.testing.assertPanelUnder
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -73,22 +74,20 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Ear training screen (Phase 55) in each style, from its state alone: the three exercises as words
- * TalkBack names in full, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
+ * The Ear training screen (Phase 55) in Ink, from its state alone: the exercise's name pill under the top row and
+ * the panel of the three it opens (upright and on its side), a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
- * and wrong shown gently with nothing moving; the "What is asked" panel with Play it back's and
- * Intervals' choices; Chord type's question and its buttons (three in a column, all twenty scrolling
+ * and wrong shown gently with nothing moving; the "What is asked" ⋯ at the top row's end and the floating panel it
+ * opens under it with Play it back's and Intervals' choices, open across a turned phone; Chord type's question and its buttons (three in a column, all twenty scrolling
  * in their own box), right and wrong, its chips, and the no-shape line; and the whole screen fitting, upright and on its side, at 2× text in Dutch
  * (every language with `--languages`).
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class EarTrainingScreenTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class EarTrainingScreenTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -121,7 +120,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     EarTrainingContent(
                         state = shownState.value,
                         heard = shownHeard.value,
@@ -163,8 +162,15 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                         },
                         onAllowMic = { micAsks++ },
                         onOpenSettings = { settingsOpened++ },
-                        // The tool button's place (`:app` puts the tool button and the tuning line there).
-                        header = { Box(Modifier.size(160.dp, 48.dp).testTag(HEADER)) },
+                        // The top row's place (`:app` puts the back arrow and the tool's name there, the ⋯ at its end, and the
+                        // picker chip on its own line under it; TunerTabTest checks the real one's places).
+                        header = { end ->
+                            TopBar(
+                                middle = { Box(Modifier.size(160.dp, 48.dp).testTag(HEADER)) },
+                                modifier = Modifier.fillMaxWidth().testTag(TOP_ROW),
+                                end = end,
+                            )
+                        },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                     )
                 }
@@ -179,33 +185,104 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private fun textOf(tag: String): String =
         node(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.Text) { emptyList() }.joinToString()
 
+    /**
+     * The exercise is a name pill under the top row, as Chords' name (Phase 77: until then a switch of three short
+     * words), opening the three exercises in the floating panel under it; a pick is passed on and closes it.
+     */
     @Test
-    fun talkBackNamesEachExerciseAndAPickIsPassedOn() {
+    fun theExercisePillOpensTheThreeExercisesAndAPickIsPassedOn() {
         show()
+        val pill = node(EarTrainingTestTags.EXERCISE)
+            .assert(hasText("Play it back"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Exercise: Play it back")))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
+            .assertIsDisplayed()
+        // As Chords' name: 8 dp under the top row, as wide as it (up to 400 dp), 56 dp high.
+        val row = node(TOP_ROW).getBoundsInRoot()
+        val at = pill.getBoundsInRoot()
+        assertEquals("8 dp under the top row", row.bottom.value + 8f, at.top.value, 0.5f)
+        assertEquals("as wide as the top row", row.width.value, at.width.value, 1f)
+        assertEquals("from its start", row.left.value, at.left.value, 1f)
+        assertEquals("the one picker height", 56f, at.height.value, 0.5f)
+        assertTrue("no panel yet", !exists(EarTrainingTestTags.EXERCISE_PANEL))
+
+        pill.performClick()
+        compose.waitForIdle()
+        node(EarTrainingTestTags.EXERCISE_PANEL)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Exercise"))
+        assertPanelUnder(pill, node(EarTrainingTestTags.EXERCISE_PANEL), node(WINDOW), "the exercises")
+        val panel = node(EarTrainingTestTags.EXERCISE_PANEL).getBoundsInRoot()
+        assertEquals("from the pill's start", at.left.value, panel.left.value, 0.5f)
+        assertEquals("as wide as the pill", at.width.value, panel.width.value, 1f)
         val names = mapOf(Exercise.PLAY_IT_BACK to "Play it back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chord type")
-        for (exercise in Exercise.entries) {
+        for ((exercise, name) in names) {
             node(EarTrainingTestTags.exercise(exercise))
-                .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(names.getValue(exercise))))
+                .assert(hasText(name))
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 .assertIsDisplayed()
         }
-        val words = mapOf(Exercise.PLAY_IT_BACK to "Play back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chord type")
-        for (exercise in Exercise.entries) node(EarTrainingTestTags.exercise(exercise)).assert(hasText(words.getValue(exercise)))
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsSelected()
-        val before = Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() }
+        node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsNotSelected()
         node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).performClick()
         compose.waitForIdle()
         assertEquals(listOf(Exercise.INTERVALS), picked)
-        node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected()
-        node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsNotSelected()
-        assertEquals("the words keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
-        // The switch runs across the row to 12 dp before the options button, in three equal segments (Phase 65).
-        val span = before.last().right - before.first().left
-        val choices = node(EarTrainingTestTags.CHOICES).getBoundsInRoot()
-        assertEquals("across the row", (choices.left - before.first().left).value - 12f, span.value, 1.5f)
-        for (bounds in before) assertEquals("one steady width each", span.value / 3, bounds.width.value, 1.5f)
-        // Until Intervals' first question is in the state, nothing shows under the row.
+        assertTrue("a pick closes it", !exists(EarTrainingTestTags.EXERCISE_PANEL))
+        node(EarTrainingTestTags.EXERCISE).assert(hasText("Intervals"))
+        assertEquals("the pill stays put", at, node(EarTrainingTestTags.EXERCISE).getBoundsInRoot())
+        // Until Intervals' first question is in the state, nothing shows under the pill.
         assertTrue(!exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.HEARD))
+
+        // The one picked again closes it too, passing nothing on; Back closes it.
+        node(EarTrainingTestTags.EXERCISE).performClick()
+        compose.waitForIdle()
+        node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected().performClick()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.EXERCISE_PANEL))
+        assertEquals(listOf(Exercise.INTERVALS), picked)
+        node(EarTrainingTestTags.EXERCISE).performClick()
+        compose.waitForIdle()
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.EXERCISE_PANEL))
+    }
+
+    /**
+     * On its side the pill stands in the start half under the top row, in the middle of the height it leaves (as
+     * Chords' name), and its panel opens from the top of that half, open across a turn.
+     */
+    @Test
+    fun onItsSideThePillStandsInTheStartHalfAndItsPanelOpensOverIt() {
+        shownSize.value = PHONE_LANDSCAPE
+        show()
+        val window = node(WINDOW).getBoundsInRoot()
+        val row = node(TOP_ROW).getBoundsInRoot()
+        val pill = node(EarTrainingTestTags.EXERCISE).getBoundsInRoot()
+        val middle = (window.left + window.right) / 2
+        assertTrue("in the start half $pill", pill.right <= middle)
+        assertEquals("as wide as the top row", row.width.value, pill.width.value, 1f)
+        assertTrue("under the top row $pill", pill.top >= row.bottom + 8.dp)
+        val room = (row.bottom + window.bottom) / 2
+        assertEquals("in the middle of the height left", room.value, ((pill.top + pill.bottom) / 2).value, 12f)
+        node(EarTrainingTestTags.EXERCISE).performClick()
+        compose.waitForIdle()
+        for (size in listOf(PHONE_LANDSCAPE, XIAOMI, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val panel = node(EarTrainingTestTags.EXERCISE_PANEL).assertIsDisplayed().getBoundsInRoot()
+            val now = node(EarTrainingTestTags.EXERCISE).getBoundsInRoot()
+            assertEquals("$size: from the pill's start", now.left.value, panel.left.value, 0.5f)
+            assertEquals("$size: as wide as the pill", now.width.value, panel.width.value, 1f)
+            if (size == XIAOMI) {
+                assertPanelUnder(node(EarTrainingTestTags.EXERCISE), node(EarTrainingTestTags.EXERCISE_PANEL), node(WINDOW), "$size")
+            } else {
+                assertTrue("$size: from the top of the start half $panel", panel.top < now.top)
+            }
+            for (exercise in Exercise.entries) assertWhollyShown(node(EarTrainingTestTags.exercise(exercise)), "$size $exercise", scroll = false)
+        }
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.EXERCISE_PANEL))
     }
 
     @Test
@@ -226,7 +303,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     fun theTallyShowsOnceAQuestionWasAnsweredAndNothingMoves() {
         show()
         assertTrue("nothing to count yet", !exists(EarTrainingTestTags.TALLY))
-        val tags = Exercise.entries.map(EarTrainingTestTags::exercise) + listOf(EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY)
+        val tags = listOf(EarTrainingTestTags.EXERCISE, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY)
         val before = tags.map { node(it).getBoundsInRoot() }
         shownState.value = shownState.value.copy(tally = Tally(right = 7, asked = 9))
         compose.waitForIdle()
@@ -234,9 +311,14 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         assertEquals("7 right of 9", spoken(EarTrainingTestTags.TALLY))
         assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
         assertEquals("What is asked", spoken(EarTrainingTestTags.CHOICES))
+        node(EarTrainingTestTags.CHOICES).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
+        // The top row's ⋯ (Phase 77: until then the 52 dp options button at the exercise row's end), its outline at the row's end.
         val choices = node(EarTrainingTestTags.CHOICES).getBoundsInRoot()
-        assertEquals("the shared options button, 52 dp", 52f, choices.width.value, 0.5f)
-        assertEquals(52f, choices.height.value, 0.5f)
+        val row = node(TOP_ROW).getBoundsInRoot()
+        assertEquals("the top row's 44 dp ⋯", 44f, choices.width.value, 0.5f)
+        assertEquals(44f, choices.height.value, 0.5f)
+        assertEquals("at the row's end", row.right.value, choices.right.value, 0.5f)
+        assertEquals("in the row's middle", (row.top + row.bottom).value / 2, (choices.top + choices.bottom).value / 2, 0.5f)
     }
 
     @Test
@@ -369,8 +451,16 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         show()
         node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
         compose.waitForIdle()
-        node(EarTrainingTestTags.CHOICES_PANEL).assertExists()
-        compose.onNode(hasText("What is asked")).assertIsDisplayed()
+        // The floating panel under the ⋯ (a sheet from the bottom until Phase 77), their ends in line, as wide as the top
+        // row; TalkBack hears it by its name.
+        node(EarTrainingTestTags.CHOICES_PANEL)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "What is asked"))
+        assertPanelUnder(node(EarTrainingTestTags.CHOICES), node(EarTrainingTestTags.CHOICES_PANEL), node(WINDOW), "What is asked")
+        val panel = node(EarTrainingTestTags.CHOICES_PANEL).getBoundsInRoot()
+        assertEquals("its end under the ⋯'s", node(EarTrainingTestTags.CHOICES).getBoundsInRoot().right.value, panel.right.value, 0.5f)
+        assertEquals("as wide as the top row", node(TOP_ROW).getBoundsInRoot().width.value, panel.width.value, 1f)
+        assertTrue("no title of its own", compose.onAllNodes(hasText("What is asked")).fetchSemanticsNodes().isEmpty())
         val names = mapOf(
             NoteChoice.OPEN_STRINGS to "Open strings",
             NoteChoice.NATURALS_TO_5TH to "Natural notes to the 5th fret",
@@ -413,6 +503,31 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         assertEquals(listOf(NoteMatch.EXACT), matches)
         node(EarTrainingTestTags.ANY_OCTAVE).assertIsOff()
         // It stays open for more, and Back closes it.
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.CHOICES_PANEL))
+    }
+
+    /** The panel keeps open when the phone turns, under the ⋯ in its new place; on its side, short, it scrolls. */
+    @Test
+    fun whatIsAskedStaysOpenUnderTheButtonAcrossATurnedPhone() {
+        shownState.value = ALL_CHORDS_ASKED
+        show()
+        node(EarTrainingTestTags.CHOICES).performClick()
+        compose.waitForIdle()
+        for (size in listOf(PHONE_LANDSCAPE, NARROW_UPRIGHT, XIAOMI)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val case = "$size:"
+            node(EarTrainingTestTags.CHOICES_PANEL).assertIsDisplayed()
+            assertPanelUnder(node(EarTrainingTestTags.CHOICES), node(EarTrainingTestTags.CHOICES_PANEL), node(WINDOW), case)
+            val panel = node(EarTrainingTestTags.CHOICES_PANEL).getBoundsInRoot()
+            val window = node(WINDOW).getBoundsInRoot()
+            assertTrue("$case inside the window $panel", panel.top >= window.top && panel.bottom <= window.bottom + 0.5.dp)
+            assertTrue("$case inside the window $panel", panel.left >= window.left && panel.right <= window.right + 0.5.dp)
+            // The last of the twenty scrolls into view inside the panel.
+            assertWhollyShown(node(EarTrainingTestTags.askChordType(ChordQuality.inPanel.last())), "$case the last chord type")
+        }
         Espresso.pressBack()
         compose.waitForIdle()
         assertTrue(!exists(EarTrainingTestTags.CHOICES_PANEL))
@@ -498,8 +613,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         show()
         node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
         compose.waitForIdle()
-        // The panel's heading; the exercise switch above it says "Intervals" too.
-        compose.onNode(hasText("Intervals") and !hasTestTag(EarTrainingTestTags.exercise(Exercise.INTERVALS))).assertExists()
+        // The panel's heading; the exercise pill above it says "Intervals" too.
+        compose.onNode(hasText("Intervals") and hasAnyAncestor(hasTestTag(EarTrainingTestTags.CHOICES_PANEL))).assertExists()
         compose.onNode(hasText("Played")).assertExists()
         val widths = Interval.entries.map { interval ->
             val chip = node(EarTrainingTestTags.askInterval(interval))
@@ -581,7 +696,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         val box = node(EarTrainingTestTags.CHORD_ANSWERS).getBoundsInRoot()
         assertTrue("the box ends inside the window ${box.bottom}", box.bottom <= node(WINDOW).getBoundsInRoot().bottom)
         val sizes = ChordQuality.inPanel.map { type ->
-            assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $type")
+            assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$type")
             node(EarTrainingTestTags.chordAnswer(type)).getBoundsInRoot().let { it.width to it.height }
         }
         assertTrue("one steady size $sizes", sizes.all { abs(it.first.value - sizes[0].first.value) < 0.5f && abs(it.second.value - sizes[0].second.value) < 0.5f })
@@ -603,7 +718,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         compose.waitForIdle()
         node(EarTrainingTestTags.CHORD_LINE).assert(hasText("Not that one"))
         assertEquals("Not that one. The answer: augmented", spoken(EarTrainingTestTags.CHORD_LINE))
-        assertWhollyShown(node(EarTrainingTestTags.chordAnswer(ChordQuality.AUGMENTED)), "$style the answer in view", scroll = false)
+        assertWhollyShown(node(EarTrainingTestTags.chordAnswer(ChordQuality.AUGMENTED)), "the answer in view", scroll = false)
         node(EarTrainingTestTags.chordAnswer(ChordQuality.MINOR)).assertIsNotEnabled().performClick()
         compose.waitForIdle()
         assertEquals("answered once", emptyList<ChordQuality>(), typePicks)
@@ -661,7 +776,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE, NARROW_UPRIGHT)) {
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style $size, all chord types:"
+            val case = "$size, all chord types:"
             for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE) + ChordQuality.inPanel.map(EarTrainingTestTags::chordAnswer)) {
                 assertWhollyShown(node(tag), "$case $tag")
             }
@@ -671,11 +786,11 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         compose.waitForIdle()
         // The play button and the question stand where they are; the answers' box fills the room under them, inside the window.
         for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE)) {
-            assertWhollyShown(node(tag), "$style Xiaomi all chord types $tag", scroll = false)
+            assertWhollyShown(node(tag), "Xiaomi all chord types $tag", scroll = false)
         }
         val box = node(EarTrainingTestTags.CHORD_ANSWERS).getBoundsInRoot()
-        assertTrue("$style the answers' box inside the window $box", box.bottom <= node(WINDOW).getBoundsInRoot().bottom + 0.5.dp)
-        assertTrue("$style and most of the room under the question $box", box.height > 400.dp)
+        assertTrue("the answers' box inside the window $box", box.bottom <= node(WINDOW).getBoundsInRoot().bottom + 0.5.dp)
+        assertTrue("and most of the room under the question $box", box.height > 400.dp)
     }
 
     @Test
@@ -688,16 +803,16 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style $size dark $dark:"
+            val case = "$size dark $dark:"
             val window = bars().safeArea(size)
             for (tag in listOf(HEADER, EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.DOTS, EarTrainingTestTags.HEARD_LINE) +
-                Exercise.entries.map(EarTrainingTestTags::exercise)) {
+                EarTrainingTestTags.EXERCISE) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
             }
             val header = node(HEADER).getBoundsInRoot()
             assertTrue("$case the top row at the top $header", header.top - window.top in 4.dp..16.dp)
-            val row = node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).getBoundsInRoot()
-            assertTrue("$case the exercises under it $row", row.top >= header.bottom)
+            val row = node(EarTrainingTestTags.EXERCISE).getBoundsInRoot()
+            assertTrue("$case the exercise pill under it $row", row.top >= header.bottom)
             compose.assertEveryTextWhollyShown("$case")
         }
         // Intervals with all twelve: the end half or the column scrolls where it must, and everything shows.
@@ -706,7 +821,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
-            val case = "$style $size dark $dark, all intervals:"
+            val case = "$size dark $dark, all intervals:"
             for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.DIRECTION, EarTrainingTestTags.INTERVAL_LINE) + Interval.entries.map(EarTrainingTestTags::answer)) {
                 assertWhollyShown(node(tag), "$case $tag")
             }
@@ -718,7 +833,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         // On the Xiaomi six answers fit without scrolling.
         shownState.value = INTERVALS_ASKED
         compose.waitForIdle()
-        for (tag in Interval.DEFAULT.map(EarTrainingTestTags::answer)) assertWhollyShown(node(tag), "$style Xiaomi six answers $tag", scroll = false)
+        for (tag in Interval.DEFAULT.map(EarTrainingTestTags::answer)) assertWhollyShown(node(tag), "Xiaomi six answers $tag", scroll = false)
     }
 
     @Test
@@ -733,27 +848,28 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 shownMic.value = mic
                 compose.waitForIdle()
                 for (tag in listOf(EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY)) {
-                    assertWhollyShown(node(tag), "$style nl $size $mic $tag at 2x")
+                    assertWhollyShown(node(tag), "nl $size $mic $tag at 2x")
                 }
-                compose.assertEveryTextWhollyShown("$style nl $size $mic at 2x:")
+                compose.assertEveryTextWhollyShown("nl $size $mic at 2x:")
             }
             shownMic.value = MicPermissionStatus.GRANTED
+            checkExercisesAtTwiceTheTextSize("nl", size)
             for ((name, state) in playItBackStates()) {
                 shownState.value = state
                 compose.waitForIdle()
-                assertWhollyShown(node(EarTrainingTestTags.HEARD_LINE), "$style nl $size $name at 2x")
-                compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
+                assertWhollyShown(node(EarTrainingTestTags.HEARD_LINE), "nl $size $name at 2x")
+                compose.assertEveryTextWhollyShown("nl $size $name at 2x:")
             }
             for ((name, state) in intervalsStates()) {
                 shownState.value = state
                 compose.waitForIdle()
-                for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$style nl $size $name $interval at 2x")
-                compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
+                for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "nl $size $name $interval at 2x")
+                compose.assertEveryTextWhollyShown("nl $size $name at 2x:")
             }
             node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
             compose.waitForIdle()
             for (tag in Interval.entries.map(EarTrainingTestTags::askInterval) + IntervalDirection.entries.map(EarTrainingTestTags::direction)) {
-                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+                assertWhollyShown(node(tag), "nl $size $tag at 2x")
             }
             Espresso.pressBack()
             compose.waitForIdle()
@@ -770,7 +886,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             // The panel, with its new rows.
             node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
             compose.waitForIdle()
-            for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+            for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "nl $size $tag at 2x")
             Espresso.pressBack()
             compose.waitForIdle()
         }
@@ -807,19 +923,38 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             shownState.value = state.copy(tally = tally)
             compose.waitForIdle()
             // The buttons' boxes once; their texts in every state.
-            if (!state.answered) for (type in state.chordTypes) assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $language $size $name $type at 2x")
-            compose.assertEveryTextWhollyShown("$style $language $size chord type $name at 2x:")
+            if (!state.answered) for (type in state.chordTypes) assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$language $size $name $type at 2x")
+            compose.assertEveryTextWhollyShown("$language $size chord type $name at 2x:")
         }
         shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.NO_SHAPE, tally = tally)
         compose.waitForIdle()
-        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$style $language $size no shape at 2x")
-        compose.assertEveryTextWhollyShown("$style $language $size no shape at 2x:")
+        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$language $size no shape at 2x")
+        compose.assertEveryTextWhollyShown("$language $size no shape at 2x:")
         shownState.value = ALL_CHORDS_ASKED.copy(tally = tally)
         compose.waitForIdle()
         node(EarTrainingTestTags.CHOICES).performClick()
         compose.waitForIdle()
-        for (type in ChordQuality.inPanel) assertWhollyShown(node(EarTrainingTestTags.askChordType(type)), "$style $language $size chip $type at 2x")
+        for (type in ChordQuality.inPanel) assertWhollyShown(node(EarTrainingTestTags.askChordType(type)), "$language $size chip $type at 2x")
         Espresso.pressBack()
+        compose.waitForIdle()
+    }
+
+    /** The exercise's pill with each exercise's name, and its panel of the three, wholly shown at 2× text in [language] on [size]. */
+    private fun checkExercisesAtTwiceTheTextSize(language: String, size: DpSize) {
+        val before = shownState.value
+        for (exercise in Exercise.entries) {
+            shownState.value = EarTrainingState(exercise = exercise, tally = before.tally)
+            compose.waitForIdle()
+            assertWhollyShown(node(EarTrainingTestTags.EXERCISE), "$language $size $exercise pill at 2x")
+            compose.assertEveryTextWhollyShown("$language $size $exercise pill at 2x:")
+        }
+        node(EarTrainingTestTags.EXERCISE).performScrollTo().performClick()
+        compose.waitForIdle()
+        for (exercise in Exercise.entries) assertWhollyShown(node(EarTrainingTestTags.exercise(exercise)), "$language $size $exercise row at 2x")
+        compose.assertEveryTextWhollyShown("$language $size exercises panel at 2x:")
+        Espresso.pressBack()
+        compose.waitForIdle()
+        shownState.value = before
         compose.waitForIdle()
     }
 
@@ -859,25 +994,26 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 for (mic in listOf(MicPermissionStatus.GRANTED, MicPermissionStatus.DENIED, MicPermissionStatus.PERMANENTLY_DENIED)) {
                     shownMic.value = mic
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $size $mic at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $size $mic at 2x:")
                 }
                 shownMic.value = MicPermissionStatus.GRANTED
+                checkExercisesAtTwiceTheTextSize(language, size)
                 val single = shownState.value
                 for ((name, state) in playItBackStates()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $size $name at 2x:")
                 }
                 for ((name, state) in intervalsStates()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$style $language $size $name $interval at 2x")
-                    compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
+                    for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$language $size $name $interval at 2x")
+                    compose.assertEveryTextWhollyShown("$language $size $name at 2x:")
                 }
                 node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
                 compose.waitForIdle()
                 for (tag in Interval.entries.map(EarTrainingTestTags::askInterval) + IntervalDirection.entries.map(EarTrainingTestTags::direction)) {
-                    assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
+                    assertWhollyShown(node(tag), "$language $size $tag at 2x")
                 }
                 Espresso.pressBack()
                 compose.waitForIdle()
@@ -886,8 +1022,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 compose.waitForIdle()
                 node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
                 compose.waitForIdle()
-                for (choice in NoteChoice.entries) assertWhollyShown(node(EarTrainingTestTags.noteChoice(choice)), "$style $language $size $choice at 2x")
-                for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
+                for (choice in NoteChoice.entries) assertWhollyShown(node(EarTrainingTestTags.noteChoice(choice)), "$language $size $choice at 2x")
+                for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$language $size $tag at 2x")
                 Espresso.pressBack()
                 compose.waitForIdle()
             }
@@ -895,12 +1031,9 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val WINDOW = "window"
         private const val HEADER = "header"
+        private const val TOP_ROW = "top_row"
         private const val TEST_TIMEOUT_SECONDS = 30L
 
         /** The Xiaomi 12X less the status and navigation bars, a short narrow phone less the bars, on its side less the rail, and a 320 dp phone. */

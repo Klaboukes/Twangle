@@ -1,10 +1,13 @@
 /* The Twangle website (Phase 54, docs/architecture/website.md). Contemporary colours
    (core/designsystem StylePalettes.kt), light or dark as the visitor's device is set, the device's
-   own font (Contemporary uses Roboto), nothing loaded from another site (website/build.py checks). */
+   own font (Contemporary uses Roboto), nothing loaded from another site (website/build.py checks).
+   Since Phase 79 the text is in the app's own face, Nunito: nunito.woff2, a cut of its Latin letters with its
+   weights (SIL OFL 1.1, nunito-OFL.txt beside it; docs/architecture/website.md says how it was cut). */
+@font-face { font-family: Nunito; src: url("nunito.woff2") format("woff2"); font-weight: 200 1000; font-display: swap; }
 :root {
   --page: #F5F7FC; --surface: #EFF2FA; --line: #D9DEEA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
   --container: color-mix(in srgb, #3A4FD6 14%, #F5F7FC);
-  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui: Nunito, Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -23,7 +26,10 @@ img { max-width: 100%; }
 header { border-bottom: 1px solid var(--line); }
 header .wrap { display: flex; align-items: center; gap: 16px; min-height: 60px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; color: var(--ink); text-decoration: none; margin-right: auto; }
-.brand .icon { width: 32px; height: 32px; border-radius: 9px; }
+/* The icon and name (Phase 79, website/twangle-icon.svg and twangle-name.svg, TwangleName.kt's proportions): the
+   capitals about 15 px tall, the icon 2.5 times that, the word's capitals level with the icon's middle. */
+.brand .twangle-icon { display: block; height: 38px; width: 38px; flex: none; }
+.brand .twangle-name { display: block; height: 19.4px; margin-left: -2.5px; width: auto; aspect-ratio: 449.7 / 100.8; align-self: flex-start; margin-top: 11.5px; }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 16px; top: 8px; background: var(--page); padding: 6px 12px; border-radius: 8px; z-index: 1; }
 nav { display: flex; gap: 18px; font-size: 16px; }

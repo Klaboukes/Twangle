@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">تعذّر فتح الميكروفون. أغلق التطبيقات الأخرى التي تستخدمه وانقر على «حاول مرة أخرى»، أو أعد تشغيل جهازك.</string>
     <string name="error_mic_stopped">توقف الميكروفون، ربما بسبب مكالمة أو تطبيق آخر. انقر على «حاول مرة أخرى» لمتابعة الضبط.</string>
     <string name="error_retry">حاول مرة أخرى</string>
+    <string name="tuner_any_note">أي نغمة</string>
+    <string name="tuner_any_note_summary">أقرب نغمة، بلا أوتار</string>
 
-    <string name="tuner_mode_strings">الأوتار</string>
-    <string name="tuner_mode_chromatic">كروماتي</string>
     <string name="tuner_show_controls">إظهار عناصر التحكم</string>
     <string name="tuner_focus_mode">وضع التركيز</string>
     <string name="tuner_exit_focus_mode">الخروج من وضع التركيز</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">اعزف نغمة</string>
     <string name="tuner_hint_play_locked_string">اعزف وتر %1$s</string>
     <string name="tuner_hint_playing">قيد التشغيل: %1$s</string>
+    <string name="tuner_hint_all_in_tune">مضبوط. اعزف.</string>
     <string name="tuner_string_lock">ثبّت هذا الوتر</string>
     <string name="tuner_string_unlock">اختر الأوتار تلقائيًا</string>
     <string name="tuner_string_locked">مثبّت</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">مثبّت، قيد التشغيل</string>
     <string name="tuner_string_tuned">مضبوط</string>
     <string name="tuner_string_locked_tuned">مثبّت، مضبوط</string>
-    <string name="tuner_frequency">%1$.1f هرتز</string>
+    <string name="tuner_string_locked_mark">مثبّت، %1$s</string>
     <!-- 0, 100+: سنت; 1: بسنت واحد; 2: بسنتين; 3–10: سنتات; 11–99: سنتًا. -->
     <string name="tuner_cents_zero">٠ سنت</string>
     <plurals name="tuner_cents_flat">
@@ -105,8 +106,18 @@
         <item quantity="other">أعلى بـ%1$d سنت</item>
     </plurals>
     <string name="tuner_in_tune">مضبوط</string>
-    <string name="tuner_tune_up">شُدّ ↑</string>
-    <string name="tuner_tune_down">أرخِ ↓</string>
+    <string name="tuner_word_tighten">شُدّ</string>
+    <string name="tuner_word_loosen">أرخِ</string>
+    <string name="tuner_word_too_low">منخفضة جدًا</string>
+    <string name="tuner_word_too_high">مرتفعة جدًا</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="zero">%1$d سنت</item>
+        <item quantity="one">سنت واحد</item>
+        <item quantity="two">سنتان</item>
+        <item quantity="few">%1$d سنتات</item>
+        <item quantity="many">%1$d سنتًا</item>
+        <item quantity="other">%1$d سنت</item>
+    </plurals>
     <string name="tuner_tip_too_soft">اعزف بصوت أعلى قليلًا</string>
     <string name="tuner_tip_too_noisy">ضجيج كثير، قرّب الهاتف</string>
     <string name="tuner_tip_too_loud">الصوت عالٍ جدًا، أبعد الهاتف</string>
@@ -120,15 +131,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d، %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d، %3$s، %4$s</string>
-    <string name="tuner_spoken_tune_up">شُدّ</string>
-    <string name="tuner_spoken_tune_down">أرخِ</string>
     <string name="tuner_spoken_separator">"، "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s، مع وتر الأوكتاف</string>
     <string name="tuner_spoken_tuning">%1$s، %2$s</string>
     <string name="tuner_spoken_picker">%1$s، %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">الآلة والدوزان</string>
+    <string name="tuner_picker_title">ماذا تضبط؟</string>
 
     <string name="tuner_new_tuning">دوزان جديد</string>
 
@@ -157,39 +166,24 @@
     <string name="tuner_delete_tuning_cancel">إلغاء</string>
     <string name="tuner_strum_check">فحص بضربة</string>
     <string name="tuner_strum_waiting">اضرب كل الأوتار المفتوحة</string>
-    <string name="tuner_strum_waiting_detail">يظهر لكل وتر إن كان منخفضًا أو مضبوطًا أو مرتفعًا</string>
-    <string name="tuner_strum_hearing">جارٍ الاستماع…</string>
-    <!-- 0, 100+: وتر; 1: وتر واحد; 2: وتران; 3–10: أوتار; 11–99: وترًا. -->
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="zero">%1$d وتر للضبط</item>
-        <item quantity="one">وتر واحد للضبط</item>
-        <item quantity="two">وتران للضبط</item>
-        <item quantity="few">%1$d أوتار للضبط</item>
-        <item quantity="many">%1$d وترًا للضبط</item>
-        <item quantity="other">%1$d وتر للضبط</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">لم تُسمع كل الأوتار</string>
-    <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
-    <string name="tuner_strum_tap_to_tune">اختر وترًا لضبطه</string>
-    <string name="tuner_strum_again">اضرب مجددًا، أو اختر وترًا لضبطه</string>
-    <string name="tuner_strum_tune_string">اضبط %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s، %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s، لم يُسمع</string>
     <string name="tuner_strum_spoken_waiting">%1$s، لم يُضرب بعد</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s، لم يُسمع</string>
     <string name="tuner_strum_spoken_less_sure">%1$s، قراءة أقل يقينًا</string>
-    <string name="tour_title">جولة تعريفية</string>
-    <string name="tour_step_count">%1$d من %2$d</string>
-    <string name="tour_step_spoken">الخطوة %1$d من %2$d. %3$s.</string>
-    <string name="tour_readout">كم تبعد عن النغمة، وأي نغمة هي</string>
-    <string name="tour_strum">اضرب لفحص كل الأوتار</string>
-    <string name="tour_strings">اختر: اضبط هذا الوتر وحده. اضغط مطولًا: استمع إليه</string>
-    <string name="tour_picker">اختر الآلة والدوزان</string>
-    <string name="tour_skip">تخطَّ الجولة</string>
-    <string name="tour_next">التالي</string>
-    <string name="tour_done">تم</string>
-    <string name="tuner_more_tools">أدوات أخرى</string>
-    <string name="tuner_tool_on">%1$s قيد التشغيل</string>
+    <string name="tuner_strum_close">أغلق فحص بضربة</string>
+    <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="zero">%1$d من %2$d مضبوطة</item>
+        <item quantity="one">%1$d من %2$d مضبوط</item>
+        <item quantity="two">%1$d من %2$d مضبوطان</item>
+        <item quantity="few">%1$d من %2$d مضبوطة</item>
+        <item quantity="many">%1$d من %2$d مضبوطة</item>
+        <item quantity="other">%1$d من %2$d مضبوطة</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">لم يُسمع</string>
+    <string name="tuner_strum_spoken_string">%1$s، %2$s</string>
     <string name="tuner_intonation_check">فحص الدستان ١٢</string>
+    <string name="tuner_intonation_check_summary">هل السرج في مكانه الصحيح؟</string>
+    <string name="tuner_intonation_close">أغلق فحص الدستان ١٢</string>
     <string name="tuner_intonation_step_open">مفتوح</string>
     <string name="tuner_intonation_step_fret">الدستان ١٢</string>
     <string name="tuner_intonation_choose_string">اختر وترًا</string>
@@ -230,37 +224,9 @@
     <string name="tuner_intonation_mark_back">السرج للخلف</string>
     <string name="tuner_intonation_mark_forward">السرج للأمام</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s، لم يُفحص بعد</string>
-    <string name="tour_more_tools">أدوات أخرى مثل فحص بضربة</string>
-    <string name="tuner_chord_name">اسم الكورد</string>
-    <string name="tuner_chord_major">%1$s ماجور</string>
-    <string name="tuner_chord_minor">%1$s مينور</string>
-    <string name="tuner_chord_seventh">%1$s سابعة</string>
-    <string name="tuner_chord_major_seventh">%1$s ماجور سابعة</string>
-    <string name="tuner_chord_minor_seventh">%1$s مينور سابعة</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s باور كورد</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s سابعة تاسعة مرفوعة</string>
-    <string name="tuner_chord_minor_ninth">%1$s مينور تاسعة</string>
-    <string name="tuner_chord_major_ninth">%1$s ماجور تاسعة</string>
-    <string name="tuner_chord_slash">%1$s، و%2$s في الباص</string>
-    <string name="tuner_chord_bass">الباص</string>
-    <string name="tuner_chord_strum">اضرب كوردًا</string>
-    <string name="tuner_chord_strum_detail">دع كل الأوتار ترنّ</string>
-    <string name="tuner_chord_next">اضرب مجددًا للكورد التالي</string>
-    <string name="tuner_chord_let_ring">دعه يرنّ</string>
-    <string name="tuner_chord_unclear">ليس كوردًا واضحًا</string>
-    <string name="tuner_chord_unclear_detail">اضرب كل أوتار الكورد</string>
-    <string name="tuner_chord_none">لا كورد بعد</string>
-    <string name="tuner_chord_spoken_notes">النغمات %1$s</string>
-    <string name="tuner_chord_spoken_recent">قبل ذلك %1$s</string>
-    <string name="tuner_pitch_trail">أثر النغمة</string>
-    <string name="tuner_trail_spoken">أثر النغمة، %1$s</string>
-    <string name="tuner_trail_no_note">لا نغمة</string>
-    <string name="tuner_trail_steady">ثابتة، %1$s</string>
-    <string name="tuner_trail_wavering">متذبذبة، %1$s</string>
     <string name="tuner_trail_bending_up">ترتفع</string>
     <string name="tuner_trail_bending_down">تنخفض</string>
+    <string name="tuner_spoken_wavering">تتذبذب</string>
     <string name="tuner_screen_off_soon">ستنطفئ الشاشة قريبًا</string>
     <string name="tuner_screen_off_keep_on">انقر لإبقائها مضاءة</string>
 </resources>

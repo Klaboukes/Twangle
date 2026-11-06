@@ -6,9 +6,10 @@
         <item quantity="one">%1$d slag per minut, %2$s</item>
         <item quantity="other">%1$d slag per minut, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">slag per minut · %1$s</string>
     <string name="metronome_slower">Långsammare</string>
     <string name="metronome_faster">Snabbare</string>
-    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_tap">Tryck i takt</string>
     <string name="metronome_start">Starta</string>
     <string name="metronome_stop">Stoppa</string>
     <string name="metronome_vibrate">Vibrera på slaget</string>
@@ -22,12 +23,8 @@
     <string name="metronome_subdivision_eighths">Åttondelar</string>
     <string name="metronome_subdivision_triplets">Trioler</string>
     <string name="metronome_subdivision_sixteenths">Sextondelar</string>
-    <string name="metronome_subdivision_eighths_on">Åttondelar mellan slagen</string>
-    <string name="metronome_subdivision_triplets_on">Trioler mellan slagen</string>
-    <string name="metronome_subdivision_sixteenths_on">Sextondelar mellan slagen</string>
     <string name="metronome_options">Alternativ</string>
     <string name="metronome_trainer">Tempotränare</string>
-    <string name="metronome_trainer_back">Tillbaka till alternativen</string>
     <string name="metronome_trainer_start">Starttempo</string>
     <string name="metronome_trainer_goal">Mål</string>
     <string name="metronome_trainer_start_slower">Sänk starttempot</string>
@@ -65,7 +62,6 @@
     <string name="metronome_listen">Lyssna</string>
     <string name="metronome_listen_stop_spoken">Sluta lyssna</string>
     <string name="metronome_listening">Lyssnar…</string>
-    <string name="metronome_listen_line_stop">Stoppa</string>
     <string name="metronome_heard">Hört</string>
     <string name="metronome_use">Använd</string>
     <string name="metronome_not_now">Inte nu</string>

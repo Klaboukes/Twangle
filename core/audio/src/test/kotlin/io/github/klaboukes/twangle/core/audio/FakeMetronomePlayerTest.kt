@@ -94,4 +94,16 @@ class FakeMetronomePlayerTest {
         player.setTempo(100)
         assertEquals(100, player.bpm)
     }
+
+    @Test
+    fun `silence is kept across stop and start, playing or not`() {
+        assertFalse(player.silent)
+        player.setSilent(true) // while stopped, too
+        player.start(120, Meter.FOUR_FOUR)
+        assertTrue(player.silent)
+        player.stop()
+        assertTrue(player.silent)
+        player.setSilent(false)
+        assertFalse(player.silent)
+    }
 }

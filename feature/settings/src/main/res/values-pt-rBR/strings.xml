@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Configurações</string>
     <string name="settings_back">Voltar</string>
+    <string name="settings_group_tuning">Afinação</string>
 
-    <string name="settings_group_pitch">Diapasão e notas</string>
     <string name="settings_group_look">Aparência</string>
-    <string name="settings_group_tuner_screen">Tela do afinador</string>
     <string name="settings_group_while_tuning">Ao afinar</string>
-    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Diapasão (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">Baixar A4 em 1\u00A0Hz</string>
     <string name="settings_a4_raise">Subir A4 em 1\u00A0Hz</string>
     <string name="settings_a4_reset">Voltar para %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Afinação precisa</string>
+    <string name="settings_precise_summary">Afinado com margem de 2 cents em vez de 5</string>
 
     <string name="settings_notation_title">Nomes das notas</string>
     <string name="settings_notation_sharps">Sustenidos: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Alemão: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Precisão da afinação</string>
-    <string name="settings_in_tune_precision_relaxed">Tolerante: até 5 cents</string>
-    <string name="settings_in_tune_precision_precise">Precisa: até 2 cents</string>
 
-    <string name="settings_style_title">Estilo</string>
     <string name="settings_theme_title">Claro ou escuro</string>
-    <string name="settings_theme_system">Padrão do sistema</string>
+    <string name="settings_theme_system">Igual ao celular</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Escuro</string>
     <string name="settings_dynamic_color_title">Cores do papel de parede</string>
     <string name="settings_dynamic_color_summary">Usar as cores do seu papel de parede</string>
+    <string name="settings_meter_title">Indicador</string>
+    <string name="settings_meter_classic">Clássico</string>
+    <string name="settings_meter_light_arc">Arco de luzes</string>
+    <string name="settings_meter_strobe">Estroboscópio</string>
 
-    <string name="settings_meter_look_title">Medidor</string>
-    <string name="settings_meter_look_classic">Clássico</string>
-    <string name="settings_meter_look_light_arc">Arco de luz</string>
-    <string name="settings_meter_look_pointers">Ponteiros</string>
-    <string name="settings_meter_look_loupe">Lupa</string>
-    <string name="settings_meter_look_arrows">Setas</string>
-    <string name="settings_meter_look_light_bars">Barras de luz</string>
-    <string name="settings_in_tune_effect_title">Efeito ao afinar</string>
-    <string name="settings_in_tune_effect_summary">Quanto o medidor brilha quando a nota está afinada</string>
-    <string name="settings_in_tune_effect_calm">Suave</string>
-    <string name="settings_in_tune_effect_bold">Marcante</string>
-
-    <string name="settings_display_title">Abaixo da nota</string>
-    <string name="settings_display_numbers">Números: quantos cents de desvio</string>
-    <string name="settings_display_wave">Onda: uma imagem em movimento, no estilo que você escolher</string>
-    <string name="settings_wave_look_title">Estilo da onda</string>
-    <string name="settings_wave_look_strobe">Estroboscópio</string>
-    <string name="settings_wave_look_ribbon">Fita</string>
-    <string name="settings_wave_look_dots">Pontos</string>
-    <string name="settings_wave_look_fireflies">Vaga-lumes</string>
-    <string name="settings_wave_look_loop">Aro</string>
-    <string name="settings_wave_look_ripples">Ondulações</string>
-    <string name="settings_focus_mode_title">Modo foco</string>
-    <string name="settings_focus_mode_summary">Deixa o Twangle na horizontal com um medidor grande, fácil de ler de longe</string>
     <string name="settings_left_handed_title">Canhoto</string>
     <string name="settings_left_handed_summary">Diagramas de acordes e braço das escalas desenhados para um violão segurado ao contrário</string>
+    <string name="settings_under_meter_title">Abaixo do indicador</string>
+    <string name="settings_under_meter_words">Palavras: Aperte ou Afrouxe</string>
+    <string name="settings_under_meter_cents">Cents: −12</string>
 
     <string name="settings_keep_screen_on_title">Manter a tela ligada</string>
     <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto você afina</string>
     <string name="settings_vibrate_in_tune_title">Vibrar quando afinado</string>
     <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota fica afinada</string>
-    <string name="settings_show_tune_hint_title">Mostrar ajuda para afinar</string>
-    <string name="settings_show_tune_hint_summary">Diz se é para subir ou baixar e marca cada corda assim que ela estiver afinada</string>
+    <string name="settings_string_tick_off_title">Marcar cordas afinadas</string>
+    <string name="settings_string_tick_off_summary">Uma marca em cada corda afinada, e “Tudo afinado. Pode tocar.” quando todas estiverem</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de sinal</string>
-    <string name="settings_show_signal_bars_summary">Para curiosos: barrinhas ao lado da nota mostram se o afinador ouve você bem. Toque nelas para ver os números</string>
+    <string name="settings_show_signal_bars_summary">Para curiosos: barrinhas acima das cordas mostram se o afinador ouve você bem. Toque nelas para ver os números</string>
 
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_phone">Idioma do celular</string>
     <string name="settings_language_cancel">Cancelar</string>
-    <string name="settings_show_tour_title">Fazer um tour</string>
-    <string name="settings_show_tour_summary">Um tour rápido pelo afinador</string>
     <string name="about_title">Sobre o Twangle</string>
     <string name="settings_about_link_summary">Versão %1$s, ajuda, privacidade e licenças</string>
+    <string name="settings_about_name_title">O nome</string>
+    <string name="settings_about_name_meaning">Em inglês, twang é o som vibrante de uma corda dedilhada.</string>
     <string name="settings_about_version">Versão %1$s</string>
     <string name="settings_about_free_title">Grátis para sempre</string>
     <string name="settings_about_free_summary">Sem anúncios, sem conta, sem compras no app e sem rastreamento. Nem agora, nem depois.</string>

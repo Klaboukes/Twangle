@@ -20,16 +20,22 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@style/Theme.Twangle.Watch">
 
         <!-- Works without the phone app: the watch tuner needs nothing from the phone. -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
             android:value="true" />
 
+        <!-- singleTask: a tile button (Tune, Metronome) or the launcher finding the app open reaches the one
+             activity through onNewIntent. In the standard mode a launch whose intent differed from the
+             task's first (the tile's after the launcher's) stacked a second activity on top
+             (the Galaxy Watch 5, 2026-11-05), and one like it only brings the task up, its page unread. -->
         <activity
             android:name=".WatchActivity"
             android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Twangle.Watch.Starting"
             android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,7 +43,8 @@
             </intent-filter>
         </activity>
 
-        <!-- The Twangle tile beside the watch face: one Tune button that opens the tuner.
+        <!-- The Twangle tile beside the watch face: a Tune button that opens the tuner and, with the
+             metronome's switch on, a Metronome button that opens the metronome.
              Only the system's tile host may bind it. It never listens. -->
         <service
             android:name=".WatchTileService"

@@ -6,7 +6,7 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Immutable
-import io.github.klaboukes.twangle.core.settings.MeterLook
+import io.github.klaboukes.twangle.core.settings.LensLook
 import kotlin.math.PI
 
 /**
@@ -24,19 +24,24 @@ data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
 }
 
 /**
- * Each look's spring, as on the approved mock-up page (`docs/design/meter-looks-preview.html`,
- * `FEEL`): Classic swings a little past a new string, like a mechanical needle; Light arc follows
- * almost without swinging; the arrows and the light bars follow closely (the round-2 mock-up's
- * springs); the note's pointer of Pointers and the loupe's marker follow as closely, with hardly a
- * swing (the Phase 60 mock-up, `docs/design/meter-precision-preview.html`).
+ * The looks' springs, as on the approved mock-up page (`docs/design/1.x/meter-looks-preview.html`, `FEEL`); the meter's
+ * looks take theirs from [meterFeel].
  */
-fun meterFeel(look: MeterLook): MeterFeel = when (look) {
-    MeterLook.CLASSIC -> MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
-    MeterLook.LIGHT_ARC -> MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
-    MeterLook.POINTERS -> MeterFeel(frequencyHz = 1.9f, dampingRatio = 0.8f)
-    MeterLook.LOUPE -> MeterFeel(frequencyHz = 1.8f, dampingRatio = 0.8f)
-    MeterLook.ARROWS -> MeterFeel(frequencyHz = 2.0f, dampingRatio = 0.9f)
-    MeterLook.LIGHT_BARS -> MeterFeel(frequencyHz = 1.8f, dampingRatio = 0.8f)
+object MeterFeels {
+    /** Classic swings a little past a new string, like a mechanical needle (1.1's, back in Phase 78). */
+    val CLASSIC = MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
+
+    /** Light arc follows almost without swinging. */
+    val LIGHT_ARC = MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
+}
+
+/**
+ * The spring the meter's marker ([MeterReading.cents]) follows each reading with in [look]: Classic's needle its own,
+ * the Light arc's, almost without swinging, for the others (the strobe drifts from the marker's cents).
+ */
+fun meterFeel(look: LensLook): MeterFeel = when (look) {
+    LensLook.CLASSIC -> MeterFeels.CLASSIC
+    LensLook.LIGHT_ARC, LensLook.STROBE -> MeterFeels.LIGHT_ARC
 }
 
 /** Smoothstep: starts and ends gently. */

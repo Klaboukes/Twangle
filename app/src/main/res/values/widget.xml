@@ -2,10 +2,11 @@
 <resources>
     <!-- The home-screen widget's corners; Android 12+ uses the launcher's own (values-v31). -->
     <dimen name="widget_corner_radius">16dp</dimen>
-    <!-- The widget picker's preview colours: Contemporary light (values-night: dark). The placed
-         widget is coloured by TuningWidget in the user's style. -->
-    <color name="widget_background">#E3E7F0</color>
-    <color name="widget_ink">#10141F</color>
-    <color name="widget_muted">#4A5268</color>
-    <color name="widget_accent">#3A4FD6</color>
+    <!-- The widget picker's preview colours: Ink light (values-night: dark). The placed widget is
+         coloured by TuningWidget, in Ink or the wallpaper's colours. -->
+    <color name="widget_background">#F6F7F9</color>
+    <color name="widget_surface">#FFFFFF</color>
+    <color name="widget_line">#E1E5EA</color>
+    <color name="widget_ink">#14181D</color>
+    <color name="widget_muted">#4D5560</color>
 </resources>

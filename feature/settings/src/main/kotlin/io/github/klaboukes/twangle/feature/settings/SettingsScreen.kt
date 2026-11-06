@@ -20,15 +20,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -45,45 +40,47 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.klaboukes.twangle.core.designsystem.OneLineAutoSize
-import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.BackButton
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TabletTop
+import io.github.klaboukes.twangle.core.designsystem.TopBar
+import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
+import io.github.klaboukes.twangle.core.designsystem.isMusicSign
+import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
+import io.github.klaboukes.twangle.feature.settings.components.ChoiceDialogSetting
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
-import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
+import io.github.klaboukes.twangle.feature.settings.components.MeterPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
-import io.github.klaboukes.twangle.feature.settings.components.StylePicker
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
-import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
 /**
- * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
- * lead away). Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
- * With [onShowTour], a "Show me around" row starts the first-start tour again (on the tuner).
+ * Settings entry point, opened from the gear in the top corner of every tab (2.0, Phase 69; a tab of
+ * its own until then): with [onBack] a back arrow at the top leads back to that tab, as Back does. Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
  *
  * With [languages] (`twangle.languages`, as resource qualifiers), a Language row sets the app's
  * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
@@ -96,9 +93,9 @@ fun SettingsScreen(
     appVersion: String,
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
-    onShowTour: (() -> Unit)? = null,
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -113,21 +110,17 @@ fun SettingsScreen(
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
         onInTunePrecisionChange = viewModel::setInTunePrecision,
-        onStyleChange = viewModel::setStyle,
         onThemeChange = viewModel::setTheme,
         onDynamicColorChange = viewModel::setDynamicColor,
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
-        onShowTuneHintChange = viewModel::setShowTuneHint,
+        onStringTickOffChange = viewModel::setStringTickOff,
+        onUnderMeterChange = viewModel::setUnderMeter,
         onShowSignalBarsChange = viewModel::setShowSignalBars,
-        onDisplayChange = viewModel::setDisplay,
-        onMeterLookChange = viewModel::setMeterLook,
-        onInTuneEffectChange = viewModel::setInTuneEffect,
-        onWaveLookChange = viewModel::setWaveLook,
-        onFocusModeChange = viewModel::setFocusMode,
+        onLensLookChange = viewModel::setLensLook,
         onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
-        onShowTour = onShowTour,
+        onBack = onBack,
         languages = languageTags,
         appLanguage = appLanguage,
         onAppLanguageChange = { tag ->
@@ -142,11 +135,11 @@ fun SettingsScreen(
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
- * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
- * (Android 12+); the meter looks always show, and the wave looks only while the wave is the
- * display. The Language row shows when there are [languages]
- * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's.
+ * load. The settings come in four headed groups, the last ending in a link to the About page (see [SettingsGroups]);
+ * the wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+). The Language row shows when there are [languages]
+ * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's. With
+ * [onBack] the top bar has a back arrow, as About's. Meter's
+ * cards (2.0 Phases 72 and 78) are Classic, the Light arc and the strobe.
  */
 @Composable
 fun SettingsContent(
@@ -156,51 +149,42 @@ fun SettingsContent(
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
-    onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
-    onShowTuneHintChange: (Boolean) -> Unit,
+    onStringTickOffChange: (Boolean) -> Unit,
+    onUnderMeterChange: (UnderMeter) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
-    onDisplayChange: (TunerDisplay) -> Unit,
-    onMeterLookChange: (MeterLook) -> Unit,
-    onInTuneEffectChange: (InTuneEffect) -> Unit,
-    onWaveLookChange: (WaveLook) -> Unit,
-    onFocusModeChange: (Boolean) -> Unit,
+    onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-    onShowTour: (() -> Unit)? = null,
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
     onAppLanguageChange: (String?) -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
-    SettingsPage(title = stringResource(R.string.settings_title), onBack = null, modifier = modifier) {
+    SettingsPage(title = stringResource(R.string.settings_title), onBack = onBack, modifier = modifier) {
         if (settings != null) {
             SettingsGroups(
                 settings = settings,
                 appVersion = appVersion,
                 onOpenAbout = onOpenAbout,
-                onShowTour = onShowTour,
                 languages = languages,
                 appLanguage = appLanguage,
                 onAppLanguageChange = onAppLanguageChange,
                 onA4Change = onA4Change,
                 onNotationChange = onNotationChange,
                 onInTunePrecisionChange = onInTunePrecisionChange,
-                onStyleChange = onStyleChange,
                 onThemeChange = onThemeChange,
                 onDynamicColorChange = onDynamicColorChange,
                 onKeepScreenOnChange = onKeepScreenOnChange,
                 onVibrateInTuneChange = onVibrateInTuneChange,
-                onShowTuneHintChange = onShowTuneHintChange,
+                onStringTickOffChange = onStringTickOffChange,
+                onUnderMeterChange = onUnderMeterChange,
                 onShowSignalBarsChange = onShowSignalBarsChange,
-                onDisplayChange = onDisplayChange,
-                onMeterLookChange = onMeterLookChange,
-                onInTuneEffectChange = onInTuneEffectChange,
-                onWaveLookChange = onWaveLookChange,
-                onFocusModeChange = onFocusModeChange,
+                onLensLookChange = onLensLookChange,
                 onLeftHandedChange = onLeftHandedChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
@@ -210,7 +194,7 @@ fun SettingsContent(
 
 /**
  * A page of the settings: a top bar with [title] and, with [onBack], a back arrow, then [content] in a
- * scrolling column. The page is see-through, so the style's background shows behind it.
+ * scrolling column. The page is see-through, so the app's background shows behind it.
  */
 @Composable
 internal fun SettingsPage(
@@ -221,13 +205,13 @@ internal fun SettingsPage(
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         // The page's size, for the look card grids' rule (three to a row on a large window at any font size).
-        CompositionLocalProvider(LocalSettingsWindow provides DpSize(maxWidth, maxHeight)) {
+        // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+        CompositionLocalProvider(LocalSettingsWindow provides DpSize(maxWidth, maxHeight), LocalTopScale provides topScaleFor(maxWidth.value, maxHeight.value)) {
             SettingsScaffold(title, onBack, content)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsScaffold(
     title: String,
@@ -242,36 +226,27 @@ private fun SettingsScaffold(
         // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            // The bar stands in the same centred column as the rows, so the title (and the back arrow)
-            // line up with the headings where the window is wider than the column (Phase 52: a tablet's
-            // title sat at the window's edge, 100 to 300 dp from the rows). The bar is see-through, so
-            // narrowing it shows nothing new; where the column is the whole width it is as before.
+            // Every tab's top row (TopBar): the back arrow in the gear's place, the title in the middle, 8 dp down
+            // and the arrow's outline 16 dp in, as the rows (Material's top bar until 2026-11-04, its title at the
+            // start beside a bare arrow). It stands in the same centred column as the rows, so the arrow lines up
+            // with them where the window is wider than the column (Phase 52: a tablet's title sat at the window's
+            // edge, 100 to 300 dp from the rows); upright on a tablet it is drawn as the tuner's (TabletTop), so the arrow
+            // stands where the tabs have the gear. The bar is see-through.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
                 contentAlignment = Alignment.TopCenter,
             ) {
-                TopAppBar(
-                    title = {
-                        // Set smaller where it doesn't fit the bar: Bengali's About title in Futuristic, Orbitron's
-                        // "Twangle" beside Bengali letters, made a line taller than the bar at 2× text (the
-                        // overnight run of 2026-10-30). It still wraps where it is too wide, as French "À propos
-                        // de Twangle" does at 2× text, in two lines that fit; one line never wrapped ran off the bar.
-                        val style = LocalTextStyle.current
-                        Text(title, autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, TITLE_SMALLEST) })
-                    },
-                    modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth(),
-                    windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                    navigationIcon = {
-                        if (onBack != null) {
-                            TwangleIconButton(onClick = onBack) {
-                                Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
-                            }
-                        }
-                    },
-                )
+                Box(Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth().padding(start = TOP_BAR_MARGIN, end = TOP_BAR_MARGIN, top = TOP_BAR_TOP)) {
+                    TabletTop {
+                        TopBar(
+                            middle = { TopBarTitle(title) },
+                            modifier = Modifier.fillMaxWidth(),
+                            start = onBack?.let { back -> { BackButton(back, stringResource(R.string.settings_back), faceModifier = Modifier.testTag(SETTINGS_BACK_TAG)) } },
+                        )
+                    }
+                }
             }
         },
     ) { innerPadding ->
@@ -320,89 +295,72 @@ private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
         }
 
 /**
- * Every setting, in five headed groups: Pitch and notes (which note it is and what counts as in
- * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
- * style with its wallpaper colours, then light or dark), Tuner screen (the meter's look and in-tune effect,
- * what shows below the note and the layout on its side), While tuning (what the tuner does while
- * it listens) and App (the app's language, the tour and one row that opens the About page: version,
- * promise, privacy and licences, so those long texts don't crowd the settings). A line divides two
- * subjects; a setting that belongs to the one above stays with it. Rows, including the card grids, keep
- * 16 dp from the column's edges.
+ * Every setting, in four short headed groups (2.0, Phase 75, as the first 2.0 mock-up draws them; Look first since
+ * 2026-11-05): Look (the lens's look, what goes under the meter, light or dark with the wallpaper colours, and
+ * left-handed charts), While tuning (what the tuner does while it listens), Tuning (which note it is, what counts as
+ * in tune and the reference pitch) and Twangle (the app's language and one
+ * row that opens the About page: version, promise, privacy and licences, so those long texts don't crowd the
+ * settings). No lines inside or between the groups (the owner, 2026-11-05: they fell where a rule put them and looked
+ * random; the headings and the room above them mark the groups, each setting's title the rest). Rows, including the
+ * card grids, keep 16 dp from the column's edges. Four kinds of control and no more: the Meter cards, choice rows,
+ * switches, and rows that open a list.
  */
 @Composable
 private fun SettingsGroups(
     settings: AppSettings,
     appVersion: String,
     onOpenAbout: () -> Unit,
-    onShowTour: (() -> Unit)?,
     languages: List<String>,
     appLanguage: String?,
     onAppLanguageChange: (String?) -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
-    onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
-    onShowTuneHintChange: (Boolean) -> Unit,
+    onStringTickOffChange: (Boolean) -> Unit,
+    onUnderMeterChange: (UnderMeter) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
-    onDisplayChange: (TunerDisplay) -> Unit,
-    onMeterLookChange: (MeterLook) -> Unit,
-    onInTuneEffectChange: (InTuneEffect) -> Unit,
-    onWaveLookChange: (WaveLook) -> Unit,
-    onFocusModeChange: (Boolean) -> Unit,
+    onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
-        SettingsGroup(title = stringResource(R.string.settings_group_pitch)) {
-            Rows {
-                A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
-                HorizontalDivider()
-                // Automatic (null) follows the app's language and shows what that gives.
-                val languageNotation = Notation.forLanguage(appLanguage())
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_notation_title),
-                    options = listOf(null) + Notation.entries,
-                    selected = settings.notationChoice,
-                    onSelect = onNotationChange,
-                ) {
-                    if (it == null) {
-                        stringResource(R.string.settings_notation_automatic, notationSample(languageNotation))
-                    } else {
-                        stringResource(notationLabel(it))
-                    }
-                }
-                HorizontalDivider()
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_in_tune_precision_title),
-                    options = InTunePrecision.entries,
-                    selected = settings.inTunePrecision,
-                    onSelect = onInTunePrecisionChange,
-                ) { stringResource(inTunePrecisionLabel(it)) }
-                HorizontalDivider()
-                // With Note names, the other setting that changes what the chord charts and the scale neck show.
-                SwitchSetting(
-                    title = stringResource(R.string.settings_left_handed_title),
-                    summary = stringResource(R.string.settings_left_handed_summary),
-                    checked = settings.leftHanded,
-                    onCheckedChange = onLeftHandedChange,
-                )
-            }
-        }
+        // What the player sees first (the owner, 2026-11-05: the settings most players change come first, Tuning's big
+        // slider last): the lens's cards, the one look a player picks (the owner's review, 2026-11-03), what goes under
+        // the meter, then light or dark, then how the charts are drawn.
         SettingsGroup(title = stringResource(R.string.settings_group_look)) {
             Rows {
-                StylePicker(
-                    title = stringResource(R.string.settings_style_title),
-                    selected = settings.style,
-                    onSelect = onStyleChange,
+                // The lens's look (2.0, Phase 72), in place of 1.1's meter look, Calm or Bold glow, display and wave look.
+                MeterPicker(
+                    looks = LensLook.entries,
+                    selected = settings.lensLook,
+                    onSelect = onLensLookChange,
+                    precision = settings.inTunePrecision,
                 )
-                // The wallpaper colours belong to the Contemporary style (they show only with it), so they stay
-                // with the style, as the in-tune effect with the meter's look and the wave's look with the display.
-                if (dynamicColorAvailable && settings.style == VisualStyle.CONTEMPORARY) {
+                // What the tuner shows under its meter (2.0, Phase 78): the word, or the cents big in its place.
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_under_meter_title),
+                    options = UnderMeter.entries,
+                    selected = settings.underMeter,
+                    onSelect = onUnderMeterChange,
+                ) { stringResource(underMeterLabel(it)) }
+                // One row that opens the list, as Note names and Language: most players set it once, if ever (three
+                // full rows until 2026-11-05).
+                ChoiceDialogSetting(
+                    title = stringResource(R.string.settings_theme_title),
+                    options = ThemeMode.entries,
+                    selected = settings.theme,
+                    label = { AnnotatedString(stringResource(themeLabel(it))) },
+                    onSelect = onThemeChange,
+                    rowTag = THEME_SETTING_TAG,
+                    optionTag = ::themeOptionTag,
+                )
+                // Android 12 and later only: older phones have no wallpaper colours to take.
+                if (dynamicColorAvailable) {
                     SwitchSetting(
                         title = stringResource(R.string.settings_dynamic_color_title),
                         summary = stringResource(R.string.settings_dynamic_color_summary),
@@ -410,52 +368,12 @@ private fun SettingsGroups(
                         onCheckedChange = onDynamicColorChange,
                     )
                 }
-                HorizontalDivider()
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_theme_title),
-                    options = ThemeMode.entries,
-                    selected = settings.theme,
-                    onSelect = onThemeChange,
-                ) { stringResource(themeLabel(it)) }
-            }
-        }
-        SettingsGroup(title = stringResource(R.string.settings_group_tuner_screen)) {
-            Rows {
-                // The meter sits above the note with both displays, so its looks come first.
-                MeterLookPicker(
-                    title = stringResource(R.string.settings_meter_look_title),
-                    selected = settings.meterLook,
-                    onSelect = onMeterLookChange,
-                    effect = settings.inTuneEffect,
-                    precision = settings.inTunePrecision,
-                ) { stringResource(meterLookLabel(it)) }
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_in_tune_effect_title),
-                    summary = stringResource(R.string.settings_in_tune_effect_summary),
-                    options = InTuneEffect.entries,
-                    selected = settings.inTuneEffect,
-                    onSelect = onInTuneEffectChange,
-                ) { stringResource(inTuneEffectLabel(it)) }
-                HorizontalDivider()
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_display_title),
-                    options = TunerDisplay.entries,
-                    selected = settings.display,
-                    onSelect = onDisplayChange,
-                ) { stringResource(displayLabel(it)) }
-                if (settings.display == TunerDisplay.WAVE) {
-                    WaveLookPicker(
-                        title = stringResource(R.string.settings_wave_look_title),
-                        selected = settings.waveLook,
-                        onSelect = onWaveLookChange,
-                    ) { stringResource(waveLookLabel(it)) }
-                }
-                HorizontalDivider()
+                // Mirrors the chord charts and the scale neck.
                 SwitchSetting(
-                    title = stringResource(R.string.settings_focus_mode_title),
-                    summary = stringResource(R.string.settings_focus_mode_summary),
-                    checked = settings.focusMode,
-                    onCheckedChange = onFocusModeChange,
+                    title = stringResource(R.string.settings_left_handed_title),
+                    summary = stringResource(R.string.settings_left_handed_summary),
+                    checked = settings.leftHanded,
+                    onCheckedChange = onLeftHandedChange,
                 )
             }
         }
@@ -473,11 +391,12 @@ private fun SettingsGroups(
                     checked = settings.vibrateInTune,
                     onCheckedChange = onVibrateInTuneChange,
                 )
+                // The beginner's help (2.0, Phase 71), off by default: 1.1's "Show tuning help" went, as the word always shows.
                 SwitchSetting(
-                    title = stringResource(R.string.settings_show_tune_hint_title),
-                    summary = stringResource(R.string.settings_show_tune_hint_summary),
-                    checked = settings.showTuneHint,
-                    onCheckedChange = onShowTuneHintChange,
+                    title = stringResource(R.string.settings_string_tick_off_title),
+                    summary = stringResource(R.string.settings_string_tick_off_summary),
+                    checked = settings.stringTickOff,
+                    onCheckedChange = onStringTickOffChange,
                 )
                 SwitchSetting(
                     title = stringResource(R.string.settings_show_signal_bars_title),
@@ -487,8 +406,45 @@ private fun SettingsGroups(
                 )
             }
         }
-        // The app itself: its language, the tour and About (until Phase 63 the only rows without a heading).
-        SettingsGroup(title = stringResource(R.string.settings_group_app)) {
+        // Which note it is and what counts as in tune ("Pitch and notes" until Phase 75); the reference pitch last,
+        // the setting most players never change.
+        SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
+            Rows {
+                // Automatic (null) follows the app's language and shows what that gives. One row that opens the list
+                // (five rows until 2026-11-05: hardly anyone changes it). Labels such as "Sharps: C, C♯, D …" set
+                // their signs like the rest of the app, and TalkBack says their note names in words ("C sharp").
+                val languageNotation = Notation.forLanguage(appLanguage())
+                val speech = rememberNoteNameSpeech()
+                val notationText: @Composable (Notation?) -> String = {
+                    if (it == null) {
+                        stringResource(R.string.settings_notation_automatic, notationSample(languageNotation))
+                    } else {
+                        stringResource(notationLabel(it))
+                    }
+                }
+                ChoiceDialogSetting(
+                    title = stringResource(R.string.settings_notation_title),
+                    options = listOf(null) + Notation.entries,
+                    selected = settings.notationChoice,
+                    label = { musicText(notationText(it)) },
+                    spoken = { notationText(it).let { text -> if (text.any(::isMusicSign)) speech.text(text) else null } },
+                    onSelect = onNotationChange,
+                    rowTag = NOTATION_SETTING_TAG,
+                    optionTag = ::notationOptionTag,
+                )
+                // Relaxed or Precise is a yes or no, so a switch like the others (two choice rows, then a segmented
+                // switch, until 2026-11-05): on means Precise.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_precise_title),
+                    summary = stringResource(R.string.settings_precise_summary),
+                    checked = settings.inTunePrecision == InTunePrecision.PRECISE,
+                    onCheckedChange = { onInTunePrecisionChange(if (it) InTunePrecision.PRECISE else InTunePrecision.RELAXED) },
+                )
+                A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
+            }
+        }
+        // The app itself: its language and About ("App" until Phase 75).
+        SettingsGroup(title = stringResource(R.string.settings_group_twangle)) {
             Rows {
                 if (languages.isNotEmpty()) {
                     val names = remember(languages) { languages.associateWith(AppLanguages::nameOf) }
@@ -497,14 +453,6 @@ private fun SettingsGroups(
                         selected = appLanguage,
                         nameOf = { names.getValue(it) },
                         onSelect = onAppLanguageChange,
-                    )
-                }
-                if (onShowTour != null) {
-                    LinkSetting(
-                        title = stringResource(R.string.settings_show_tour_title),
-                        summary = stringResource(R.string.settings_show_tour_summary),
-                        onClick = onShowTour,
-                        modifier = Modifier.testTag(SHOW_TOUR_TAG),
                     )
                 }
                 LinkSetting(
@@ -550,9 +498,6 @@ private fun Rows(content: @Composable ColumnScope.() -> Unit) {
 /** Space between two groups, so each heading clearly starts a new one. */
 private val GROUP_GAP = 32.dp
 
-/** Test tag of the "Show me around" row, which starts the first-start tour again. */
-const val SHOW_TOUR_TAG = "settings_show_tour"
-
 /** Test tag of the row that opens the About page (the Baseline Profile generator opens it). */
 const val ABOUT_LINK_TAG = "settings_about"
 
@@ -565,8 +510,8 @@ private val CONTENT_MAX_WIDTH = 600.dp
 /** How far under the fixed title the rows fade out while the page is scrolled. */
 private val TITLE_FADE = 24.dp
 
-/** The top bar's title is set no smaller than this where it doesn't fit. */
-private val TITLE_SMALLEST = 14.sp
+/** The back arrow's face at the start of Settings' and About's top row, for UI tests (a resource id in the app). */
+const val SETTINGS_BACK_TAG = "settingsBack"
 
 private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SHARPS -> R.string.settings_notation_sharps
@@ -585,37 +530,21 @@ private fun notationSample(notation: Notation): String = stringResource(
     notation.nameOf(PitchClass.B),
 )
 
-private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precision) {
-    InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed
-    InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
-}
+/** Test tag of the Note names row in Settings. */
+const val NOTATION_SETTING_TAG = "settings_notation"
 
-private fun displayLabel(display: TunerDisplay): Int = when (display) {
-    TunerDisplay.NEEDLE -> R.string.settings_display_numbers
-    TunerDisplay.WAVE -> R.string.settings_display_wave
-}
+/** Test tag of a choice in the Note names list: its notation's name, or "automatic". */
+fun notationOptionTag(notation: Notation?): String = "notation:${notation?.name ?: "automatic"}"
 
-private fun meterLookLabel(look: MeterLook): Int = when (look) {
-    MeterLook.CLASSIC -> R.string.settings_meter_look_classic
-    MeterLook.LIGHT_ARC -> R.string.settings_meter_look_light_arc
-    MeterLook.POINTERS -> R.string.settings_meter_look_pointers
-    MeterLook.LOUPE -> R.string.settings_meter_look_loupe
-    MeterLook.ARROWS -> R.string.settings_meter_look_arrows
-    MeterLook.LIGHT_BARS -> R.string.settings_meter_look_light_bars
-}
+/** Test tag of the Light or dark row in Settings. */
+const val THEME_SETTING_TAG = "settings_theme"
 
-private fun inTuneEffectLabel(effect: InTuneEffect): Int = when (effect) {
-    InTuneEffect.CALM -> R.string.settings_in_tune_effect_calm
-    InTuneEffect.BOLD -> R.string.settings_in_tune_effect_bold
-}
+/** Test tag of a choice in the Light or dark list: its mode's name. */
+fun themeOptionTag(theme: ThemeMode): String = "theme:${theme.name}"
 
-private fun waveLookLabel(look: WaveLook): Int = when (look) {
-    WaveLook.STROBE -> R.string.settings_wave_look_strobe
-    WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
-    WaveLook.DOTS -> R.string.settings_wave_look_dots
-    WaveLook.FIREFLIES -> R.string.settings_wave_look_fireflies
-    WaveLook.LOOP -> R.string.settings_wave_look_loop
-    WaveLook.RIPPLES -> R.string.settings_wave_look_ripples
+private fun underMeterLabel(choice: UnderMeter): Int = when (choice) {
+    UnderMeter.WORDS -> R.string.settings_under_meter_words
+    UnderMeter.CENTS -> R.string.settings_under_meter_cents
 }
 
 private fun themeLabel(theme: ThemeMode): Int = when (theme) {
@@ -635,18 +564,14 @@ private fun SettingsContentPreview() {
             onA4Change = {},
             onNotationChange = {},
             onInTunePrecisionChange = {},
-            onStyleChange = {},
             onThemeChange = {},
             onDynamicColorChange = {},
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
-            onShowTuneHintChange = {},
+            onStringTickOffChange = {},
+            onUnderMeterChange = {},
             onShowSignalBarsChange = {},
-            onDisplayChange = {},
-            onMeterLookChange = {},
-            onInTuneEffectChange = {},
-            onWaveLookChange = {},
-            onFocusModeChange = {},
+            onLensLookChange = {},
             onLeftHandedChange = {},
         )
     }

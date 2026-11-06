@@ -17,33 +17,63 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.rememberTextMeasurer
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
+import io.github.klaboukes.twangle.core.designsystem.lens.LensReading
 import kotlinx.coroutines.flow.first
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 
 /*
- * 2. Light arc, as on the round-2 mock-up page (docs/design/meter-looks-round2-preview.html, drawFan),
- * sharpened in Phase 60 (docs/design/meter-precision-preview.html, drawFan with `sharp`): a fan of
- * little lights, like an LED pedal's, with no numbers. The rays from the centre out to the reading
- * light up as a wedge, brightest at the reading; the middle ray is the centre mark. The rays stand
- * on the stretched scale, so the ones near the middle are a few cents apart, and tiny dots just
- * past the outer lights mark 5 and 10 cents and the in-tune window.
+ * The Light arc, as on the round-2 mock-up page (docs/design/1.x/meter-looks-round2-preview.html, drawFan),
+ * sharpened in Phase 60 (docs/design/1.x/meter-precision-preview.html, drawFan with `sharp`) and fitted into
+ * 2.0's lens in Phase 72 (docs/design/v2-tuner-screens-preview.html, lensArc): a fan of little lights, like
+ * an LED pedal's, with no numbers. The rays from the centre out to the reading light up as a wedge, brightest
+ * at the reading, in the reading's tone; the middle ray is the centre mark. The rays stand on the stretched
+ * scale, so the ones near the middle are a few cents apart, and tiny dots just past the outer lights mark 5
+ * and 10 cents and the in-tune window.
  */
 
 /**
- * The fan's geometry in a box of [size]: rays from a pivot [PIVOT_BELOW_UNITS] under the box's
- * bottom middle, evenly spaced from −[FAN_SWEEP] to +[FAN_SWEEP] radians ([lightArcRayPlace]), each
- * with [LIGHT_ARC_DOTS] lights from [FIRST_DOT_UNITS] out, [DOT_STEP_UNITS] apart, growing from
- * [FIRST_DOT_RADIUS] by [DOT_GROWTH] each, and room for a mark [MARK_GAP_UNITS] past the outer
- * light. Angles are measured clockwise from straight up, so a positive angle is to the right (sharp).
+ * The fan's geometry in a lens of [size], with [dp] px to a dp: rays from a pivot under the fan, evenly spaced
+ * from −[sweep] to +[sweep] radians ([lightArcRayPlace]; [UPRIGHT_SWEEP] upright, [WIDE_SWEEP] in a [wide]
+ * lens, as the mock-up's `lensArc`), each with [LIGHT_ARC_DOTS] lights from [FIRST_DOT_UNITS] out,
+ * [DOT_STEP_UNITS] apart, growing from [FIRST_DOT_RADIUS] by [DOT_GROWTH] each, and a mark [MARK_GAP_UNITS]
+ * past the outer light. Lengths are in units [u], 1/[OUTER_UNITS] of the outer lights' distance from the pivot
+ * ([radius]), which is the largest that fits the box both ways: the outer lights [SIDE_ROOM] dp in from the
+ * sides, the marks at the top and the inner lights at the ends [END_ROOM] dp in from the top and the bottom,
+ * the fan centred in the height. Angles are measured clockwise from straight up, so a positive angle is to
+ * the right (sharp). Pure, so it is tested on the JVM (`FanGeometryTest`).
  */
-internal class FanGeometry(size: Size) {
-    val u = meterUnit(size.width)
+internal class FanGeometry(size: Size, wide: Boolean, dp: Float) {
+    /** How far the fan opens each way, in radians. */
+    val sweep = if (wide) WIDE_SWEEP else UPRIGHT_SWEEP
+
+    /** The outer lights' distance from the pivot: the largest that fits the box both ways. */
+    val radius: Float
+
+    /** The fan's unit: 1/[OUTER_UNITS] of [radius]. */
+    val u: Float
+
     val cx = size.width / 2f
-    val pivotY = size.height + PIVOT_BELOW_UNITS * u
+
+    /** The pivot, under the fan's middle. */
+    val pivotY: Float
+
+    /** The fan's top (the marks over its middle) and bottom (the inner lights at its ends), in px. */
+    val top: Float
+    val bottom: Float
+
+    init {
+        val across = (size.width / 2f - SIDE_ROOM * dp) / ((sin(sweep) * OUTER_UNITS + OUTER_LIGHT_UNITS) / OUTER_UNITS)
+        val tall = (TOP_UNITS - FIRST_DOT_UNITS * cos(sweep) + INNER_LIGHT_UNITS) / OUTER_UNITS
+        val down = (size.height - 2f * END_ROOM * dp) / tall
+        radius = max(0f, min(across, down))
+        u = radius / OUTER_UNITS
+        top = (size.height - radius * tall) / 2f
+        bottom = top + radius * tall
+        pivotY = top + TOP_UNITS * u
+    }
 
     /** Each light's middle (x, y) and radius, in index order. */
     val lights = FloatArray(LIGHT_ARC_LIGHTS * 3).also {
@@ -61,89 +91,97 @@ internal class FanGeometry(size: Size) {
     val glowCentre = Offset(cx, pivotY - GLOW_UP_UNITS * u)
 
     /** Ray [ray]'s angle, in radians clockwise from straight up. */
-    fun rayAngle(ray: Int): Float = lightArcRayPlace(ray) / METER_RANGE_CENTS * FAN_SWEEP
+    fun rayAngle(ray: Int): Float = lightArcRayPlace(ray) / METER_RANGE_CENTS * sweep
 
     /** Where a mark on ray [ray] sits: [MARK_GAP_UNITS] past its outer light's middle. */
     fun markAt(ray: Int): Offset {
         val angle = rayAngle(ray)
-        val distance = (FIRST_DOT_UNITS + DOT_STEP_UNITS * (LIGHT_ARC_DOTS - 1) + MARK_GAP_UNITS) * u
+        val distance = (OUTER_UNITS + MARK_GAP_UNITS) * u
         return Offset(cx + distance * sin(angle), pivotY - distance * cos(angle))
     }
 
     companion object {
-        const val PIVOT_BELOW_UNITS = 6f
-        const val FAN_SWEEP = 1.2f
+        /** The fan opens ±1.2 rad upright and ±0.8 rad in a wide lens (the mock-up's `lensArc`). */
+        const val UPRIGHT_SWEEP = 1.2f
+        const val WIDE_SWEEP = 0.8f
+
         const val FIRST_DOT_UNITS = 78f
         const val DOT_STEP_UNITS = 17.5f
         const val FIRST_DOT_RADIUS = 3.4f
         const val DOT_GROWTH = 0.55f
         const val GLOW_UP_UNITS = 120f
         const val MARK_GAP_UNITS = 12f
+
+        /** The outer lights' distance from the pivot, in units. */
+        const val OUTER_UNITS = FIRST_DOT_UNITS + DOT_STEP_UNITS * (LIGHT_ARC_DOTS - 1)
+
+        /** The fan's top above the pivot: the strong marks just past the outer lights, with their radius. */
+        const val TOP_UNITS = OUTER_UNITS + MARK_GAP_UNITS + 1.8f
+
+        /** An outer and an inner light's radius when fully lit (8 % larger than unlit). */
+        const val OUTER_LIGHT_UNITS = (FIRST_DOT_RADIUS + DOT_GROWTH * (LIGHT_ARC_DOTS - 1)) * 1.08f
+        const val INNER_LIGHT_UNITS = FIRST_DOT_RADIUS * 1.08f
+
+        /** Room, in dp, between the outer lights and the box's sides (the mock-up's 16) … */
+        const val SIDE_ROOM = 16f
+
+        /** … and between the fan and the box's top and bottom. */
+        const val END_ROOM = 14f
     }
 }
 
 /**
- * Light arc: the calm field, the fan's lights unlit (in the track colour, like dark LEDs) and the ♭
- * and ♯ (static); the in-tune glow; the middle ray (the centre mark: two dim lights in the accent off
- * the note, all five in the centre colour as it is reached, and its neighbours half lit); the lit
- * wedge with a small halo round each light, redrawn from the reading and [LightArcHeat] in its own
- * layer; and over it the marks just past the outer lights ([lightArcMarks], static, made again only
- * when the in-tune window changes). A frame loop runs only while some light is still fading, so a
- * steady reading moves nothing.
+ * The Light arc in the lens (Phase 72, docs/architecture/v2-plan.md, *The lens*), from one [reading]: the fan's
+ * lights unlit (in the line colour, like dark LEDs; static); the in-tune glow; the middle ray (the centre mark:
+ * two dim lights in the muted colour off the note, all five green as it is reached, and its neighbours half
+ * lit); the lit wedge in the reading's tone with a small halo round each light, redrawn from the reading and
+ * [LightArcHeat] in its own layer; and over it the marks just past the outer lights ([lightArcMarks], static,
+ * made again only when the in-tune window changes). The fan opens less far in a [wide] lens. The lens draws
+ * the face, the border and ♭ ♯. A frame loop runs only while some light is still fading, so a steady reading
+ * moves nothing; once the string dies the marker rests in the middle, the wedge fades and only the centre
+ * ray is left, muted.
  */
 @Composable
-internal fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect) {
-    val roles = meterRoles(effect)
-    val measurer = rememberTextMeasurer()
+internal fun BoxScope.LightArcLook(reading: LensReading, wide: Boolean) {
+    val roles = meterRoles()
     val heat = remember(reading) { LightArcHeat(Snapshot.withoutReadObservation { reading.cents }) }
     val frames = remember(heat) { mutableIntStateOf(0) }
     LaunchedEffect(heat) { runLightArc(heat, reading, frames) }
     StaticArt {
-        val fan = FanGeometry(size)
-        val u = fan.u
-        val field = meterField(size, roles)
+        val lights = FanGeometry(size, wide, density).lights
         val unlit = roles.track.copy(alpha = if (roles.dark) 0.75f else 0.7f)
-        val lights = fan.lights
-        // In the box's lower corners, beside the fan's ends.
-        val signY = size.height - SIGN_UP_UNITS * u
-        val signs = SignsArt(
-            measurer, this, u, roles,
-            flatX = SIGN_IN_UNITS * u,
-            sharpX = size.width - SIGN_IN_UNITS * u,
-            y = signY,
-            maxHeight = 2f * (size.height - u - signY),
-        )
         val draw: DrawScope.() -> Unit = {
-            field.draw(this)
             for (i in 0 until LIGHT_ARC_LIGHTS) drawCircle(unlit, lights[i * 3 + 2], Offset(lights[i * 3], lights[i * 3 + 1]))
-            signs.draw(this)
         }
         draw
     }
-    TuneGlow(roles, reading, LIGHT_ARC_GLOW_UNITS, centre = { size -> FanGeometry(size).glowCentre })
+    TuneGlow(roles, reading) {
+        val fan = FanGeometry(size, wide, density)
+        fan.glowCentre to LIGHT_ARC_GLOW_UNITS * fan.u
+    }
     // The middle ray, in a layer of its own so its in-tune fade redraws nothing else.
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
-            val art = FanLightsArt(FanGeometry(size), roles)
-            onDrawBehind { art.drawCentre(this, reading.tuned, reading.presence) }
+            val art = FanLightsArt(FanGeometry(size, wide, density), roles)
+            onDrawBehind { art.drawCentre(this, reading.tuned) }
         },
     )
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
             reading.applyMarkerLook(this)
         }.drawWithCache {
-            val art = FanLightsArt(FanGeometry(size), roles)
+            val art = FanLightsArt(FanGeometry(size, wide, density), roles)
             onDrawBehind {
                 // Redraws on every step of the fading trail.
                 frames.intValue
-                art.drawLit(this, heat.heat, reading.tuned)
+                art.drawLit(this, heat.heat, reading.tuned, reading.tone)
             }
         },
     )
     // The marks, over the lit lights' halos so they stay crisp. Reading the window here makes them
     // again when the setting changes.
     StaticArt {
-        val fan = FanGeometry(size)
+        val fan = FanGeometry(size, wide, density)
         val marks = lightArcMarks(reading.inTuneWindow).flatMap { (out, mark) ->
             listOf(-1, 1).map { side ->
                 Triple(fan.markAt(LIGHT_ARC_CENTRE_RAY + side * out), mark.radiusUnits * fan.u, roles.ink.copy(alpha = mark.ink))
@@ -180,20 +218,19 @@ internal const val NANOS_PER_SECOND = 1_000_000_000f
 internal const val MAX_STEP_SECONDS = 0.1f
 
 /**
- * The fan's lit lights. A lit light is the accent (a little whiter in dark) at its heat, a touch
- * larger than unlit, with a soft halo of 3.4 times its radius (45 % dark, 28 % light at its middle).
- * The middle ray is the centre mark: its two inner lights at 45 % and the rest at 14 % off the note,
- * all five in the centre colour as the note is reached ([MeterReading.tuned]); the rays either side
- * then light half way (three lights at 50 %, two at 20 %), so the fan closes round the centre.
+ * The fan's lit lights. A lit light is the reading's tone (a little whiter in dark) at its heat, a touch larger
+ * than unlit, with a soft halo of 3.4 times its radius (45 % dark, 28 % light at its middle), drawn as a few
+ * rings in the tone so one halo serves any tone without a brush per colour. The middle ray is the centre mark:
+ * its two inner lights at 45 % and the rest at 14 % off the note, muted, all five green as the note is reached
+ * ([MeterReading.tuned]); the rays either side then light half way (three lights at 50 %, two at 20 %), so the
+ * fan closes round the centre.
  */
 private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
     private val lights = fan.lights
-    private val haloAlpha = if (roles.dark) 0.45f else 0.28f
-    private val halos = Array(LIGHT_ARC_DOTS) { dot ->
-        GlowArt(HALO_SIZE * (FanGeometry.FIRST_DOT_RADIUS + FanGeometry.DOT_GROWTH * dot) * fan.u, roles.accent)
-    }
+    private val ringAlpha = (if (roles.dark) 0.45f else 0.28f) / HALO_RINGS
 
-    fun drawLit(scope: DrawScope, heat: FloatArray, tuned: Float) = with(scope) {
+    fun drawLit(scope: DrawScope, heat: FloatArray, tuned: Float, tone: Color) = with(scope) {
+        val centre = roles.centre(tuned)
         for (i in 0 until LIGHT_ARC_LIGHTS) {
             val ray = i / LIGHT_ARC_DOTS
             if (ray == LIGHT_ARC_CENTRE_RAY) continue
@@ -202,19 +239,23 @@ private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
             val closing = if (beside) tuned * (if (dot < 3) 0.5f else 0.2f) else 0f
             val glow = max(heat[i], closing)
             if (glow < MIN_LIT) continue
-            val x = lights[i * 3]
-            val y = lights[i * 3 + 1]
+            val middle = Offset(lights[i * 3], lights[i * 3 + 1])
             val radius = lights[i * 3 + 2]
-            val lit = if (closing > heat[i]) roles.centre(tuned) else roles.accent
-            if (closing <= heat[i]) halos[dot].draw(this, x, y, haloAlpha * glow)
+            val lit = if (closing > heat[i]) centre else tone
+            if (closing <= heat[i]) {
+                // The halo, from the outside in, each ring adding a little.
+                for (ring in HALO_RINGS downTo 1) {
+                    drawCircle(lit, radius * (1f + (HALO_SIZE - 1f) * ring / HALO_RINGS), middle, alpha = ringAlpha * glow)
+                }
+            }
             val color = if (roles.dark) mix(lit, Color.White, 0.15f * glow) else lit
-            drawCircle(color.copy(alpha = glow), radius * (1f + LIT_GROWTH * glow), Offset(x, y))
+            drawCircle(color.copy(alpha = glow), radius * (1f + LIT_GROWTH * glow), middle)
         }
     }
 
-    /** The middle ray, [tuned] of the way to "in tune" and muted at rest ([presence], see [MeterRoles.centre]). */
-    fun drawCentre(scope: DrawScope, tuned: Float, presence: Float = 1f) = with(scope) {
-        val color = roles.centre(tuned, presence)
+    /** The middle ray, [tuned] of the way to "in tune" (see [MeterRoles.centre]). */
+    fun drawCentre(scope: DrawScope, tuned: Float) = with(scope) {
+        val color = roles.centre(tuned)
         for (dot in 0 until LIGHT_ARC_DOTS) {
             val i = LIGHT_ARC_CENTRE_RAY * LIGHT_ARC_DOTS + dot
             val resting = if (dot < 2) CENTRE_INNER else CENTRE_OUTER
@@ -230,20 +271,15 @@ private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
         /** A fully lit light is this much larger than unlit. */
         const val LIT_GROWTH = 0.08f
 
-        /** A lit light's halo reaches this many times its radius. */
+        /** A lit light's halo reaches this many times its radius, in this many rings. */
         const val HALO_SIZE = 3.4f
+        const val HALO_RINGS = 4
 
         /** The middle ray's lights off the note: the two inner ones, then the rest. */
         const val CENTRE_INNER = 0.45f
         const val CENTRE_OUTER = 0.14f
     }
 }
-
-/** The ♭ and ♯ sit this many units in from the box's sides … */
-private const val SIGN_IN_UNITS = 24f
-
-/** … and this many up from its bottom. */
-private const val SIGN_UP_UNITS = 14f
 
 /** The light arc's in-tune glow reaches this many units from its middle. */
 private const val LIGHT_ARC_GLOW_UNITS = 90f

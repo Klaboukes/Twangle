@@ -5,7 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
@@ -26,6 +28,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.then
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
@@ -40,15 +43,12 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.PracticeTool
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
-import io.github.klaboukes.twangle.core.testing.assertMenuUnder
+import io.github.klaboukes.twangle.core.testing.assertPanelUnder
 import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -65,20 +65,18 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
 /**
- * The Chords tool (Phase 32) in each style, light and dark: it opens on the saved chord, the name
+ * The Chords tool (Phase 32) in Ink, light and dark: it opens on the saved chord, the name
  * button opens one panel of roots and chord types that picks the chord (and reports it to be saved),
  * closing on each pick so the chart shows it, the chart follows the picked tuning and notation, ‹ › and a swipe
  * step through the shapes, TalkBack hears the name as a heading and a list, the panel's grids as
  * radio groups and the chart in words, and the whole tool fits: without scrolling upright and on its
  * side at normal text, wholly shown at 2× text, the panel too; the banjo charted with its short string, in both hands (Phase 59).
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class ChordsScreenTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class ChordsScreenTest {
 
     private val compose = createSharedActivityComposeRule()
 
@@ -105,7 +103,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
     private fun show(root: PitchClass = PitchClass.C, quality: ChordQuality = ChordQuality.MAJOR) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     ChordsScreen(
                         tuning = shownTuning.value,
                         tuningName = "Guitar · Standard",
@@ -115,7 +113,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                         savedQuality = quality,
                         onRootChange = { savedRoots += it },
                         onQualityChange = { savedQualities += it },
-                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) },
+                        onBack = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                         leftHanded = shownLeftHanded.value,
@@ -126,6 +124,16 @@ class ChordsScreenTest(private val style: VisualStyle) {
     }
 
     private fun node(tag: String) = compose.onNodeWithTag(tag)
+
+    /**
+     * [tag]'s bounds in the window's dp. A node's own bounds are in its own dp, and upright on a tablet the top row is
+     * drawn bigger (TabletTop), with that many more pixels to its dp.
+     */
+    private fun windowBounds(tag: String): DpRect {
+        val pxPerDp = node(WINDOW).fetchSemanticsNode().layoutInfo.density.density
+        val r = node(tag).fetchSemanticsNode().boundsInRoot
+        return DpRect((r.left / pxPerDp).dp, (r.top / pxPerDp).dp, (r.right / pxPerDp).dp, (r.bottom / pxPerDp).dp)
+    }
     private fun exists(tag: String): Boolean = compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
     private fun chart() = node(PracticeTestTags.CHART)
     private fun spokenChart(): String = chart().fetchSemanticsNode().config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
@@ -143,7 +151,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
         picker().assertTextEquals(words)
     }
 
-    /** Opens the panel and waits for it: a window of its own. */
+    /** Opens the panel and waits for it: it comes with a short fade. */
     private fun openPanel() {
         picker().performClick()
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.root(PitchClass.C)) }
@@ -155,7 +163,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
         awaitPanelClosed()
     }
 
-    /** Waits for the panel to go: a window of its own, it goes with a short animation. */
+    /** Waits for the panel to go: it goes with a short fade. */
     private fun awaitPanelClosed() {
         compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.root(PitchClass.C)) }
     }
@@ -254,10 +262,11 @@ class ChordsScreenTest(private val style: VisualStyle) {
         closePanel()
         node(PracticeTestTags.PREVIOUS).assert(hasContentDescription("Previous shape"))
         node(PracticeTestTags.NEXT).assert(hasContentDescription("Next shape"))
-        node(PracticeTestTags.INSTRUMENT_BUTTON)
+        // The picker chip (Phase 70), heard as the tuner's: the instrument and tuning, a button that changes them.
+        node(PracticeTestTags.TUNING)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Guitar, Standard"))
-        assertTrue("the name beside it is skipped", node(PracticeTestTags.TUNING).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
+            .assert(hasContentDescription("Guitar, Standard"))
+            .assert(SemanticsMatcher("double-tap changes the instrument or tuning") { it.config.getOrNull(SemanticsActions.OnClick)?.label == "Change instrument or tuning" })
         assertTrue("a chart is a polite live region", chart().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
     }
 
@@ -317,7 +326,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
         shownTuning.value = Instruments.BANJO_5.defaultTuning
         show(PitchClass.G, ChordQuality.MAJOR)
         for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
-            val case = "$style $size at ${scale}x"
+            val case = "$size at ${scale}x"
             shownFontScale.value = scale
             shownSize.value = size
             compose.waitForIdle()
@@ -382,7 +391,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 pick(PracticeTestTags.root(root), PracticeTestTags.type(quality))
                 val spoken = awaitChart("$words, shape 1 of")
                 compose.waitForIdle()
-                val case = "$style $size $words"
+                val case = "$size $words"
                 val fromNut = quality != ChordQuality.MAJOR || root != PitchClass.D
                 val normal = chart().captureToImage()
                 assertShortString(normal, ChartGeometry.of(banjo), fromNut, "$case right-handed")
@@ -451,10 +460,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 compose.waitForIdle()
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
                 for (tag in listOf(PracticeTestTags.CHART, PracticeTestTags.NAME_PICKER, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
-                    assertWhollyShown(node(tag), "$style $language $size at 2x, banjo: $tag", scroll = true)
+                    assertWhollyShown(node(tag), "$language $size at 2x, banjo: $tag", scroll = true)
                 }
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
-                compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
+                compose.assertEveryTextWhollyShown("$language $size at 2x, banjo:")
+                compose.assertNoWordBroken("$language $size at 2x, banjo:")
             }
         }
     }
@@ -478,7 +487,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 val chartBounds = chart().getBoundsInRoot()
                 shownLeftHanded.value = true
                 compose.waitForIdle()
-                val case = "$style $size $chord"
+                val case = "$size $chord"
                 assertEquals("$case: TalkBack hears the same", spoken, spokenChart())
                 assertEquals("$case: the name stays", name, picker().getBoundsInRoot())
                 assertEquals("$case: the chart's room stays", chartBounds, chart().getBoundsInRoot())
@@ -510,22 +519,34 @@ class ChordsScreenTest(private val style: VisualStyle) {
             shownSize.value = size
             compose.waitForIdle()
             awaitChart("C major")
-            val case = "$style ${if (dark) "dark" else "light"} $size:"
+            val case = "${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
-            for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
+            for (tag in listOf(PracticeTestTags.BACK, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
-                val bounds = node(tag).getBoundsInRoot()
+                val bounds = windowBounds(tag)
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // One row: the tool button at the start, the instrument and tuning beside it (Phase 47).
-            val toolButton = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
-            val instrument = node(PracticeTestTags.INSTRUMENT_BUTTON).getBoundsInRoot()
+            // One row, every tab's: the back arrow at the start, the picker chip in the middle (Phase 47, 69, 70; beside the
+            // arrow until 2026-11-04), as on the tuner.
+            val backArrow = windowBounds(PracticeTestTags.BACK)
+            val instrument = windowBounds(PracticeTestTags.TUNING)
+            // The tool's name in the top row beside the back arrow, the chip on its own line under it (Phase 77).
+            val title = windowBounds(PracticeTestTags.TITLE)
             assertTrue(
-                "$case the tuning beside the tool button $toolButton $instrument",
-                instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
+                "$case the tool's name beside the back arrow $backArrow $title",
+                title.left >= backArrow.right && title.top < backArrow.bottom && title.bottom > backArrow.top,
             )
-            // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not.
-            assertThePanel(case, wide = size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT)
+            assertTrue("$case the tuning on its own line under the top row $backArrow $instrument", instrument.top >= backArrow.bottom)
+            // Each centred in whole pixels, so they can be a pixel apart: on a tablet's window forced onto the Xiaomi
+            // (0.8 px a dp) that is 1.2 dp (the overnight run of 2026-11-05, after Nunito changed the name's width).
+            val near = maxOf(1f, 1.05f / node(PracticeTestTags.TUNING).fetchSemanticsNode().layoutInfo.density.density)
+            assertEquals("$case the chip under the name", ((title.left + title.right) / 2).value, ((instrument.left + instrument.right) / 2).value, near)
+            if (size.width < size.height) {
+                assertEquals("$case the chip in the window's middle", ((window.left + window.right) / 2).value, ((instrument.left + instrument.right) / 2).value, near)
+            }
+            // On a tablet the panel drops under the name, on its side too (Phase 52); since Phase 77 it floats on the screen's
+            // own layer, so the tablets' forced windows show where (Material's menu, a window of its own, wasn't scaled with them).
+            assertThePanel(case, wide = size == PHONE_LANDSCAPE)
             val chart = chart().getBoundsInRoot()
             // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp; the banjo's, a fret row taller, 194 dp).
             val least = if (tuning.hasShortString) 194.dp else if (size == PHONE_UPRIGHT) 156.dp else 170.dp
@@ -543,7 +564,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             } else if (size == TABLET_LANDSCAPE) {
                 // A tablet on its side (Phase 52): the tuning line and the name share the top row, the chart runs the whole width under it.
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
-                assertTrue("$case the name in the end half, beside the tool button", name.left >= middle && name.top < toolButton.bottom)
+                assertTrue("$case the name in the end half, beside the back arrow", name.left >= middle && name.top < backArrow.bottom)
                 assertTrue("$case the chart's room the whole width $chart", chart.left <= window.left + 25.dp && chart.right >= window.right - 25.dp)
                 assertTrue("$case a large chart's room ${chart.height}", chart.height >= 500.dp)
             } else {
@@ -570,10 +591,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
             compose.waitForIdle()
             awaitChart("La")
             for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
-                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+                assertWhollyShown(node(tag), "nl $size $tag at 2x")
             }
-            compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
-            assertThePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+            compose.assertEveryTextWhollyShown("nl $size at 2x:")
+            assertThePanel("nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
         }
     }
 
@@ -589,8 +610,14 @@ class ChordsScreenTest(private val style: VisualStyle) {
         val first = top(PracticeTestTags.root(PitchClass.C))
         val second = top(PracticeTestTags.root(PitchClass.F_SHARP))
         assertTrue("$case roots in two rows of six", top(PracticeTestTags.root(PitchClass.F)) == first && second > first && top(PracticeTestTags.root(PitchClass.B)) == second)
-        // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
-        if (!wide) assertMenuUnder(picker(), node(PracticeTestTags.root(PitchClass.C)), case)
+        // Upright under the name; on its side over the start half, from its top.
+        val panel = node(PracticeTestTags.NAME_PANEL).getBoundsInRoot()
+        val window = node(WINDOW).getBoundsInRoot()
+        if (!wide) {
+            assertPanelUnder(picker(), node(PracticeTestTags.NAME_PANEL), node(WINDOW), case)
+        } else {
+            assertTrue("$case the panel $panel over the start half of $window", panel.left < (window.left + window.right) / 2 && panel.top < picker().getBoundsInRoot().top)
+        }
         val types = top(PracticeTestTags.type(ChordQuality.MAJOR))
         assertTrue("$case the types under the roots", types > second)
         // C to C7, Cmaj7 to Csus4, C7sus4 to Cadd9, C9 to C7♯9, Cdim to Caug.
@@ -621,13 +648,13 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 shownSize.value = size
                 compose.waitForIdle()
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
-                compose.assertNoWordBroken("$style $language $size at 2x:")
-                // The panel is a window of its own: Back with it shut would close the activity, and a tap while the last
-                // one is still going away only shuts that one (the Retro run, 2026-10-19). So wait for it both ways.
+                compose.assertEveryTextWhollyShown("$language $size at 2x:")
+                compose.assertNoWordBroken("$language $size at 2x:")
+                // Back with the panel shut would close the activity, and a tap while the last one is still going away only
+                // shuts that one (the Retro run, 2026-10-19, when it was a window of its own). So wait for it both ways.
                 openPanel()
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x, panel:")
-                compose.assertNoWordBroken("$style $language $size at 2x, panel:")
+                compose.assertEveryTextWhollyShown("$language $size at 2x, panel:")
+                compose.assertNoWordBroken("$language $size at 2x, panel:")
                 closePanel()
             }
         }
@@ -648,7 +675,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             shownSize.value = case.size
             shownLocale.value = case.language
             shownNotation.value = if (case.fontScale > 1f) Notation.SOLFEGE else Notation.SHARPS
-            val name = "$style ${case.language} ${case.size} at ${case.fontScale}x:"
+            val name = "${case.language} ${case.size} at ${case.fontScale}x:"
             pick(PracticeTestTags.root(PitchClass.C), PracticeTestTags.type(ChordQuality.MAJOR))
             val short = picker().getBoundsInRoot()
             val chartTop = chart().getBoundsInRoot().top
@@ -658,8 +685,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
             assertEquals("$name the one picker face's height", NAME_PICKER_HEIGHT.value, long.height.value, 0.5f)
             assertEquals("$name the chart stays put", chartTop.value, chart().getBoundsInRoot().top.value, 0.5f)
             if (case.size.width < case.size.height) {
-                val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
-                assertEquals("$name at the row's start", tool.left.value, long.left.value, 1f)
+                val tool = node(PracticeTestTags.BACK).getBoundsInRoot()
+                assertEquals("$name at the row's start", tool.left.value, long.left.value, ARROW_INSET)
                 assertTrue("$name as wide as the row ${long.width}", long.width >= case.size.width - 32.dp - 1.dp)
             }
             assertWhollyShown(picker(), "$name the name")
@@ -668,19 +695,14 @@ class ChordsScreenTest(private val style: VisualStyle) {
         }
     }
 
-    /** The instrument button before the tuning line, and the line itself, open the instrument and tuning panel. */
+    /** The picker chip (Phase 70) opens the "What are you tuning?" sheet; the headstock button went. */
     @Test
-    fun theInstrumentButtonAndTheTuningLineOpenThePanel() {
+    fun thePickerChipOpensTheSheet() {
         show()
-        node(PracticeTestTags.INSTRUMENT_BUTTON).assertIsDisplayed().performClick()
-        node(PracticeTestTags.TUNING).performClick()
-        assertEquals(2, instrumentTaps)
+        node(PracticeTestTags.TUNING).assertIsDisplayed().assert(hasContentDescription("Guitar, Standard")).performClick()
+        assertEquals(1, instrumentTaps)
     }
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L
@@ -699,3 +721,6 @@ class ChordsScreenTest(private val style: VisualStyle) {
         private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
     }
 }
+
+/** The back arrow's face stands this far (in dp, give or take one) inside the row's start: 2 dp in its 48 dp touch area. */
+internal const val ARROW_INSET = 3f

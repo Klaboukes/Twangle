@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">無法開啟麥克風。請關閉正在使用它的其他應用程式，然後輕觸「重試」，或重新啟動裝置。</string>
     <string name="error_mic_stopped">麥克風停止了，可能是因為通話或其他應用程式。輕觸「重試」繼續調音。</string>
     <string name="error_retry">重試</string>
+    <string name="tuner_any_note">任意音</string>
+    <string name="tuner_any_note_summary">最接近的音，不分琴弦</string>
 
-    <string name="tuner_mode_strings">琴弦</string>
-    <string name="tuner_mode_chromatic">半音階</string>
     <string name="tuner_show_controls">顯示控制項</string>
     <string name="tuner_focus_mode">專注模式</string>
     <string name="tuner_exit_focus_mode">結束專注模式</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">彈一個音</string>
     <string name="tuner_hint_play_locked_string">彈 %1$s 弦</string>
     <string name="tuner_hint_playing">正在播放 %1$s</string>
+    <string name="tuner_hint_all_in_tune">已調準。開彈吧。</string>
     <string name="tuner_string_lock">鎖定這根弦</string>
     <string name="tuner_string_unlock">自動辨識琴弦</string>
     <string name="tuner_string_locked">已鎖定</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">已鎖定，正在播放</string>
     <string name="tuner_string_tuned">已調準</string>
     <string name="tuner_string_locked_tuned">已鎖定，已調準</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">已鎖定，%1$s</string>
     <string name="tuner_cents_zero">0 音分</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">偏低 %1$d 音分</item>
@@ -94,8 +95,13 @@
         <item quantity="other">偏高 %1$d 音分</item>
     </plurals>
     <string name="tuner_in_tune">已調準</string>
-    <string name="tuner_tune_up">調高 ↑</string>
-    <string name="tuner_tune_down">調低 ↓</string>
+    <string name="tuner_word_tighten">調緊</string>
+    <string name="tuner_word_loosen">調鬆</string>
+    <string name="tuner_word_too_low">太低</string>
+    <string name="tuner_word_too_high">太高</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d 音分</item>
+    </plurals>
     <string name="tuner_tip_too_soft">彈大聲一點</string>
     <string name="tuner_tip_too_noisy">太吵了，把手機拿近一點</string>
     <string name="tuner_tip_too_loud">太大聲了，把手機拿遠一點</string>
@@ -109,15 +115,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d，%3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d，%3$s，%4$s</string>
-    <string name="tuner_spoken_tune_up">調高</string>
-    <string name="tuner_spoken_tune_down">調低</string>
     <string name="tuner_spoken_separator">，</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s，附八度弦</string>
     <string name="tuner_spoken_tuning">%1$s，%2$s</string>
     <string name="tuner_spoken_picker">%1$s，%2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">樂器與調音</string>
+    <string name="tuner_picker_title">你要調什麼？</string>
 
     <string name="tuner_new_tuning">新增調音</string>
 
@@ -146,33 +150,19 @@
     <string name="tuner_delete_tuning_cancel">取消</string>
     <string name="tuner_strum_check">刷弦檢查</string>
     <string name="tuner_strum_waiting">刷一下所有空弦</string>
-    <string name="tuner_strum_waiting_detail">每根弦都會顯示偏低、已調準或偏高</string>
-    <string name="tuner_strum_hearing">正在聆聽…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="other">%1$d 根弦需要調音</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">有些弦沒聽到</string>
-    <string name="tuner_strum_all_in_tune">所有弦都已調準</string>
-    <string name="tuner_strum_tap_to_tune">輕觸一根弦來調音</string>
-    <string name="tuner_strum_again">再刷一次，或輕觸一根弦來調音</string>
-    <string name="tuner_strum_tune_string">調 %1$s 弦</string>
-    <string name="tuner_strum_spoken_string">%1$s，%2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s，沒聽到</string>
     <string name="tuner_strum_spoken_waiting">%1$s，還沒刷弦</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s，沒聽到</string>
     <string name="tuner_strum_spoken_less_sure">%1$s，不太確定</string>
-    <string name="tour_title">帶我看看</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">第 %1$d 步，共 %2$d 步。%3$s。</string>
-    <string name="tour_readout">偏了多少，是哪個音</string>
-    <string name="tour_strum">刷弦，檢查每根弦</string>
-    <string name="tour_strings">輕觸：只調這根弦。按住：試聽</string>
-    <string name="tour_picker">選擇樂器和調音</string>
-    <string name="tour_skip">略過導覽</string>
-    <string name="tour_next">下一步</string>
-    <string name="tour_done">完成</string>
-    <string name="tuner_more_tools">更多工具</string>
-    <string name="tuner_tool_on">%1$s已開啟</string>
+    <string name="tuner_strum_close">關閉刷弦檢查</string>
+    <string name="tuner_strum_all_in_tune">所有弦都已調準</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">%2$d 根中 %1$d 根已調準</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">未聽到</string>
+    <string name="tuner_strum_spoken_string">%1$s，%2$s</string>
     <string name="tuner_intonation_check">第12格檢查</string>
+    <string name="tuner_intonation_check_summary">下弦枕位置對嗎？</string>
+    <string name="tuner_intonation_close">關閉第12格檢查</string>
     <string name="tuner_intonation_step_open">空弦</string>
     <string name="tuner_intonation_step_fret">第12格</string>
     <string name="tuner_intonation_choose_string">選一根弦</string>
@@ -208,37 +198,9 @@
     <string name="tuner_intonation_mark_back">下弦枕往後移</string>
     <string name="tuner_intonation_mark_forward">下弦枕往前移</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s，尚未檢查</string>
-    <string name="tour_more_tools">更多工具，例如刷弦檢查</string>
-    <string name="tuner_chord_name">和弦名稱</string>
-    <string name="tuner_chord_major">%1$s 大三和弦</string>
-    <string name="tuner_chord_minor">%1$s 小三和弦</string>
-    <string name="tuner_chord_seventh">%1$s 屬七和弦</string>
-    <string name="tuner_chord_major_seventh">%1$s 大七和弦</string>
-    <string name="tuner_chord_minor_seventh">%1$s 小七和弦</string>
-    <string name="tuner_chord_sus2">%1$s 掛二和弦</string>
-    <string name="tuner_chord_sus4">%1$s 掛四和弦</string>
-    <string name="tuner_chord_power_chord">%1$s 強力和弦</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s 屬七升九和弦</string>
-    <string name="tuner_chord_minor_ninth">%1$s 小九和弦</string>
-    <string name="tuner_chord_major_ninth">%1$s 大九和弦</string>
-    <string name="tuner_chord_slash">%1$s，低音 %2$s</string>
-    <string name="tuner_chord_bass">低音</string>
-    <string name="tuner_chord_strum">刷一個和弦</string>
-    <string name="tuner_chord_strum_detail">讓每根弦都響起來</string>
-    <string name="tuner_chord_next">再刷一次，辨識下一個和弦</string>
-    <string name="tuner_chord_let_ring">讓它繼續響</string>
-    <string name="tuner_chord_unclear">和弦不夠清楚</string>
-    <string name="tuner_chord_unclear_detail">刷到和弦的每一根弦</string>
-    <string name="tuner_chord_none">還沒有和弦</string>
-    <string name="tuner_chord_spoken_notes">音 %1$s</string>
-    <string name="tuner_chord_spoken_recent">之前是 %1$s</string>
-    <string name="tuner_pitch_trail">音高軌跡</string>
-    <string name="tuner_trail_spoken">音高軌跡，%1$s</string>
-    <string name="tuner_trail_no_note">沒有音</string>
-    <string name="tuner_trail_steady">平穩，%1$s</string>
-    <string name="tuner_trail_wavering">搖擺，%1$s</string>
     <string name="tuner_trail_bending_up">音高上升</string>
     <string name="tuner_trail_bending_down">音高下降</string>
+    <string name="tuner_spoken_wavering">音高不穩</string>
     <string name="tuner_screen_off_soon">螢幕即將關閉</string>
     <string name="tuner_screen_off_keep_on">輕觸即可保持開啟</string>
 </resources>

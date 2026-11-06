@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Ear training (Phase 55), a Practice tool. TalkBack: the switch of three words at the top that picks the exercise. -->
+    <!-- Ear training (Phase 55), a Practice tool. TalkBack: the group of the three exercises in the panel the exercise's pill at the top opens, and that panel's name. -->
     <string name="ear_exercises">Exercise</string>
-    <!-- The three exercises' names; TalkBack says these for the switch's words (ear_exercise_word_*). Play it back: Twangle plays a note, the player finds it on the instrument. -->
+    <!-- The three exercises' names, on the wide pill at the top of Ear training ("Play it back ⌄") and as rows in the panel it opens. Play it back: Twangle plays a note, the player finds it on the instrument. -->
     <string name="ear_exercise_play_back">Play it back</string>
-    <!-- Ear training: TalkBack name of the exercise where two notes sound and the player names the interval between them. -->
+    <!-- Ear training: the exercise where two notes sound and the player names the interval between them. On the pill and in its panel. -->
     <string name="ear_exercise_intervals">Intervals</string>
-    <!-- As practice_chord_type in the Chords tool. -->
+    <!-- Ear training: the exercise where a chord sounds and the player names its type (major, minor…). As practice_chord_type in the Chords tool; not the word for "Chords", another Practice tool's name. -->
     <string name="ear_exercise_chord_type">Chord type</string>
-    <!-- The switch at the top of Ear training: one short word per exercise, side by side in three narrow equal segments
-         (about 70 dp each), so keep it to one short word where the language allows; it is set smaller where it doesn't fit.
-         Play back: the exercise "Play it back" (Twangle plays a note, the player finds it on the instrument). -->
-    <string name="ear_exercise_word_play_back">Play back</string>
-    <!-- The switch's word for the exercise "Intervals" (two notes sound, the player names the interval). One short word. -->
-    <string name="ear_exercise_word_intervals">Intervals</string>
-    <!-- The switch's word for the exercise "Chord type" (a chord sounds, the player names its type: major, minor…). As short as the language allows, one or two words; not the word for "Chords", which is another Practice tool's name. -->
-    <string name="ear_exercise_word_chord_type">Chord type</string>
+    <!-- TalkBack: the wide pill at the top of Ear training that opens the three exercises; %1$s the exercise picked ("Intervals"). As practice_capo_shapes_spoken. -->
+    <string name="ear_exercise_spoken">Exercise: %1$s</string>
     <!-- TalkBack: the round play button that sounds the question again. -->
     <string name="ear_replay">Hear it again</string>
     <!-- Play it back: in the place of the note heard, while none is heard: the note just heard is to be played on the instrument. Large, on up to two lines. -->
@@ -29,7 +23,7 @@
         <item quantity="one">%1$d right of %2$d</item>
         <item quantity="other">%1$d right of %2$d</item>
     </plurals>
-    <!-- The button with a sliders icon at the end of the exercise row (TalkBack), and the title of the panel it opens, where the player picks what the questions ask. -->
+    <!-- TalkBack's name for the ⋯ button at the end of Ear training's top row, and of the small panel it opens, where the player picks what the questions ask. -->
     <string name="ear_choices">What is asked</string>
     <!-- In that panel, Play it back: the heading over the three choices of notes asked. -->
     <string name="ear_notes">Notes</string>

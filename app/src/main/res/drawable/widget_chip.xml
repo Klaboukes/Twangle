@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget's chip, as the tuner's picker chip: a pill in the surface colour. TuningWidget tints it
+     with a colour filter, so this colour (Ink's) only shows in the widget picker's preview. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_surface" />
+    <corners android:radius="100dp" />
+</shape>

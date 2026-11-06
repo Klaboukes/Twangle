@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Mikrofonia ei voitu avata. Sulje muut sitä käyttävät sovellukset ja napauta ”Yritä uudelleen”, tai käynnistä laite uudelleen.</string>
     <string name="error_mic_stopped">Mikrofoni pysähtyi, ehkä puhelun tai toisen sovelluksen takia. Jatka virittämistä napauttamalla ”Yritä uudelleen”.</string>
     <string name="error_retry">Yritä uudelleen</string>
+    <string name="tuner_any_note">Kaikki sävelet</string>
+    <string name="tuner_any_note_summary">Lähin sävel, ei kieliä</string>
 
-    <string name="tuner_mode_strings">Kielet</string>
-    <string name="tuner_mode_chromatic">Kromaattinen</string>
     <string name="tuner_show_controls">Näytä säätimet</string>
     <string name="tuner_focus_mode">Keskittymistila</string>
     <string name="tuner_exit_focus_mode">Poistu keskittymistilasta</string>
@@ -77,6 +77,7 @@
     <string name="tuner_hint_play_note">Soita sävel</string>
     <string name="tuner_hint_play_locked_string">Soita kieli %1$s</string>
     <string name="tuner_hint_playing">Soi: %1$s</string>
+    <string name="tuner_hint_all_in_tune">Vireessä. Soita.</string>
     <string name="tuner_string_lock">Lukitse tähän kieleen</string>
     <string name="tuner_string_unlock">Valitse kielet automaattisesti</string>
     <string name="tuner_string_locked">Lukittu</string>
@@ -86,7 +87,7 @@
     <string name="tuner_string_locked_sounding">Lukittu, soi</string>
     <string name="tuner_string_tuned">Vireessä</string>
     <string name="tuner_string_locked_tuned">Lukittu, vireessä</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">Lukittu, %1$s</string>
     <string name="tuner_cents_zero">0 senttiä</string>
     <!-- Luvun jälkeen partitiivi: 1 sentti, 2 senttiä. -->
     <plurals name="tuner_cents_flat">
@@ -98,8 +99,14 @@
         <item quantity="other">%1$d senttiä korkealla</item>
     </plurals>
     <string name="tuner_in_tune">vireessä</string>
-    <string name="tuner_tune_up">Kiristä ↑</string>
-    <string name="tuner_tune_down">Löysää ↓</string>
+    <string name="tuner_word_tighten">Kiristä</string>
+    <string name="tuner_word_loosen">Löysää</string>
+    <string name="tuner_word_too_low">Liian matala</string>
+    <string name="tuner_word_too_high">Liian korkea</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d sentti</item>
+        <item quantity="other">%1$d senttiä</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Soita vähän kovempaa</string>
     <string name="tuner_tip_too_noisy">Liian meluisaa, tuo puhelin lähemmäs</string>
     <string name="tuner_tip_too_loud">Liian kovaa, vie puhelin kauemmas</string>
@@ -113,15 +120,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">kiristä</string>
-    <string name="tuner_spoken_tune_down">löysää</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, oktaavikielen kanssa</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Soitin ja viritys</string>
+    <string name="tuner_picker_title">Mitä virität?</string>
 
     <string name="tuner_new_tuning">Uusi viritys</string>
 
@@ -150,35 +155,20 @@
     <string name="tuner_delete_tuning_cancel">Peruuta</string>
     <string name="tuner_strum_check">Lyöntitesti</string>
     <string name="tuner_strum_waiting">Soita kaikki avoimet kielet kerralla</string>
-    <string name="tuner_strum_waiting_detail">Jokainen kieli näyttää: matalalla, vireessä tai korkealla</string>
-    <string name="tuner_strum_hearing">Kuunnellaan…</string>
-    <!-- Käskymuoto välttää taivutuksen: Viritä 1 kieli, Viritä 2 kieltä. -->
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">Viritä %1$d kieli</item>
-        <item quantity="other">Viritä %1$d kieltä</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Kaikkia kieliä ei kuultu</string>
-    <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
-    <string name="tuner_strum_tap_to_tune">Napauta kieltä, niin virität sen</string>
-    <string name="tuner_strum_again">Soita uudelleen tai napauta kieltä, niin virität sen</string>
-    <string name="tuner_strum_tune_string">Viritä %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ei vielä soitettu</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, epävarmempi</string>
-    <string name="tour_title">Esittele sovellus</string>
-    <string name="tour_step_count">%1$d/%2$d</string>
-    <string name="tour_step_spoken">Vaihe %1$d, yhteensä %2$d. %3$s.</string>
-    <string name="tour_readout">Paljonko heittää ja mikä sävel</string>
-    <string name="tour_strum">Yksi lyönti tarkistaa kaikki kielet</string>
-    <string name="tour_strings">Napauta: viritä vain tämä kieli. Pidä: kuuntele</string>
-    <string name="tour_picker">Valitse soitin ja viritys</string>
-    <string name="tour_skip">Ohita</string>
-    <string name="tour_next">Seuraava</string>
-    <string name="tour_done">Valmis</string>
-    <string name="tuner_more_tools">Lisää työkaluja</string>
-    <string name="tuner_tool_on">%1$s päällä</string>
+    <string name="tuner_strum_close">Sulje lyöntitesti</string>
+    <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d/%2$d vireessä</item>
+        <item quantity="other">%1$d/%2$d vireessä</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Ei kuulunut</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">12. nauhan testi</string>
+    <string name="tuner_intonation_check_summary">Onko talla oikeassa kohdassa?</string>
+    <string name="tuner_intonation_close">Sulje 12. nauhan testi</string>
     <string name="tuner_intonation_step_open">Avoin</string>
     <string name="tuner_intonation_step_fret">12. nauha</string>
     <string name="tuner_intonation_choose_string">Valitse kieli</string>
@@ -215,38 +205,9 @@
     <string name="tuner_intonation_mark_back">siirrä tallaa taakse</string>
     <string name="tuner_intonation_mark_forward">siirrä tallaa eteen</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ei vielä tarkistettu</string>
-    <string name="tour_more_tools">Lisää työkaluja, kuten lyöntitesti</string>
-    <string name="tuner_chord_name">Soinnun nimi</string>
-    <!-- Yhdysmerkki välttää taivutuksen: A-duuri, Sol-molli, H-septimisointu. -->
-    <string name="tuner_chord_major">%1$s-duuri</string>
-    <string name="tuner_chord_minor">%1$s-molli</string>
-    <string name="tuner_chord_seventh">%1$s-septimisointu</string>
-    <string name="tuner_chord_major_seventh">%1$s-duuriseptimisointu</string>
-    <string name="tuner_chord_minor_seventh">%1$s-molliseptimisointu</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s-voimasointu</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s-septimisointu, ylinouseva nooni</string>
-    <string name="tuner_chord_minor_ninth">%1$s-mollinoonisointu</string>
-    <string name="tuner_chord_major_ninth">%1$s-duurinoonisointu</string>
-    <string name="tuner_chord_slash">%1$s, bassossa %2$s</string>
-    <string name="tuner_chord_bass">basso</string>
-    <string name="tuner_chord_strum">Soita sointu</string>
-    <string name="tuner_chord_strum_detail">Anna kaikkien kielten soida</string>
-    <string name="tuner_chord_next">Soita seuraava sointu</string>
-    <string name="tuner_chord_let_ring">Anna soida</string>
-    <string name="tuner_chord_unclear">Epäselvä sointu</string>
-    <string name="tuner_chord_unclear_detail">Soita soinnun kaikki kielet</string>
-    <string name="tuner_chord_none">Ei vielä sointua</string>
-    <string name="tuner_chord_spoken_notes">sävelet %1$s</string>
-    <string name="tuner_chord_spoken_recent">ennen sitä %1$s</string>
-    <string name="tuner_pitch_trail">Sävelkäyrä</string>
-    <string name="tuner_trail_spoken">Sävelkäyrä, %1$s</string>
-    <string name="tuner_trail_no_note">ei säveltä</string>
-    <string name="tuner_trail_steady">vakaa, %1$s</string>
-    <string name="tuner_trail_wavering">huojuva, %1$s</string>
     <string name="tuner_trail_bending_up">nousee</string>
     <string name="tuner_trail_bending_down">laskee</string>
+    <string name="tuner_spoken_wavering">huojuu</string>
     <string name="tuner_screen_off_soon">Näyttö sammuu pian</string>
     <string name="tuner_screen_off_keep_on">Napauta, niin se pysyy päällä</string>
 </resources>

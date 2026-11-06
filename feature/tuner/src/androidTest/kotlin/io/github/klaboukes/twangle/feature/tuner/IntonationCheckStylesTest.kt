@@ -1,9 +1,10 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import androidx.compose.ui.state.ToggleableState
 import android.Manifest
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -12,17 +13,19 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.klaboukes.twangle.core.audio.AudioConfig
@@ -37,16 +40,15 @@ import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationVerdict
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.onPhoneScreen
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -59,23 +61,23 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
 /**
- * The 12th-fret check (Phase 29) and the "more tools" button in each of the six styles: its panel in
- * the meter's place, the line (and the verdict's buttons) under it, the button above the strings.
- * Upright every step fits without scrolling and nothing moves between steps; at 2× text in Dutch every
- * part is wholly shown (every language overnight). The menu lists both tools and turns one on; with the
- * strum check alone its own switch shows. TalkBack hears the steps, the verdict, each string's result
- * and the button's state. Synthetic plucks through a fake microphone give a verdict on the real screen.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
+ * The 12th-fret check (Phase 29) in Ink, opened from the picker sheet (2.0, Phase 71, the owner's pick B of
+ * 2026-11-03): its row ends the sheet in guitar mode while the check is off, for an instrument the ViewModel offers it
+ * for ([TunerTool.INTONATION_CHECK]), and is gone in Any note and with the build's switch off. Its panel in the meter's
+ * place (the summary drawn as the pegs, its one control the × in its corner, which ends the check, as Back does), the
+ * line (and the verdict's buttons) under it, the pegs picking the string and carrying each result. Upright every step
+ * fits without scrolling and nothing moves between steps; at 2× text in Dutch every part is wholly shown (every
+ * language overnight). TalkBack hears the steps, the verdict, each string's result and the ×'s name. On the real
+ * screen the sheet's row starts the check and the × ends it, and synthetic plucks through a fake microphone give a
+ * verdict.
  */
-@RunWith(Parameterized::class)
-class IntonationCheckStylesTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class IntonationCheckStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -92,8 +94,15 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownLocale = mutableStateOf("en")
-    private val shownTools = mutableStateOf(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK))
+    /** What the ViewModel offers for a guitar. */
+    private val shownTools = mutableStateOf(listOf(TunerTool.INTONATION_CHECK))
     private val shownIntonation = mutableStateOf(true)
+    private val shownMode = mutableStateOf(TunerMode.AUTO)
+    private val shownPickerOpen = mutableStateOf(false)
+    private var backDispatcher: OnBackPressedDispatcher? = null
+
+    /** False: a build without the check (`ToolSwitches.intonationCheck` off), which gives the screen no callback. */
+    private val shownIntonationSwitch = mutableStateOf(true)
 
     /** On its side: the compact layout (focus mode, TunerContent's default) or, false, the two panes. */
     private val shownCompact = mutableStateOf(true)
@@ -103,24 +112,25 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
     private fun show() {
         compose.setContent {
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
+            backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
             PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     TunerContent(
                         shownState.value,
-                        TunerMode.AUTO,
+                        shownMode.value,
                         onModeChange = {},
                         onTuningChange = {},
                         onStringClick = { clicks += "string $it" },
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        strumCheck = false,
-                        onStrumCheckChange = { toolChanges += "strum" to it },
                         tunerTools = shownTools.value,
                         intonationCheck = shownIntonation.value,
-                        onIntonationCheckChange = { toolChanges += "intonation" to it },
+                        onIntonationCheckChange = if (shownIntonationSwitch.value) ({ toolChanges += "intonation" to it }) else null,
                         onCheckAgain = { clicks += "again" },
                         onNextString = { clicks += "next" },
-                        compactLandscape = shownCompact.value,
+                        focusMode = shownCompact.value,
+                        pickerOpen = shownPickerOpen.value,
+                        onPickerOpenChange = { shownPickerOpen.value = it },
                     )
                 }
             }
@@ -129,17 +139,28 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
 
     private val panel get() = compose.onNodeWithTag(TunerTestTags.INTONATION_PANEL)
     private val status get() = compose.onNodeWithTag(TunerTestTags.INTONATION_STATUS)
-    private val moreTools get() = compose.onNodeWithTag(TunerTestTags.MORE_TOOLS)
+    private val close get() = compose.onNodeWithTag(TunerTestTags.INTONATION_CLOSE)
+    private val row get() = compose.onNodeWithTag(TunerTestTags.INTONATION_ROW)
     private val strings = listOf("E2", "A2", "D3", "G3", "B3", "E4")
 
-    /** The parts to check; on its side the compact layout hides the controls until tapped ([controls] false). */
+    /**
+     * The parts to check; on its side the compact layout hides the controls until tapped ([controls] false). The ×,
+     * in the panel's corner, is checked apart ([assertCloseInThePanelsCorner]).
+     */
     private fun parts(controls: Boolean = true): List<Pair<String, SemanticsNodeInteraction>> = buildList {
         add("panel" to panel)
         add("status" to status)
-        if (controls) {
-            add("more tools" to moreTools)
-            strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
-        }
+        if (controls) strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
+    }
+
+    /** The × inside the panel's box, at its top end, clear of the line under it. */
+    private fun assertCloseInThePanelsCorner(case: String) {
+        val x = close.assertIsDisplayed().getBoundsInRoot()
+        val inside = panel.getBoundsInRoot()
+        val line = status.getBoundsInRoot()
+        assertTrue("$case the × $x inside the panel $inside", x.left >= inside.left - SLACK && x.right <= inside.right + SLACK && x.top >= inside.top - SLACK && x.bottom <= inside.bottom + SLACK)
+        assertTrue("$case the × $x at the panel's top end", x.right >= inside.right - 48.dp && x.top <= inside.top + 48.dp)
+        assertTrue("$case the × $x clear of the line $line", !x.overlaps(line))
     }
 
     /** Upright on a narrow phone and on the Xiaomi at 1.25×: every step in view, clear of each other, the line never moving. */
@@ -153,12 +174,13 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
             for ((name, state) in steps()) {
                 shownState.value = state
                 compose.waitForIdle()
-                val case = "$style $name ${size.width} x ${size.height} at ${scale}x:"
+                val case = "$name ${size.width} x ${size.height} at ${scale}x:"
                 val bounds = assertAllInView(case, parts())
+                assertCloseInThePanelsCorner(case)
                 tops += bounds[1].top.value
                 tops += bounds[2].top.value
             }
-            if (tops.size != 2) fail("$style ${size.width} x ${size.height}: the line or the strings moved between steps: $tops")
+            if (tops.size != 2) fail("${size.width} x ${size.height}: the line or the strings moved between steps: $tops")
         }
     }
 
@@ -173,11 +195,12 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
             for ((name, state) in steps()) {
                 shownState.value = state
                 compose.waitForIdle()
-                for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "$style nl $name $size at 2x: $part")
+                for ((part, node) in parts(controls = size == PHONE_UPRIGHT)) assertWhollyShown(node, "nl $name $size at 2x: $part")
+                assertWhollyShown(close, "nl $name $size at 2x: the ×")
                 if (state.step == IntonationStep.VERDICT) {
                     picture("2x-$name-${size.width.value.toInt()}")
-                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_AGAIN), "$style $size: Check again")
-                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_NEXT), "$style $size: Next string")
+                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_AGAIN), "$size: Check again")
+                    assertWhollyShown(compose.onNodeWithTag(TunerTestTags.INTONATION_NEXT), "$size: Next string")
                 }
             }
         }
@@ -196,7 +219,7 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
                 for ((name, state) in steps()) {
                     shownState.value = state
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language $name ${size.width} x ${size.height} at 2x:")
+                    compose.assertEveryTextWhollyShown("$language $name ${size.width} x ${size.height} at 2x:")
                 }
             }
         }
@@ -223,85 +246,91 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         again.assertDoesNotExist()
     }
 
-    /** The "more tools" menu lists both tools, the one that is on as a switch that is on; the button names it; picking one calls back. */
+    /**
+     * The way in: the picker sheet's last row, under Any note, while the check is off in guitar mode. A tap closes the
+     * sheet and turns the check on.
+     */
     @Test
-    fun theMoreToolsMenuListsBothToolsAndTurnsOneOn() {
+    fun theSheetsLastRowClosesItAndStartsTheCheck() {
+        shownIntonation.value = false
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
+        shownPickerOpen.value = true
         show()
-        compose.onNodeWithTag(TunerTestTags.tool(TunerTool.STRUM_CHECK)).assertDoesNotExist()
-        moreTools.performClick()
-        val strum = compose.onNodeWithTag(TunerTestTags.tool(TunerTool.STRUM_CHECK))
-        val intonation = compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK))
-        strum.assertIsDisplayed()
-        intonation.assertIsDisplayed()
-        assertEquals(ToggleableState.Off, strum.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
-        assertEquals(ToggleableState.On, intonation.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
-        assertEquals(
-            context.getString(R.string.tuner_tool_on, context.getString(R.string.tuner_intonation_check)),
-            moreTools.fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription),
-        )
-        strum.performClick()
-        compose.waitForIdle()
-        assertEquals(listOf("strum" to true), toolChanges)
-        strum.assertDoesNotExist()
-        moreTools.performClick()
-        compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).performClick()
-        assertEquals(listOf("strum" to true, "intonation" to false), toolChanges)
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_ROW).fetchSemanticsNodes().isNotEmpty() }
+        val config = row.assertIsDisplayed().fetchSemanticsNode().config
+        assertEquals(Role.Button, config.getOrNull(SemanticsProperties.Role))
+        compose.onNodeWithText(context.getString(R.string.tuner_intonation_check)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_intonation_check_summary)).assertIsDisplayed()
+        val anyNote = compose.onNodeWithTag(TunerTestTags.ANY_NOTE).getBoundsInRoot()
+        assertTrue("the row under Any note", row.getBoundsInRoot().top >= anyNote.bottom - SLACK)
+        row.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { toolChanges.isNotEmpty() }
+        assertEquals(listOf("intonation" to true), toolChanges)
+        assertEquals("the sheet closed", false, shownPickerOpen.value)
     }
 
     /**
-     * The "more tools" menu ends in line with its button, on a phone upright and on its side and on a tablet both
-     * ways, at the tablet's 1.3× text (Phase 52): Material opens a menu from its button's start where it fits,
-     * which on an upright tablet pushed it against the screen's edge (3 dp from it). The menu window isn't forced
-     * by [PhoneScreen], so it is measured on the screen, in px.
+     * Hidden where it means nothing: in Any note (no strings), while the check is on already, for an instrument the
+     * ViewModel doesn't offer it for (no frets, the banjo) and in a build without the check (no callback). The sheet
+     * still opens, with Any note.
      */
     @Test
-    fun onAPhoneTheMoreToolsMenuEndsInLineWithItsButton() =
-        assertMenuEndsInLine(listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE, XIAOMI_UPRIGHT))
-
-    @Test
-    fun onATabletTheMoreToolsMenuEndsInLineWithItsButton() =
-        assertMenuEndsInLine(listOf(TABLET_UPRIGHT, TABLET_ON_ITS_SIDE))
-
-    private fun assertMenuEndsInLine(sizes: List<DpSize>) {
-        shownCompact.value = false
-        shownFontScale.value = TABLET_FONT_SCALE
-        shownSize.value = sizes.first()
+    fun theSheetHasNoRowInAnyNoteWhileOnWithoutTheToolOrInABuildWithoutIt() {
+        shownIntonation.value = false
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
+        shownPickerOpen.value = true
         show()
-        for (size in sizes) {
-            shownSize.value = size
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_ROW).fetchSemanticsNodes().isNotEmpty() }
+        val cases = listOf<Pair<String, () -> Unit>>(
+            "Any note" to { shownMode.value = TunerMode.CHROMATIC },
+            "on already" to { shownIntonation.value = true },
+            "not offered" to { shownTools.value = emptyList() },
+            "a build without it" to { shownIntonationSwitch.value = false },
+        )
+        for ((case, change) in cases) {
+            change()
             compose.waitForIdle()
-            moreTools.performClick()
+            compose.onNodeWithTag(TunerTestTags.ANY_NOTE).assertIsDisplayed()
+            row.assertDoesNotExist()
+            // Back as it was.
+            shownMode.value = TunerMode.AUTO
+            shownIntonation.value = false
+            shownTools.value = listOf(TunerTool.INTONATION_CHECK)
+            shownIntonationSwitch.value = true
             compose.waitForIdle()
-            val button = moreTools.fetchSemanticsNode()
-            val menu = compose.onNodeWithTag(TunerTestTags.MORE_TOOLS_MENU).fetchSemanticsNode()
-            val screen = compose.onPhoneScreen().fetchSemanticsNode()
-            val buttonEnd = button.positionOnScreen.x + button.size.width
-            val menuEnd = menu.positionOnScreen.x + menu.size.width
-            val screenEnd = screen.positionOnScreen.x + screen.size.width
-            // The button's own dp (bigger in the tablet's scaled column): Material ends the menu at the end of the
-            // button's 48 dp touch area, 2 dp past its 44 dp outline.
-            val dp = button.layoutInfo.density.density
-            val case = "$style ${size.width} x ${size.height}: menu ends at $menuEnd px, the button at $buttonEnd px"
-            if (menuEnd < buttonEnd - dp || menuEnd > buttonEnd + 3 * dp) fail("$case, not in line")
-            val margin = (screenEnd - menuEnd) / screen.layoutInfo.density.density
-            if (margin < 8f) fail("$case, $margin dp from the screen's edge")
-            compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).performClick()
-            compose.waitForIdle()
+            assertTrue(case, compose.onAllNodesWithTag(TunerTestTags.INTONATION_ROW).fetchSemanticsNodes().isNotEmpty())
         }
     }
 
-    /** With the strum check as the only tool (a violin), its own switch shows and no "more tools". */
+    /**
+     * The way out: the × in the panel's corner, named for TalkBack, and Back, both turning the check off; with the
+     * check off there is no ×. The pegs keep room above them for a strum's marks (Phase 74).
+     */
     @Test
-    fun withOneToolTheStrumSwitchShowsAsInVersionOne() {
-        shownTools.value = listOf(TunerTool.STRUM_CHECK)
+    fun theCloseAndBackEndTheCheck() {
+        shownCompact.value = false
+        shownState.value = check(IntonationStep.CHOOSE, string = null)
+        show()
+        val config = close.assertIsDisplayed().fetchSemanticsNode().config
+        assertEquals(listOf(context.getString(R.string.tuner_intonation_close)), config.getOrNull(SemanticsProperties.ContentDescription))
+        assertEquals(Role.Button, config.getOrNull(SemanticsProperties.Role))
+        close.performClick()
+        assertEquals(listOf("intonation" to false), toolChanges)
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        assertEquals(listOf("intonation" to false, "intonation" to false), toolChanges)
+
+        // Off: no ×.
         shownIntonation.value = false
         shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
-        show()
-        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
-        moreTools.assertDoesNotExist()
+        compose.waitForIdle()
+        close.assertDoesNotExist()
+        // A strum's mark (18 dp, 4 dp over the face) fits between the word and the pegs.
+        val word = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
+        val first = compose.onNodeWithText(strings.first()).getBoundsInRoot()
+        assertTrue("room for a mark between the word $word and the pegs $first", first.top - word.bottom >= 22.dp - SLACK)
     }
 
-    /** TalkBack: the line says the step with the string spoken, the verdict, each string's result, the button's state. */
+    /** TalkBack: the line says the step with the string spoken, the verdict, each string's result. */
     @Test
     fun talkBackHearsTheStepsTheVerdictAndTheResults() {
         shownState.value = check(IntonationStep.OPEN)
@@ -316,60 +345,124 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         assertTrue(spokenLine(), spokenLine().endsWith(context.getString(R.string.tuner_intonation_back_mm, "3")))
         val sharp = context.resources.getQuantityString(R.plurals.tuner_cents_sharp, 8, 8)
         assertEquals(listOf(sharp), panel.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription))
-        // The A string's button carries its result.
-        val chip = compose.onNodeWithText("A2", useUnmergedTree = false).fetchSemanticsNode().config
-        assertEquals(context.getString(R.string.tuner_intonation_mark_back), chip.getOrNull(SemanticsProperties.StateDescription))
+        // The A string's peg carries its result, and a tap on it checks it.
+        val peg = compose.onNodeWithText("A2", useUnmergedTree = false).fetchSemanticsNode().config
+        assertEquals(context.getString(R.string.tuner_intonation_mark_back), peg.getOrNull(SemanticsProperties.StateDescription))
         assertEquals(
             context.getString(R.string.tuner_intonation_check_string, "A 2"),
-            chip.getOrNull(SemanticsActions.OnClick)?.label,
+            peg.getOrNull(SemanticsActions.OnClick)?.label,
         )
-        val button = moreTools.fetchSemanticsNode().config
-        assertEquals(listOf(context.getString(R.string.tuner_more_tools)), button.getOrNull(SemanticsProperties.ContentDescription))
-        assertEquals(context.getString(R.string.tuner_tool_on, context.getString(R.string.tuner_intonation_check)), button.getOrNull(SemanticsProperties.StateDescription))
 
-        // The summary: each string a button with its result.
+        // The summary, drawn as the pegs: each string's result said, none of them a button; the pegs pick.
         shownState.value = check(IntonationStep.CHOOSE, string = null)
         compose.waitForIdle()
         picture("5-summary")
         val column = compose.onNodeWithTag(TunerTestTags.intonationString(1)).fetchSemanticsNode().config
         val spoken = column.getOrNull(SemanticsProperties.ContentDescription)?.joinToString().orEmpty()
         assertTrue(spoken, spoken.startsWith("A 2") && spoken.contains(context.getString(R.string.tuner_intonation_mark_back)))
-        val notChecked = compose.onNodeWithTag(TunerTestTags.intonationString(4)).fetchSemanticsNode().config
+        val notChecked = compose.onNodeWithTag(TunerTestTags.intonationString(4))
         assertEquals(
             listOf(context.getString(R.string.tuner_intonation_spoken_not_checked, "B 3")),
-            notChecked.getOrNull(SemanticsProperties.ContentDescription),
+            notChecked.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription),
         )
-        compose.onNodeWithTag(TunerTestTags.intonationString(4)).performSemanticsAction(SemanticsActions.OnClick)
+        notChecked.assertHasNoClickAction()
+        compose.onNodeWithText("B3").performClick()
         assertEquals(listOf("string 4"), clicks)
     }
 
     /**
-     * The phone check with synthetic tones through a fake microphone: the real screen and ViewModel,
-     * the 12th-fret check turned on from the menu, the A string tapped, then an open A2 pluck and an A3
-     * pluck 8 cents sharp: the verdict says move the saddle back, about 3 mm, and the A string's
+     * On the real screen and ViewModel: the chip opens the sheet, its row starts the check, the × ends it; for an
+     * instrument without the check, and in a build without it, the sheet has no row.
+     */
+    @Test
+    fun onTheRealScreenTheSheetsRowStartsTheCheckAndTheCloseEndsIt() {
+        val settings = FakeSettingsRepository()
+        val tools = mutableStateOf(ToolSwitches.ALL_ON)
+        val pickerOpen = mutableStateOf(false)
+        compose.mainClock.autoAdvance = true
+        compose.setContent {
+            PhoneScreen(XIAOMI_UPRIGHT, SystemBars.tab(onItsSide = false)) {
+                TwangleTheme(darkTheme = false, animate = false) {
+                    // A new screen (and ViewModel) for each build's switches, as a new version of the app would be.
+                    androidx.compose.runtime.key(tools.value) {
+                        val owner = androidx.compose.runtime.remember {
+                            object : androidx.lifecycle.ViewModelStoreOwner {
+                                override val viewModelStore = androidx.lifecycle.ViewModelStore()
+                            }
+                        }
+                        androidx.compose.runtime.CompositionLocalProvider(androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner provides owner) {
+                            TunerScreen(
+                                audioRecorder = PluckOnCue(FloatArray(0)),
+                                settingsRepository = settings,
+                                tonePlayer = FakeTonePlayer(),
+                                tools = tools.value,
+                                pickerOpen = pickerOpen.value,
+                                onPickerOpenChange = { pickerOpen.value = it },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        fun openSheet() {
+            compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.PICKER_CHIP).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).performClick()
+            compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.ANY_NOTE).fetchSemanticsNodes().isNotEmpty() }
+            compose.waitForIdle()
+        }
+        openSheet()
+        row.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_PANEL).fetchSemanticsNodes().isNotEmpty() }
+        assertEquals("the sheet closed", false, pickerOpen.value)
+        close.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_PANEL).fetchSemanticsNodes().isEmpty() }
+        close.assertDoesNotExist()
+        // The violin has no frets: no row.
+        kotlinx.coroutines.runBlocking { settings.setInstrument(Instruments.VIOLIN) }
+        openSheet()
+        row.assertDoesNotExist()
+        pickerOpen.value = false
+        // The build's brake hides it on a guitar too.
+        kotlinx.coroutines.runBlocking { settings.setInstrument(Instruments.GUITAR) }
+        tools.value = ToolSwitches.ALL_ON.copy(intonationCheck = false)
+        openSheet()
+        row.assertDoesNotExist()
+        pickerOpen.value = false
+        compose.waitForIdle()
+    }
+
+    /**
+     * The phone check with synthetic tones through a fake microphone: the real screen and ViewModel, the 12th-fret
+     * check started from the picker sheet's row, the A peg tapped, then an open A2 pluck and an A3 pluck 8 cents sharp: the verdict says move the saddle back, about 3 mm, and the A string's
      * button carries its mark. With `-a intonationScreens=true` it saves pictures of each step.
      */
     @Test
     fun syntheticPlucksGiveTheVerdictOnTheRealScreen() {
         // Silence until the string is chosen, then the two plucks.
         val recorder = PluckOnCue(pluck(110f, 2.6f) + pluck(220f * cents(8f), 2.6f))
+        val pickerOpen = mutableStateOf(false)
         compose.mainClock.autoAdvance = true
         compose.setContent {
             PhoneScreen(XIAOMI_UPRIGHT, SystemBars.tab(onItsSide = false)) {
-                TwangleTheme(style = style, darkTheme = true, animate = false) {
+                TwangleTheme(darkTheme = true, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerScreen(
                         audioRecorder = recorder,
                         settingsRepository = FakeSettingsRepository(),
                         tonePlayer = FakeTonePlayer(),
                         tools = ToolSwitches.ALL_ON,
+                        pickerOpen = pickerOpen.value,
+                        onPickerOpenChange = { pickerOpen.value = it },
                     )
                 }
             }
         }
-        moreTools.performClick()
-        picture("1-menu")
-        compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).performClick()
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.PICKER_CHIP).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).performClick()
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_ROW).fetchSemanticsNodes().isNotEmpty() }
+        picture("1-sheet")
+        row.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithTag(TunerTestTags.INTONATION_PANEL).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("A2").performClick()
         recorder.cue = true
         compose.waitUntil(STEP_WAIT_MS) { stepShown(R.string.tuner_intonation_play_open) }
@@ -456,11 +549,10 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
     private fun androidx.compose.ui.test.junit4.ComposeTestRule.onAllNodesWithText(text: String) =
         onAllNodes(androidx.compose.ui.test.hasText(text))
 
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+    private fun androidx.compose.ui.test.junit4.ComposeTestRule.onAllNodesWithTag(tag: String) =
+        onAllNodes(androidx.compose.ui.test.hasTestTag(tag))
 
+    companion object {
         /** Results so far: E2 fine, A2 back 8, D3 forward 6, the rest not checked. */
         private val RESULTS = listOf(
             IntonationResult(1f, IntonationVerdict.FINE),
@@ -508,9 +600,6 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         private const val OWNER_FONT_SCALE = 1.25f
 
         /** A tablet (the Lenovo Tab M11) upright and on its side, and its own text size. */
-        private val TABLET_UPRIGHT = DpSize(800.dp, 1280.dp)
-        private val TABLET_ON_ITS_SIDE = DpSize(1280.dp, 800.dp)
-        private const val TABLET_FONT_SCALE = 1.3f
         private val SLACK = 0.5.dp
     }
 }

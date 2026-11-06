@@ -15,8 +15,8 @@
         <item quantity="one">%1$d cent for høj</item>
         <item quantity="other">%1$d cent for høj</item>
     </plurals>
-    <string name="wear_spoken_tune_up">stem op</string>
-    <string name="wear_spoken_tune_down">stem ned</string>
+    <string name="wear_word_tighten">Stram</string>
+    <string name="wear_word_loosen">Slæk</string>
     <string name="wear_spoken_sharp">%1$s med kryds</string>
     <string name="wear_mic_needed">Twangle lytter til dit instrument med urets mikrofon.</string>
     <string name="wear_allow_mic">Tillad mikrofon</string>
@@ -25,6 +25,17 @@
     <string name="wear_mic_unavailable">Mikrofonen kan ikke åbnes.</string>
     <string name="wear_try_again">Prøv igen</string>
     <string name="wear_tile_tune">Stem</string>
+    <string name="wear_tile_metronome">Metronom</string>
+    <string name="wear_tile_open_metronome">Åbn metronomen, %1$s</string>
     <string name="wear_shortcut_tune">Stem</string>
     <string name="wear_shortcut_open">Åbn tuneren</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d slag pr. minut</item>
+        <item quantity="other">%1$d slag pr. minut</item>
+    </plurals>
+    <string name="wear_metronome_playing">Spiller</string>
+    <string name="wear_metronome_stopped">Stoppet</string>
+    <string name="wear_metronome_start">Start</string>
+    <string name="wear_metronome_stop">Stop</string>
+    <string name="wear_metronome_click">Kliklyd</string>
 </resources>

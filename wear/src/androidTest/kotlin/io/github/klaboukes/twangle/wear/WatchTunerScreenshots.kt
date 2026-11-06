@@ -22,8 +22,8 @@ import org.junit.runner.RunWith
 import java.io.File
 
 /**
- * Pictures of the watch tuner with a note, for the PR and the owner (the emulator's mic hears
- * nothing). Only with `-e watchScreenshots true`; saved to the app's files folder on the watch:
+ * Pictures of the watch tuner (2.0's note, dot along the arc and word), for the PR and the owner (the emulator's
+ * mic hears nothing). Only with `-e watchScreenshots true`; saved to the app's files folder on the watch:
  * `/sdcard/Android/data/io.github.klaboukes.twangle/files/`.
  */
 @RunWith(AndroidJUnit4::class)
@@ -38,10 +38,16 @@ class WatchTunerScreenshots {
     }
 
     @Test
-    fun inTune() = capture("watch-in-tune", WatchTunerState.Detected(Note.of(PitchClass.A, 2), 1, inTune = true))
+    fun listening() = capture("watch-listening", WatchTunerState.Listening)
 
     @Test
-    fun flat() = capture("watch-flat", WatchTunerState.Detected(Note.of(PitchClass.D_SHARP, 3), -18))
+    fun farOff() = capture("watch-far-off", WatchTunerState.Detected(Note.of(PitchClass.D_SHARP, 3), -28))
+
+    @Test
+    fun close() = capture("watch-close", WatchTunerState.Detected(Note.of(PitchClass.E, 2), 8))
+
+    @Test
+    fun inTune() = capture("watch-in-tune", WatchTunerState.Detected(Note.of(PitchClass.A, 2), 1, inTune = true))
 
     private fun capture(name: String, state: WatchTunerState) {
         compose.setContent {
@@ -49,7 +55,7 @@ class WatchTunerScreenshots {
                 Box(Modifier.fillMaxSize().background(Color.Black)) { WatchTuner(state, onRetry = {}) }
             }
         }
-        compose.mainClock.advanceTimeBy(2_000) // the glow and the marker settle
+        compose.mainClock.advanceTimeBy(2_000) // the arc's green and the dot settle
         compose.waitForIdle()
         val image = compose.onRoot().captureToImage().asAndroidBitmap()
         val dir = InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null)

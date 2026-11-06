@@ -15,8 +15,8 @@
         <item quantity="one">%1$d cent te hoog</item>
         <item quantity="other">%1$d cent te hoog</item>
     </plurals>
-    <string name="wear_spoken_tune_up">hoger stemmen</string>
-    <string name="wear_spoken_tune_down">lager stemmen</string>
+    <string name="wear_word_tighten">Strakker</string>
+    <string name="wear_word_loosen">Losser</string>
     <string name="wear_spoken_sharp">%1$s kruis</string>
     <string name="wear_mic_needed">Twangle luistert met de microfoon van je horloge naar je instrument.</string>
     <string name="wear_allow_mic">Microfoon toestaan</string>
@@ -25,6 +25,17 @@
     <string name="wear_mic_unavailable">De microfoon kan niet worden geopend.</string>
     <string name="wear_try_again">Opnieuw proberen</string>
     <string name="wear_tile_tune">Stemmen</string>
+    <string name="wear_tile_metronome">Metronoom</string>
+    <string name="wear_tile_open_metronome">Open de metronoom, %1$s</string>
     <string name="wear_shortcut_tune">Stem</string>
     <string name="wear_shortcut_open">Open de stemmer</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d slag per minuut</item>
+        <item quantity="other">%1$d slagen per minuut</item>
+    </plurals>
+    <string name="wear_metronome_playing">Speelt</string>
+    <string name="wear_metronome_stopped">Gestopt</string>
+    <string name="wear_metronome_start">Start</string>
+    <string name="wear_metronome_stop">Stop</string>
+    <string name="wear_metronome_click">Klikgeluid</string>
 </resources>

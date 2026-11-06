@@ -1,10 +1,16 @@
 <resources>
-    <string name="practice_tool_metronome">মেট্রোনোম</string>
     <string name="practice_tool_chords">কর্ড</string>
     <string name="practice_tool_scales">স্কেল</string>
+    <string name="practice_card_chords">সব শেপ, বাঁহাতিদের জন্যও</string>
+    <string name="practice_card_scales">ড্রোনের সাথে বাজান</string>
+    <string name="practice_card_capo">পছন্দের স্কেলের জন্য কোন ফ্রেট</string>
+    <string name="practice_card_ear_training">নোট শুনুন, তারপর বাজান</string>
+    <string name="practice_last_time">গতবার ব্যবহৃত</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">ফিরে যান</string>
     <string name="practice_tool_ear_training">ইয়ার ট্রেনিং</string>
-    <string name="practice_tool_button">টুল</string>
-    <string name="practice_tool_list">সব টুল</string>
+    <string name="practice_tool_pitch_trail">সুরের রেখা</string>
+    <string name="practice_card_pitch_trail">আপনার সুর কতটা স্থির?</string>
     <string name="practice_root">রুট</string>
     <string name="practice_chord_type">কর্ডের ধরন</string>
     <string name="practice_chord_major">%1$s মেজর</string>
@@ -90,6 +96,8 @@
     <string name="practice_capo_row_spoken">%1$s শেপ, বাজে %2$s</string>
     <string name="practice_capo_open_chord">কর্ডে খুলুন</string>
     <string name="practice_drone">ড্রোন</string>
+    <string name="practice_chords_listen">শুনুন</string>
+    <string name="practice_chords_listening">শুনছে</string>
     <string name="practice_drone_play">ড্রোন বাজান</string>
     <string name="practice_drone_stop">ড্রোন থামান</string>
     <string name="practice_drone_sound_spoken">ড্রোনের সাউন্ড: %1$s</string>

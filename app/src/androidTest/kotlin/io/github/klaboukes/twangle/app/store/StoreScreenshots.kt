@@ -10,7 +10,17 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.util.Base64
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,24 +36,23 @@ import io.github.klaboukes.twangle.app.TwangleApplication
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
-import io.github.klaboukes.twangle.core.dsp.capo.SongKey
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
+import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.TunerTool
+import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.AfterClass
@@ -60,12 +69,12 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The Play Store's phone screenshots, made on the phone in one language (docs/store-listing.md,
- * *Phone screenshots*): each case opens the real app in its style and theme, feeds the tuner a fixed
+ * *Phone screenshots*): each case opens the real app in its theme (Ink light or dark), feeds the tuner a fixed
  * sound through a stand-in microphone ([FixedSoundRecorder], nothing plays out loud), saves the
  * screen as it is (`raw-<n>.png`, without the status bar) and the finished picture
  * (`store-<n>.png`: the screen on a 1080 × 1920 canvas with the caption above, cut in on the part
- * that sells it, [Shot.focus], so its words can be read at Play's size; [StoreCanvas]). Focus mode's
- * picture stands on its side, 1920 × 1080, as the phone does.
+ * that sells it, [Shot.focus], so its words can be read at Play's size; [StoreCanvas]). All eight stand
+ * upright (until 2.0's listing focus mode's stood on its side, 1920 × 1080, breaking the row's rhythm).
  *
  * With `storeTablet=true` (a tablet, at least 600 dp the short way) it makes the 10-inch tablet set
  * instead (docs/store-listing.md, *Tablet screenshots*): the tablet locked upright and at the normal
@@ -73,7 +82,7 @@ import java.util.concurrent.TimeUnit
  * the screens without the status and navigation bars, each the whole tablet on the same canvases
  * (Phase 65: on its side the tuner's two panes left an empty middle).
  *
- * Opt-in, as it only makes files and changes the phone's Twangle (its style, theme and settings are
+ * Opt-in, as it only makes files and changes the phone's Twangle (its theme and settings are
  * left as the last picture had them; the app's language is put back): without the instrumentation
  * argument `storeScreenshots=<Play locale>` it has no cases at all. `storeCaptions` carries that
  * locale's `screenshot_captions.txt` in Base64 (the shell would mangle other scripts).
@@ -84,35 +93,42 @@ import java.util.concurrent.TimeUnit
 class StoreScreenshots(private val shot: Shot) {
 
     /**
-     * The eight screenshots of the plan, in its order, each in its style and theme, with the part of the
+     * The eight screenshots of the plan, in its order, each in its theme, with the part of the
      * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
-     * screens fit whole). The six styles' canvas is in [style]; its screens are [STYLE_TILES].
+     * screens fit whole). The first two tell what sets Twangle apart, nothing to sign up for and nothing
+     * leaving the phone (2.0's listing, 2026-11-05).
      */
-    enum class Shot(val style: VisualStyle, val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
-        /** The meter, the note and "In tune". */
-        IN_TUNE(VisualStyle.CONTEMPORARY, dark = false, focus = 0f..0.62f),
-        SIX_STYLES(VisualStyle.SPACE_AGE, dark = true),
+    enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
+        /** The top row with no sign-in in the way, the chip, the ruler's A, the needle and "In tune" (the pegs left out). */
+        IN_TUNE(dark = true, focus = 0f..0.62f),
 
-        /** The meter, the note, its pill and "Tune up". */
-        TUNE_UP(VisualStyle.CLASSIC, dark = true, focus = 0f..0.68f),
+        /** The tuner's microphone prompt, which says the sound is analysed on the phone and never recorded or sent. */
+        PRIVACY(dark = true, focus = 0.30f..0.72f),
 
-        /** The panel's instruments and the first tunings. */
-        INSTRUMENTS(VisualStyle.RETRO, dark = false, focus = 0.24f..0.80f),
+        /** The ruler's E, the needle left of the zone, "Tighten" and the cents. */
+        TUNE_UP(dark = true, focus = 0f..0.68f),
 
-        /** The chord's name, its notes and the last chords. */
-        CHORD_NAME(VisualStyle.FUTURISTIC, dark = true, focus = 0f..0.56f),
-        CHORDS_AND_CAPO(VisualStyle.ANCIENT, dark = false),
+        /** The strum check after the open strings were strummed, two of them off: each string's column and "4 of 6 in tune". */
+        STRUM_CHECK(dark = true, focus = 0f..0.56f),
 
-        /** At twice the text size: the meter, the note, its pill and "Tune up". */
-        TALKBACK(VisualStyle.CONTEMPORARY, dark = true, focus = 0.065f..0.71f),
-        PITCH_TRAIL(VisualStyle.CLASSIC, dark = false),
+        /**
+         * Two phones side by side, each whole: the metronome at 120 with its first beat lit, and Practice's tools
+         * under the "Last used" row. The metronome's screen is also the website's (`raw-metronome.png`).
+         */
+        ALL_IN_ONE(dark = true),
+
+        /** Chords with Listen on: a strummed A minor named and charted. */
+        CHORD_NAME(dark = true, focus = 0f..0.80f),
+
+        /** The sheet "What are you tuning?", its instrument pills scrolled to bass, ukulele and violin, and the first tunings. */
+        INSTRUMENTS(dark = true, focus = 0.24f..0.80f),
+
+        /** At twice the text size, a string a little sharp: the ruler, the needle, "Loosen" and the cents, and TalkBack's reading. */
+        TALKBACK(dark = true, focus = 0.065f..0.71f),
         ;
 
         val number: Int get() = ordinal + 1
     }
-
-    /** One of the six styles' screens: the tuner in [style] with [look], holding [string] (a MIDI note) in tune. */
-    data class StyleTile(val style: VisualStyle, val dark: Boolean, val look: MeterLook, val string: Int)
 
     @get:Rule
     val rules: RuleChain = RuleChain
@@ -144,11 +160,9 @@ class StoreScreenshots(private val shot: Shot) {
         // Play's Norwegian folder is no-NO, but Android finds the texts (values-nb) only for nb.
         showLanguage(if (locale == "no-NO") "nb-NO" else locale)
         runBlocking {
-            settings.setTourSeen(true)
-            settings.setFocusMode(false)
-            settings.setStyle(shot.style)
+            container.focusMode.value = false
             settings.setTheme(if (shot.dark) ThemeMode.DARK else ThemeMode.LIGHT)
-            // The style's own colours, not the wallpaper's.
+            // Ink's own colours, not the wallpaper's.
             settings.setDynamicColor(false)
             settings.setA4(NoteMapper.DEFAULT_A4_HZ)
             settings.setInstrument(Instruments.GUITAR)
@@ -156,11 +170,8 @@ class StoreScreenshots(private val shot: Shot) {
             settings.setMode(TunerMode.AUTO)
             settings.setNotation(null)
             settings.setInTunePrecision(InTunePrecision.DEFAULT)
-            settings.setDisplay(TunerDisplay.NEEDLE)
-            settings.setMeterLook(MeterLook.DEFAULT)
-            settings.setWaveLook(WaveLook.DEFAULT)
-            settings.setInTuneEffect(InTuneEffect.DEFAULT)
-            settings.setShowTuneHint(true)
+            // As a new player sees it: the string tick-off is off by default (2.0).
+            settings.setStringTickOff(false)
             settings.setShowSignalBars(false)
             settings.setKeepScreenOn(true)
             // The phone lies still on the desk overnight.
@@ -175,7 +186,7 @@ class StoreScreenshots(private val shot: Shot) {
     fun tearDown() {
         container.testAudioRecorder = null
         container.testMetronomePlayer = null
-        runBlocking { settings.setFocusMode(false) }
+        container.focusMode.value = false
     }
 
     @Test
@@ -187,101 +198,110 @@ class StoreScreenshots(private val shot: Shot) {
     private fun shoot() {
         when (shot) {
             Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
-            Shot.SIX_STYLES -> {
-                // Each style with a meter look of its own, each holding another string in tune.
-                val screens = STYLE_TILES.mapIndexed { i, tile ->
-                    runBlocking {
-                        settings.setStyle(tile.style)
-                        settings.setTheme(if (tile.dark) ThemeMode.DARK else ThemeMode.LIGHT)
-                        settings.setMeterLook(tile.look)
-                    }
-                    capture(name = "${shot.number}${'a' + i}") {
-                        recorder.play(StoreSounds.heldNote(StoreSounds.hz(tile.string), NOTE_SECONDS))
-                        settle(NOTE_SETTLE_MS)
-                    }
-                }
-                val focus = if (tablet) TABLET_TILE_FOCUS else TILE_FOCUS
-                compose(screens.map { Window(it.asImageBitmap(), focus) }.chunked(2))
+            Shot.PRIVACY -> save(micPrompt())
+            Shot.TUNE_UP -> tuner { recorder.play(heldLowE(cents = -12.0)); settle(NOTE_SETTLE_MS) }
+            Shot.STRUM_CHECK -> tuner {
+                // The strum check's button, then the open strings strummed, two of them off.
+                click(TunerTestTags.STRUM_BUTTON)
+                waitFor(TunerTestTags.STRUM_PANEL)
+                recorder.play(StoreSounds.strum(StoreSounds.OPEN_STRINGS, STRUM_SECONDS, StoreSounds.OPEN_STRINGS_OFF))
+                settle(OPEN_STRUM_SETTLE_MS)
             }
-            Shot.TUNE_UP -> tuner { recorder.play(flatLowE()); settle(NOTE_SETTLE_MS) }
+            Shot.ALL_IN_ONE -> {
+                runBlocking {
+                    // "Last used": Chords, C major.
+                    settings.setPracticeTool(PracticeTool.CHORDS)
+                    settings.setPracticeRoot(PitchClass.C)
+                    settings.setPracticeChordQuality(ChordQuality.MAJOR)
+                    settings.setMetronomeBpm(METRONOME_BPM)
+                    settings.setMetronomeMeter(Meter.FOUR_FOUR)
+                }
+                lateinit var beat: Bitmap
+                lateinit var cards: Bitmap
+                ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                    waitFor(navigation)
+                    measureCrop(scenario)
+                    // 120 beats a minute in 4/4, the first beat lit (the website's metronome picture too).
+                    click(NavigationTestTags.tab(Destination.METRONOME))
+                    click(MetronomeTestTags.START)
+                    settle(PANEL_SETTLE_MS)
+                    metronome.beat(0)
+                    SystemClock.sleep(BEAT_LIT_MS)
+                    beat = screenshot(scenario, "metronome")
+                    click(MetronomeTestTags.START)
+                    click(NavigationTestTags.tab(Destination.PRACTICE))
+                    waitFor(PracticeTestTags.LAST_TIME)
+                    settle(PANEL_SETTLE_MS)
+                    cards = screenshot(scenario, "${shot.number}")
+                }
+                compose(listOf(listOf(beat, cards).map { Window(it.asImageBitmap()) }), staggered = true)
+            }
+            // Listen in Chords (2.0, Phase 74): C, G, then A minor twice, pictured while the last rings. Listen settles a
+            // strum behind, so the A minor strummed again is what shows it named and charted.
+            Shot.CHORD_NAME -> tuner {
+                click(NavigationTestTags.tab(Destination.PRACTICE))
+                click(PracticeTestTags.card(PracticeTool.CHORDS))
+                waitFor(PracticeTestTags.CHORDS)
+                click(PracticeTestTags.CHORDS_LISTEN)
+                recorder.play(
+                    StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
+                        StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +
+                        StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS) +
+                        StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS),
+                )
+                settle((3 * STRUM_SECONDS * 1000).toLong() + LAST_STRUM_SETTLE_MS)
+            }
             Shot.INSTRUMENTS -> tuner {
-                // The panel is a window of its own, whose parts UI Automator can't find by tag.
-                click(TunerTestTags.INSTRUMENT_BUTTON)
+                // The panel is a window of its own, whose parts UI Automator can't find by tag; its pill row is the
+                // one short scrollable in it, scrolled on to the bass, the ukulele and the violin.
+                click(TunerTestTags.PICKER_CHIP)
                 settle(SHEET_SETTLE_MS)
+                val pills = device.findObjects(By.scrollable(true)).firstOrNull { it.visibleBounds.height() < it.visibleBounds.width() / 4 }
+                    ?: error("the instrument pills weren't found")
+                // Dragged slowly, so it stops where the finger does (a scroll call stopped after one row's width), against
+                // the reading direction: right to left, the row starts at the right and goes on to the left.
+                val row = pills.visibleBounds
+                val rtl = app.resources.configuration.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL
+                val drag = (row.width() * PILLS_DRAG).toInt() * if (rtl) -1 else 1
+                repeat(PILLS_DRAGS) {
+                    device.swipe(row.centerX() + drag / 2, row.centerY(), row.centerX() - drag / 2, row.centerY(), DRAG_STEPS)
+                    settle(POLL_MS)
+                }
+                settle(PANEL_SETTLE_MS)
             }
             Shot.TALKBACK -> withFontScale(TALKBACK_FONT_SCALE) {
                 var spoken: SpeechBubble? = null
                 val screen = capture { scenario ->
-                    recorder.play(flatLowE())
+                    recorder.play(heldLowE(cents = 10.0))
                     settle(NOTE_SETTLE_MS)
                     spoken = reading()
                 }
                 save(screen, bubble = spoken ?: error("TalkBack's reading of the note wasn't found"))
             }
-            Shot.CHORD_NAME -> tuner {
-                click(TunerTestTags.MORE_TOOLS)
-                click(TunerTestTags.tool(TunerTool.CHORD_NAME))
-                waitFor(TunerTestTags.CHORD_PANEL)
-                recorder.play(
-                    StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
-                        StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +
-                        StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS),
-                )
-                settle((2 * STRUM_SECONDS * 1000).toLong() + LAST_STRUM_SETTLE_MS)
-            }
-            Shot.CHORDS_AND_CAPO -> {
-                runBlocking {
-                    settings.setPracticeTool(PracticeTool.CHORDS)
-                    settings.setPracticeRoot(PitchClass.C)
-                    settings.setPracticeChordQuality(ChordQuality.MAJOR)
-                    // A song in A played with G shapes: capo on the 2nd fret.
-                    settings.setPracticeCapoShapes(SongKey(PitchClass.G))
-                    settings.setPracticeCapoFret(CAPO_FRET)
+        }
+    }
+
+    /**
+     * The tuner's microphone prompt as a new player sees it before allowing the microphone, drawn by the app's own
+     * [PermissionPrompt] over the theme's background at the screen's size. Drawn, not opened: the permission is granted
+     * for the whole run, and taking it back would stop the app with the test inside it.
+     */
+    private fun micPrompt(): Bitmap {
+        val metrics = app.resources.displayMetrics
+        val screen = renderCanvas(metrics.widthPixels, metrics.heightPixels) {
+            val size = with(LocalDensity.current) { DpSize(metrics.widthPixels.toDp(), metrics.heightPixels.toDp()) }
+            TwangleTheme(darkTheme = shot.dark, animate = false) {
+                // The text colour the tuner's screen gives it, on the theme's background.
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+                    Box(Modifier.size(size), contentAlignment = Alignment.Center) {
+                        StyleBackdrop(Modifier.fillMaxSize())
+                        PermissionPrompt(MicPermissionStatus.NOT_REQUESTED, onRequest = {}, onOpenSettings = {})
+                    }
                 }
-                val screens = mutableListOf<Bitmap>()
-                ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-                    waitFor(navigation)
-                    click(NavigationTestTags.tab(Destination.METRONOME))
-                    waitFor(PracticeTestTags.CHORDS)
-                    settle(PANEL_SETTLE_MS)
-                    screens += screenshot(scenario, "${shot.number}a")
-                    click(PracticeTestTags.TOOL_BUTTON)
-                    click(PracticeTestTags.tool(PracticeTool.CAPO))
-                    device.wait(Until.gone(By.res(PracticeTestTags.CHORDS)), WAIT_MS)
-                    settle(PANEL_SETTLE_MS)
-                    screens += screenshot(scenario, "${shot.number}b")
-                }
-                compose(listOf(screens.map { Window(it.asImageBitmap()) }), staggered = true)
-            }
-            Shot.PITCH_TRAIL -> {
-                val screen = capture(
-                    after = { scenario ->
-                        // Upright again before the activity goes, as focus mode off does with auto-rotate off.
-                        runBlocking { settings.setFocusMode(false) }
-                        waitUntil { !scenario.landscape() }
-                    },
-                ) { scenario ->
-                    click(TunerTestTags.MORE_TOOLS)
-                    click(TunerTestTags.tool(TunerTool.PITCH_TRAIL))
-                    // A held A4, as sung or played high up the neck: any note, so chromatic. The last
-                    // step through UI Automator: once the trail moves, it waits for a still screen
-                    // before each step, up to its time-out.
-                    click(TunerTestTags.mode(TunerMode.CHROMATIC))
-                    // Focus mode turns the phone on its side, the trail in the big meter's place.
-                    runBlocking { settings.setFocusMode(true) }
-                    check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }
-                    // Without its controls the tuner takes the whole screen: no rail and no status bar to cut off.
-                    check(waitUntil { scenario.barsHidden() }) { "focus mode didn't go full screen" }
-                    measureCrop(scenario)
-                    recorder.play(StoreSounds.vibratoNote(StoreSounds.hz(StoreSounds.A4), NOTE_SECONDS, VIBRATO_STEADY_SECONDS))
-                    settle(TRAIL_SETTLE_MS)
-                }
-                // On its side, as the phone (or tablet) stands in focus mode, on a canvas on its side, so
-                // the trail, the note and "In tune" read the right way round (Phase 65; until then the
-                // picture was turned upright, its words running up the screen).
-                compose(listOf(listOf(Window(screen.asImageBitmap()))), spec = CanvasSpec.LANDSCAPE)
             }
         }
+        write(screen, "raw-${shot.number}.png")
+        return screen
     }
 
     /** The navigation bar: every picture opens upright (focus mode turns it only after the app is open). */
@@ -370,7 +390,7 @@ class StoreScreenshots(private val shot: Shot) {
     ) {
         val caption = captions().getOrNull(shot.ordinal) ?: error("no caption ${shot.number} for $locale")
         val canvas = renderCanvas(spec.width, spec.height) {
-            StoreCanvas(caption, rows, shot.style, shot.dark, spec, bubble, staggered)
+            StoreCanvas(caption, rows, shot.dark, spec, bubble, staggered)
         }
         write(canvas, "store-${shot.number}.png")
     }
@@ -412,23 +432,8 @@ class StoreScreenshots(private val shot: Shot) {
             ?.contentDescription?.toString()
     }
 
-    /** The low E string 12 cents flat. */
-    private fun flatLowE() = StoreSounds.heldNote(StoreSounds.hz(StoreSounds.LOW_E, cents = -12.0), NOTE_SECONDS)
-
-    private fun ActivityScenario<MainActivity>.barsHidden(): Boolean {
-        var hidden = false
-        onActivity {
-            val insets = ViewCompat.getRootWindowInsets(it.window.decorView)
-            hidden = insets != null && !insets.isVisible(WindowInsetsCompat.Type.statusBars())
-        }
-        return hidden
-    }
-
-    private fun ActivityScenario<MainActivity>.landscape(): Boolean {
-        var side = false
-        onActivity { side = it.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
-        return side
-    }
+    /** The low E string held [cents] off: flat for "Tighten", sharp for "Loosen". */
+    private fun heldLowE(cents: Double) = StoreSounds.heldNote(StoreSounds.hz(StoreSounds.LOW_E, cents = cents), NOTE_SECONDS)
 
     private fun waitFor(tag: String) = check(device.wait(Until.hasObject(By.res(tag)), WAIT_MS)) { "$tag never showed" }
 
@@ -479,25 +484,6 @@ class StoreScreenshots(private val shot: Shot) {
         @Parameterized.Parameters(name = "{0}")
         fun shots(): List<Shot> =
             if (InstrumentationRegistry.getArguments().getString(LOCALE_ARGUMENT).isNullOrBlank()) emptyList() else Shot.entries
-
-        /**
-         * The six styles' grid, two a row, light and dark crossed: each style with a meter look of its
-         * own (six looks in all) and another string of the guitar in tune.
-         */
-        val STYLE_TILES = listOf(
-            StyleTile(VisualStyle.CONTEMPORARY, dark = false, look = MeterLook.CLASSIC, string = 40),
-            StyleTile(VisualStyle.FUTURISTIC, dark = true, look = MeterLook.LIGHT_BARS, string = 45),
-            StyleTile(VisualStyle.CLASSIC, dark = true, look = MeterLook.LOUPE, string = 50),
-            StyleTile(VisualStyle.RETRO, dark = false, look = MeterLook.POINTERS, string = 55),
-            StyleTile(VisualStyle.ANCIENT, dark = false, look = MeterLook.LIGHT_ARC, string = 59),
-            StyleTile(VisualStyle.SPACE_AGE, dark = true, look = MeterLook.ARROWS, string = 64),
-        )
-
-        /** What each of the six styles' screens shows: the meter, the note and "In tune". */
-        private val TILE_FOCUS = 0.08f..0.66f
-
-        /** The same on the tablet upright, whose taller column is about as tall a share (unchecked on the tablet). */
-        private val TABLET_TILE_FOCUS = 0.06f..0.66f
 
         /** The app's language before the first picture, put back after the last. */
         private var languageBefore: String? = null
@@ -559,14 +545,23 @@ class StoreScreenshots(private val shot: Shot) {
         private const val STRUM_SECONDS = 3.0
         private const val LAST_STRUM_SETTLE_MS = 1_800L
 
-        private const val CAPO_FRET = 2
+        /** The open strings' strum is pictured this long after it starts: its marks stand (after about half a second) while it rings. */
+        private const val OPEN_STRUM_SETTLE_MS = 1_800L
+
+        /** The website's metronome picture: its tempo, and how long after the first beat it is taken, still lit. */
+        private const val METRONOME_BPM = 120
+        private const val BEAT_LIT_MS = 120L
 
         /** The navigation rail's width (NavigationBar.kt, RAIL_WIDTH). */
         private const val RAIL_DP = 80
 
-        /** The A is held steady this long, then the vibrato sets in; pictured when the trail shows both. */
-        private const val VIBRATO_STEADY_SECONDS = 2.5
-        private const val TRAIL_SETTLE_MS = 5_200L
+        /**
+         * The instrument pills are dragged [PILLS_DRAGS] times by [PILLS_DRAG] of their row's width, on to the bass, the
+         * ukulele and the violin, each drag in [DRAG_STEPS] steps of about 5 ms (slow, so the row doesn't fling on).
+         */
+        private const val PILLS_DRAGS = 2
+        private const val PILLS_DRAG = 0.65f
+        private const val DRAG_STEPS = 100
 
         /** TalkBack users often read at large text: the screenshot shows the largest Twangle supports. */
         private const val TALKBACK_FONT_SCALE = 2f

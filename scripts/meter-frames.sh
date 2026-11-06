@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Measures frame times and main-thread work of every meter look on the connected phone
+# Measures frame times and main-thread work of the tuner's meter on the connected phone
 # (MeterFramesBenchmark in :baselineprofile) and prints the table. See
-# docs/architecture/performance.md, "Meter looks".
+# docs/architecture/performance.md, "Meter looks". Since Phase 72 (2.0) it measures each of the
+# lens's three looks, the app started afresh with each.
 #
-#   scripts/meter-frames.sh                      every look and the pitch trail, 3 windows of 7 s each
-#   scripts/meter-frames.sh CLASSIC:LIGHT_ARC    only these looks (MeterLook names, colon-separated)
-#   scripts/meter-frames.sh CURRENT              keep the look the app has (e.g. an older build)
-#   scripts/meter-frames.sh PITCH_TRAIL          only the pitch trail (Phase 31; always measured last)
+#   scripts/meter-frames.sh                      Classic, the Light arc and the strobe, 3 windows of 7 s each
+#   scripts/meter-frames.sh STROBE               one look (CLASSIC, LIGHT_ARC, STROBE; colons between several)
+#   scripts/meter-frames.sh CURRENT              the look the app shows
 #
-# Needs the phone connected, unlocked and upright, about 4 minutes. It installs the minified
+# Needs the phone connected, unlocked and upright, about 5 minutes. It installs the minified
 # benchmarkRelease build, which hears a synthetic sweeping tone instead of the mic (no test tones
 # needed), then puts the normal debug build back. Installing a different build clears the app's
 # settings, as the UI tests do.

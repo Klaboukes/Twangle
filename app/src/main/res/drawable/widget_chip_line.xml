@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The fine line round the widget's chip (the picker chip's 1 dp outline): the same pill, a dp larger
+     than the chip's fill, in the outline colour. Tinted by TuningWidget; this colour is the preview's. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_line" />
+    <corners android:radius="100dp" />
+</shape>

@@ -11,46 +11,61 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
 /**
- * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order: the metronome,
- * then each with its switch on: chords, scales (a tool of its own since Phase 47) and the capo helper
- * (Phase 33, only with chords, whose charts its rows open), and Ear training (Phase 55). None while the Practice tab's switch is
- * off, or when the metronome would be the only tool: the tab is then the plain Metronome tab, with no
- * tool button.
+ * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order, each with its
+ * switch on: chords, scales (a tool of its own since Phase 47), the capo helper (Phase 33, only with
+ * chords, whose charts its rows open), Ear training (Phase 55) and the pitch trail (2.0, Phase 78). None while the Practice tab's switch
+ * is off, or every tool's: there is then no Practice tab, and the metronome keeps its own (since 2.0,
+ * Phase 69, a tab of its own either way).
  */
 fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> {
     if (!tools.practiceTab) return emptyList()
-    val others = buildList {
+    return buildList {
         if (tools.chords) add(PracticeTool.CHORDS)
         if (tools.scales) add(PracticeTool.SCALES)
         if (tools.capoHelper && tools.chords) add(PracticeTool.CAPO)
         if (tools.earTraining) add(PracticeTool.EAR_TRAINING)
+        if (tools.pitchTrail) add(PracticeTool.PITCH_TRAIL)
     }
-    return if (others.isEmpty()) emptyList() else listOf(PracticeTool.METRONOME) + others
 }
 
-/** The tool Practice opens on: the one used last ([saved]) while it is [offered], else the metronome. */
-fun practiceToolToOpen(saved: PracticeTool, offered: List<PracticeTool>): PracticeTool =
-    if (saved in offered) saved else PracticeTool.METRONOME
+/**
+ * The tool the Practice cards' "last time" row opens (2.0, Phase 69): the one used last ([saved]) while it is
+ * [offered], else none, and then there is no row (nothing used yet, 1.1's metronome, or a tool whose switch is
+ * now off). Practice itself opens on its cards, never on a tool by itself.
+ */
+fun lastTimeTool(saved: PracticeTool?, offered: List<PracticeTool>): PracticeTool? = saved?.takeIf { it in offered }
 
 /** Test tags for UI tests (as resource ids in the app, see `MainActivity`). */
 object PracticeTestTags {
-    /** The tool button at the top start of every Practice tool, which opens the list of tools. */
-    const val TOOL_BUTTON = "practice_tool_button"
+    /** The Practice tab's cards page (2.0, Phase 69). */
+    const val CARDS = "practice_cards"
+
+    /** A tool's card on that page, e.g. "practice_card_chords". */
+    fun card(tool: PracticeTool): String = "practice_card_" + tool.name.lowercase()
+
+    /** The "last time" row under the cards, which opens the tool used last. */
+    const val LAST_TIME = "practice_last_time"
+
+    /** The back arrow in the top start corner of every Practice tool, which leads back to the cards. */
+    const val BACK = "practice_back"
+
+    /** A Practice tool's name in the middle of its top row ("Chords"; Phase 77), over the picker chip's own line. */
+    const val TITLE = "practice_tool_title"
 
     /** The Chords tool's screen. */
     const val CHORDS = "practice_chords"
 
+    /** Listen in Chords (2.0, Phase 74): the round button at the end of the chord name's row. */
+    const val CHORDS_LISTEN = "practice_chords_listen"
+
     /** The Scales tool's screen. */
     const val SCALES = "practice_scales"
 
-    /** A tool's row in the tool button's list, e.g. "practice_tool_chords". */
-    fun tool(tool: PracticeTool): String = "practice_tool_" + tool.name.lowercase()
-
-    /** The Chords, Scales and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */
+    /**
+     * The Practice tools' instrument and tuning ("Guitar · Standard"): the picker chip that opens the sheet
+     * (Phase 70; until then a line after a headstock button), or the plain line where nothing opens it.
+     */
     const val TUNING = "practice_tuning"
-
-    /** The instrument and tuning button (a headstock) before that line, which opens the panel. */
-    const val INSTRUMENT_BUTTON = "practice_instrument_button"
 
     /** A root button, e.g. "practice_root_a_sharp". */
     fun root(root: PitchClass): String = "practice_root_" + root.name.lowercase()
@@ -78,6 +93,9 @@ object PracticeTestTags {
     /** The chord's or the scale's full name over its chart or neck ("C suspended second ⌄", "A minor pentatonic ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
     const val NAME_PICKER = "practice_name_picker"
 
+    /** That panel (the shared floating panel, Phase 77). */
+    const val NAME_PANEL = "practice_name_panel"
+
     /** The drone button on Scales (Phase 48): its ▶ / ■ half, and its other half with the sound's icon, which opens the drone panel. */
     const val DRONE_PLAY = "practice_drone_play"
     const val DRONE_SOUND = "practice_drone_sound"
@@ -101,6 +119,9 @@ object PracticeTestTags {
 
     /** The Capo helper's "Shapes I play" button, which opens the list of shapes. */
     const val CAPO_SHAPES = "practice_capo_shapes"
+
+    /** That list (the shared floating panel, Phase 77). */
+    const val CAPO_SHAPES_PANEL = "practice_capo_shapes_panel"
 
     /** An entry of the shapes' list, e.g. "practice_capo_shapes_a_minor". */
     fun capoShapes(shapes: SongKey): String = CAPO_SHAPES + "_" + shapes.tonic.name.lowercase() + if (shapes.minor) "_minor" else ""

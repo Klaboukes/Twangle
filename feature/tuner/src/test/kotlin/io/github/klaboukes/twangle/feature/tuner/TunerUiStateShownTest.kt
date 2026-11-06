@@ -30,9 +30,10 @@ class TunerUiStateShownTest {
     }
 
     @Test
-    fun `a change in whole cents or tenths of a hertz is visible`() {
+    fun `a change in whole cents is visible, the hertz not at all`() {
         assertNotEquals(detected(-12.4f).asShown(), detected(-12.6f).asShown())
-        assertNotEquals(detected(3f, 110.04f).asShown(), detected(3f, 110.06f).asShown())
+        // 2.0 shows no hertz (Phase 71): a frequency that moves alone changes nothing on screen.
+        assertEquals(detected(3f, 110.04f).asShown(), detected(3f, 110.36f).asShown())
         assertNotEquals(detected(3f, inTune = false).asShown(), detected(3f, inTune = true).asShown())
     }
 
@@ -40,7 +41,7 @@ class TunerUiStateShownTest {
     fun `shown values are rounded the way the readout writes them`() {
         val shown = detected(-11.6f, 81.84f).asShown() as TunerUiState.Detected
         assertEquals(-12f, shown.cents)
-        assertEquals(81.8f, shown.frequencyHz)
+        assertEquals("the hertz isn't shown", 0f, shown.frequencyHz)
         // Guitar mode can be far off the string; that is still shown in whole cents.
         assertEquals(-230f, (detected(-230.3f).asShown() as TunerUiState.Detected).cents)
     }
@@ -77,6 +78,7 @@ class TunerUiStateShownTest {
         assertFalse(base.looksLike(base.copy(notation = Notation.SOLFEGE)))
         assertFalse(base.looksLike(base.copy(reception = 0.9f)))
         assertFalse(base.looksLike(base.copy(tip = ReceptionTip.TOO_SOFT)))
+        assertFalse(base.looksLike(base.copy(targetMidi = base.targetMidi + 12)))
         assertFalse(base.looksLike(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)))
         val listening = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
         assertTrue(listening.looksLike(listening.copy()))
@@ -93,9 +95,21 @@ class TunerUiStateShownTest {
     }
 
     @Test
+    fun `a reading's target note is read back from its name by default`() {
+        assertEquals(40, detected(-12f).targetMidi)
+        assertEquals(56, targetMidiOf("Sol♯", 3, Notation.SOLFEGE, 207f, 440f, 0f))
+        assertEquals(59, targetMidiOf("H", 3, Notation.GERMAN, 247f, 440f, 0f))
+        assertEquals(58, targetMidiOf("B", 3, Notation.GERMAN, 233f, 440f, 0f))
+        assertEquals(51, targetMidiOf("E♭", 3, Notation.SHARPS, 155f, 440f, 0f))
+        // A name of no notation: from the frequency, less the cents.
+        assertEquals(69, targetMidiOf("?", 4, Notation.SHARPS, 445f, 440f, 19.6f))
+        assertEquals(69, targetMidiOf("?", 4, Notation.SHARPS, 0f, 440f, 0f))
+    }
+
+    @Test
     fun `looksLike compares every field of Detected`() {
         // looksLike lists the fields one by one so it allocates nothing. A new field needs a line
         // there and in the test above; then update this count.
-        assertEquals(15, TunerUiState.Detected::class.java.declaredFields.size)
+        assertEquals(16, TunerUiState.Detected::class.java.declaredFields.size)
     }
 }

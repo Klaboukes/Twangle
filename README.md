@@ -27,7 +27,7 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 - **Your own tunings:** make, edit and delete tunings of your own for any instrument, unison strings included.
 - **Chromatic mode:** tunes any note, for any instrument.
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
-- **Helpful hints:** "Tune up" or "Tune down", a tip when it's too quiet, too noisy or too loud to hear you well, and a short tour of the screen the first time you open it.
+- **Helpful hints:** "Tune up" or "Tune down", and a tip when it's too quiet, too noisy or too loud to hear you well.
 - **Clear when in tune:** a calm glow (you choose how strong), and a short vibration if you like.
 - **Accurate:** within ±1 cent on test signals, from the low B of a 5-string bass up to the highest frets.
 - **Keeps the screen on** while you tune (can be turned off).
@@ -40,7 +40,7 @@ From the tools button above the strings, one at a time:
 - **Pitch trail:** a line of your pitch over the last few seconds, to see bends, vibrato and how steady a note is.
 
 ### Practice
-- **Metronome:** 30 to 250 beats per minute on a round tempo dial, with − and + buttons and tap tempo. 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on beat 1 and beat lights to follow along.
+- **Metronome:** 30 to 250 beats per minute, the tempo big on the screen with − and + beside it and a ruler to drag, and Tap the beat. 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on beat 1 and beat lights to follow along.
 - **Listen:** play for a few seconds and the metronome suggests your tempo.
 - Clicks over your own music or backing track, and can vibrate on the beat. It stops by itself for a phone call or when headphones are unplugged.
 - **Chord charts:** 20 chord types on any root, the power chord and 9ths included, drawn as in a songbook with fingers and barres, several shapes for each chord, for the tuning you picked, your own tunings included.
@@ -49,7 +49,7 @@ From the tools button above the strings, one at a time:
 - **Ear training:** play back a note Twangle plays while the tuner listens, or name intervals and chord types by ear with buttons. You choose what is asked; no scores are kept, and the microphone is used only by *Play it back*, only while it is on the screen.
 
 ### Make it yours
-- **Six visual styles:** Ancient, Classic, Retro, Contemporary, Futuristic and Space Age, each with its own colours, lettering and background.
+- **One calm look:** light or dark (or as the phone is), with your wallpaper's colours on Android 12 and later.
 - **Six meter looks** (Classic, Light arc, Pointers, Loupe, Arrows, Light bars) and **six wave looks** (a strobe among them).
 - Light, dark or follow the phone, with colours from your wallpaper on Android 12+.
 - **Note names:** C, C♯, D (or with flats), German style with H for B, or Do Re Mi. By default they follow what is usual in your language.
@@ -79,7 +79,7 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:feature:practice` | The Practice tab: chord charts, scales and the capo helper |
 | `:core:audio` | Microphone capture, reference tones and metronome clicks |
 | `:core:settings` | Saved settings |
-| `:core:designsystem` | The six visual styles: colours, fonts, backgrounds, style cards, meter and wave looks |
+| `:core:designsystem` | The look (Ink, light and dark): colours, shapes, buttons, meter and wave looks |
 | `:core:dsp` | Pitch detection, strum check, note math, tunings, plucked-string tones, metronome timing (pure Kotlin, no Android) |
 
 The full design is in [ARCHITECTURE.md](ARCHITECTURE.md) and the topic files it lists.
@@ -102,6 +102,12 @@ GitHub Actions builds, tests and lints `main` every night. It doesn't keep the A
 
 Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
+## Licence
+
+Twangle is free software under the [GNU General Public License, version 3](LICENSE): you may copy, change and share it, as long as what you build from it stays open under the same licence.
+
+The name "Twangle" and its logo (the app icon) are not covered by the licence. A copy you share must use its own name and icon.
+
 ## Fonts
 
-The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Forum (Denis Masharov), Alegreya Sans (Juan Pablo del Peral, Huerta Tipográfica), Playfair Display (Claus Eggers Sørensen), Bodoni Moda (Owen Earl, indestructible type*), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google), renamed Twangle Music Signs as the licence asks of a changed font. The app icons are Google's Material Symbols (Apache License 2.0).
+Text is set in the phone's own font. The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google), bundled under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses) and renamed Twangle Music Signs as the licence asks of a changed font. The app icons are Google's Material Symbols (Apache License 2.0).

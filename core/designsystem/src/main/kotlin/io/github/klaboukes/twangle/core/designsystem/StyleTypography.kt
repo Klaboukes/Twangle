@@ -1,216 +1,51 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.em
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
- * The lettering of each style. The display faces are bundled (res/font, SIL Open Font License, see
- * assets/licenses) so they work offline; reading text is the phone's plain face, but for Ancient's
- * Alegreya Sans (Phase 65). None of them has ♯ and ♭; [musicText] sets those in [MusicSignsFont] in every style.
+ * Twangle's own face, Nunito (Phase 79, the owner's pick of 2026-11-05 after a branding review): rounded ends like
+ * the name's Comfortaa and the icon's harmonics, but sturdy and open at small sizes, so the app looks the same on
+ * every brand of phone (until then it took the phone's own font: MiSans on a Xiaomi, One UI Sans on a Galaxy).
+ * Bundled whole and unchanged ([R.font.nunito], one variable file, SIL OFL 1.1, credited on the About page),
+ * one [Font] for each weight the app asks for. It covers the Latin, Cyrillic and Vietnamese letters, 17 of the 25
+ * languages; Chinese, Japanese, Korean, Arabic, Hindi, Bengali and Thai letters, which it lacks, come from the
+ * phone's own font, glyph by glyph, as Android does for any face. Its figures are lining and all one width, so a
+ * changing number never shifts.
  */
-internal object StyleFonts {
-    /**
-     * Ancient: antique Roman letters, calm and a little narrow, with Polish, Turkish and Russian letters.
-     * Forum by Denis Masharov (October 2026, replacing Caesar Dressing, which the owner found too gimmicky).
-     */
-    val Roman = FontFamily(Font(R.font.forum))
-
-    /**
-     * Ancient's numbers and, since Phase 65, its reading text: a calm humanist sans whose 0 reads as a 0
-     * and whose pen-drawn shapes sit with Forum's Roman letters (the phone's Roboto beside Forum read as
-     * two apps), at its medium weight (the only cut bundled, so every weight asks for it). Alegreya
-     * Sans by Juan Pablo del Peral, Huerta Tipográfica.
-     */
-    val Humanist = FontFamily(
-        Font(R.font.alegreya_sans_medium, FontWeight.Normal),
-        Font(R.font.alegreya_sans_medium, FontWeight.Medium),
-    )
-
-    /** Classic: a high-contrast Didone serif. Playfair Display by Claus Eggers Sørensen (variable). */
-    val Didone = FontFamily(
-        Font(R.font.playfair_display, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
-        Font(R.font.playfair_display, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
-        Font(R.font.playfair_display, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700))),
-    )
-
-    /**
-     * Classic's numbers: a Bodoni whose digits stand full height, at weight 500 and a text optical size.
-     * Bodoni Moda by Owen Earl, indestructible type* (variable).
-     */
-    val Bodoni = FontFamily(
-        Font(R.font.bodoni_moda, FontWeight.Normal, variationSettings = bodoniAt(500)),
-        Font(R.font.bodoni_moda, FontWeight.Medium, variationSettings = bodoniAt(500)),
-        Font(R.font.bodoni_moda, FontWeight.Bold, variationSettings = bodoniAt(700)),
-    )
-
-    /** Retro: round 1970s display letters. Righteous by Astigmatic. */
-    val Groovy = FontFamily(Font(R.font.righteous))
-
-    /** Futuristic: geometric sci-fi capitals. Orbitron by Matt McInerney (variable). */
-    val Hud = FontFamily(
-        Font(R.font.orbitron, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
-        Font(R.font.orbitron, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
-        Font(R.font.orbitron, FontWeight.SemiBold, variationSettings = FontVariation.Settings(FontVariation.weight(600))),
-        Font(R.font.orbitron, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(800))),
-    )
-
-    /** Futuristic's numbers: Orbitron at weight 500 whatever weight the text asks for, as in the mock-up. */
-    val HudNumbers = FontFamily(
-        Font(R.font.orbitron, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
-        Font(R.font.orbitron, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700))),
-    )
-
-    /** Space Age: wide 1960s "Microgramma" letters. Michroma by Vernon Adams. */
-    val JetAge = FontFamily(Font(R.font.michroma))
-
-    private fun bodoniAt(weight: Int) = FontVariation.Settings(FontVariation.weight(weight), FontVariation.Setting("opsz", BODONI_OPTICAL_SIZE))
-
-    /** Bodoni Moda's optical size for the readouts (its axis runs 6 to 96): sturdy hairlines at 12 to 20 sp. */
-    private const val BODONI_OPTICAL_SIZE = 14f
-}
-
-/** The faces one style uses for display text, titles and reading text. */
-internal data class StyleFaces(
-    val display: FontFamily,
-    val title: FontFamily,
-    val body: FontFamily,
-    val label: FontFamily = body,
-    /** Readouts made of numbers, like "12 cents flat": the title face, unless its digits are hard to read. */
-    val numbers: FontFamily = title,
-    /** Weight of the display and headline styles; null keeps Material's. */
-    val displayWeight: FontWeight? = null,
-    /** Extra letter spacing for titles, e.g. wide HUD lettering. */
-    val titleSpacing: TextUnit = TextUnit.Unspecified,
-    /**
-     * The reading text's size against Material's: a face whose small letters are smaller than the
-     * phone's font is set this much larger, so it reads as large (Alegreya Sans' x-height is 0.46 em,
-     * Roboto's and MiSans' 0.53; at 1.12 it is still narrower than them). Line heights stay Material's.
-     */
-    val bodyScale: Float = 1f,
+@OptIn(ExperimentalTextApi::class)
+val TwangleFont: FontFamily = FontFamily(
+    listOf(200, 300, 400, 500, 600, 700, 800, 900).map { weight ->
+        Font(R.font.nunito, FontWeight(weight), variationSettings = FontVariation.Settings(FontVariation.weight(weight)))
+    },
 )
 
 /**
- * The faces of [style] for text in [language] (`Locale.language`, e.g. "pl"). Orbitron lacks
- * Polish, Turkish, Danish and Norwegian letters (ą ę ś ż, ł, ğ ş İ, ø), so a word there would mix two faces: Futuristic's
- * display and titles take Space Age's Michroma. Vietnamese's tone letters are only in Playfair
- * Display, so outside Classic its display text and titles take the phone's font
- * ([TONE_LETTER_LANGUAGES]). Scripts the display faces don't have
- * ([OTHER_SCRIPT_LANGUAGES]) are drawn whole in the phone's own font; the extra letter spacing meant
- * for the display face is left out there, so Chinese and Japanese characters don't stand apart. A bundled
- * reading face (Ancient's Alegreya Sans, which has Cyrillic) gives way to the phone's there too, outside
- * [CYRILLIC_LANGUAGES], so the few Latin words (A4, Hz) aren't in another face and size than the rest. `StyleFontCoverageTest` checks the lists
- * against the bundled fonts and every language's texts.
+ * The face for number readouts ("12 cents flat", the tempo): [TwangleFont], as every other text. It has no ♯
+ * and ♭; [musicText] sets those in [MusicSignsFont].
  */
-internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
-    val own = ownFacesFor(style)
-    return when {
-        language in EXTENDED_LATIN_LANGUAGES && style == VisualStyle.FUTURISTIC ->
-            own.copy(display = StyleFonts.JetAge, title = StyleFonts.JetAge, displayWeight = null, titleSpacing = SPACE_AGE_SPACING)
-        language in TONE_LETTER_LANGUAGES && style != VisualStyle.CLASSIC ->
-            own.copy(display = own.body, title = own.body, titleSpacing = TextUnit.Unspecified)
-        language in OTHER_SCRIPT_LANGUAGES -> own.copy(titleSpacing = TextUnit.Unspecified).let {
-            if (language in CYRILLIC_LANGUAGES) it else it.withPhoneReadingFace()
-        }
-        else -> own
-    }
-}
-
-/**
- * Languages with Latin letters that Orbitron (Futuristic) lacks: Polish, Turkish, and Danish and
- * Norwegian's ø. Norwegian is "nb" only: Android puts the locale whose texts it found first, so the
- * Bokmål texts always come with "nb", also on a phone that lists Nynorsk before Bokmål.
- */
-internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr", "da", "nb")
-
-/**
- * Latin languages whose letters only Classic's Playfair Display has among the display faces:
- * Vietnamese's ơ ư and tone letters (ạ ế ỗ ặ). Forum, Righteous, Orbitron and Michroma have the
- * plain letters but not those, so a word would mix two faces; in every style but Classic the display
- * text and titles take the style's reading face (the phone's font), without the extra spacing.
- */
-internal val TONE_LETTER_LANGUAGES = setOf("vi")
-
-/**
- * Languages in a script none of the display faces has (Arabic, Bengali, Devanagari, Thai, Chinese,
- * Japanese, Korean, and Cyrillic, which only Classic's Playfair Display and Ancient's Forum have;
- * Android says "ru" and "uk", whose і ї є ґ both faces have too).
- */
-internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "bn", "hi", "ja", "ko", "ru", "th", "uk", "zh")
-
-/** The [OTHER_SCRIPT_LANGUAGES] in Cyrillic, which Ancient's reading face (Alegreya Sans) has: it stays there. */
-internal val CYRILLIC_LANGUAGES = setOf("ru", "uk")
-
-/** The bundled reading faces, which lack the scripts of [OTHER_SCRIPT_LANGUAGES] but Cyrillic. */
-private val BUNDLED_READING_FACES = setOf(StyleFonts.Humanist)
-
-/** These faces with the phone's own font for reading text, at Material's sizes, where [body] is a bundled face. */
-private fun StyleFaces.withPhoneReadingFace(): StyleFaces =
-    if (body in BUNDLED_READING_FACES) copy(body = FontFamily.SansSerif, label = FontFamily.SansSerif, bodyScale = 1f) else this
-
-private val SPACE_AGE_SPACING = 0.02.em
-
-/**
- * The faces of each style, from the approved mock-ups: Forum with Alegreya Sans numbers (the
- * readouts kept the face they were approved in) and, since Phase 65, Alegreya Sans reading text at
- * [ANCIENT_BODY_SCALE], Playfair Display with Bodoni Moda numbers and serif reading text, Righteous,
- * the phone's own font in light, Orbitron and Michroma (wide faces, numbers at 82 %, see
- * `numberScaleFor`). Reading text is the phone's sans serif unless said otherwise: beside Righteous,
- * Orbitron and Michroma a plain sans is what the mock-ups paired them with, and Classic's serif already
- * matches Playfair Display; only Ancient's Roboto clashed (Phase 65).
- */
-private fun ownFacesFor(style: VisualStyle): StyleFaces = when (style) {
-    VisualStyle.ANCIENT -> StyleFaces(
-        StyleFonts.Roman, StyleFonts.Roman, StyleFonts.Humanist,
-        numbers = StyleFonts.Humanist, titleSpacing = 0.01.em, bodyScale = ANCIENT_BODY_SCALE,
-    )
-    VisualStyle.CLASSIC -> StyleFaces(
-        StyleFonts.Didone, StyleFonts.Didone, FontFamily.Serif,
-        numbers = StyleFonts.Bodoni, displayWeight = FontWeight.Normal,
-    )
-    VisualStyle.RETRO -> StyleFaces(StyleFonts.Groovy, StyleFonts.Groovy, FontFamily.SansSerif)
-    VisualStyle.CONTEMPORARY -> StyleFaces(FontFamily.Default, FontFamily.Default, FontFamily.Default, displayWeight = FontWeight.Light)
-    VisualStyle.FUTURISTIC -> StyleFaces(
-        StyleFonts.Hud, StyleFonts.Hud, FontFamily.SansSerif,
-        numbers = StyleFonts.HudNumbers, displayWeight = FontWeight.Medium, titleSpacing = 0.06.em,
-    )
-    VisualStyle.SPACE_AGE -> StyleFaces(StyleFonts.JetAge, StyleFonts.JetAge, FontFamily.SansSerif, titleSpacing = SPACE_AGE_SPACING)
-}
-
-/** Ancient's reading text (Alegreya Sans) against Material's sizes: see [StyleFaces.bodyScale]. */
-internal const val ANCIENT_BODY_SCALE = 1.12f
-
-/** The face for number readouts in [style] (see [StyleFaces.numbers]). */
-fun numberFontFor(style: VisualStyle): FontFamily = facesFor(style).numbers
+val NumberFont: FontFamily = TwangleFont
 
 /**
  * The OpenType feature for lining figures: digits standing full height on the baseline, so a 0 never
- * looks like an o (Playfair Display's own figures are old-style). Every text style asks for it; faces
- * without the feature already have lining figures and ignore it.
+ * looks like an o. Every text style asks for it; faces without the feature already have lining figures
+ * and ignore it.
  */
 const val LINING_FIGURES = "lnum"
 
 /**
- * Material 3's type scale set in the faces of [style] for text in [language] (see
- * [facesFor]), every style with [LINING_FIGURES].
+ * Material 3's type scale in [TwangleFont], the display and headline styles light, every style with
+ * [LINING_FIGURES].
  */
-fun typographyFor(style: VisualStyle, language: String = ""): Typography {
-    val faces = facesFor(style, language)
+fun inkTypography(): Typography {
     val base = Typography()
-    fun TextStyle.display() = copy(fontFamily = faces.display, fontWeight = faces.displayWeight ?: fontWeight, fontFeatureSettings = LINING_FIGURES)
-    fun TextStyle.title() = copy(
-        fontFamily = faces.title,
-        letterSpacing = if (faces.titleSpacing != TextUnit.Unspecified) faces.titleSpacing else letterSpacing,
-        fontFeatureSettings = LINING_FIGURES,
-    )
-    fun TextStyle.body() = copy(fontFamily = faces.body, fontSize = fontSize * faces.bodyScale, fontFeatureSettings = LINING_FIGURES)
-    fun TextStyle.label() = copy(fontFamily = faces.label, fontSize = fontSize * faces.bodyScale, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.display() = copy(fontFamily = TwangleFont, fontWeight = FontWeight.Light, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.text() = copy(fontFamily = TwangleFont, fontFeatureSettings = LINING_FIGURES)
     return base.copy(
         displayLarge = base.displayLarge.display(),
         displayMedium = base.displayMedium.display(),
@@ -218,14 +53,14 @@ fun typographyFor(style: VisualStyle, language: String = ""): Typography {
         headlineLarge = base.headlineLarge.display(),
         headlineMedium = base.headlineMedium.display(),
         headlineSmall = base.headlineSmall.display(),
-        titleLarge = base.titleLarge.title(),
-        titleMedium = base.titleMedium.title(),
-        titleSmall = base.titleSmall.body(),
-        bodyLarge = base.bodyLarge.body(),
-        bodyMedium = base.bodyMedium.body(),
-        bodySmall = base.bodySmall.body(),
-        labelLarge = base.labelLarge.label(),
-        labelMedium = base.labelMedium.label(),
-        labelSmall = base.labelSmall.label(),
+        titleLarge = base.titleLarge.text(),
+        titleMedium = base.titleMedium.text(),
+        titleSmall = base.titleSmall.text(),
+        bodyLarge = base.bodyLarge.text(),
+        bodyMedium = base.bodyMedium.text(),
+        bodySmall = base.bodySmall.text(),
+        labelLarge = base.labelLarge.text(),
+        labelMedium = base.labelMedium.text(),
+        labelSmall = base.labelSmall.text(),
     )
 }

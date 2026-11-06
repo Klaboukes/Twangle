@@ -3,11 +3,15 @@ package io.github.klaboukes.twangle.app.widget
 import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
+import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.media.AudioManager
 import android.os.SystemClock
 import android.view.View
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ActivityScenario
@@ -24,7 +28,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -33,9 +36,10 @@ import org.junit.runner.RunWith
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 
 /**
- * The home-screen widget: drawn as the launcher draws it, it names the instrument and tuning in the
- * style's colours and opens nothing by itself (the microphone stays off); its tap brings the open
- * app back to the tuner.
+ * The home-screen widget (2.0's look, Phase 75): drawn as the launcher draws it, it names the
+ * instrument and tuning in a chip like the tuner's picker chip, with "Open the tuner" under it, in
+ * Ink's colours, light or dark (the picker's preview too), and opens nothing by itself (the
+ * microphone stays off); its tap brings the open app back to the tuner.
  *
  * The app runs as itself here (`ActivityScenario`, no Compose test rule): its opening screen waits
  * for the first real frame, which a Compose rule's test clock would hold back.
@@ -61,24 +65,75 @@ class TuningWidgetTest {
         return view
     }
 
+    /** The colour an image of the widget is drawn in (its shape tinted by its colour filter): its middle, drawn alone. */
+    private fun View.tint(id: Int): Int {
+        val image = findViewById<ImageView>(id)
+        val bitmap = Bitmap.createBitmap(SAMPLE_WIDTH, SAMPLE_HEIGHT, Bitmap.Config.ARGB_8888)
+        instrumentation.runOnMainSync {
+            image.measure(
+                View.MeasureSpec.makeMeasureSpec(SAMPLE_WIDTH, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(SAMPLE_HEIGHT, View.MeasureSpec.EXACTLY),
+            )
+            image.layout(0, 0, SAMPLE_WIDTH, SAMPLE_HEIGHT)
+            image.draw(Canvas(bitmap))
+        }
+        return bitmap.getPixel(SAMPLE_WIDTH / 2, SAMPLE_HEIGHT / 2)
+    }
+
     @Test
-    fun namesTheInstrumentAndTuningInTheStylesColours() {
-        val view = drawn(AppSettings(tuning = Tunings.DROP_D, style = VisualStyle.RETRO, theme = ThemeMode.DARK))
+    fun namesTheInstrumentAndTuningInAChipInInksColours() {
+        // Ink's own colours: the wallpaper's (on by default) differ from phone to phone.
+        val view = drawn(AppSettings(tuning = Tunings.DROP_D, theme = ThemeMode.DARK, dynamicColor = false))
         val title = view.findViewById<TextView>(R.id.widget_title)
         val guitar = context.getString(TunerR.string.instrument_guitar)
         val dropD = context.getString(TunerR.string.tuning_drop_d)
         assertEquals(context.getString(R.string.widget_title, guitar, dropD), title.text.toString())
         assertEquals(context.getString(TunerR.string.tuner_spoken_picker, guitar, dropD), title.contentDescription)
-        val scheme = tokensFor(VisualStyle.RETRO, dark = true).scheme
-        assertEquals(scheme.onBackground.toArgb(), title.currentTextColor)
-        assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
+        val scheme = tokensFor(dark = true).scheme
+        assertEquals(scheme.onSurface.toArgb(), title.currentTextColor)
+        val subtitle = view.findViewById<TextView>(R.id.widget_subtitle)
+        assertEquals(context.getString(R.string.widget_open_tuner), subtitle.text.toString())
+        assertEquals(scheme.onSurfaceVariant.toArgb(), subtitle.currentTextColor)
+        assertEquals("the chip's fill", scheme.surface.toArgb(), view.tint(R.id.widget_chip))
+        assertEquals("the chip's line", scheme.outlineVariant.toArgb(), view.tint(R.id.widget_chip_line))
+        assertEquals("the tile", scheme.background.toArgb(), view.tint(R.id.widget_backdrop))
         assertTrue("the whole tile can be tapped", view.findViewById<View>(android.R.id.background).hasOnClickListeners())
     }
 
     @Test
-    fun chromaticModeSaysChromatic() {
+    fun inTheLightThemeItIsInkLight() {
+        val view = drawn(AppSettings(theme = ThemeMode.LIGHT, dynamicColor = false))
+        val scheme = tokensFor(dark = false).scheme
+        assertEquals(scheme.onSurface.toArgb(), view.findViewById<TextView>(R.id.widget_title).currentTextColor)
+        assertEquals(scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
+        assertEquals(scheme.surface.toArgb(), view.tint(R.id.widget_chip))
+        assertEquals(scheme.outlineVariant.toArgb(), view.tint(R.id.widget_chip_line))
+        assertEquals(scheme.background.toArgb(), view.tint(R.id.widget_backdrop))
+    }
+
+    /** The widget picker shows the layout's own colours before the app draws it: Ink's too, light and dark. */
+    @Test
+    fun thePickersPreviewIsInInk() {
+        for (dark in listOf(false, true)) {
+            val configuration = Configuration(context.resources.configuration).apply {
+                uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
+                    if (dark) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+            }
+            val preview = context.createConfigurationContext(configuration)
+            val scheme = tokensFor(dark).scheme
+            val case = if (dark) "dark" else "light"
+            assertEquals("$case background", scheme.background.toArgb(), preview.getColor(R.color.widget_background))
+            assertEquals("$case chip", scheme.surface.toArgb(), preview.getColor(R.color.widget_surface))
+            assertEquals("$case chip's line", scheme.outlineVariant.toArgb(), preview.getColor(R.color.widget_line))
+            assertEquals("$case ink", scheme.onSurface.toArgb(), preview.getColor(R.color.widget_ink))
+            assertEquals("$case muted", scheme.onSurfaceVariant.toArgb(), preview.getColor(R.color.widget_muted))
+        }
+    }
+
+    @Test
+    fun chromaticModeSaysAnyNote() {
         val title = drawn(AppSettings(mode = TunerMode.CHROMATIC)).findViewById<TextView>(R.id.widget_title)
-        assertEquals(context.getString(TunerR.string.tuner_mode_chromatic), title.text.toString())
+        assertEquals(context.getString(TunerR.string.tuner_any_note), title.text.toString())
     }
 
     @Test
@@ -94,11 +149,12 @@ class TuningWidgetTest {
     @Test
     fun aTapOpensTheTunerFromAnotherScreen() {
         ActivityScenario.launch(MainActivity::class.java).use {
-            val settings = NavigationTestTags.tab(Destination.SETTINGS)
+            // The gear opens Settings (Phase 69), which has no bar.
+            val gear = NavigationTestTags.SETTINGS
             val tuner = NavigationTestTags.tab(Destination.TUNER)
-            assertTrue("the app opens", waitFor(5_000) { tab(settings) != null })
-            tab(settings)!!.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            assertTrue("Settings opens", waitFor(3_000) { tab(settings)?.isSelected == true })
+            assertTrue("the app opens", waitFor(5_000) { tab(gear) != null })
+            tab(gear)!!.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            assertTrue("Settings opens", waitFor(3_000) { tab(tuner) == null })
 
             TuningWidget.openTuner(context).send()
             assertTrue("the widget's tap shows the tuner", waitFor(5_000) { tab(tuner)?.isSelected == true })
@@ -127,5 +183,11 @@ class TuningWidgetTest {
             SystemClock.sleep(100)
         }
         return condition()
+    }
+
+    private companion object {
+        /** The size each image is drawn at to read its colour: a small pill. */
+        const val SAMPLE_WIDTH = 120
+        const val SAMPLE_HEIGHT = 40
     }
 }

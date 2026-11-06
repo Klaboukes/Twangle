@@ -5,9 +5,10 @@
         <item quantity="one">প্রতি মিনিটে %1$d বিট, %2$s</item>
         <item quantity="other">প্রতি মিনিটে %1$d বিট, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">প্রতি মিনিটে বিট · %1$s</string>
     <string name="metronome_slower">আরও ধীরে</string>
     <string name="metronome_faster">আরও দ্রুত</string>
-    <string name="metronome_tap">ট্যাপ টেম্পো</string>
+    <string name="metronome_tap">বিটে ট্যাপ করুন</string>
     <string name="metronome_start">শুরু করুন</string>
     <string name="metronome_stop">থামান</string>
     <string name="metronome_vibrate">বিটে ভাইব্রেট করুন</string>
@@ -21,12 +22,8 @@
     <string name="metronome_subdivision_eighths">এইটথ নোট</string>
     <string name="metronome_subdivision_triplets">ট্রিপলেট</string>
     <string name="metronome_subdivision_sixteenths">সিক্সটিন্থ নোট</string>
-    <string name="metronome_subdivision_eighths_on">বিটের মাঝে এইটথ নোট</string>
-    <string name="metronome_subdivision_triplets_on">বিটের মাঝে ট্রিপলেট</string>
-    <string name="metronome_subdivision_sixteenths_on">বিটের মাঝে সিক্সটিন্থ নোট</string>
     <string name="metronome_options">বিকল্প</string>
     <string name="metronome_trainer">স্পিড ট্রেনার</string>
-    <string name="metronome_trainer_back">বিকল্পে ফিরে যান</string>
     <string name="metronome_trainer_start">শুরুর টেম্পো</string>
     <string name="metronome_trainer_goal">লক্ষ্য</string>
     <string name="metronome_trainer_start_slower">শুরুর টেম্পো কমান</string>
@@ -62,7 +59,6 @@
     <string name="metronome_listen">শুনুন</string>
     <string name="metronome_listen_stop_spoken">শোনা বন্ধ করুন</string>
     <string name="metronome_listening">শুনছে…</string>
-    <string name="metronome_listen_line_stop">থামান</string>
     <string name="metronome_heard">শোনা গেছে</string>
     <string name="metronome_use">ব্যবহার করুন</string>
     <string name="metronome_not_now">এখন না</string>

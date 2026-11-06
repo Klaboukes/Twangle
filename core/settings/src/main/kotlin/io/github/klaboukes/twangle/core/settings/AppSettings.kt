@@ -64,99 +64,21 @@ enum class ThemeMode {
 }
 
 /**
- * The look of the whole app: colours, lettering, background and the tuning dial. Each style has a
- * light and a dark version ([ThemeMode] picks which). Saved in settings by [name], so don't rename
- * the entries. Listed in the order the style picker shows them. (Versions before October 2026 had
- * Prehistoric and Middle Ages; a saved one of those is read as [ANCIENT].)
+ * What the tuner's meter draws (Phases 71, 72 and 78). Saved in settings by [name] under 1.1's `meter_look` key, so
+ * don't rename the entries: 1.1's Classic and Light arc keep their names, and a 1.1 look that 2.0 doesn't have is read
+ * by the meter look's rule (`DataStoreSettingsRepository`, docs/architecture/v2-plan.md, *Settings from 1.1*). 2.0's
+ * `TRAIL` (the default from Phase 71 until the trail became a Practice tool in Phase 78) is no entry any more, so a
+ * saved one reads as the default.
  */
-enum class VisualStyle {
-    ANCIENT,
-    CLASSIC,
-    RETRO,
-    CONTEMPORARY,
-    FUTURISTIC,
-    SPACE_AGE,
-    ;
-
-    companion object {
-        val DEFAULT = CONTEMPORARY
-    }
-}
-
-/**
- * How the tuner shows how far off a note is, under the note. The needle dial is always there;
- * this picks what goes with it. Saved in settings by [name], so don't rename the entries. (A
- * third display, the strobe, became [WaveLook.STROBE]; a saved "STROBE" is read as [WAVE] with
- * that look.)
- */
-enum class TunerDisplay {
-    /** The number of cents in a pill, and the frequency. */
-    NEEDLE,
-
-    /** A moving picture (in the [WaveLook] picked) instead of a number of cents. */
-    WAVE,
-    ;
-
-    companion object {
-        val DEFAULT = WAVE
-    }
-}
-
-/**
- * How the wave view draws how far off a note is. Saved in settings by [name], so don't rename the
- * entries. (The stripes look, saved as "STRIPES", made way for [STROBE] and is read as it.)
- */
-enum class WaveLook {
-    /** Rows of stripes in the style's own marks that drift and stand still in tune, like a strobe tuner. */
-    STROBE,
-
-    /** A soft ribbon in the style's own marks. */
-    RIBBON,
-
-    /** A grid of little lights. */
-    DOTS,
-
-    /** Glowing specks that line up when in tune. */
-    FIREFLIES,
-
-    /** A ring that tumbles until the note is in tune. */
-    LOOP,
-
-    /** Rings that spread out (sharp) or close in (flat). */
-    RIPPLES,
-    ;
-
-    companion object {
-        val DEFAULT = RIBBON
-    }
-}
-
-/**
- * How the meter above the note draws how far off a note is. Every look sits in the same frame (a
- * 2:1 box, ±50 cents, left flat and right sharp), so picking one moves nothing else on the screen.
- * Saved in settings by [name], so don't rename the entries. (Rolling scale, Comet and Studio meter,
- * saved as "ROLLING_SCALE", "COMET" and "STUDIO_METER", went in Phase 25; a saved one reads as the
- * default. Spirit level and Eclipse, saved as "SPIRIT_LEVEL" and "ECLIPSE", went in Phase 60; a saved
- * one reads as the look that took its place, [POINTERS] or [LOUPE].)
- */
-enum class MeterLook {
-    /** The half-circle dial with a needle and a numbered scale. */
+enum class LensLook {
+    /** A needle on a numbered half-circle dial (1.1's Classic meter look, the default again since Phase 78). */
     CLASSIC,
 
-    /** A fan of little lights that opens from the centre toward the note. */
+    /** A fan of little lights that opens from the centre toward the note (1.1's Light arc meter look). */
     LIGHT_ARC,
 
-    /** The note's pointer slides along a straight track under a fixed one; in tune their tips meet. */
-    POINTERS,
-
-    /** A slim marker on a straight scale, magnified under a round glass over the scale's middle. */
-    LOUPE,
-
-    /** Chevrons on the side the note is off light up and point the way to turn. */
-    ARROWS,
-
-    /** A row of light bars with a soft peak where the note is. */
-    LIGHT_BARS,
+    /** Bands of stripes that drift the way the note is off and stand still in tune (1.1's strobe wave look). */
+    STROBE,
     ;
 
     companion object {
@@ -165,31 +87,29 @@ enum class MeterLook {
 }
 
 /**
- * How strong the meter's glow is when the note is reached. Both ease in, hold and fade the same
- * way, without bursts or flashes; Bold is only brighter and larger. Saved in settings by [name], so
- * don't rename the entries.
+ * What the tuner shows under its meter (2.0, Phase 78): the word that says which way to turn (Tighten · Loosen, the
+ * cents small under it) or the signed cents big in its place. "In tune" and "Play a string" are words in both. Saved
+ * by [name] under `under_meter`, so don't rename the entries.
  */
-enum class InTuneEffect {
-    /** The soft glow. */
-    CALM,
+enum class UnderMeter {
+    /** Tighten · Loosen (Too low · Too high in Any note), with the cents small under it: a beginner's help. */
+    WORDS,
 
-    /** A stronger, larger glow, still smooth. */
-    BOLD,
+    /** The signed cents ("−12") big in the word's place, nothing under it. */
+    CENTS,
     ;
 
     companion object {
-        val DEFAULT = CALM
+        val DEFAULT = WORDS
     }
 }
 
 /**
- * The tool the Practice tab shows (Phase 32, with its switch on, [ToolSwitches.practiceTab]): it
- * opens on the one used last. Saved in settings by [name], so don't rename the entries.
+ * A tool of the Practice tab (Phase 32, with its switch on, [ToolSwitches.practiceTab]). Saved in
+ * settings by [name], so don't rename the entries. The metronome was one until 2.0 gave it a tab of its
+ * own (Phase 69): a saved `METRONOME` reads as nothing used yet.
  */
 enum class PracticeTool {
-    /** The metronome, the Metronome tab's screen. */
-    METRONOME,
-
     /** Chord charts for the picked instrument and tuning. */
     CHORDS,
 
@@ -204,12 +124,12 @@ enum class PracticeTool {
 
     /** Ear training (Phase 55, with its own switch, [ToolSwitches.earTraining]): Play it back, Intervals and Chord type. */
     EAR_TRAINING,
-    ;
 
-    companion object {
-        /** A fresh install opens Practice on the metronome, the tab it used to be. */
-        val DEFAULT = METRONOME
-    }
+    /**
+     * The pitch trail (2.0, Phase 78, with its switch, [ToolSwitches.pitchTrail]): a held note's last seconds as a
+     * line, for singers and players without frets. The tuner's meter drew it from Phase 71 to 77.
+     */
+    PITCH_TRAIL,
 }
 
 /** Everything the user can change, with the defaults a fresh install starts from. */
@@ -235,36 +155,36 @@ data class AppSettings(
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,
-    val style: VisualStyle = VisualStyle.DEFAULT,
-    /** Colours from the wallpaper (Android 12+), in the contemporary [style] only. Ignored on older phones. */
-    val dynamicColor: Boolean = true,
+    /**
+     * Colours from the wallpaper (Android 12+) for the background, surfaces, text and accent; the in-tune green and the
+     * far-off amber stay the app's own. Ignored on older phones. (1.1's styles, saved as `visual_style`, are no longer
+     * read: every one shows as the one look, Ink.) Off unless switched on (the owner's review of 2026-11-03: on by
+     * default, most players never saw Ink, and a green wallpaper took from the in-tune green); a 1.1 player who
+     * switched it on keeps it, one who left it at 1.1's default gets Ink.
+     */
+    val dynamicColor: Boolean = false,
     /** Stop the screen from dimming while the tuner is open and hears playing (it lets go after a quiet spell). */
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,
-    /** "Tune up ↑" / "Tune down ↓" under the note while it is off pitch, also said by TalkBack. */
-    val showTuneHint: Boolean = true,
+    /**
+     * The string tick-off (2.0, Phase 71), a beginner's help: each peg gets a check once its string is in tune, and
+     * "In tune. Play." shows once all have one. Off by default and when missing, so a 1.1 player (who had the ticks
+     * under "Show tuning help", `show_tune_hint`, which 2.0 no longer reads) starts without them.
+     */
+    val stringTickOff: Boolean = false,
+    /**
+     * What goes under the meter (2.0, Phase 78): Words by default. While none was picked, 1.1's "Show tune up/down
+     * hint" (`show_tune_hint`) decides: a player who had turned it off gets [UnderMeter.CENTS].
+     */
+    val underMeter: UnderMeter = UnderMeter.DEFAULT,
     /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
     val showSignalBars: Boolean = false,
-    /** What shows how far off a note is under it: cents or the wave view. */
-    val display: TunerDisplay = TunerDisplay.DEFAULT,
-    /** What the wave view looks like. */
-    val waveLook: WaveLook = WaveLook.DEFAULT,
-    /** What the meter above the note looks like. */
-    val meterLook: MeterLook = MeterLook.DEFAULT,
-    /** How strong the meter's glow is when the note is reached. */
-    val inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
     /**
-     * Focus mode: on its side the tuner shows the compact layout, one big meter that fills the
-     * screen. Off (the default), it keeps the full two-pane layout (tuner beside its controls).
+     * What the tuner's lens draws (read from Phase 71 on). 1.1's display, wave look and Calm or Bold glow are no
+     * longer settings: the tuner has one meter and one glow.
      */
-    val focusMode: Boolean = false,
-    /**
-     * The first-start tour ("Show me around") was skipped or finished, so it doesn't come back by
-     * itself. An install that already had saved settings before the tour came (an update) counts as
-     * having seen it (see [SettingsRepository.decideTourOnce]).
-     */
-    val tourSeen: Boolean = false,
+    val lensLook: LensLook = LensLook.DEFAULT,
     /**
      * The player has refused the microphone in Android's own dialog at least once on this install.
      * Android doesn't say whether it will show that dialog again, so the tuner uses this to tell a
@@ -299,8 +219,8 @@ data class AppSettings(
     val metronomeTrainer: SpeedTrainer? = null,
     /** Whether the speed trainer is on (only with its tool switch, [ToolSwitches.speedTrainer]). */
     val metronomeTrainerOn: Boolean = false,
-    /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
-    val practiceTool: PracticeTool = PracticeTool.DEFAULT,
+    /** The Practice tab's tool used last (only with the Practice tab's switch on), or null while none was (a fresh install, or 1.1's metronome). */
+    val practiceTool: PracticeTool? = null,
     /** The root picked last in the Practice tab's chord charts and scales, one for both (C on a fresh install). */
     val practiceRoot: PitchClass = PitchClass.C,
     /** The chord type picked last in the Practice tab's chord charts (major on a fresh install). */

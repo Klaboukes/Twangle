@@ -98,7 +98,7 @@ internal class ScreenAwake(private val rule: ScreenAwakeRule, private val clock:
 /** What [state] tells [ScreenAwakeRule] of the player. */
 internal fun soundOf(state: TunerUiState): ScreenAwakeRule.Sound = when (state) {
     is TunerUiState.Detected -> ScreenAwakeRule.Sound.SOUNDING
-    is TunerUiState.StrumCheck, is TunerUiState.IntonationCheck, is TunerUiState.ChordName -> ScreenAwakeRule.Sound.PLAYED
+    is TunerUiState.StrumCheck, is TunerUiState.IntonationCheck -> ScreenAwakeRule.Sound.PLAYED
     is TunerUiState.Listening, is TunerUiState.Error, TunerUiState.PermissionRequired -> ScreenAwakeRule.Sound.QUIET
 }
 

@@ -1,40 +1,28 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.shape.CircleShape
-import io.github.klaboukes.twangle.core.settings.VisualStyle
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.unit.dp
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Test
 
-/** The shared button's face follows the style (Phase 63): one shape per style, the same on every screen. */
+/** Ink's shapes (Phase 67): round buttons and string buttons, 22 dp large corners, the same on every screen. */
 class StyleButtonTest {
 
     @Test
-    fun `round in Contemporary and Space Age`() {
-        for (style in listOf(VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE)) {
-            assertSame(style.name, CircleShape, buttonShapeFor(style, shapesFor(style).small))
-        }
+    fun `the buttons and the string buttons are round`() {
+        assertSame(CircleShape, ButtonLook(InkShapes.small, lightColorScheme()).buttonShape)
+        assertSame(CircleShape, StringChipShape)
+        assertEquals(40.dp, StringChipSize.width)
+        assertEquals(StringChipSize.width, StringChipSize.height)
     }
 
     @Test
-    fun `the style's small shape in Classic, Retro and Futuristic`() {
-        for (style in listOf(VisualStyle.CLASSIC, VisualStyle.RETRO, VisualStyle.FUTURISTIC)) {
-            val small = shapesFor(style).small
-            assertSame(style.name, small, buttonShapeFor(style, small))
-        }
-    }
-
-    @Test
-    fun `the joined bar is a capsule where the buttons are round, else the style's small corners`() {
-        for (style in VisualStyle.entries) {
-            val small = shapesFor(style).small
-            val expected = if (style == VisualStyle.CONTEMPORARY || style == VisualStyle.SPACE_AGE) CircleShape else small
-            assertSame(style.name, expected, segmentedShapeFor(style, small))
-        }
-    }
-
-    @Test
-    fun `Ancient's pebble, as the instrument button's`() {
-        assertSame(PICKER_PEBBLE, buttonShapeFor(VisualStyle.ANCIENT, shapesFor(VisualStyle.ANCIENT).small))
-        assertSame(PICKER_PEBBLE, pickerButtonShape(VisualStyle.ANCIENT, CircleShape))
+    fun `Ink's corners are the mock-ups'`() {
+        assertEquals(RoundedCornerShape(18.dp), InkShapes.small)
+        assertEquals(RoundedCornerShape(12.dp), InkShapes.medium)
+        assertEquals("the lens's and the cards' corners", RoundedCornerShape(22.dp), InkShapes.large)
     }
 }

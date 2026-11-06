@@ -22,8 +22,8 @@
         <item quantity="many">%1$d centów za wysoko</item>
         <item quantity="other">%1$d centa za wysoko</item>
     </plurals>
-    <string name="wear_spoken_tune_up">podciągnij</string>
-    <string name="wear_spoken_tune_down">popuść</string>
+    <string name="wear_word_tighten">Podciągnij</string>
+    <string name="wear_word_loosen">Popuść</string>
     <string name="wear_spoken_sharp">%1$s z krzyżykiem</string>
     <string name="wear_mic_needed">Twangle słucha twojego instrumentu przez mikrofon zegarka.</string>
     <string name="wear_allow_mic">Zezwól na mikrofon</string>
@@ -32,6 +32,19 @@
     <string name="wear_mic_unavailable">Nie można otworzyć mikrofonu.</string>
     <string name="wear_try_again">Spróbuj ponownie</string>
     <string name="wear_tile_tune">Strój</string>
+    <string name="wear_tile_metronome">Metronom</string>
+    <string name="wear_tile_open_metronome">Otwórz metronom, %1$s</string>
     <string name="wear_shortcut_tune">Strój</string>
     <string name="wear_shortcut_open">Otwórz stroik</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d uderzenie na minutę</item>
+        <item quantity="few">%1$d uderzenia na minutę</item>
+        <item quantity="many">%1$d uderzeń na minutę</item>
+        <item quantity="other">%1$d uderzenia na minutę</item>
+    </plurals>
+    <string name="wear_metronome_playing">Gra</string>
+    <string name="wear_metronome_stopped">Zatrzymany</string>
+    <string name="wear_metronome_start">Start</string>
+    <string name="wear_metronome_stop">Stop</string>
+    <string name="wear_metronome_click">Dźwięk kliknięcia</string>
 </resources>

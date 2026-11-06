@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Не удалось открыть микрофон. Закрой другие приложения, которые его используют, и нажми «Попробовать снова» или перезапусти устройство.</string>
     <string name="error_mic_stopped">Микрофон отключился, возможно, из-за звонка или другого приложения. Нажми «Попробовать снова», чтобы продолжить настройку.</string>
     <string name="error_retry">Попробовать снова</string>
+    <string name="tuner_any_note">Любая нота</string>
+    <string name="tuner_any_note_summary">Ближайшая нота, без струн</string>
 
-    <string name="tuner_mode_strings">Струны</string>
-    <string name="tuner_mode_chromatic">Хроматический</string>
     <string name="tuner_show_controls">Показать управление</string>
     <string name="tuner_focus_mode">Режим фокуса</string>
     <string name="tuner_exit_focus_mode">Выйти из режима фокуса</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">Сыграй ноту</string>
     <string name="tuner_hint_play_locked_string">Сыграй струну %1$s</string>
     <string name="tuner_hint_playing">Звучит %1$s</string>
+    <string name="tuner_hint_all_in_tune">Настроено. Играй.</string>
     <string name="tuner_string_lock">Закрепить эту струну</string>
     <string name="tuner_string_unlock">Выбирать струны автоматически</string>
     <string name="tuner_string_locked">Закреплена</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">Закреплена, звучит</string>
     <string name="tuner_string_tuned">Настроена</string>
     <string name="tuner_string_locked_tuned">Закреплена, настроена</string>
-    <string name="tuner_frequency">%1$.1f Гц</string>
+    <string name="tuner_string_locked_mark">Закреплена, %1$s</string>
     <!-- 1, 21 … цент; 2–4, 22–24 … цента; 0, 5–20, 25 … центов. -->
     <string name="tuner_cents_zero">0 центов</string>
     <plurals name="tuner_cents_flat">
@@ -101,8 +102,16 @@
         <item quantity="other">%1$d цента выше</item>
     </plurals>
     <string name="tuner_in_tune">настроено</string>
-    <string name="tuner_tune_up">Подтяни ↑</string>
-    <string name="tuner_tune_down">Ослабь ↓</string>
+    <string name="tuner_word_tighten">Подтяни</string>
+    <string name="tuner_word_loosen">Ослабь</string>
+    <string name="tuner_word_too_low">Низко</string>
+    <string name="tuner_word_too_high">Высоко</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d цент</item>
+        <item quantity="few">%1$d цента</item>
+        <item quantity="many">%1$d центов</item>
+        <item quantity="other">%1$d цента</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Играй чуть громче</string>
     <string name="tuner_tip_too_noisy">Слишком шумно, придвинь телефон</string>
     <string name="tuner_tip_too_loud">Слишком громко, отодвинь телефон</string>
@@ -116,15 +125,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">подтяни</string>
-    <string name="tuner_spoken_tune_down">ослабь</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, с октавной струной</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Инструмент и строй</string>
+    <string name="tuner_picker_title">Что настраиваешь?</string>
 
     <string name="tuner_new_tuning">Новый строй</string>
 
@@ -153,36 +160,22 @@
     <string name="tuner_delete_tuning_cancel">Отмена</string>
     <string name="tuner_strum_check">Проверка струн</string>
     <string name="tuner_strum_waiting">Проведи по всем открытым струнам</string>
-    <string name="tuner_strum_waiting_detail">Каждая струна покажет: ниже, настроено или выше</string>
-    <string name="tuner_strum_hearing">Слушаю…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">Подстроить %1$d струну</item>
-        <item quantity="few">Подстроить %1$d струны</item>
-        <item quantity="many">Подстроить %1$d струн</item>
-        <item quantity="other">Подстроить %1$d струны</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Слышны не все струны</string>
-    <string name="tuner_strum_all_in_tune">Все струны настроены</string>
-    <string name="tuner_strum_tap_to_tune">Нажми на струну, чтобы настроить её</string>
-    <string name="tuner_strum_again">Проведи по струнам снова или нажми на струну, чтобы настроить её</string>
-    <string name="tuner_strum_tune_string">Настроить %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, не слышно</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ещё не звучала</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, не слышно</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, не наверняка</string>
-    <string name="tour_title">Экскурсия</string>
-    <string name="tour_step_count">%1$d из %2$d</string>
-    <string name="tour_step_spoken">Шаг %1$d из %2$d. %3$s.</string>
-    <string name="tour_readout">Нота и её отклонение</string>
-    <string name="tour_strum">Проведи по струнам, чтобы проверить все</string>
-    <string name="tour_strings">Нажми — настроить только эту струну, удерживай — послушать</string>
-    <string name="tour_picker">Выбери инструмент и строй</string>
-    <string name="tour_skip">Пропустить</string>
-    <string name="tour_next">Далее</string>
-    <string name="tour_done">Готово</string>
-    <string name="tuner_more_tools">Ещё функции</string>
-    <string name="tuner_tool_on">Включено: %1$s</string>
+    <string name="tuner_strum_close">Закрыть проверку струн</string>
+    <string name="tuner_strum_all_in_tune">Все струны настроены</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d из %2$d настроена</item>
+        <item quantity="few">%1$d из %2$d настроены</item>
+        <item quantity="many">%1$d из %2$d настроены</item>
+        <item quantity="other">%1$d из %2$d настроены</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Не слышно</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Проверка на 12-м ладу</string>
+    <string name="tuner_intonation_check_summary">Седло стоит правильно?</string>
+    <string name="tuner_intonation_close">Закрыть проверку на 12-м ладу</string>
     <string name="tuner_intonation_step_open">Открытая</string>
     <string name="tuner_intonation_step_fret">12-й лад</string>
     <string name="tuner_intonation_choose_string">Выбери струну</string>
@@ -221,37 +214,9 @@
     <string name="tuner_intonation_mark_back">седло назад</string>
     <string name="tuner_intonation_mark_forward">седло вперёд</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ещё не проверена</string>
-    <string name="tour_more_tools">Ещё функции, например проверка струн</string>
-    <string name="tuner_chord_name">Название аккорда</string>
-    <string name="tuner_chord_major">%1$s мажор</string>
-    <string name="tuner_chord_minor">%1$s минор</string>
-    <string name="tuner_chord_seventh">%1$s септаккорд</string>
-    <string name="tuner_chord_major_seventh">%1$s большой мажорный септаккорд</string>
-    <string name="tuner_chord_minor_seventh">%1$s минорный септаккорд</string>
-    <string name="tuner_chord_sus2">%1$s sus 2</string>
-    <string name="tuner_chord_sus4">%1$s sus 4</string>
-    <string name="tuner_chord_power_chord">%1$s пауэр-аккорд</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s септаккорд с повышенной ноной</string>
-    <string name="tuner_chord_minor_ninth">%1$s минорный нонаккорд</string>
-    <string name="tuner_chord_major_ninth">%1$s большой мажорный нонаккорд</string>
-    <string name="tuner_chord_slash">%1$s, в басу %2$s</string>
-    <string name="tuner_chord_bass">бас</string>
-    <string name="tuner_chord_strum">Сыграй аккорд</string>
-    <string name="tuner_chord_strum_detail">Пусть звучат все струны</string>
-    <string name="tuner_chord_next">Сыграй ещё раз для следующего аккорда</string>
-    <string name="tuner_chord_let_ring">Дай ему прозвучать</string>
-    <string name="tuner_chord_unclear">Аккорд не распознан</string>
-    <string name="tuner_chord_unclear_detail">Проведи по всем струнам аккорда</string>
-    <string name="tuner_chord_none">Пока нет аккорда</string>
-    <string name="tuner_chord_spoken_notes">ноты %1$s</string>
-    <string name="tuner_chord_spoken_recent">до этого %1$s</string>
-    <string name="tuner_pitch_trail">График высоты</string>
-    <string name="tuner_trail_spoken">График высоты, %1$s</string>
-    <string name="tuner_trail_no_note">нет ноты</string>
-    <string name="tuner_trail_steady">ровно, %1$s</string>
-    <string name="tuner_trail_wavering">колеблется, %1$s</string>
     <string name="tuner_trail_bending_up">идёт вверх</string>
     <string name="tuner_trail_bending_down">идёт вниз</string>
+    <string name="tuner_spoken_wavering">колеблется</string>
     <string name="tuner_screen_off_soon">Экран скоро погаснет</string>
     <string name="tuner_screen_off_keep_on">Нажми, чтобы он не гас</string>
 </resources>

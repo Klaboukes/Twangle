@@ -18,8 +18,8 @@
         <item quantity="many">%1$d cents acima</item>
         <item quantity="other">%1$d cents acima</item>
     </plurals>
-    <string name="wear_spoken_tune_up">subir</string>
-    <string name="wear_spoken_tune_down">baixar</string>
+    <string name="wear_word_tighten">Aperte</string>
+    <string name="wear_word_loosen">Afrouxe</string>
     <string name="wear_spoken_sharp">%1$s sustenido</string>
     <string name="wear_mic_needed">O Twangle ouve seu instrumento pelo microfone do relógio.</string>
     <string name="wear_allow_mic">Permitir microfone</string>
@@ -28,6 +28,18 @@
     <string name="wear_mic_unavailable">Não foi possível abrir o microfone.</string>
     <string name="wear_try_again">Tentar de novo</string>
     <string name="wear_tile_tune">Afinar</string>
+    <string name="wear_tile_metronome">Metrônomo</string>
+    <string name="wear_tile_open_metronome">Abrir o metrônomo, %1$s</string>
     <string name="wear_shortcut_tune">Afine</string>
     <string name="wear_shortcut_open">Abrir o afinador</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d batida por minuto</item>
+        <item quantity="many">%1$d batidas por minuto</item>
+        <item quantity="other">%1$d batidas por minuto</item>
+    </plurals>
+    <string name="wear_metronome_playing">Tocando</string>
+    <string name="wear_metronome_stopped">Parado</string>
+    <string name="wear_metronome_start">Iniciar</string>
+    <string name="wear_metronome_stop">Parar</string>
+    <string name="wear_metronome_click">Som de clique</string>
 </resources>

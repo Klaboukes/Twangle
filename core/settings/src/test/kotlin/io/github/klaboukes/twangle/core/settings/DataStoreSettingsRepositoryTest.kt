@@ -52,6 +52,7 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -106,18 +107,13 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.GERMAN, settings.notationFor("de"))
         assertEquals(InTunePrecision.RELAXED, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals(VisualStyle.CONTEMPORARY, settings.style)
-        assertEquals(true, settings.dynamicColor)
+        assertEquals("Ink, not the wallpaper's colours (2026-11-03)", false, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
-        assertEquals(true, settings.showTuneHint)
+        assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
+        assertEquals("the word under the meter on a fresh install", UnderMeter.WORDS, settings.underMeter)
         assertEquals(false, settings.showSignalBars)
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.RIBBON, settings.waveLook)
-        assertEquals(MeterLook.CLASSIC, settings.meterLook)
-        assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
-        assertEquals("a fresh install is due the tour", false, settings.tourSeen)
-        assertEquals(false, settings.focusMode)
+        assertEquals("a fresh install's meter shows the Classic needle", LensLook.CLASSIC, settings.lensLook)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
@@ -125,7 +121,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome clicks only on the beats", Subdivision.NONE, settings.metronomeSubdivision)
         assertEquals("the speed trainer was never set up", null, settings.metronomeTrainer)
         assertEquals("the speed trainer is off", false, settings.metronomeTrainerOn)
-        assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
+        assertEquals("no Practice tool used yet", null, settings.practiceTool)
         assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
         assertEquals("the scales open on major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("the capo helper opens on C shapes", SongKey(PitchClass.C), settings.practiceCapoShapes)
@@ -150,18 +146,13 @@ class DataStoreSettingsRepositoryTest {
         repo.setNotation(Notation.SOLFEGE)
         repo.setInTunePrecision(InTunePrecision.PRECISE)
         repo.setTheme(ThemeMode.DARK)
-        repo.setStyle(VisualStyle.SPACE_AGE)
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
-        repo.setShowTuneHint(false)
+        repo.setStringTickOff(true)
+        repo.setUnderMeter(UnderMeter.CENTS)
         repo.setShowSignalBars(true)
-        repo.setDisplay(TunerDisplay.NEEDLE)
-        repo.setWaveLook(WaveLook.FIREFLIES)
-        repo.setMeterLook(MeterLook.LIGHT_ARC)
-        repo.setInTuneEffect(InTuneEffect.BOLD)
-        repo.setTourSeen(true)
-        repo.setFocusMode(true)
+        repo.setLensLook(LensLook.STROBE)
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
@@ -194,18 +185,13 @@ class DataStoreSettingsRepositoryTest {
             notationChoice = Notation.SOLFEGE,
             inTunePrecision = InTunePrecision.PRECISE,
             theme = ThemeMode.DARK,
-            style = VisualStyle.SPACE_AGE,
             dynamicColor = false,
             keepScreenOn = false,
             vibrateInTune = false,
-            showTuneHint = false,
+            stringTickOff = true,
+            underMeter = UnderMeter.CENTS,
             showSignalBars = true,
-            display = TunerDisplay.NEEDLE,
-            waveLook = WaveLook.FIREFLIES,
-            meterLook = MeterLook.LIGHT_ARC,
-            inTuneEffect = InTuneEffect.BOLD,
-            tourSeen = true,
-            focusMode = true,
+            lensLook = LensLook.STROBE,
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
@@ -251,11 +237,8 @@ class DataStoreSettingsRepositoryTest {
             setMode(TunerMode.CHROMATIC)
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
-            setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
-            setFocusMode(true)
-            setMeterLook(MeterLook.POINTERS)
-            setInTuneEffect(InTuneEffect.BOLD)
+            setLensLook(LensLook.LIGHT_ARC)
             setMetronomeBpm(72)
             setMetronomeMeter(Meter.SIX_EIGHT)
             setMetronomeVibrate(true)
@@ -288,11 +271,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Tunings.DROP_D, settings.tuning)
         assertEquals(Notation.FLATS, settings.notationChoice)
         assertEquals("a picked notation wins over the language", Notation.FLATS, settings.notationFor("fr"))
-        assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
-        assertEquals("the focus mode choice is kept", true, settings.focusMode)
-        assertEquals("the meter look is kept", MeterLook.POINTERS, settings.meterLook)
-        assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
+        assertEquals("the lens look is kept", LensLook.LIGHT_ARC, settings.lensLook)
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
         assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
@@ -588,41 +568,15 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown notation counts as never picked", null, settings.notationChoice)
         assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
-        assertEquals(VisualStyle.DEFAULT, settings.style)
-        assertEquals(WaveLook.DEFAULT, settings.waveLook)
-        assertEquals("an unknown meter look gives Classic", MeterLook.CLASSIC, settings.meterLook)
-        assertEquals("an unknown in-tune effect gives Calm", InTuneEffect.CALM, settings.inTuneEffect)
-        assertEquals(TunerDisplay.DEFAULT, settings.display)
+        assertEquals("an unknown meter look over an unknown wave gives the default", LensLook.DEFAULT, settings.lensLook)
         assertEquals(466f, settings.a4Hz)
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
         assertEquals("an unknown click gives the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
         assertEquals("an unknown subdivision gives none", Subdivision.NONE, settings.metronomeSubdivision)
-        assertEquals("an unknown tool gives the metronome", PracticeTool.METRONOME, settings.practiceTool)
+        assertEquals("an unknown tool counts as none used yet", null, settings.practiceTool)
         assertEquals("an unknown scale gives major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("unknown capo shapes give C", SongKey(PitchClass.C), settings.practiceCapoShapes)
         assertEquals("a capo fret out of range gives no capo", 0, settings.practiceCapoFret)
-    }
-
-    @Test
-    fun `the old wave view switch carries over to the display`() = runTest {
-        val store = dataStore()
-        store.edit { it[booleanPreferencesKey("show_waves")] = false }
-        assertEquals("wave view off: the needle with cents", TunerDisplay.NEEDLE, repository(store).settings.first().display)
-
-        store.edit { it[booleanPreferencesKey("show_waves")] = true }
-        assertEquals("wave view on: the wave", TunerDisplay.WAVE, repository(store).settings.first().display)
-    }
-
-    @Test
-    fun `a picked display wins over the old wave view switch and survives a restart`() = runTest {
-        dataStore().edit { it[booleanPreferencesKey("show_waves")] = false }
-        close()
-        repository().setDisplay(TunerDisplay.WAVE)
-        close()
-
-        val store = dataStore()
-        assertEquals(TunerDisplay.WAVE, repository(store).settings.first().display)
-        assertEquals("the old switch is cleared", null, store.data.first()[booleanPreferencesKey("show_waves")])
     }
 
     @Test
@@ -645,6 +599,26 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun `a metronome saved as the Practice tool used last reads as none used yet`() = runTest {
+        // 1.1 saved it; 2.0 gives the metronome a tab of its own (Phase 69), so it is no Practice tool any more.
+        dataStore().edit { it[stringPreferencesKey("practice_tool")] = "METRONOME" }
+        close()
+        assertEquals(null, repository().settings.first().practiceTool)
+        close()
+
+        repository().setPracticeTool(PracticeTool.EAR_TRAINING)
+        close()
+        assertEquals("a tool picked after the update is kept", PracticeTool.EAR_TRAINING, repository().settings.first().practiceTool)
+        close()
+
+        repository().setPracticeTool(null)
+        close()
+        val store = dataStore()
+        assertEquals("forgotten, none is used yet", null, repository(store).settings.first().practiceTool)
+        assertEquals("and the key is gone", null, store.data.first()[stringPreferencesKey("practice_tool")])
+    }
+
+    @Test
     fun `the old chords or scales choice is read only until a tool is picked`() = runTest {
         dataStore().edit {
             it[stringPreferencesKey("practice_tool")] = "CHORDS"
@@ -659,141 +633,221 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the old choice is cleared", null, store.data.first()[stringPreferencesKey("practice_chart")])
     }
 
-    @Test
-    fun `an old strobe display opens as the wave with the strobe look`() = runTest {
+    /** The lens look read from 1.1's keys for the meter and what showed under it (null leaves a key out). */
+    private suspend fun lensLookFrom(
+        meterLook: String? = null,
+        display: String? = null,
+        showWaves: Boolean? = null,
+        waveLook: String? = null,
+    ): LensLook {
         val store = dataStore()
         store.edit {
-            it[stringPreferencesKey("tuner_display")] = "STROBE"
-            it[stringPreferencesKey("wave_look")] = "FIREFLIES"
+            it.clear()
+            meterLook?.let { look -> it[stringPreferencesKey("meter_look")] = look }
+            display?.let { shown -> it[stringPreferencesKey("tuner_display")] = shown }
+            showWaves?.let { on -> it[booleanPreferencesKey("show_waves")] = on }
+            waveLook?.let { look -> it[stringPreferencesKey("wave_look")] = look }
         }
-
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals("the strobe it showed, not the look picked for the wave back then", WaveLook.STROBE, settings.waveLook)
+        val look = repository(store).settings.first().lensLook
+        close()
+        return look
     }
 
     @Test
-    fun `the old stripes look opens as the strobe look`() = runTest {
-        val store = dataStore()
-        store.edit {
+    fun `rule 1, a saved look 2_0 has is that look`() = runTest {
+        for (look in LensLook.entries) {
+            assertEquals(look.name, look, lensLookFrom(meterLook = look.name))
+            assertEquals("${look.name}, whatever showed under the meter", look, lensLookFrom(meterLook = look.name, display = "WAVE", waveLook = "STROBE"))
+        }
+        assertEquals("1.1's Light arc stays the Light arc", LensLook.LIGHT_ARC, lensLookFrom(meterLook = "LIGHT_ARC", display = "STROBE"))
+        assertEquals("1.1's Classic stays Classic", LensLook.CLASSIC, lensLookFrom(meterLook = "CLASSIC", display = "WAVE", waveLook = "STROBE"))
+    }
+
+    @Test
+    fun `rule 2, a 1_1 meter look 2_0 lacks over the strobe is the strobe`() = runTest {
+        for (gone in listOf("TRAIL", "POINTERS", "LOUPE", "ARROWS", "LIGHT_BARS", "SPIRIT_LEVEL", "ECLIPSE", "ROLLING_SCALE", "SUNDIAL")) {
+            assertEquals("$gone over the strobe wave", LensLook.STROBE, lensLookFrom(meterLook = gone, display = "WAVE", waveLook = "STROBE"))
+        }
+        assertEquals("no meter look saved, the strobe wave", LensLook.STROBE, lensLookFrom(display = "WAVE", waveLook = "STROBE"))
+    }
+
+    @Test
+    fun `rule 2 reads the strobe as 1_1 did, old names included`() = runTest {
+        assertEquals("the old strobe display", LensLook.STROBE, lensLookFrom(display = "STROBE"))
+        assertEquals("the old strobe display over another wave look", LensLook.STROBE, lensLookFrom(display = "STROBE", waveLook = "FIREFLIES"))
+        assertEquals("the old stripes look", LensLook.STROBE, lensLookFrom(display = "WAVE", waveLook = "STRIPES"))
+        assertEquals("no display saved: 1.1's default was the wave", LensLook.STROBE, lensLookFrom(waveLook = "STROBE"))
+        assertEquals("the old wave-view switch on", LensLook.STROBE, lensLookFrom(showWaves = true, waveLook = "STRIPES"))
+        assertEquals("a damaged display read as 1.1's default, the wave", LensLook.STROBE, lensLookFrom(display = "HOLOGRAM", waveLook = "STROBE"))
+    }
+
+    @Test
+    fun `rule 3, anything else is the Classic needle`() = runTest {
+        assertEquals("a fresh install", LensLook.CLASSIC, lensLookFrom())
+        assertEquals("1.1's defaults, Classic over the ribbon", LensLook.CLASSIC, lensLookFrom(meterLook = "CLASSIC", display = "WAVE", waveLook = "RIBBON"))
+        assertEquals("2.0's trail, a Practice tool since Phase 78", LensLook.CLASSIC, lensLookFrom(meterLook = "TRAIL"))
+        assertEquals("the cents under the meter, the strobe picked for the wave", LensLook.CLASSIC, lensLookFrom(display = "NEEDLE", waveLook = "STROBE"))
+        assertEquals("the old wave-view switch off", LensLook.CLASSIC, lensLookFrom(showWaves = false, waveLook = "STROBE"))
+        assertEquals("the strobe wave's look never saved: the ribbon", LensLook.CLASSIC, lensLookFrom(display = "WAVE"))
+        assertEquals("another wave look", LensLook.CLASSIC, lensLookFrom(meterLook = "LOUPE", display = "WAVE", waveLook = "FIREFLIES"))
+        assertEquals("a damaged meter look and wave look", LensLook.CLASSIC, lensLookFrom(meterLook = "SUNDIAL", waveLook = "LAVA_LAMP"))
+    }
+
+    @Test
+    fun `picking a look ends the rule, saved under meter_look, and survives a restart`() = runTest {
+        dataStore().edit {
             it[stringPreferencesKey("tuner_display")] = "WAVE"
-            it[stringPreferencesKey("wave_look")] = "STRIPES"
-        }
-
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.STROBE, settings.waveLook)
-    }
-
-    @Test
-    fun `a look picked after an old strobe display shows and survives a restart`() = runTest {
-        dataStore().edit { it[stringPreferencesKey("tuner_display")] = "STROBE" }
-        close()
-        repository().setWaveLook(WaveLook.LOOP)
-        close()
-
-        val store = dataStore()
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.LOOP, settings.waveLook)
-        assertEquals("the old display is rewritten", "WAVE", store.data.first()[stringPreferencesKey("tuner_display")])
-    }
-
-    @Test
-    fun `switching away from an old strobe display and back keeps the strobe look`() = runTest {
-        val store = dataStore()
-        store.edit {
-            it[stringPreferencesKey("tuner_display")] = "STROBE"
-            it[stringPreferencesKey("wave_look")] = "RIBBON"
-        }
-        val repo = repository(store)
-
-        repo.setDisplay(TunerDisplay.NEEDLE)
-        assertEquals(TunerDisplay.NEEDLE, repo.settings.first().display)
-        repo.setDisplay(TunerDisplay.WAVE)
-        assertEquals(WaveLook.STROBE, repo.settings.first().waveLook)
-    }
-
-    @Test
-    fun `the old wave view switch still carries over next to an old stripes look`() = runTest {
-        val store = dataStore()
-        store.edit {
             it[booleanPreferencesKey("show_waves")] = true
-            it[stringPreferencesKey("wave_look")] = "STRIPES"
+            it[stringPreferencesKey("wave_look")] = "STROBE"
         }
-
-        val settings = repository(store).settings.first()
-        assertEquals(TunerDisplay.WAVE, settings.display)
-        assertEquals(WaveLook.STROBE, settings.waveLook)
-    }
-
-    @Test
-    fun `every style saved by an older version opens as its closest new style`() = runTest {
-        // The seven styles before October 2026, and the style each one opens as now.
-        val expected = mapOf(
-            "PREHISTORIC" to VisualStyle.ANCIENT,
-            "MIDDLE_AGES" to VisualStyle.ANCIENT,
-            "CLASSIC" to VisualStyle.CLASSIC,
-            "RETRO" to VisualStyle.RETRO,
-            "CONTEMPORARY" to VisualStyle.CONTEMPORARY,
-            "FUTURISTIC" to VisualStyle.FUTURISTIC,
-            "SPACE_AGE" to VisualStyle.SPACE_AGE,
-        )
-        val store = dataStore()
-        val repo = repository(store)
-        for ((saved, style) in expected) {
-            store.edit { it[stringPreferencesKey("visual_style")] = saved }
-            assertEquals(saved, style, repo.settings.first().style)
-        }
-    }
-
-    @Test
-    fun `an old style survives a restart and picking a style rewrites it`() = runTest {
-        dataStore().edit { it[stringPreferencesKey("visual_style")] = "MIDDLE_AGES" }
         close()
-        assertEquals(VisualStyle.ANCIENT, repository().settings.first().style)
+        repository().setLensLook(LensLook.LIGHT_ARC)
         close()
 
         val store = dataStore()
-        repository(store).setStyle(VisualStyle.ANCIENT)
-        assertEquals("ANCIENT", store.data.first()[stringPreferencesKey("visual_style")])
+        assertEquals("the Light arc picked, not the strobe 1.1 showed", LensLook.LIGHT_ARC, repository(store).settings.first().lensLook)
+        val saved = store.data.first()
+        assertEquals("LIGHT_ARC", saved[stringPreferencesKey("meter_look")])
+        assertEquals("1.1's display is removed", null, saved[stringPreferencesKey("tuner_display")])
+        assertEquals("the old wave-view switch is removed", null, saved[booleanPreferencesKey("show_waves")])
+        assertEquals("1.1's wave look is removed", null, saved[stringPreferencesKey("wave_look")])
     }
 
     @Test
-    fun `an unknown or damaged saved style opens as the default`() = runTest {
+    fun `1_1's focus mode on is taken once, removed, and false ever after`() = runTest {
+        dataStore().edit { it[booleanPreferencesKey("focus_mode")] = true }
+        close()
         val store = dataStore()
         val repo = repository(store)
-        for (saved in listOf("", "prehistoric", "Middle Ages", "STONE_AGE", "ANCIENT ")) {
-            store.edit { it[stringPreferencesKey("visual_style")] = saved }
-            assertEquals(saved, VisualStyle.CONTEMPORARY, repo.settings.first().style)
-        }
+        assertTrue("the first start opens in focus mode", repo.takeOldFocusMode())
+        assertEquals("the switch is removed", null, store.data.first()[booleanPreferencesKey("focus_mode")])
+        assertFalse("never again", repo.takeOldFocusMode())
+        close()
+        assertFalse("nor after a restart", repository().takeOldFocusMode())
     }
 
+    /**
+     * The settings file 1.1.0 wrote on the Xiaomi 12X on 2026-11-03 (Phase 76's upgrade check), every
+     * value set to something other than its default through the app: read as it lies, nothing is lost.
+     */
     @Test
-    fun `every style is saved by its name`() = runTest {
+    fun `a real 1_1 file is read with every kept setting, and the gone ones fall back as planned`() = runTest {
+        javaClass.getResourceAsStream("/settings-1.1.preferences_pb")!!.use { input -> file.outputStream().use { input.copyTo(it) } }
         val store = dataStore()
         val repo = repository(store)
-        for (style in VisualStyle.entries) {
-            repo.setStyle(style)
-            assertEquals(style, repo.settings.first().style)
-            assertEquals(style.name, store.data.first()[stringPreferencesKey("visual_style")])
-        }
-    }
+        val settings = repo.settings.first()
 
-    @Test
-    fun `the six styles come in the owner's order, Contemporary the default`() {
+        // Tuning
+        assertEquals(442f, settings.a4Hz)
+        assertEquals(TunerMode.AUTO, settings.mode)
+        assertEquals(Instruments.UKULELE, settings.instrument)
+        assertEquals("ukulele_baritone", settings.tuning.id)
+        assertEquals(2, settings.tuning.loweredBy)
+        val own = settings.customTunings.single()
+        assertEquals("UpgradeCheck", own.name)
+        assertEquals(Instruments.GUITAR, own.instrument)
+        assertEquals(listOf(38, 45, 50, 55, 60, 64), own.notes.map { it.midi })
+        assertEquals(Notation.SOLFEGE, settings.notationChoice)
+        assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
+        // While tuning
+        assertFalse(settings.keepScreenOn)
+        assertFalse(settings.vibrateInTune)
+        assertFalse("1.1's Show tuning help on gives no tick-off", settings.stringTickOff)
+        assertEquals("and the word under the meter", UnderMeter.WORDS, settings.underMeter)
+        // Look: Retro, Bold and the Loupe go; the strobe wave under the Loupe makes the lens the strobe
+        assertEquals(ThemeMode.DARK, settings.theme)
+        assertFalse("1.1's default, never switched, gives Ink (2026-11-03)", settings.dynamicColor)
+        assertTrue(settings.showSignalBars)
+        assertEquals(LensLook.STROBE, settings.lensLook)
+        // Metronome
+        assertEquals(97, settings.metronomeBpm)
+        assertEquals(Meter.SEVEN_EIGHT, settings.metronomeMeter)
+        assertEquals(ClickSound.CLAVES, settings.metronomeClickSound)
+        assertEquals(Subdivision.TWO, settings.metronomeSubdivision)
+        assertTrue(settings.metronomeVibrate)
+        assertEquals(SpeedTrainer(90, 130, 2, 8), settings.metronomeTrainer)
+        assertTrue(settings.metronomeTrainerOn)
+        // Practice
+        assertEquals(PracticeTool.SCALES, settings.practiceTool)
+        assertEquals(PitchClass.F_SHARP, settings.practiceRoot)
+        assertEquals(ChordQuality.MINOR_SEVENTH, settings.practiceChordQuality)
+        assertEquals(ScaleType.DORIAN, settings.practiceScaleType)
+        assertEquals(SongKey(PitchClass.E, minor = true), settings.practiceCapoShapes)
+        assertEquals(3, settings.practiceCapoFret)
+        assertEquals(DroneSound.WARM_PAD, settings.droneSound)
+        assertEquals(DroneVoicing.FIFTH_OCTAVE, settings.droneVoicing)
+        assertTrue(settings.droneLower)
+        assertTrue(settings.leftHanded)
+        assertEquals(Exercise.CHORD_TYPE, settings.earExercise)
         assertEquals(
-            listOf(
-                VisualStyle.ANCIENT,
-                VisualStyle.CLASSIC,
-                VisualStyle.RETRO,
-                VisualStyle.CONTEMPORARY,
-                VisualStyle.FUTURISTIC,
-                VisualStyle.SPACE_AGE,
-            ),
-            VisualStyle.entries,
+            setOf(ChordQuality.MAJOR, ChordQuality.MINOR, ChordQuality.DOMINANT_SEVENTH, ChordQuality.MAJOR_SEVENTH, ChordQuality.SUS4),
+            settings.earChordTypes,
         )
-        assertEquals(VisualStyle.CONTEMPORARY, VisualStyle.DEFAULT)
+        // Google's rating window
+        assertEquals(1_793_687_587_874L, settings.firstUseMillis)
+        assertFalse(settings.ratingAsked)
+
+        // 1.1's focus mode was on: the first start opens in it, and its key is all that is written.
+        val before = store.data.first().asMap()
+        assertTrue(repo.takeOldFocusMode())
+        assertEquals(before - booleanPreferencesKey("focus_mode"), store.data.first().asMap())
+    }
+
+    @Test
+    fun `1_1's focus mode off is removed too, and the tuner opens as usual`() = runTest {
+        dataStore().edit { it[booleanPreferencesKey("focus_mode")] = false }
+        close()
+        val store = dataStore()
+        assertFalse(repository(store).takeOldFocusMode())
+        assertEquals("the switch is removed", null, store.data.first()[booleanPreferencesKey("focus_mode")])
+    }
+
+    @Test
+    fun `without 1_1's focus mode nothing is written`() = runTest {
+        val store = dataStore()
+        store.edit { it[floatPreferencesKey("a4_hz")] = 442f }
+        val before = store.data.first()
+        assertFalse(repository(store).takeOldFocusMode())
+        assertEquals("the file is as it was", before, store.data.first())
+    }
+
+    @Test
+    fun `1_1's Calm or Bold glow is left in the file unread`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        // A key no longer read changes nothing.
+        val before = repo.settings.first()
+        for (effect in listOf("CALM", "BOLD", "FIREWORKS")) {
+            store.edit { it[stringPreferencesKey("in_tune_effect")] = effect }
+            assertEquals(effect, before, repo.settings.first())
+        }
+        assertEquals("never removed", "FIREWORKS", store.data.first()[stringPreferencesKey("in_tune_effect")])
+    }
+
+    @Test
+    fun `a style saved by 1_1 is left in the file unread and changes nothing`() = runTest {
+        // 2.0 has one look (Ink): every 1.1 style, old names and damaged values included, reads the same.
+        val store = dataStore()
+        val repo = repository(store)
+        val plain = repo.settings.first()
+        for (saved in listOf("ANCIENT", "CLASSIC", "RETRO", "CONTEMPORARY", "FUTURISTIC", "SPACE_AGE", "MIDDLE_AGES", "", "BAROQUE")) {
+            store.edit { it[stringPreferencesKey("visual_style")] = saved }
+            assertEquals(saved, plain, repo.settings.first())
+        }
+        repo.setDynamicColor(false)
+        assertEquals("the key stays as it lay", "BAROQUE", store.data.first()[stringPreferencesKey("visual_style")])
+    }
+
+    @Test
+    fun `a 1_1 player of another style keeps the wallpaper colours they had switched on`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[stringPreferencesKey("visual_style")] = "RETRO"
+            it[booleanPreferencesKey("dynamic_color")] = true
+        }
+        assertEquals(true, repository(store).settings.first().dynamicColor)
+        store.edit { it[booleanPreferencesKey("dynamic_color")] = false }
+        assertEquals(false, repository(store).settings.first().dynamicColor)
     }
 
     @Test
@@ -879,62 +933,20 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `every meter look is saved under meter_look by its name`() = runTest {
+    fun `every lens look is saved under meter_look by its name`() = runTest {
         val store = dataStore()
         val repo = repository(store)
-        for (look in MeterLook.entries) {
-            repo.setMeterLook(look)
-            assertEquals(look, repo.settings.first().meterLook)
+        for (look in LensLook.entries) {
+            repo.setLensLook(look)
+            assertEquals(look, repo.settings.first().lensLook)
             assertEquals(look.name, store.data.first()[stringPreferencesKey("meter_look")])
         }
     }
 
     @Test
-    fun `the six meter looks come in the owner's order, Classic first and the default`() {
-        assertEquals(
-            listOf(
-                MeterLook.CLASSIC,
-                MeterLook.LIGHT_ARC,
-                MeterLook.POINTERS,
-                MeterLook.LOUPE,
-                MeterLook.ARROWS,
-                MeterLook.LIGHT_BARS,
-            ),
-            MeterLook.entries,
-        )
-        assertEquals(MeterLook.CLASSIC, MeterLook.DEFAULT)
-    }
-
-    @Test
-    fun `a meter look that went in Phase 25 reads as Classic`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        for (gone in listOf("ROLLING_SCALE", "COMET", "STUDIO_METER")) {
-            store.edit { it[stringPreferencesKey("meter_look")] = gone }
-            assertEquals(gone, MeterLook.CLASSIC, repo.settings.first().meterLook)
-        }
-    }
-
-    @Test
-    fun `a saved spirit level opens as Pointers, which took its place in Phase 60`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        store.edit { it[stringPreferencesKey("meter_look")] = "SPIRIT_LEVEL" }
-        assertEquals(MeterLook.POINTERS, repo.settings.first().meterLook)
-        // Picking a look again saves it under its own name.
-        repo.setMeterLook(MeterLook.POINTERS)
-        assertEquals("POINTERS", store.data.first()[stringPreferencesKey("meter_look")])
-    }
-
-    @Test
-    fun `a saved eclipse opens as Loupe, which took its place in Phase 60`() = runTest {
-        val store = dataStore()
-        val repo = repository(store)
-        store.edit { it[stringPreferencesKey("meter_look")] = "ECLIPSE" }
-        assertEquals(MeterLook.LOUPE, repo.settings.first().meterLook)
-        // Picking a look again saves it under its own name.
-        repo.setMeterLook(MeterLook.LOUPE)
-        assertEquals("LOUPE", store.data.first()[stringPreferencesKey("meter_look")])
+    fun `the three meter looks, Classic first and the default`() {
+        assertEquals(listOf(LensLook.CLASSIC, LensLook.LIGHT_ARC, LensLook.STROBE), LensLook.entries)
+        assertEquals(LensLook.CLASSIC, LensLook.DEFAULT)
     }
 
     @Test
@@ -942,12 +954,100 @@ class DataStoreSettingsRepositoryTest {
         val store = dataStore()
         val repo = repository(store)
         for (breathes in listOf(true, false)) {
-            store.edit {
-                it[booleanPreferencesKey("wave_breathes_in_tune")] = breathes
-                it[booleanPreferencesKey("tour_seen")] = true
-            }
-            assertEquals("saved $breathes", AppSettings(tourSeen = true), repo.settings.first())
+            store.edit { it[booleanPreferencesKey("wave_breathes_in_tune")] = breathes }
+            assertEquals("saved $breathes", AppSettings(), repo.settings.first())
         }
+    }
+
+    @Test
+    fun `the string tick-off is saved under string_tick_off and survives a restart`() = runTest {
+        val store = dataStore()
+        repository(store).setStringTickOff(true)
+        assertEquals(true, store.data.first()[booleanPreferencesKey("string_tick_off")])
+        assertEquals(true, repository(store).settings.first().stringTickOff)
+        repository(store).setStringTickOff(false)
+        assertEquals(false, repository(store).settings.first().stringTickOff)
+    }
+
+    @Test
+    fun `the 12th-fret check's old switch from a 2_0 test build is removed at start, changing nothing else`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[booleanPreferencesKey("show_intonation_check")] = true
+            it[floatPreferencesKey("a4_hz")] = 442f
+        }
+        val repo = repository(store)
+        val before = repo.settings.first()
+        repo.forgetDroppedSettings()
+        val saved = store.data.first()
+        assertEquals("the switch is removed", null, saved[booleanPreferencesKey("show_intonation_check")])
+        assertEquals("the rest stays", 442f, saved[floatPreferencesKey("a4_hz")])
+        assertEquals("it was never read", before, repo.settings.first())
+    }
+
+    @Test
+    fun `without a dropped setting nothing is written at start`() = runTest {
+        val store = dataStore()
+        store.edit { it[floatPreferencesKey("a4_hz")] = 442f }
+        val before = store.data.first()
+        repository(store).forgetDroppedSettings()
+        assertEquals("the file is as it was", before, store.data.first())
+    }
+
+    @Test
+    fun `1_1's Show tuning help has no say in the tick-off, so a 1_1 player starts without it`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (shown in listOf(true, false)) {
+            store.edit { it[booleanPreferencesKey("show_tune_hint")] = shown }
+            assertEquals("show_tune_hint = $shown", false, repo.settings.first().stringTickOff)
+        }
+        repo.setStringTickOff(true)
+        assertEquals("the old key stays as it lay", false, store.data.first()[booleanPreferencesKey("show_tune_hint")])
+        assertEquals(true, repo.settings.first().stringTickOff)
+    }
+
+    @Test
+    fun `a 1_1 player who had turned the tune hint off gets the cents under the meter, one who had it on the words`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        store.edit { it[booleanPreferencesKey("show_tune_hint")] = false }
+        assertEquals(UnderMeter.CENTS, repo.settings.first().underMeter)
+        store.edit { it[booleanPreferencesKey("show_tune_hint")] = true }
+        assertEquals(UnderMeter.WORDS, repo.settings.first().underMeter)
+    }
+
+    @Test
+    fun `the choice under the meter is saved under under_meter and takes over from 1_1's tune hint for good`() = runTest {
+        val store = dataStore()
+        store.edit { it[booleanPreferencesKey("show_tune_hint")] = false }
+        repository(store).setUnderMeter(UnderMeter.WORDS)
+        val saved = store.data.first()
+        assertEquals("WORDS", saved[stringPreferencesKey("under_meter")])
+        assertEquals("the old key is read only once", null, saved[booleanPreferencesKey("show_tune_hint")])
+        assertEquals("a restart keeps the pick", UnderMeter.WORDS, repository(store).settings.first().underMeter)
+        repository(store).setUnderMeter(UnderMeter.CENTS)
+        assertEquals(UnderMeter.CENTS, repository(store).settings.first().underMeter)
+    }
+
+    @Test
+    fun `an unknown choice under the meter reads as the words`() = runTest {
+        val store = dataStore()
+        store.edit { it[stringPreferencesKey("under_meter")] = "PICTURES" }
+        assertEquals(UnderMeter.WORDS, repository(store).settings.first().underMeter)
+    }
+
+    @Test
+    fun `1_1's tour flag is left in the file unread`() = runTest {
+        // 2.0 has no tour (Phase 68): whether 1.1 saw it changes nothing, and the key stays as it lay.
+        val store = dataStore()
+        val repo = repository(store)
+        for (seen in listOf(true, false)) {
+            store.edit { it[booleanPreferencesKey("tour_seen")] = seen }
+            assertEquals("saved $seen", AppSettings(), repo.settings.first())
+        }
+        repo.setDynamicColor(false)
+        assertEquals("never removed", false, store.data.first()[booleanPreferencesKey("tour_seen")])
     }
 
     // --- Custom tunings ---
@@ -1157,80 +1257,20 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `a fresh install is due the tour until it is skipped or finished, also after a restart`() = runTest {
+    fun `a refused microphone is remembered across restarts`() = runTest {
         val repo = repository()
-        repo.decideTourOnce()
-        assertEquals("fresh: the tour shows", false, repo.settings.first().tourSeen)
-        repo.setTourSeen(true)
-        close()
-
-        assertEquals("skipped or finished: never again by itself", true, repository().settings.first().tourSeen)
-    }
-
-    @Test
-    fun `settings saved before the tour is decided make an update, which never shows the tour`() = runTest {
-        // An install from before the tour that only dismissed the string-lock tip (a key no longer
-        // read): it saved other settings, never the tour.
-        val store = dataStore()
-        store.edit { it[booleanPreferencesKey("string_lock_tip_seen")] = true }
-        val repo = repository(store)
-        assertEquals("read as seen before anything is decided", true, repo.settings.first().tourSeen)
-
-        repo.decideTourOnce()
-        close()
-        assertEquals("and saved as seen", true, repository().settings.first().tourSeen)
-    }
-
-    @Test
-    fun `any saved setting at all counts as an update`() = runTest {
-        val store = dataStore()
-        store.edit { it[stringPreferencesKey("visual_style")] = VisualStyle.RETRO.name }
-        val repo = repository(store)
-        repo.decideTourOnce()
-        assertEquals(true, repo.settings.first().tourSeen)
-    }
-
-    @Test
-    fun `once a fresh install is decided, saving other settings doesn't cancel the tour`() = runTest {
-        val repo = repository()
-        repo.decideTourOnce()
-        // E.g. the microphone was refused at first and the style picked in Settings first.
-        repo.setStyle(VisualStyle.FUTURISTIC)
-        repo.setFocusMode(true)
-        repo.decideTourOnce()
-        close()
-
-        assertEquals("still due after a restart", false, repository().settings.first().tourSeen)
-    }
-
-    @Test
-    fun `deciding again never brings a seen tour back`() = runTest {
-        val repo = repository()
-        repo.decideTourOnce()
-        repo.setTourSeen(true)
-        repo.decideTourOnce()
-        assertEquals(true, repo.settings.first().tourSeen)
-    }
-
-    @Test
-    fun `a refused microphone is remembered across restarts, and doesn't cancel a fresh install's tour`() = runTest {
-        val repo = repository()
-        repo.decideTourOnce()
         assertEquals("not refused on a fresh install", false, repo.settings.first().micRefused)
         repo.setMicRefused(true)
         close()
 
-        val reopened = repository().settings.first()
-        assertEquals(true, reopened.micRefused)
-        assertEquals("the tour is still due", false, reopened.tourSeen)
+        assertEquals(true, repository().settings.first().micRefused)
     }
 
     @Test
-    fun `the first use is noted once, after the tour's decision, and the rating ask is remembered`() = runTest {
+    fun `the first use is noted once, and the rating ask is remembered`() = runTest {
         val repo = repository()
         assertEquals("not noted on a fresh install", 0L, repo.settings.first().firstUseMillis)
         assertEquals(false, repo.settings.first().ratingAsked)
-        repo.decideTourOnce()
         repo.noteFirstUseOnce(1_000L)
         repo.noteFirstUseOnce(9_000L)
         repo.setRatingAsked(true)
@@ -1239,7 +1279,6 @@ class DataStoreSettingsRepositoryTest {
         val reopened = repository().settings.first()
         assertEquals("the first one stays", 1_000L, reopened.firstUseMillis)
         assertEquals(true, reopened.ratingAsked)
-        assertEquals("the tour is still due", false, reopened.tourSeen)
     }
 
     /** [real] for reading, while every write fails as on a full phone. */
@@ -1254,7 +1293,11 @@ class DataStoreSettingsRepositoryTest {
         val real = dataStore()
         val kept = DataStoreSettingsRepository(real)
         kept.addCustomTuning("Mine", Instruments.GUITAR, dropC, pick = true)!!
-        kept.setStyle(VisualStyle.FUTURISTIC)
+        kept.setInTunePrecision(InTunePrecision.PRECISE)
+        real.edit {
+            it[booleanPreferencesKey("focus_mode")] = true
+            it[booleanPreferencesKey("show_intonation_check")] = true
+        }
         val before = kept.settings.first()
         val logged = mutableListOf<IOException>()
         val repo = DataStoreSettingsRepository(FullDataStore(real), logWriteError = { logged += it })
@@ -1273,19 +1316,17 @@ class DataStoreSettingsRepositoryTest {
             "setNotation" to { repo.setNotation(Notation.entries.last()) },
             "setInTunePrecision" to { repo.setInTunePrecision(InTunePrecision.entries.last()) },
             "setTheme" to { repo.setTheme(ThemeMode.entries.last()) },
-            "setStyle" to { repo.setStyle(VisualStyle.ANCIENT) },
             "setDynamicColor" to { repo.setDynamicColor(!before.dynamicColor) },
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
-            "setShowTuneHint" to { repo.setShowTuneHint(!before.showTuneHint) },
+            "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
+            "setUnderMeter" to { repo.setUnderMeter(UnderMeter.CENTS) },
             "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
-            "setDisplay" to { repo.setDisplay(TunerDisplay.entries.last()) },
-            "setWaveLook" to { repo.setWaveLook(WaveLook.entries.last()) },
-            "setMeterLook" to { repo.setMeterLook(MeterLook.entries.last()) },
-            "setInTuneEffect" to { repo.setInTuneEffect(InTuneEffect.entries.last()) },
-            "setFocusMode" to { repo.setFocusMode(!before.focusMode) },
-            "setTourSeen" to { repo.setTourSeen(!before.tourSeen) },
-            "decideTourOnce" to { repo.decideTourOnce() },
+            "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
+            // 1.1's focus mode switch is there (below), so the read once tries to remove it.
+            "takeOldFocusMode" to { assertTrue("it was on", repo.takeOldFocusMode()) },
+            // The 12th-fret check's old switch is there (below) too, so the start's clean-up tries to remove it.
+            "forgetDroppedSettings" to { repo.forgetDroppedSettings() },
             "setMicRefused" to { repo.setMicRefused(!before.micRefused) },
             // The first-use notes run at every start (MainActivity.onCreate): a full phone must not stop the app.
             "noteFirstUseOnce" to { repo.noteFirstUseOnce(1_000L) },
@@ -1350,12 +1391,12 @@ class DataStoreSettingsRepositoryTest {
         val repo = appRepository()
 
         assertEquals(AppSettings(), repo.settings.first())
-        repo.setStyle(VisualStyle.FUTURISTIC)
+        repo.setTheme(ThemeMode.DARK)
         repo.setMicRefused(true)
         close()
 
         val reopened = appRepository().settings.first()
-        assertEquals("the damaged settings were replaced", VisualStyle.FUTURISTIC, reopened.style)
+        assertEquals("the damaged settings were replaced", ThemeMode.DARK, reopened.theme)
         assertEquals("and this phone's own file too", true, reopened.micRefused)
     }
 
@@ -1371,7 +1412,6 @@ class DataStoreSettingsRepositoryTest {
 
         val repo = appRepository()
         assertEquals("still refused after the update", true, repo.settings.first().micRefused)
-        assertEquals(VisualStyle.RETRO, repo.settings.first().style)
         repo.setTheme(ThemeMode.DARK)
         close()
 
@@ -1394,11 +1434,11 @@ class DataStoreSettingsRepositoryTest {
     fun `every collector shares one reading of a change`() = runBlocking {
         val repo = repository()
         repo.settings.first()
-        val readers = List(10) { async { repo.settings.first { it.style == VisualStyle.FUTURISTIC } } }
+        val readers = List(10) { async { repo.settings.first { it.theme == ThemeMode.DARK } } }
         delay(200) // every reader has the settings as they are
         val before = repo.parseCount
 
-        repo.setStyle(VisualStyle.FUTURISTIC)
+        repo.setTheme(ThemeMode.DARK)
         withTimeout(5_000) { readers.awaitAll() }
 
         assertEquals("one change, read once for all ten", 1, repo.parseCount - before)

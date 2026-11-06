@@ -19,18 +19,18 @@ minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JV
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools (Ear training too) under the Practice tab, draws the style's background), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
-| `:wear` | Android app (Wear OS) | The standalone watch tuner, same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
+| `:app` | Android app | `MainActivity` (switches Tune ↔ Metronome ↔ Practice through the navigation bar or rail, puts the Practice cards under the Practice tab and opens each Practice tool (Ear training too) full screen from its card, back to the cards, opens Settings from the gear in every tab's top start corner (on its side at the rail's top) and About from Settings, both going back to where they were opened from, opens the tuning editor, draws the app's background), `navigation/` (the bar, the rail, the gear), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
+| `:wear` | Android app (Wear OS) | The standalone watch tuner and, a swipe left, its metronome (Phase 80, behind its switch in `WatchToolSwitches`), same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline`, `WatchMetronomeViewModel` with `WatchBeatTaps` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
-| `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
-| `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
-| `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the tool button (`PracticeToolButton`), Chords and Scales (`ChordsScreen`, `ScaleNeck`), the drone button (`DroneButton`) and the Capo helper (`CapoScreen`); `:app` puts the metronome and these tools under it |
+| `:feature:settings` | Android library | Settings and About screen UI (incl. Meter, the lens's look card grid), `SettingsViewModel` |
+| `:feature:metronome` | Android library | Metronome screen UI (the tempo with − and +, the ruler to drag, beat lights, meter and sound choices, Tap the beat and Start, the speed trainer's row, the options panel with Listen), `MetronomeViewModel` |
+| `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the cards with the "last time" row (`PracticeCards`, Phase 69), Chords and Scales (`ChordsScreen`, `ScaleNeck`), the drone button (`DroneButton`) and the Capo helper (`CapoScreen`), each tool's top row with its back arrow (`BackAndTuningRow`); `:app` opens each tool full screen from its card |
 | `:feature:eartraining` | Android library | Ear training (Phase 55, a Practice tool behind its switch): `EarTrainingScreen`, `EarTrainingViewModel` (the visit, the question's sound through `TonePlayer`, the microphone through `PitchListener`, which `:app` backs with the tuner's `PitchPipeline`), the "What is asked" panel |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones), `MetronomePlayer` (clicks) and `DronePlayer` (the drone under Scales) through `AudioTrack` |
-| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
-| `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |
+| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, theme and wallpaper colours, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
+| `:core:designsystem` | Android library | `TwangleTheme` and the one look, Ink (`StyleTokens` light and dark, its face Nunito (`TwangleFont`) with a bundled face for ♯ and ♭, the background), the lens's looks (`lens/`: `LensLookArt`, the trail since Phase 71), the metronome's beat lights, the icon beside the name (`TwangleName`), the segmented switch (`SegmentedSwitch`), the tuner's picker chip (`PickerChip`), the Practice tools' floating panel (`FloatingMenu`) |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, strum check and chord naming, chord, scale and capo charts, Ear training's questions, string synthesis (the reference tones), the drone's synthesis, metronome click track and tap tempo |
-| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone); in its own on-device tests `PluckRecorder`, which records plucked strings for `:core:dsp`'s test fixtures (`scripts/record-plucks.sh`, never part of the app) |
+| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone); in its own on-device tests `PluckRecorder`, which records plucked strings for `:core:dsp`'s test fixtures (`scripts/record-plucks.sh`, never part of the app) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
 ## Commands
@@ -45,9 +45,9 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
-scripts/overnight-ui-tests.sh           # the overnight run: the watch app's tests on the watch when it is connected, every UI test in every style, then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
+scripts/overnight-ui-tests.sh           # the overnight run: the watch app's tests on the watch when it is connected, every UI test (Ink light and dark), then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
 scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2 min a language, ~50 for all; before a listing is sent, release.sh listing refuses older ones; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
-scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
+scripts/meter-frames.sh                 # frame times of the meter and the pitch trail on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~15 min; class filter and uninstall first: performance.md, *Baseline Profile*); commit app/src/release/generated/
@@ -59,10 +59,11 @@ scripts/publish-website.sh              # publish website/ to https://klaboukes.
 scripts/website-pictures.sh             # the website's small screenshots and icon, from the last store-screenshot run (commit them)
 scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md to the public policy page after a policy change landed on main
 scripts/store-graphics.sh [locale…]     # the Play Store's icon and every language's feature graphic, drawn on the phone (committed; docs/store-listing.md)
-scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
-scripts/style-screens.sh                # pictures of the tuner in every style, light and dark, for the owner (~1 min)
+scripts/style-screens.sh                # pictures of the tuner in Ink, light and dark, for the owner (~1 min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
+python -I scripts/launcher-icon.py      # draws the launcher icon, themed icon and watch mark (phone and watch) from the harmonics; edit it, not the drawables (ARCHITECTURE.md, *Name, app ID and icon*)
+python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa Bold, spaced) into the vector beside the icon and the website's top-bar SVG; needs fontTools (python -I -m pip install fonttools)
 ```
 `scripts/ui-test-scope.py`, `scripts/devices.sh`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
@@ -104,16 +105,16 @@ scripts/record-plucks.sh                # records plucked strings on the phone i
 
 ## Workflow
 - **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. Without an argument it runs one increment: announce in plain language → branch → build → verify → land. `/roadmap-step <N>` finishes every remaining item of phase N in one session, still one branch and PR per increment; each increment runs in its own sub-agent so the session stays small.
-- Work through ROADMAP phases in the order ROADMAP.md lists them, not by number; the owner may move a phase ahead. Don't start the next phase while `main`'s build or tests are broken (`v2`'s, for a 2.0 phase).
+- Work through ROADMAP phases in the order ROADMAP.md lists them, not by number; the owner may move a phase ahead. Don't start the next phase while `main`'s build or tests are broken.
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in), and on the Lenovo tablet when the change is about a tablet layout.
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
-- **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
+- **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test, light and dark, and every language, fixed and landed without asking them anything (questions go in the morning summary).
 - **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md). A release waits for a clean overnight run over the code it releases: nothing (not even the version number) changes before that.
 - **Use the `/translate` skill** (`.claude/skills/translate/SKILL.md`) to bring the night languages up to date: whatever daily work left in English and Dutch only, translated in parallel batches, recorded, strict-checked and landed through its own PR. The overnight run starts with it; it can also run by hand any time (no phone).
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
 - The project owner is a professional software engineer (20+ years: .NET, web, scripting, SQL) but new to Android and Kotlin, and leaves the code here to Claude. Talk to them in plain language about outcomes and the actions they need to take; go technical only where a detail matters for them to know (a tradeoff to weigh, a risk, why something failed). Brief sub-agents the same way, never as "non-coder" (owner, 2026-10-28).
-- Open every mock-up and preview page (`docs/design/*.html`) for the owner in Firefox (`C:\Program Files\Mozilla Firefox\firefox.exe <full path>`), never in the app's built-in browser, which doesn't play their sounds (owner, 2026-10-26).
+- Open every mock-up and preview page (`docs/design/*.html`; 1.1's replaced ones in `docs/design/1.x/`) for the owner in Firefox (`C:\Program Files\Mozilla Firefox\firefox.exe <full path>`), never in the app's built-in browser, which doesn't play their sounds (owner, 2026-10-26).
 
 ## Git & GitHub
 Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.
@@ -126,13 +127,6 @@ Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default bra
 5. Verify locally (see Workflow). **The local run is the merge gate.** The free plan for private repos has no branch protection or auto-merge, so nothing on GitHub blocks a bad merge.
 6. `git push -u origin <branch>`, then `gh pr create --base main` (title = increment name, body = what changed + how it was verified).
 7. `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Merging right away is the owner's chosen policy. CI checks `main` overnight, and the next iteration checks the last run first and fixes any failure before anything else.
-
-### The v2 branch (until 2.0 lands)
-Owner, 2026-11-02: 1.1.x stays stable on `main` for the launch while 2.0 (ROADMAP.md, *2.0 — the app designed again*) is built on the long-lived branch `v2`, made from `main` on 2026-11-02, so a hotfix never carries half-built 2.0 code.
-- **2.0 phases (66 and up) branch from `v2` and merge into `v2`:** in a worktree `git fetch -q origin && git switch --detach origin/v2`, then `git switch -c phase-<N>/<topic>`; `gh pr create --base v2`; `gh pr merge --squash`. Read `main` as `v2` in the skills' commands for these phases. The local run is `v2`'s only gate: the nightly CI checks `main` alone (run it by hand on `v2` only when the owner asks).
-- **`main` gets fixes for 1.1.x only,** and `/release` keeps releasing `main`. After a fix lands on `main`, carry it to `v2` from a worktree, no PR: `git fetch -q origin && git switch --detach origin/v2 && git merge origin/main && git push origin HEAD:v2`, resolving a conflict in favour of 2.0's design.
-- **The scripts and the overnight run know both lines:** `scripts/ui-tests.sh` scopes a 2.0 branch from where it left `v2` and keeps v2's passes apart (`build/ui-tests-passed/v2/`); the overnight run checks one branch a night, `main` when its code changed since its last clean run, otherwise `v2` (`scripts/overnight-ui-tests.sh --which`; the owner may name one). Releases, the website, the privacy page and the nightly CI stay on `main`.
-- **When 2.0 is ready for testers** (Phase 76), `v2` merges into `main` through one PR, and this section goes.
 
 ### One worktree per session that changes files
 Owner, 2026-10-28: two sessions in one folder switch branches under each other (that day a commit landed on the wrong branch).

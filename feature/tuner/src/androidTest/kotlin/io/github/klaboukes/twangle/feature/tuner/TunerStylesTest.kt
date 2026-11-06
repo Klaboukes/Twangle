@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
@@ -21,17 +22,15 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
-import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
@@ -45,25 +44,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.abs
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
- * The tuner upright and in its full layout on its side, in each of the six styles, light and dark:
- * each style brings its own fonts and string-button shapes, so the parts differ in size. Upright and
+ * The tuner upright and in its full layout on its side, in Ink, light and dark. Upright and
  * on its side everything fits without scrolling (in the room the navigation bar or rail leaves) and
  * nothing overlaps; at the owner's 1.25× text on the Xiaomi 12X too. At 2× text every part can be scrolled to
  * and is then wholly shown, and the string buttons' names (solfège flats, the longest) fit. TalkBack
- * hears the reading once, skips the meter and the wave, and hears the mode switch and every string
- * by name with which one is picked. [TunerContentTest] covers each behaviour in one style, and
+ * hears the reading once, skips the meter, and hears the mode switch and every string
+ * by name with which one is picked. [TunerContentTest] covers each behaviour, and
  * [CompactLandscapeStylesTest] the compact layout on its side.
- *
- * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
-@RunWith(Parameterized::class)
-class TunerStylesTest(private val style: VisualStyle) {
+@RunWith(AndroidJUnit4::class)
+class TunerStylesTest {
 
     val compose = createSharedActivityComposeRule()
 
@@ -77,7 +73,6 @@ class TunerStylesTest(private val style: VisualStyle) {
 
     // Set these to change what the window shows without composing it again.
     private val shownState = mutableStateOf<TunerUiState>(detected())
-    private val shownDisplay = mutableStateOf(TunerDisplay.NEEDLE)
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
@@ -88,7 +83,7 @@ class TunerStylesTest(private val style: VisualStyle) {
         compose.setContent {
             // The area inside the bars: TunerScreen keeps TunerContent clear of them.
             PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
-                TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) {
                     TunerContent(
                         shownState.value,
                         shownMode.value,
@@ -97,11 +92,8 @@ class TunerStylesTest(private val style: VisualStyle) {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        display = shownDisplay.value,
-                        showTuneHint = true,
                         showSignalBars = true,
-                        compactLandscape = false,
-                        onStrumCheckChange = {},
+                        focusMode = false,
                     )
                 }
             }
@@ -121,28 +113,22 @@ class TunerStylesTest(private val style: VisualStyle) {
 
     private val twelveCentsFlat get() = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
     private val gauge get() = compose.onNodeWithTag(TunerTestTags.GAUGE)
-    private val wave get() = compose.onNodeWithTag(TunerTestTags.WAVE, useUnmergedTree = true)
-    private val guitar get() = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO))
-    private val chromatic get() = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC))
+    private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
     private val strings = listOf("E2", "A2", "D3", "G3", "B3", "E4")
 
-    /** Every part of the screen with [display], by name: the meter or the wave first. */
-    private fun parts(display: TunerDisplay): List<Pair<String, SemanticsNodeInteraction>> = buildList {
-        add("mode switch, guitar" to guitar)
-        add("mode switch, chromatic" to chromatic)
-        if (display == TunerDisplay.NEEDLE) add("meter" to gauge) else add("wave" to wave)
-        add("note" to compose.onNodeWithText("A"))
-        if (display == TunerDisplay.NEEDLE) {
-            add("cents" to compose.onNodeWithText(twelveCentsFlat))
-            add("frequency" to compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f)))
-        }
-        add("tune hint" to compose.onNodeWithText(context.getString(R.string.tuner_tune_up)))
+    /** Every part of the screen, by name. (1.1's wave view, which took the cents' and frequency's place, went in Phase 67.) */
+    private fun parts(): List<Pair<String, SemanticsNodeInteraction>> = buildList {
+        add("picker chip" to pickerChip)
+        // The ruler names the note, upright and on its side (the big note, its octave and the hertz went in Phase 71).
+        add("ruler" to compose.onNodeWithTag(TunerTestTags.RULER))
+        add("meter" to gauge)
+        add("cents" to compose.onNodeWithText(twelveCentsFlat))
+        add("word" to compose.onNodeWithText(context.getString(R.string.tuner_word_tighten)))
         add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON))
-        add("strum check switch" to compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE))
         strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
     }
 
-    /** Upright on a narrow phone at normal text, light and dark, with the meter and with the wave. */
+    /** Upright on a narrow phone at normal text, light and dark. */
     @Test
     fun uprightEverythingFitsWithoutScrolling() {
         show()
@@ -150,10 +136,9 @@ class TunerStylesTest(private val style: VisualStyle) {
     }
 
     /**
-     * On a short phone the note shrinks, never the meter (owner, 2026-10-21: on the Galaxy S26 it was
-     * at its 160 dp minimum): the meter keeps the screen's width less 8 dp at each side, light and
-     * dark, with the cents and with the wave, and everything stays in view. Space Age's face, whose
-     * line is the tallest, is in the thorough run.
+     * On a short phone the lens's height gives way, never its width (owner, 2026-10-21: shrink the note, never the
+     * meter; on the Galaxy S26 it was at its 160 dp minimum): the lens keeps the screen's width less 20 dp at each
+     * side, light and dark, and everything stays in view.
      */
     @Test
     fun uprightOnAShortPhoneTheMeterKeepsItsFullWidth() {
@@ -163,6 +148,7 @@ class TunerStylesTest(private val style: VisualStyle) {
             val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
             val scale = (window.right - window.left) / PHONE_UPRIGHT.width
             val meter = gauge.assertIsDisplayed().getBoundsInRoot()
+            // The meter: the screen less 8 dp each side (Phase 78; the lens was 20 dp in).
             assertEquals("$case meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, (meter.right - meter.left).value, 1f)
         }
     }
@@ -175,17 +161,17 @@ class TunerStylesTest(private val style: VisualStyle) {
         forEachCase(XIAOMI_UPRIGHT, OWNER_FONT_SCALE) { case -> assertAllInView(case) }
     }
 
-    /** The full layout on a phone on its side: the readout beside the controls, all in view. */
+    /** The wide layout on a phone on its side (2.0, Phase 73): the ruler, the lens and the pegs under it, all in view. */
     @Test
     fun onItsSideEverythingFitsWithoutScrolling() {
         shownSize.value = PHONE_LANDSCAPE
         show()
         forEachCase(PHONE_LANDSCAPE, 1f) { case ->
             assertAllInView(case)
-            val note = compose.onNodeWithText("A").getBoundsInRoot()
+            val lens = gauge.getBoundsInRoot()
             for (label in strings) {
                 val chip = compose.onNodeWithText(label).getBoundsInRoot()
-                if (chip.left < note.right) fail("$case: string $label should be right of the note")
+                if (chip.top < lens.bottom) fail("$case: string $label should be under the lens")
             }
         }
     }
@@ -207,7 +193,7 @@ class TunerStylesTest(private val style: VisualStyle) {
 
     /**
      * The string buttons have a fixed size and let their names grow only to 1.3×: the longest names
-     * (solfège flats, "Sol♭3") still fit in this style's buttons at 2× text, upright and on its side.
+     * (solfège flats, "Sol♭3") still fit their buttons at 2× text, upright and on its side.
      */
     @Test
     fun theLongestStringNamesFitTheirButtonsAtTwiceTheTextSize() {
@@ -220,13 +206,13 @@ class TunerStylesTest(private val style: VisualStyle) {
             compose.waitForIdle()
             for (label in labels) {
                 // The name in its button, unmerged: its own text box, not the button's.
-                assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$style $size: $label")
+                assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$size: $label")
             }
         }
     }
 
     /**
-     * TalkBack, light and dark: the reading is one sentence, the meter and the wave say nothing, the
+     * TalkBack, light and dark: the reading is one sentence, the meter says nothing, the
      * mode switch and strings have their names, a click action and which one is picked.
      */
     @Test
@@ -234,58 +220,51 @@ class TunerStylesTest(private val style: VisualStyle) {
         show()
         for (dark in listOf(false, true)) {
             shownDark.value = dark
-            for (display in TunerDisplay.entries) {
-                shownDisplay.value = display
-                compose.waitForIdle()
-                val case = "$style ${if (dark) "dark" else "light"} $display"
-                val spoken = "A 2, $twelveCentsFlat, ${context.getString(R.string.tuner_spoken_tune_up)}"
-                compose.onNode(hasContentDescription(spoken)).assertExists()
-                val picture = if (display == TunerDisplay.NEEDLE) gauge else wave
-                val node = picture.fetchSemanticsNode()
-                assertNull("$case: TalkBack reads the picture", node.config.getOrNull(SemanticsProperties.ContentDescription))
-                assertNull("$case: TalkBack reads the picture", node.config.getOrNull(SemanticsProperties.Text))
-                assertTrue("$case: something inside the picture for TalkBack", node.children.isEmpty())
-                guitar.assertHasClickAction().assertIsSelected()
-                chromatic.assertHasClickAction().assertIsNotSelected()
-                listOf("E 2", "A 2", "D 3", "G 3", "B 3", "E 4").forEachIndexed { index, name ->
-                    val chip = compose.onNode(hasContentDescription(name)).assertHasClickAction()
-                    if (index == 1) chip.assertIsSelected() else chip.assertIsNotSelected()
-                }
-                compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertHasClickAction()
+            compose.waitForIdle()
+            val case = "${if (dark) "dark" else "light"}"
+            val spoken = "A 2, $twelveCentsFlat, ${context.getString(R.string.tuner_word_tighten)}"
+            compose.onNode(hasContentDescription(spoken)).assertExists()
+            val node = gauge.fetchSemanticsNode()
+            assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
+            assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
+            assertTrue("$case: something inside the meter for TalkBack", node.children.isEmpty())
+            pickerChip.assertHasClickAction().assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, context.getString(R.string.instrument_guitar), context.getString(R.string.tuning_standard))))
+            listOf("E 2", "A 2", "D 3", "G 3", "B 3", "E 4").forEachIndexed { index, name ->
+                val chip = compose.onNode(hasContentDescription(name)).assertHasClickAction()
+                if (index == 1) chip.assertIsSelected() else chip.assertIsNotSelected()
             }
         }
     }
 
     /**
-     * While nothing is heard the hint ("Play a string", "Play a note") stands in the note's slot, in
-     * the style's face, where the note then comes, so nothing moves: upright and on its side, at 1× and,
-     * in Dutch, at 2× text, in both modes (Strings with the meter, Chromatic with the wave). It is
-     * wholly shown (wrapped or set smaller where it must) and never reaches past the note's slot.
+     * While nothing is heard the word ("Play a string", "Play a note") stands where the word will stand with a note
+     * (2.0, Phase 71: until then the hint stood in the note's slot), so nothing moves: upright and on its side, at 1x
+     * and, in Dutch, at 2x text, in both modes. It is wholly shown (set smaller where it must).
      */
     @Test
-    fun theIdleHintFitsTheNotesSlot() {
+    fun theQuietWordFitsTheWordsLine() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             for ((fontScale, locale) in listOf(1f to null, 2f to "nl")) {
                 shownSize.value = size
                 shownFontScale.value = fontScale
                 shownLocale.value = locale
-                for ((mode, display) in listOf(TunerMode.AUTO to TunerDisplay.NEEDLE, TunerMode.CHROMATIC to TunerDisplay.WAVE)) {
+                for (mode in TunerMode.entries) {
                     shownMode.value = mode
-                    shownDisplay.value = display
                     shownState.value = TunerUiState.Listening(mode, Tunings.STANDARD)
                     compose.waitForIdle()
-                    val case = "$style $mode $display ${size.width} x ${size.height} at ${fontScale}x in ${locale ?: "en"}:"
+                    val case = "$mode ${size.width} x ${size.height} at ${fontScale}x in ${locale ?: "en"}:"
                     val resources = locale?.let { localised(it) } ?: context.resources
                     val words = resources.getString(if (mode == TunerMode.AUTO) R.string.tuner_hint_play_string else R.string.tuner_hint_play_note)
                     val hint = compose.onNodeWithText(words)
                     assertWhollyShown(hint, "$case hint")
-                    val hintBounds = hint.getBoundsInRoot()
+                    val line = compose.onNodeWithTag(TunerTestTags.WORD_TEXT).getBoundsInRoot()
                     shownState.value = detected().copy(mode = mode, targetString = if (mode == TunerMode.AUTO) 1 else null)
                     compose.waitForIdle()
-                    val note = compose.onNodeWithText("A").getBoundsInRoot()
-                    if (hintBounds.top < note.top - SLACK || hintBounds.bottom > note.bottom + SLACK) {
-                        fail("$case hint $hintBounds reaches past the note's slot $note")
+                    val withNote = compose.onNodeWithTag(TunerTestTags.WORD_TEXT).getBoundsInRoot()
+                    // The quiet word is set smaller, centred in the same line.
+                    if (abs(((line.top + line.bottom) - (withNote.top + withNote.bottom)).value) / 2f > 1f) {
+                        fail("$case the quiet word $line is not in the word's line $withNote")
                     }
                 }
             }
@@ -296,24 +275,21 @@ class TunerStylesTest(private val style: VisualStyle) {
         Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) },
     ).resources
 
-    /** Runs [check] with the meter and the wave, in the light and the dark theme, at [size] and [fontScale]. */
+    /** Runs [check] in the light and the dark theme, at [size] and [fontScale]. */
     private fun forEachCase(size: DpSize, fontScale: Float, check: (case: String) -> Unit) {
         shownSize.value = size
         shownFontScale.value = fontScale
         for (dark in listOf(false, true)) {
             shownDark.value = dark
-            for (display in TunerDisplay.entries) {
-                shownDisplay.value = display
-                compose.waitForIdle()
-                check("$style ${if (dark) "dark" else "light"} $display ${size.width} x ${size.height} at ${fontScale}x:")
-            }
+            compose.waitForIdle()
+            check("${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${fontScale}x:")
         }
     }
 
     /** Every part is on screen without scrolling, inside the window, and no two overlap. */
     private fun assertAllInView(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val bounds = parts(shownDisplay.value).map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
+        val bounds = parts().map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
         for ((name, rect) in bounds) {
             if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
                 fail("$case $name $rect is outside the window $window")
@@ -325,6 +301,8 @@ class TunerStylesTest(private val style: VisualStyle) {
                 val (b, second) = bounds[j]
                 // The mode switch's two segments share their border.
                 if (a.startsWith("mode switch") && b.startsWith("mode switch")) continue
+                // The signal bars stand inside the ruler, beside its heard note.
+                if (setOf(a, b) == setOf("ruler", "signal bars")) continue
                 if (first.overlaps(second)) fail("$case $a $first overlaps $b $second")
             }
         }
@@ -332,8 +310,8 @@ class TunerStylesTest(private val style: VisualStyle) {
 
     /** Every part can be scrolled to and is then wholly shown. */
     private fun assertAllWhollyShown(case: String) {
-        for ((name, node) in parts(shownDisplay.value)) {
-            // The meter and the wave are pictures: scrolled to, they must be wholly in view too.
+        for ((name, node) in parts()) {
+            // The meter is a picture: scrolled to, it must be wholly in view too.
             assertWhollyShown(node, "$case $name")
         }
     }
@@ -342,8 +320,7 @@ class TunerStylesTest(private val style: VisualStyle) {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     /**
-     * Every language at 2× text, upright and on its side, a note with the meter and listening with the
-     * wave: every text wholly shown (every style in a thorough run). Only with `--languages`.
+     * Every language at 2× text, upright and on its side, a note and listening: every text wholly shown. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -354,21 +331,16 @@ class TunerStylesTest(private val style: VisualStyle) {
             shownLocale.value = language
             for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
-                for ((state, display) in listOf(detected() to TunerDisplay.NEEDLE, TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD) to TunerDisplay.WAVE)) {
+                for ((name, state) in listOf("note" to detected(), "listening" to TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))) {
                     shownState.value = state
-                    shownDisplay.value = display
                     compose.waitForIdle()
-                    compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} $display at 2x:")
+                    compose.assertEveryTextWhollyShown("$language ${size.width} x ${size.height} $name at 2x:")
                 }
             }
         }
     }
 
     companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
-
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 10L
 

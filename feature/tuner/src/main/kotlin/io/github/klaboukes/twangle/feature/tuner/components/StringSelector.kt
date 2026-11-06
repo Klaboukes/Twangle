@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -30,22 +29,28 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
+import io.github.klaboukes.twangle.feature.tuner.StrumString
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -73,31 +78,32 @@ import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonGlow
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.stringChipFill
-import io.github.klaboukes.twangle.core.designsystem.stringChipShading
-import io.github.klaboukes.twangle.core.designsystem.stringChipShape
-import io.github.klaboukes.twangle.core.designsystem.stringChipSize
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.designsystem.StringChipShape
+import io.github.klaboukes.twangle.core.designsystem.StringChipSize
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunedStrings
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 
 /**
- * The open strings of [tuning], lowest on the left (in right-to-left languages too), with the [targetString] (if any) highlighted.
- * Each string shows its note name with the octave as a small subscript, e.g. E₂. The highlight
- * turns green while [inTune].
+ * The pegs (2.0, Phase 71; docs/design/v2-tuner-screens-preview.html): the open strings of [tuning] as a plain row
+ * of round buttons in the tuning's order, lowest on the left (in right-to-left languages too), each alike, its note
+ * name in ink with the octave as a small subscript, e.g. E₂. The [targetString] (if any: the string heard, or the
+ * locked one waiting to be) is ringed: a 2 dp ring in the reading's [tone] round its face with a soft glow outside
+ * it, so it is amber far off, eases toward green and is green in tune, as the lens's border and the word (the same
+ * [LiveTone], read while drawing: a reading recomposes nothing); without a [tone] (the tools' rows) the accent,
+ * green while [inTune]. Until 2.0 the target was filled in the accent.
  *
  * With [onStringClick] the strings are buttons: tapping one locks the tuner to it, tapping the
- * [lockedString] again unlocks it. The locked string gets an extra outer ring. With [onStringLongClick]
+ * [lockedString] again unlocks it. The locked peg carries a small padlock at its bottom end corner, outside its
+ * face so nothing moves (until 2.0 an outer ring, which the heard ring now is). With [onStringLongClick]
  * a long-press plays the string's note (TalkBack: the named long-press action "Play A 2"); the
  * [soundingString], whose tone sounds now, sends rings out round its button like sound waves (one
  * still ring with Android's animations off), drawn outside it so nothing moves. While a tone sounds
@@ -115,13 +121,19 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
  * badge, and TalkBack says it after the string's name; [checking] makes a tap's TalkBack action
  * "Check A 2" instead of locking.
  *
- * The strings in [tuned] (in tune since the tuner opened, Phase 65) carry the same badge as a string
+ * The strings in [tuned] (in tune since the tuner opened, Phase 65; given only with the string tick-off on, 2.0's
+ * beginner's help, off by default) carry the same badge as a string
  * whose saddle is fine: a check mark on a disc in the "in tune" colour, growing in once, outside the
  * button's box so nothing moves; TalkBack hears "Tuned" as the button's state ("Locked, tuned" on the
  * locked string). [tuned] must be of this [tuning]. The [small] chips leave it out.
  *
- * [small] draws a narrow row of small chips, for the compact landscape layout: it only shows which
- * string is the target. It takes no more width than it needs and is hidden from TalkBack, since the
+ * With [strumMarks] (a strum of the open strings heard, 2.0 Phase 74) each string's verdict stands above its peg
+ * ([StrumMark]: ↑ tighten, ↓ loosen, ✓ in tune, – not heard), [MARK_SIZE] high and [MARK_GAP] above the face, outside
+ * the peg's box so nothing moves (the row above the pegs keeps room for it, `GuitarControls`), and TalkBack hears it
+ * as the peg's state ("Tighten"; "Locked, Tighten" on the locked peg).
+ *
+ * [small] draws a narrow row of small pegs, for the compact landscape layout: it only shows which
+ * string is the target, and the lock. It takes no more width than it needs and is hidden from TalkBack, since the
  * note's reading already names the string.
  */
 @Composable
@@ -139,6 +151,8 @@ fun StringSelector(
     marks: List<StringMark?>? = null,
     checking: Boolean = false,
     tuned: TunedStrings? = null,
+    tone: LiveTone? = null,
+    strumMarks: List<StrumString>? = null,
 ) {
     val checkLabel = stringResource(R.string.tuner_intonation_check_string)
     val markLabels = StringMark.entries.associateWith { spokenMark(it) }
@@ -150,17 +164,19 @@ fun StringSelector(
     val lockedSoundingState = stringResource(R.string.tuner_string_locked_sounding)
     val tunedState = stringResource(R.string.tuner_string_tuned)
     val lockedTunedState = stringResource(R.string.tuner_string_locked_tuned)
+    val lockedMarkState = stringResource(R.string.tuner_string_locked_mark)
+    val strumLabels = StrumVerdict.entries.associateWith { strumMarkLabel(it) }
+    val marksAnimationsOff = strumMarks != null && rememberAnimationsOff()
     val playLabel = stringResource(R.string.tuner_string_play)
     val animationsOff = soundingString != null && rememberAnimationsOff()
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
     val spokenOctaveCourse = stringResource(R.string.tuner_spoken_octave_course)
-    val style = MaterialTheme.styleTokens.style
     BoxWithConstraints(if (small) modifier else modifier.fillMaxWidth()) {
         // 4 to 8 strings: full-size buttons while they fit, else equal shares of the row, shrunk.
         val width = if (constraints.hasBoundedWidth) maxWidth else Dp.Infinity
-        val shortGap = shortStringGapFor(style, width, tuning, small)
-        val fit = stringRowFitFor(style, width, tuning.strings.size, small, shortGap)
+        val shortGap = shortStringGapFor(width, tuning, small)
+        val fit = stringRowFitFor(width, tuning.strings.size, small, shortGap)
         // Low to high, left to right, in every language: like a keyboard and the meter, not mirrored
         // in right-to-left languages (Material's rule for graphs and gauges).
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -180,6 +196,18 @@ fun StringSelector(
                     val mark = marks?.getOrNull(index)
                     val octaveString = tuning.hasOctaveString(index)
                     val ticked = !small && tuned != null && index in tuned
+                    val strum = strumMarks?.getOrNull(index)?.takeIf { !small }
+                    val strumLabel = strum?.let { strumLabels.getValue(it.verdict) }
+                    PegWithMark(
+                        mark = strum?.let { { StrumMark(it, index, animationsOff = marksAnimationsOff) } },
+                        modifier = when {
+                            fit.squeezed -> Modifier.weight(1f)
+                            // Outside the button, so the gap is no part of it to touch.
+                            endsShortStrings(tuning, index) -> Modifier.padding(end = shortGap)
+                            else -> Modifier
+                        },
+                        faceInset = fit.ringGapDp.dp,
+                    ) {
                     StringChip(
                         name = name,
                         spokenName = if (octaveString) spokenOctaveCourse.format(spokenName) else spokenName,
@@ -187,6 +215,7 @@ fun StringSelector(
                         octave = note.octave,
                         highlighted = index == targetString,
                         inTune = inTune,
+                        tone = tone,
                         locked = locked,
                         onClick = onStringClick?.let { click -> { click(index) } },
                         clickLabel = when {
@@ -199,10 +228,12 @@ fun StringSelector(
                         longClickLabel = playLabel.format(spokenName),
                         state = when {
                             locked && sounding -> lockedSoundingState
+                            locked && strumLabel != null -> lockedMarkState.format(strumLabel)
                             locked && ticked -> lockedTunedState
                             locked -> lockedState
                             sounding -> soundingState
                             mark != null -> markLabels.getValue(mark)
+                            strumLabel != null -> strumLabel
                             ticked -> tunedState
                             else -> null
                         },
@@ -210,27 +241,42 @@ fun StringSelector(
                         tuned = ticked,
                         sounding = sounding,
                         animationsOff = animationsOff,
-                        index = index,
                         fit = fit,
                         small = small,
-                        modifier = when {
-                            fit.squeezed -> Modifier.weight(1f)
-                            // Outside the button, so the gap is no part of it to touch.
-                            endsShortStrings(tuning, index) -> Modifier.padding(end = shortGap)
-                            else -> Modifier
-                        },
+                        modifier = if (fit.squeezed) Modifier.fillMaxWidth() else Modifier,
                     )
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ * A [peg] with its strum [mark] (if any) centred above it, [MARK_GAP] above its face (its box less [faceInset] at the
+ * top), placed outside the peg's box: the row and everything round it keep their places with or without it.
+ */
+@Composable
+private fun PegWithMark(mark: (@Composable () -> Unit)?, modifier: Modifier, faceInset: Dp, peg: @Composable () -> Unit) {
+    val markSlot = @Composable { if (mark != null) mark() }
+    Layout(contents = listOf(peg, markSlot), modifier = modifier) { (pegMeasurables, markMeasurables), constraints ->
+        val pegPlaceable = pegMeasurables.single().measure(constraints)
+        val markPlaceable = markMeasurables.firstOrNull()?.measure(Constraints())
+        layout(pegPlaceable.width, pegPlaceable.height) {
+            pegPlaceable.placeRelative(0, 0)
+            markPlaceable?.placeRelative(
+                (pegPlaceable.width - markPlaceable.width) / 2,
+                faceInset.roundToPx() - MARK_GAP.roundToPx() - markPlaceable.height,
+            )
+        }
+    }
+}
+
 /** How far in from each end of a full-size row [width] wide of [tuning]'s string buttons the faces are, in dp ([stringFaceInset]). */
-internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, tuning: Tuning): Float {
-    val gap = shortStringGapFor(style, width, tuning, small = false)
+internal fun stringFaceInsetFor(width: Dp, tuning: Tuning): Float {
+    val gap = shortStringGapFor(width, tuning, small = false)
     val count = tuning.strings.size
-    return stringFaceInset(width.value, count, stringChipSize(style).width.value, stringRowFitFor(style, width, count, small = false, gap), gap.value)
+    return stringFaceInset(width.value, count, StringChipSize.width.value, stringRowFitFor(width, count, small = false, gap), gap.value)
 }
 
 /**
@@ -238,10 +284,10 @@ internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, tuning: Tuning): 
  * [width] wide: [SHORT_STRING_GAP] (the [small] chips' [SMALL_SHORT_STRING_GAP]) while the buttons
  * still fit at full size with it, else none, as squeezed buttons take equal shares.
  */
-internal fun shortStringGapFor(style: VisualStyle, width: Dp, tuning: Tuning, small: Boolean): Dp {
+internal fun shortStringGapFor(width: Dp, tuning: Tuning, small: Boolean): Dp {
     if (!tuning.hasShortString) return 0.dp
     val gap = if (small) SMALL_SHORT_STRING_GAP else SHORT_STRING_GAP
-    return if (stringRowFitFor(style, width, tuning.strings.size, small, gap).squeezed) 0.dp else gap
+    return if (stringRowFitFor(width, tuning.strings.size, small, gap).squeezed) 0.dp else gap
 }
 
 /** Whether string [index] is the last of a run of short strings with another string after it, so the gap follows it. */
@@ -249,20 +295,20 @@ private fun endsShortStrings(tuning: Tuning, index: Int): Boolean =
     index in tuning.shortStrings && index + 1 < tuning.stringCount && index + 1 !in tuning.shortStrings
 
 /**
- * How [count] string buttons in [style] fit a row [width] wide (the [small] chips or the full-size
+ * How [count] string buttons fit a row [width] wide (the [small] chips or the full-size
  * buttons), [extraGap] of it taken by the short strings' gap ([shortStringGapFor]).
  */
-internal fun stringRowFitFor(style: VisualStyle, width: Dp, count: Int, small: Boolean, extraGap: Dp = 0.dp): StringRowFit {
+internal fun stringRowFitFor(width: Dp, count: Int, small: Boolean, extraGap: Dp = 0.dp): StringRowFit {
     val available = if (width == Dp.Infinity) Float.MAX_VALUE else width.value - extraGap.value
     return if (small) {
-        stringRowFit(available, count, smallChipSize(style).width.value, SMALL_RING_GAP.value, minSlotDp = 0f, spacingDp = SMALL_CHIP_SPACING.value)
+        stringRowFit(available, count, SMALL_CHIP.width.value, SMALL_RING_GAP.value, minSlotDp = 0f, spacingDp = SMALL_CHIP_SPACING.value)
     } else {
-        stringRowFit(available, count, stringChipSize(style).width.value, RING_GAP.value, minSlotDp = MIN_TOUCH.value)
+        stringRowFit(available, count, StringChipSize.width.value, RING_GAP.value, minSlotDp = MIN_TOUCH.value)
     }
 }
 
-/** The compact layout's chip in [style]: the style's button shrunk into the small square, lock ring included. */
-private fun smallChipSize(style: VisualStyle): DpSize = stringChipSize(style).fitInside(SMALL_CHIP_SIZE - SMALL_RING_GAP * 2)
+/** The compact layout's chip: the button shrunk into the small square, lock ring included. */
+private val SMALL_CHIP: DpSize get() = StringChipSize.fitInside(SMALL_CHIP_SIZE - SMALL_RING_GAP * 2)
 
 @Composable
 private fun StringChip(
@@ -272,6 +318,7 @@ private fun StringChip(
     octave: Int,
     highlighted: Boolean,
     inTune: Boolean,
+    tone: LiveTone?,
     locked: Boolean,
     onClick: (() -> Unit)?,
     clickLabel: String,
@@ -282,39 +329,28 @@ private fun StringChip(
     tuned: Boolean,
     sounding: Boolean,
     animationsOff: Boolean,
-    index: Int,
     fit: StringRowFit,
     small: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
-    val accent by animateInTuneColor(inTune, colors.primary, "chipAccent")
-    val background by animateColorAsState(if (highlighted) accent else Color.Transparent, label = "chip")
-    val content by animateColorAsState(
-        targetValue = when {
-            // Full ink, as the round buttons' icons (Phase 65; the muted colour before).
-            !highlighted -> colors.onSurface
-            inTune -> onInTuneColor()
-            else -> colors.onPrimary
-        },
-        label = "chipText",
-    )
-    val ring by animateColorAsState(if (locked) colors.onSurface else Color.Transparent, label = "lockRing")
-    val style = MaterialTheme.styleTokens.style
-    // The style's own button (pebble, ivory key, capsule...), with room round it for the lock ring.
-    val shape = stringChipShape(style, index)
+    // The ring's colour without a reading's tone (the tools' rows): the accent, green in tune.
+    val accent = animateInTuneColor(inTune, colors.primary, "pegAccent")
+    val ringColour = remember(tone, accent) { ColorProducer { tone?.colour ?: accent.value } }
+    // The heard peg's ring comes and goes calmly (the mock-up's quarter second), never jumping between pegs.
+    val ringShown = animateFloatAsState(if (highlighted) 1f else 0f, tween(RING_FADE_MS), label = "pegRing")
+    // A round button, with room round it for the heard ring's glow.
+    val shape = StringChipShape
     val ringGap = fit.ringGapDp.dp
-    val natural = if (small) smallChipSize(style) else stringChipSize(style)
+    val natural = if (small) SMALL_CHIP else StringChipSize
     val button = DpSize(natural.width * fit.buttonScale, natural.height * fit.buttonScale)
-    // Futuristic's tiles are neon outlines on a solid tint, then a soft glow round the picked one.
-    val neon = style == VisualStyle.FUTURISTIC
-    val keyLabel = style == VisualStyle.CLASSIC && !small
-    val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
     // The press effect: the whole button sinks, and the light lies over its fill, under its name.
     val press = remember { MutableInteractionSource() }
     // A string ticked off as tuned grows its check in once, calmly; one already ticked shows it at once.
     val tick = animateFloatAsState(if (tuned) 1f else 0f, tween(TICK_GROW_MS, easing = FastOutSlowInEasing), label = "tick")
     val badge = mark ?: StringMark.FINE.takeIf { tuned }
+    // The lock on the peg grows in and out the same way.
+    val lock = animateFloatAsState(if (locked) 1f else 0f, tween(LOCK_GROW_MS, easing = FastOutSlowInEasing), label = "lock")
     Box(
         modifier = modifier
             .then(
@@ -328,7 +364,6 @@ private fun StringChip(
                 },
             )
             .size(button.width + ringGap * 2, button.height + ringGap * 2)
-            .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
             // Outside the clip, so the rings reach past the button without taking room.
             .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
             // Over the button and outside its clip, so the row doesn't move.
@@ -340,6 +375,17 @@ private fun StringChip(
                 background = colors.background,
                 scale = if (mark != null) ({ 1f }) else ({ tick.value }),
             )
+            // The lock, across the bottom end corner from the tick, outside the clip too.
+            .lockBadge(
+                inset = ringGap,
+                radius = if (small) SMALL_LOCK_BADGE_RADIUS else LOCK_BADGE_RADIUS,
+                fill = colors.onSurface,
+                on = colors.surface,
+                background = colors.background,
+                scale = { lock.value },
+            )
+            // The heard peg's ring and its glow, over the face's edge and in the room round it.
+            .heardRing(ringGap, ringColour) { ringShown.value }
             .pressSink(press)
             .clip(shape)
             .then(
@@ -364,24 +410,18 @@ private fun StringChip(
                     }
                 },
             )
-            // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
-            .border(2.dp, ring, shape)
             .padding(ringGap)
-            .background(stringChipFill(colors, neon), shape)
-            .background(background, shape)
-            // Classic's keys and Retro's push buttons get their shading over the fill.
-            .stringChipShading(style, shape, colors.onSurface)
-            // An edge 3:1 against the background in every style, as the round buttons' (Phase 65).
-            .border(1.dp, if (highlighted) accent else controlOutline(colors, neon), shape)
-            .indication(press, PressIndication(shape, face = true))
+            .background(stringChipFill(colors), shape)
+            // An edge 3:1 against the background, as the round buttons' (Phase 65); the heard ring lies over it.
+            .border(1.dp, controlOutline(colors), shape)
+            .indication(press, PressIndication(shape))
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
                 selected = highlighted
                 if (state != null) stateDescription = state
                 if (small) hideFromAccessibility()
             },
-        // Classic's ivory keys carry their name low, above the shaded front edge.
-        contentAlignment = if (keyLabel) Alignment.BottomCenter else Alignment.Center,
+        contentAlignment = Alignment.Center,
     ) {
         // The button has a fixed size, so its label grows with the system font only up to a point.
         val density = LocalDensity.current
@@ -415,14 +455,13 @@ private fun StringChip(
                     withStyle(octaveStyle) { append(octave.toString()) }
                 },
                 style = textStyle,
-                color = content,
+                color = colors.onSurface,
                 maxLines = 1,
-                // The name keeps its size where it fits; in a squeezed button, or in a wide face
-                // (Space Age's "Mi" at 2× text), it shrinks as far as it must to fit. Never wrapped, so the
+                // The name keeps its size where it fits; in a squeezed button (or at 2× text) it shrinks
+                // as far as it must to fit. Never wrapped, so the
                 // auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
                 softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL, maxFontSize = textStyle.fontSize, stepSize = 0.5.sp),
-                modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING * fit.buttonScale) else Modifier,
             )
             // A 12-string's octave pair: a small "8" in the top left corner, as an octave is marked in
             // music (8va), across from a tick's badge; TalkBack has it in the button's name.
@@ -434,7 +473,7 @@ private fun StringChip(
                         lineHeight = 1.em,
                         fontWeight = FontWeight.SemiBold,
                     ),
-                    color = content.copy(alpha = OCTAVE_MARK_ALPHA),
+                    color = colors.onSurface.copy(alpha = OCTAVE_MARK_ALPHA),
                     maxLines = 1,
                     modifier = Modifier
                         .align(OCTAVE_MARK_PLACE)
@@ -485,6 +524,74 @@ private fun Modifier.soundingRings(shape: Shape, inset: Dp, color: Color, steady
     }
 }
 
+/**
+ * The heard peg's ring (2.0, Phase 71, the mock-up's `.peg.on`): a [HEARD_RING_STROKE] ring in [colour] over the
+ * round face's edge (the box less [inset] each side) and a soft glow round it, the same colour at
+ * [HEARD_GLOW_ALPHA], in the room outside the face, at most [HEARD_GLOW] wide. [shown] (0..1, read while drawing)
+ * fades both; the colour is read while drawing too, so a reading's tone recolours it without recomposing.
+ */
+private fun Modifier.heardRing(inset: Dp, colour: ColorProducer, shown: () -> Float): Modifier = drawWithContent {
+    drawContent()
+    val alpha = shown()
+    if (alpha <= 0f) return@drawWithContent
+    val gap = inset.toPx()
+    val face = (minOf(size.width, size.height) / 2f - gap).coerceAtLeast(0f)
+    if (face <= 0f) return@drawWithContent
+    val tone = colour()
+    val stroke = HEARD_RING_STROKE.toPx()
+    val glow = minOf(HEARD_GLOW.toPx(), gap)
+    if (glow > 0f) {
+        drawCircle(tone.copy(alpha = tone.alpha * HEARD_GLOW_ALPHA * alpha), radius = face + glow / 2f, style = Stroke(glow))
+    }
+    drawCircle(tone.copy(alpha = tone.alpha * alpha), radius = face - stroke / 2f, style = Stroke(stroke))
+}
+
+/**
+ * The locked peg's mark: a small padlock in [on] on a disc in [fill], [radius] round, at the box's bottom end corner
+ * (the face less [inset]), ringed in the [background] so it reads apart from the peg, drawn over it and outside its
+ * face so nothing moves; across from the tick or the 12th-fret result at the top end corner. [scale] (0..1, read
+ * while drawing) grows it in and out. Left to right in every language, as the row is.
+ */
+private fun Modifier.lockBadge(inset: Dp, radius: Dp, fill: Color, on: Color, background: Color, scale: () -> Float): Modifier =
+    drawWithContent {
+        drawContent()
+        val grown = scale()
+        if (grown <= 0f) return@drawWithContent
+        val full = radius.toPx()
+        val r = full * grown
+        val centre = Offset(size.width - inset.toPx() - full * 0.35f, size.height - inset.toPx() - full * 0.35f)
+        drawCircle(background, r + LOCK_BADGE_HALO.toPx() * grown, centre)
+        drawCircle(fill, r, centre)
+        drawPadlock(centre, r, on)
+    }
+
+/** A padlock [r] px round about [centre] in [colour]: a rounded body under an arched shackle, as the usual lock icon. */
+private fun DrawScope.drawPadlock(centre: Offset, r: Float, colour: Color) {
+    val bodyWidth = r * 1.0f
+    val bodyHeight = r * 0.72f
+    val bodyTop = centre.y - r * 0.12f
+    drawRoundRect(
+        colour,
+        topLeft = Offset(centre.x - bodyWidth / 2f, bodyTop),
+        size = Size(bodyWidth, bodyHeight),
+        cornerRadius = CornerRadius(r * 0.14f),
+    )
+    val shackle = r * 0.62f
+    val stroke = r * 0.2f
+    drawArc(
+        colour,
+        startAngle = 180f,
+        sweepAngle = 180f,
+        useCenter = false,
+        topLeft = Offset(centre.x - shackle / 2f, bodyTop - shackle * 0.62f),
+        size = Size(shackle, shackle),
+        style = Stroke(stroke),
+    )
+    // The shackle's legs down into the body.
+    drawLine(colour, Offset(centre.x - shackle / 2f, bodyTop - shackle * 0.12f), Offset(centre.x - shackle / 2f, bodyTop + stroke), stroke)
+    drawLine(colour, Offset(centre.x + shackle / 2f, bodyTop - shackle * 0.12f), Offset(centre.x + shackle / 2f, bodyTop + stroke), stroke)
+}
+
 /** [outline] (the button, [inner] in size) widened by [grow] px all round, drawn as a [stroke] px line. */
 private fun DrawScope.soundRing(outline: Path, inner: Size, grow: Float, color: Color, stroke: Float) {
     val sx = (inner.width + grow * 2f) / inner.width
@@ -523,7 +630,19 @@ private const val MAX_SMALL_CHIP_FONT_SCALE = 1f
 
 private val SMALL_CHIP_SIZE = 32.dp
 
-/** Room round a button for the lock ring: full-size buttons and the small chips. */
+/** The heard peg's ring over its face's edge, its glow outside it (the mock-up's 2 px and 3 px at 22 %), and how long it takes to come or go. */
+private val HEARD_RING_STROKE = 2.dp
+private val HEARD_GLOW = 3.dp
+private const val HEARD_GLOW_ALPHA = 0.22f
+private const val RING_FADE_MS = 250
+
+/** The lock's badge on a peg (the tick's size) and on the compact layout's small pegs, the background's ring round it, and its growing in. */
+private val LOCK_BADGE_RADIUS = 8.dp
+private val SMALL_LOCK_BADGE_RADIUS = 5.5.dp
+private val LOCK_BADGE_HALO = 1.5.dp
+private const val LOCK_GROW_MS = 200
+
+/** Room round a button for the heard ring's glow (until 2.0 the lock ring's): full-size buttons and the small chips. */
 private val RING_GAP = 4.dp
 private val SMALL_RING_GAP = 2.dp
 
@@ -533,11 +652,6 @@ private val MIN_TOUCH = 48.dp
 /** A string's name shrinks to fit its button, but no further than this. */
 private val MIN_LABEL = 8.sp
 
-/** How far above a Classic key's bottom edge its name sits. */
-private val KEY_LABEL_PADDING = 6.dp
-
-/** Futuristic's tiles: an outline in the accent at 55 %, and a glow in it at 35 % round the picked one (the mock-up's neon). */
-private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
 
 /** How long a string's tick takes to grow in when it is ticked off as tuned. */

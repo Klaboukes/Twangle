@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
@@ -52,7 +51,7 @@ class ScreenOffWarningTest {
     private fun show(fontScale: Float = 1f) {
         compose.setContent {
             PhoneScreen(PHONE_UPRIGHT, fontScale = fontScale, locale = shownLocale.value) {
-                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                TwangleTheme(darkTheme = false, animate = false) {
                     Box(Modifier.fillMaxSize()) {
                         ScreenOffWarning(
                             left = { 0.5f },

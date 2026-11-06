@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">Mikrofonen kunde inte öppnas. Stäng andra appar som använder den och tryck på Försök igen, eller starta om enheten.</string>
     <string name="error_mic_stopped">Mikrofonen stoppades, kanske av ett samtal eller en annan app. Tryck på Försök igen för att fortsätta stämma.</string>
     <string name="error_retry">Försök igen</string>
+    <string name="tuner_any_note">Alla toner</string>
+    <string name="tuner_any_note_summary">Närmaste ton, utan strängar</string>
 
-    <string name="tuner_mode_strings">Strängar</string>
-    <string name="tuner_mode_chromatic">Kromatisk</string>
     <string name="tuner_show_controls">Visa reglage</string>
     <string name="tuner_focus_mode">Fokusläge</string>
     <string name="tuner_exit_focus_mode">Avsluta fokusläge</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">Spela en ton</string>
     <string name="tuner_hint_play_locked_string">Spela %1$s-strängen</string>
     <string name="tuner_hint_playing">Spelar %1$s</string>
+    <string name="tuner_hint_all_in_tune">Stämd. Spela på.</string>
     <string name="tuner_string_lock">Låsa på den här strängen</string>
     <string name="tuner_string_unlock">Välja strängar automatiskt</string>
     <string name="tuner_string_locked">Låst</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">Låst, spelar</string>
     <string name="tuner_string_tuned">Stämd</string>
     <string name="tuner_string_locked_tuned">Låst, stämd</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">Låst, %1$s</string>
     <string name="tuner_cents_zero">0 cent</string>
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent för lågt</item>
@@ -96,8 +97,14 @@
         <item quantity="other">%1$d cent för högt</item>
     </plurals>
     <string name="tuner_in_tune">stämd</string>
-    <string name="tuner_tune_up">Stäm upp ↑</string>
-    <string name="tuner_tune_down">Stäm ner ↓</string>
+    <string name="tuner_word_tighten">Spänn</string>
+    <string name="tuner_word_loosen">Slacka</string>
+    <string name="tuner_word_too_low">För låg</string>
+    <string name="tuner_word_too_high">För hög</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="one">%1$d cent</item>
+        <item quantity="other">%1$d cent</item>
+    </plurals>
     <string name="tuner_tip_too_soft">Spela lite starkare</string>
     <string name="tuner_tip_too_noisy">För mycket brus, flytta telefonen närmare</string>
     <string name="tuner_tip_too_loud">För starkt, flytta bort telefonen</string>
@@ -111,15 +118,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">stäm upp</string>
-    <string name="tuner_spoken_tune_down">stäm ner</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, med oktavsträng</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">Instrument och stämning</string>
+    <string name="tuner_picker_title">Vad ska du stämma?</string>
 
     <string name="tuner_new_tuning">Ny stämning</string>
 
@@ -148,34 +153,20 @@
     <string name="tuner_delete_tuning_cancel">Avbryt</string>
     <string name="tuner_strum_check">Anslagstest</string>
     <string name="tuner_strum_waiting">Slå an alla lösa strängar</string>
-    <string name="tuner_strum_waiting_detail">Varje sträng visar för lågt, stämd eller för högt</string>
-    <string name="tuner_strum_hearing">Lyssnar…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="one">%1$d sträng att stämma</item>
-        <item quantity="other">%1$d strängar att stämma</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">Inte alla strängar hördes</string>
-    <string name="tuner_strum_all_in_tune">Alla strängar är stämda</string>
-    <string name="tuner_strum_tap_to_tune">Välj en sträng för att stämma den</string>
-    <string name="tuner_strum_again">Slå an igen, eller välj en sträng för att stämma den</string>
-    <string name="tuner_strum_tune_string">Stämma %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, hördes inte</string>
     <string name="tuner_strum_spoken_waiting">%1$s, inte anslagen än</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, hördes inte</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre säker</string>
-    <string name="tour_title">Rundtur</string>
-    <string name="tour_step_count">%1$d av %2$d</string>
-    <string name="tour_step_spoken">Steg %1$d av %2$d. %3$s.</string>
-    <string name="tour_readout">Hur långt ifrån, och vilken ton</string>
-    <string name="tour_strum">Slå an och testa alla strängar</string>
-    <string name="tour_strings">Välj: stäm bara den här strängen. Håll: hör den</string>
-    <string name="tour_picker">Välj instrument och stämning</string>
-    <string name="tour_skip">Hoppa över</string>
-    <string name="tour_next">Nästa</string>
-    <string name="tour_done">Klar</string>
-    <string name="tuner_more_tools">Fler verktyg</string>
-    <string name="tuner_tool_on">%1$s på</string>
+    <string name="tuner_strum_close">Stäng anslagstestet</string>
+    <string name="tuner_strum_all_in_tune">Alla strängar är stämda</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="one">%1$d av %2$d stämd</item>
+        <item quantity="other">%1$d av %2$d stämda</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">Inte hörd</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">Test vid 12:e bandet</string>
+    <string name="tuner_intonation_check_summary">Sitter sadeln på rätt plats?</string>
+    <string name="tuner_intonation_close">Stäng testet vid 12:e bandet</string>
     <string name="tuner_intonation_step_open">Lös</string>
     <string name="tuner_intonation_step_fret">12:e bandet</string>
     <string name="tuner_intonation_choose_string">Välj en sträng</string>
@@ -212,37 +203,9 @@
     <string name="tuner_intonation_mark_back">flytta sadeln bakåt</string>
     <string name="tuner_intonation_mark_forward">flytta sadeln framåt</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, inte testad än</string>
-    <string name="tour_more_tools">Fler verktyg, som anslagstestet</string>
-    <string name="tuner_chord_name">Ackordnamn</string>
-    <string name="tuner_chord_major">%1$s-dur</string>
-    <string name="tuner_chord_minor">%1$s-moll</string>
-    <string name="tuner_chord_seventh">%1$s sju</string>
-    <string name="tuner_chord_major_seventh">%1$s maj sju</string>
-    <string name="tuner_chord_minor_seventh">%1$s-moll sju</string>
-    <string name="tuner_chord_sus2">%1$s sus två</string>
-    <string name="tuner_chord_sus4">%1$s sus fyra</string>
-    <string name="tuner_chord_power_chord">%1$s powerackord</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s sju med höjd nia</string>
-    <string name="tuner_chord_minor_ninth">%1$s-moll nio</string>
-    <string name="tuner_chord_major_ninth">%1$s maj nio</string>
-    <string name="tuner_chord_slash">%1$s, %2$s i basen</string>
-    <string name="tuner_chord_bass">bas</string>
-    <string name="tuner_chord_strum">Slå an ett ackord</string>
-    <string name="tuner_chord_strum_detail">Låt alla strängar klinga</string>
-    <string name="tuner_chord_next">Slå an igen för nästa ackord</string>
-    <string name="tuner_chord_let_ring">Låt det klinga</string>
-    <string name="tuner_chord_unclear">Inget tydligt ackord</string>
-    <string name="tuner_chord_unclear_detail">Slå an alla ackordets strängar</string>
-    <string name="tuner_chord_none">Inget ackord än</string>
-    <string name="tuner_chord_spoken_notes">toner %1$s</string>
-    <string name="tuner_chord_spoken_recent">innan dess %1$s</string>
-    <string name="tuner_pitch_trail">Tonkurva</string>
-    <string name="tuner_trail_spoken">Tonkurva, %1$s</string>
-    <string name="tuner_trail_no_note">ingen ton</string>
-    <string name="tuner_trail_steady">stadig, %1$s</string>
-    <string name="tuner_trail_wavering">svajande, %1$s</string>
     <string name="tuner_trail_bending_up">stiger</string>
     <string name="tuner_trail_bending_down">sjunker</string>
+    <string name="tuner_spoken_wavering">svajande</string>
     <string name="tuner_screen_off_soon">Skärmen släcks snart</string>
     <string name="tuner_screen_off_keep_on">Tryck för att hålla den tänd</string>
 </resources>

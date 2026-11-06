@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">เปิดไมโครโฟนไม่ได้ ปิดแอปอื่นที่ใช้ไมโครโฟนอยู่แล้วแตะลองอีกครั้ง หรือรีสตาร์ทอุปกรณ์</string>
     <string name="error_mic_stopped">ไมโครโฟนหยุดทำงาน อาจเป็นเพราะการโทรหรือแอปอื่น แตะลองอีกครั้งเพื่อจูนต่อ</string>
     <string name="error_retry">ลองอีกครั้ง</string>
+    <string name="tuner_any_note">โน้ตใดก็ได้</string>
+    <string name="tuner_any_note_summary">โน้ตที่ใกล้ที่สุด ไม่อิงสาย</string>
 
-    <string name="tuner_mode_strings">สาย</string>
-    <string name="tuner_mode_chromatic">โครมาติก</string>
     <string name="tuner_show_controls">แสดงปุ่มควบคุม</string>
     <string name="tuner_focus_mode">โหมดโฟกัส</string>
     <string name="tuner_exit_focus_mode">ออกจากโหมดโฟกัส</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">เล่นสักโน้ต</string>
     <string name="tuner_hint_play_locked_string">เล่นสาย %1$s</string>
     <string name="tuner_hint_playing">กำลังเล่น %1$s</string>
+    <string name="tuner_hint_all_in_tune">ตรงเสียงแล้ว เล่นได้เลย</string>
     <string name="tuner_string_lock">ล็อกไว้ที่สายนี้</string>
     <string name="tuner_string_unlock">เลือกสายอัตโนมัติ</string>
     <string name="tuner_string_locked">ล็อกอยู่</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">ล็อกอยู่ กำลังเล่น</string>
     <string name="tuner_string_tuned">จูนแล้ว</string>
     <string name="tuner_string_locked_tuned">ล็อกอยู่ จูนแล้ว</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">ล็อกอยู่ %1$s</string>
     <string name="tuner_cents_zero">0 เซนต์</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">ต่ำไป %1$d เซนต์</item>
@@ -94,8 +95,13 @@
         <item quantity="other">สูงไป %1$d เซนต์</item>
     </plurals>
     <string name="tuner_in_tune">ตรงเสียง</string>
-    <string name="tuner_tune_up">จูนขึ้น ↑</string>
-    <string name="tuner_tune_down">จูนลง ↓</string>
+    <string name="tuner_word_tighten">จูนขึ้น</string>
+    <string name="tuner_word_loosen">จูนลง</string>
+    <string name="tuner_word_too_low">ต่ำไป</string>
+    <string name="tuner_word_too_high">สูงไป</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d เซนต์</item>
+    </plurals>
     <string name="tuner_tip_too_soft">เล่นดังขึ้นอีกนิด</string>
     <string name="tuner_tip_too_noisy">เสียงรบกวนเยอะ วางโทรศัพท์ให้ใกล้ขึ้น</string>
     <string name="tuner_tip_too_loud">ดังเกินไป วางโทรศัพท์ให้ห่างขึ้น</string>
@@ -109,15 +115,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
-    <string name="tuner_spoken_tune_up">จูนขึ้น</string>
-    <string name="tuner_spoken_tune_down">จูนลง</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s พร้อมสายอ็อกเทฟ</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">เครื่องดนตรีและการตั้งสาย</string>
+    <string name="tuner_picker_title">จะจูนอะไร</string>
 
     <string name="tuner_new_tuning">การตั้งสายใหม่</string>
 
@@ -146,33 +150,19 @@
     <string name="tuner_delete_tuning_cancel">ยกเลิก</string>
     <string name="tuner_strum_check">เช็กทุกสาย</string>
     <string name="tuner_strum_waiting">ตีสายเปล่าทุกสาย</string>
-    <string name="tuner_strum_waiting_detail">ทุกสายจะบอกว่าต่ำไป ตรงเสียง หรือสูงไป</string>
-    <string name="tuner_strum_hearing">กำลังฟัง…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="other">ต้องจูน %1$d สาย</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">ได้ยินไม่ครบทุกสาย</string>
-    <string name="tuner_strum_all_in_tune">ทุกสายตรงเสียง</string>
-    <string name="tuner_strum_tap_to_tune">เลือกสายเพื่อจูน</string>
-    <string name="tuner_strum_again">ตีอีกครั้ง หรือเลือกสายเพื่อจูน</string>
-    <string name="tuner_strum_tune_string">จูน %1$s</string>
-    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s, ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ยังไม่ได้ตี</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, ไม่ค่อยแน่ใจ</string>
-    <string name="tour_title">แนะนำการใช้งาน</string>
-    <string name="tour_step_count">%1$d จาก %2$d</string>
-    <string name="tour_step_spoken">ขั้นที่ %1$d จาก %2$d %3$s</string>
-    <string name="tour_readout">เพี้ยนแค่ไหน และเป็นโน้ตอะไร</string>
-    <string name="tour_strum">ตีทีเดียว เช็กทุกสาย</string>
-    <string name="tour_strings">เลือก: จูนเฉพาะสายนี้ กดค้าง: ฟังเสียง</string>
-    <string name="tour_picker">เลือกเครื่องดนตรีและการตั้งสาย</string>
-    <string name="tour_skip">ข้าม</string>
-    <string name="tour_next">ถัดไป</string>
-    <string name="tour_done">เสร็จ</string>
-    <string name="tuner_more_tools">เครื่องมือเพิ่มเติม</string>
-    <string name="tuner_tool_on">%1$s เปิดอยู่</string>
+    <string name="tuner_strum_close">ปิดเช็กทุกสาย</string>
+    <string name="tuner_strum_all_in_tune">ทุกสายตรงเสียง</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">ตรงเสียง %1$d จาก %2$d สาย</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">ไม่ได้ยิน</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_intonation_check">เช็กเฟรตที่ 12</string>
+    <string name="tuner_intonation_check_summary">แซดเดิลอยู่ถูกที่ไหม</string>
+    <string name="tuner_intonation_close">ปิดเช็กเฟรตที่ 12</string>
     <string name="tuner_intonation_step_open">สายเปล่า</string>
     <string name="tuner_intonation_step_fret">เฟรตที่ 12</string>
     <string name="tuner_intonation_choose_string">เลือกสาย</string>
@@ -208,37 +198,9 @@
     <string name="tuner_intonation_mark_back">ขยับแซดเดิลถอยหลัง</string>
     <string name="tuner_intonation_mark_forward">ขยับแซดเดิลไปข้างหน้า</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ยังไม่ได้เช็ก</string>
-    <string name="tour_more_tools">เครื่องมือเพิ่มเติม เช่น เช็กทุกสาย</string>
-    <string name="tuner_chord_name">ชื่อคอร์ด</string>
-    <string name="tuner_chord_major">%1$s เมเจอร์</string>
-    <string name="tuner_chord_minor">%1$s ไมเนอร์</string>
-    <string name="tuner_chord_seventh">%1$s เซเวนท์</string>
-    <string name="tuner_chord_major_seventh">%1$s เมเจอร์เซเวนท์</string>
-    <string name="tuner_chord_minor_seventh">%1$s ไมเนอร์เซเวนท์</string>
-    <string name="tuner_chord_sus2">%1$s ซัสทู</string>
-    <string name="tuner_chord_sus4">%1$s ซัสโฟร์</string>
-    <string name="tuner_chord_power_chord">%1$s พาวเวอร์คอร์ด</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s เซเวนท์ชาร์ปไนน์</string>
-    <string name="tuner_chord_minor_ninth">%1$s ไมเนอร์ไนน์</string>
-    <string name="tuner_chord_major_ninth">%1$s เมเจอร์ไนน์</string>
-    <string name="tuner_chord_slash">%1$s, %2$s เป็นเสียงเบส</string>
-    <string name="tuner_chord_bass">เบส</string>
-    <string name="tuner_chord_strum">ตีคอร์ด</string>
-    <string name="tuner_chord_strum_detail">ปล่อยให้ทุกสายดังก้อง</string>
-    <string name="tuner_chord_next">ตีอีกครั้งเพื่อคอร์ดถัดไป</string>
-    <string name="tuner_chord_let_ring">ปล่อยให้เสียงก้อง</string>
-    <string name="tuner_chord_unclear">ไม่ใช่คอร์ดที่ชัดเจน</string>
-    <string name="tuner_chord_unclear_detail">ตีให้ครบทุกสายของคอร์ด</string>
-    <string name="tuner_chord_none">ยังไม่มีคอร์ด</string>
-    <string name="tuner_chord_spoken_notes">โน้ต %1$s</string>
-    <string name="tuner_chord_spoken_recent">ก่อนหน้านั้น %1$s</string>
-    <string name="tuner_pitch_trail">เส้นระดับเสียง</string>
-    <string name="tuner_trail_spoken">เส้นระดับเสียง, %1$s</string>
-    <string name="tuner_trail_no_note">ไม่มีโน้ต</string>
-    <string name="tuner_trail_steady">นิ่ง, %1$s</string>
-    <string name="tuner_trail_wavering">แกว่ง, %1$s</string>
     <string name="tuner_trail_bending_up">เบนด์ขึ้น</string>
     <string name="tuner_trail_bending_down">เบนด์ลง</string>
+    <string name="tuner_spoken_wavering">แกว่งไปมา</string>
     <string name="tuner_screen_off_soon">หน้าจอจะดับในไม่ช้า</string>
     <string name="tuner_screen_off_keep_on">แตะเพื่อให้เปิดค้างไว้</string>
 </resources>

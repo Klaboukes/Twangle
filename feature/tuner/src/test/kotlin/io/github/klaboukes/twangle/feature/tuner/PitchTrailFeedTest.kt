@@ -1,25 +1,15 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
-import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
-import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
-import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -77,114 +67,5 @@ class PitchTrailFeedTest {
         assertTrue(history.isEmpty)
         feed.gap(frame)
         assertEquals(5 * frame, history.timeAt(4), 1e-6f)
-    }
-
-    // ---- Fed by the tuner ----
-
-    private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
-        TunerViewModel(recorder, FakeSettingsRepository(), FakeTonePlayer(), StandardTestDispatcher(testScheduler), tools = tools)
-
-    @Test
-    fun `the tuner fills the history with the played note`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true))
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(1_000)
-
-        val history = vm.pitchHistory
-        assertTrue("about one entry per frame, got ${history.end}", history.end > 30)
-        var notes = 0
-        history.forEachWithin { _, target, cents, _ ->
-            if (target != PitchHistory.NO_NOTE) {
-                notes++
-                assertEquals(45, target)
-                assertTrue("off by $cents c", abs(cents) < 1f)
-            }
-        }
-        assertTrue("only $notes notes", notes > 20)
-        // Every entry is one frame after the one before.
-        val end = history.end
-        for (i in history.firstReadable(end) + 1 until end) {
-            assertEquals(1024f / 48_000f, history.timeAt(i) - history.timeAt(i - 1), 1e-4f)
-        }
-    }
-
-    @Test
-    fun `silence leaves only gaps`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder.silence())
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(500)
-
-        val history = vm.pitchHistory
-        assertTrue(history.end > 10)
-        history.forEachWithin { _, target, _, _ -> assertEquals(PitchHistory.NO_NOTE, target) }
-    }
-
-    @Test
-    fun `stays empty while its switch is off`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true), ToolSwitches.ALL_OFF)
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(500)
-
-        assertTrue(vm.state.value is TunerUiState.Detected)
-        assertEquals(0L, vm.pitchHistory.end)
-    }
-
-    // ---- The trail as a tool ----
-
-    @Test
-    fun `the trail is one tool at a time and stays on in chromatic mode`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder.silence())
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(100)
-        assertTrue(TunerTool.PITCH_TRAIL in vm.tunerTools.value)
-        vm.setChordName(true)
-        vm.setPitchTrail(true)
-        advanceTimeBy(100)
-        assertTrue(vm.pitchTrail.value)
-        assertFalse(vm.chordName.value)
-        // The tuner keeps listening as it is: no tool state.
-        assertTrue(vm.state.value is TunerUiState.Listening)
-        // Chromatic mode keeps it (singers, violins); the other tools turn it off.
-        vm.setMode(TunerMode.CHROMATIC)
-        advanceTimeBy(100)
-        assertTrue(vm.pitchTrail.value)
-        vm.setStrumCheck(true)
-        assertFalse(vm.pitchTrail.value)
-        vm.setPitchTrail(true)
-        assertFalse(vm.strumCheck.value)
-        vm.setIntonationCheck(true)
-        assertFalse(vm.pitchTrail.value)
-        vm.setPitchTrail(true)
-        assertFalse(vm.intonationCheck.value)
-        vm.setPitchTrail(false)
-        assertFalse(vm.pitchTrail.value)
-    }
-
-    @Test
-    fun `a string tapped with the trail on locks it as usual`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder.silence())
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        vm.setPitchTrail(true)
-        advanceTimeBy(100)
-        vm.toggleString(2)
-        advanceTimeBy(100)
-        assertTrue(vm.pitchTrail.value)
-        assertEquals(2, (vm.state.value as TunerUiState.Listening).lockedString)
-    }
-
-    @Test
-    fun `with its switch off the trail is not offered`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder.silence(), ToolSwitches.ALL_OFF)
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        advanceTimeBy(100)
-        assertFalse(TunerTool.PITCH_TRAIL in vm.tunerTools.value)
-        vm.setPitchTrail(true)
-        assertFalse(vm.pitchTrail.value)
     }
 }

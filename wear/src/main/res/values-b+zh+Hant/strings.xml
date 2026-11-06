@@ -12,8 +12,8 @@
     <plurals name="wear_spoken_cents_sharp">
         <item quantity="other">偏高 %1$d 音分</item>
     </plurals>
-    <string name="wear_spoken_tune_up">調高</string>
-    <string name="wear_spoken_tune_down">調低</string>
+    <string name="wear_word_tighten">調緊</string>
+    <string name="wear_word_loosen">調鬆</string>
     <string name="wear_spoken_sharp">升%1$s</string>
     <string name="wear_mic_needed">Twangle 透過手錶的麥克風聆聽你的樂器。</string>
     <string name="wear_allow_mic">允許使用麥克風</string>
@@ -22,6 +22,16 @@
     <string name="wear_mic_unavailable">無法開啟麥克風。</string>
     <string name="wear_try_again">重試</string>
     <string name="wear_tile_tune">調音</string>
+    <string name="wear_tile_metronome">節拍器</string>
+    <string name="wear_tile_open_metronome">開啟節拍器，%1$s</string>
     <string name="wear_shortcut_tune">調音</string>
     <string name="wear_shortcut_open">開啟調音器</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="other">每分鐘 %1$d 拍</item>
+    </plurals>
+    <string name="wear_metronome_playing">播放中</string>
+    <string name="wear_metronome_stopped">已停止</string>
+    <string name="wear_metronome_start">開始</string>
+    <string name="wear_metronome_stop">停止</string>
+    <string name="wear_metronome_click">滴答聲</string>
 </resources>

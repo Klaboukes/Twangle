@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="practice_tool_metronome">メトロノーム</string>
     <string name="practice_tool_chords">コード</string>
     <string name="practice_tool_scales">スケール</string>
+    <string name="practice_card_chords">すべての押さえ方、左利き用も</string>
+    <string name="practice_card_scales">ドローンに合わせて弾ける</string>
+    <string name="practice_card_capo">弾きたいキーに合うフレット</string>
+    <string name="practice_card_ear_training">音を聞いて、同じ音を弾く</string>
+    <string name="practice_last_time">前回使用</string>
+    <string name="practice_last_time_detail">%1$s · %2$s</string>
+    <string name="practice_back">戻る</string>
     <string name="practice_tool_ear_training">耳トレーニング</string>
-    <string name="practice_tool_button">ツール</string>
-    <string name="practice_tool_list">ツール一覧</string>
+    <string name="practice_tool_pitch_trail">ピッチの軌跡</string>
+    <string name="practice_card_pitch_trail">その音、安定していますか？</string>
     <string name="practice_root">ルート</string>
     <string name="practice_chord_type">コードの種類</string>
     <string name="practice_chord_major">%1$s メジャー</string>
@@ -91,6 +97,8 @@
     <string name="practice_capo_row_spoken">%1$s の押さえ方、実音は %2$s</string>
     <string name="practice_capo_open_chord">コードで開く</string>
     <string name="practice_drone">ドローン</string>
+    <string name="practice_chords_listen">聞き取る</string>
+    <string name="practice_chords_listening">聞き取り中</string>
     <string name="practice_drone_play">ドローンを再生</string>
     <string name="practice_drone_stop">ドローンを停止</string>
     <string name="practice_drone_sound_spoken">ドローンの音色：%1$s</string>

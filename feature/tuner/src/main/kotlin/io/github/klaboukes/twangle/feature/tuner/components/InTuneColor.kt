@@ -7,10 +7,10 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 
-// Material 3 has no "success" role, so each style brings its own "in tune" colour (StyleTokens),
-// readable as large text on the style's background.
+// Material 3 has no "success" role, so Ink brings its own "in tune" colour (StyleTokens), light and
+// dark, readable as large text on the background.
 
-/** The "in tune" colour of the current style. */
+/** The "in tune" colour, light or dark. */
 @Composable
 fun inTuneColor(): Color = MaterialTheme.styleTokens.inTune
 
@@ -18,7 +18,7 @@ fun inTuneColor(): Color = MaterialTheme.styleTokens.inTune
 @Composable
 fun onInTuneColor(): Color = MaterialTheme.styleTokens.onInTune
 
-/** [normal], fading to [inTune] (by default the style's "in tune" colour) while [isInTune]. */
+/** [normal], fading to [inTune] (by default the "in tune" colour) while [isInTune]. */
 @Composable
 fun animateInTuneColor(isInTune: Boolean, normal: Color, label: String, inTune: Color = inTuneColor()): State<Color> =
     animateColorAsState(if (isInTune) inTune else normal, label = label)

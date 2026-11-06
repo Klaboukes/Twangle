@@ -7,36 +7,23 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -49,31 +36,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -84,79 +59,57 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
-import io.github.klaboukes.twangle.core.designsystem.FitColumn
-import io.github.klaboukes.twangle.core.designsystem.INSTRUMENT_BUTTON_SIZE
-import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
-import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
-import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
-import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
-import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.WaveLook
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
-import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
 import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
-import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
-import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
-import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
-import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
-import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
+import io.github.klaboukes.twangle.feature.tuner.components.Lens
+import io.github.klaboukes.twangle.feature.tuner.components.ScreenTintFrom
+import io.github.klaboukes.twangle.feature.tuner.components.TuneWordLine
+import io.github.klaboukes.twangle.feature.tuner.components.rememberLiveTone
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
-import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
-import io.github.klaboukes.twangle.feature.tuner.components.PitchTrailPanel
+import io.github.klaboukes.twangle.feature.tuner.components.rulerHeight
+import io.github.klaboukes.twangle.feature.tuner.components.Ruler
+import io.github.klaboukes.twangle.feature.tuner.components.rulerHeardMidi
+import io.github.klaboukes.twangle.feature.tuner.components.rulerNames
+import io.github.klaboukes.twangle.feature.tuner.components.rulerPosition
+import io.github.klaboukes.twangle.feature.tuner.components.rulerRestMidi
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
-import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckToggle
+import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckButton
 import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
-import io.github.klaboukes.twangle.feature.tuner.components.StrumStatus
-import io.github.klaboukes.twangle.feature.tuner.components.ChordPanel
-import io.github.klaboukes.twangle.feature.tuner.components.ChordStatus
+import io.github.klaboukes.twangle.feature.tuner.components.strumCountText
+import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationPanel
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationStatus
-import io.github.klaboukes.twangle.feature.tuner.components.MoreToolsButton
-import io.github.klaboukes.twangle.feature.tuner.components.StringMark
-import io.github.klaboukes.twangle.feature.tuner.components.markOf
-import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
-import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
@@ -164,24 +117,26 @@ import kotlin.math.min
  * reached from the app's navigation bar or rail, which stays in every layout, the compact one too.
  * [saved] are the settings the app already read at its start, so the first frame shows the
  * player's mode, looks, layout and instrument instead of switching from the defaults a moment later
- * ([TunerViewModel]). The panel shows while [pickerOpen] (the navigation bar's
- * Instrument item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used only in focus mode
- * (the "Focus mode" setting). The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
+ * ([TunerViewModel]). The picker sheet, "What are you tuning?", shows while [pickerOpen] (the picker
+ * chip at the top opens it, calling [onPickerOpenChange] with true) and calls [onPickerOpenChange] with
+ * false once it has closed. [focusMode] is whether focus mode is on (2.0, Phase 73: the app holds it, not saved;
+ * one button turns it on, [onFocusModeChange] with true, and its exit button and Back off). The sheet's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
  * the screen (another screen, or the app in the background).
- * While the first-start tour runs ([tourOpen]) the compact layout on its side shows its controls, so
- * the tour can point at them. [onMicGrantedChange] says whether the tuner itself shows (the
- * microphone is allowed), and false when it leaves. Without the microphone the permission prompt shows
- * instead, and [pickerOpen] opens the panel over it all the same. The saved
+ * Without the microphone the permission prompt shows
+ * instead, with the picker chip over it, and the sheet opens over it all the same. The saved
  * [AppSettings.micRefused] tells a dismissed dialog from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
- * [closeToolsRequest] (a tap on the navigation bar's Tuner tab, or "Show me around") turns the tool that is on off.
- * [onFullScreenChange] says when focus mode's compact layout shows without its controls, so the app
+ * [closeToolsRequest] (a tap on the navigation bar's Tuner tab) turns the tool that is on off.
+ * [onFullScreenChange] says when focus mode's tuner shows without its controls, so the app
  * can hide the rail and the system bars around it.
  * [ratingWindow] is Google Play's own rating window (Phase 50), asked for at most once when
- * [TunerViewModel.ratingDue] says the moment has come, never while the tour or the panel is open.
+ * [TunerViewModel.ratingDue] says the moment has come, never while the panel is open.
+ * [settingsButton] is the app's gear that opens Settings (2.0, Phase 69), given where the screen holds it
+ * (upright; on its side it is at the rail's top): at the start of the header row, across from focus
+ * mode's button, and in the same top start corner over the permission prompt.
  */
 @Composable
 fun TunerScreen(
@@ -194,11 +149,13 @@ fun TunerScreen(
     onOpenTuningEditor: (instrument: Instrument, customTuningId: String?) -> Unit = { _, _ -> },
     pickerOpen: Boolean = false,
     onPickerOpenChange: (Boolean) -> Unit = {},
-    tourOpen: Boolean = false,
-    onMicGrantedChange: (Boolean) -> Unit = {},
     closeToolsRequest: Int = 0,
     onFullScreenChange: (Boolean) -> Unit = {},
     ratingWindow: RatingWindow = RatingWindow.NONE,
+    settingsButton: (@Composable () -> Unit)? = null,
+    focusMode: Boolean = false,
+    onFocusModeChange: ((Boolean) -> Unit)? = null,
+    title: String? = null,
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -217,8 +174,8 @@ fun TunerScreen(
     LaunchedEffect(language) { viewModel.setLanguage(language) }
     val ratingDue by viewModel.ratingDue.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
-    LaunchedEffect(ratingDue, tourOpen, pickerOpen) {
-        if (ratingDue && !tourOpen && !pickerOpen && activity != null) {
+    LaunchedEffect(ratingDue, pickerOpen) {
+        if (ratingDue && !pickerOpen && activity != null) {
             viewModel.onRatingAsked()
             ratingWindow.show(activity)
         }
@@ -226,38 +183,34 @@ fun TunerScreen(
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the
-    // needle follows the exact cents without recomposing (see MeterFrame).
+    // lens follows the exact cents without recomposing (see Lens).
     val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
     // The exact cents and the reception, read while drawing (NaN without a note).
     val exactCents = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.cents else Float.NaN } } }
     val reception = remember(readings) { LiveFloat { readings.value.let { if (it is TunerUiState.Detected) it.reception else Float.NaN } } }
+    // Where the exact reading sits on the ruler's scale, read while drawing too, from the same reading as the cents.
+    val rulerPitch = remember(readings) {
+        LiveFloat { readings.value.let { if (it is TunerUiState.Detected) rulerPosition(it.targetMidi, it.cents) else Float.NaN } }
+    }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val instrument by viewModel.instrument.collectAsStateWithLifecycle()
     val customTunings by viewModel.customTunings.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
-    val display by viewModel.display.collectAsStateWithLifecycle()
-    val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
-    val meterLook by viewModel.meterLook.collectAsStateWithLifecycle()
-    val inTuneEffect by viewModel.inTuneEffect.collectAsStateWithLifecycle()
     val inTunePrecision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
-    val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
+    val stringTickOff by viewModel.stringTickOff.collectAsStateWithLifecycle()
+    val underMeter by viewModel.underMeter.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
-    val focusMode by viewModel.focusMode.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
     val tunedStrings by viewModel.tunedStrings.collectAsStateWithLifecycle()
-    val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
-    val chordName by viewModel.chordName.collectAsStateWithLifecycle()
-    val pitchTrail by viewModel.pitchTrail.collectAsStateWithLifecycle()
+    val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
+    val heard by viewModel.heardStrum.collectAsStateWithLifecycle()
+    val lensLook by viewModel.lensLook.collectAsStateWithLifecycle()
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
-    // The tour starts once the tuner shows (after the microphone question), and not while it's away.
-    val currentOnMicGrantedChange by rememberUpdatedState(onMicGrantedChange)
-    LaunchedEffect(granted) { currentOnMicGrantedChange(granted) }
-    DisposableEffect(Unit) { onDispose { currentOnMicGrantedChange(false) } }
     // Keep screen on lets go after a quiet spell, with a warning first (ScreenAwakeRule).
     val awake = rememberScreenAwake(readings, enabled = granted && keepScreenOn)
     if (granted && keepScreenOn && awake.phase != ScreenAwakePhase.OFF) KeepScreenOn()
@@ -302,6 +255,7 @@ fun TunerScreen(
                     state = state,
                     needleCents = exactCents,
                     reception = reception,
+                    rulerPitch = rulerPitch,
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
@@ -319,32 +273,28 @@ fun TunerScreen(
                     soundingString = soundingString,
                     tunedStrings = tunedStrings,
                     onRetry = viewModel::retry,
-                    display = display,
-                    waveLook = waveLook,
-                    meterLook = meterLook,
-                    inTuneEffect = inTuneEffect,
                     inTunePrecision = inTunePrecision,
                     meterGlow = glowing,
                     animationsOff = animationsOff,
-                    showTuneHint = showTuneHint,
+                    stringTickOff = stringTickOff,
+                    underMeter = underMeter,
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
-                    compactLandscape = focusMode,
-                    controlsAlwaysShown = tourOpen,
-                    strumCheck = strumCheck,
-                    onStrumCheckChange = viewModel::setStrumCheck,
+                    focusMode = focusMode,
+                    heard = heard,
                     tunerTools = tunerTools,
                     intonationCheck = intonationCheck,
                     onIntonationCheckChange = viewModel::setIntonationCheck,
+                    strumCheck = strumCheck,
+                    onStrumCheckChange = viewModel::setStrumCheck,
+                    onStrumCheckClose = viewModel::closeStrumCheck,
                     onCheckAgain = viewModel::checkIntonationAgain,
                     onNextString = viewModel::checkNextString,
-                    chordName = chordName,
-                    onChordNameChange = viewModel::setChordName,
-                    pitchTrail = pitchTrail,
-                    onPitchTrailChange = viewModel::setPitchTrail,
-                    pitchHistory = viewModel.pitchHistory,
+                    lensLook = lensLook,
                     onFullScreenChange = onFullScreenChange,
-                    onFocusModeChange = viewModel::setFocusMode,
+                    onFocusModeChange = onFocusModeChange,
+                    settingsButton = settingsButton,
+                    title = title,
                 )
                 val fade = if (animationsOff) 0 else WARNING_FADE_MILLIS
                 AnimatedVisibility(
@@ -364,10 +314,26 @@ fun TunerScreen(
                     onOpenSettings = mic::openSettings,
                     practiceTab = tools.practiceTab,
                 )
-                // The navigation bar's Instrument item works without the microphone too: the panel opens
-                // over the prompt, and the tuning picked is the one the tuner listens for once allowed.
+                // The tuner's top over the prompt, as it stands over the tuner: Settings stays one tap away while the
+                // microphone is asked for (the gear in the row's corner), and the picker chip works without the
+                // microphone too: the sheet opens over the prompt, and the tuning picked is the one the tuner listens
+                // for once allowed.
                 val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
                 val shown = panelTuning
+                BoxWithConstraints(Modifier.align(Alignment.TopCenter).fillMaxWidth()) {
+                    val chipInRow = maxWidth > maxHeight && maxHeight < CHIP_LINE_MIN_HEIGHT
+                    Box(Modifier.padding(top = EDGE_INSET).padding(horizontal = COLUMN_PADDING)) {
+                        ChipRow(
+                            chip = { if (shown != null) TunerPickerChip(mode, shown, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) }) },
+                            bars = null,
+                            button = null,
+                            gear = settingsButton,
+                            title = title,
+                            chipInRow = chipInRow,
+                            hasChip = shown != null,
+                        )
+                    }
+                }
                 if (pickerOpen && shown != null) {
                     TuningPanel(
                         instrument = instrument,
@@ -387,159 +353,6 @@ fun TunerScreen(
             }
         }
     }
-}
-
-/**
- * The instrument and tuning panel ([InstrumentTuningPanel]) for [tuning]. The strings show in guitar
- * mode only, so a pick made in chromatic [mode] switches to it.
- */
-@Composable
-private fun TuningPanel(
-    instrument: Instrument,
-    tuning: PanelTuning,
-    mode: TunerMode,
-    onModeChange: (TunerMode) -> Unit,
-    onInstrumentChange: (Instrument) -> Unit,
-    onTuningChange: (Tuning) -> Unit,
-    onDismiss: () -> Unit,
-    customTunings: List<CustomTuning>,
-    onNewTuning: ((Instrument) -> Unit)?,
-    onEditTuning: ((CustomTuning) -> Unit)?,
-    onDeleteTuning: ((CustomTuning) -> Unit)?,
-    onLoweredByChange: ((Int) -> Unit)?,
-) {
-    val toGuitar = { if (mode != TunerMode.AUTO) onModeChange(TunerMode.AUTO) }
-    InstrumentTuningPanel(
-        instrument = instrument,
-        tuning = tuning.tuning,
-        onInstrumentChange = {
-            toGuitar()
-            onInstrumentChange(it)
-        },
-        onTuningChange = {
-            toGuitar()
-            onTuningChange(it)
-        },
-        onDismiss = onDismiss,
-        notation = tuning.notation,
-        customTunings = customTunings,
-        onNewTuning = onNewTuning,
-        onEditTuning = onEditTuning,
-        onDeleteTuning = onDeleteTuning,
-        onLoweredByChange = onLoweredByChange?.let { lower ->
-            { semitones: Int ->
-                toGuitar()
-                lower(semitones)
-            }
-        },
-    )
-}
-
-/**
- * Test tags for UI tests and the Baseline Profile generator (`:baselineprofile`), which finds them as
- * resource ids because `MainActivity` turns on `testTagsAsResourceId`. Tags don't change with the
- * app's language, unlike the visible text.
- */
-object TunerTestTags {
-    /** A microphone error's message in the tuner's place (a polite live region, so TalkBack says it as it comes). */
-    const val ERROR = "tuner_error"
-
-    /** The wave view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
-    const val WAVE = "tuner_wave"
-
-    /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
-    const val GAUGE = "tuner_gauge"
-
-    /** The optional signal bars by the note, and the figures panel a tap on them opens. */
-    const val SIGNAL_BARS = "tuner_signal_bars"
-    const val SIGNAL_FIGURES = "tuner_signal_figures"
-
-    /** The signal bars as drawn, in their small slot; [SIGNAL_BARS] is the 48 dp button around them. */
-    const val SIGNAL_BARS_ICON = "tuner_signal_bars_icon"
-
-    /** The instrument and tuning panel, opened from the navigation bar's Instrument item. */
-    const val PICKER_PANEL = "tuner_picker_panel"
-
-    /** A 12-string's small "8" on a string button with an octave string (TalkBack has it in the button's name). */
-    const val OCTAVE_MARK = "tuner_octave_mark"
-
-    /** The quiet line under an instrument's tunings in the panel saying what the tuner can't do for it (the 12-string's). */
-    const val PICKER_NOTE = "tuner_picker_note"
-
-    /** The panel's "New tuning" row, which opens the tuning editor. */
-    const val NEW_TUNING = "tuner_new_tuning"
-
-    /** The panel's "Lower by" row at its bottom, its amount, and its down and up buttons. */
-    const val LOWER_BY = "tuner_lower_by"
-    const val LOWERED_AMOUNT = "tuner_lowered_amount"
-    const val LOWER_MORE = "tuner_lower_more"
-    const val LOWER_LESS = "tuner_lower_less"
-
-    /** The dialog that asks before one of the player's own tunings is deleted. */
-    const val DELETE_TUNING_DIALOG = "tuner_delete_tuning_dialog"
-
-    /** One of the player's own tunings in the panel, by its id, and its ⋮ button (Edit, Delete). */
-    fun customTuning(id: String): String = "tuner_custom_tuning_$id"
-    fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
-
-    /** The instrument and tuning button (a headstock) at the start of the row above the strings, which opens the panel. */
-    const val INSTRUMENT_BUTTON = "tuner_instrument_button"
-
-    /** The instrument and tuning's name beside it ("Guitar · Drop D"), which opens the panel too. */
-    const val TUNING_NAME = "tuner_tuning_name"
-
-    /** The compact landscape layout, which shows the controls when tapped. */
-    const val COMPACT = "tuner_compact"
-
-    /** Focus mode's exit button, in the top end corner of the full-screen tuner. */
-    const val EXIT_FOCUS = "tuner_exit_focus"
-
-    /** The button that turns focus mode on, at the end of the mode switch's row. */
-    const val ENTER_FOCUS = "tuner_enter_focus"
-
-    /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */
-    const val HIDE_CONTROLS = "tuner_hide_controls"
-
-    /** Focus mode's small note in the corner, beside the full-screen meter. */
-    const val FOCUS_NOTE = "tuner_focus_note"
-
-    /** Strum check: its switch above the strings, its panel in the meter's place, and the line under it. */
-    const val STRUM_TOGGLE = "tuner_strum_toggle"
-    const val STRUM_PANEL = "tuner_strum_panel"
-    const val STRUM_STATUS = "tuner_strum_status"
-
-    /** The switch's name in a tooltip, shown on a long-press. */
-    const val STRUM_TOOLTIP = "tuner_strum_tooltip"
-
-    /** String [index]'s column in the strum check's panel. */
-    fun strumString(index: Int): String = "tuner_strum_string_$index"
-
-    /** The "more tools" button (tiles and a plus) above the strings, the menu it opens, and each tool's item in it. */
-    const val MORE_TOOLS = "tuner_more_tools"
-    const val MORE_TOOLS_MENU = "tuner_more_tools_menu"
-    fun tool(tool: TunerTool): String = "tuner_tool_" + tool.name.lowercase()
-
-    /** The 12th-fret check: its panel in the meter's place, the line under it, and the verdict's two buttons. */
-    const val INTONATION_PANEL = "tuner_intonation_panel"
-    const val INTONATION_STATUS = "tuner_intonation_status"
-    const val INTONATION_AGAIN = "tuner_intonation_again"
-    const val INTONATION_NEXT = "tuner_intonation_next"
-
-    /** The chord name: its panel in the meter's place and the line under it. */
-    const val CHORD_PANEL = "tuner_chord_panel"
-    const val CHORD_STATUS = "tuner_chord_status"
-
-    /** The pitch trail's panel in the meter's place. */
-    const val TRAIL_PANEL = "tuner_trail_panel"
-
-    /** String [index]'s column in the 12th-fret check's summary. */
-    fun intonationString(index: Int): String = "tuner_intonation_string_$index"
-
-    /** Keep screen on's warning before the screen is let go ("Screen turns off soon"). */
-    const val SCREEN_OFF_WARNING = "tuner_screen_off_warning"
-
-    /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
-    fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }
 
 /**
@@ -579,54 +392,58 @@ private fun KeepScreenOn() {
 
 /**
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
- * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
- * [needleCents] gives the needle's and the wave's position, by default the cents of [state] (NaN
+ * [mode] comes straight from the ViewModel, so the chip reacts before the next reading arrives.
+ * [needleCents] gives the needle's position, by default the cents of [state] (NaN
  * without a note). [TunerScreen] passes the exact cents there and a [state] rounded to what the text
  * shows ([asShown]). [reception] likewise gives how well the note is heard (NaN without one), which
- * the needle and the wave read while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. [display] picks how
- * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (holding
- * perfectly still on the note); the meter above the note is drawn in
- * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
- * tune; as strong as [inTuneEffect]; showing the in-tune window of [inTunePrecision] where the look has one; with
- * [animationsOff] its in-tune colour and glow switch without easing), and
- * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
- * adds small signal bars at the start of the mode switch's row ([ModeSwitchRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
- * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. While
- * [pickerOpen] the instrument and tuning panel shows over the tuner ([InstrumentTuningPanel], opened
- * from the navigation bar), and [onPickerOpenChange] hears false once it has closed. [instrument] is
- * the one picked there (by default the one [state]'s tuning belongs to); picking another calls
- * [onInstrumentChange]. Picking an instrument or a tuning in chromatic mode switches to guitar mode,
- * where the strings show. [customTunings] are the player's own tunings (the panel lists the
+ * the lens reads while drawing. Both are [LiveFloat]s: read on every frame, boxing nothing. The lens's in-tune glow
+ * is lit by [meterGlow] (from [rememberInTuneGlow]; by default while the note is in tune; with [animationsOff] its
+ * in-tune colour and glow switch without easing). The ruler at the top names the note (2.0, Phase 71: the big note
+ * and the hertz went), the lens under it says how far, and under the lens the word ([TuneWordLine]: Tighten ·
+ * Loosen · In tune, Too low · Too high in Any note, "Play a string" while nothing is heard) with the cents small
+ * under it, always there: the tuner's one item TalkBack speaks. The
+ * reading's tone ([rememberLiveTone]) is the lens's border, the word's colour and, while the app gives a
+ * [io.github.klaboukes.twangle.core.designsystem.ScreenTint], the whole screen's tint ([ScreenTintFrom]). [showSignalBars]
+ * adds small signal bars beside the ruler's heard note (at the start of the top row, [ChipRow], while a tool's panel
+ * stands in the ruler's and the lens's place), which open the live [signalFigures] when tapped; focus mode, with its
+ * controls hidden, leaves them out. The app's [settingsButton] (the gear, Phase 69) stands at the very start of the
+ * top row, across from focus mode's button, which [onFocusModeChange] adds at its end, and [title] ("Tune") in its middle
+ * (Phase 77). On its own line under the row (in its middle on a phone on its side, [ChipRow]) the picker chip (2.0, Phase 70: "Guitar · Drop D ▾", the player's own tuning by its
+ * name, "Any note ▾" in chromatic mode) calls [onPickerOpenChange] with true. While [pickerOpen] the
+ * picker sheet, "What are you tuning?", shows over the tuner ([InstrumentTuningPanel]), and
+ * [onPickerOpenChange] hears false once it has closed. [instrument] is the one picked there (by
+ * default the one [state]'s tuning belongs to); picking another calls [onInstrumentChange]. Its Any
+ * note switch calls [onModeChange] (the mode switch went in Phase 70); picking an instrument or a
+ * tuning in chromatic mode switches to guitar mode, where the strings show. [customTunings] are the player's own tunings (the panel lists the
  * instrument's under its presets, each with Edit, [onEditTuning], and Delete, [onDeleteTuning], after
  * asking), and [onNewTuning], when given, adds "New tuning" to the panel's list; [onLoweredByChange],
  * when given, adds its "Lower by" row, which lowers the picked tuning. A long-press on a string calls [onStringLongClick] (play its
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
- * sounds a tap on any string calls [onStringClick], which stops the tone. [tunedStrings] are the strings
- * tuned since the tuner opened and not played clearly off since, ticked off on their buttons in the plain tuner (not
- * while a tool is on, nor in the compact layout's small row), and only with [showTuneHint] on: the
- * "Show tuning help" setting covers both. With [onStrumCheckChange] a
- * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
- * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
- * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
- * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
- * Where [tunerTools] holds anything but the strum check alone, one "more tools" button takes the switch's place
- * and opens a menu of them ([MoreToolsButton]); the 12th-fret check is turned on and off with
- * [onIntonationCheckChange] ([intonationCheck] is whether it is on). A [TunerUiState.IntonationCheck]
- * shows its panel and line in the same places ([IntonationPanel], [IntonationStatus]), the verdict's
- * buttons calling [onCheckAgain] and [onNextString], and each string's result on its button. The chord
- * name is turned on and off with [onChordNameChange] ([chordName] is whether it is on); a
- * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). The pitch
- * trail is turned on and off with [onPitchTrailChange] ([pitchTrail] is whether it is on): while it is
- * on, [pitchHistory] is drawn as a line in the meter's place ([PitchTrailPanel]); the note and the
- * strings stay the tuner's.
+ * sounds a tap on any string calls [onStringClick], which stops the tone. The strings are the pegs ([StringSelector]:
+ * the one heard ringed in the reading's tone, the locked one with a padlock). [tunedStrings] are the strings
+ * tuned since the tuner opened and not played clearly off since, ticked off on their pegs in the plain tuner (not
+ * while a tool is on, nor in the compact layout's small row), and only with [stringTickOff] on (the string tick-off,
+ * 2.0's beginner's help, off by default); once every string of the tuning shown is ticked, the word says "In tune.
+ * Play." while nothing is heard, in the in-tune colour. Where [tunerTools] holds the strum check and
+ * [onStrumCheckChange] is given, its button stands above the pegs at their end ([StrumCheckButton], [strumCheck]
+ * whether it is on; until its strum the word says "Strum all the open strings"). What the tuner [heard] besides one
+ * string ([TunerViewModel.heardStrum]), a strum of the open strings, shows in the strum check's panel in the lens's
+ * place ([StrumPanel]) and, while no string is heard, "4 of 6 in tune" in the word's place ([strumCountText]). Where
+ * [tunerTools] holds the 12th-fret check (an instrument with frets, in a build with the check) and
+ * [onIntonationCheckChange] is given, the picker sheet ends in its row in guitar mode while it is off
+ * (`IntonationCheckRow`, 2.0 Phase 71: the owner's pick B, 2026-11-03), which closes the sheet and turns it on
+ * ([intonationCheck] is whether it is on). A [TunerUiState.IntonationCheck] shows its panel in the lens's place and
+ * its lines in the word's ([IntonationPanel], [IntonationStatus]), the verdict's buttons calling [onCheckAgain] and
+ * [onNextString]; the pegs pick the string ([onStringClick]) and carry each string's result. The panel's × and Back
+ * turn it off again. In the plain
+ * tuner the meter ([Lens], 2.0 Phases 71 and 78) stands under the ruler, drawing [lensLook] straight on the page.
  *
- * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
- * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
- * (a big meter beside the note, controls hidden until the screen is tapped), else two panes side by
- * side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
- * [controlsAlwaysShown] (while the first-start tour runs) keeps the compact layout's controls shown.
- * The parts the tour lights up mark themselves with [tourTarget]; the mode switch and focus mode's
- * button, which have no step, with [tourControl], so balloons keep clear of them.
+ * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held upright; any
+ * window wider than tall the wide layout (2.0, Phase 73, [WideLayout]): the ruler across the full width, the lens
+ * wide, the word under it and the pegs, or in [focusMode] nothing but the ruler, the lens and the word with the
+ * string small beside it, until a tap brings the pegs and the tabs back for a few seconds. The 12th-fret check's panel
+ * keeps 1.1's arrangements on its side (two panes, in focus mode the compact row). All state lives in the
+ * ViewModel, so rotating keeps the mode, the tuning and a locked string.
  */
 @Composable
 fun TunerContent(
@@ -642,18 +459,15 @@ fun TunerContent(
     tunedStrings: TunedStrings? = null,
     needleCents: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.cents else Float.NaN },
     reception: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) state.reception else Float.NaN },
-    display: TunerDisplay = TunerDisplay.NEEDLE,
-    waveLook: WaveLook = WaveLook.DEFAULT,
-    meterLook: MeterLook = MeterLook.DEFAULT,
-    inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
+    rulerPitch: LiveFloat = LiveFloat { if (state is TunerUiState.Detected) rulerPosition(state.targetMidi, state.cents) else Float.NaN },
     inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
-    showTuneHint: Boolean = false,
+    stringTickOff: Boolean = false,
+    underMeter: UnderMeter = UnderMeter.DEFAULT,
     showSignalBars: Boolean = false,
     signalFigures: Flow<SignalFigures?> = emptyFlow(),
-    compactLandscape: Boolean = true,
-    controlsAlwaysShown: Boolean = false,
+    focusMode: Boolean = false,
     instrument: Instrument = instrumentOf(state),
     onInstrumentChange: (Instrument) -> Unit = {},
     customTunings: List<CustomTuning> = emptyList(),
@@ -663,23 +477,21 @@ fun TunerContent(
     onLoweredByChange: ((Int) -> Unit)? = null,
     pickerOpen: Boolean = false,
     onPickerOpenChange: (Boolean) -> Unit = {},
-    strumCheck: Boolean = false,
-    onStrumCheckChange: ((Boolean) -> Unit)? = null,
-    tunerTools: List<TunerTool> = listOf(TunerTool.STRUM_CHECK),
+    heard: HeardStrum = HeardStrum.None,
+    tunerTools: List<TunerTool> = emptyList(),
     intonationCheck: Boolean = false,
     onIntonationCheckChange: ((Boolean) -> Unit)? = null,
+    strumCheck: Boolean = false,
+    onStrumCheckChange: ((Boolean) -> Unit)? = null,
+    onStrumCheckClose: (() -> Unit)? = null,
     onCheckAgain: () -> Unit = {},
     onNextString: () -> Unit = {},
-    chordName: Boolean = false,
-    onChordNameChange: ((Boolean) -> Unit)? = null,
-    pitchTrail: Boolean = false,
-    onPitchTrailChange: ((Boolean) -> Unit)? = null,
-    pitchHistory: PitchHistory? = null,
+    lensLook: LensLook = LensLook.DEFAULT,
     onFullScreenChange: (Boolean) -> Unit = {},
     onFocusModeChange: ((Boolean) -> Unit)? = null,
+    settingsButton: (@Composable () -> Unit)? = null,
+    title: String? = null,
 ) {
-    // The wave takes the cents' place, which changes the layout.
-    val pictured = display != TunerDisplay.NEEDLE
     // Movable, so the bars keep their count (and an open figures panel stays open) when the layout
     // changes and the header is built afresh around them.
     val currentReception by rememberUpdatedState(reception)
@@ -689,279 +501,322 @@ fun TunerContent(
             SignalBarsButton({ currentReception() }, currentFigures, MaterialTheme.colorScheme.onSurface, Modifier.fillMaxSize())
         }
     }
-    // While focus mode's controls are up over the compact layout, its button takes them away again.
+    // While focus mode's controls are up, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val header = @Composable {
-        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourControl()) }
-        // Focus mode's button at the end of the mode switch's row, in both modes in the same place (owner,
+    val shownTuning = when (state) {
+        is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
+        else -> null
+    }
+    // barsInRow: the signal bars in the top row, where they don't stand over the pegs; chipInRow: the chip in the row's
+    // middle, in the name's place (a phone on its side, [ChipRow]).
+    val header = @Composable { barsInRow: Boolean, chipInRow: Boolean ->
+        // The picker chip on its line under the top row (2.0, Phase 70; Phase 77); none over an error, where the sheet can't open.
+        val chip = @Composable {
+            if (shownTuning != null) {
+                TunerPickerChip(mode, shownTuning, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) })
+            }
+        }
+        // Focus mode's button at the end of the chip's row, in both modes in the same place (owner,
         // 2026-10-25, idea A1 of the Phase 43 mock-up: chromatic mode has no strings or tools to stand it on).
         // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
-        // the exit button there looked as if a tap had already left focus mode); its exit is in the
-        // full-screen tuner's corner. On, without the compact layout (a large screen upright), it exits.
+        // the exit button there looked as if a tap had already left focus mode); its exit is in the same
+        // corner of the full-screen tuner. On, upright (a large screen keeping its rotation lock), it exits.
         val focusButton = onFocusModeChange?.let { onFocus ->
             @Composable {
                 val hide = hideControls
                 when {
                     hide != null -> FocusModeButton(FocusAction.HIDE_CONTROLS, onClick = hide)
-                    compactLandscape -> FocusModeButton(FocusAction.EXIT, onClick = { onFocus(false) })
+                    focusMode -> FocusModeButton(FocusAction.EXIT, onClick = { onFocus(false) })
                     else -> FocusModeButton(FocusAction.ENTER, onClick = { onFocus(true) })
                 }
             }
         }
-        ModeSwitchRow(
-            switch = switch,
-            bars = if (showSignalBars) ({ movableSignalBars() }) else null,
+        ChipRow(
+            chip = chip,
+            bars = if (showSignalBars && barsInRow) ({ movableSignalBars() }) else null,
             button = focusButton,
+            gear = settingsButton,
+            title = title,
+            chipInRow = chipInRow,
+            hasChip = shownTuning != null,
         )
     }
-    val guitarSlot = @Composable {
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString, tunedStrings.takeIf { showTuneHint })
-        val strum = onStrumCheckChange?.let { onStrum ->
-            // Only tools whose switch the screen was given; the strum check's alone is its own switch, as in v1.0.
-            val offered = tunerTools.filter {
-                when (it) {
-                    TunerTool.STRUM_CHECK -> true
-                    TunerTool.INTONATION_CHECK -> onIntonationCheckChange != null
-                    TunerTool.CHORD_NAME -> onChordNameChange != null
-                    TunerTool.PITCH_TRAIL -> onPitchTrailChange != null && pitchHistory != null
-                }
-            }
-            ToolsState(
-                tools = offered,
-                active = when {
-                    strumCheck -> TunerTool.STRUM_CHECK
-                    intonationCheck -> TunerTool.INTONATION_CHECK
-                    chordName -> TunerTool.CHORD_NAME
-                    pitchTrail -> TunerTool.PITCH_TRAIL
-                    else -> null
-                },
-                onChange = { tool, on ->
-                    when (tool) {
-                        TunerTool.STRUM_CHECK -> onStrum(on)
-                        TunerTool.INTONATION_CHECK -> onIntonationCheckChange?.invoke(on)
-                        TunerTool.CHORD_NAME -> onChordNameChange?.invoke(on)
-                        TunerTool.PITCH_TRAIL -> onPitchTrailChange?.invoke(on)
-                    }
-                },
-            )
-        }
-        GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
+    // The reading's tone, one for the lens's border, the word, the heard peg's ring and the whole screen's tint
+    // (Phase 71), so they agree.
+    val tone = rememberLiveTone(needleCents, (state as? TunerUiState.Detected)?.inTune == true, inTunePrecision, animationsOff)
+    ScreenTintFrom(tone)
+    val ticks = tunedStrings.takeIf { stringTickOff }
+    // What the tuner heard besides one string (Phase 74): a strum of the open strings.
+    val strumShown = (heard as? HeardStrum.OpenStrings)?.check?.takeIf { it.strings.isNotEmpty() && it.tuning == shownTuning?.tuning && mode == TunerMode.AUTO }
+    // The strum check's panel in the lens's place (1.1's columns, the owner's pick of 2026-11-03): from the button's tap,
+    // empty until the strum, then its strings, the ones played on their own after it following the tuner.
+    val strumPanel = shownTuning?.takeIf { mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening) }?.let { shown ->
+        strumShown ?: TunerUiState.StrumCheck(
+            tuning = shown.tuning,
+            notation = shown.notation,
+            phase = StrumPhase.WAITING,
+            strings = emptyList(),
+            toleranceCents = StrumCheckInterpreter.toleranceFor(inTunePrecision),
+        ).takeIf { strumCheck }
     }
+    // The signal bars at the start of the strum check's row over the pegs, upright in guitar mode (the owner's review of
+    // 2026-11-03); elsewhere (Any note, a tool's panel, on its side) at the start of the chip's row, by the gear.
+    val barsByPegs = showSignalBars && mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening)
+    // wide: the pegs in the wide layout's one row (Phase 73), where the bars stay in the chip's row; withBars: upright.
+    val guitarSlotWith = @Composable { wide: Boolean, withBars: Boolean ->
+        // No marks over the pegs: the panel's columns show the strum (the marks stay for the other layouts' tests).
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, null)
+        // The strum check's button above the pegs at their end (beside them, after the last, on its side).
+        // Not in Any note, where the pegs are measured but not shown (the row keeps its height without it).
+        val strumButton = onStrumCheckChange?.takeIf { TunerTool.STRUM_CHECK in tunerTools && mode == TunerMode.AUTO }?.let { onStrum ->
+            @Composable { StrumCheckButton(on = strumCheck, onChange = onStrum) }
+        }
+        GuitarSlotFor(state, mode, strings, strumButton, wide = wide, bars = if (barsByPegs && withBars) ({ movableSignalBars() }) else null)
+    }
+    val guitarSlot = @Composable { guitarSlotWith(false, false) }
     val gauge = @Composable {
-        // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
-        if (state is TunerUiState.ChordName) {
-            ChordPanel(state, Modifier.zIndex(-1f).tourTarget(TourPart.READOUT))
-        } else if (state is TunerUiState.StrumCheck) {
-            StrumPanel(
-                state,
-                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.READOUT),
-                onStringClick = onStringClick,
-                toneSounding = soundingString != null,
-            )
-        } else if (state is TunerUiState.IntonationCheck) {
-            IntonationPanel(
-                state,
-                Modifier.zIndex(-1f).tourTarget(TourPart.READOUT),
-                onStringClick = onStringClick,
-                toneSounding = soundingString != null,
-            )
-        } else if (pitchTrail && pitchHistory != null) {
-            // The pitch trail takes the needle's place; the note under it stays the tuner's.
-            PitchTrailPanel(
-                pitchHistory,
-                Modifier.zIndex(-1f).tourTarget(TourPart.READOUT),
-                animationsOff = animationsOff,
-            )
+        // The 12th-fret check takes the lens's place, at the old meter's shape.
+        if (state is TunerUiState.IntonationCheck) {
+            // The pegs below pick the string; the panel's one control is its ×, which ends the check.
+            IntonationPanel(state, Modifier.zIndex(-1f), onClose = onIntonationCheckChange?.let { { it(false) } })
+        } else if (strumPanel != null) {
+            // The strum check takes the lens's place; its × closes it, as the 12th-fret check's does.
+            StrumPanel(strumPanel, Modifier.zIndex(-1f), onClose = onStrumCheckClose)
         } else {
-            MeterFrame(
-                look = meterLook,
-                effect = inTuneEffect,
-                precision = inTunePrecision,
+            Lens(
+                look = lensLook,
                 cents = needleCents,
+                precision = inTunePrecision,
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 glow = meterGlow,
                 animationsOff = animationsOff,
-                // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.READOUT),
+                // A window wider than tall gets the lens's wide shape and its looks drawn wide.
+                wide = LocalLensWide.current,
+                // Drawn under its neighbours: its in-tune glow reaches past its box and fades out on the page.
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
                 reception = reception,
+                tone = tone,
             )
         }
     }
-    // Kept here, as the bars are: TalkBack's pacing carries over when the note's display is built
-    // afresh, so a note fading to "Play a string" (or a short drop-out) isn't said at once.
+    // Kept here, as the bars are: TalkBack's pacing carries over when the word is built afresh (another layout),
+    // so a note fading to "Play a string" (or a short drop-out) isn't said at once.
     val speech = rememberPacedSpeech()
-    val noteFor = @Composable { compact: Boolean, maxHeight: Dp ->
+    val detected = state as? TunerUiState.Detected
+    val readout = detected?.let { NoteReadout(it.noteName, it.octave, it.cents, it.inTune, it.hint) }
+    // The word under the lens (Phase 71), the tuner's one speaking item: what to do, the cents under it, or what to play.
+    val word = @Composable { compact: Boolean, start: Boolean ->
+        val listening = state as? TunerUiState.Listening
+        // Every string ticked off (the string tick-off on): "In tune. Play." while nothing is heard.
+        val allTuned = mode != TunerMode.CHROMATIC && listening != null && ticks.coversAll(listening.tuning)
+        // While no string is heard (and no reference tone says which plays) the strum's count stands in the word's
+        // place (Phase 74).
+        val noteSpeech = rememberNoteNameSpeech()
+        // The strum check's button on and no strum read yet: what to do.
+        val strumWaiting = stringResource(R.string.tuner_strum_waiting)
+        val heardQuiet = listening?.takeIf { soundingString == null }?.let {
+            strumShown?.let { check -> strumCountText(check)?.let { count -> HeardWords(count, count) } }
+                ?: HeardWords(strumWaiting, strumWaiting).takeIf { strumCheck && mode == TunerMode.AUTO }
+        }
+        // Every string of the strum in tune: its line in the in-tune colour, as the tick-off's "In tune. Play." is.
+        val strumAllInTune = heardQuiet != null && strumShown != null && strumShown.strings.all { it.verdict == StrumVerdict.IN_TUNE }
+        TuneWordLine(
+            readout = readout,
+            hint = detected?.hint,
+            chromatic = mode == TunerMode.CHROMATIC,
+            quiet = heardQuiet?.shown ?: listening?.let { listeningHint(mode, it, soundingString, allTuned = allTuned) }.orEmpty(),
+            spokenQuiet = heardQuiet?.spoken ?: listening?.let { listeningHint(mode, it, soundingString, noteSpeech, allTuned) }.orEmpty(),
+            quietInTune = (allTuned && soundingString == null && heardQuiet == null) || strumAllInTune,
+            // While a reference tone sounds its line says which, not a tip about the mic.
+            // Nor while a strum's count stands there: a strum's many notes read as noise to the tuner.
+            tip = detected?.tip ?: listening?.tip?.takeIf { soundingString == null && heardQuiet == null },
+            tone = tone,
+            // Settings' Under the meter (Phase 78): the signed cents big in the word's place.
+            centsBig = underMeter == UnderMeter.CENTS,
+            compact = compact,
+            start = start,
+            speech = speech,
+        )
+    }
+    // Under the lens the word; under a tool's panel the tool's own lines.
+    val status = @Composable { compact: Boolean ->
         when (state) {
-            is TunerUiState.StrumCheck -> StrumStatus(state, compact = compact)
             is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString, compact = compact)
-            is TunerUiState.ChordName -> ChordStatus(state, compact = compact)
-            is TunerUiState.Detected -> NoteDisplay(
-                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
-                hint = "",
-                display = display,
-                compact = compact,
-                maxHeight = maxHeight,
-                waveLook = waveLook,
-                showTuneHint = showTuneHint,
-                waveCents = needleCents,
-                reception = reception,
-                tip = state.tip,
-                speech = speech,
-            )
-            // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
-            is TunerUiState.Listening ->
-                NoteDisplay(
-                    readout = null,
-                    hint = listeningHint(mode, state, soundingString),
-                    spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
-                    display = display,
-                    compact = compact,
-                    maxHeight = maxHeight,
-                    waveLook = waveLook,
-                    showTuneHint = showTuneHint,
-                    // While a reference tone sounds its line says which, not a tip about the mic.
-                    tip = state.tip.takeIf { soundingString == null },
-                    speech = speech,
-                )
-            else -> NoteDisplay(
-                readout = null,
-                hint = "",
-                display = display,
-                compact = compact,
-                maxHeight = maxHeight,
-                waveLook = waveLook,
-                showTuneHint = showTuneHint,
-                speech = speech,
+            // One call for a note, the wait for one and the start, so the word keeps what it showed as a note comes.
+            else -> word(compact, false)
+        }
+    }
+    // The ruler over the lens (2.0, Phase 71) while the tuner reads a note or waits for one: it names the note
+    // (the big note went in the phase's last step). A tool's panel in the lens's place has none.
+    val lastHeard = remember { LastHeardNote() }
+    // None over the strum check's panel either: it names its strings itself.
+    val rulerShown = rulerFor(state, lastHeard)?.takeIf { strumPanel == null }
+    // large: upright, the needle in the room over the lens (2026-11-03); on its side and in focus mode the plain size.
+    val rulerWith = @Composable { large: Boolean, edgeClear: Dp ->
+        if (rulerShown != null) {
+            Ruler(
+                pitch = rulerPitch,
+                names = rulerShown.names,
+                rest = rulerShown.rest,
+                heard = rulerShown.heard,
+                cents = needleCents,
+                inTune = (state as? TunerUiState.Detected)?.inTune == true,
+                precision = inTunePrecision,
+                animationsOff = animationsOff,
+                edgeClear = edgeClear,
+                large = large,
             )
         }
     }
-    // Focus mode's note: small in the corner, beside the full-screen meter.
-    val focusNote = @Composable {
-        when (state) {
-            is TunerUiState.Detected -> FocusNote(
-                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
-                hint = "",
-                showTuneHint = showTuneHint,
-                tip = state.tip,
-                speech = speech,
-            )
-            is TunerUiState.Listening -> FocusNote(
-                readout = null,
-                hint = listeningHint(mode, state, soundingString),
-                spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
-                tip = state.tip.takeIf { soundingString == null },
-                speech = speech,
-            )
-            else -> FocusNote(readout = null, hint = "", speech = speech)
+    val ruler = rulerShown?.let { @Composable { rulerWith(false, 0.dp) } }
+    val rulerAndGauge = @Composable { largeRuler: Boolean, rulerGap: Dp ->
+        if (ruler == null) {
+            gauge()
+        } else {
+            // Under its neighbours, as the lens is on its own: the lens's glow reaches past its box, behind them.
+            Column(Modifier.zIndex(-1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                rulerWith(largeRuler, 0.dp)
+                Spacer(Modifier.height(rulerGap))
+                gauge()
+            }
         }
     }
-    // The note (with its pill and frequency, or the wave) is lit with the meter in the tour's first step.
-    val note = @Composable { compact: Boolean, maxHeight: Dp -> Box(Modifier.tourTarget(TourPart.READOUT)) { noteFor(compact, maxHeight) } }
     val error = (state as? TunerUiState.Error)?.reason
-    // The plain tuner's meter; with a tool on, its panel takes the meter's place.
-    val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
-        !(pitchTrail && pitchHistory != null)
+    // The plain tuner's lens; with a tool on, its panel takes the lens's place.
+    val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) && strumPanel == null
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        // A phone on its side keeps the chip in the top row's middle, so the lens keeps its height ([ChipRow]).
+        val chipInRow = maxWidth > maxHeight && maxHeight < CHIP_LINE_MIN_HEIGHT
         val twoPane = @Composable {
             TwoPaneLayout(
                 error = error,
                 onRetry = onRetry,
-                header = header,
+                // On its side the signal bars stay in the chip's row.
+                header = { header(true, chipInRow) },
                 guitarSlot = guitarSlot,
                 gauge = gauge,
-                note = { compact -> note(compact, Dp.Unspecified) },
-                compactNote = pictured || showTuneHint,
+                status = status,
+                ruler = ruler,
             )
         }
         val singleColumn = @Composable {
             // On a tablet held upright the whole column is drawn bigger, as on a phone (1 on every phone).
             val scale = columnScaleFor(maxWidth.value, maxHeight.value)
+            // The big ruler where the column has room for it (the Xiaomi's 750 dp); a short one (the S26's 570) keeps the plain one.
+            val largeRuler = maxHeight / scale >= LARGE_RULER_MIN_HEIGHT
+            // A short column closes up the ruler over the lens too (SingleColumnLayout closes up its sections).
+            val rulerGap = if (maxHeight / scale < SHORT_COLUMN_HEIGHT) RULER_METER_GAP_SHORT else RULER_METER_GAP
             ScaledUp(scale) {
                 SingleColumnLayout(
                     height = maxHeight / scale,
                     error = error,
                     onRetry = onRetry,
-                    header = header,
-                    gauge = gauge,
-                    note = { maxHeight -> note(false, maxHeight) },
-                    noteShrinks = plainMeter,
-                    guitarSlot = guitarSlot,
+                    header = { header(!barsByPegs, false) },
+                    gauge = { rulerAndGauge(largeRuler, rulerGap) },
+                    status = { status(false) },
+                    lensGivesWay = plainMeter,
+                    // Upright the signal bars stand in the strum check's row over the pegs.
+                    guitarSlot = { guitarSlotWith(false, true) },
+                    overLens = if (ruler != null) rulerHeight(largeRuler) + rulerGap else 0.dp,
                 )
             }
         }
-        val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
-        val twoPanesFit = maxWidth.value >= TWO_PANE_MIN_WIDTH_DP
-        when (layout) {
-            TunerLayout.SINGLE_COLUMN -> singleColumn()
-            TunerLayout.TWO_PANE -> twoPane()
-            TunerLayout.COMPACT -> {
-                var controlsShown by remember { mutableStateOf(false) }
-                // Every touch while the controls show, and an open instrument and tuning panel, keep them a while longer.
-                var touches by remember { mutableIntStateOf(0) }
-                val accessibility = LocalAccessibilityManager.current
-                val shownMillis = remember(accessibility) {
-                    // Longer when the user asked Android for more time to act ("Time to take action").
-                    accessibility?.calculateRecommendedTimeoutMillis(
-                        COMPACT_CONTROLS_SHOWN_MS,
-                        containsIcons = true,
-                        containsText = true,
-                        containsControls = true,
-                    ) ?: COMPACT_CONTROLS_SHOWN_MS
-                }
-                // While the tour runs the controls stay, so it can point at them.
-                val showing = controlsShown || controlsAlwaysShown
-                DisposableEffect(controlsAlwaysShown) {
-                    hideControls = if (controlsAlwaysShown) null else ({ controlsShown = false })
-                    onDispose { hideControls = null }
-                }
-                LaunchedEffect(controlsShown, touches, pickerOpen) {
-                    if (controlsShown && !pickerOpen) {
-                        delay(shownMillis)
-                        controlsShown = false
+        val windowHeight = maxHeight
+        // The wide layout (Phase 73) with the pegs, or in focus mode without: the ruler, the lens and the word, the
+        // string small beside the word (no signal bars there: they open a panel, a control).
+        val wide = @Composable { focus: Boolean ->
+            WideLayout(
+                height = windowHeight,
+                error = error,
+                onRetry = onRetry,
+                header = if (focus) null else ({ header(true, chipInRow) }),
+                ruler = rulerShown?.let { if (focus) ({ rulerWith(false, WIDE_RULER_CLEAR) }) else ruler },
+                gauge = gauge,
+                word = { word(true, true) },
+                pegs = if (focus) null else ({ guitarSlotWith(true, false) }),
+                string = if (focus) ({ FocusString(state) }) else null,
+            )
+        }
+        // The 12th-fret check's and the strum check's panels are laid out as in 1.1 on its side.
+        val toolPanel = state is TunerUiState.IntonationCheck || strumPanel != null
+        val controls = @Composable {
+            when (tunerLayoutFor(maxWidth.value, maxHeight.value, focusMode = false, toolPanel = toolPanel)) {
+                TunerLayout.WIDE -> wide(false)
+                TunerLayout.TWO_PANE -> twoPane()
+                else -> singleColumn()
+            }
+        }
+        val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, focusMode, toolPanel)
+        CompositionLocalProvider(LocalLensWide provides (maxWidth > maxHeight)) {
+            when {
+                !focusMode || layout == TunerLayout.SINGLE_COLUMN -> controls()
+                else -> {
+                    var controlsShown by remember { mutableStateOf(false) }
+                    // Every touch while the controls show, and an open instrument and tuning panel, keep them a while longer.
+                    var touches by remember { mutableIntStateOf(0) }
+                    val accessibility = LocalAccessibilityManager.current
+                    val shownMillis = remember(accessibility) {
+                        // Longer when the user asked Android for more time to act ("Time to take action").
+                        accessibility?.calculateRecommendedTimeoutMillis(
+                            COMPACT_CONTROLS_SHOWN_MS,
+                            containsIcons = true,
+                            containsText = true,
+                            containsControls = true,
+                        ) ?: COMPACT_CONTROLS_SHOWN_MS
                     }
-                }
-                // Without the controls the tuner takes the whole screen: the app hides the rail and the system bars.
-                val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
-                LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
-                DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
-                // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app
-                // (not while the tour runs: there Back ends the tour).
-                if (onFocusModeChange != null) BackHandler(enabled = !controlsAlwaysShown) { onFocusModeChange(false) }
-                Crossfade(targetState = showing, label = "compactControls") { shown ->
-                    if (shown) {
-                        Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
-                            // Beside the rail and the phone's navigation buttons a phone on its side may be
-                            // too narrow for two panes (578 dp on a Galaxy S26): the controls in one column then.
-                            if (twoPanesFit) twoPane() else singleColumn()
+                    val showing = controlsShown
+                    DisposableEffect(Unit) {
+                        hideControls = { controlsShown = false }
+                        onDispose { hideControls = null }
+                    }
+                    LaunchedEffect(controlsShown, touches, pickerOpen) {
+                        if (controlsShown && !pickerOpen) {
+                            delay(shownMillis)
+                            controlsShown = false
                         }
-                    } else {
-                        CompactLayout(
-                            error = error,
-                            onRetry = onRetry,
-                            gauge = gauge,
-                            note = { note(false, Dp.Unspecified) },
-                            below = { CompactExtraFor(state, mode, pictured) },
-                            // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
-                            focusNote = if (plainMeter) focusNote else null,
-                            // The strum check's columns are buttons: each keeps a 48 dp touch width.
-                            gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
-                            onShowControls = { controlsShown = true },
-                            onExitFocus = onFocusModeChange?.let { { it(false) } },
-                        )
+                    }
+                    // Without the controls the tuner takes the whole screen: the app hides the rail and the system bars.
+                    val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
+                    LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
+                    DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
+                    // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app.
+                    if (onFocusModeChange != null) BackHandler { onFocusModeChange(false) }
+                    Crossfade(targetState = showing, label = "compactControls") { shown ->
+                        if (shown) {
+                            // The same layout with its controls: the pegs and the picker chip, the rail beside it.
+                            Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) { controls() }
+                        } else {
+                            CompactLayout(
+                                onShowControls = { controlsShown = true },
+                                onExitFocus = onFocusModeChange?.let { { it(false) } },
+                            ) {
+                                if (layout == TunerLayout.WIDE) {
+                                    wide(true)
+                                } else {
+                                    // The 12th-fret check keeps its panel beside its own lines and buttons.
+                                    CompactRow(
+                                        error = error,
+                                        onRetry = onRetry,
+                                        gauge = gauge,
+                                        status = { status(false) },
+                                        below = { CompactPegsFor(state) },
+                                        gaugeMinWidth = GAUGE_MIN_WIDTH,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
-    val shownTuning = when (state) {
-        is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.StrumCheck -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
-        is TunerUiState.ChordName -> PanelTuning(state.tuning, state.notation)
-        else -> null
-    }
+    // Back ends the 12th-fret check, as its × does, before it leaves the app (composed last, so it is asked first).
+    if (intonationCheck && onIntonationCheckChange != null) BackHandler { onIntonationCheckChange(false) }
+    // Back closes the strum check's panel too, as its × does.
+    if (strumPanel != null && onStrumCheckClose != null) BackHandler { onStrumCheckClose() }
     // Only over the tuner itself, not over an error (it closes then) or the moment before the microphone is heard.
     if (pickerOpen && state is TunerUiState.Error) LaunchedEffect(Unit) { onPickerOpenChange(false) }
     if (pickerOpen && shownTuning != null) {
@@ -978,829 +833,75 @@ fun TunerContent(
             onEditTuning = onEditTuning,
             onDeleteTuning = onDeleteTuning,
             onLoweredByChange = onLoweredByChange,
+            // Its row only in guitar mode, while it is off, for an instrument it is offered for.
+            onIntonationCheck = onIntonationCheckChange
+                ?.takeIf { TunerTool.INTONATION_CHECK in tunerTools && mode == TunerMode.AUTO && !intonationCheck }
+                ?.let { start -> { start(true) } },
         )
     }
 }
 
+/** A chord's words in the word's place: as [shown], and as TalkBack says them ([spoken], "B flat major"). */
+private class HeardWords(val shown: String, val spoken: String)
+
+/** What the ruler shows: its 12 [names], where it rests while quiet ([rest]) and the [heard] note (null while quiet). */
+internal class RulerShown(val names: List<String>, val rest: Int, val heard: Int?)
+
+/** The note the ruler last showed as heard, so it rests there once the string dies away (not state: nothing redraws for it). */
+internal class LastHeardNote {
+    var midi: Int? = null
+}
+
 /**
- * The upright layout, as on the approved mock-up (docs/design/theme-styles-preview.html): the mode
- * switch centred at the top, the meter as wide
- * as the screen less [METER_MARGIN] at each side, the note under it, and the strings (with the strum
- * check's switch above them) at the bottom. The free [height] is shared out one to two above the meter and above the
- * strings, so the meter sits a little high and the gaps look balanced. Everything but the meter keeps
- * the [COLUMN_PADDING] text margin. Where the screen is too short for all that (a narrow phone with
- * navigation buttons), the gaps close up to [SECTION_SPACING] and, with [noteShrinks] (the plain
- * tuner), the note gets smaller (given its room as [note]'s maxHeight) while the meter keeps its full
- * width (owner, 2026-10-21: shrink the note, never the meter). With a tool on, its panel in the
- * meter's place shrinks instead (keeping its shape, down to [GAUGE_MIN_WIDTH]), so the tool's text
- * under it keeps its size. Only with a very large system font is it still taller than the screen,
- * and then it scrolls. The scroll area fills the screen, so
- * the meter's glow fades out on the screen rather than at the column's edge.
+ * What the ruler shows for [state] ([RulerShown]): with a note, the heard note as the screen's text has the
+ * reading; waiting for one, where it rests ([rulerRestMidi]: a locked string, the note [lastHeard], the
+ * tuning's first string or A4). Null for every other state: the ruler shows only in the plain tuner.
  */
 @Composable
-private fun SingleColumnLayout(
-    height: Dp,
-    error: TunerError?,
-    onRetry: () -> Unit,
-    header: @Composable () -> Unit,
-    gauge: @Composable () -> Unit,
-    note: @Composable (maxHeight: Dp) -> Unit,
-    noteShrinks: Boolean,
-    guitarSlot: @Composable () -> Unit,
-) {
-    val textMargin = Modifier.padding(horizontal = COLUMN_PADDING - METER_MARGIN)
-    FitColumn(
-        height = height,
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .widthIn(max = COLUMN_MAX_WIDTH)
-            .padding(horizontal = METER_MARGIN),
-    ) {
-        Box(textMargin.padding(top = EDGE_INSET)) { header() }
-        Spacer(Modifier.gap(TOP_GAP_WEIGHT))
-        Spacer(Modifier.height(SECTION_SPACING))
-        if (error != null) {
-            Column(textMargin, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
-                TunerErrorMessage(error, onRetry)
-            }
-            Spacer(Modifier.gap(1f))
-        } else {
-            // On a short screen (a phone with navigation buttons) the note, or a tool's panel, shrinks, so the strings stay in view.
-            if (noteShrinks) {
-                FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH)
-                Spacer(Modifier.height(SECTION_SPACING))
-                Shrinking { room -> Box(textMargin) { note(room) } }
-            } else {
-                Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
-                Spacer(Modifier.height(SECTION_SPACING))
-                Box(textMargin) { note(Dp.Unspecified) }
-            }
-            Spacer(Modifier.height(SECTION_SPACING))
-            Spacer(Modifier.gap(1f))
-            Box(textMargin) { guitarSlot() }
+internal fun rulerFor(state: TunerUiState, lastHeard: LastHeardNote): RulerShown? {
+    val mode: TunerMode
+    val tuning: Tuning
+    val notation: Notation
+    val locked: Int?
+    when (state) {
+        is TunerUiState.Detected -> {
+            mode = state.mode
+            tuning = state.tuning
+            notation = state.notation
+            locked = state.lockedString
         }
-        Spacer(Modifier.height(EDGE_INSET))
+        is TunerUiState.Listening -> {
+            mode = state.mode
+            tuning = state.tuning
+            notation = state.notation
+            locked = state.lockedString
+        }
+        else -> return null
     }
+    val guitar = mode == TunerMode.AUTO
+    val names = remember(notation, tuning.spelling, guitar) { rulerNames(notation, tuning, guitar) }
+    val heard = (state as? TunerUiState.Detected)?.let { rulerHeardMidi(rulerPosition(it.targetMidi, it.cents)) }
+    if (heard != null) SideEffect { lastHeard.midi = heard }
+    return RulerShown(names, rest = heard ?: rulerRestMidi(mode, tuning, locked, lastHeard.midi), heard = heard)
 }
-
-/**
- * Readout pane beside the controls pane: landscape and wide screens, and the [TunerLayout.COMPACT]
- * layout while its controls show. [compactNote] (the wave view, or the tune hint's line)
- * makes the readout taller; on a phone on its side it only fits with a smaller note.
- */
-@Composable
-private fun TwoPaneLayout(
-    error: TunerError?,
-    onRetry: () -> Unit,
-    header: @Composable () -> Unit,
-    guitarSlot: @Composable () -> Unit,
-    gauge: @Composable () -> Unit,
-    note: @Composable (compact: Boolean) -> Unit,
-    compactNote: Boolean,
-) {
-    Row(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING),
-    ) {
-        // Readout side. The gauge shrinks to fit the height, so the note stays in view.
-        BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-            val paneHeight = maxHeight
-            Column(
-                // At least the pane's height, so the meter's glow fades out on the screen, not at the scroll area's edge.
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .heightIn(min = paneHeight)
-                    .widthIn(max = READOUT_PANE_MAX_WIDTH),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterVertically),
-            ) {
-                if (error != null) {
-                    TunerErrorMessage(error, onRetry)
-                } else {
-                    val compact = compactNote && paneHeight < COMPACT_PANE_HEIGHT
-                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
-                }
-            }
-        }
-        // Controls side, at the end. The vertical padding keeps a margin when they scroll.
-        Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .widthIn(max = COLUMN_MAX_WIDTH)
-                    .padding(vertical = CONTROLS_PANE_CLEARANCE),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                HeaderOverSlot(header, guitarSlot)
-            }
-        }
-    }
-}
-
-/**
- * The controls pane's [header] (the mode switch, focus mode's button and the signal bars) over the
- * [guitarSlot], [SECTION_SPACING] apart, the header as wide as the string buttons' faces
- * ([StringFacesSpan]), so on its side focus mode's button ends where the last string's button and the
- * tools button do, and the signal bars start where the instrument button does (Phase 65: they stood a
- * few dp further out, the header taking the pane's whole width). Without strings it takes the width.
- */
-@Composable
-private fun HeaderOverSlot(header: @Composable () -> Unit, guitarSlot: @Composable () -> Unit) {
-    val faces = remember { StringFacesSpan() }
-    val slotContent = @Composable { CompositionLocalProvider(LocalStringFacesSpan provides faces, guitarSlot) }
-    Layout(contents = listOf(header, slotContent)) { (headerMeasurables, slotMeasurables), constraints ->
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val slot = slotMeasurables.single().measure(loose)
-        // Written by the guitar controls as the slot measured them; read here, so a change measures this again.
-        val span = faces.width
-        val headerConstraints = if (span <= 0 || span > loose.maxWidth) loose else loose.copy(minWidth = span, maxWidth = span)
-        val headerPlaceable = headerMeasurables.single().measure(headerConstraints)
-        val gap = SECTION_SPACING.roundToPx()
-        val width = maxOf(slot.width, headerPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = (headerPlaceable.height + gap + slot.height).coerceIn(constraints.minHeight, constraints.maxHeight)
-        layout(width, height) {
-            headerPlaceable.placeRelative((width - headerPlaceable.width) / 2, 0)
-            slot.placeRelative((width - slot.width) / 2, headerPlaceable.height + gap)
-        }
-    }
-}
-
-/**
- * How wide the string buttons' faces span, first face's start to last one's end, in px: the guitar
- * controls write it as they measure, and the header over them on its side ([HeaderOverSlot]) takes
- * that width; 0 without strings. Every part between them is centred, so the width alone places it.
- * Snapshot state, so the header follows a change. (Until Phase 65's last step a vertical alignment
- * line carried it; reading it during measuring left the string buttons' place on screen and their
- * place for touch and TalkBack apart, StringRowStylesTest found it.)
- */
-@Stable
-private class StringFacesSpan {
-    var width by mutableIntStateOf(0)
-}
-
-/** The [StringFacesSpan] of the header over the strings on its side; none where nothing reads it. */
-private val LocalStringFacesSpan = staticCompositionLocalOf<StringFacesSpan?> { null }
-
-/**
- * The compact landscape layout (focus mode). With a [focusNote] (the plain tuner) the [gauge] fills
- * the screen, the small note in its top start corner ([FocusMeter]). Otherwise (a tool on) the gauge
- * is as big as the space allows beside the [note] with [below] under it (the small string row or the
- * chromatic numbers). No mode switch, strum check switch or string buttons. A tap anywhere, or
- * TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls]. Focus
- * mode's exit button ([onExitFocus]) sits in the top end corner, where every meter look leaves room
- * (owner, 2026-10-19: in place of a "Tap to show the controls" line, as the way out). An [error]
- * shows its message and retry instead.
- */
-@Composable
-private fun CompactLayout(
-    error: TunerError?,
-    onRetry: () -> Unit,
-    gauge: @Composable () -> Unit,
-    note: @Composable () -> Unit,
-    below: @Composable () -> Unit,
-    gaugeMinWidth: Dp,
-    onShowControls: () -> Unit,
-    onExitFocus: (() -> Unit)?,
-    focusNote: (@Composable () -> Unit)? = null,
-) {
-    val fullMeter = focusNote != null && error == null
-    val showControls = stringResource(R.string.tuner_show_controls)
-    val currentOnShowControls by rememberUpdatedState(onShowControls)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .testTag(TunerTestTags.COMPACT)
-            .pointerInput(Unit) { detectTapGestures { currentOnShowControls() } }
-            .semantics {
-                contentDescription = showControls
-                role = Role.Button
-                onClick(label = showControls) {
-                    currentOnShowControls()
-                    true
-                }
-            },
-    ) {
-        if (fullMeter && focusNote != null) {
-            FocusMeter(gauge, focusNote)
-        } else {
-            CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
-        }
-        if (onExitFocus != null) {
-            // In a box of its own: the button's tooltip wrapper doesn't pass the alignment on.
-            Box(Modifier.align(Alignment.TopEnd).padding(top = FOCUS_EDGE_TOP, end = FOCUS_EDGE_SIDE)) {
-                FocusModeButton(FocusAction.EXIT, onClick = onExitFocus)
-            }
-        }
-    }
-}
-
-/**
- * The mode [switch] centred, with focus mode's [button] at the row's end, its outline in line with
- * the column's text margin (owner, 2026-10-25: the same place in both modes, never moving), and the
- * signal [bars] at its start, across from the button. The row takes the whole width. The switch keeps
- * clear of two equal slots ([FOCUS_BUTTON_SLOT]) at the row's ends, whether the bars show or not, so
- * it stays centred and never reaches either: a long label at a large font shrinks to fit instead
- * (Dutch "Chromatisch" at 2× text on a 360 dp phone). None of them moves with anything the tuner
- * hears, nor when the mode changes or the bars are turned on.
- */
-@Composable
-private fun ModeSwitchRow(switch: @Composable () -> Unit, bars: (@Composable () -> Unit)?, button: (@Composable () -> Unit)?) {
-    val barsSlot = @Composable { if (bars != null) Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
-    val buttonSlot = @Composable { if (button != null) button() }
-    Layout(contents = listOf(switch, barsSlot, buttonSlot)) { (switchMeasurables, barsMeasurables, buttonMeasurables), constraints ->
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val buttonPlaceable = buttonMeasurables.singleOrNull()?.measure(loose)
-        val barsPlaceable = barsMeasurables.singleOrNull()?.measure(loose)
-        val slot = if (buttonPlaceable != null || barsPlaceable != null) FOCUS_BUTTON_SLOT.roundToPx() else 0
-        val bounded = constraints.hasBoundedWidth
-        val switchRoom = if (bounded) (loose.maxWidth - 2 * slot).coerceAtLeast(0) else Constraints.Infinity
-        val switchPlaceable = switchMeasurables.single().measure(loose.copy(maxWidth = switchRoom))
-        val width = if (bounded) constraints.maxWidth else switchPlaceable.width + 2 * slot
-        val height = maxOf(switchPlaceable.height, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0)
-        layout(width, height) {
-            switchPlaceable.placeRelative((width - switchPlaceable.width) / 2, (height - switchPlaceable.height) / 2)
-            // The bars in the middle of their 48 dp touch area, which starts at the row's start.
-            barsPlaceable?.placeRelative((SIGNAL_BARS_SLOT.roundToPx() - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
-            // The touch area is wider than the outline; the outline ends at the row's end.
-            buttonPlaceable?.let {
-                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
-                it.placeRelative(width - it.width + outlineInset, (height - it.height) / 2)
-            }
-        }
-    }
-}
-
-/**
- * Focus mode's plain tuner: the [gauge] as big as the whole screen allows (keeping its 2:1 shape, so
- * on a phone on its side its height decides), with [note] small in the top start corner, where every
- * meter look leaves room above its scale.
- */
-@Composable
-private fun FocusMeter(gauge: @Composable () -> Unit, note: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxSize().padding(FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
-            FitGauge(gauge, maxWidth = FOCUS_GAUGE_MAX_WIDTH)
-        }
-        Box(Modifier.align(Alignment.TopStart).padding(start = FOCUS_EDGE_SIDE, top = FOCUS_EDGE_TOP)) { note() }
-    }
-}
-
-/** The compact layout's meter, at least [gaugeMinWidth] wide, beside the note column, or the [error]. */
-@Composable
-private fun CompactRow(
-    error: TunerError?,
-    onRetry: () -> Unit,
-    gauge: @Composable () -> Unit,
-    note: @Composable () -> Unit,
-    below: @Composable () -> Unit,
-    gaugeMinWidth: Dp,
-) {
-    BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-        // The note column never takes the meter's last [gaugeMinWidth]: long lines in a wide face at 2× text
-        // (Space Age's 12th-fret check in Dutch) would otherwise leave the meter no width at all, and the
-        // strum check's columns, which are buttons, too little (Futuristic and Space Age beside the rail).
-        val noteMaxWidth = (maxWidth - SECTION_SPACING - gaugeMinWidth).coerceAtLeast(0.dp)
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterHorizontally),
-        ) {
-            if (error != null) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
-                    TunerErrorMessage(error, onRetry)
-                }
-            } else {
-                // The note column is measured first; the meter takes all the room that is left.
-                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                    FitGauge(gauge, maxWidth = COMPACT_GAUGE_MAX_WIDTH)
-                }
-                Column(
-                    // With a very large system font the note column can be taller than the screen; then it scrolls,
-                    // clear of focus mode's exit button in the top end corner (and as far from the bottom).
-                    modifier = Modifier
-                        .widthIn(max = noteMaxWidth)
-                        .padding(vertical = COMPACT_CORNER_CLEARANCE)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(COMPACT_NOTE_SPACING),
-                ) {
-                    note()
-                    below()
-                }
-            }
-        }
-    }
-}
-
-/**
- * Under the note in the compact layout: in guitar mode a small string row with the target (or
- * locked) string highlighted; in chromatic mode with the wave view the cents and
- * frequency ([ChromaticReadout]), which those views leave out under the note.
- */
-@Composable
-private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, pictured: Boolean) {
-    when {
-        mode == TunerMode.CHROMATIC && pictured && state is TunerUiState.Detected ->
-            ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune))
-        mode == TunerMode.CHROMATIC && pictured && state is TunerUiState.Listening -> ChromaticReadout(readout = null)
-        mode == TunerMode.CHROMATIC -> Unit
-        state is TunerUiState.Detected -> StringSelector(
-            state.tuning,
-            state.targetString,
-            notation = state.notation,
-            inTune = state.inTune,
-            lockedString = state.lockedString,
-            small = true,
-        )
-        // A locked string is the target before anything is played, so it stays highlighted.
-        state is TunerUiState.Listening -> StringSelector(
-            state.tuning,
-            state.lockedString,
-            notation = state.notation,
-            lockedString = state.lockedString,
-            small = true,
-        )
-        state is TunerUiState.IntonationCheck -> StringSelector(state.tuning, state.string, notation = state.notation, small = true)
-    }
-}
-
-/**
- * The gauge as wide as the space allows (at most [maxWidth]), shrinking (keeping its shape, down to
- * [GAUGE_MIN_WIDTH]) when it would be taller than the space, or than [maxHeight] where that is given.
- */
-@Composable
-private fun FitGauge(gauge: @Composable () -> Unit, maxWidth: Dp, maxHeight: Dp = Dp.Unspecified) {
-    Layout(content = gauge) { measurables, constraints ->
-        val measurable = measurables.single()
-        val width = min(constraints.maxWidth, maxWidth.roundToPx())
-        val fullHeight = measurable.minIntrinsicHeight(width)
-        val height = if (maxHeight.isSpecified) min(maxHeight.roundToPx(), constraints.maxHeight) else constraints.maxHeight
-        val gaugeWidth = if (height == Constraints.Infinity || fullHeight <= height) {
-            width
-        } else {
-            // The dial is twice as wide as it is tall (anything the gauge adds under it keeps its height).
-            val labels = fullHeight - width / 2
-            ((height - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), width), width)
-        }
-        val placeable = measurable.measure(Constraints.fixedWidth(gaugeWidth))
-        layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
-    }
-}
-
-/** Calls [onTouch] whenever a finger goes down here, before (and without taking) the touch from what's under it. */
-private fun Modifier.onEveryTouch(onTouch: () -> Unit): Modifier = pointerInput(Unit) {
-    awaitEachGesture {
-        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-        onTouch()
-    }
-}
-
-/**
- * [gauge] above [note], for the two-pane layout. The note keeps its natural size and the gauge
- * shrinks (keeping its shape, down to [GAUGE_MIN_WIDTH]) so both fit in [targetHeight]: a phone on
- * its side is too short for the full-width gauge. Taller than [targetHeight] only with a very large
- * font, where the pane scrolls.
- */
-@Composable
-private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -> Unit, targetHeight: Dp) {
-    Layout(contents = listOf(gauge, note)) { (gaugeMeasurables, noteMeasurables), constraints ->
-        val maxWidth = constraints.maxWidth
-        val notePlaceable = noteMeasurables.single().measure(Constraints(maxWidth = maxWidth))
-        val gaugeMeasurable = gaugeMeasurables.single()
-        val spacing = GAUGE_NOTE_SPACING.roundToPx()
-
-        val available = targetHeight.roundToPx() - notePlaceable.height - spacing
-        val fullHeight = gaugeMeasurable.minIntrinsicHeight(maxWidth)
-        val gaugeWidth = if (fullHeight <= available) {
-            maxWidth
-        } else {
-            // The dial is twice as wide as it is tall (anything the gauge adds under it keeps its height).
-            val labels = fullHeight - maxWidth / 2
-            ((available - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), maxWidth), maxWidth)
-        }
-        val gaugePlaceable = gaugeMeasurable.measure(Constraints.fixedWidth(gaugeWidth))
-
-        val width = max(gaugePlaceable.width, notePlaceable.width)
-        layout(width, gaugePlaceable.height + spacing + notePlaceable.height) {
-            gaugePlaceable.placeRelative((width - gaugePlaceable.width) / 2, 0)
-            notePlaceable.placeRelative((width - notePlaceable.width) / 2, gaugePlaceable.height + spacing)
-        }
-    }
-}
-
-/**
- * The [ModeSlot] for each [TunerUiState]: the string row (with the strum check's switch) for guitar mode and, with
- * [pictured] (the wave instead of cents), the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
- * already under the note, so chromatic mode leaves the slot empty.
- */
-@Composable
-private fun GuitarSlotFor(
-    state: TunerUiState,
-    mode: TunerMode,
-    pictured: Boolean,
-    strings: StringActions,
-    strum: ToolsState? = null,
-    names: TuningNames? = null,
-) {
-    val chromatic:(@Composable () -> Unit)? = if (pictured) {
-        when (state) {
-            is TunerUiState.Detected -> {
-                { ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune)) }
-            }
-            is TunerUiState.Listening -> {
-                { ChromaticReadout(readout = null) }
-            }
-            else -> null
-        }
-    } else {
-        null
-    }
-    val controls = when (state) {
-        // The strings ticked off only while they belong to the tuning shown (a new one starts afresh).
-        is TunerUiState.Detected -> GuitarControlsState(
-            state.tuning, state.notation, state.targetString, state.lockedString, state.inTune,
-            tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
-        )
-        // A locked string is the target before anything is played, so it stays highlighted.
-        is TunerUiState.Listening -> GuitarControlsState(
-            state.tuning, state.notation, state.lockedString, state.lockedString, inTune = false,
-            tuned = strings.tuned?.takeIf { it.tuning == state.tuning },
-        )
-        // Strum check reads every string at once, the chord name every note: none is the target.
-        is TunerUiState.StrumCheck ->
-            GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, inTune = false)
-        is TunerUiState.ChordName ->
-            GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, inTune = false)
-        // The 12th-fret check: the string being checked, and every string's result on its button.
-        is TunerUiState.IntonationCheck ->
-            GuitarControlsState(
-                state.tuning, state.notation, targetString = state.string, lockedString = null, inTune = false,
-                marks = state.results.map(::markOf), checking = true,
-            )
-        // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
-        // permission is granted): empty space of the same height.
-        else -> null
-    }
-    // One call site for both Detected and Listening, so the controls stay in the composition when a
-    // note starts or stops.
-    val guitar: (@Composable () -> Unit)? = if (controls != null) {
-        {
-            GuitarControls(
-                controls.tuning, controls.notation, strings,
-                controls.targetString, controls.lockedString, controls.inTune,
-                strum,
-                names = names,
-                marks = controls.marks,
-                checking = controls.checking,
-                tuned = controls.tuned,
-                // Only where it shows: hidden in chromatic mode, it isn't laid out, so its old place mustn't count.
-                inTour = mode == TunerMode.AUTO,
-            )
-        }
-    } else {
-        null
-    }
-    ModeSlot(mode, guitar = guitar, chromatic = chromatic)
-}
-
-/** What [GuitarControls] shows for the current [TunerUiState]. */
-private data class GuitarControlsState(
-    val tuning: Tuning,
-    val notation: Notation,
-    val targetString: Int?,
-    val lockedString: Int?,
-    val inTune: Boolean,
-    val marks: List<StringMark?>? = null,
-    val checking: Boolean = false,
-    val tuned: TunedStrings? = null,
-)
-
-/**
- * What the string buttons do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
- * ([onLongClick]: play the string's note, none without it), which string's tone is [sounding], and
- * which strings are ticked off as tuned ([tuned]).
- */
-private data class StringActions(
-    val onClick: (Int) -> Unit,
-    val onLongClick: ((Int) -> Unit)?,
-    val sounding: Int?,
-    val tuned: TunedStrings? = null,
-)
-
-/** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
-private fun instrumentOf(state: TunerUiState): Instrument {
-    val tuning = when (state) {
-        is TunerUiState.Listening -> state.tuning
-        is TunerUiState.Detected -> state.tuning
-        else -> null
-    }
-    return tuning?.let { Instruments.ofTuning(it.id) } ?: Instruments.DEFAULT
-}
-
-/**
- * What the instrument button and the name over the string row are made of: the [instrument] picked
- * and the player's own [customTunings], whose names are their own (the presets' come from the string
- * resources). A tap on either calls [onClick] (opens the instrument and tuning panel).
- */
-private data class TuningNames(val instrument: Instrument, val customTunings: List<CustomTuning>, val onClick: () -> Unit)
-
-/** "Guitar · Drop D" for [tuning], or the player's own tuning's name after the instrument's. */
-@Composable
-private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
-    val tuningName = tuningLabel(tuning, customTunings.firstOrNull { it.id == tuning.id }?.name)
-    return if (spoken) {
-        stringResource(R.string.tuner_spoken_picker, instrumentLabel(instrument), rememberNoteNameSpeech().text(tuningName))
-    } else {
-        stringResource(R.string.tuner_tuning_name, instrumentLabel(instrument), tuningName)
-    }
-}
-
-/**
- * The tools the tuner offers ([tools]: the strum check, and in builds with its switch the 12th-fret
- * check), the one that is [active] (null: none), and what turning one on or off calls ([onChange]).
- */
-private data class ToolsState(val tools: List<TunerTool>, val active: TunerTool?, val onChange: (TunerTool, Boolean) -> Unit)
-
-private val STRUM_CHECK_ALONE = listOf(TunerTool.STRUM_CHECK)
-
-/**
- * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch (or
- * the "more tools" button) sits in a row of its own above the strings, at its end, its outline ending
- * in line with the last string's button ([stringFaceInsetFor]). With [names] that row starts with the
- * instrument button ([InstrumentButton], a headstock in the same outline), its outline starting in
- * line with the first string's button, so a button of one kind stands at each end; between them the
- * instrument and tuning ("Guitar · Drop D"), quiet in the muted text colour. A long name (a large font,
- * a long language, an own tuning) takes up to two lines and ends in "…" rather than move either
- * button. A tap on the button or the name opens the instrument and tuning panel; TalkBack hears the
- * button ("Instrument, Guitar, Drop D") and skips the name, which says the same.
- * [inTour]: the instrument button, the switch and the strings are the tour's steps.
- */
-@Composable
-private fun GuitarControls(
-    tuning: Tuning,
-    notation: Notation,
-    stringActions: StringActions,
-    targetString: Int?,
-    lockedString: Int?,
-    inTune: Boolean = false,
-    strum: ToolsState? = null,
-    inTour: Boolean = true,
-    names: TuningNames? = null,
-    marks: List<StringMark?>? = null,
-    checking: Boolean = false,
-    tuned: TunedStrings? = null,
-) {
-    val strings = @Composable {
-        StringSelector(
-            tuning,
-            targetString,
-            notation = notation,
-            inTune = inTune,
-            lockedString = lockedString,
-            onStringClick = stringActions.onClick,
-            onStringLongClick = stringActions.onLongClick,
-            soundingString = stringActions.sounding,
-            modifier = if (inTour) Modifier.tourTarget(TourPart.STRINGS) else Modifier,
-            marks = marks,
-            checking = checking,
-            tuned = tuned,
-        )
-    }
-    val toggle = @Composable {
-        when {
-            strum == null || strum.tools.isEmpty() -> Unit
-            // The strum check alone keeps its own switch, exactly as in v1.0.
-            strum.tools == STRUM_CHECK_ALONE -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
-            // Any other tool, or more than one (the 12-string has no strum check): one "more tools"
-            // button gathers them, in the switch's place.
-            else -> MoreToolsButton(strum.tools, strum.active, strum.onChange, inTour = inTour)
-        }
-    }
-    // One press for the instrument button and the name beside it: a tap on either sinks and lights both.
-    val namePress = remember { MutableInteractionSource() }
-    val instrument = @Composable {
-        if (names != null) {
-            InstrumentButton(
-                interactionSource = namePress,
-                current = names.labelFor(tuning, spoken = true),
-                onClick = names.onClick,
-                // The tour lights up the outline, not the touch target round it.
-                faceModifier = Modifier
-                    .testTag(TunerTestTags.INSTRUMENT_BUTTON)
-                    .then(if (inTour) Modifier.tourTarget(TourPart.PICKER) else Modifier),
-            )
-        }
-    }
-    val label = @Composable {
-        if (names != null) {
-            // Pressed (or its button pressed), the name sinks and lights up; a quiet label, so only the
-            // tint, never Futuristic's neon frame tight round its text.
-            val press = namePress
-            val nameShape = MaterialTheme.shapes.small
-            Box(
-                Modifier
-                    .heightIn(min = LABEL_MIN_HEIGHT)
-                    .pressSink(press)
-                    .clip(nameShape)
-                    .clickable(press, PressIndication(nameShape)) {
-                        press.pressFlash()
-                        names.onClick()
-                    }
-                    .testTag(TunerTestTags.TUNING_NAME)
-                    // The instrument button beside it says the same to TalkBack.
-                    .clearAndSetSemantics {
-                        hideFromAccessibility()
-                        onClick {
-                            names.onClick()
-                            true
-                        }
-                    },
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Text(
-                    musicText(names.labelFor(tuning, spoken = false)),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
-    val style = MaterialTheme.styleTokens.style
-    val facesSpan = LocalStringFacesSpan.current
-    // Without the strings, the header over them takes its own width again.
-    if (facesSpan != null) DisposableEffect(facesSpan) { onDispose { facesSpan.width = 0 } }
-    Layout(contents = listOf(strings, toggle, instrument, label)) { (stringMeasurables, toggleMeasurables, instrumentMeasurables, labelMeasurables), constraints ->
-        val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-        val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
-        val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(partConstraints)
-        val instrumentPlaceable = instrumentMeasurables.firstOrNull()?.measure(partConstraints)
-        val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
-        val stringsX = (width - stringsPlaceable.width) / 2
-        // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
-        val faceInset = stringFaceInsetFor(style, stringsPlaceable.width.toDp(), tuning).dp.roundToPx().coerceAtLeast(0)
-        val facesStart = stringsX + faceInset
-        val facesEnd = stringsX + stringsPlaceable.width - faceInset
-        // Each button's outline sits inside its 48 dp touch target: the switch's ends where the last
-        // string's face does, the instrument button's starts where the first one's does.
-        val toggleX = togglePlaceable?.let {
-            val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
-            (facesEnd - it.width + outlineInset).coerceIn(0, (width - it.width).coerceAtLeast(0))
-        }
-        val instrumentInset = instrumentPlaceable?.let { (it.width - INSTRUMENT_BUTTON_SIZE.roundToPx()).coerceAtLeast(0) / 2 } ?: 0
-        val instrumentX = instrumentPlaceable?.let { (facesStart - instrumentInset).coerceIn(0, (width - it.width).coerceAtLeast(0)) }
-        // The name between the two buttons' outlines, a gap from each.
-        val labelStart = if (instrumentPlaceable != null && instrumentX != null) {
-            instrumentX + instrumentPlaceable.width - instrumentInset + LABEL_BUTTON_GAP.roundToPx()
-        } else {
-            facesStart
-        }
-        val labelEnd = if (togglePlaceable != null && toggleX != null) {
-            toggleX + (togglePlaceable.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2 - LABEL_TOGGLE_GAP.roundToPx()
-        } else {
-            facesEnd
-        }
-        val labelPlaceable = labelMeasurables.firstOrNull()
-            ?.measure(partConstraints.copy(maxWidth = (labelEnd - labelStart).coerceAtLeast(0)))
-        val rowHeight = maxOf(togglePlaceable?.height ?: 0, instrumentPlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
-        val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
-        val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
-        // For the header over the strings on its side: as wide as the faces (they are centred, as it is).
-        facesSpan?.width = (facesEnd - facesStart).coerceAtLeast(0)
-        layout(width, height) {
-            if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
-            if (instrumentPlaceable != null && instrumentX != null) instrumentPlaceable.placeRelative(instrumentX, (rowHeight - instrumentPlaceable.height) / 2)
-            labelPlaceable?.placeRelative(labelStart, (rowHeight - labelPlaceable.height) / 2)
-            stringsPlaceable.placeRelative(stringsX, stringsY)
-        }
-    }
-}
-
-/**
- * The space under the readout that changes with the mode: [guitar] in guitar mode, [chromatic] (or
- * nothing) in chromatic mode, at the bottom of the slot. Both are measured all the time and the slot
- * takes the taller one's height (at least [GUITAR_SLOT_HEIGHT]), so switching modes never moves
- * anything, also with a large system font, where the strings grow. The other mode's content
- * isn't placed, so it is neither drawn nor tappable, and its semantics are cleared, so TalkBack and
- * UI tests don't find it either.
- */
-@Composable
-private fun ModeSlot(
-    mode: TunerMode,
-    guitar: (@Composable () -> Unit)?,
-    chromatic: (@Composable () -> Unit)?,
-) {
-    val guitarShown = mode == TunerMode.AUTO
-    val guitarPart = @Composable { if (guitar != null) SlotPart(shown = guitarShown, content = guitar) }
-    val chromaticPart = @Composable { if (chromatic != null) SlotPart(shown = !guitarShown, content = chromatic) }
-    Layout(
-        contents = listOf(guitarPart, chromaticPart),
-        modifier = Modifier.heightIn(min = GUITAR_SLOT_HEIGHT),
-    ) { (guitarMeasurables, chromaticMeasurables), constraints ->
-        val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-        val guitarPlaceable = guitarMeasurables.firstOrNull()?.measure(partConstraints)
-        val chromaticPlaceable = chromaticMeasurables.firstOrNull()?.measure(partConstraints)
-        val parts = listOfNotNull(guitarPlaceable, chromaticPlaceable)
-        val width = (parts.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = (parts.maxOfOrNull { it.height } ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
-        // Both parts are measured in either mode, so the guitar controls tell the header over the slot on
-        // its side the faces' width in chromatic mode too ([StringFacesSpan]), and its edges stay put.
-        layout(width, height) {
-            val shown = if (guitarShown) guitarPlaceable else chromaticPlaceable
-            shown?.placeRelative((width - shown.width) / 2, height - shown.height)
-        }
-    }
-}
-
-/** One mode's content in the [ModeSlot]; while not [shown] TalkBack and UI tests don't see it. */
-@Composable
-private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
-    Box(if (shown) Modifier else Modifier.clearAndSetSemantics {}) { content() }
-}
-
-private val SECTION_SPACING = 24.dp
-
-/** The tuning's name is a touch target this high at least, like the switch beside it. */
-private val LABEL_MIN_HEIGHT = 48.dp
-
-/** At least this much room between the tuning's name and the strum check's switch. */
-private val LABEL_TOGGLE_GAP = 12.dp
-
-/** Between the instrument button's outline and the tuning's name. */
-private val LABEL_BUTTON_GAP = 12.dp
-
-/** Between the strum check's switch and the string row under it. */
-private val TOGGLE_STRINGS_GAP = 8.dp
-
-/** The signal bars as drawn, and their touch area's width at the mode switch row's start. */
-private val SIGNAL_BARS_SIZE = 24.dp
-private val SIGNAL_BARS_SLOT = 48.dp
-
-/** The single column's text margin at each side. */
-private val COLUMN_PADDING = 16.dp
-
-/** The upright meter's margin at each side of the screen (the approved mock-up's 8 dp). */
-private val METER_MARGIN = 8.dp
-
-/** The free height above the meter, against 1 above the strings (the mock-up's `.grow.top`). */
-private const val TOP_GAP_WEIGHT = 0.5f
-
-/** The single column, and the controls pane, never get wider than this. */
-private val COLUMN_MAX_WIDTH = 480.dp
-
-/** On a wide screen the gauge stops growing here. */
-private val READOUT_PANE_MAX_WIDTH = 560.dp
-
-/** A phone on its side shrinks the gauge to fit, but not below this. */
-private val GAUGE_MIN_WIDTH = 160.dp
-
-/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view or the hint. */
-private val COMPACT_PANE_HEIGHT = 420.dp
-
-/** The compact layout's "Tap to show the controls" fades in and out this gently. */
-
-/** In the compact layout the meter grows with the screen, up to this. */
-private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
-
-/** Focus mode's full-screen meter: the margin round it, and how wide it may grow (a tablet on its side). */
-private val FOCUS_METER_MARGIN = 8.dp
-private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
-
-/** The room at each end of the mode switch's row: focus mode's 44 dp button outline and 8 dp clear of the switch; the signal bars' 48 dp touch area fits it too. */
-private val FOCUS_BUTTON_SLOT = 52.dp
-
-/** What sits in the compact layout's top corners (the note, focus mode's exit button) keeps this far from the screen's edges. */
-private val FOCUS_EDGE_SIDE = 16.dp
-private val FOCUS_EDGE_TOP = 8.dp
-
-/** Above and below the compact layout's note column: focus mode's exit button (48 dp at 8 dp from the top) stays clear. */
-private val COMPACT_CORNER_CLEARANCE = 56.dp
-
-/** Between the note and what's under it in the compact layout. */
-private val COMPACT_NOTE_SPACING = 12.dp
-
-/** Between gauge and note in the two-pane layout, where height is scarce. */
-private val GAUGE_NOTE_SPACING = 8.dp
-
-/** The upright column keeps this far from the top and bottom of its space. */
-private val EDGE_INSET = 8.dp
-
-/** Above and below the controls pane's column, so it keeps a margin when it scrolls (a large font on a phone on its side). */
-private val CONTROLS_PANE_CLEARANCE = 56.dp
-
-/** Instrument-and-tuning button (a 48 dp touch target) + 8 dp + string row (48 dp). */
-private val GUITAR_SLOT_HEIGHT = 104.dp
 
 /** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */
 @Composable
-private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening, sounding: Int? = null, speech: NoteNameSpeech? = null): String {
+private fun listeningHint(
+    mode: TunerMode,
+    state: TunerUiState.Listening,
+    sounding: Int? = null,
+    speech: NoteNameSpeech? = null,
+    allTuned: Boolean = false,
+): String {
     val locked = state.lockedString
     // The string whose reference tone sounds now: "Playing D3", in the player's note names.
     val playing = sounding?.let { state.tuning.strings.getOrNull(it) }
     return when {
         playing != null -> stringResource(R.string.tuner_hint_playing, stringName(state, playing, speech))
         mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
+        // Every string ticked off (the string tick-off): the guitar is tuned, a locked string too.
+        allTuned -> stringResource(R.string.tuner_hint_all_in_tune)
         locked != null -> stringResource(R.string.tuner_hint_play_locked_string, stringName(state, state.tuning.strings[locked], speech))
         else -> stringResource(R.string.tuner_hint_play_string)
     }
@@ -1822,7 +923,7 @@ private fun stringName(state: TunerUiState.Listening, string: Note, speech: Note
  * without a word (Phase 65).
  */
 @Composable
-private fun TunerErrorMessage(error: TunerError, onRetry: () -> Unit) {
+internal fun TunerErrorMessage(error: TunerError, onRetry: () -> Unit) {
     Text(
         text = stringResource(
             when (error) {

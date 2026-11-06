@@ -160,7 +160,7 @@ class WatchTunerViewModelTest {
     }
 
     @Test
-    fun `note names and signed cents`() {
+    fun `note names and the cents' digits`() {
         val aSharp = Note.of(PitchClass.A_SHARP, 2)
         assertEquals("A♯", WatchNoteName.letter(aSharp))
         assertEquals("La♯", WatchNoteName.letter(aSharp, Notation.forLanguage("fr")))
@@ -169,12 +169,9 @@ class WatchTunerViewModelTest {
         assertEquals(0.8f, WatchNoteName.sizeFor("La♯"))
         assertEquals(0.65f, WatchNoteName.sizeFor("Sol♯"))
         assertEquals("2", WatchNoteName.octave(aSharp))
-        assertEquals("+12", WatchNoteName.signedCents(12))
-        assertEquals("−3", WatchNoteName.signedCents(-3))
-        assertEquals("0", WatchNoteName.signedCents(0))
+        assertEquals("12", digits(12, Locale.ROOT))
         // In the digits of the app's language, like its texts; the octave stays 0–9.
         val arabic = Locale.forLanguageTag("ar-u-nu-arab")
-        assertEquals("+١٢", WatchNoteName.signedCents(12, arabic))
-        assertEquals("−٣", WatchNoteName.signedCents(-3, arabic))
+        assertEquals("١٢", digits(12, arabic))
     }
 }

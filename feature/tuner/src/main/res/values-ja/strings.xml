@@ -14,9 +14,9 @@
     <string name="error_mic_unavailable">マイクを開けませんでした。マイクを使っている他のアプリを閉じて「再試行」をタップするか、端末を再起動してください。</string>
     <string name="error_mic_stopped">通話や別のアプリのためか、マイクが停止しました。「再試行」をタップしてチューニングを続けてください。</string>
     <string name="error_retry">再試行</string>
+    <string name="tuner_any_note">任意の音</string>
+    <string name="tuner_any_note_summary">弦を選ばず、最も近い音を表示</string>
 
-    <string name="tuner_mode_strings">弦</string>
-    <string name="tuner_mode_chromatic">クロマチック</string>
     <string name="tuner_show_controls">操作を表示</string>
     <string name="tuner_focus_mode">フォーカスモード</string>
     <string name="tuner_exit_focus_mode">フォーカスモードを終了</string>
@@ -76,6 +76,7 @@
     <string name="tuner_hint_play_note">音を鳴らしてください</string>
     <string name="tuner_hint_play_locked_string">%1$s 弦を弾いてください</string>
     <string name="tuner_hint_playing">%1$s を再生中</string>
+    <string name="tuner_hint_all_in_tune">合っています。弾きましょう。</string>
     <string name="tuner_string_lock">この弦に固定</string>
     <string name="tuner_string_unlock">弦を自動で選ぶ</string>
     <string name="tuner_string_locked">固定中</string>
@@ -85,7 +86,7 @@
     <string name="tuner_string_locked_sounding">固定中、再生中</string>
     <string name="tuner_string_tuned">チューニング済み</string>
     <string name="tuner_string_locked_tuned">固定中、チューニング済み</string>
-    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_string_locked_mark">固定中、%1$s</string>
     <string name="tuner_cents_zero">0 セント</string>
     <plurals name="tuner_cents_flat">
         <item quantity="other">%1$d セント低い</item>
@@ -94,8 +95,13 @@
         <item quantity="other">%1$d セント高い</item>
     </plurals>
     <string name="tuner_in_tune">合っています</string>
-    <string name="tuner_tune_up">上げる ↑</string>
-    <string name="tuner_tune_down">下げる ↓</string>
+    <string name="tuner_word_tighten">締める</string>
+    <string name="tuner_word_loosen">緩める</string>
+    <string name="tuner_word_too_low">低すぎ</string>
+    <string name="tuner_word_too_high">高すぎ</string>
+    <plurals name="tuner_cents_off">
+        <item quantity="other">%1$d セント</item>
+    </plurals>
     <string name="tuner_tip_too_soft">強めに弾いてください</string>
     <string name="tuner_tip_too_noisy">周りがうるさすぎます。スマホを近づけてください</string>
     <string name="tuner_tip_too_loud">音が大きすぎます。スマホを離してください</string>
@@ -109,15 +115,13 @@
 
     <string name="tuner_spoken_reading">%1$s %2$d、%3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d、%3$s、%4$s</string>
-    <string name="tuner_spoken_tune_up">上げる</string>
-    <string name="tuner_spoken_tune_down">下げる</string>
     <string name="tuner_spoken_separator">、</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s、オクターブ弦付き</string>
     <string name="tuner_spoken_tuning">%1$s、%2$s</string>
     <string name="tuner_spoken_picker">%1$s、%2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_picker_title">楽器とチューニング</string>
+    <string name="tuner_picker_title">何をチューニングしますか？</string>
 
     <string name="tuner_new_tuning">新しいチューニング</string>
 
@@ -146,33 +150,19 @@
     <string name="tuner_delete_tuning_cancel">キャンセル</string>
     <string name="tuner_strum_check">ストロークチェック</string>
     <string name="tuner_strum_waiting">開放弦を全部まとめて弾いてください</string>
-    <string name="tuner_strum_waiting_detail">弦ごとに低い・合っている・高いを表示します</string>
-    <string name="tuner_strum_hearing">聞き取り中…</string>
-    <plurals name="tuner_strum_to_tune">
-        <item quantity="other">合わせる弦：%1$d 本</item>
-    </plurals>
-    <string name="tuner_strum_not_all_heard">聞き取れなかった弦があります</string>
-    <string name="tuner_strum_all_in_tune">すべての弦が合っています</string>
-    <string name="tuner_strum_tap_to_tune">弦をタップしてチューニング</string>
-    <string name="tuner_strum_again">もう一度弾くか、弦をタップしてチューニング</string>
-    <string name="tuner_strum_tune_string">%1$s をチューニング</string>
-    <string name="tuner_strum_spoken_string">%1$s、%2$s</string>
-    <string name="tuner_strum_spoken_not_heard">%1$s、聞き取れず</string>
     <string name="tuner_strum_spoken_waiting">%1$s、まだ弾いていません</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s、聞き取れず</string>
     <string name="tuner_strum_spoken_less_sure">%1$s、やや不確か</string>
-    <string name="tour_title">使い方を見る</string>
-    <string name="tour_step_count">%1$d / %2$d</string>
-    <string name="tour_step_spoken">ステップ %1$d / %2$d。%3$s。</string>
-    <string name="tour_readout">ずれ具合と音名</string>
-    <string name="tour_strum">まとめて弾いて全弦をチェック</string>
-    <string name="tour_strings">タップでこの弦だけ調整、長押しで試聴</string>
-    <string name="tour_picker">楽器とチューニングを選ぶ</string>
-    <string name="tour_skip">ツアーをスキップ</string>
-    <string name="tour_next">次へ</string>
-    <string name="tour_done">完了</string>
-    <string name="tuner_more_tools">その他のツール</string>
-    <string name="tuner_tool_on">%1$s オン</string>
+    <string name="tuner_strum_close">ストロークチェックを閉じる</string>
+    <string name="tuner_strum_all_in_tune">すべての弦が合っています</string>
+    <plurals name="tuner_strum_count">
+        <item quantity="other">%2$d 本中 %1$d 本が合っています</item>
+    </plurals>
+    <string name="tuner_strum_not_heard">聞こえません</string>
+    <string name="tuner_strum_spoken_string">%1$s、%2$s</string>
     <string name="tuner_intonation_check">12フレットチェック</string>
+    <string name="tuner_intonation_check_summary">サドルの位置は合っていますか？</string>
+    <string name="tuner_intonation_close">12フレットチェックを閉じる</string>
     <string name="tuner_intonation_step_open">開放</string>
     <string name="tuner_intonation_step_fret">12フレット</string>
     <string name="tuner_intonation_choose_string">弦を選んでください</string>
@@ -208,37 +198,9 @@
     <string name="tuner_intonation_mark_back">サドルを後ろへ</string>
     <string name="tuner_intonation_mark_forward">サドルを前へ</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s、未チェック</string>
-    <string name="tour_more_tools">ストロークチェックなど、その他のツール</string>
-    <string name="tuner_chord_name">コード名</string>
-    <string name="tuner_chord_major">%1$s メジャー</string>
-    <string name="tuner_chord_minor">%1$s マイナー</string>
-    <string name="tuner_chord_seventh">%1$s セブンス</string>
-    <string name="tuner_chord_major_seventh">%1$s メジャーセブンス</string>
-    <string name="tuner_chord_minor_seventh">%1$s マイナーセブンス</string>
-    <string name="tuner_chord_sus2">%1$s サスツー</string>
-    <string name="tuner_chord_sus4">%1$s サスフォー</string>
-    <string name="tuner_chord_power_chord">%1$s パワーコード</string>
-    <string name="tuner_chord_seventh_sharp_nine">%1$s セブンスシャープナインス</string>
-    <string name="tuner_chord_minor_ninth">%1$s マイナーナインス</string>
-    <string name="tuner_chord_major_ninth">%1$s メジャーナインス</string>
-    <string name="tuner_chord_slash">%1$s、ベースは %2$s</string>
-    <string name="tuner_chord_bass">ベース</string>
-    <string name="tuner_chord_strum">コードを弾いてください</string>
-    <string name="tuner_chord_strum_detail">全部の弦を鳴らしてください</string>
-    <string name="tuner_chord_next">もう一度弾いて次のコードへ</string>
-    <string name="tuner_chord_let_ring">そのまま鳴らしてください</string>
-    <string name="tuner_chord_unclear">コードを判別できません</string>
-    <string name="tuner_chord_unclear_detail">コードの全部の弦を弾いてください</string>
-    <string name="tuner_chord_none">まだコードはありません</string>
-    <string name="tuner_chord_spoken_notes">構成音 %1$s</string>
-    <string name="tuner_chord_spoken_recent">その前は %1$s</string>
-    <string name="tuner_pitch_trail">ピッチの軌跡</string>
-    <string name="tuner_trail_spoken">ピッチの軌跡、%1$s</string>
-    <string name="tuner_trail_no_note">音なし</string>
-    <string name="tuner_trail_steady">安定、%1$s</string>
-    <string name="tuner_trail_wavering">揺れている、%1$s</string>
     <string name="tuner_trail_bending_up">上がっている</string>
     <string name="tuner_trail_bending_down">下がっている</string>
+    <string name="tuner_spoken_wavering">揺れている</string>
     <string name="tuner_screen_off_soon">まもなく画面が消えます</string>
     <string name="tuner_screen_off_keep_on">タップすると消えません</string>
 </resources>

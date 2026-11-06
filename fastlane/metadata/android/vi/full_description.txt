@@ -21,7 +21,7 @@ LUYỆN TẬP
 • Âm giai trên cần đàn: trưởng, thứ, ngũ cung và blues, mọi nốt đều có tên
 • Trợ giúp capo: chọn giọng của bài hát và các thế bấm bạn thích, rồi xem nên kẹp capo ở đâu
 • Luyện tai: Đàn lại (đàn trên nhạc cụ của bạn những nốt bạn nghe được), Quãng và Loại hợp âm
-• Máy đếm nhịp: 30 đến 250 phách mỗi phút trên một núm xoay nhịp độ, có gõ nhịp
+• Máy đếm nhịp: 30 đến 250 phách mỗi phút trên một thước nhịp độ để kéo, có gõ nhịp
 • 2/4, 3/4, 4/4, 5/4, 6/8 và 7/8, nhấn mạnh phách đầu và có đèn để theo dõi
 • Phát tiếng nhịp cùng nhạc của bạn hay nhạc đệm, và có thể rung theo phách
 • Giữa các phách: thêm tiếng nhịp theo móc đơn, liên ba hoặc móc kép
@@ -35,10 +35,9 @@ DÀNH CHO MỌI NGƯỜI
 • Tên nốt theo cách bạn đã học: C D E, kiểu Đức với H thay cho B, hoặc Đô Rê Mi
 
 THEO CÁCH CỦA BẠN
-• Sáu phong cách, từ Cổ xưa đến Vũ trụ, mỗi phong cách có màu sắc, kiểu chữ và hình nền riêng
-• Sáu kiểu đồng hồ đo và sáu kiểu sóng, trong đó có strobe
 • Sáng, tối, hoặc theo điện thoại, với màu từ hình nền trên Android 12 trở lên
-• Chế độ tập trung: một đồng hồ đo lớn trên điện thoại xoay ngang, dễ đọc từ xa
+• Ba kiểu đồng hồ đo để chọn: đường cao độ, cung đèn hoặc strobe
+• Chế độ tập trung: máy lên dây toàn màn hình trên điện thoại xoay ngang, dễ đọc từ xa
 
 NGOÀI RA
 • Tiện ích màn hình chính mở máy lên dây chỉ với một lần chạm

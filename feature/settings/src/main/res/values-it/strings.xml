@@ -1,12 +1,10 @@
 <resources>
     <string name="settings_title">Impostazioni</string>
     <string name="settings_back">Indietro</string>
+    <string name="settings_group_tuning">Accordatura</string>
 
-    <string name="settings_group_pitch">Altezza e note</string>
     <string name="settings_group_look">Aspetto</string>
-    <string name="settings_group_tuner_screen">Schermata dell\'accordatore</string>
     <string name="settings_group_while_tuning">Mentre accordi</string>
-    <string name="settings_group_app">App</string>
 
     <string name="settings_a4_title">Diapason (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
@@ -14,6 +12,8 @@
     <string name="settings_a4_lower">Abbassa A4 di 1\u00A0Hz</string>
     <string name="settings_a4_raise">Alza A4 di 1\u00A0Hz</string>
     <string name="settings_a4_reset">Ripristina %1$d\u00A0Hz</string>
+    <string name="settings_precise_title">Accordatura precisa</string>
+    <string name="settings_precise_summary">Intonato entro 2 cent anziché 5</string>
 
     <string name="settings_notation_title">Nomi delle note</string>
     <string name="settings_notation_sharps">Diesis: C, C♯, D …</string>
@@ -23,61 +23,40 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Tedesco: C, C♯, D … H</string>
 
-    <string name="settings_in_tune_precision_title">Precisione d\'intonazione</string>
-    <string name="settings_in_tune_precision_relaxed">Tollerante: entro 5 cent</string>
-    <string name="settings_in_tune_precision_precise">Precisa: entro 2 cent</string>
 
-    <string name="settings_style_title">Stile</string>
     <string name="settings_theme_title">Chiaro o scuro</string>
-    <string name="settings_theme_system">Come il sistema</string>
+    <string name="settings_theme_system">Come il telefono</string>
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_dark">Scuro</string>
     <string name="settings_dynamic_color_title">Colori dello sfondo</string>
     <string name="settings_dynamic_color_summary">Usa i colori del tuo sfondo</string>
+    <string name="settings_meter_title">Indicatore</string>
+    <string name="settings_meter_classic">Classico</string>
+    <string name="settings_meter_light_arc">Arco di luci</string>
+    <string name="settings_meter_strobe">Stroboscopio</string>
 
-    <string name="settings_meter_look_title">Indicatore</string>
-    <string name="settings_meter_look_classic">Classico</string>
-    <string name="settings_meter_look_light_arc">Arco di luce</string>
-    <string name="settings_meter_look_pointers">Indici</string>
-    <string name="settings_meter_look_loupe">Lente</string>
-    <string name="settings_meter_look_arrows">Frecce</string>
-    <string name="settings_meter_look_light_bars">Barre di luce</string>
-    <string name="settings_in_tune_effect_title">Effetto d\'intonazione</string>
-    <string name="settings_in_tune_effect_summary">Quanto si illumina l\'indicatore quando la nota è intonata</string>
-    <string name="settings_in_tune_effect_calm">Calmo</string>
-    <string name="settings_in_tune_effect_bold">Deciso</string>
-
-    <string name="settings_display_title">Sotto la nota</string>
-    <string name="settings_display_numbers">Numeri: quanti cent di scarto</string>
-    <string name="settings_display_wave">Onda: un\'immagine in movimento, nello stile che scegli</string>
-    <string name="settings_wave_look_title">Stile dell\'onda</string>
-    <string name="settings_wave_look_strobe">Stroboscopio</string>
-    <string name="settings_wave_look_ribbon">Nastro</string>
-    <string name="settings_wave_look_dots">Punti</string>
-    <string name="settings_wave_look_fireflies">Lucciole</string>
-    <string name="settings_wave_look_loop">Anello</string>
-    <string name="settings_wave_look_ripples">Increspature</string>
-    <string name="settings_focus_mode_title">Modalità concentrazione</string>
-    <string name="settings_focus_mode_summary">Mette Twangle in orizzontale con un grande indicatore, facile da leggere a distanza</string>
     <string name="settings_left_handed_title">Mancino</string>
     <string name="settings_left_handed_summary">Schemi degli accordi e manico delle scale disegnati per una chitarra tenuta al contrario</string>
+    <string name="settings_under_meter_title">Sotto l\'indicatore</string>
+    <string name="settings_under_meter_words">Parole: Tendi o Allenta</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
 
     <string name="settings_keep_screen_on_title">Schermo sempre acceso</string>
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso durante l\'accordatura</string>
     <string name="settings_vibrate_in_tune_title">Vibra quando è intonato</string>
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
-    <string name="settings_show_tune_hint_title">Mostra l\'aiuto per accordare</string>
-    <string name="settings_show_tune_hint_summary">Dice se alzare o abbassare, e spunta ogni corda appena è intonata</string>
+    <string name="settings_string_tick_off_title">Spunta le corde intonate</string>
+    <string name="settings_string_tick_off_summary">Una spunta su ogni corda intonata, e «Tutto intonato. Suona!» quando lo sono tutte</string>
     <string name="settings_show_signal_bars_title">Mostra le barre del segnale</string>
-    <string name="settings_show_signal_bars_summary">Per i curiosi: piccole barre vicino alla nota mostrano quanto bene ti sente l\'accordatore. Toccale per vedere i valori</string>
+    <string name="settings_show_signal_bars_summary">Per i curiosi: piccole barre sopra le corde mostrano quanto bene ti sente l\'accordatore. Toccale per vedere i valori</string>
 
     <string name="settings_language_title">Lingua</string>
     <string name="settings_language_phone">Lingua del telefono</string>
     <string name="settings_language_cancel">Annulla</string>
-    <string name="settings_show_tour_title">Tour guidato</string>
-    <string name="settings_show_tour_summary">Un breve giro dell\'accordatore</string>
     <string name="about_title">Info su Twangle</string>
     <string name="settings_about_link_summary">Versione %1$s, aiuto, privacy e licenze</string>
+    <string name="settings_about_name_title">Il nome</string>
+    <string name="settings_about_name_meaning">In inglese, twang è il suono vibrante di una corda pizzicata.</string>
     <string name="settings_about_version">Versione %1$s</string>
     <string name="settings_about_free_title">Gratis per sempre</string>
     <string name="settings_about_free_summary">Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Né ora né mai.</string>

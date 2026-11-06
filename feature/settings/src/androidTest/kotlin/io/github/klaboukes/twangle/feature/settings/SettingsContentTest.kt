@@ -11,6 +11,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -23,7 +24,6 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onAllNodesWithText
@@ -36,22 +36,21 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_FACE
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
-import io.github.klaboukes.twangle.core.settings.MeterLook
+import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
-import io.github.klaboukes.twangle.core.settings.TunerDisplay
-import io.github.klaboukes.twangle.core.settings.VisualStyle
-import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.settings.UnderMeter
 import io.github.klaboukes.twangle.core.testing.Navigation
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -63,11 +62,9 @@ import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.RATE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.WEBSITE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
+import io.github.klaboukes.twangle.feature.settings.components.lensLookCardTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
-import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
-import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
-import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -93,24 +90,19 @@ class SettingsContentTest {
     private val a4Changes = mutableListOf<Float>()
     private val notationChanges = mutableListOf<Notation?>()
     private val precisionChanges = mutableListOf<InTunePrecision>()
-    private val styleChanges = mutableListOf<VisualStyle>()
     private val themeChanges = mutableListOf<ThemeMode>()
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
-    private val tuneHintChanges = mutableListOf<Boolean>()
+    private val tickOffChanges = mutableListOf<Boolean>()
+    private val underMeterChanges = mutableListOf<UnderMeter>()
     private val signalBarsChanges = mutableListOf<Boolean>()
-    private val displayChanges = mutableListOf<TunerDisplay>()
-    private val meterLookChanges = mutableListOf<MeterLook>()
-    private val effectChanges = mutableListOf<InTuneEffect>()
-    private val waveLookChanges = mutableListOf<WaveLook>()
-    private val focusModeChanges = mutableListOf<Boolean>()
+    private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
     private var rates = 0
     private val websiteLinks = mutableListOf<String>()
-    private var toursAsked = 0
     private val languageChanges = mutableListOf<String?>()
 
     /** The window [show] shows, inside the phone's bars ([shownBars]). */
@@ -124,7 +116,7 @@ class SettingsContentTest {
      * Shows [settings] (or, with [about], the About page), as if the window inside the phone's bars were
      * [size] ([PHONE] unless given, whatever the phone's own screen; [PhoneScreen] draws a larger one
      * smaller to fit), the phone's font were [fontScale] times its normal size, or the app were in
-     * another language ([locale], e.g. "nl").
+     * another language ([locale], e.g. "nl"). With [settingsBack] Settings has its back arrow, as from the gear.
      */
     private fun show(
         settings: AppSettings,
@@ -133,15 +125,16 @@ class SettingsContentTest {
         fontScale: Float? = null,
         locale: String? = null,
         about: Boolean = false,
-        style: VisualStyle? = null,
+        ink: Boolean = false,
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
+        settingsBack: Boolean = false,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
         compose.setContent {
             val content = @Composable {
-                Themed(style) {
+                Themed(ink) {
                     if (about) {
                         AboutScreen(
                             appVersion = VERSION,
@@ -157,25 +150,21 @@ class SettingsContentTest {
                         onA4Change = { a4Changes += it },
                         onNotationChange = { notationChanges += it },
                         onInTunePrecisionChange = { precisionChanges += it },
-                        onStyleChange = { styleChanges += it },
                         onThemeChange = { themeChanges += it },
                         onDynamicColorChange = { dynamicColorChanges += it },
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
-                        onShowTuneHintChange = { tuneHintChanges += it },
+                        onStringTickOffChange = { tickOffChanges += it },
+                        onUnderMeterChange = { underMeterChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
-                        onDisplayChange = { displayChanges += it },
-                        onMeterLookChange = { meterLookChanges += it },
-                        onInTuneEffectChange = { effectChanges += it },
-                        onWaveLookChange = { waveLookChanges += it },
-                        onFocusModeChange = { focusModeChanges += it },
+                        onLensLookChange = { lensLookChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
-                        onShowTour = { toursAsked++ },
                         languages = languages,
                         appLanguage = appLanguage,
                         onAppLanguageChange = { languageChanges += it },
+                        onBack = if (settingsBack) ({ backs++ }) else null,
                     )
                 }
             }
@@ -235,13 +224,13 @@ class SettingsContentTest {
     @Test
     fun showsTheCurrentA4() {
         show(AppSettings(a4Hz = 442f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_value, 442)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_value, 442)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun plusAndMinusStepByOneHertz() {
         show(AppSettings(a4Hz = 442f))
-        compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_raise)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_raise)).performScrollTo().performClick()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_lower)).performClick()
         assertEquals(listOf(443f, 441f), a4Changes)
     }
@@ -249,14 +238,16 @@ class SettingsContentTest {
     @Test
     fun resetGoesBackTo440() {
         show(AppSettings(a4Hz = 432f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).performScrollTo().performClick()
         assertEquals(listOf(440f), a4Changes)
     }
 
     @Test
-    fun resetIsDisabledAt440() {
+    fun resetStaysAButtonAt440AndChangesNothing() {
+        // Never greyed out: too faint on a dimmed screen (owner, 2026-11-05).
         show(AppSettings(a4Hz = 440f))
-        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).assertIsNotEnabled()
+        compose.onNodeWithText(context.getString(R.string.settings_a4_reset, 440)).performScrollTo().assertIsEnabled().performClick()
+        assertEquals(emptyList<Float>(), a4Changes)
     }
 
     @Test
@@ -266,12 +257,16 @@ class SettingsContentTest {
         compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_lower)).assertIsEnabled()
     }
 
-    /** Settings is one of the app's tabs: the navigation bar and Back lead away, not an arrow. */
+    /**
+     * Settings is behind the gear (Phase 69), no tab: its back arrow stands at the top and leads back (to
+     * the tab that opened it).
+     */
     @Test
-    fun settingsHasNoBackArrow() {
-        show(AppSettings())
+    fun settingsBackArrowGoesBack() {
+        show(AppSettings(), settingsBack = true)
         compose.onNodeWithText(context.getString(R.string.settings_title)).assertIsDisplayed()
-        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
+        assertEquals(1, backs)
     }
 
     @Test
@@ -287,17 +282,12 @@ class SettingsContentTest {
         assertEquals(1, aboutOpened)
     }
 
-    /** "Show me around", above About, starts the first-start tour again. */
+    /** "Show me around" went with the tour (Phase 68): its row (tagged so in 1.1) is gone, About stays. */
     @Test
-    fun showMeAroundStartsTheTourAgain() {
-        show(AppSettings(tourSeen = true))
-        compose.onNodeWithTag(SHOW_TOUR_TAG)
-            .assert(hasText(context.getString(R.string.settings_show_tour_title)))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-            .performScrollTo()
-            .assertIsDisplayed()
-            .performClick()
-        assertEquals(1, toursAsked)
+    fun showMeAroundIsGone() {
+        show(AppSettings())
+        compose.onNodeWithTag("settings_show_tour").assertDoesNotExist()
+        compose.onNodeWithTag(ABOUT_LINK_TAG).performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -308,73 +298,176 @@ class SettingsContentTest {
         assertEquals(1, backs)
     }
 
+    /**
+     * Note names is one row (since 2026-11-05; five choice rows until then): the picked one under its title, the list
+     * in a dialog that a tap opens, Cancel closing it with nothing changed.
+     */
+    @Test
+    fun noteNamesIsOneRowThatOpensTheList() {
+        show(AppSettings(notationChoice = Notation.FLATS))
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assertDoesNotExist()
+        compose.onNodeWithTag(NOTATION_SETTING_TAG)
+            .performScrollTo()
+            .assert(hasText(context.getString(R.string.settings_notation_title)))
+            .assert(hasText(context.getString(R.string.settings_notation_flats)))
+            .assertHasClickAction()
+        openNoteNames()
+        (listOf(null) + Notation.entries).forEach { compose.onNodeWithTag(notationOptionTag(it)).assertIsDisplayed() }
+        compose.onNodeWithText(context.getString(R.string.settings_language_cancel)).performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        assertEquals(emptyList<Notation?>(), notationChanges)
+    }
+
+    private fun openNoteNames() {
+        compose.onNodeWithTag(NOTATION_SETTING_TAG).performScrollTo().performClick()
+        compose.onNode(isDialog()).assertExists()
+    }
+
     @Test
     fun talkBackSaysTheNotationChoicesSignsAsWords() {
         show(AppSettings())
-        compose.onNode(hasContentDescription("Sharps: C, C sharp, D …")).assertExists()
-        compose.onNode(hasContentDescription("Flats: C, D flat, D …")).assertExists()
-        compose.onNode(hasContentDescription("Do Re Mi: Do, Do sharp, Re …")).assertExists()
-        compose.onNode(hasContentDescription("German: C, C sharp, D … H")).assertExists()
-        // Never picked: Automatic, which in English is sharps.
-        compose.onNode(hasContentDescription("Automatic: C, C sharp, D … B")).assertExists().assertIsSelected()
+        // Never picked: Automatic, which in English is sharps; said in words under the row's title too.
+        compose.onNodeWithTag(NOTATION_SETTING_TAG).performScrollTo().assert(hasContentDescription("Automatic: C, C sharp, D … B", substring = true))
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assert(hasContentDescription("Sharps: C, C sharp, D …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).assert(hasContentDescription("Flats: C, D flat, D …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.SOLFEGE)).assert(hasContentDescription("Do Re Mi: Do, Do sharp, Re …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.GERMAN)).assert(hasContentDescription("German: C, C sharp, D … H"))
+        compose.onNodeWithTag(notationOptionTag(null)).assert(hasContentDescription("Automatic: C, C sharp, D … B")).assertIsSelected()
     }
 
     @Test
     fun germanAutomaticIsTheGermanNotationAndTalkBackSaysItTheGermanWay() {
         show(AppSettings(), locale = "de")
-        compose.onNode(hasContentDescription("Automatisch: C, Cis, D … H")).assertExists().assertIsSelected()
-        compose.onNode(hasContentDescription("Deutsch: C, Cis, D … H")).assertExists().assertIsNotSelected()
-        compose.onNodeWithText("Automatisch: C, C♯, D … H").assertIsDisplayed()
+        compose.onNodeWithText("Automatisch: C, C♯, D … H").performScrollTo().assertIsDisplayed()
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(null)).assert(hasContentDescription("Automatisch: C, Cis, D … H")).assertIsSelected()
+        compose.onNodeWithTag(notationOptionTag(Notation.GERMAN)).assert(hasContentDescription("Deutsch: C, Cis, D … H")).assertIsNotSelected()
     }
 
     @Test
     fun frenchAutomaticIsDoReMi() {
         show(AppSettings(), locale = "fr")
         // French sets a no-break space before the colon.
-        compose.onNodeWithText("Automatique : Do, Do♯, Re … Si").assertIsSelected()
+        val automatic = "Automatique : Do, Do♯, Re … Si"
+        compose.onNodeWithTag(NOTATION_SETTING_TAG).performScrollTo().assert(hasText(automatic))
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(null)).assert(hasText(automatic)).assertIsSelected()
     }
 
     @Test
     fun dutchTalkBackSaysTheNotationChoicesTheDutchWay() {
         show(AppSettings(notationChoice = Notation.FLATS), locale = "nl")
-        compose.onNode(hasContentDescription("Kruisen: c, cis, d …")).assertExists()
-        compose.onNode(hasContentDescription("Mollen: c, des, d …")).assertExists().assertIsSelected()
-        compose.onNode(hasContentDescription("Do Re Mi: Do, Do kruis, Re …")).assertExists()
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assert(hasContentDescription("Kruisen: c, cis, d …"))
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).assert(hasContentDescription("Mollen: c, des, d …")).assertIsSelected()
+        compose.onNodeWithTag(notationOptionTag(Notation.SOLFEGE)).assert(hasContentDescription("Do Re Mi: Do, Do kruis, Re …"))
         // What's on screen doesn't change.
-        compose.onNodeWithText("Kruisen: C, C♯, D …").assertIsDisplayed()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assert(hasText("Kruisen: C, C♯, D …"))
     }
 
     @Test
     fun notationShowsTheChoiceAndReportsANewOne() {
         show(AppSettings(notationChoice = Notation.FLATS))
-        compose.onNodeWithText(context.getString(R.string.settings_notation_flats)).assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_sharps)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_solfege)).performClick()
-        compose.onNodeWithText(context.getString(R.string.settings_notation_german)).performClick()
-        compose.onNodeWithText("Automatic", substring = true).performClick()
+        openNoteNames()
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).assertIsSelected()
+        compose.onNodeWithTag(notationOptionTag(Notation.SHARPS)).assertIsNotSelected()
+        // A pick closes the list; the one already picked changes nothing.
+        compose.onNodeWithTag(notationOptionTag(Notation.FLATS)).performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        for (notation in listOf(Notation.SOLFEGE, Notation.GERMAN, null)) {
+            openNoteNames()
+            compose.onNodeWithTag(notationOptionTag(notation)).performClick()
+            compose.onNode(isDialog()).assertDoesNotExist()
+        }
         assertEquals(listOf(Notation.SOLFEGE, Notation.GERMAN, null), notationChanges)
     }
 
+    /**
+     * What goes under the meter (2.0, Phase 78), in Look under the Meter cards since 2026-11-05: Words by default, Cents reported when picked;
+     * the words named as the tuner says them, in Dutch too.
+     */
     @Test
-    fun inTunePrecisionShowsTheChoiceAndReportsANewOne() {
-        show(AppSettings())
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise)).performScrollTo().assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise)).performClick()
+    fun underTheMeterIsWordsByDefaultAndReportsCents() = assertUnderMeter("en", "Under the meter", "Words: Tighten or Loosen", "Cents: −12")
+
+    @Test
+    fun dutchUnderTheMeterIsWordsByDefaultAndReportsCents() = assertUnderMeter("nl", "Onder de meter", "Woorden: Strakker of Losser", "Cent: −12")
+
+    private fun assertUnderMeter(locale: String, title: String, words: String, cents: String) {
+        show(AppSettings(), locale = locale)
+        val res = resourcesIn(locale)
+        assertEquals(listOf(title, words, cents), listOf(R.string.settings_under_meter_title, R.string.settings_under_meter_words, R.string.settings_under_meter_cents).map(res::getString))
+        compose.onNodeWithText(title).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(words).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(cents).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(UnderMeter.CENTS), underMeterChanges)
+    }
+
+    @Test
+    fun underTheMeterShowsCentsWhenPicked() {
+        show(AppSettings(underMeter = UnderMeter.CENTS))
+        compose.onNodeWithText(context.getString(R.string.settings_under_meter_cents)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_under_meter_words)).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(UnderMeter.WORDS), underMeterChanges)
+    }
+
+    /**
+     * In-tune precision is one switch, "Precise tuning" (since 2026-11-05; two choice rows, then a segmented switch,
+     * until then): off is Relaxed, on is Precise, and its line says what it does, in Dutch too.
+     */
+    @Test
+    fun preciseTuningIsASwitchOffByDefault() = assertPreciseSwitch("en", "Precise tuning", "In tune within 2 cents instead of 5")
+
+    @Test
+    fun dutchPreciseTuningIsASwitchOffByDefault() = assertPreciseSwitch("nl", "Precies stemmen", "Zuiver binnen 2 cent in plaats van 5")
+
+    private fun assertPreciseSwitch(locale: String, title: String, summary: String) {
+        show(AppSettings(), locale = locale)
+        val res = resourcesIn(locale)
+        assertEquals(listOf(title, summary), listOf(R.string.settings_precise_title, R.string.settings_precise_summary).map(res::getString))
+        val switch = compose.onNodeWithText(title)
+        switch.performScrollTo().assertIsOff()
+        compose.onNodeWithText(summary).assertIsDisplayed()
+        switch.performClick()
         assertEquals(listOf(InTunePrecision.PRECISE), precisionChanges)
     }
 
     @Test
-    fun themeShowsTheChoiceAndReportsANewOne() {
+    fun preciseTuningShowsItIsOnAndTurnsBackToRelaxed() {
+        show(AppSettings(inTunePrecision = InTunePrecision.PRECISE))
+        val switch = compose.onNodeWithText(context.getString(R.string.settings_precise_title))
+        switch.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(InTunePrecision.RELAXED), precisionChanges)
+    }
+
+    /**
+     * Light or dark is one row that opens its list (since 2026-11-05; three choice rows, then a segmented switch, until
+     * then), as Note names and Language: the picked one under its title, Same as the phone · Light · Dark in the list.
+     */
+    @Test
+    fun lightOrDarkIsOneRowThatOpensTheList() {
         show(AppSettings(theme = ThemeMode.SYSTEM))
-        compose.onNodeWithText(context.getString(R.string.settings_theme_system)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_theme_dark)).performScrollTo().performClick()
+        assertEquals(
+            listOf("Same as the phone", "Light", "Dark"),
+            listOf(R.string.settings_theme_system, R.string.settings_theme_light, R.string.settings_theme_dark).map(context::getString),
+        )
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.DARK)).assertDoesNotExist()
+        compose.onNodeWithTag(THEME_SETTING_TAG)
+            .performScrollTo()
+            .assert(hasText(context.getString(R.string.settings_theme_title)))
+            .assert(hasText(context.getString(R.string.settings_theme_system)))
+            .assertHasClickAction()
+            .performClick()
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.SYSTEM)).assertIsSelected()
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.LIGHT)).assertIsNotSelected()
+        compose.onNodeWithTag(themeOptionTag(ThemeMode.DARK)).assertIsNotSelected().performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
         assertEquals(listOf(ThemeMode.DARK), themeChanges)
     }
 
     @Test
     fun switchesShowTheirStateAndToggle() {
-        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showTuneHint = true))
+        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, stringTickOff = true))
         val dynamic = compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title))
         dynamic.performScrollTo().assertIsOn().performClick()
         val keepOn = compose.onNodeWithText(context.getString(R.string.settings_keep_screen_on_title))
@@ -384,27 +477,52 @@ class SettingsContentTest {
         assertEquals(listOf(false), dynamicColorChanges)
         assertEquals(listOf(true), keepScreenOnChanges)
         assertEquals(listOf(false), vibrateChanges)
-        val tuneHint = compose.onNodeWithText(context.getString(R.string.settings_show_tune_hint_title))
-        tuneHint.performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), tuneHintChanges)
+        val tickOff = compose.onNodeWithText(context.getString(R.string.settings_string_tick_off_title))
+        tickOff.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), tickOffChanges)
     }
 
-    /** One switch covers the up/down hint and the strings' ticks (owner, 2026-11-01): its words say both, in Dutch too. */
+    /**
+     * The string tick-off's switch (2.0, Phase 71), off by default, in While tuning: its words name the ticks and
+     * "In tune. Play.", in Dutch too. 1.1's "Show tuning help" is gone (the word under the lens always shows).
+     */
     @Test
-    fun theTuningHelpSwitchNamesTheHintAndTheTicks() = assertTuningHelpSwitch("en", "Show tuning help")
+    fun theStringTickOffSwitchIsOffByDefaultAndNamesTheTicks() =
+        assertStringTickOffSwitch("en", "Tick off tuned strings", "In tune. Play.")
 
     @Test
-    fun dutchTuningHelpSwitchNamesTheHintAndTheTicks() = assertTuningHelpSwitch("nl", "Stemhulp tonen")
+    fun dutchStringTickOffSwitchIsOffByDefaultAndNamesTheTicks() =
+        assertStringTickOffSwitch("nl", "Gestemde snaren afvinken", "Zuiver. Speel maar.")
 
-    private fun assertTuningHelpSwitch(locale: String, title: String) {
-        show(AppSettings(showTuneHint = false), locale = locale)
+    private fun assertStringTickOffSwitch(locale: String, title: String, allInTune: String) {
+        show(AppSettings(), locale = locale)
         val res = resourcesIn(locale)
-        assertEquals(title, res.getString(R.string.settings_show_tune_hint_title))
+        assertEquals(title, res.getString(R.string.settings_string_tick_off_title))
+        val summary = res.getString(R.string.settings_string_tick_off_summary)
+        assertTrue("the line names the tuner's own words: $summary", allInTune in summary)
         val switch = compose.onNodeWithText(title)
         switch.performScrollTo().assertIsOff()
-        compose.onNodeWithText(res.getString(R.string.settings_show_tune_hint_summary)).assertIsDisplayed()
+        compose.onNodeWithText(summary).assertIsDisplayed()
+        compose.onAllNodesWithText("Show tuning help").assertCountEquals(0)
+        compose.onAllNodesWithText("Stemhulp tonen").assertCountEquals(0)
         switch.performClick()
-        assertEquals(listOf(true), tuneHintChanges)
+        assertEquals(listOf(true), tickOffChanges)
+    }
+
+    /**
+     * While tuning has no switch for the 12th-fret check (2.0, Phase 71): the check is opened from the tuner's picker
+     * sheet since the owner picked that way in (2026-11-03). Its name is no Settings text, in English or Dutch.
+     */
+    @Test
+    fun whileTuningHasNoSwitchForTheTwelfthFretCheck() = assertNoIntonationCheckSwitch("en", "12th-fret")
+
+    @Test
+    fun dutchWhileTuningHasNoSwitchForTheTwelfthFretCheck() = assertNoIntonationCheckSwitch("nl", "12e-fret")
+
+    private fun assertNoIntonationCheckSwitch(locale: String, name: String) {
+        show(AppSettings(), locale = locale)
+        compose.onNodeWithText(resourcesIn(locale).getString(R.string.settings_string_tick_off_title)).performScrollTo().assertIsDisplayed()
+        compose.onAllNodes(hasText(name, substring = true)).assertCountEquals(0)
     }
 
     @Test
@@ -416,22 +534,6 @@ class SettingsContentTest {
     }
 
     @Test
-    fun focusModeSwitchIsOffByDefaultAndToggles() {
-        show(AppSettings())
-        val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
-        focusMode.performScrollTo().assertIsOff().performClick()
-        assertEquals(listOf(true), focusModeChanges)
-    }
-
-    @Test
-    fun focusModeSwitchShowsItIsOn() {
-        show(AppSettings(focusMode = true))
-        val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
-        focusMode.performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), focusModeChanges)
-    }
-
-    @Test
     fun leftHandedSwitchIsOffByDefaultAndToggles() {
         show(AppSettings())
         val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
@@ -440,301 +542,67 @@ class SettingsContentTest {
     }
 
     @Test
-    fun leftHandedSwitchShowsItIsOnInPitchAndNotesUnderTheNoteNames() {
+    fun leftHandedSwitchShowsItIsOnAtTheEndOfLook() {
         show(AppSettings(leftHanded = true))
         val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
         leftHanded.performScrollTo().assertIsOn()
-        // At the end of "Pitch and notes", under Note names and In-tune precision, before the "Look" group.
+        // At the end of "Look" (Phase 75; "Pitch and notes" until then), under Meter, before the "Twangle" group.
         val top = { text: Int -> compose.onNodeWithText(context.getString(text)).getUnclippedBoundsInRoot().top }
-        assertTrue("under In-tune precision", top(R.string.settings_left_handed_title) > top(R.string.settings_in_tune_precision_title))
-        assertTrue("under Note names", top(R.string.settings_left_handed_title) > top(R.string.settings_notation_title))
-        assertTrue("before Look", top(R.string.settings_left_handed_title) < top(R.string.settings_group_look))
+        assertTrue("under Look", top(R.string.settings_left_handed_title) > top(R.string.settings_group_look))
+        assertTrue("under Meter", top(R.string.settings_left_handed_title) > top(R.string.settings_meter_title))
+        assertTrue("before Twangle", top(R.string.settings_left_handed_title) < top(R.string.settings_group_twangle))
         leftHanded.performClick()
         assertEquals(listOf(false), leftHandedChanges)
     }
 
+    /**
+     * 1.1's meter look cards, Calm or Bold, "Below the note" and the wave look cards went in Phase 67 (one meter and
+     * one glow until the lens; its Meter cards come in Phase 72): no card of theirs is left. Meter stands in the Look
+     * group (Phase 75; the Tuner screen group's only row until then), first, over light or dark and Left-handed charts
+     * (the owner's review, 2026-11-03), and Look is the page's first group (2026-11-05).
+     */
     @Test
-    fun displayPickerShowsTheChoiceAndReportsANewOne() {
-        show(AppSettings(display = TunerDisplay.WAVE))
-        compose.onNodeWithText(context.getString(R.string.settings_display_wave)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_display_numbers)).assertIsNotSelected().performClick()
-        assertEquals(listOf(TunerDisplay.NEEDLE), displayChanges)
-    }
-
-    /** Six meter cards, in the owner's order, with the needle display as well as the wave. */
-    @Test
-    fun theMeterPickerShowsSixCardsWithTheNeedle() = assertSixMeterCards(TunerDisplay.NEEDLE)
-
-    @Test
-    fun theMeterPickerShowsSixCardsWithTheWave() = assertSixMeterCards(TunerDisplay.WAVE)
-
-    private fun assertSixMeterCards(display: TunerDisplay) {
-        show(AppSettings(display = display))
-        compose.onNodeWithText(context.getString(R.string.settings_meter_look_title)).performScrollTo().assertIsDisplayed()
-        val cards = SemanticsMatcher("a meter look card") {
-            it.config.getOrElseNullable(SemanticsProperties.TestTag) { null }?.startsWith("meter_look_card_") == true
+    fun meterOffersTheThreeLooksAsCardsWithTheSavedOnePicked() {
+        show(AppSettings(lensLook = LensLook.STROBE))
+        val lookCards = SemanticsMatcher("a 1.1 look card") {
+            val tag = it.config.getOrElseNullable(SemanticsProperties.TestTag) { null }.orEmpty()
+            tag.startsWith("meter_look_card_") || tag.startsWith("wave_look_card_")
         }
-        compose.onAllNodes(cards).assertCountEquals(6)
-        val places = MeterLook.entries.map { compose.onNodeWithTag(meterLookCardTag(it)).fetchSemanticsNode().positionInRoot }
-        // Read in rows: each card is beside the one before it, to the right, or in the row below.
-        places.zipWithNext().forEach { (a, b) -> assertTrue("$a then $b", b.y > a.y || (b.y == a.y && b.x > a.x)) }
+        compose.onAllNodes(lookCards, useUnmergedTree = true).assertCountEquals(0)
+        val top = { text: Int -> compose.onNodeWithText(context.getString(text)).fetchSemanticsNode().positionInRoot.y }
+        val theme = top(R.string.settings_theme_title)
+        val meter = top(R.string.settings_meter_title)
+        val leftHanded = top(R.string.settings_left_handed_title)
+        assertTrue("Meter over Light or dark, Left-handed charts under both", theme > meter && leftHanded > theme)
+        val names = mapOf(
+            LensLook.CLASSIC to R.string.settings_meter_classic,
+            LensLook.LIGHT_ARC to R.string.settings_meter_light_arc,
+            LensLook.STROBE to R.string.settings_meter_strobe,
+        )
+        val lefts = LensLook.entries.map { look ->
+            // Not scrolled to, so every place is measured on the same page.
+            val card = compose.onNodeWithTag(lensLookCardTag(look))
+            // TalkBack: a radio button named after its look, the saved one picked.
+            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            card.assert(hasText(context.getString(names.getValue(look))))
+            if (look == LensLook.STROBE) card.assertIsSelected() else card.assertIsNotSelected()
+            // Unclipped: a card below the fold has no bounds on screen.
+            val node = card.fetchSemanticsNode()
+            val top = node.positionInRoot.y
+            val bottom = top + node.size.height
+            assertTrue("$look's card ($top to $bottom) between Meter ($meter) and Light or dark ($theme)", top > meter && bottom < theme)
+            node.positionInRoot.x
+        }
+        assertEquals("Classic · Light arc · Strobe, in one row", lefts.sorted(), lefts)
     }
 
     @Test
-    fun meterLooksShowTheChoiceAndReportEachOne() {
-        show(AppSettings(meterLook = MeterLook.POINTERS))
-        compose.onNodeWithTag(meterLookCardTag(MeterLook.POINTERS)).performScrollTo().assertIsSelected()
-        compose.onNodeWithTag(meterLookCardTag(MeterLook.CLASSIC)).assertIsNotSelected()
-        for (look in MeterLook.entries) compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo().performClick()
-        assertEquals(MeterLook.entries, meterLookChanges)
-    }
-
-    /** The in-tune effect shows Calm picked on a fresh install, and reports Bold (and back) when tapped. */
-    @Test
-    fun inTuneEffectShowsTheChoiceAndReportsANewOne() {
+    fun pickingAMeterCardSavesItsLook() {
         show(AppSettings())
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_title)).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_calm)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_bold)).performScrollTo().assertIsNotSelected().performClick()
-        assertEquals(listOf(InTuneEffect.BOLD), effectChanges)
-    }
-
-    @Test
-    fun inTuneEffectShowsBoldWhenPicked() {
-        show(AppSettings(inTuneEffect = InTuneEffect.BOLD, display = TunerDisplay.NEEDLE))
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_bold)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_calm)).performScrollTo().assertIsNotSelected().performClick()
-        assertEquals(listOf(InTuneEffect.CALM), effectChanges)
-    }
-
-    /**
-     * TalkBack hears Calm and Bold as two radio buttons in one group, by name, with the picked one
-     * selected. In English and in Dutch ("Rustig", "Krachtig").
-     */
-    @Test
-    fun talkBackReadsTheInTuneEffectsAsRadioButtons() = assertInTuneEffectsSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsTheInTuneEffectsAsRadioButtons() = assertInTuneEffectsSpoken(locale = "nl")
-
-    private fun assertInTuneEffectsSpoken(locale: String?) {
-        show(AppSettings(inTuneEffect = InTuneEffect.BOLD), locale = locale)
-        val res = resourcesIn(locale)
-        for ((effect, id) in listOf(InTuneEffect.CALM to R.string.settings_in_tune_effect_calm, InTuneEffect.BOLD to R.string.settings_in_tune_effect_bold)) {
-            val name = res.getString(id)
-            val row = compose.onNodeWithText(name).performScrollTo()
-            row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (effect == InTuneEffect.BOLD) row.assertIsSelected() else row.assertIsNotSelected()
-            assertEquals("$effect", listOf(name), row.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            row.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /** At 2× font the in-tune effect's title and both choices are wholly shown, in English and Dutch, also on a phone on its side. */
-    @Test
-    @Thorough
-    fun inTuneEffectFitsAtTwiceTheFontSize() = assertInTuneEffectFits(fontScale = 2f)
-
-    @Test
-    fun inTuneEffectFitsInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertInTuneEffectFits(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
-
-    private fun assertInTuneEffectFits(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
-        val res = resourcesIn(locale)
-        listOf(R.string.settings_in_tune_effect_title, R.string.settings_in_tune_effect_calm, R.string.settings_in_tune_effect_bold)
-            .map { res.getString(it) }
-            .forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
-        listOf(R.string.settings_in_tune_effect_calm, R.string.settings_in_tune_effect_bold).forEach {
-            val row = compose.onNodeWithText(res.getString(it)).performScrollTo().getBoundsInRoot()
-            assertTrue("${res.getString(it)} row is ${row.bottom - row.top} high", row.bottom - row.top >= 47.5.dp)
-        }
-    }
-
-    /**
-     * TalkBack hears every meter card as a radio button with its name, and which one is picked:
-     * one group, exactly one card selected. In English and in Dutch.
-     */
-    @Test
-    fun talkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = "nl")
-
-    private fun assertMeterLooksSpoken(locale: String?) {
-        show(AppSettings(meterLook = MeterLook.POINTERS), locale = locale)
-        val res = resourcesIn(locale)
-        for ((look, id) in meterLookNames) {
-            val name = res.getString(id)
-            val card = compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo()
-            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (look == MeterLook.POINTERS) card.assertIsSelected() else card.assertIsNotSelected()
-            // Its name, said once: the moving meter inside says nothing.
-            assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /**
-     * At 2× font every meter look's name still fits its card on one line (two cards to a row then,
-     * and the name gets smaller when needed), in English and Dutch ("Waterpas"), on a phone and
-     * on a phone on its side.
-     */
-    @Test
-    @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f)
-
-    @Test
-    @Thorough
-    fun meterLookNamesFitInDutchAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f, locale = "nl")
-
-    /** Classic sets its names in a wide serif face. */
-    @Test
-    @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSizeInTheClassicStyle() =
-        assertMeterLookNamesFit(fontScale = 2f, style = VisualStyle.CLASSIC)
-
-    @Test
-    fun meterLookNamesFitInDutchAtTwiceTheFontSizeInTheClassicStyle() =
-        assertMeterLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
-
-    @Test
-    @Thorough
-    fun meterLookNamesFitAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertMeterLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
-
-    /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
-    @Test
-    fun meterLookNamesFitInALargerFontSizeInTheClassicStyle() =
-        assertMeterLookNamesFit(fontScale = 1.29f, style = VisualStyle.CLASSIC)
-
-    private fun assertMeterLookNamesFit(
-        size: DpSize? = null,
-        fontScale: Float? = null,
-        locale: String? = null,
-        style: VisualStyle? = null,
-    ) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale, style = style)
-        val res = resourcesIn(locale)
-        for ((look, id) in meterLookNames) {
-            val name = res.getString(id)
-            val label = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(meterLookCardTag(look))), useUnmergedTree = true)
-            assertWhollyShown(label, name)
-            val layouts = mutableListOf<TextLayoutResult>()
-            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
-        }
-    }
-
-    private val meterLookNames = mapOf(
-        MeterLook.CLASSIC to R.string.settings_meter_look_classic,
-        MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
-        MeterLook.POINTERS to R.string.settings_meter_look_pointers,
-        MeterLook.LOUPE to R.string.settings_meter_look_loupe,
-        MeterLook.ARROWS to R.string.settings_meter_look_arrows,
-        MeterLook.LIGHT_BARS to R.string.settings_meter_look_light_bars,
-    )
-
-    @Test
-    fun waveLooksShowTheChoiceAndReportANewOne() {
-        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.LOOP))
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_loop)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_fireflies)).performScrollTo().performClick()
-        assertEquals(listOf(WaveLook.FIREFLIES), waveLookChanges)
-    }
-
-    /**
-     * TalkBack hears every look card as a radio button with its name, and which one is picked:
-     * one group, exactly one card selected. In English and in Dutch.
-     */
-    @Test
-    fun talkBackReadsEveryWaveLookAsARadioButton() = assertWaveLooksSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsEveryWaveLookAsARadioButton() = assertWaveLooksSpoken(locale = "nl")
-
-    private fun assertWaveLooksSpoken(locale: String?) {
-        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.DOTS), locale = locale)
-        val res = resourcesIn(locale)
-        val names = waveLookNames.mapValues { res.getString(it.value) }
-        for ((look, name) in names) {
-            val card = compose.onNodeWithText(name).performScrollTo()
-            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (look == WaveLook.DOTS) card.assertIsSelected() else card.assertIsNotSelected()
-            // Its name, said once: nothing else inside the card for TalkBack to read.
-            assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /**
-     * At 2× font every look's name still fits its card on one line (two cards to a row then, and
-     * the name gets smaller when needed) instead of breaking in the middle of a word, in English
-     * and Dutch ("Vuurvliegjes"), on a phone and on a phone on its side.
-     */
-    @Test
-    @Thorough
-    fun waveLookNamesFitAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f)
-
-    @Test
-    @Thorough
-    fun waveLookNamesFitInDutchAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f, locale = "nl")
-
-    /** Classic sets its names in a wide serif face. */
-    @Test
-    fun waveLookNamesFitInDutchAtTwiceTheFontSizeInTheClassicStyle() =
-        assertWaveLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
-
-    @Test
-    @Thorough
-    fun waveLookNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertWaveLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
-
-    @Test
-    fun waveLookNamesFitInDutchAtALargerFontSize() =
-        assertWaveLookNamesFit(fontScale = 1.3f, locale = "nl", style = VisualStyle.CLASSIC)
-
-    private fun assertWaveLookNamesFit(
-        size: DpSize? = null,
-        fontScale: Float? = null,
-        locale: String? = null,
-        style: VisualStyle? = null,
-    ) {
-        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = fontScale, locale = locale, style = style)
-        val res = resourcesIn(locale)
-        for (id in waveLookNames.values) {
-            val name = res.getString(id)
-            val label = compose.onNodeWithText(name, useUnmergedTree = true)
-            assertWhollyShown(label, name)
-            val layouts = mutableListOf<TextLayoutResult>()
-            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
-        }
-    }
-
-    private val waveLookNames = mapOf(
-        WaveLook.STROBE to R.string.settings_wave_look_strobe,
-        WaveLook.RIBBON to R.string.settings_wave_look_ribbon,
-        WaveLook.DOTS to R.string.settings_wave_look_dots,
-        WaveLook.FIREFLIES to R.string.settings_wave_look_fireflies,
-        WaveLook.LOOP to R.string.settings_wave_look_loop,
-        WaveLook.RIPPLES to R.string.settings_wave_look_ripples,
-    )
-
-    @Test
-    fun waveLooksAreHiddenWithTheNeedle() {
-        show(AppSettings(display = TunerDisplay.NEEDLE))
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertDoesNotExist()
-    }
-
-    @Test
-    fun theStrobeIsOneOfTheWaveLooks() {
-        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.STROBE))
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_strobe)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected().performClick()
-        assertEquals(listOf(WaveLook.RIBBON), waveLookChanges)
+        compose.onNodeWithTag(lensLookCardTag(LensLook.CLASSIC)).performScrollTo().assertIsSelected()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.LIGHT_ARC)).performClick()
+        compose.onNodeWithTag(lensLookCardTag(LensLook.STROBE)).performClick()
+        assertEquals(listOf(LensLook.LIGHT_ARC, LensLook.STROBE), lensLookChanges)
     }
 
     @Test
@@ -744,145 +612,45 @@ class SettingsContentTest {
     }
 
     @Test
-    fun wallpaperColoursOnlyApplyToTheContemporaryStyle() {
-        show(AppSettings(style = VisualStyle.RETRO))
-        compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title)).assertDoesNotExist()
-    }
-
-    @Test
-    fun styleCardsShowTheChoiceAndReportANewOne() {
-        show(AppSettings(style = VisualStyle.CLASSIC))
-        compose.onNodeWithTag(styleCardTag(VisualStyle.CLASSIC)).performScrollTo().assertIsSelected()
-        compose.onNodeWithTag(styleCardTag(VisualStyle.ANCIENT)).performScrollTo().assertIsNotSelected().performClick()
-        assertEquals(listOf(VisualStyle.ANCIENT), styleChanges)
-    }
-
-    /** The six styles, in the owner's order, three to a row: Ancient, Classic, Retro, then Contemporary, Futuristic, Space Age. */
-    @Test
-    fun styleCardsComeInTheOwnersOrderThreeToARow() {
-        show(AppSettings())
-        // Unclipped: the second row may sit below the bottom of the screen.
-        val bounds = VisualStyle.entries.map { compose.onNodeWithTag(styleCardTag(it)).getUnclippedBoundsInRoot() }
-        assertEquals(
-            listOf(
-                VisualStyle.ANCIENT,
-                VisualStyle.CLASSIC,
-                VisualStyle.RETRO,
-                VisualStyle.CONTEMPORARY,
-                VisualStyle.FUTURISTIC,
-                VisualStyle.SPACE_AGE,
-            ),
-            VisualStyle.entries,
-        )
-        for (row in bounds.chunked(3)) {
-            row.zipWithNext { a, b ->
-                assertEquals("same row", a.top.value, b.top.value, 0.5f)
-                assertTrue("left to right", a.right <= b.left)
-            }
-        }
-        assertTrue("second row starts at ${bounds[3].top}, the first ends at ${bounds[0].bottom}: $bounds", bounds[3].top >= bounds[0].bottom)
-    }
-
-    /**
-     * TalkBack hears every style card as a radio button with the style's name, and which one is
-     * picked; the mood picture inside (its big letter and string buttons) says nothing. In English
-     * and in Dutch.
-     */
-    @Test
-    fun talkBackReadsEveryStyleAsARadioButton() = assertStylesSpoken(locale = null)
-
-    @Test
-    fun dutchTalkBackReadsEveryStyleAsARadioButton() = assertStylesSpoken(locale = "nl")
-
-    private fun assertStylesSpoken(locale: String?) {
-        show(AppSettings(style = VisualStyle.FUTURISTIC), locale = locale)
-        val res = resourcesIn(locale)
-        for ((style, id) in styleNames) {
-            val name = res.getString(id)
-            val card = compose.onNodeWithTag(styleCardTag(style)).performScrollTo()
-            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (style == VisualStyle.FUTURISTIC) card.assertIsSelected() else card.assertIsNotSelected()
-            assertEquals("$style", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
-            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
-        }
-    }
-
-    /** At 2× font every style's name still fits its card on one line, also Dutch "Ruimtetijdperk". */
-    @Test
-    fun styleNamesFitInDutchAtTwiceTheFontSize() = assertStyleNamesFit(fontScale = 2f, locale = "nl")
-
-    @Test
-    @Thorough
-    fun styleNamesFitAtTwiceTheFontSize() = assertStyleNamesFit(fontScale = 2f)
-
-    /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
-    @Test
-    fun styleNamesFitInDutchInALargerFontSize() = assertStyleNamesFit(fontScale = 1.29f, locale = "nl")
-
-    @Test
-    @Thorough
-    fun styleNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
-        assertStyleNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
-
-    private fun assertStyleNamesFit(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
-        show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
-        val res = resourcesIn(locale)
-        for ((style, id) in styleNames) {
-            val name = res.getString(id)
-            val label = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(styleCardTag(style))), useUnmergedTree = true)
-            assertWhollyShown(label, name)
-            val layouts = mutableListOf<TextLayoutResult>()
-            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
-        }
-    }
-
-    private val styleNames = mapOf(
-        VisualStyle.ANCIENT to DesignR.string.style_ancient,
-        VisualStyle.CLASSIC to DesignR.string.style_classic,
-        VisualStyle.RETRO to DesignR.string.style_retro,
-        VisualStyle.CONTEMPORARY to DesignR.string.style_contemporary,
-        VisualStyle.FUTURISTIC to DesignR.string.style_futuristic,
-        VisualStyle.SPACE_AGE to DesignR.string.style_space_age,
-    )
-
-    @Test
-    fun settingsComeInFiveHeadedGroupsTheLastEndingInTheAboutLink() {
-        show(AppSettings(display = TunerDisplay.WAVE))
+    fun settingsComeInFourHeadedGroupsTheLastEndingInTheAboutLink() {
+        show(AppSettings(), languages = listOf("de", "nl"))
         val headings = listOf(
-            R.string.settings_group_pitch,
             R.string.settings_group_look,
-            R.string.settings_group_tuner_screen,
             R.string.settings_group_while_tuning,
-            R.string.settings_group_app,
+            R.string.settings_group_tuning,
+            R.string.settings_group_twangle,
         )
-        headings.forEach { compose.onNodeWithText(context.getString(it)).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)) }
+        val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+        headings.forEach { compose.onNodeWithText(context.getString(it)).assert(isHeading) }
+        // No other heading but the page's title (every tab's top row, 2026-11-04): the four groups are all there is
+        // (Phase 75; five until then).
+        compose.onNodeWithText(context.getString(R.string.settings_title)).assert(isHeading)
+        compose.onAllNodes(isHeading).assertCountEquals(headings.size + 1)
 
-        // Top to bottom: each heading, then the settings of its group.
+        // Top to bottom: each heading, then the settings of its group (2.0, Phase 75, the first mock-up's four groups;
+        // Look first and the reference pitch last since the owner's look of 2026-11-05: what most players change first).
         // Unclipped positions: most of these rows are below the fold.
         fun top(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
         val order = listOf(
-            top(context.getString(R.string.settings_group_pitch)),
-            top(context.getString(R.string.settings_a4_title)),
-            top(context.getString(R.string.settings_notation_title)),
-            top(context.getString(R.string.settings_in_tune_precision_title)),
             top(context.getString(R.string.settings_group_look)),
-            compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
-            // The wallpaper colours belong to the style (Contemporary only), so they come right under it (Phase 63).
-            top(context.getString(R.string.settings_dynamic_color_title)),
+            // The lens's cards first (the owner's review, 2026-11-03), then what goes under the meter, light or dark with
+            // the wallpaper colours, then the charts' hand.
+            top(context.getString(R.string.settings_meter_title)),
+            top(context.getString(R.string.settings_under_meter_title)),
             top(context.getString(R.string.settings_theme_title)),
-            top(context.getString(R.string.settings_group_tuner_screen)),
-            top(context.getString(R.string.settings_meter_look_title)),
-            top(context.getString(R.string.settings_in_tune_effect_title)),
-            top(context.getString(R.string.settings_in_tune_effect_summary)),
-            top(context.getString(R.string.settings_display_title)),
-            top(context.getString(R.string.settings_wave_look_title)),
+            top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_left_handed_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
-            top(context.getString(R.string.settings_show_tune_hint_title)),
+            top(context.getString(R.string.settings_string_tick_off_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
-            top(context.getString(R.string.settings_group_app)),
+            top(context.getString(R.string.settings_group_tuning)),
+            top(context.getString(R.string.settings_notation_title)),
+            top(context.getString(R.string.settings_precise_title)),
+            top(context.getString(R.string.settings_a4_title)),
+            top(context.getString(R.string.settings_group_twangle)),
+            top(context.getString(R.string.settings_language_title)),
             top(context.getString(R.string.about_title)),
         )
         assertEquals("tops $order", order.sorted(), order)
@@ -892,7 +660,7 @@ class SettingsContentTest {
     fun onAWideScreenTheSettingsStayInAReadableColumn() {
         show(AppSettings(), size = DpSize(1200.dp, 800.dp))
         val window = safeArea()
-        val row = compose.onNodeWithText(context.getString(R.string.settings_theme_dark)).performScrollTo().getBoundsInRoot()
+        val row = compose.onNodeWithText(context.getString(R.string.settings_under_meter_words)).performScrollTo().getBoundsInRoot()
         // 600 of the 1200 dp, in the middle.
         val share = (row.right - row.left) / (window.right - window.left)
         assertTrue("row takes $share of the width", share in 0.4f..0.51f)
@@ -902,44 +670,57 @@ class SettingsContentTest {
     }
 
     /**
-     * The page's title lines up with the rows' column (Phase 52): on a tablet the title stayed at the window's
-     * edge while the rows stood in the centred 600 dp column, 100 dp apart upright and 300 dp on its side. On
-     * a phone the column is the whole width, so the title stays where it was.
+     * The page's top row stands over the rows' column (Phase 52): on a tablet the title stayed at the window's
+     * edge while the rows stood in the centred 600 dp column, 100 dp apart upright and 300 dp on its side. Since
+     * 2026-11-04 it is every tab's top row, the title in the middle of the column.
      */
     @Test
-    fun onATabletUprightTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(TABLET_UPRIGHT)
+    fun onATabletUprightTheTitleStandsOverTheRows() = assertSettingsTitleLinesUp(TABLET_UPRIGHT)
 
     @Test
-    fun onATabletOnItsSideTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(TABLET_ON_ITS_SIDE)
+    fun onATabletOnItsSideTheTitleStandsOverTheRows() = assertSettingsTitleLinesUp(TABLET_ON_ITS_SIDE)
 
     @Test
-    fun onAPhoneTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(PHONE)
+    fun onAPhoneTheTitleStandsOverTheRows() = assertSettingsTitleLinesUp(PHONE)
 
     private fun assertSettingsTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE)
-        val start = columnStart() + ROW_INSET
-        val title = compose.onNodeWithText(context.getString(R.string.settings_title)).getBoundsInRoot()
-        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_pitch)).getBoundsInRoot()
-        assertEquals("$size: the first heading at the column's start", start.value, heading.left.value, tolerance())
-        assertEquals("$size: the title in line with the heading", heading.left.value, title.left.value, tolerance())
+        val title = compose.onNodeWithText(context.getString(R.string.settings_title)).windowBounds()
+        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_look)).getBoundsInRoot()
+        assertEquals("$size: the first heading at the column's start", (columnStart() + ROW_INSET).value, heading.left.value, tolerance())
+        assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
     }
 
-    /** On About the back arrow stands at the column's start, its arrow in line with the text, and the title after it. */
+    /**
+     * On About the back arrow's outline stands at the column's start, in line with the text, and the title in the middle;
+     * upright on a tablet the top row is drawn as the tuner's (TabletTop), the arrow where the tabs have the gear.
+     */
     @Test
     fun onATabletUprightAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_UPRIGHT)
 
     @Test
     fun onATabletOnItsSideAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_ON_ITS_SIDE)
 
+    @Test
+    fun onAPhoneAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(PHONE)
+
     private fun assertAboutTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE, about = true)
-        val start = columnStart()
-        val back = compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).getBoundsInRoot()
-        val title = compose.onNodeWithText(context.getString(R.string.about_title)).getBoundsInRoot()
+        val back = compose.onNodeWithTag(SETTINGS_BACK_TAG).windowBounds()
+        val title = compose.onNodeWithText(context.getString(R.string.about_title)).windowBounds()
         val text = compose.onNodeWithText(context.getString(R.string.settings_about_free_title)).getBoundsInRoot()
-        assertEquals("$size: the text at the column's start", (start + ROW_INSET).value, text.left.value, tolerance())
-        // Material's top bar keeps the 48 dp back button 4 dp in, so its 24 dp arrow starts 16 dp in, as the text.
-        assertEquals("$size: the back arrow's middle", (text.left + 12.dp).value, ((back.left + back.right) / 2).value, tolerance())
+        assertEquals("$size: the text at the column's start", (columnStart() + ROW_INSET).value, text.left.value, tolerance())
+        val grow = topScaleFor(size.width.value, size.height.value)
+        if (grow > 1f) {
+            // At the start of a phone's 480 dp column less its 16 dp margins, drawn that much bigger in the middle: within two
+            // pixels, rounded once in the bigger row and once in the window.
+            val pixels = 2.05f / compose.onNodeWithTag(WINDOW).fetchSemanticsNode().layoutInfo.density.density
+            assertEquals("$size: the back arrow's outline where the tabs' gear is", (columnMiddle() - 224.dp * grow).value, back.left.value, maxOf(tolerance(), pixels))
+        } else {
+            assertEquals("$size: the back arrow's outline in line with the text", text.left.value, back.left.value, tolerance())
+        }
+        assertEquals("$size: the arrow on the top row's face", TOP_BAR_FACE.value * grow, (back.right - back.left).value, tolerance())
+        assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
         assertTrue("$size: the title after the arrow", title.left >= back.right)
     }
 
@@ -956,48 +737,25 @@ class SettingsContentTest {
         return safe.left + maxOf(0.dp, (safe.right - safe.left - CONTENT_WIDTH) / 2)
     }
 
+    private fun columnMiddle(): Dp = safeArea().let { (it.left + it.right) / 2 }
+
     /**
-     * The style, meter and wave cards come three to a row on a tablet at its 1.3× text (Phase 52), near their
-     * phone size: two to a row they were about 280 × 385 dp each on the Lenovo Tab M11, the six styles a screen
-     * and a half upright and three screens on its side. On a phone they still go to two from 1.3×.
+     * The node's bounds in the window's dp. Its own bounds are in its own dp, and upright on a tablet the top row is drawn
+     * bigger (TabletTop), with that many more pixels to its dp.
      */
-    @Test
-    fun onATabletUprightTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_UPRIGHT, perRow = 3)
-
-    @Test
-    fun onATabletOnItsSideTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_ON_ITS_SIDE, perRow = 3)
-
-    @Test
-    fun onAPhoneAtTheTabletsTextTheCardsComeTwoToARow() = assertCardsPerRow(PHONE, perRow = 2)
-
-    private fun assertCardsPerRow(size: DpSize, perRow: Int) {
-        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = TABLET_FONT_SCALE)
-        val width = minOf(safeArea().let { it.right - it.left }, CONTENT_WIDTH) - ROW_INSET * 2
-        val cardWidth = (width - CARD_GAP * (perRow - 1)) / perRow
-        val grids = mapOf(
-            "style" to VisualStyle.entries.map(::styleCardTag),
-            "meter" to MeterLook.entries.map(::meterLookCardTag),
-            "wave" to WaveLook.entries.map(::waveLookCardTag),
-        )
-        for ((grid, tags) in grids) {
-            // Unclipped: the lower rows may lie below the bottom of the screen.
-            val cards = tags.map { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
-            val rows = cards.chunked(perRow)
-            for ((index, row) in rows.withIndex()) {
-                for (card in row) {
-                    assertEquals("$size $grid row $index top", row.first().top.value, card.top.value, tolerance())
-                    assertEquals("$size $grid card width", cardWidth.value, (card.right - card.left).value, tolerance())
-                }
-                if (index > 0) assertTrue("$size $grid row $index under the one before", row.first().top >= rows[index - 1].first().bottom)
-            }
-        }
+    private fun SemanticsNodeInteraction.windowBounds(): DpRect {
+        val pxPerDp = compose.onNodeWithTag(WINDOW).fetchSemanticsNode().layoutInfo.density.density
+        val r = fetchSemanticsNode().boundsInRoot
+        return DpRect((r.left / pxPerDp).dp, (r.top / pxPerDp).dp, (r.right / pxPerDp).dp, (r.bottom / pxPerDp).dp)
     }
 
     @Test
-    fun aboutShowsTheVersionThePromiseAndThePrivacyStatement() {
+    fun aboutShowsTheVersionTheNamesMeaningThePromiseAndThePrivacyStatement() {
         show(AppSettings(), about = true)
         listOf(
             context.getString(R.string.settings_about_version, VERSION),
+            context.getString(R.string.settings_about_name_title),
+            context.getString(R.string.settings_about_name_meaning),
             context.getString(R.string.settings_about_free_title),
             context.getString(R.string.settings_about_free_summary),
             context.getString(R.string.settings_about_privacy_title),
@@ -1074,7 +832,7 @@ class SettingsContentTest {
     @Test
     fun creditsAreButtonsThatSayWhatTheyDo() {
         show(AppSettings(), about = true)
-        compose.onNodeWithTag(creditTag("Orbitron")).performScrollTo()
+        compose.onNodeWithTag(creditTag("Noto Sans Symbols")).performScrollTo()
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             .assert(
                 SemanticsMatcher("click label") {
@@ -1086,9 +844,9 @@ class SettingsContentTest {
     @Test
     fun tappingAFontShowsItsLicenceFromTheApp() {
         show(AppSettings(), about = true)
-        compose.onNodeWithTag(creditTag("Orbitron")).performScrollTo().performClick()
+        compose.onNodeWithTag(creditTag("Noto Sans Symbols")).performScrollTo().performClick()
         // The licence is read from the app's own files, so it is there without internet.
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Orbitron Project Authors", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Google Inc. All Rights Reserved", substring = true).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("licensed under the SIL Open Font License, Version 1.1", substring = true).assertExists()
         compose.onNodeWithText(context.getString(R.string.settings_about_licence_close)).assertIsDisplayed().performClick()
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assertDoesNotExist()
@@ -1136,8 +894,8 @@ class SettingsContentTest {
     @Test
     fun theLicenceCanBeClosedAtTwiceTheFontSize() {
         show(AppSettings(), fontScale = 2f, about = true)
-        compose.onNodeWithTag(creditTag("Michroma")).performScrollTo().performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Michroma Project Authors", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag(creditTag("Noto Sans Symbols")).performScrollTo().performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Google Inc. All Rights Reserved", substring = true).fetchSemanticsNodes().isNotEmpty() }
         // A long licence scrolls inside the dialog; the button stays on screen.
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
         compose.onNodeWithText(context.getString(R.string.settings_about_licence_close)).assertIsDisplayed().performClick()
@@ -1186,10 +944,10 @@ class SettingsContentTest {
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
     }
 
-    /** [MaterialTheme], or with a [style] that style's lettering and colours (light). */
+    /** [MaterialTheme], or with [ink] the app's own theme (Ink, light). */
     @Composable
-    private fun Themed(style: VisualStyle?, content: @Composable () -> Unit) {
-        if (style == null) MaterialTheme { content() } else TwangleTheme(style = style, darkTheme = false, animate = false) { content() }
+    private fun Themed(ink: Boolean, content: @Composable () -> Unit) {
+        if (!ink) MaterialTheme { content() } else TwangleTheme(darkTheme = false, animate = false) { content() }
     }
 
     /** Resources in [locale], or the test's own when it is null. */
@@ -1201,7 +959,7 @@ class SettingsContentTest {
     }
 
     /**
-     * The rows phase 8 added to settings: the three group headings, the note-name choices and the
+     * The rows phase 8 added to settings, with Phase 75's four group headings: the headings, the note-name choices and the
      * About link. Each can be scrolled to and is then wholly on screen, inside the window, and its
      * text isn't cut short.
      */
@@ -1209,19 +967,20 @@ class SettingsContentTest {
         show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
         val res = resourcesIn(locale)
         val texts = listOf(
-            R.string.settings_group_pitch,
+            R.string.settings_group_tuning,
+            // Note names and Light or dark are rows that open their lists, Precise tuning a switch (2026-11-05).
             R.string.settings_notation_title,
-            R.string.settings_notation_sharps,
-            R.string.settings_notation_flats,
-            R.string.settings_notation_solfege,
-            R.string.settings_notation_german,
-            R.string.settings_group_look,
-            R.string.settings_group_tuner_screen,
+            R.string.settings_theme_title,
+            R.string.settings_theme_system,
+            R.string.settings_precise_title,
+            R.string.settings_precise_summary,
             R.string.settings_group_while_tuning,
-            R.string.settings_group_app,
+            R.string.settings_group_look,
+            R.string.settings_group_twangle,
             R.string.about_title,
         ).map { res.getString(it) } + res.getString(R.string.settings_about_link_summary, VERSION)
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
+        assertWhollyShown(compose.onNodeWithTag(NOTATION_SETTING_TAG), "the note names row")
     }
 
     /**
@@ -1234,6 +993,7 @@ class SettingsContentTest {
         // The page title sits in the top bar, which doesn't scroll.
         assertWhollyShown(compose.onNodeWithText(res.getString(R.string.about_title), useUnmergedTree = true), "title", scroll = false)
         val texts = listOf(
+            R.string.settings_about_name_title,
             R.string.settings_about_free_title,
             R.string.settings_about_privacy_title,
             R.string.settings_about_credits_title,
@@ -1241,7 +1001,12 @@ class SettingsContentTest {
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
         // The long About texts are taller than a phone on its side at 2×, but they wrap inside the window.
         val window = safeArea()
-        listOf(R.string.settings_about_free_summary, R.string.settings_about_privacy_summary, R.string.settings_about_credits_summary)
+        listOf(
+            R.string.settings_about_name_meaning,
+            R.string.settings_about_free_summary,
+            R.string.settings_about_privacy_summary,
+            R.string.settings_about_credits_summary,
+        )
             .map { res.getString(it) }
             .forEach {
                 val bounds = compose.onNodeWithText(it).performScrollTo().assertIsDisplayed().getBoundsInRoot()
@@ -1298,10 +1063,9 @@ class SettingsContentTest {
         /** The Lenovo Tab M11's own text size. */
         const val TABLET_FONT_SCALE = 1.3f
 
-        /** The rows' column at most, its rows' inset and the cards' gap, as SettingsScreen and LookCardGrid set them. */
+        /** The rows' column at most and its rows' inset, as SettingsScreen sets them. */
         val CONTENT_WIDTH = 600.dp
         val ROW_INSET = 16.dp
-        val CARD_GAP = 8.dp
 
         /** Positions compared in dp: at the tablet's 1.5 px a dp, a pixel's rounding is 0.67 dp ([tolerance]). */
         const val EDGE_TOLERANCE = 0.75f

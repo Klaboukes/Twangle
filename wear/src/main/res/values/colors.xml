@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The launcher icon's mustard, as on the phone. -->
-    <color name="ic_launcher_background">#E3B23C</color>
+    <!-- The launcher icon's circle on the watch: a slate a little lighter than the phone's Ink dark (#0E1116),
+         which vanished on the app list's black (owner, 2026-11-05). -->
+    <color name="ic_launcher_background">#262D38</color>
 </resources>

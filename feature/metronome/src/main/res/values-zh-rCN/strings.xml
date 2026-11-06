@@ -5,9 +5,10 @@
     <plurals name="metronome_tempo_value">
         <item quantity="other">每分钟 %1$d 拍，%2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">每分钟拍数 · %1$s</string>
     <string name="metronome_slower">减慢</string>
     <string name="metronome_faster">加快</string>
-    <string name="metronome_tap">点按测速</string>
+    <string name="metronome_tap">点按节拍</string>
     <string name="metronome_start">开始</string>
     <string name="metronome_stop">停止</string>
     <string name="metronome_vibrate">随节拍振动</string>
@@ -21,12 +22,8 @@
     <string name="metronome_subdivision_eighths">八分音符</string>
     <string name="metronome_subdivision_triplets">三连音</string>
     <string name="metronome_subdivision_sixteenths">十六分音符</string>
-    <string name="metronome_subdivision_eighths_on">拍间加入八分音符</string>
-    <string name="metronome_subdivision_triplets_on">拍间加入三连音</string>
-    <string name="metronome_subdivision_sixteenths_on">拍间加入十六分音符</string>
     <string name="metronome_options">选项</string>
     <string name="metronome_trainer">速度训练</string>
-    <string name="metronome_trainer_back">返回选项</string>
     <string name="metronome_trainer_start">起始速度</string>
     <string name="metronome_trainer_goal">目标</string>
     <string name="metronome_trainer_start_slower">降低起始速度</string>
@@ -61,7 +58,6 @@
     <string name="metronome_listen">聆听</string>
     <string name="metronome_listen_stop_spoken">停止聆听</string>
     <string name="metronome_listening">正在聆听…</string>
-    <string name="metronome_listen_line_stop">停止</string>
     <string name="metronome_heard">听到</string>
     <string name="metronome_use">使用</string>
     <string name="metronome_not_now">暂不</string>

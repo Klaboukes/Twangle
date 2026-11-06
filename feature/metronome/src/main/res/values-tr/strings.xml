@@ -6,9 +6,10 @@
         <item quantity="one">Dakikada %1$d vuruş, %2$s</item>
         <item quantity="other">Dakikada %1$d vuruş, %2$s</item>
     </plurals>
+    <string name="metronome_tempo_line">dakikada vuruş · %1$s</string>
     <string name="metronome_slower">Daha yavaş</string>
     <string name="metronome_faster">Daha hızlı</string>
-    <string name="metronome_tap">Dokunarak tempo</string>
+    <string name="metronome_tap">Ritimle dokun</string>
     <string name="metronome_start">Başlat</string>
     <string name="metronome_stop">Durdur</string>
     <string name="metronome_vibrate">Vuruşta titreşim</string>
@@ -22,12 +23,8 @@
     <string name="metronome_subdivision_eighths">Sekizlikler</string>
     <string name="metronome_subdivision_triplets">Üçlemeler</string>
     <string name="metronome_subdivision_sixteenths">On altılıklar</string>
-    <string name="metronome_subdivision_eighths_on">Vuruşlar arası sekizlikler</string>
-    <string name="metronome_subdivision_triplets_on">Vuruşlar arası üçlemeler</string>
-    <string name="metronome_subdivision_sixteenths_on">Vuruşlar arası on altılıklar</string>
     <string name="metronome_options">Seçenekler</string>
     <string name="metronome_trainer">Tempo antrenörü</string>
-    <string name="metronome_trainer_back">Seçeneklere dön</string>
     <string name="metronome_trainer_start">Başlangıç temposu</string>
     <string name="metronome_trainer_goal">Hedef</string>
     <string name="metronome_trainer_start_slower">Daha düşük başlangıç temposu</string>
@@ -64,7 +61,6 @@
     <string name="metronome_listen">Dinle</string>
     <string name="metronome_listen_stop_spoken">Dinlemeyi durdur</string>
     <string name="metronome_listening">Dinliyor…</string>
-    <string name="metronome_listen_line_stop">Durdur</string>
     <string name="metronome_heard">Duyulan</string>
     <string name="metronome_use">Kullan</string>
     <string name="metronome_not_now">Şimdi değil</string>

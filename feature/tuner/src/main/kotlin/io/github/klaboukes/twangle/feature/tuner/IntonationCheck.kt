@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import io.github.klaboukes.twangle.core.dsp.chord.ChordInstruments
 import io.github.klaboukes.twangle.core.dsp.intonation.Intonation
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationInstruments
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
@@ -17,41 +16,28 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * The tools the tuner's "more tools" button gathers (docs/architecture/ui-tuner.md, *More tools*),
- * each a mode that takes the meter's and the note's place while it is on. One at a time.
+ * The tuner's tools, each taking the lens's place while it is on (docs/architecture/ui-tuner.md, *12th-fret check
+ * view*, *The strum check*): the 12th-fret check, opened from the picker sheet's row (Phase 71), and the strum check,
+ * from its button above the pegs (Phase 74; owner, 2026-11-03). 1.1's "more tools" menu went in 2.0.
  */
 enum class TunerTool {
-    /** Strum once and every string shows flat, in tune or sharp (v1.0). */
-    STRUM_CHECK,
-
     /** Phase 29: the 12th-fret check, string by string. */
     INTONATION_CHECK,
 
-    /** Phase 30: strum a chord and its name shows. */
-    CHORD_NAME,
+    /** Phase 18: strum the open strings once and see which are off; since 2.0 a button above the pegs. */
+    STRUM_CHECK,
 
-    /**
-     * Phase 31: the pitch trail, a line of the last seconds in the meter's place. Unlike the others it
-     * doesn't take the microphone from the tuner: the note, its cents and the strings stay, and it
-     * stays on in chromatic mode (singers, violins).
-     */
-    PITCH_TRAIL,
+    // 1.1's other tools went in 2.0: the pitch trail is the lens's look (Phase 71); the chord name is Chords' Listen (Phase 74).
 }
 
 /**
- * The tools the tuner offers for [instrument] in a build with [tools] switched on, in the menu's
- * order: the strum check where its switch is on and it can tell the strings apart ([StrumInstruments.offers]: not on the
- * 12-string), the 12th-fret check where its switch is on and the instrument has
- * frets and a saddle ([IntonationInstruments.offers]), the chord name where its switch is on and the
- * instrument is strummed in chords ([ChordInstruments.offers]), and the pitch trail where its switch is on
- * (every instrument: it draws any note). With the strum check alone the tuner shows its
- * switch as in v1.0; with any other tool or more, one "more tools" button opens a menu of them.
+ * The tools the tuner offers for [instrument] in a build with [tools] switched on: the 12th-fret check where its
+ * switch is on and the instrument has frets and a saddle ([IntonationInstruments.offers]), the strum check where its
+ * switch is on and the instrument's strings can be read in one strum ([StrumInstruments.offers]: not the 12-string).
  */
 fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
-    if (tools.strumCheck && StrumInstruments.offers(instrument)) add(TunerTool.STRUM_CHECK)
     if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
-    if (tools.chordNaming && ChordInstruments.offers(instrument)) add(TunerTool.CHORD_NAME)
-    if (tools.pitchTrail) add(TunerTool.PITCH_TRAIL)
+    if (tools.strumCheck && StrumInstruments.offers(instrument)) add(TunerTool.STRUM_CHECK)
 }
 
 /** Where the 12th-fret check is: see [TunerUiState.IntonationCheck]. */

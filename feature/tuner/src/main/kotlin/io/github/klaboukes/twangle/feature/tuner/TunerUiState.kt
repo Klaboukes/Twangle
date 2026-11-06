@@ -1,11 +1,13 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
-import io.github.klaboukes.twangle.core.dsp.chord.SettledChord
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
 import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
+import io.github.klaboukes.twangle.core.dsp.music.Accidental
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
@@ -80,6 +82,13 @@ sealed interface TunerUiState {
          * back"), held steady by [SteadyHint]; null for none. [TunerInterpreter] sets it.
          */
         val tip: ReceptionTip? = null,
+        /**
+         * The target note's MIDI number (the note [noteName] and [octave] name, 40 for E2), so the ruler
+         * places the reading at `targetMidi + cents / 100` without parsing a name. [TunerInterpreter] sets
+         * it; by default it is read back from [noteName], [octave] and [notation] (or, for a name of none
+         * of the notations, from [frequencyHz] and [cents]).
+         */
+        val targetMidi: Int = targetMidiOf(noteName, octave, notation, frequencyHz, a4Hz, cents),
     ) : TunerUiState
 
     /**
@@ -117,34 +126,19 @@ sealed interface TunerUiState {
         val results: List<IntonationResult?> = emptyList(),
         val scaleLengthMm: Float? = null,
     ) : TunerUiState
-
-    /**
-     * The chord name (Phase 30, guitar mode, switched on from the "more tools" menu): strum a chord
-     * and its name shows, settled over several readings ([ChordNameInterpreter]). [chord] is the one
-     * shown (null: none yet, or [ChordPhase.UNCLEAR]), [faded] once its strum has died away or while a
-     * new strum is heard; [recent] the last three chords shown, the latest last. [tuning] is only for
-     * the string row and the panel's names; [notation] writes the chord ("Am", "Lam", "Hm").
-     */
-    data class ChordName(
-        val tuning: Tuning,
-        val notation: Notation = Notation.DEFAULT,
-        val phase: ChordPhase = ChordPhase.WAITING,
-        val chord: SettledChord? = null,
-        val faded: Boolean = false,
-        val recent: List<SettledChord> = emptyList(),
-    ) : TunerUiState
 }
 
 /**
  * This state as the screen's text shows it: in [TunerUiState.Detected] the cents rounded to whole
- * cents and the frequency to 0.1 Hz, the precision `NoteDisplay` writes them with. Two readings whose
- * text looks the same then compare equal, so the screen recomposes only when the text changes. The
- * needle needs the exact cents and reads them from the unrounded state, and the [TunerUiState.Detected.reception]
- * isn't text at all: it is set to 1 here, and the needle and the wave read it from the unrounded state
- * while drawing. Other states are returned as they are.
+ * cents, the precision the word writes them with. Two readings whose text looks the same then compare
+ * equal, so the screen recomposes only when the text changes. The frequency isn't shown (2.0, Phase 71:
+ * the hertz went with the big note), so it is 0 here. The lens and the ruler need the exact cents and
+ * read them from the unrounded state, and the [TunerUiState.Detected.reception] isn't text at all: it is
+ * set to 1 here, and the lens reads it from the unrounded state while drawing. Other states are
+ * returned as they are.
  */
 fun TunerUiState.asShown(): TunerUiState = when (this) {
-    is TunerUiState.Detected -> copy(cents = shownCents(cents), frequencyHz = shownHz(frequencyHz), reception = 1f)
+    is TunerUiState.Detected -> copy(cents = shownCents(cents), frequencyHz = 0f, reception = 1f)
     else -> this
 }
 
@@ -157,7 +151,7 @@ fun TunerUiState.asShown(): TunerUiState = when (this) {
  */
 internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
     if (this !is TunerUiState.Detected || other !is TunerUiState.Detected) return this == other
-    // Every field of Detected except cents and frequencyHz; TunerUiStateShownTest notices a new one.
+    // Every field of Detected except cents and frequencyHz (not shown); TunerUiStateShownTest notices a new one.
     return mode == other.mode &&
         tuning == other.tuning &&
         a4Hz == other.a4Hz &&
@@ -169,8 +163,8 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         inTune == other.inTune &&
         hint == other.hint &&
         tip == other.tip &&
+        targetMidi == other.targetMidi &&
         shownCents(cents) == shownCents(other.cents) &&
-        shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
         abs(meterCents(cents) - meterCents(other.cents)) < NEEDLE_STEP_CENTS &&
         abs(reception - other.reception) < RECEPTION_STEP
 }
@@ -190,5 +184,19 @@ internal const val RECEPTION_STEP = 0.02f
 
 private fun shownCents(cents: Float): Float = cents.roundToInt().toFloat()
 
-/** The frequency is shown to 0.1 Hz (`tuner_frequency`). */
-private fun shownHz(frequencyHz: Float): Float = (frequencyHz * 10f).roundToInt() / 10f
+/**
+ * The MIDI number of the note called [noteName] in [notation] (either spelling) in [octave]; for a name of
+ * no pitch class, the note nearest [frequencyHz] less [cents] at [a4Hz], or A4 without a frequency.
+ */
+internal fun targetMidiOf(noteName: String, octave: Int, notation: Notation, frequencyHz: Float, a4Hz: Float, cents: Float): Int {
+    for (pitchClass in PitchClass.entries) {
+        if (notation.nameOf(pitchClass, Accidental.SHARP) == noteName || notation.nameOf(pitchClass, Accidental.FLAT) == noteName) {
+            return Note.of(pitchClass, octave).midi
+        }
+    }
+    if (!(frequencyHz > 0f) || !frequencyHz.isFinite() || a4Hz !in NoteMapper.MIN_A4_HZ..NoteMapper.MAX_A4_HZ) return A4_MIDI
+    return (NoteMapper(a4Hz).midiOf(frequencyHz) - cents / CENTS_PER_SEMITONE).roundToInt()
+}
+
+private const val A4_MIDI = 69
+private const val CENTS_PER_SEMITONE = 100f

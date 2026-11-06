@@ -1,10 +1,12 @@
 package io.github.klaboukes.twangle.feature.settings.components
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
 
+/** The Meter cards' demo loop (Phase 72; 1.1's meter look cards had the same loop). */
 class MeterDemoTest {
 
     @Test
@@ -28,13 +30,13 @@ class MeterDemoTest {
     }
 
     @Test
-    fun `the marker follows the loop gently and stays on the meter`() {
+    fun `the reading follows the loop gently and stays on the lens`() {
         val demo = MeterDemo()
         var previous = demo.cents.floatValue
         repeat(2 * 60 * METER_DEMO_SECONDS.toInt()) { frame ->
             demo.advance(1f / 60f, frame.toLong())
             val now = demo.cents.floatValue
-            assertTrue("marker at $now", abs(now) <= 18f)
+            assertTrue("reading at $now", abs(now) <= 18f)
             assertTrue("step of ${abs(now - previous)} cents", abs(now - previous) < 1f)
             previous = now
         }
@@ -57,5 +59,23 @@ class MeterDemoTest {
         val start = demo.cents.floatValue
         demo.advance(30f, 0L)
         assertEquals(start, demo.cents.floatValue, 1e-4f)
+    }
+
+    @Test
+    fun `a still card shows the note reached and settled, the strobe standing still`() {
+        val demo = MeterDemo()
+        holdStill(demo)
+        assertEquals("in tune, settled", 1f, demo.tuned.floatValue)
+        assertTrue("within the strobe's half cent: ${demo.cents.floatValue}", abs(demo.cents.floatValue) < 0.5f)
+    }
+
+    @Test
+    fun `the demo has a reading only while the cards are on screen`() {
+        val demo = MeterDemo()
+        assertFalse(demo.onScreen.value)
+        demo.onScreenChanged(true)
+        assertTrue(demo.onScreen.value)
+        demo.onScreenChanged(false)
+        assertFalse(demo.onScreen.value)
     }
 }
