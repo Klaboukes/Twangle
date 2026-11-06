@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -133,6 +134,16 @@ class CapoScreenTest {
     }
 
     private fun node(tag: String) = compose.onNodeWithTag(tag)
+
+    /**
+     * [tag]'s bounds in the window's dp. A node's own bounds are in its own dp, and upright on a tablet the top row is
+     * drawn bigger (TabletTop), with that many more pixels to its dp.
+     */
+    private fun windowBounds(tag: String): DpRect {
+        val pxPerDp = node(WINDOW).fetchSemanticsNode().layoutInfo.density.density
+        val r = node(tag).fetchSemanticsNode().boundsInRoot
+        return DpRect((r.left / pxPerDp).dp, (r.top / pxPerDp).dp, (r.right / pxPerDp).dp, (r.bottom / pxPerDp).dp)
+    }
     private fun exists(tag: String): Boolean = compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
     private fun row(root: PitchClass, quality: ChordQuality) = node(PracticeTestTags.capoRow(Chord.of(root, quality)))
     private fun spoken(tag: String): String =
@@ -355,15 +366,15 @@ class CapoScreenTest {
             val window = bars().safeArea(size)
             for (tag in listOf(PracticeTestTags.BACK, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
-                val bounds = node(tag).getBoundsInRoot()
+                val bounds = windowBounds(tag)
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
             // One row, every tab's: the back arrow at the start, the picker chip in the middle (Phase 47, 69, 70; beside the
             // arrow until 2026-11-04), as on the tuner.
-            val backArrow = node(PracticeTestTags.BACK).getBoundsInRoot()
-            val instrument = node(PracticeTestTags.TUNING).getBoundsInRoot()
+            val backArrow = windowBounds(PracticeTestTags.BACK)
+            val instrument = windowBounds(PracticeTestTags.TUNING)
             // The tool's name in the top row beside the back arrow, the chip on its own line under it (Phase 77).
-            val title = node(PracticeTestTags.TITLE).getBoundsInRoot()
+            val title = windowBounds(PracticeTestTags.TITLE)
             assertTrue(
                 "$case the tool's name beside the back arrow $backArrow $title",
                 title.left >= backArrow.right && title.top < backArrow.bottom && title.bottom > backArrow.top,

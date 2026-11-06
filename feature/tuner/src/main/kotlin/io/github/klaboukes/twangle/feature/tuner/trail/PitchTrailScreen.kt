@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner.trail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -26,9 +28,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.lens.LensReading
 import io.github.klaboukes.twangle.core.designsystem.lens.TrailLook
 import io.github.klaboukes.twangle.core.designsystem.lens.TrailReading
@@ -89,16 +93,19 @@ fun PitchTrailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val precision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     // Clear of the status bar and a cutout, as every Practice tool (the bar under it is the app's).
-    Column(
-        modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PitchTrailTestTags.SCREEN),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        // The top row where every Practice tool has it: 8 dp down, 16 dp in from the sides.
-        Box(Modifier.fillMaxWidth().padding(top = TOP_BAR_TOP).padding(horizontal = TOP_BAR_MARGIN)) { header() }
-        if (!granted) {
-            PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
-        } else {
-            PitchTrailContent(state, viewModel.history, precision, onRetry = viewModel::retry)
+    BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PitchTrailTestTags.SCREEN)) {
+        // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+        val topScale = topScaleFor(maxWidth.value, maxHeight.value)
+        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            // The top row where every Practice tool has it: 8 dp down, 16 dp in from the sides.
+            Box(Modifier.fillMaxWidth().padding(top = TOP_BAR_TOP).padding(horizontal = TOP_BAR_MARGIN)) {
+                CompositionLocalProvider(LocalTopScale provides topScale) { header() }
+            }
+            if (!granted) {
+                PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
+            } else {
+                PitchTrailContent(state, viewModel.history, precision, onRetry = viewModel::retry)
+            }
         }
     }
 }

@@ -50,11 +50,14 @@ import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.designsystem.BackButton
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TabletTop
 import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.isMusicSign
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -202,7 +205,8 @@ internal fun SettingsPage(
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         // The page's size, for the look card grids' rule (three to a row on a large window at any font size).
-        CompositionLocalProvider(LocalSettingsWindow provides DpSize(maxWidth, maxHeight)) {
+        // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+        CompositionLocalProvider(LocalSettingsWindow provides DpSize(maxWidth, maxHeight), LocalTopScale provides topScaleFor(maxWidth.value, maxHeight.value)) {
             SettingsScaffold(title, onBack, content)
         }
     }
@@ -226,21 +230,23 @@ private fun SettingsScaffold(
             // and the arrow's outline 16 dp in, as the rows (Material's top bar until 2026-11-04, its title at the
             // start beside a bare arrow). It stands in the same centred column as the rows, so the arrow lines up
             // with them where the window is wider than the column (Phase 52: a tablet's title sat at the window's
-            // edge, 100 to 300 dp from the rows). The bar is see-through.
+            // edge, 100 to 300 dp from the rows); upright on a tablet it is drawn as the tuner's (TabletTop), so the arrow
+            // stands where the tabs have the gear. The bar is see-through.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
                 contentAlignment = Alignment.TopCenter,
             ) {
-                TopBar(
-                    middle = { TopBarTitle(title) },
-                    modifier = Modifier
-                        .widthIn(max = CONTENT_MAX_WIDTH)
-                        .fillMaxWidth()
-                        .padding(start = TOP_BAR_MARGIN, end = TOP_BAR_MARGIN, top = TOP_BAR_TOP),
-                    start = onBack?.let { back -> { BackButton(back, stringResource(R.string.settings_back), faceModifier = Modifier.testTag(SETTINGS_BACK_TAG)) } },
-                )
+                Box(Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth().padding(start = TOP_BAR_MARGIN, end = TOP_BAR_MARGIN, top = TOP_BAR_TOP)) {
+                    TabletTop {
+                        TopBar(
+                            middle = { TopBarTitle(title) },
+                            modifier = Modifier.fillMaxWidth(),
+                            start = onBack?.let { back -> { BackButton(back, stringResource(R.string.settings_back), faceModifier = Modifier.testTag(SETTINGS_BACK_TAG)) } },
+                        )
+                    }
+                }
             }
         },
     ) { innerPadding ->

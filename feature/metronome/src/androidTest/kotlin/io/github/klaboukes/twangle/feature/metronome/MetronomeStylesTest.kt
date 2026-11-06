@@ -417,9 +417,10 @@ class MetronomeStylesTest {
     /**
      * On a tablet held upright the column is a phone's, drawn bigger ([columnScaleFor], Phase 52, the
      * tuner's rule): every part sits where it sits on a phone of the tablet's size divided by that
-     * scale, that much bigger, at the tablet's own 1.3x text, with no text cut off. The gear keeps its
-     * own size and its place: at the start of a phone's 480 dp column, 8 dp down, clear of the rest. The
-     * options panel opens from its button at the column's size. A phone keeps its own size (the other tests).
+     * scale, that much bigger, at the tablet's own 1.3x text, with no text cut off. The gear grows with it
+     * in the top row, level with the ⋯, as the tuner's (until the tablet run of 2026-11-06 it kept a phone's
+     * size over the column's start). The options panel opens from its button at the column's size. A phone
+     * keeps its own size (the other tests).
      */
     @Test
     fun anUprightTabletShowsThePhonesColumnBigger() {
@@ -458,17 +459,20 @@ class MetronomeStylesTest {
         compose.waitForIdle()
         val case = "tablet upright with the gear:"
         val gear = compose.onNodeWithTag(HEADER).windowBounds()
-        assertEquals("$case gear's width", 48f, gear.width.value, 1f)
-        // Its face's outline (inside the 48 dp touch area) at the column's text margin, as on every tab.
-        assertEquals("$case gear's left", ((TABLET_UPRIGHT.width - 448.dp) / 2 - TOP_BAR_OUTLINE_INSET).value, gear.left.value, 1f)
-        assertEquals("$case gear's top", 8f, gear.top.value, 1f)
+        // In the top row, as big as the column (as the tuner's gear): 48 dp grown, its face's outline (inside the touch
+        // area) at the grown column's text margin, the row 8 dp down grown.
+        assertEquals("$case gear's width", 48f * grow, gear.width.value, 1f)
+        assertEquals("$case gear's left", ((TABLET_UPRIGHT.width - 448.dp * grow) / 2 - TOP_BAR_OUTLINE_INSET * grow).value, gear.left.value, 1f)
+        assertEquals("$case gear's top", 8f * grow, gear.top.value, 1f)
         val bounds = parts().map { (name, node) -> name to node.windowBounds() }
+        val more = bounds.first { it.first == "options" }.second
+        assertEquals("$case gear level with the ⋯", ((more.top + more.bottom) / 2).value, ((gear.top + gear.bottom) / 2).value, 1f)
         for ((name, rect) in bounds) {
             assertTrue(
                 "$case $name $rect inside the window",
                 rect.left >= -SLACK && rect.top >= -SLACK && rect.right <= TABLET_UPRIGHT.width + SLACK && rect.bottom <= TABLET_UPRIGHT.height + SLACK,
             )
-            if (name != "gear") assertTrue("$case $name $rect under the gear $gear", rect.top >= gear.bottom - TABLET_SLACK)
+            if (name != "gear" && name != "options") assertTrue("$case $name $rect under the top row $gear", rect.top >= gear.bottom - TABLET_SLACK)
         }
         compose.assertEveryTextWhollyShown("$case at ${TABLET_FONT_SCALE}x")
 

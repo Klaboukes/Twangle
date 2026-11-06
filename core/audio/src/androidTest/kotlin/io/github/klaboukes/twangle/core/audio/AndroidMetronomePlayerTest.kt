@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.util.Log
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
@@ -24,6 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.math.abs
@@ -31,6 +33,10 @@ import kotlin.math.abs
 /** Plays real clicks through the speaker (at media volume), so it needs a device. */
 @RunWith(AndroidJUnit4::class)
 class AndroidMetronomePlayerTest {
+
+    /** A screen in the foreground: Android 15 (the Lenovo tablet) refuses audio focus to an app without one. */
+    @get:Rule
+    val foreground = ActivityScenarioRule(ForegroundActivity::class.java)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val player = AndroidMetronomePlayer(context)

@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,9 +47,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.TabletTop
 import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.WholeWordsAutoSize
 import io.github.klaboukes.twangle.core.designsystem.breakableAtHyphens
 import io.github.klaboukes.twangle.core.designsystem.koreanWordsKeptWhole
@@ -100,6 +104,8 @@ fun PracticeCards(
 ) {
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CARDS)) {
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
+        // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+        val topScale = topScaleFor(maxWidth.value, maxHeight.value)
         val side = layout == PracticeLayout.HALVES || layout == PracticeLayout.LARGE_SIDE
         val maxContent = when (layout) {
             PracticeLayout.COLUMN -> COLUMN_MAX_WIDTH
@@ -123,7 +129,7 @@ fun PracticeCards(
                 val rowWidth = (maxWidth - gap * (columns - 1)) / columns
                 Column {
                     Spacer(Modifier.height(TOP_BAR_TOP))
-                    TitleRow(title, settingsButton)
+                    CompositionLocalProvider(LocalTopScale provides topScale) { TabletTop { TitleRow(title, settingsButton) } }
                     Spacer(Modifier.height(if (short) SHORT_GAP / 2 else TITLE_GAP))
                     if (lastTime != null) {
                         LastTimeRow(

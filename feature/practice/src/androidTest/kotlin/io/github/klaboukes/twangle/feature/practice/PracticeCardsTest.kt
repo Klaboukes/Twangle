@@ -14,6 +14,7 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
@@ -22,6 +23,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_OUTLINE_INSET
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.ZERO_WIDTH_SPACE
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
@@ -179,9 +181,19 @@ class PracticeCardsTest {
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
             val rows = PracticeTool.entries.map { card(it).getBoundsInRoot() }
-            // At the top start of the page's column, its face's outline (inside its 48 dp touch area) in line with the rows, as on every tab.
-            val gear = node(GEAR).getBoundsInRoot()
-            assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left + TOP_BAR_OUTLINE_INSET - rows[0].left).value) < 1f)
+            // In the window's dp: upright on a tablet the top row is drawn bigger (TabletTop), with more pixels to its own dp.
+            val pxPerDp = card(PracticeTool.CHORDS).fetchSemanticsNode().layoutInfo.density.density
+            val gear = node(GEAR).fetchSemanticsNode().boundsInRoot.let { DpRect((it.left / pxPerDp).dp, (it.top / pxPerDp).dp, (it.right / pxPerDp).dp, (it.bottom / pxPerDp).dp) }
+            val grow = topScaleFor(window.width.value, window.height.value)
+            if (grow > 1f) {
+                // Upright on a tablet where the tuner's gear is: its face's outline at the start of a phone's column less the
+                // margins, drawn that much bigger in the window's middle, at the top.
+                assertEquals("$case the gear where the tuner's is $gear", (window.left + (window.width - 448.dp * grow) / 2).value, (gear.left + TOP_BAR_OUTLINE_INSET * grow).value, 1f)
+                assertTrue("$case the gear at the top $gear", gear.top <= window.top + 16.dp * grow)
+            } else {
+                // At the top start of the page's column, its face's outline (inside its 48 dp touch area) in line with the rows, as on every tab.
+                assertTrue("$case the gear at the top start $gear", gear.top <= window.top + 16.dp && abs((gear.left + TOP_BAR_OUTLINE_INSET - rows[0].left).value) < 1f)
+            }
             // Within a pixel or two: each column is rounded to the pixel.
             for (bounds in rows) assertEquals("$case one width", rows[0].width.value, bounds.width.value, 2f)
             if (size.width > size.height) {

@@ -1,14 +1,19 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -77,6 +82,46 @@ fun TopBar(
 fun PickerLine(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(modifier.fillMaxWidth().padding(top = PICKER_LINE_GAP), contentAlignment = Alignment.Center) { content() }
 }
+
+/**
+ * A page's top ([content]: its [TopBar], with the [PickerLine] under it where it has one) where the tuner's stands on a
+ * tablet held upright. There the tuner's whole column is laid out as on a phone and drawn [columnScaleFor] bigger
+ * ([ScaledUp]), its top row with it; so here too the top is laid out in a phone's column ([TOP_COLUMN_MAX_WIDTH], less
+ * [TOP_BAR_MARGIN] each side) and drawn [LocalTopScale] times bigger, centred, however wide the page under it is, and
+ * the gear, the name, the end button and the chip stand in one place and one size on every tab and page (the tablet run
+ * of 2026-11-06 found the metronome's and Practice's smaller and elsewhere). The page's own [TOP_BAR_TOP] over it grows
+ * by as much. At 1 (every phone, and on its side) it is just [content].
+ */
+@Composable
+fun TabletTop(content: @Composable () -> Unit) {
+    val scale = LocalTopScale.current
+    if (scale <= 1f) {
+        content()
+        return
+    }
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(TOP_BAR_TOP * (scale - 1f)))
+        // Wider than a narrower page under it, centred over it as the tuner's column is in the window.
+        Box(Modifier.requiredWidth((TOP_COLUMN_MAX_WIDTH - TOP_BAR_MARGIN * 2) * scale)) {
+            ScaledUp(scale, content)
+        }
+    }
+}
+
+/**
+ * How much bigger a page's window draws a phone's column ([topScaleFor] of the window less the system bars, as the
+ * tuner works it out), for [TabletTop]; each page whose top uses it provides it. 1 where none does.
+ */
+val LocalTopScale = staticCompositionLocalOf { 1f }
+
+/**
+ * [LocalTopScale] for a window of [widthDp] by [heightDp]: the tuner's upright column's [columnScaleFor], and 1 on its
+ * side, where the tuner's wide layout keeps its size (a tablet on its side, 800 dp high, would grow by 1.05).
+ */
+fun topScaleFor(widthDp: Float, heightDp: Float): Float = if (widthDp > heightDp) 1f else columnScaleFor(widthDp, heightDp)
+
+/** The phone column the tuner and the metronome are laid out in upright (at most this wide), and so every page's top. */
+val TOP_COLUMN_MAX_WIDTH = 480.dp
 
 /**
  * A tab's or page's name in the middle of its [TopBar] ("Tune", "Metronome", "Practice", "Chords", "Settings"), a heading for TalkBack:

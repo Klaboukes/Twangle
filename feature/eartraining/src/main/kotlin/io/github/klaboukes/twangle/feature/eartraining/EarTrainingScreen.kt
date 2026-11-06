@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
@@ -32,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -84,6 +86,7 @@ import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
 import io.github.klaboukes.twangle.core.designsystem.FLOATING_PANEL_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.MoreButton
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_MAX_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
@@ -92,6 +95,7 @@ import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -309,13 +313,18 @@ fun EarTrainingContent(
         } else {
             Column(
                 Modifier
-                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    // The scroll across the window, the column in its middle: a scroll clips its sides, and upright on a
+                    // tablet the top row reaches past the column (TabletTop).
                     .fillMaxWidth()
                     .then(if (answersFillRoom) Modifier.fillMaxHeight() else scrolls)
+                    .wrapContentWidth()
+                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                topRow()
+                // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+                CompositionLocalProvider(LocalTopScale provides topScaleFor(this@BoxWithConstraints.maxWidth.value, height.value)) { topRow() }
                 Spacer(Modifier.height(8.dp))
                 pill()
                 Spacer(Modifier.height(QUESTION_TOP))

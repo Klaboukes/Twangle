@@ -1033,11 +1033,17 @@ class TunerContentTest {
 
     /**
      * TalkBack is given [spoken] within [SpokenReadingThrottle]'s wait: a new hint right after
-     * another is held back up to 2 s, so the reader isn't talked over.
+     * another is held back up to 2 s, so the reader isn't talked over. That wait runs on the test's clock, so the
+     * clock is stepped through it: waited for in real time, a slow device (the Lenovo tablet) didn't get through
+     * 2 s of frames in 3 s.
      */
     private fun assertSpokenSoon(spoken: String) {
-        compose.waitUntil(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000) {
-            compose.onAllNodes(hasContentDescription(spoken)).fetchSemanticsNodes().isNotEmpty()
+        val limit = SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000
+        var waited = 0L
+        while (compose.onAllNodes(hasContentDescription(spoken)).fetchSemanticsNodes().isEmpty()) {
+            assertTrue("TalkBack is given \"$spoken\" within $limit ms", waited < limit)
+            compose.mainClock.advanceTimeBy(SPOKEN_STEP_MS)
+            waited += SPOKEN_STEP_MS
         }
     }
 
@@ -2408,6 +2414,9 @@ class TunerContentTest {
 
         /** The slowest test takes about 2 s on the S26; 10 s means it hangs. */
         const val TEST_TIMEOUT_SECONDS = 10L
+
+        /** How far [assertSpokenSoon] steps the test's clock between looks. */
+        const val SPOKEN_STEP_MS = 100L
 
         /**
          * The window unless a test gives one: a Galaxy S26 upright, the smaller of the two test phones

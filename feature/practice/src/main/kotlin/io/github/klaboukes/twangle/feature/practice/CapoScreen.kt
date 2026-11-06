@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
@@ -29,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +75,9 @@ import io.github.klaboukes.twangle.core.designsystem.PanelEdge
 import io.github.klaboukes.twangle.core.designsystem.PickGrid
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -289,14 +293,21 @@ fun CapoScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 Column(
                     Modifier
-                        .widthIn(max = COLUMN_MAX_WIDTH)
+                        // The scroll across the window, the column in its middle: a scroll clips its sides, and upright
+                        // on a tablet the top row reaches past the column (TabletTop).
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .heightIn(min = height)
+                        .wrapContentWidth()
+                        .widthIn(max = COLUMN_MAX_WIDTH)
+                        .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    header(if (tight) PILL_GAP_TIGHT else PILL_GAP)
+                    // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+                    CompositionLocalProvider(LocalTopScale provides topScaleFor(this@BoxWithConstraints.maxWidth.value, height.value)) {
+                        header(if (tight) PILL_GAP_TIGHT else PILL_GAP)
+                    }
                     Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(12.dp * gap))
                     stepper(tight)

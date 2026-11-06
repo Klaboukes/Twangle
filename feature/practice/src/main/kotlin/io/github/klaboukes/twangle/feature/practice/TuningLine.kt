@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.BackButton
 import io.github.klaboukes.twangle.core.designsystem.PickerChip
 import io.github.klaboukes.twangle.core.designsystem.PickerLine
+import io.github.klaboukes.twangle.core.designsystem.TabletTop
 import io.github.klaboukes.twangle.core.designsystem.TopBar
 import io.github.klaboukes.twangle.core.designsystem.TopBarTitle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
@@ -94,14 +95,17 @@ fun BackAndTuningRow(
     modifier: Modifier = Modifier,
     end: (@Composable () -> Unit)? = null,
 ) {
-    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        TopBar(
-            middle = { TopBarTitle(stringResource(tool.label), Modifier.testTag(PracticeTestTags.TITLE)) },
-            modifier = Modifier.fillMaxWidth(),
-            start = { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) },
-            end = end,
-        )
-        if (tuningName != null) PickerLine { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
+    // Upright on a tablet drawn as the tuner's top, as big and in its place, by the tool's LocalTopScale.
+    TabletTop {
+        Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            TopBar(
+                middle = { TopBarTitle(stringResource(tool.label), Modifier.testTag(PracticeTestTags.TITLE)) },
+                modifier = Modifier.fillMaxWidth(),
+                start = { BackButton(onBack, stringResource(R.string.practice_back), faceModifier = Modifier.testTag(PracticeTestTags.BACK)) },
+                end = end,
+            )
+            if (tuningName != null) PickerLine { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
+        }
     }
 }
 

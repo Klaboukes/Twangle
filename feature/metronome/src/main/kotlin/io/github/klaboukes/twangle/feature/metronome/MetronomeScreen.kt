@@ -348,8 +348,8 @@ class BeatClock {
  *
  * On a large upright window (a tablet held upright, Phase 52) the column is laid out as on a phone and
  * drawn bigger, by the tuner's rule ([columnScaleFor], [ScaledUp]), and the panels and the suggestion
- * with it. The [header] keeps its own size there, over the column's start. On a phone, and on its side,
- * nothing changes.
+ * with it, the [header] in its top row too, as on the tuner (until the tablet run of 2026-11-06 it kept its own size over
+ * the column's start, out of line with the tuner's gear). On a phone, and on its side, nothing changes.
  */
 @Composable
 fun MetronomeContent(
@@ -433,9 +433,8 @@ fun MetronomeContent(
             val height = maxHeight
             val wide = width >= WIDE_MIN_WIDTH && width > height
             // On a tablet held upright the column and the panels over it are drawn bigger, by the tuner's
-            // rule (1 on every phone, and on its side); the gear keeps its own size and place there.
+            // rule (1 on every phone, and on its side), the top row with the gear too, as the tuner's.
             val scale = if (wide) 1f else columnScaleFor(width.value, height.value)
-            val headerAbove = header != null && scale > 1f
             // Every tab's top row: the gear, the tab's name, the ⋯ (on its side only the ⋯; TopBar says why).
             val topRow: @Composable (withHeader: Boolean, withOptions: Boolean, withTitle: Boolean, modifier: Modifier) -> Unit = { withHeader, withOptions, withTitle, rowModifier ->
                 TopBar(
@@ -559,13 +558,6 @@ fun MetronomeContent(
                 }
             } else {
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (headerAbove) {
-                        Spacer(Modifier.height(TOP_BAR_TOP))
-                        // At the start of a phone's column, as on the other screens on a tablet.
-                        Box(Modifier.widthIn(max = COLUMN_MAX_WIDTH).fillMaxWidth().padding(horizontal = TOP_BAR_MARGIN)) {
-                            TopBar(middle = {}, start = header)
-                        }
-                    }
                     BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         // Laid out as on a phone of the room divided by the scale, then drawn that much bigger.
                         val room = maxHeight
@@ -578,7 +570,7 @@ fun MetronomeContent(
                                     .padding(horizontal = TOP_BAR_MARGIN),
                             ) {
                                 Spacer(Modifier.height(TOP_BAR_TOP))
-                                topRow(header != null && !headerAbove, true, true, Modifier)
+                                topRow(header != null, true, true, Modifier)
                                 Spacer(Modifier.gap(1f))
                                 Shrinking { space -> heading(space) }
                                 // What is left goes mostly to the beat bars' room, some over the tempo and the

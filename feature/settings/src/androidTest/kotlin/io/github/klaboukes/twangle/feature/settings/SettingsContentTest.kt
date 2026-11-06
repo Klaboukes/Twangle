@@ -36,6 +36,7 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -43,6 +44,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_FACE
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -683,13 +685,16 @@ class SettingsContentTest {
 
     private fun assertSettingsTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE)
-        val title = compose.onNodeWithText(context.getString(R.string.settings_title)).getBoundsInRoot()
+        val title = compose.onNodeWithText(context.getString(R.string.settings_title)).windowBounds()
         val heading = compose.onNodeWithText(context.getString(R.string.settings_group_look)).getBoundsInRoot()
         assertEquals("$size: the first heading at the column's start", (columnStart() + ROW_INSET).value, heading.left.value, tolerance())
         assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
     }
 
-    /** On About the back arrow's outline stands at the column's start, in line with the text, and the title in the middle. */
+    /**
+     * On About the back arrow's outline stands at the column's start, in line with the text, and the title in the middle;
+     * upright on a tablet the top row is drawn as the tuner's (TabletTop), the arrow where the tabs have the gear.
+     */
     @Test
     fun onATabletUprightAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_UPRIGHT)
 
@@ -701,12 +706,20 @@ class SettingsContentTest {
 
     private fun assertAboutTitleLinesUp(size: DpSize) {
         show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE, about = true)
-        val back = compose.onNodeWithTag(SETTINGS_BACK_TAG).getBoundsInRoot()
-        val title = compose.onNodeWithText(context.getString(R.string.about_title)).getBoundsInRoot()
+        val back = compose.onNodeWithTag(SETTINGS_BACK_TAG).windowBounds()
+        val title = compose.onNodeWithText(context.getString(R.string.about_title)).windowBounds()
         val text = compose.onNodeWithText(context.getString(R.string.settings_about_free_title)).getBoundsInRoot()
         assertEquals("$size: the text at the column's start", (columnStart() + ROW_INSET).value, text.left.value, tolerance())
-        assertEquals("$size: the back arrow's outline in line with the text", text.left.value, back.left.value, tolerance())
-        assertEquals("$size: the arrow on the top row's face", TOP_BAR_FACE.value, (back.right - back.left).value, tolerance())
+        val grow = topScaleFor(size.width.value, size.height.value)
+        if (grow > 1f) {
+            // At the start of a phone's 480 dp column less its 16 dp margins, drawn that much bigger in the middle: within two
+            // pixels, rounded once in the bigger row and once in the window.
+            val pixels = 2.05f / compose.onNodeWithTag(WINDOW).fetchSemanticsNode().layoutInfo.density.density
+            assertEquals("$size: the back arrow's outline where the tabs' gear is", (columnMiddle() - 224.dp * grow).value, back.left.value, maxOf(tolerance(), pixels))
+        } else {
+            assertEquals("$size: the back arrow's outline in line with the text", text.left.value, back.left.value, tolerance())
+        }
+        assertEquals("$size: the arrow on the top row's face", TOP_BAR_FACE.value * grow, (back.right - back.left).value, tolerance())
         assertEquals("$size: the title in the column's middle", columnMiddle().value, ((title.left + title.right) / 2).value, tolerance())
         assertTrue("$size: the title after the arrow", title.left >= back.right)
     }
@@ -725,6 +738,16 @@ class SettingsContentTest {
     }
 
     private fun columnMiddle(): Dp = safeArea().let { (it.left + it.right) / 2 }
+
+    /**
+     * The node's bounds in the window's dp. Its own bounds are in its own dp, and upright on a tablet the top row is drawn
+     * bigger (TabletTop), with that many more pixels to its dp.
+     */
+    private fun SemanticsNodeInteraction.windowBounds(): DpRect {
+        val pxPerDp = compose.onNodeWithTag(WINDOW).fetchSemanticsNode().layoutInfo.density.density
+        val r = fetchSemanticsNode().boundsInRoot
+        return DpRect((r.left / pxPerDp).dp, (r.top / pxPerDp).dp, (r.right / pxPerDp).dp, (r.bottom / pxPerDp).dp)
+    }
 
     @Test
     fun aboutShowsTheVersionTheNamesMeaningThePromiseAndThePrivacyStatement() {

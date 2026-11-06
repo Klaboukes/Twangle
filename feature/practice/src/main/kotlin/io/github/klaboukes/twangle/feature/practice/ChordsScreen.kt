@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,7 +67,9 @@ import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
+import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
+import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.designsystem.panelAnchor
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -326,6 +329,8 @@ fun ChordsScreen(
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(if (scales) PracticeTestTags.SCALES else PracticeTestTags.CHORDS)) {
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
         val height = maxHeight
+        // Upright on a tablet the top row is drawn as the tuner's, that much bigger (TabletTop).
+        val topScale = topScaleFor(maxWidth.value, maxHeight.value)
         if (layout == PracticeLayout.LARGE_SIDE) {
             // A tablet on its side: the top row and the name share one row (the panels drop under the
             // name, as upright), and the chart or the neck runs the whole width under it.
@@ -396,7 +401,7 @@ fun ChordsScreen(
                     rowsMaxWidth = if (large) COLUMN_MAX_WIDTH - 32.dp else null,
                     top = {
                         Spacer(Modifier.height(TOP_BAR_TOP))
-                        topRow()
+                        CompositionLocalProvider(LocalTopScale provides topScale) { topRow() }
                         Spacer(Modifier.height(8.dp * gap))
                         name()
                         Spacer(Modifier.height(4.dp * gap))
