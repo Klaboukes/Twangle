@@ -1,0 +1,9 @@
+- Een heel nieuw uiterlijk: rustig en duidelijk, met een nieuw icoon.
+- Drie tabbladen: Stemmen, Metronoom en Oefenen; Instellingen achter het tandwiel.
+- Instrument en stemming bovenaan de stemmer.
+- De stemmer zegt: Strakker of Losser.
+- Drie meters: Klassiek, Lichtboog en Stroboscoop.
+- Akkoorden: tik op Luister en sla aan om de naam te zien.
+- Metronoom: sleep de liniaal om het tempo in te stellen.
+- Focusmodus: de stemmer schermvullend.
+- Toonlijn staat nu onder Oefenen.

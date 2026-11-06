@@ -1,0 +1,9 @@
+- Tampilan yang benar-benar baru: tenang dan jelas, dengan ikon baru.
+- Tiga tab: Stem, Metronom, dan Latihan; Setelan di balik ikon roda gigi.
+- Pilih instrumen dan setelan senar di bagian atas tuner.
+- Tuner memberi tahu: Kencangkan atau Kendurkan.
+- Tiga meter: Klasik, Busur cahaya, dan Strobo.
+- Akor: ketuk Dengarkan lalu genjreng untuk melihat nama akornya.
+- Metronom: geser penggaris untuk mengatur tempo.
+- Mode fokus: tuner layar penuh, sekali ketuk.
+- Jejak nada kini ada di Latihan.

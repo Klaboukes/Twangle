@@ -1,0 +1,9 @@
+- Ein ganz neues Aussehen: ruhig und klar, mit neuem Symbol.
+- Drei Tabs: Stimmen, Metronom und Üben; Einstellungen hinter dem Zahnrad.
+- Instrument und Stimmung oben im Stimmgerät.
+- Das Stimmgerät sagt: Spannen oder Lockern.
+- Drei Anzeigen: Klassisch, LED-Bogen und Stroboskop.
+- Akkorde: Zuhören antippen, anschlagen, Namen sehen.
+- Metronom: Tempo mit dem Lineal einstellen.
+- Fokusmodus: das Stimmgerät im Vollbild.
+- Der Tonverlauf ist jetzt unter Üben.

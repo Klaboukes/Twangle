@@ -1,0 +1,9 @@
+- Giao diện hoàn toàn mới: êm dịu và rõ ràng, có biểu tượng mới.
+- Ba thẻ: Lên dây, Đếm nhịp và Luyện tập; Cài đặt nằm sau biểu tượng bánh răng.
+- Chọn nhạc cụ và kiểu lên dây ở trên cùng của bộ lên dây.
+- Bộ lên dây cho bạn biết: Căng lên hay Chùng xuống.
+- Ba đồng hồ đo: Cổ điển, Cung đèn và Strobe.
+- Hợp âm: chạm Nghe rồi quạt đàn để thấy tên hợp âm.
+- Đếm nhịp: kéo thước để đặt nhịp độ.
+- Chế độ tập trung: bộ lên dây toàn màn hình, chỉ một chạm.
+- Đường cao độ giờ nằm trong Luyện tập.

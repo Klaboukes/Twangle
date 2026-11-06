@@ -1,0 +1,9 @@
+- Zupełnie nowy wygląd: spokojny i czytelny, z nową ikoną.
+- Trzy karty: Strojenie, Metronom i Ćwiczenia; Ustawienia pod kołem zębatym.
+- Instrument i strój u góry tunera.
+- Tuner mówi wprost: Podciągnij lub Popuść.
+- Trzy wskaźniki: Klasyczny, Łuk świetlny i Stroboskop.
+- Akordy: dotknij Słuchaj i uderz w struny, by zobaczyć nazwę.
+- Metronom: przeciągnij linijkę, by ustawić tempo.
+- Tryb skupienia: tuner na pełnym ekranie.
+- Ślad wysokości jest teraz w Ćwiczeniach.

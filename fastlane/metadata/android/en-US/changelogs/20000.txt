@@ -1,0 +1,9 @@
+- A whole new look: calm and clear, with a new icon.
+- Three tabs: Tune, Metronome and Practice; Settings behind the gear.
+- Pick your instrument and tuning at the top of the tuner.
+- The tuner tells you: Tighten or Loosen.
+- Three meters: Classic, Light arc and Strobe.
+- Chords: tap Listen and strum to see the chord's name.
+- Metronome: drag the ruler to set the tempo.
+- Focus mode: the tuner full screen, one tap away.
+- Pitch trail is now in Practice.

@@ -1,0 +1,9 @@
+- Ett helt nytt utseende: lugnt och tydligt, med en ny ikon.
+- Tre flikar: Stämma, Metronom och Öva; Inställningar bakom kugghjulet.
+- Välj instrument och stämning högst upp i stämapparaten.
+- Stämapparaten säger det: Spänn eller Slacka.
+- Tre mätare: Klassisk, LED-båge och Stroboskop.
+- Ackord: tryck på Lyssna och slå an för att se ackordets namn.
+- Metronom: dra i linjalen för att ställa in tempot.
+- Fokusläge: stämapparaten i helskärm, ett tryck bort.
+- Tonkurva finns nu under Öva.

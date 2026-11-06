@@ -1,0 +1,9 @@
+- Un aspetto tutto nuovo: calmo e chiaro, con una nuova icona.
+- Tre schede: Accordare, Metronomo e Pratica; Impostazioni dietro l'ingranaggio.
+- Strumento e accordatura in cima all'accordatore.
+- L'accordatore ti dice: Tendi o Allenta.
+- Tre indicatori: Classico, Arco di luci e Stroboscopio.
+- Accordi: tocca Ascolta e suona per vederne il nome.
+- Metronomo: trascina il righello per il tempo.
+- Modalità concentrazione: tutto a schermo intero.
+- La traccia dell'intonazione è ora in Pratica.

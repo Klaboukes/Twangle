@@ -1,0 +1,9 @@
+- Et helt nytt utseende: rolig og tydelig, med et nytt ikon.
+- Tre faner: Stemming, Metronom og Øving; Innstillinger bak tannhjulet.
+- Velg instrument og stemming øverst i stemmeapparatet.
+- Stemmeapparatet sier det: Stram eller Slakk.
+- Tre målere: Klassisk, LED-bue og Stroboskop.
+- Akkorder: trykk på Lytt og slå an for å se akkordens navn.
+- Metronom: dra i linjalen for å stille inn tempoet.
+- Fokusmodus: stemmeapparatet i fullskjerm, ett trykk unna.
+- Tonespor ligger nå under Øving.

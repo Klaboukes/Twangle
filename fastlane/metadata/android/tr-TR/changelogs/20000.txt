@@ -1,0 +1,9 @@
+- Baştan yeni bir görünüm: sakin ve net, yeni bir simgeyle.
+- Üç sekme: Akort, Metronom ve Pratik; Ayarlar dişli simgesinin arkasında.
+- Enstrümanı ve akordu akort aletinin üstünden seç.
+- Akort aleti söyler: Yükselt ya da Düşür.
+- Üç gösterge: Klasik, Işık yayı ve Stroboskop.
+- Akorlar: Dinle'ye dokun ve tele vur, akorun adını gör.
+- Metronom: tempoyu ayarlamak için cetveli sürükle.
+- Odak modu: tek dokunuşla tam ekran akort aleti.
+- Ses izi artık Pratik'te.

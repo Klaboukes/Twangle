@@ -1,0 +1,9 @@
+- Um visual todo novo: calmo e claro, com um ícone novo.
+- Três abas: Afinar, Metrônomo e Prática; Configurações atrás da engrenagem.
+- Instrumento e afinação no alto do afinador.
+- O afinador diz: Aperte ou Afrouxe.
+- Três indicadores: Clássico, Arco de luzes e Estroboscópio.
+- Acordes: toque em Ouvir e toque as cordas para ver o nome.
+- Metrônomo: arraste a régua para definir o andamento.
+- Modo foco: o afinador em tela cheia.
+- A linha de afinação agora fica em Prática.

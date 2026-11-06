@@ -1,0 +1,9 @@
+- Un tout nouveau look : calme et clair, avec une nouvelle icône.
+- Trois onglets : Accorder, Métronome et Pratique ; Paramètres sous la roue.
+- L'instrument et l'accordage en haut de l'accordeur.
+- L'accordeur vous dit : Tendez ou Détendez.
+- Trois affichages : Classique, Arc lumineux et Stroboscope.
+- Accords : touchez Écouter et grattez pour voir son nom.
+- Métronome : glissez la règle pour régler le tempo.
+- Mode concentration : tout en plein écran.
+- La trace de hauteur est dans Pratique.

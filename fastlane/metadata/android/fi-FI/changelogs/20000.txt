@@ -1,0 +1,9 @@
+- Täysin uusi ulkoasu: rauhallinen ja selkeä, uusi kuvake.
+- Kolme välilehteä: Viritä, Metronomi ja Harjoitus; Asetukset rattaan takana.
+- Valitse soitin ja viritys virittimen yläreunasta.
+- Viritin kertoo: Kiristä tai Löysää.
+- Kolme mittaria: Klassinen, Valokaari ja Strobo.
+- Soinnut: napauta Kuuntele ja soita, niin näet soinnun nimen.
+- Metronomi: vedä viivainta asettaaksesi tempon.
+- Keskittymistila: viritin koko näytöllä yhdellä napautuksella.
+- Sävelkäyrä on nyt Harjoitus-välilehdellä.

@@ -1,0 +1,9 @@
+- Un aspecto nuevo: tranquilo y claro, con un icono nuevo.
+- Tres pestañas: Afinar, Metrónomo y Práctica; los Ajustes tras el engranaje.
+- Instrumento y afinación arriba del afinador.
+- El afinador te dice: Tensa o Afloja.
+- Tres indicadores: Clásico, Arco de luces y Estroboscopio.
+- Acordes: toca Escuchar y rasguea para ver su nombre.
+- Metrónomo: arrastra la regla para fijar el tempo.
+- Modo concentración: el afinador a pantalla completa.
+- El trazo de afinación está ahora en Práctica.
