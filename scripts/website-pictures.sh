@@ -14,12 +14,13 @@ JAVA="$JAVA_HOME/bin/java"
 SHRINK="$ROOT/website/tools/ShrinkImage.java"
 STATIC="$ROOT/website/static"
 
-# The screens the pages show, by their number in docs/store-listing.md's table (Phase 69, after
-# Phase 65 renumbered the store's; Phase 76: 2 is the Practice cards, 5 two screens, 5a and 5b): the home page
-# 1, 2, 4, 5b, metronome and 6a, the tuner's page 3, the strum check's 5a, the chord name's 5b, the
-# pitch trail's 8, the metronome's page "metronome" (saved with store screenshot 2, no store picture
-# of its own), Chords' 6a, the Capo helper's 6b, the instruments' 4.
-SHOTS="1 2 3 4 5a 5b 6a 6b 8 metronome"
+# The screens the pages show, by their number in docs/store-listing.md's table (2.0's listing,
+# 2026-11-05): the home page 1 (hero), 5 (the Practice tab's cards), 6, metronome and 7, the tuner's
+# page 3, the strum check's 4, the chord name's and Chords' 6, the metronome's page "metronome"
+# (saved with store screenshot 5, no store picture of its own), the instruments' 7. 2 (the microphone
+# prompt) and 8 (TalkBack at twice the text) show nothing a page needs; Capo and the pitch trail have
+# no 2.0 screen in the set, so their pages have none.
+SHOTS="1 3 4 5 6 7 metronome"
 # Play locale -> the site's language folder.
 LOCALES="en-US:en nl-NL:nl"
 
@@ -34,8 +35,6 @@ for pair in $LOCALES; do
             echo "Missing $raw: run scripts/store-screenshots.sh $locale first." >&2
             exit 1
         fi
-        width=540
-        [ "$n" = 8 ] && width=960  # the phone on its side: a wide picture across the page's column
-        "$JAVA" "$SHRINK" "$raw" "$STATIC/shots/$lang/$n.jpg" "$width"
+        "$JAVA" "$SHRINK" "$raw" "$STATIC/shots/$lang/$n.jpg" 540
     done
 done
