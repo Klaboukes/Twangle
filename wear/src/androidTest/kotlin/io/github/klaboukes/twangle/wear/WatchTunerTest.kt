@@ -48,13 +48,16 @@ class WatchTunerTest {
     private var dial by mutableStateOf(225.dp)
     private var retries = 0
 
+    /** The tuner's pacing of what TalkBack hears, kept here so a wait on the test's clock can read it. */
+    private val speech = WatchPacedSpeech()
+
     private fun show(first: WatchTunerState, language: String? = null) {
         state = first
         compose.setContent {
             val tuner = @Composable {
                 WatchTheme {
                     Box(Modifier.size(dial).background(Color.Black)) {
-                        WatchTuner(state, onRetry = { retries++ })
+                        WatchTuner(state, onRetry = { retries++ }, speech = speech)
                     }
                 }
             }
@@ -75,9 +78,15 @@ class WatchTunerTest {
         compose.onNodeWithTag(WatchDial.SPOKEN_TAG).fetchSemanticsNode().config
             .getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
 
-    /** TalkBack is given [text] within the throttle's longest wait, as a polite live region if [announced]. */
+    /**
+     * TalkBack is given [text] within the throttle's longest wait, as a polite live region if [announced]. The wait is
+     * on the test's clock, which the pacing's delays run on: counted in real time, a slow watch (the Galaxy Watch 5)
+     * took longer than that to step the clock through 1.5 s of frames. It watches [speech], since the screen can't be
+     * read from the main thread the clock's wait runs on, then checks the screen. (2.0 had it first, #642.)
+     */
     private fun assertSpoken(text: String, announced: Boolean = true) {
-        compose.waitUntil(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000) { spoken() == text }
+        awaitSpoken(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000, text)
+        assertEquals(text, spoken())
         val node = compose.onNodeWithTag(WatchDial.SPOKEN_TAG)
         if (announced) node.assert(polite) else node.assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
     }
@@ -130,7 +139,8 @@ class WatchTunerTest {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
         assertSpoken("E 2, 12 cents flat, tune up")
         state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), 6)
-        compose.waitUntil(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900) { spoken() == "E 2, 6 cents sharp, tune down" }
+        awaitSpoken(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900, "E 2, 6 cents sharp, tune down")
+        assertEquals("E 2, 6 cents sharp, tune down", spoken())
     }
 
     /** "Play a note" is said at first, but not again after every note dies away: TalkBack reads it on touch. */
@@ -223,5 +233,11 @@ class WatchTunerTest {
             val distance = hypot(corner.x - centre.x, corner.y - centre.y)
             assertTrue("$what at $size: corner $corner is ${distance}px from the centre, ring inside is ${inner}px", distance <= inner)
         }
+    }
+
+    /** Steps the test's clock until the pacing has given TalkBack [text], at most [millis] of it. */
+    private fun awaitSpoken(millis: Long, text: String) {
+        compose.mainClock.advanceTimeUntil(millis) { speech.spoken == text }
+        compose.waitForIdle()
     }
 }
