@@ -19,7 +19,7 @@
 #   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests, in the testers'
 #                                                languages only (DAY_LANGUAGES, default en,nl from gradle.properties): daytime
 #   scripts/ui-tests.sh --all-languages ...      the @EveryLanguage tests in every language Twangle
-#                                                ships (long; the overnight run)
+#                                                ships (long; the full check)
 #   scripts/ui-tests.sh --dry-run ...            only say which modules would run, and why (no build,
 #                                                no phone)
 #
@@ -27,12 +27,12 @@
 # tablet) for the phone's modules, the watch for :wear; ANDROID_SERIAL names one instead.
 #
 # A normal run is quick and leaves out the double checks: tests marked @Thorough (:core:testing) are
-# skipped. The overnight run
-# (scripts/overnight-ui-tests.sh) passes --thorough and checks everything. --quick is accepted and
+# skipped. The full check
+# (scripts/full-check.sh) passes --thorough and checks everything. --quick is accepted and
 # changes nothing.
 #
 # A module that passes whole (no -f, -c or -a) from a clean working tree is noted as passed at that
-# commit in build/ui-tests-passed/ (this PC only; the overnight run notes every
+# commit in build/ui-tests-passed/ (this PC only; the full check notes every
 # module it passes).
 # --since-pass reads those notes, so a release runs only what changed since the last good run.
 #
@@ -48,7 +48,7 @@ export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
 # The languages a daytime --languages run checks: twangle.dayLanguages in gradle.properties (en,nl),
-# the ones written by day, as language tags (pt-rBR -> pt-BR, b+zh+Hant -> zh-Hant). The overnight run checks all.
+# the ones written by day, as language tags (pt-rBR -> pt-BR, b+zh+Hant -> zh-Hant). The full check checks all.
 DAY_LANGUAGES="${DAY_LANGUAGES:-$(sed -n 's/^twangle\.dayLanguages=//p' gradle.properties | sed 's/-r/-/g; s/b+//g; s/+/-/g')}"
 COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
@@ -92,7 +92,7 @@ unproven_modules() {
     for module in "${UI_MODULES[@]}"; do
         commit="$(cut -d' ' -f1 "$(pass_file "$module")" 2>/dev/null)"
         if [ -n "$commit" ] && git cat-file -e "$commit^{commit}" 2>/dev/null; then
-            # Modules passed at the same commit (the overnight run's) share one look at the change.
+            # Modules passed at the same commit (the full check's) share one look at the change.
             [ -n "${reached[$commit]+set}" ] || reached[$commit]=" $(affected_modules "$commit" | tr '\n' ' ')"
         fi
         if [ -z "$commit" ] || ! git cat-file -e "$commit^{commit}" 2>/dev/null ||

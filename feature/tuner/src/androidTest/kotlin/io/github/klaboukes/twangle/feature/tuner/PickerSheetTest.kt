@@ -73,7 +73,7 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
  * whole row toggles it, TalkBack hears one switch), and "Lower by" (the − and + step a half step at a
  * time and stop at the ends, − on the left in every language, keep their place whatever the amount).
  * The chip: TalkBack hears what is tuned and what a tap does, and a long name stays on one line. At 2×
- * text every word fits: in Dutch by day, every language overnight. (The sheet over the tuner, a window
+ * text every word fits: in Dutch by day, every language in the full check. (The sheet over the tuner, a window
  * of its own that takes the phone's text size, is checked in [TunerContentTest] too.)
  */
 @RunWith(AndroidJUnit4::class)

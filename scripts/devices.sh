@@ -1,4 +1,4 @@
-# Which connected device is which, for scripts/ui-tests.sh and scripts/overnight-ui-tests.sh (sourced,
+# Which connected device is which, for scripts/ui-tests.sh and scripts/full-check.sh (sourced,
 # with their adb function). On 2026-11-05 the Galaxy Watch 5 came on over Wi-Fi a minute into the
 # overnight run, and every phone install stopped on "more than one device/emulator": so a run picks its
 # device itself, the phone for the phone's tests and the watch for the watch's (docs/devices.md).
@@ -43,7 +43,7 @@ first_device() {
     return 1
 }
 
-# "Xiaomi 2112123AG (f813c98c)": the maker, model and serial, for the logs and the morning summary.
+# "Xiaomi 2112123AG (f813c98c)": the maker, model and serial, for the logs and the summary.
 device_name() {
     echo "$(adb -s "$1" shell getprop ro.product.manufacturer < /dev/null 2>/dev/null | tr -d '\r') $(adb -s "$1" shell getprop ro.product.model < /dev/null 2>/dev/null | tr -d '\r') ($1)"
 }

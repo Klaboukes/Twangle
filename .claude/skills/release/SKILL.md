@@ -44,35 +44,35 @@ A new release, as steps on the task list:
 Steps 6–8 follow later, each on the owner's word.
 
 ## 1. Is main ready?
-- Work in the main folder, which belongs to releases and the overnight run (CLAUDE.md, *One worktree
-  per session that changes files*): the overnight summary and the store screenshots are there.
+- Work in the main folder, which belongs to releases and the full check (CLAUDE.md, *One worktree
+  per session that changes files*): the full check's summary and the store screenshots are there.
 - `git switch main && git pull`, then `git describe --tags --abbrev=0 --match 'v*'` (the `listing/*` and `store-screenshots` tags are no versions). If nothing a player would
   notice changed since that tag, say so and stop.
-- **A clean overnight run first** (owner, 2026-10-28): nothing is released that the overnight run
+- **A clean full check first** (owner, 2026-10-28; the overnight run until 2026-11-06): nothing is released that the full check
   (every UI test, every language; a language check skipped because nothing it shows
   changed since it passed counts as passed) hasn't passed. The first line
-  of `build/overnight/summary.txt` says which commit it ran on and whether everything passed. It counts
-  when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (the
-  morning summary says so), and `git diff --stat <that commit>..main` shows no code change since but
+  of `build/full-check/summary.txt` says which commit it ran on and whether everything passed. It counts
+  when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (its
+  summary says so), and `git diff --stat <that commit>..main` shows no code change since but
   that fix, docs, `.claude/`, `scripts/` or a regenerated Baseline Profile (`app/src/release/generated/`,
-  which the debug builds the overnight run tests don't use). Otherwise **stop here, before any branch, version or note**:
-  tell the owner in one line that the release waits for a clean overnight run, and that `/release`
-  picks it up the morning after. The summary is git-ignored, so on the other PC (or with none) the
-  answer is also: wait for the overnight run.
+  which the debug builds the full check tests don't use). Otherwise **stop here, before any branch, version or note**:
+  tell the owner in one line that the release waits for a clean full check (`/full-check`, about 35
+  minutes), and that `/release` picks it up after. The summary is git-ignored, so on the other PC (or with none) the
+  answer is also: run the full check first.
 - **Every language complete and up to date** (owner, 2026-10-28): by day only English and Dutch are
-  written, and the overnight run's first step translates the rest (`/translate`). Run
+  written, and the full check's first step translates the rest (`/translate`). Run
   `./gradlew :app:testDebugUnitTest --tests '*LocalizationTest' -Ptwangle.strictTranslations=true`
   (`scripts/release.sh bundle` runs it again and refuses to build otherwise). If it fails, a language
   lacks a text or has a stale one (`python -I scripts/translations.py status` lists them): stop here
-  as for the overnight run, since new translations need that night's language tests too, and tell the
-  owner in one line that the release waits for the next overnight run.
+  as for the full check, since new translations need that run's language tests too, and tell the
+  owner in one line that the release waits for the next full check.
 - The build checks: `gh run list --workflow android.yml --branch main --limit 1 --json headSha,conclusion`.
   A success on this very commit (`headSha` is `git rev-parse HEAD`) already ran test, lint and the
   builds: skip them. Otherwise (an older commit, a failure, a run GitHub refused to start) run
   `./gradlew test lint assembleDebug`.
 - The phone: `scripts/ui-tests.sh --since-pass` on a test phone (the [ui-test skill](../ui-test/SKILL.md)).
-  It runs only the modules changed since they last passed whole on this PC, so after a good overnight
-  run there is often nothing to run. A phone that still has Twangle from Play (the last release's
+  It runs only the modules changed since they last passed whole on this PC, so after a good full
+  check there is often nothing to run. A phone that still has Twangle from Play (the last release's
   check) can't take the test build (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`): once that check is over,
   uninstall it as CLAUDE.md says and run again.
 - **The Baseline Profile** (the launch review, 2026-11-01): `scripts/release.sh profile` says whether
@@ -171,7 +171,7 @@ moves on.
   They are no longer made every night (owner, 2026-10-30), so make them when `listing-changes` says
   the app's screens changed since they were made: `listing` refuses them then (it reads the commit
   the last run of every language noted, `build/phone-screenshots.made-at`). Look them over as the
-  overnight-run skill says (*When store screenshots were made*) before asking to send. They are
+  full-check skill says (*When store screenshots were made*) before asking to send. They are
   git-ignored, but a run that made them all shares them on GitHub, and `listing` first takes that set
   when it is newer than this PC's (`scripts/share-store-screenshots.sh`), so the owner can make them
   on one PC and send from the other. `listing` refuses without them and says how old the oldest are. The 10-inch tablet set (the same

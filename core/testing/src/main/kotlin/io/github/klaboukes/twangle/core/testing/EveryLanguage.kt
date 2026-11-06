@@ -17,7 +17,7 @@ import java.io.FileOutputStream
 /**
  * Marks a UI test that checks a screen in every language of [checkedLanguages], which takes long.
  * `scripts/ui-tests.sh` leaves these out unless it is run with `--languages` (the testers' languages,
- * by day) or `--all-languages` (every language Twangle ships, the overnight run).
+ * by day) or `--all-languages` (every language Twangle ships, the full check).
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Keep screen on's warning ("Screen turns off soon", "Tap to keep it on") shows both lines, a tap
  * keeps the screen on, and at 2× text on a small phone every word fits: in Dutch by day, every
- * language overnight.
+ * language in the full check.
  */
 @RunWith(AndroidJUnit4::class)
 class ScreenOffWarningTest {

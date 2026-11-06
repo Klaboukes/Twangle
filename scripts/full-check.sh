@@ -1,36 +1,36 @@
 #!/usr/bin/env bash
-# The overnight run: the watch app's tests on the watch when one is connected, every on-device UI test
+# The full check: the watch app's tests on the watch when one is connected, every on-device UI test
 # (in Ink, light and dark), then every language at 2× text, kept cool, with one summary at the end. Run
 # it while nobody needs the phone. See
-# .claude/skills/overnight-run/SKILL.md.
+# .claude/skills/full-check/SKILL.md.
 #
-#   scripts/overnight-ui-tests.sh             the watch, the sweep and the languages
-#   scripts/overnight-ui-tests.sh --watch     only the watch app's tests, on the watch
-#   scripts/overnight-ui-tests.sh --sweep     only the thorough sweep of every module
-#   scripts/overnight-ui-tests.sh --languages only the every-language checks
-#   scripts/overnight-ui-tests.sh --store     only the Play Store screenshots (scripts/store-screenshots.sh)
-#   scripts/overnight-ui-tests.sh --full ...  the languages of every module, none skipped
-#   scripts/overnight-ui-tests.sh --dry-run   only say which every-language checks would run (no phone)
+#   scripts/full-check.sh             the watch, the sweep and the languages
+#   scripts/full-check.sh --watch     only the watch app's tests, on the watch
+#   scripts/full-check.sh --sweep     only the thorough sweep of every module
+#   scripts/full-check.sh --languages only the every-language checks
+#   scripts/full-check.sh --store     only the Play Store screenshots (scripts/store-screenshots.sh)
+#   scripts/full-check.sh --full ...  the languages of every module, none skipped
+#   scripts/full-check.sh --dry-run   only say which every-language checks would run (no phone)
 # (--watch, --sweep, --languages and --store may be combined.)
 #
 # The every-language checks of a module that passed whole are noted at that commit, like a
 # module's pass (scripts/ui-tests.sh): build/ui-tests-passed/languages/feature-tuner holds
-# "<commit> <seconds since 1970> <date>". A later night skips them while nothing the module shows has
+# "<commit> <seconds since 1970> <date>". A later run skips them while nothing the module shows has
 # changed since (scripts/ui-test-scope.py, the rule --since-pass uses) and the pass is under
 # LANGUAGES_MAX_AGE_DAYS old (7): so a check runs again within a week whatever happens, in case the
 # scope missed a change. With 25 languages the checks of every module in 1.1's six styles took about 6 h (2 h since the same day's faster checks;
 # 2.0 has one look, so one check a module, all six about 17 min on 2026-11-05);
 # owner, 2026-10-30: skip what hasn't changed, and make the store screenshots only before a listing is
-# sent (scripts/release.sh listing refuses screenshots older than the app's screens), not every night.
+# sent (scripts/release.sh listing refuses screenshots older than the app's screens), not every run.
 #
-# Logs go to build/overnight/ (sweep.txt, languages.txt, store.txt, summary.txt); pictures of screens
+# Logs go to build/full-check/ (sweep.txt, languages.txt, store.txt, summary.txt); pictures of screens
 # where a language didn't fit go to each module's build/outputs/connected_android_test_additional_output,
 # the store screenshots to fastlane/metadata/android/<locale>/images/phoneScreenshots/. Each module the
 # sweep passes is noted as passed at this commit (scripts/ui-tests.sh, --since-pass), for the release.
 #
 # The devices (scripts/devices.sh): the phone's stages run on a phone (else the tablet), the watch's
 # on the watch (the Galaxy Watch 5 over Wi-Fi, docs/devices.md), each named once at the start, so a
-# device that comes or goes during the night changes nothing for the others; ANDROID_SERIAL names the
+# device that comes or goes during the run changes nothing for the others; ANDROID_SERIAL names the
 # phone instead. No watch connected: its stage is skipped, and the summary says so. A watch that drops
 # off during its stage (its Wi-Fi went) says nothing about the app either: not counted as a failure.
 set -uo pipefail
@@ -39,7 +39,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 COOL_BELOW="${COOL_BELOW:-37}"
-OUT="$ROOT/build/overnight"
+OUT="$ROOT/build/full-check"
 # The modules with @EveryLanguage tests (each checks light and dark itself; 1.1 ran them once per
 # style). The list can be narrowed for a short try (LANGUAGE_MODULES=":app").
 read -ra LANGUAGE_MODULES <<<"${LANGUAGE_MODULES:-:feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :app}"
@@ -107,7 +107,7 @@ fi
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 . "$ROOT/scripts/devices.sh"
 
-# The phone and the watch for tonight, picked once (the phone's stages, and wait_cool, use ANDROID_SERIAL).
+# The phone and the watch for this run, picked once (the phone's stages, and wait_cool, use ANDROID_SERIAL).
 PHONE="${ANDROID_SERIAL:-$(first_device phone tablet)}"
 WATCH="$(first_device watch)"
 [ -n "$PHONE" ] && export ANDROID_SERIAL="$PHONE"
@@ -131,7 +131,7 @@ keep_awake() {
     awake_pid=$!
     trap 'kill $awake_pid 2> /dev/null' EXIT
     sleep 10
-    kill -0 $awake_pid 2> /dev/null || echo "Warning: could not keep Windows awake; set the PC to never sleep for tonight." >&2
+    kill -0 $awake_pid 2> /dev/null || echo "Warning: could not keep Windows awake; set the PC to never sleep while it runs." >&2
 }
 keep_awake
 
@@ -189,7 +189,7 @@ fi
 skipped=0 checked=0
 if [ $languages = 1 ]; then
     logs+=("$OUT/languages.txt")
-    rm -f "$OUT"/reached-*.txt   # worked out against tonight's tree
+    rm -f "$OUT"/reached-*.txt   # worked out against this run's tree
     echo "== Every language at 2× text ($(date +%H:%M))" | tee "$OUT/languages.txt"
     for module in "${LANGUAGE_MODULES[@]}"; do
         if since="$(languages_still_good "$module")"; then
@@ -222,7 +222,7 @@ fi
 tested="at $(git rev-parse --short HEAD)"
 [ $clean = 1 ] || tested="$tested with uncommitted changes"
 {
-    echo "Overnight run: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
+    echo "Full check: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
     [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module checks ran; $skipped passed earlier with nothing they show changed since"
     [ $sweep = 1 ] || [ $languages = 1 ] || [ $store = 1 ] && echo "Phone: the $phone_name"
     [ $watch = 1 ] && echo "Watch: $watch_result"

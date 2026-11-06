@@ -72,7 +72,7 @@ import kotlin.math.pow
  * place (the summary drawn as the pegs, its one control the × in its corner, which ends the check, as Back does), the
  * line (and the verdict's buttons) under it, the pegs picking the string and carrying each result. Upright every step
  * fits without scrolling and nothing moves between steps; at 2× text in Dutch every part is wholly shown (every
- * language overnight). TalkBack hears the steps, the verdict, each string's result and the ×'s name. On the real
+ * language in the full check). TalkBack hears the steps, the verdict, each string's result and the ×'s name. On the real
  * screen the sheet's row starts the check and the × ends it, and synthetic plucks through a fake microphone give a
  * verdict.
  */
@@ -206,7 +206,7 @@ class IntonationCheckStylesTest {
         }
     }
 
-    /** Every language at 2× text, upright and on its side, every step: every text wholly shown (overnight). */
+    /** Every language at 2× text, upright and on its side, every step: every text wholly shown (the full check). */
     @EveryLanguage
     @Test
     fun everyLanguageFitsAtTwiceTheTextSize() {

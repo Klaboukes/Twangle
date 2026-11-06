@@ -1,6 +1,6 @@
 ---
 name: translate
-description: Translate every Twangle text the night languages lack or have stale — new or reworded English that daily work wrote only in English and Dutch — in parallel batches of languages, then update the translation record, run the strict check and land it through a PR. No phone needed. The overnight run's first step; also by hand at any time. Use when the owner or a skill says "translate", "/translate", "bring the languages up to date", or a strict LocalizationTest (a release) stops on missing or stale translations.
+description: Translate every Twangle text the night languages lack or have stale — new or reworded English that daily work wrote only in English and Dutch — in parallel batches of languages, then update the translation record, run the strict check and land it through a PR. No phone needed. The full check's first step; also by hand at any time. Use when the owner or a skill says "translate", "/translate", "bring the languages up to date", or a strict LocalizationTest (a release) stops on missing or stale translations.
 argument-hint: "[optional: languages to do, e.g. de fr; default every language]"
 ---
 
@@ -19,8 +19,8 @@ python -I scripts/translations.py status        # per language: "up to date" or 
 Exit code 0, every language up to date: say so in one line and stop (no branch, no PR). This is the
 usual night after a day without new texts.
 
-**Where:** by hand, your own worktree (CLAUDE.md, *One worktree per session*). From the overnight run,
-the main folder, on `main` and before that night's branch: this lands first, so the night's
+**Where:** by hand, your own worktree (CLAUDE.md, *One worktree per session*). From the full check,
+the main folder, on `main` and before that run's branch: this lands first, so the run's
 language tests check the new texts. Branch `chore/translations-<date>` from an up-to-date `main`.
 
 ## 1. The list
@@ -89,7 +89,7 @@ and delete the branch).
 
 ## 6. Report
 In plain language, short: how many texts in how many languages, and the choices worth a native
-speaker's look. From the overnight run this goes into the morning summary.
+speaker's look. From the full check this goes into its summary.
 
 The Play Store texts and release notes in `fastlane/` are not part of this: the release skill
 translates the notes, and the store listing is written with Phase 50's listing work.

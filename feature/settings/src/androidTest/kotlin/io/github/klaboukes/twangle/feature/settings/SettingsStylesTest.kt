@@ -47,7 +47,7 @@ import org.junit.runner.RunWith
  * is then wholly shown; About's titles, version and credits too. TalkBack, light and dark, hears every
  * light-or-dark choice as a radio button with its name and which one is picked, and the back arrow by
  * name. The lens's Meter cards (Phase 72) and their names are among the texts checked, every language's too
- * (`@EveryLanguage`, overnight). [SettingsContentTest] covers each behaviour.
+ * (`@EveryLanguage`, the full check). [SettingsContentTest] covers each behaviour.
  */
 @RunWith(AndroidJUnit4::class)
 class SettingsStylesTest {

@@ -174,7 +174,7 @@ class StoreScreenshots(private val shot: Shot) {
             settings.setStringTickOff(false)
             settings.setShowSignalBars(false)
             settings.setKeepScreenOn(true)
-            // The phone lies still on the desk overnight.
+            // The phone lies still on the desk.
             settings.setVibrateInTune(false)
             settings.setMetronomeVibrate(false)
         }

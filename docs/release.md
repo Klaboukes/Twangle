@@ -11,9 +11,9 @@ further, and does the few things only the Play Console can do (the checklist bel
 - **Not every change is a release.** Fixes and features land on `main` as usual. When the owner asks
   (the owner decides when a version goes to Play, ROADMAP.md *Where things stand*), what is on `main`
   goes out as one release. Claude may suggest one when a bad bug is fixed or much has gathered.
-- **After a clean overnight run** (owner, 2026-10-28): a release starts only once the overnight run
-  (`/overnight-run`) has passed on the code it releases; until then `/release` stops before it raises
-  the version or writes a note, and says it waits for that night's run.
+- **After a clean full check** (owner, 2026-10-28): a release starts only once the full check
+  (`/full-check`) has passed on the code it releases; until then `/release` stops before it raises
+  the version or writes a note, and says it waits for a full check.
 - **Every upload has a higher version.** Play refuses a version it has seen. One place holds it:
   `twangle.version` in `gradle.properties`. Fixes raise the last number (1.0.0 → 1.0.1), new features
   the middle one (1.0.1 → 1.1.0), something big the first (2.0.0). The build turns it into Play's
@@ -34,7 +34,7 @@ further, and does the few things only the Play Console can do (the checklist bel
 ## What Claude does (`/release`)
 1. Checks `main`: `./gradlew test lint assembleDebug`, skipped when the nightly CI run passed on this
    very commit, and `scripts/ui-tests.sh --since-pass` on a test phone, which runs only the parts of
-   the app changed since their UI tests last passed on this PC (after a good overnight run, often none).
+   the app changed since their UI tests last passed on this PC (after a good full check, often none).
 2. Reads what changed since the last tag (`git log v<last>..main`) and picks patch or minor.
 3. On a branch `release/v<version>`: `scripts/release.sh bump patch|minor` (it keeps a version that
    was never released, above), then the release notes,

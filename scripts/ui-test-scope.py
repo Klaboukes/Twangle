@@ -23,7 +23,7 @@ in :core:testing, and TwangleTheme, which every screen draws. Members called wit
 (operators, toString, equals, hashCode, componentN, getValue) count as the whole class.
 
 It reads names, not types: a name used for something else as well only widens the set. The
-overnight run tests everything, so a rare way to miss a module (a constructor argument moved
+full check tests everything, so a rare way to miss a module (a constructor argument moved
 between two of the same type) is caught there.
 """
 import re

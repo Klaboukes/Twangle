@@ -242,11 +242,11 @@ release with the old one: scripts/release.sh bundle --keep-old-profile. Nothing 
     fi
     use_java
 
-    # By day only English and Dutch are written; the overnight run's /translate does the rest. A
+    # By day only English and Dutch are written; the full check's /translate does the rest. A
     # release ships nothing half translated.
     echo "Checking that every language is complete and up to date..."
     ./gradlew --quiet :app:testDebugUnitTest --tests '*LocalizationTest' -Ptwangle.strictTranslations=true ||
-        fail "a language lacks a text or has a stale one (above; python -I scripts/translations.py status lists them): the overnight run translates them (/translate), release after it"
+        fail "a language lacks a text or has a stale one (above; python -I scripts/translations.py status lists them): the full check translates them (/translate), release after it"
 
     # The watch app's bundle too, from the same commit, so the update that brings it needs no other
     # build (it goes to Play only through upload watch).
