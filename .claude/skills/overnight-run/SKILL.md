@@ -7,7 +7,7 @@ argument-hint: "[optional: --sweep or --languages to run only one part, --full t
 # The overnight run
 
 The owner starts it at bedtime with a test phone on USB and goes to sleep, taking turns between the
-Xiaomi 12X and the Galaxy S26 from one night to the next; say in the summary which phone it was. It runs for hours, so
+Xiaomi 12X and the Galaxy S26 from one night to the next; say in the summary which phone it was. It runs while they sleep, so
 the owner can't be asked anything: take the recommended answer to every question, note it, and put
 it in the morning summary for them to double-check. That never covers a step that reaches Google Play
 (`scripts/release.sh upload`, `promote`, `rollout`, `halt`, `listing`) or publishes anything (the website,
@@ -63,11 +63,11 @@ export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run p
 
 ```bash
 scripts/overnight-ui-tests.sh --dry-run                        # which language checks tonight runs (no phone)
-scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~1–3 h
+scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~35 min (less on a quiet night)
 ```
 It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
 time, waiting while the phone is 37 °C or warmer; 1.1's six styles took about 55 minutes, 2.0's one
-look about a third of that), then the `@EveryLanguage`
+look about 16 minutes, 2026-11-05), then the `@EveryLanguage`
 checks one module at a time with cooling pauses, and writes `build/overnight/summary.txt`. A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
@@ -78,7 +78,8 @@ noted (`build/ui-tests-passed/languages/`), and a later night skips them while n
 shows changed since (the rule `--since-pass` uses) and the pass is under a week old; the log says
 "passed …, nothing it shows changed since", and the summary's second line how many ran. A night after
 a change every screen shows (the design system, a new language, the night's translations of texts in
-every module) runs nearly all of them, about 20 minutes a module; a quiet one, very few. `--full` runs all
+every module) runs nearly all of them, about 17 minutes for all six in 2.0 (2026-11-05: Ear training and Practice
+about 6 each, the tuner, Settings and the metronome 1 to 1½, `:app` under half a minute); a quiet one, very few. `--full` runs all
 (after a change to the test helpers' scoping, or when in doubt). Skipped checks count as passed for the
 release, as `--since-pass` modules do.
 

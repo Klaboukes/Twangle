@@ -45,7 +45,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
-scripts/overnight-ui-tests.sh           # the overnight run: the watch app's tests on the watch when it is connected, every UI test (Ink light and dark), then every language where a screen changed since it passed (~1–3 h; --dry-run says what tonight runs; see /overnight-run)
+scripts/overnight-ui-tests.sh           # the overnight run: the watch app's tests on the watch when it is connected, every UI test (Ink light and dark), then every language where a screen changed since it passed (~35 min when every screen changed, 2.0 on 2026-11-05, 1.1's six styles took ~3 h; --dry-run says what tonight runs; see /overnight-run)
 scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2 min a language, ~50 for all; before a listing is sent, release.sh listing refuses older ones; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
 scripts/meter-frames.sh                 # frame times of the meter and the pitch trail on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
