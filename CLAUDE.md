@@ -105,7 +105,7 @@ python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa B
 
 ## Workflow
 - **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. Without an argument it runs one increment: announce in plain language → branch → build → verify → land. `/roadmap-step <N>` finishes every remaining item of phase N in one session, still one branch and PR per increment; each increment runs in its own sub-agent so the session stays small.
-- Work through ROADMAP phases in the order ROADMAP.md lists them, not by number; the owner may move a phase ahead. Don't start the next phase while `main`'s build or tests are broken (`v2`'s, for a 2.0 phase).
+- Work through ROADMAP phases in the order ROADMAP.md lists them, not by number; the owner may move a phase ahead. Don't start the next phase while `main`'s build or tests are broken.
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in), and on the Lenovo tablet when the change is about a tablet layout.
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test, light and dark, and every language, fixed and landed without asking them anything (questions go in the morning summary).
@@ -127,13 +127,6 @@ Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default bra
 5. Verify locally (see Workflow). **The local run is the merge gate.** The free plan for private repos has no branch protection or auto-merge, so nothing on GitHub blocks a bad merge.
 6. `git push -u origin <branch>`, then `gh pr create --base main` (title = increment name, body = what changed + how it was verified).
 7. `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Merging right away is the owner's chosen policy. CI checks `main` overnight, and the next iteration checks the last run first and fixes any failure before anything else.
-
-### The v2 branch (until 2.0 lands)
-Owner, 2026-11-02: 1.1.x stays stable on `main` for the launch while 2.0 (ROADMAP.md, *2.0 — the app designed again*) is built on the long-lived branch `v2`, made from `main` on 2026-11-02, so a hotfix never carries half-built 2.0 code.
-- **2.0 phases (66 and up) branch from `v2` and merge into `v2`:** in a worktree `git fetch -q origin && git switch --detach origin/v2`, then `git switch -c phase-<N>/<topic>`; `gh pr create --base v2`; `gh pr merge --squash`. Read `main` as `v2` in the skills' commands for these phases. The local run is `v2`'s only gate: the nightly CI checks `main` alone (run it by hand on `v2` only when the owner asks).
-- **`main` gets fixes for 1.1.x only,** and `/release` keeps releasing `main`. After a fix lands on `main`, carry it to `v2` from a worktree, no PR: `git fetch -q origin && git switch --detach origin/v2 && git merge origin/main && git push origin HEAD:v2`, resolving a conflict in favour of 2.0's design.
-- **The scripts and the overnight run know both lines:** `scripts/ui-tests.sh` scopes a 2.0 branch from where it left `v2` and keeps v2's passes apart (`build/ui-tests-passed/v2/`); the overnight run checks one branch a night, `main` when its code changed since its last clean run, otherwise `v2` (`scripts/overnight-ui-tests.sh --which`; the owner may name one). Releases, the website, the privacy page and the nightly CI stay on `main`.
-- **When 2.0 is ready for testers** (Phase 76), `v2` merges into `main` through one PR, and this section goes.
 
 ### One worktree per session that changes files
 Owner, 2026-10-28: two sessions in one folder switch branches under each other (that day a commit landed on the wrong branch).

@@ -22,7 +22,6 @@ usual night after a day without new texts.
 **Where:** by hand, your own worktree (CLAUDE.md, *One worktree per session*). From the overnight run,
 the main folder, on `main` and before that night's branch: this lands first, so the night's
 language tests check the new texts. Branch `chore/translations-<date>` from an up-to-date `main`.
-On a night on `v2` (the overnight-run skill, step 0) read `main` as `v2` throughout, the PR's base too.
 
 ## 1. The list
 ```bash

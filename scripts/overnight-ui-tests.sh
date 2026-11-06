@@ -11,7 +11,6 @@
 #   scripts/overnight-ui-tests.sh --store     only the Play Store screenshots (scripts/store-screenshots.sh)
 #   scripts/overnight-ui-tests.sh --full ...  the languages of every module, none skipped
 #   scripts/overnight-ui-tests.sh --dry-run   only say which every-language checks would run (no phone)
-#   scripts/overnight-ui-tests.sh --which     only say which branch tonight's run checks, and why
 # (--watch, --sweep, --languages and --store may be combined.)
 #
 # The every-language checks of a module that passed whole are noted at that commit, like a
@@ -34,49 +33,18 @@
 # device that comes or goes during the night changes nothing for the others; ANDROID_SERIAL names the
 # phone instead. No watch connected: its stage is skipped, and the summary says so. A watch that drops
 # off during its stage (its Wi-Fi went) says nothing about the app either: not counted as a failure.
-#
-# One branch a night (CLAUDE.md, *The v2 branch*): main, or v2 while 2.0 is built there. A run on v2
-# keeps its records apart, the logs in build/overnight/v2/ and the passes in build/ui-tests-passed/v2/,
-# so main's summary and notes, which a release reads, stay main's.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 COOL_BELOW="${COOL_BELOW:-37}"
-# The line this checkout is on, by the rule of scripts/ui-tests.sh's on_v2: v2 when it holds a commit
-# of origin/v2 that main lacks, otherwise main.
-line=main
-v2_base="$(git merge-base HEAD origin/v2 2>/dev/null)" && ! git merge-base --is-ancestor "$v2_base" origin/main 2>/dev/null && line=v2
 OUT="$ROOT/build/overnight"
-[ $line = v2 ] && OUT="$OUT/v2"
 # The modules with @EveryLanguage tests (each checks light and dark itself; 1.1 ran them once per
 # style). The list can be narrowed for a short try (LANGUAGE_MODULES=":app").
 read -ra LANGUAGE_MODULES <<<"${LANGUAGE_MODULES:-:feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :app}"
 
 LANGUAGES_MAX_AGE_DAYS="${LANGUAGES_MAX_AGE_DAYS:-7}"
-
-# The branch tonight's run checks, as "<branch>: <why>" (after a git fetch): main when it has code no
-# clean overnight run passed (a release needs one over the code it releases; docs, .claude/, scripts/
-# and the Baseline Profile aside, the release skill's rule, and fastlane/'s store texts and release
-# notes, which no test on the phone reads), otherwise v2 while origin/v2 exists. It
-# reads main's summary in the main folder; a run whose failures were fixed reads as not clean, so main
-# again, unless the owner names v2.
-which_branch() {
-    local summary commit
-    summary="$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/overnight/summary.txt"
-    commit="$(sed -n '1s/^Overnight run[^:]*: [0-9]* min at \([0-9a-f]*\), everything passed$/\1/p' "$summary" 2>/dev/null)"
-    if ! git rev-parse -q --verify origin/v2 > /dev/null; then
-        echo "main: there is no v2 branch"
-    elif [ -z "$commit" ] || ! git cat-file -e "$commit^{commit}" 2>/dev/null; then
-        echo "main: its last overnight run on this PC didn't pass everything (or there is none)"
-    elif ! git diff --quiet "$commit" origin/main -- . ':(exclude)*.md' ':(exclude)docs' ':(exclude).claude' \
-        ':(exclude)scripts' ':(exclude)app/src/release/generated' ':(exclude)fastlane'; then
-        echo "main: its code changed since its last clean overnight run (at ${commit:0:8})"
-    else
-        echo "v2: main's code is as its last clean overnight run passed it (at ${commit:0:8})"
-    fi
-}
 
 watch=0 sweep=0 languages=0 store=0 full=0 dry_run=0 picked=0
 for arg in "$@"; do
@@ -87,18 +55,15 @@ for arg in "$@"; do
         --store) store=1 picked=1 ;;
         --full) full=1 ;;
         --dry-run) dry_run=1 ;;
-        --which) which_branch; exit 0 ;;
-        *) sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+        *) sed -n '2,35p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
     esac
 done
 [ $picked = 1 ] || { watch=1; sweep=1; languages=1; }
 mkdir -p "$OUT"
 
 # Where the passes of the every-language checks are noted: next to the modules' (scripts/ui-tests.sh),
-# in the main folder, so a pass counts for every checkout of this PC; v2's apart, as there.
-LANGUAGES_PASSED="$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed"
-[ $line = v2 ] && LANGUAGES_PASSED="$LANGUAGES_PASSED/v2"
-LANGUAGES_PASSED="$LANGUAGES_PASSED/languages"
+# in the main folder, so a pass counts for every checkout of this PC.
+LANGUAGES_PASSED="$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed/languages"
 languages_note() { local m="${1#:}"; echo "$LANGUAGES_PASSED/${m//:/-}"; }
 
 # The modules a change since [commit] can reach (scripts/ui-test-scope.py), worked out once per commit.
@@ -125,7 +90,7 @@ languages_still_good() {
 
 if [ $dry_run = 1 ]; then
     rm -f "$OUT"/reached-*.txt
-    echo "This checkout is on $line (records in ${OUT#"$ROOT"/}/). Tonight's default, $(which_branch)"
+    echo "Records in ${OUT#"$ROOT"/}/."
     would=0
     for module in "${LANGUAGE_MODULES[@]}"; do
         if since="$(languages_still_good "$module")"; then
@@ -257,7 +222,7 @@ fi
 tested="at $(git rev-parse --short HEAD)"
 [ $clean = 1 ] || tested="$tested with uncommitted changes"
 {
-    echo "Overnight run on $line: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
+    echo "Overnight run: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
     [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module checks ran; $skipped passed earlier with nothing they show changed since"
     [ $sweep = 1 ] || [ $languages = 1 ] || [ $store = 1 ] && echo "Phone: the $phone_name"
     [ $watch = 1 ] && echo "Watch: $watch_result"

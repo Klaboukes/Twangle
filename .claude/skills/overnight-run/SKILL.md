@@ -1,7 +1,7 @@
 ---
 name: overnight-run
 description: Run Twangle's overnight on-device check while the owner sleeps — first the night's translations (/translate), then every UI test (light and dark), then every language at 2× text where a screen changed since it last passed — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
-argument-hint: "[optional: main or v2 to name the branch, --sweep or --languages to run only one part, --full to skip no language check, --store for the store screenshots]"
+argument-hint: "[optional: --sweep or --languages to run only one part, --full to skip no language check, --store for the store screenshots]"
 ---
 
 # The overnight run
@@ -15,21 +15,6 @@ the privacy policy): those wait for the owner's yes in the morning. CLAUDE.md's 
 environment notes apply; the [ui-test skill](../ui-test/SKILL.md) says how to read results and
 what the phone's failures mean.
 
-## 0. Which branch tonight
-**One branch a night** (orchestrated with Phase 66, 2026-11-02): `main`, or `v2` while 2.0 is built
-there (CLAUDE.md, *The v2 branch*). The owner may name it ("overnight run on v2"); otherwise
-`git fetch -q origin && scripts/overnight-ui-tests.sh --which` picks it: `main` when its code changed
-since its last clean overnight run (a release needs a clean run over the code it releases), otherwise
-`v2` while `origin/v2` exists. It prints the branch and why; that is the first line of the morning
-summary. Below, **`<branch>`** is that branch. On `v2`:
-- the main folder goes to it with `git switch v2 && git pull` (`git switch` makes the local branch
-  that follows `origin/v2` the first time), and back to `main` at the very end (`git switch main`):
-  releases expect `main` there;
-- there is no nightly CI to check (it runs on `main` only), the translations land on `v2`, and every
-  PR goes `--base v2`;
-- the scripts keep its records apart by themselves: the summary in `build/overnight/v2/summary.txt`
-  and the passes in `build/ui-tests-passed/v2/`, so main's, which a release reads, stay main's.
-
 ## 1. Pre-flight (a few minutes, no phone run yet)
 Run it in the main folder, which belongs to the overnight run and releases (CLAUDE.md, *One worktree
 per session that changes files*): the release reads its summary there. If another session has the
@@ -37,8 +22,8 @@ main folder on a branch, wait for it or ask in the morning summary; never switch
 
 ```bash
 ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"   # adb is not on PATH (CLAUDE.md)
-git status --short && git switch <branch> && git pull
-gh run list --branch main --limit 3          # main only: a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
+git status --short && git switch main && git pull
+gh run list --branch main --limit 3          # a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
 "$ADB" devices                                # the phone (f813c98c or R3GL502L08P) "device"; the watch too, when left on
 export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run picks the phone and the watch itself
 "$ADB" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
@@ -67,11 +52,11 @@ export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run p
 - Read ROADMAP.md: phases may have items marked "Runs overnight", and *Waiting on the owner* may
   have an open overnight item. The run below covers all of them; note which items it closes.
 - **Translations first** (owner, 2026-10-28): run the [translate skill](../translate/SKILL.md) on
-  `<branch>`. By day texts are written only in English and Dutch; it translates what the other languages
+  `main`. By day texts are written only in English and Dutch; it translates what the other languages
   lack or have stale and lands that through its own PR, so tonight's `@EveryLanguage` checks see the new
   texts. When `scripts/translations.py status` says every language is up to date it does nothing. Then
-  `git switch <branch> && git pull` again. Its report goes into the morning summary.
-- Branch `chore/overnight-<date>` (or `phase-<N>/<topic>` when it closes a phase's item) from `<branch>`.
+  `git switch main && git pull` again. Its report goes into the morning summary.
+- Branch `chore/overnight-<date>` (or `phase-<N>/<topic>` when it closes a phase's item) from `main`.
 - `./gradlew test lint assembleDebug` must pass before the phone run.
 
 ## 2. The run
@@ -83,8 +68,7 @@ scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the backgrou
 It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
 time, waiting while the phone is 37 °C or warmer; 1.1's six styles took about 55 minutes, 2.0's one
 look about a third of that), then the `@EveryLanguage`
-checks one module at a time with cooling pauses, and writes `build/overnight/summary.txt`
-(`build/overnight/v2/summary.txt` on `v2`; the dry run's first line says which). A screen where a
+checks one module at a time with cooling pauses, and writes `build/overnight/summary.txt`. A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
 
@@ -157,15 +141,14 @@ For each failure decide first: **app bug or outdated test?**
 - Small focused commits, `./gradlew test lint assembleDebug` again, tick ROADMAP.md (☐ → ☑) for
   the items the run closed, with what was found in brackets, and update the architecture docs where a
   design changed.
-- Push, `gh pr create --base <branch>`, `gh pr merge --squash --delete-branch`, `git switch <branch> &&
+- Push, `gh pr create --base main`, `gh pr merge --squash --delete-branch`, `git switch main &&
   git pull` (the owner's policy: merge right away).
-- On `<branch>`, when there is time left: `scripts/ui-tests.sh --since-pass`. Every module the sweep
+- On `main`, when there is time left: `scripts/ui-tests.sh --since-pass`. Every module the sweep
   passed whole is already noted as passed; this runs the ones that failed (or changed with the
   fixes) once more and notes them too, so the next release (the [release skill](../release/SKILL.md))
   has little or nothing left to run.
 - Put the phone back as it was: its system settings (font size, rotation, developer options), not
   Twangle's own settings (the owner resets those).
-- On `v2`: `git switch main` last, so the main folder is on `main` again for a release.
 
 ## 5. The morning summary
 
