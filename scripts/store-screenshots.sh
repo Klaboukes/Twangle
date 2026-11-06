@@ -113,22 +113,28 @@ for locale in "${locales[@]}"; do
     log="build/store-screenshots-$locale.log"
     [ "$tablet" = true ] && log="build/store-screenshots-tablet-$locale.log"
     start=$SECONDS
-    # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
-    rm -rf "$PULLED"
-    scripts/ui-tests.sh :app -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet > "$log" 2>&1
-    code=$?
-    if [ $code -ge 3 ]; then
-        tail -3 "$log"
-        exit $code
-    fi
-    dest="$LISTINGS/$locale/images/$FOLDER"
-    rm -rf "$dest" "$RAW/$locale"
-    mkdir -p "$dest" "$RAW/$locale"
-    made=0
-    for n in $SHOTS; do
-        [ -f "$PULLED/store-$n.png" ] && cp "$PULLED/store-$n.png" "$dest/$n.png" && made=$((made + 1))
+    # A language that fails gets one more try, so one slip (a screen up before its language, 2026-11-06)
+    # doesn't spoil an unattended run; the failed try's log is kept as <log>.first.
+    for attempt in 1 2; do
+        # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
+        rm -rf "$PULLED"
+        scripts/ui-tests.sh :app -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet > "$log" 2>&1
+        code=$?
+        if [ $code -ge 3 ]; then
+            tail -3 "$log"
+            exit $code
+        fi
+        dest="$LISTINGS/$locale/images/$FOLDER"
+        rm -rf "$dest" "$RAW/$locale"
+        mkdir -p "$dest" "$RAW/$locale"
+        made=0
+        for n in $SHOTS; do
+            [ -f "$PULLED/store-$n.png" ] && cp "$PULLED/store-$n.png" "$dest/$n.png" && made=$((made + 1))
+        done
+        cp "$PULLED"/raw-*.png "$RAW/$locale/" 2>/dev/null
+        [ $code = 0 ] && [ $made = $total ] && break
+        [ $attempt = 1 ] && mv "$log" "$log.first" && printf '(again) '
     done
-    cp "$PULLED"/raw-*.png "$RAW/$locale/" 2>/dev/null
     printf '%3ds  %d of %d pictures' $((SECONDS - start)) $made $total
     if [ $code != 0 ] || [ $made != $total ]; then
         echo "  FAILED (log: $log)"

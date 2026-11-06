@@ -219,8 +219,7 @@ class StoreScreenshots(private val shot: Shot) {
                 lateinit var beat: Bitmap
                 lateinit var cards: Bitmap
                 ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-                    waitFor(navigation)
-                    measureCrop(scenario)
+                    opened(scenario)
                     // 120 beats a minute in 4/4, the first beat lit (the website's metronome picture too).
                     click(NavigationTestTags.tab(Destination.METRONOME))
                     click(MetronomeTestTags.START)
@@ -320,8 +319,7 @@ class StoreScreenshots(private val shot: Shot) {
         steps: (ActivityScenario<MainActivity>) -> Unit,
     ): Bitmap =
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            waitFor(navigation)
-            measureCrop(scenario)
+            opened(scenario)
             steps(scenario)
             screenshot(scenario, name).also {
                 // Quiet again: while a note moves the screen, the main thread is never idle, and
@@ -330,6 +328,21 @@ class StoreScreenshots(private val shot: Shot) {
                 after(scenario)
             }
         }
+
+    /**
+     * Waits for the app just opened: its navigation bar, then the screen itself in this locale's language,
+     * then measures [crop]. The app taking the language isn't enough: once its first screen still came up
+     * in the old one, mirrored the old way too (Arabic's first picture, 2026-11-06).
+     */
+    private fun opened(scenario: ActivityScenario<MainActivity>) {
+        waitFor(navigation)
+        val wanted = app.resources.configuration.locales[0].language
+        var shown = ""
+        check(waitUntil { scenario.onActivity { shown = it.resources.configuration.locales[0].language }; shown == wanted }) {
+            "the screen came up in $shown, not $wanted"
+        }
+        measureCrop(scenario)
+    }
 
     /**
      * Places [screen] on the canvas with this shot's caption (and [bubble]) and saves it: on the phone
