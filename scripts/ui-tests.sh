@@ -9,6 +9,7 @@
 #   scripts/ui-tests.sh :feature:tuner           whole module(s)
 #   scripts/ui-tests.sh :feature:tuner -f Tip    only tests whose Class#method name matches a regex
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
+#   scripts/ui-tests.sh :wear                    the watch app's tests, on the watch (named on its own)
 #   scripts/ui-tests.sh :feature:tuner -c StyleScreenshots -a styleScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
 #   scripts/ui-tests.sh --thorough ...           also the double checks: the @Thorough tests (other
@@ -21,6 +22,9 @@
 #                                                ships (long; the overnight run)
 #   scripts/ui-tests.sh --dry-run ...            only say which modules would run, and why (no build,
 #                                                no phone)
+#
+# With more than one device connected the run picks its own (scripts/devices.sh): a phone (else the
+# tablet) for the phone's modules, the watch for :wear; ANDROID_SERIAL names one instead.
 #
 # A normal run is quick and leaves out the double checks: tests marked @Thorough (:core:testing) are
 # skipped. The overnight run
@@ -50,7 +54,7 @@ COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
-usage() { sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
@@ -161,10 +165,28 @@ if [ $dry_run = 1 ]; then
     exit 0
 fi
 
-# Say plainly that the phone is missing instead of failing after the build.
-if ! adb devices 2>/dev/null | tr -d '\r' | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect a test device (the Xiaomi 12X, the Galaxy S26 or the Lenovo Tab M11) and accept the USB-debugging prompt." >&2
-    exit 3
+# The device: ANDROID_SERIAL's, else a phone (or the tablet) for the phone's modules and the watch for
+# :wear, which runs on its own. Say plainly that it is missing instead of failing after the build.
+. "$ROOT/scripts/devices.sh"
+on_watch=0
+if [[ " ${modules[*]} " == *" :wear "* ]]; then
+    [ ${#modules[@]} = 1 ] || { echo ":wear runs on the watch: name it on its own (scripts/ui-tests.sh :wear)." >&2; exit 2; }
+    on_watch=1
+fi
+if [ -z "${ANDROID_SERIAL:-}" ]; then
+    if [ $on_watch = 1 ]; then
+        ANDROID_SERIAL="$(first_device watch)" || {
+            echo "No watch connected (adb devices shows no watch). Wake the Galaxy Watch 5 and connect it over Wi-Fi (docs/devices.md, *Watch*)." >&2
+            exit 3
+        }
+    else
+        ANDROID_SERIAL="$(first_device phone tablet)" || {
+            echo "No phone connected (adb devices shows no phone or tablet). Connect a test device (the Xiaomi 12X, the Galaxy S26 or the Lenovo Tab M11) and accept the USB-debugging prompt." >&2
+            exit 3
+        }
+    fi
+    export ANDROID_SERIAL
+    [ "$(ready_devices | wc -l)" -gt 1 ] && echo "On the $(device_name "$ANDROID_SERIAL"); the others connected are left alone"
 fi
 
 # :feature:tuner -> feature/tuner
@@ -272,6 +294,7 @@ mkdir -p "$ROOT/build"
 tasks=()
 for module in "${modules[@]}"; do tasks+=("$module:assembleDebugAndroidTest"); done
 [[ " ${modules[*]} " == *" :app "* ]] && tasks+=(":app:assembleDebug")
+[ $on_watch = 1 ] && tasks+=(":wear:assembleDebug")
 start=$SECONDS
 if ! timeout "$BUILD_TIMEOUT" ./gradlew "${tasks[@]}" --console=plain > "$ROOT/build/ui-tests-build.log" 2>&1; then
     echo "Build failed (log: build/ui-tests-build.log)"
@@ -305,10 +328,12 @@ stop_test_processes() {
 # What a run killed outright leaves on the phone: the owner's rotation settings it saved in the lock
 # before turning auto-rotate off (left off, it changes the phone for good), its MIUI loop and its tests.
 clear_leftovers() {
-    local auto user
+    local auto user off
     read -r auto user <<< "$(adb shell "cat $LOCK/rotation 2>/dev/null; [ -e $LOCK/guard.pid ] && kill \$(cat $LOCK/guard.pid)" 2>/dev/null | tr -d '\r' | head -1)"
     [[ "$user" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$user" > /dev/null 2>&1
     [[ "$auto" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$auto" > /dev/null 2>&1
+    off="$(adb shell "cat $LOCK/screen_off 2>/dev/null" | tr -d '\r')"
+    [[ "$off" =~ ^[0-9]+$ ]] && adb shell settings put system screen_off_timeout "$off" > /dev/null 2>&1
     stop_test_processes
 }
 
@@ -342,7 +367,17 @@ restore_rotation() {
     [[ "$ROTATION_USER" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$ROTATION_USER" > /dev/null 2>&1
     [[ "$ROTATION_AUTO" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$ROTATION_AUTO" > /dev/null 2>&1
 }
-trap 'restore_rotation; stop_test_processes; adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
+# A watch's screen sleeps after 15 s (the owner's setting), and then its tests find "No compose
+# hierarchies" (docs/devices.md, *Watch*): kept on for the run, the owner's time-out put back after.
+SCREEN_OFF=""
+if [ $on_watch = 1 ]; then
+    SCREEN_OFF="$(adb shell settings get system screen_off_timeout 2>/dev/null | tr -d '\r')"
+    adb shell "echo $SCREEN_OFF > $LOCK/screen_off && settings put system screen_off_timeout 1800000" > /dev/null 2>&1
+fi
+restore_screen_off() {
+    [[ "$SCREEN_OFF" =~ ^[0-9]+$ ]] && adb shell settings put system screen_off_timeout "$SCREEN_OFF" > /dev/null 2>&1
+}
+trap 'restore_rotation; restore_screen_off; stop_test_processes; adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
 # Ctrl+C or `timeout` stop the script through its EXIT trap too, so the lock and the loop below go.
 trap 'exit 130' INT TERM
 
@@ -461,8 +496,8 @@ for module in "${modules[@]}"; do
         status=1
         continue
     fi
-    if [ "$module" = ":app" ]; then
-        install_apk "$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)" || { status=1; continue; }
+    if [ "$module" = ":app" ] || [ "$module" = ":wear" ]; then
+        install_apk "$(find "$dir/build/outputs/apk/debug" -name '*.apk' -print -quit)" || { status=1; continue; }
     fi
     install_apk "$apk" || { status=1; continue; }
     wake_phone
