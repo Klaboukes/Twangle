@@ -62,7 +62,8 @@ private fun rememberVibratorTick(): () -> Unit {
     }
 }
 
-private fun Context.vibrator(): Vibrator =
+/** The phone's vibration motor (the default one on phones with several). */
+internal fun Context.vibrator(): Vibrator =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         getSystemService(VibratorManager::class.java).defaultVibrator
     } else {

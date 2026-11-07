@@ -7,6 +7,8 @@ import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.audio.watching
+import io.github.klaboukes.twangle.core.dsp.guide.GuideCue
+import io.github.klaboukes.twangle.core.dsp.guide.VibrationGuide
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationInstruments
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -23,6 +25,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
+import io.github.klaboukes.twangle.feature.tuner.components.GuideVibrator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -74,6 +77,11 @@ import kotlin.math.ceil
  * the speaker) and for [ScreenReaderSpeech.TAIL_SECONDS] after, so its speech is never read as a note and a spoken
  * reading can't set off the next one. Every tool beside the tuner hears nothing then either.
  *
+ * With the vibration guide on (Phase 85, [AppSettings.vibrationGuideOn]: the player's choice, else on while a screen
+ * reader is), [guideVibrator] taps while a note is heard, once to tighten and twice to loosen, quicker as it nears
+ * pitch, and buzzes long on becoming in tune ([VibrationGuide]); [vibrateInTune]'s click is then off. It plays only
+ * while the screen is [setShown] and the tuner listens.
+ *
  * [tools] says which music tools show (Phase 28): the tuner modes of Phases 29–31 come only
  * with their switches. Tests get every tool unless they say otherwise; the app passes its build's.
  *
@@ -97,6 +105,7 @@ class TunerViewModel(
     val tools: ToolSwitches = ToolSwitches.ALL_ON,
     private val clock: () -> Long = System::currentTimeMillis,
     private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
+    private val guideVibrator: GuideVibrator = GuideVibrator.NONE,
 ) : ViewModel() {
 
     /** The app's language, whose usual notation is used while the player hasn't picked one. */
@@ -132,10 +141,18 @@ class TunerViewModel(
         .map { it.keepScreenOn }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.keepScreenOn)
 
-    /** Whether reaching "in tune" gives a haptic tick (a saved setting). */
-    val vibrateInTune: StateFlow<Boolean> = settingsRepository.settings
-        .map { it.vibrateInTune }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune)
+    /**
+     * Whether reaching "in tune" gives *Vibrate when in tune*'s haptic tick (a saved setting): never while the vibration
+     * guide is on ([AppSettings.vibrationGuideOn]), whose long buzz says "in tune" instead, so the two never play together.
+     */
+    val vibrateInTune: StateFlow<Boolean> =
+        combine(settingsRepository.settings, screenReaderSpeech.screenReaderOn) { settings, screenReader ->
+            settings.vibrateInTune && !settings.vibrationGuideOn(screenReader)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune && saved.vibrationGuide != true)
+
+    /** Whether the tuner's screen is shown ([setShown]): the vibration guide plays only then. */
+    @Volatile
+    private var shown = true
 
     /**
      * Whether the pegs tick off the strings tuned and "In tune. Play." shows once all are (the string tick-off, a saved
@@ -456,8 +473,19 @@ class TunerViewModel(
         if (tonePlayer.isPlaying.value) tonePlayer.stop()
     }
 
+    /**
+     * The tuner's screen is [shown] or not (the app in the background, another tab or Settings open). The microphone
+     * stays open 5 s after the screen goes (hard rule 4), but the vibration guide stops at once: a player who left the
+     * tuner shouldn't feel it.
+     */
+    fun setShown(shown: Boolean) {
+        this.shown = shown
+        if (!shown) guideVibrator.stop()
+    }
+
     override fun onCleared() {
         stopTone()
+        guideVibrator.stop()
     }
 
     /**
@@ -527,6 +555,25 @@ class TunerViewModel(
         return true
     }
 
+    /**
+     * Feeds the vibration guide (Phase 85) one state [shown] on the DSP thread and plays what it asks for, while it is
+     * [on]: taps while a note is heard and its direction settled (the word's own [TunerHint]), the long buzz on becoming
+     * in tune. Anything but a note (listening, the 12th-fret check, the strum check, a reference tone or TalkBack's
+     * voice set aside) is a silence to it. Off, it starts afresh. Allocates nothing.
+     */
+    private fun followGuide(guide: VibrationGuide, shown: TunerUiState, on: Boolean, precision: InTunePrecision) {
+        if (!on) {
+            guide.reset()
+            return
+        }
+        val pulse = if (shown is TunerUiState.Detected) {
+            guide.update(guideCueOf(shown.hint), shown.cents, shown.targetMidi, pipeline.frameSeconds, InTuneDetector.enterCentsFor(precision))
+        } else {
+            guide.update(GuideCue.NONE, Float.NaN, NO_GUIDE_TARGET, pipeline.frameSeconds)
+        }
+        guideVibrator.play(pulse)
+    }
+
     /** Publishes [allInTune]'s strings in tune as [tunedStrings], only when they changed (a few times a session). */
     private fun publishTuned(allInTune: AllStringsInTune) {
         val mask = allInTune.tuned
@@ -554,6 +601,9 @@ class TunerViewModel(
          * the room's echo of it isn't read as a note either.
          */
         const val TONE_TAIL_SECONDS = 0.3f
+
+        /** The guide's target while no note is heard (any number does: the cue says there is none). */
+        private const val NO_GUIDE_TARGET = Int.MIN_VALUE
     }
 
     /**
@@ -561,16 +611,23 @@ class TunerViewModel(
      * nothing is asked of the system once the tuner stops listening).
      */
     private fun listen(): Flow<TunerUiState> = flow {
-        screenReaderSpeech.watching { speaking -> emitAll(readings(speaking)) }
+        screenReaderSpeech.watching { speaking ->
+            // Whether the vibration guide is on, followed while listening: the player's choice, else the screen reader.
+            val guideOn = combine(settingsRepository.settings, screenReaderSpeech.screenReaderOn) { settings, screenReader ->
+                settings.vibrationGuideOn(screenReader)
+            }.stateIn(this)
+            emitAll(readings(speaking, guideOn))
+        }
     }
         // Leaving the tuner ends the wait: the window comes only right after the tuning, never on coming back.
-        // The strings ticked off go too: they say what was tuned since the tuner opened.
+        // The strings ticked off go too: they say what was tuned since the tuner opened. The guide stops at once.
         .onCompletion {
             ratingWait?.cancel()
             ratingWait = null
             tunedNow.value = null
             heardNow.value = HeardStrum.None
             strumOn.value = false
+            guideVibrator.stop()
         }
         // Most frames look the same on screen as the last state sent: an equal Listening state in
         // silence, or a note whose readout and needle moved less than the screen shows. Dropping
@@ -579,9 +636,14 @@ class TunerViewModel(
         .catch { emit(TunerUiState.Error(it.toTunerError())) }
         .flowOn(dspDispatcher)
 
-    /** What the tuner shows of each frame; [speaking] says whether a screen reader's voice plays now. */
-    private fun readings(speaking: StateFlow<Boolean>): Flow<TunerUiState> = flow {
+    /**
+     * What the tuner shows of each frame; [speaking] says whether a screen reader's voice plays now, [guideOn] whether
+     * the vibration guide is on.
+     */
+    private fun readings(speaking: StateFlow<Boolean>, guideOn: StateFlow<Boolean>): Flow<TunerUiState> = flow {
         var interpreter = TunerInterpreter(pipeline.frameSeconds)
+        // The vibration guide (Phase 85) follows every state shown, so its taps, the word and the colour agree.
+        val guide = VibrationGuide()
         val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val heardInterpreter = HeardStrumInterpreter()
         val heardShown = HeardShown(pipeline.frameSeconds)
@@ -666,12 +728,22 @@ class TunerViewModel(
                 publishHeard(heardShown.tuner(own))
                 if (heardShown.setsAside && own is TunerUiState.Detected) interpreter.listening(current) else own
             }.onEach {
-                val completed = allInTune.update(it, InTuneDetector.exitCentsFor((options.value ?: initial).inTunePrecision))
+                val precision = (options.value ?: initial).inTunePrecision
+                val completed = allInTune.update(it, InTuneDetector.exitCentsFor(precision))
                 publishTuned(allInTune)
                 ratingArmed = followRatingMoment(it, completed, ratingArmed)
+                followGuide(guide, it, guideOn.value && shown, precision)
             },
         )
     }
+}
+
+/** The vibration guide's cue for the tuner's held-steady [hint]: the same direction as the word under the meter. */
+internal fun guideCueOf(hint: TunerHint?): GuideCue = when (hint) {
+    null -> GuideCue.WAIT
+    TunerHint.TUNE_UP -> GuideCue.TIGHTEN
+    TunerHint.TUNE_DOWN -> GuideCue.LOOSEN
+    TunerHint.IN_TUNE -> GuideCue.IN_TUNE
 }
 
 /** The string the 12th-fret check checks (null: none chosen), and a count that starts it afresh when it goes up. */

@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalAccessibilityManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -79,6 +80,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
+import io.github.klaboukes.twangle.feature.tuner.components.AndroidGuideVibrator
 import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.LiveFloat
@@ -158,6 +160,7 @@ fun TunerScreen(
     screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) {
     val language = appLanguage()
+    val appContext = LocalContext.current.applicationContext
     val viewModel: TunerViewModel = viewModel {
         TunerViewModel(
             audioRecorder,
@@ -167,6 +170,7 @@ fun TunerScreen(
             language = language,
             tools = tools,
             screenReaderSpeech = screenReaderSpeech,
+            guideVibrator = AndroidGuideVibrator(appContext),
         )
     }
     LaunchedEffect(closeToolsRequest) { viewModel.closeToolsOnRequest(closeToolsRequest) }
@@ -209,6 +213,8 @@ fun TunerScreen(
     val lensLook by viewModel.lensLook.collectAsStateWithLifecycle()
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
+    // The vibration guide plays only while the tuner is on screen (the microphone outlives it by 5 s).
+    ReportShown(viewModel::setShown)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     // Keep screen on lets go after a quiet spell, with a warning first (ScreenAwakeRule).
@@ -366,6 +372,27 @@ private fun StopToneWhenHidden(stopTone: () -> Unit) {
         onDispose {
             lifecycle.removeObserver(observer)
             currentStopTone()
+        }
+    }
+}
+
+/** Tells [setShown] whether the screen is shown: true once started, false when stopped or gone from the composition. */
+@Composable
+private fun ReportShown(setShown: (Boolean) -> Unit) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val currentSetShown by rememberUpdatedState(setShown)
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> currentSetShown(true)
+                Lifecycle.Event.ON_STOP -> currentSetShown(false)
+                else -> Unit
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+            currentSetShown(false)
         }
     }
 }

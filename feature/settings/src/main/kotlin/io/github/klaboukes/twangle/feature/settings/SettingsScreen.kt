@@ -77,6 +77,8 @@ import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWind
 import io.github.klaboukes.twangle.feature.settings.components.MeterPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Settings entry point, opened from the gear in the top corner of every tab (2.0, Phase 69; a tab of
@@ -86,6 +88,9 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
  * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
  * Android 8–12 AppCompat keeps it. The app's screens are then recreated in it; [onLanguageChange]
  * follows, for what lives outside them (the home-screen widget).
+ *
+ * [screenReaderOn] says whether TalkBack (or another screen reader) is on: the vibration guide's switch shows on while
+ * it is, until the player sets the guide themselves (Phase 85).
  */
 @Composable
 fun SettingsScreen(
@@ -96,9 +101,11 @@ fun SettingsScreen(
     languages: List<String> = emptyList(),
     onLanguageChange: () -> Unit = {},
     onBack: (() -> Unit)? = null,
+    screenReaderOn: Flow<Boolean> = flowOf(false),
 ) {
-    val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
+    val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository, screenReaderOn) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val screenReader by viewModel.screenReaderOn.collectAsStateWithLifecycle()
     val languageTags = remember(languages) { AppLanguages.tagsOf(languages) }
     var appLanguage by remember(languageTags) {
         mutableStateOf(AppLanguages.selectedOf(AppCompatDelegate.getApplicationLocales()[0], languageTags))
@@ -119,6 +126,8 @@ fun SettingsScreen(
         onLensLookChange = viewModel::setLensLook,
         onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
+        screenReaderOn = screenReader,
+        onVibrationGuideChange = viewModel::setVibrationGuide,
         onBack = onBack,
         languages = languageTags,
         appLanguage = appLanguage,
@@ -161,6 +170,8 @@ fun SettingsContent(
     languages: List<String> = emptyList(),
     appLanguage: String? = null,
     onAppLanguageChange: (String?) -> Unit = {},
+    screenReaderOn: Boolean = false,
+    onVibrationGuideChange: (Boolean) -> Unit = {},
     onBack: (() -> Unit)? = null,
 ) {
     SettingsPage(title = stringResource(R.string.settings_title), onBack = onBack, modifier = modifier) {
@@ -184,6 +195,8 @@ fun SettingsContent(
                 onLensLookChange = onLensLookChange,
                 onLeftHandedChange = onLeftHandedChange,
                 dynamicColorAvailable = dynamicColorAvailable,
+                screenReaderOn = screenReaderOn,
+                onVibrationGuideChange = onVibrationGuideChange,
             )
         }
     }
@@ -322,6 +335,8 @@ private fun SettingsGroups(
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
+    screenReaderOn: Boolean,
+    onVibrationGuideChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
@@ -386,6 +401,15 @@ private fun SettingsGroups(
                     summary = stringResource(R.string.settings_vibrate_in_tune_summary),
                     checked = settings.vibrateInTune,
                     onCheckedChange = onVibrateInTuneChange,
+                )
+                // The vibration guide (Phase 85): taps while tuning, for tuning without looking. On by itself while a
+                // screen reader is, until the player sets it. Here, not in an Accessibility group of its own: it helps
+                // anyone who can't see the screen (a dark stage, a pocket), and those who need it most get it unasked.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_vibration_guide_title),
+                    summary = stringResource(R.string.settings_vibration_guide_summary),
+                    checked = settings.vibrationGuideOn(screenReaderOn),
+                    onCheckedChange = onVibrationGuideChange,
                 )
                 // The beginner's help (2.0, Phase 71), off by default: 1.1's "Show tuning help" went, as the word always shows.
                 SwitchSetting(

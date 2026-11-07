@@ -168,6 +168,13 @@ data class AppSettings(
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,
     /**
+     * The vibration guide (Phase 85): pulses while the tuner hears a string, one to tighten, two to loosen, quicker as
+     * it nears pitch, one long buzz in tune (instead of [vibrateInTune]'s click). null while the player has never set
+     * it: it then follows the screen reader, on while TalkBack (or another) is on ([vibrationGuideOn]); once they flip
+     * it, their choice holds.
+     */
+    val vibrationGuide: Boolean? = null,
+    /**
      * The string tick-off (2.0, Phase 71), a beginner's help: each peg gets a check once its string is in tune, and
      * "In tune. Play." shows once all have one. Off by default and when missing, so a 1.1 player (who had the ticks
      * under "Show tuning help", `show_tune_hint`, which 2.0 no longer reads) starts without them.
@@ -257,6 +264,9 @@ data class AppSettings(
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)
+
+    /** Whether the vibration guide is on: the player's choice ([vibrationGuide]), else on while a [screenReaderOn]. */
+    fun vibrationGuideOn(screenReaderOn: Boolean): Boolean = vibrationGuide ?: screenReaderOn
 
     /** [tuning] as written, before the player lowered it. */
     val tuningAsWritten: Tuning

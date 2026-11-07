@@ -34,7 +34,7 @@ The website is hosted by GitHub (GitHub Pages). Like any web host, GitHub sees t
 Twangle remembers the choices you make in the app, and nothing else. These are stored only on your phone:
 - **Tuning:** the instrument and its tuning (and how far you lowered it), tunings you made yourself, whether Any note is on, the A4 reference pitch, how note names are written and how precise "in tune" is.
 - **Look:** the meter (classic needle, light arc or strobe), whether words or cents show under the meter, light or dark mode, wallpaper colours, and the app's language if you picked one.
-- **While tuning:** keep screen on, vibrate when in tune and whether tuned strings are ticked off.
+- **While tuning:** keep screen on, vibrate when in tune, the vibration guide (once you have turned it on or off yourself) and whether tuned strings are ticked off.
 - **Metronome:** its tempo, meter, click sound, the clicks between the beats and whether it vibrates on the beat; the speed trainer's start tempo, goal, step and number of bars per step, and whether it is on.
 - **Practice:** the tool you used last; the chord or scale you looked at last; the drone's sound, its notes and whether it plays an octave lower; the Capo helper's key and fret; whether the chord charts and the scale neck are drawn left-handed; and the Ear training exercise you used last with what it asks (which notes, how many in a row and whether any octave counts; which intervals, and whether they are played up, down or together; which chord types), never your answers or a score.
 - Whether you once said no to the microphone, so Twangle knows whether Android can still ask you.
@@ -45,7 +45,7 @@ The home-screen widget shows the instrument and tuning you chose. It never uses 
 If you have turned on Android's own backup (for example Google backup), Android may include these settings in your phone's backup or copy them to a new phone, so they come back after a reinstall. Only whether you said no to the microphone stays out of it: a new phone hasn't asked you yet. That backup is run by Android and your backup provider, not by Twangle, and you control it in the phone's settings. It never contains sound.
 
 ## Vibration
-Twangle can vibrate briefly when a string is in tune, and on the metronome's beat if you turn that on; the watch taps your wrist when a note comes in tune and on every beat of its metronome. This needs Android's vibrate permission, which is granted on install and gives no access to any data.
+Twangle can vibrate briefly when a string is in tune, in short taps while you tune with the vibration guide on (on by itself while a screen reader such as TalkBack is on: Twangle only looks whether one is on, and keeps nothing of it), and on the metronome's beat if you turn that on; the watch taps your wrist when a note comes in tune and on every beat of its metronome. This needs Android's vibrate permission, which is granted on install and gives no access to any data.
 
 ## Children
 Twangle collects no personal data from anyone, including children.

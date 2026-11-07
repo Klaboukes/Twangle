@@ -23,6 +23,12 @@ interface ScreenReaderSpeech {
     /** True while a screen reader's voice plays, false otherwise; starts with the answer for now, distinct. */
     val speaking: Flow<Boolean>
 
+    /**
+     * True while a screen reader (TalkBack or one like it) is on, whether it speaks or not; starts with the answer for
+     * now, distinct, and watches the system only while collected. The vibration guide's default follows it (Phase 85).
+     */
+    val screenReaderOn: Flow<Boolean> get() = flowOf(false)
+
     companion object {
         /**
          * How long the microphone's frames stay set aside after the voice has stopped. The system says "stopped" once

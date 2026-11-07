@@ -22,7 +22,7 @@ Topic files:
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
-  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · The strum check · 12th-fret check view · Lens · Under the lens
+  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · Vibration guide · The strum check · 12th-fret check view · Lens · Under the lens
   - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Strobe · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
@@ -129,6 +129,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling,
                 LoweredTunings (any tuning lowered by up to 2½ steps)
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector, InTuneTickRule (the in-tune tap, phone and watch)
+    guide/      VibrationGuide (+ GuideCue, GuidePulse): the vibration guide's taps from the tuner's cue and cents (Phase 85)
     strobe/     StrobeMotion
     trail/      PitchHistory (the pitch trail's last seconds of readings)
     synth/      StringSynth, StringVoice (+ BodyMode, StringVoices): the reference tone in each instrument's voice
@@ -192,7 +193,7 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     HeardStrum (HeardReading, HeardStrumInterpreter, HeardShown: what was heard besides one string, and how long it shows),
     IntonationCheck (+ TunerTool), PitchTrailFeed, PitchTrailDescription, ScreenAwake
     components/ Lens, Ruler (+ RulerGeometry), TuneWord, ReadingTone, StringSelector (the pegs, + StringRowFit),
-                InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
+                InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, GuideVibrator, ReceptionLook,
                 PermissionPrompt, StrumCheckView (StrumCheckButton, StrumMark, strumCountText), StrumPanel,
                 IntonationView, FocusModeButton, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver

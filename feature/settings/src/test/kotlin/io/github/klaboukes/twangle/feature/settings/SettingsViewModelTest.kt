@@ -9,6 +9,7 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -94,6 +95,23 @@ class SettingsViewModelTest {
         assertEquals(true, repository.current.stringTickOff)
         assertEquals(UnderMeter.CENTS, repository.current.underMeter)
         assertEquals(true, repository.current.leftHanded)
+    }
+
+    @Test
+    fun `shows whether a screen reader is on and saves the vibration guide`() = runTest(dispatcher) {
+        val screenReader = MutableStateFlow(true)
+        val vm = SettingsViewModel(repository, screenReader)
+        backgroundScope.launch { vm.screenReaderOn.collect {} }
+        runCurrent()
+        assertEquals(true, vm.screenReaderOn.value)
+        screenReader.value = false
+        runCurrent()
+        assertEquals(false, vm.screenReaderOn.value)
+
+        assertEquals("never set", null, repository.current.vibrationGuide)
+        vm.setVibrationGuide(true)
+        runCurrent()
+        assertEquals(true, repository.current.vibrationGuide)
     }
 
     @Test

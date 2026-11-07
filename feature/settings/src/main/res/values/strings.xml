@@ -89,6 +89,10 @@
     <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>
     <!-- The line under the Vibrate when in tune switch. -->
     <string name="settings_vibrate_in_tune_summary">A short buzz when the note reaches pitch</string>
+    <!-- Switch title: while the tuner hears a string, the phone vibrates in short taps that tell which way to turn the peg, so a player can tune without looking at the screen (e.g. a blind player, or on a dark stage). On by itself while TalkBack is on. -->
+    <string name="settings_vibration_guide_title">Vibration guide</string>
+    <!-- The line under the Vibration guide switch: one short tap means the string is too low (tighten it), two taps too high (loosen it), a long buzz means in tune. -->
+    <string name="settings_vibration_guide_summary">Taps while you tune: one to tighten, two to loosen, long when in tune</string>
     <!-- Switch title: a help for beginners, off by default: each string's round button (peg) on the tuner gets a small check mark once that string is in tune. -->
     <string name="settings_string_tick_off_title">Tick off tuned strings</string>
     <!-- The line under the Tick off tuned strings switch. The quoted words are the tuner's own line once every string is in tune (tuner_hint_all_in_tune): use the same translation. -->

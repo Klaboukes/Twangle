@@ -34,7 +34,7 @@ De website wordt gehost door GitHub (GitHub Pages). Zoals elke webhost ziet GitH
 Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan alleen op je telefoon:
 - **Stemmen:** het instrument en de stemming (en hoeveel lager je die hebt gezet), stemmingen die je zelf hebt gemaakt, of Elke noot aan staat, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
 - **Uiterlijk:** de meter (klassieke naald, lichtboog of stroboscoop), of er woorden of cents onder de meter staan, licht of donker, kleuren van je achtergrond, en de taal van de app als je die hebt gekozen.
-- **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en of gestemde snaren worden afgevinkt.
+- **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd, stemmen op gevoel (zodra je het zelf aan- of uitzet) en of gestemde snaren worden afgevinkt.
 - **Metronoom:** het tempo, de maatsoort en het klikgeluid, de tikken tussen de tellen en of hij trilt op de tel; het begintempo, het doel, de stap en het aantal maten per stap van de tempotrainer, en of die aan staat.
 - **Oefenen:** de tool die je het laatst gebruikte; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.
 - Of je ooit nee hebt gezegd tegen de microfoon, zodat Twangle weet of Android het je nog kan vragen.
@@ -45,7 +45,7 @@ De widget op je startscherm laat het instrument en de stemming zien die je hebt 
 Heb je de back-up van Android zelf aangezet (bijvoorbeeld Google-back-up), dan kan Android deze instellingen meenemen in de back-up van je telefoon of overzetten naar een nieuwe telefoon, zodat ze na een herinstallatie terugkomen. Alleen of je nee hebt gezegd tegen de microfoon blijft erbuiten: een nieuwe telefoon heeft het je nog niet gevraagd. Die back-up wordt geregeld door Android en je back-updienst, niet door Twangle, en je beheert hem in de instellingen van je telefoon. Er zit nooit geluid in.
 
 ## Trillen
-Twangle kan kort trillen als een snaar gestemd is, en op de tel van de metronoom als je dat aanzet; het horloge tikt op je pols als een noot zuiver wordt en op elke tel van zijn metronoom. Daarvoor is de triltoestemming van Android nodig, die bij installatie wordt gegeven en geen toegang tot gegevens geeft.
+Twangle kan kort trillen als een snaar gestemd is, in korte tikjes terwijl je stemt met stemmen op gevoel aan (vanzelf aan zolang een schermlezer zoals TalkBack aan staat: Twangle kijkt alleen of er een aan staat en bewaart daar niets van), en op de tel van de metronoom als je dat aanzet; het horloge tikt op je pols als een noot zuiver wordt en op elke tel van zijn metronoom. Daarvoor is de triltoestemming van Android nodig, die bij installatie wordt gegeven en geen toegang tot gegevens geeft.
 
 ## Kinderen
 Twangle verzamelt van niemand persoonsgegevens, ook niet van kinderen.

@@ -110,6 +110,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("Ink, not the wallpaper's colours (2026-11-03)", false, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
+        assertEquals("the vibration guide was never set: it follows the screen reader", null, settings.vibrationGuide)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
         assertEquals("the word under the meter on a fresh install", UnderMeter.WORDS, settings.underMeter)
         assertEquals("a fresh install's meter shows the Classic needle", LensLook.CLASSIC, settings.lensLook)
@@ -148,6 +149,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
+        repo.setVibrationGuide(true)
         repo.setStringTickOff(true)
         repo.setUnderMeter(UnderMeter.CENTS)
         repo.setLensLook(LensLook.STROBE)
@@ -186,6 +188,7 @@ class DataStoreSettingsRepositoryTest {
             dynamicColor = false,
             keepScreenOn = false,
             vibrateInTune = false,
+            vibrationGuide = true,
             stringTickOff = true,
             underMeter = UnderMeter.CENTS,
             lensLook = LensLook.STROBE,
@@ -225,6 +228,24 @@ class DataStoreSettingsRepositoryTest {
         repo.setNotation(null)
         assertEquals(null, repo.settings.first().notationChoice)
         assertEquals(Notation.SOLFEGE, repo.settings.first().notationFor("it"))
+    }
+
+    @Test
+    fun `the vibration guide follows the screen reader until the player sets it`() = runTest {
+        val repo = repository()
+        val fresh = repo.settings.first()
+        assertTrue("on while a screen reader is", fresh.vibrationGuideOn(screenReaderOn = true))
+        assertFalse("off without one", fresh.vibrationGuideOn(screenReaderOn = false))
+
+        repo.setVibrationGuide(false)
+        val off = repo.settings.first()
+        assertFalse("turned off, it stays off with TalkBack on", off.vibrationGuideOn(screenReaderOn = true))
+
+        repo.setVibrationGuide(true)
+        val on = repo.settings.first()
+        assertTrue("turned on, it stays on without TalkBack", on.vibrationGuideOn(screenReaderOn = false))
+        close()
+        assertEquals("the choice survives a restart", true, repository().settings.first().vibrationGuide)
     }
 
     @Test
@@ -1331,6 +1352,7 @@ class DataStoreSettingsRepositoryTest {
             "setDynamicColor" to { repo.setDynamicColor(!before.dynamicColor) },
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
+            "setVibrationGuide" to { repo.setVibrationGuide(true) },
             "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
             "setUnderMeter" to { repo.setUnderMeter(UnderMeter.CENTS) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },

@@ -39,12 +39,14 @@ class AndroidScreenReaderSpeech(context: Context) : ScreenReaderSpeech {
     private val accessibilityManager = context.getSystemService(AccessibilityManager::class.java)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val speaking: Flow<Boolean> = screenReaderOn()
+    override val speaking: Flow<Boolean> = touchExploration()
         .flatMapLatest { on -> if (on) accessibilityPlayback() else flowOf(false) }
         .distinctUntilChanged()
 
+    override val screenReaderOn: Flow<Boolean> = touchExploration()
+
     /** Whether a screen reader is on, now and on every change. */
-    private fun screenReaderOn(): Flow<Boolean> = callbackFlow {
+    private fun touchExploration(): Flow<Boolean> = callbackFlow {
         // Told on the main thread; the listener only hands the answer on.
         val listener = AccessibilityManager.TouchExplorationStateChangeListener { on -> trySend(on) }
         accessibilityManager.addTouchExplorationStateChangeListener(listener)

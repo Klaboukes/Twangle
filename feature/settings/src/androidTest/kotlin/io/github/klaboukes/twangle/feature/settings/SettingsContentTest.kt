@@ -98,6 +98,7 @@ class SettingsContentTest {
     private val underMeterChanges = mutableListOf<UnderMeter>()
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
+    private val guideChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
     private var rates = 0
@@ -128,6 +129,7 @@ class SettingsContentTest {
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
         settingsBack: Boolean = false,
+        screenReaderOn: Boolean = false,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
@@ -162,6 +164,8 @@ class SettingsContentTest {
                         languages = languages,
                         appLanguage = appLanguage,
                         onAppLanguageChange = { languageChanges += it },
+                        screenReaderOn = screenReaderOn,
+                        onVibrationGuideChange = { guideChanges += it },
                         onBack = if (settingsBack) ({ backs++ }) else null,
                     )
                 }
@@ -508,6 +512,41 @@ class SettingsContentTest {
     }
 
     /**
+     * The vibration guide's switch (Phase 85) in While tuning: TalkBack hears it as a switch with its name and on or off;
+     * never set, it shows on while a screen reader is on and off otherwise; a tap saves the player's own choice.
+     */
+    @Test
+    fun theVibrationGuideSwitchIsOnWhileTalkBackIsUntilSet() {
+        val title = context.getString(R.string.settings_vibration_guide_title)
+        show(AppSettings(), screenReaderOn = true)
+        val guide = compose.onNode(hasText(title) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+        guide.performScrollTo().assertIsOn().assertHasClickAction()
+        compose.onNodeWithText(context.getString(R.string.settings_vibration_guide_summary)).assertIsDisplayed()
+        guide.performClick()
+        assertEquals("turned off with TalkBack on", listOf(false), guideChanges)
+    }
+
+    /** The player's choice holds whatever the screen reader does. */
+    @Test
+    fun theVibrationGuideSwitchKeepsThePlayersChoice() {
+        show(AppSettings(vibrationGuide = false), screenReaderOn = true)
+        compose.onNodeWithText(context.getString(R.string.settings_vibration_guide_title)).performScrollTo().assertIsOff().performClick()
+        assertEquals(listOf(true), guideChanges)
+    }
+
+    /** Never set and no screen reader: off, with the tuner's own Dutch words in its line. */
+    @Test
+    fun dutchVibrationGuideSwitchIsOffWithoutTalkBackAndHasItsWords() {
+        show(AppSettings(), locale = "nl")
+        val res = resourcesIn("nl")
+        assertEquals("Stemmen op gevoel", res.getString(R.string.settings_vibration_guide_title))
+        val summary = res.getString(R.string.settings_vibration_guide_summary)
+        assertTrue("the tuner's own words: $summary", "strakker" in summary && "losser" in summary && "zuiver" in summary)
+        compose.onNodeWithText("Stemmen op gevoel").performScrollTo().assertIsOff()
+        compose.onNodeWithText(summary).assertIsDisplayed()
+    }
+
+    /**
      * While tuning has no switch for the 12th-fret check (2.0, Phase 71): the check is opened from the tuner's picker
      * sheet since the owner picked that way in (2026-11-03). Its name is no Settings text, in English or Dutch.
      */
@@ -633,6 +672,8 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
+            // Right after its neighbour (Phase 85): no Accessibility group of its own.
+            top(context.getString(R.string.settings_vibration_guide_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),
             top(context.getString(R.string.settings_group_tuning)),
             top(context.getString(R.string.settings_notation_title)),

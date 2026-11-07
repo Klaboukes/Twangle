@@ -254,6 +254,10 @@ class DataStoreSettingsRepository internal constructor(
         save { it[VIBRATE_IN_TUNE] = enabled }
     }
 
+    override suspend fun setVibrationGuide(enabled: Boolean) {
+        save { it[VIBRATION_GUIDE] = enabled }
+    }
+
     override suspend fun setStringTickOff(enabled: Boolean) {
         save { it[STRING_TICK_OFF] = enabled }
     }
@@ -428,6 +432,7 @@ class DataStoreSettingsRepository internal constructor(
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
+            vibrationGuide = prefs[VIBRATION_GUIDE] ?: defaults.vibrationGuide,
             stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
             underMeter = underMeter(prefs),
             lensLook = lensLook(prefs) ?: defaults.lensLook,
@@ -486,6 +491,9 @@ class DataStoreSettingsRepository internal constructor(
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
+
+        /** The vibration guide (Phase 85); no key while the player has never set it, so it follows the screen reader. */
+        private val VIBRATION_GUIDE = booleanPreferencesKey("vibration_guide")
         /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") has no say in it. */
         private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
 
