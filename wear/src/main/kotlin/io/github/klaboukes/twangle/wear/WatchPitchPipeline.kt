@@ -2,6 +2,8 @@ package io.github.klaboukes.twangle.wear
 
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
+import io.github.klaboukes.twangle.core.audio.watching
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
@@ -37,6 +39,12 @@ import kotlin.math.roundToInt
  * meanwhile instead of being nudged a few cents (`WatchPitchPipelineTest` mixes a motor's buzz in at
  * the tap).
  *
+ * While a screen reader's voice plays ([screenReaderSpeech], Phase 81: TalkBack saying the reading through the
+ * watch's speaker) and for [ScreenReaderSpeech.TAIL_SECONDS] after, the frames are passed by the same way and the
+ * reading holds still; the smoothing then starts afresh, so nothing of the voice is read as a note and a spoken
+ * reading can't set off the next one. The voice is watched only while [states] is collected, and only while a screen
+ * reader is on (unverified on the watch's own TalkBack: it is taken to play with the phone's usage).
+ *
  * Everything is made once per collection and the per-frame loop allocates nothing: a new
  * [WatchTunerState] is only emitted when what the watch shows changes (the note or the whole
  * cents, or whether it is in tune), a few times a second at most while a note rings. DSP runs on [dspDispatcher].
@@ -45,6 +53,7 @@ class WatchPitchPipeline(
     private val recorder: AudioRecorder,
     private val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) {
 
     /** [WatchTunerState.Listening] first, then each change of the reading. Failures end the flow. */
@@ -58,57 +67,70 @@ class WatchPitchPipeline(
         var shownCents = 0
         var shownInTune = false
         var tapFrames = 0
+        // Frames still to pass by: a screen reader's voice plays, or its echo may still be in the room.
+        var spokenFrames = 0
         var first = true
 
         emit(WatchTunerState.Listening)
-        recorder.chunks().collect { chunk ->
-            if (first) {
-                first = false
-                // The microphone may have opened at another rate than expected (AudioRecorder.config).
-                val rate = supportedRate()
-                if (rate != analysis.rate) analysis = Analysis(rate)
-            }
-            val chain = analysis.chain
-            val frameSeconds = analysis.frameSeconds
-            val holdFrames = analysis.holdFrames
-            var pos = 0
-            while (pos < chunk.size) {
-                pos += chain.push(chunk, pos, chunk.size - pos)
-                if (!chain.isFrameReady) continue
-                if (tapFrames > 0) {
-                    // These frames may hear the wrist tap's buzz: the reading holds as it is.
-                    chain.skipFrame()
-                    tapFrames--
-                    continue
+        screenReaderSpeech.watching { speaking ->
+            recorder.chunks().collect { chunk ->
+                if (first) {
+                    first = false
+                    // The microphone may have opened at another rate than expected (AudioRecorder.config).
+                    val rate = supportedRate()
+                    if (rate != analysis.rate) analysis = Analysis(rate)
                 }
-                chain.analyse()
-                val pitch = chain.pitch
-                if (pitch.isPitched) {
-                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, chain.isAboveThreshold, chain.levelDbfs)
-                } else {
-                    smoother.noReading(chain.sustained, chain.levelDbfs)
-                }
-                if (!smoother.hasReading && shownMidi != NO_NOTE && lostFrames < holdFrames) {
-                    // The note is lost for a moment: keep showing it, glow and all, so a brief
-                    // dropout doesn't flicker to "Play a note" and back.
-                    lostFrames++
-                    continue
-                }
-                lostFrames = 0
-                val midi = if (smoother.hasReading) smoother.note.midi else NO_NOTE
-                val cents = if (smoother.hasReading) smoother.cents.roundToInt() else 0
-                // A new note (or none) has to earn "in tune" again, as on the phone; the same note
-                // back after a dropout keeps it.
-                if (midi != shownMidi) inTune.reset()
-                val isInTune = midi != NO_NOTE && inTune.update(smoother.cents, frameSeconds)
-                if (midi != shownMidi || cents != shownCents || isInTune != shownInTune) {
-                    if (isInTune && !shownInTune) tapFrames = analysis.tapFrames
-                    shownMidi = midi
-                    shownCents = cents
-                    shownInTune = isInTune
-                    emit(
-                        if (midi == NO_NOTE) WatchTunerState.Listening else WatchTunerState.Detected(Note(midi), cents, isInTune),
-                    )
+                val chain = analysis.chain
+                val frameSeconds = analysis.frameSeconds
+                val holdFrames = analysis.holdFrames
+                var pos = 0
+                while (pos < chunk.size) {
+                    pos += chain.push(chunk, pos, chunk.size - pos)
+                    if (!chain.isFrameReady) continue
+                    if (speaking.value) spokenFrames = analysis.speechTailFrames + 1
+                    if (spokenFrames > 0) {
+                        // These frames may hear the screen reader's voice: the reading holds as it is, and the
+                        // smoothing starts afresh after it, so nothing of the voice carries over.
+                        chain.skipFrame()
+                        if (tapFrames > 0) tapFrames--
+                        if (--spokenFrames == 0) smoother.reset()
+                        continue
+                    }
+                    if (tapFrames > 0) {
+                        // These frames may hear the wrist tap's buzz: the reading holds as it is.
+                        chain.skipFrame()
+                        tapFrames--
+                        continue
+                    }
+                    chain.analyse()
+                    val pitch = chain.pitch
+                    if (pitch.isPitched) {
+                        smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, chain.isAboveThreshold, chain.levelDbfs)
+                    } else {
+                        smoother.noReading(chain.sustained, chain.levelDbfs)
+                    }
+                    if (!smoother.hasReading && shownMidi != NO_NOTE && lostFrames < holdFrames) {
+                        // The note is lost for a moment: keep showing it, glow and all, so a brief
+                        // dropout doesn't flicker to "Play a note" and back.
+                        lostFrames++
+                        continue
+                    }
+                    lostFrames = 0
+                    val midi = if (smoother.hasReading) smoother.note.midi else NO_NOTE
+                    val cents = if (smoother.hasReading) smoother.cents.roundToInt() else 0
+                    // A new note (or none) has to earn "in tune" again, as on the phone; the same note
+                    // back after a dropout keeps it.
+                    if (midi != shownMidi) inTune.reset()
+                    val isInTune = midi != NO_NOTE && inTune.update(smoother.cents, frameSeconds)
+                    if (midi != shownMidi || cents != shownCents || isInTune != shownInTune) {
+                        if (isInTune && !shownInTune) tapFrames = analysis.tapFrames
+                        shownMidi = midi
+                        shownCents = cents
+                        shownInTune = isInTune
+                        emit(
+                            if (midi == NO_NOTE) WatchTunerState.Listening else WatchTunerState.Detected(Note(midi), cents, isInTune),
+                        )
+                    }
                 }
             }
         }
@@ -132,6 +154,9 @@ class WatchPitchPipeline(
 
         // Every frame whose window may hold some of the tap's buzz.
         val tapFrames = ceil((TAP_SECONDS + settings.windowSize.toFloat() / rate) / frameSeconds).toInt()
+
+        // A screen reader's voice's tail (its echo, one window).
+        val speechTailFrames = ScreenReaderSpeech.tailFrames(frameSeconds)
     }
 
     private companion object {

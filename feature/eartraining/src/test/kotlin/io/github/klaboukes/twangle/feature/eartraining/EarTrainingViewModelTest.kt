@@ -2,7 +2,9 @@ package io.github.klaboukes.twangle.feature.eartraining
 
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
 import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestion
@@ -71,8 +73,11 @@ class EarTrainingViewModelTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun TestScope.viewModel(settings: AppSettings = AppSettings(), repository: FakeSettingsRepository = FakeSettingsRepository(settings)) =
-        EarTrainingViewModel(ears, tone, repository, settings, dspDispatcher = dispatcher, random = { Random(SEED) })
+    private fun TestScope.viewModel(
+        settings: AppSettings = AppSettings(),
+        repository: FakeSettingsRepository = FakeSettingsRepository(settings),
+        speech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
+    ) = EarTrainingViewModel(ears, tone, repository, settings, dspDispatcher = dispatcher, random = { Random(SEED) }, screenReaderSpeech = speech)
 
     private fun noteAt(frequencyHz: Float, a4Hz: Float = NoteMapper.DEFAULT_A4_HZ): Note = Note(Math.round(NoteMapper(a4Hz).midiOf(frequencyHz)))
 
@@ -185,6 +190,85 @@ class EarTrainingViewModelTest {
         advanceTimeBy(500)
         runCurrent()
         assertNull(vm.heard.value)
+    }
+
+    @Test
+    fun `a screen reader's voice is never taken for the answer, nor its echo, and the player's note is after`() = runTest(dispatcher) {
+        // Phase 81: TalkBack reads the screen through the speaker; the microphone hears its voice as the asked note.
+        val speech = FakeScreenReaderSpeech()
+        val vm = viewModel(speech = speech)
+        vm.setMicAllowed(true)
+        val heard = mutableListOf<Note?>()
+        backgroundScope.launch { vm.heard.collect { heard += it } }
+        vm.show()
+        runCurrent()
+        fade()
+        val asked = vm.state.value.notes!!.notes.single()
+        assertEquals("watched while it listens", 1, speech.watchers)
+
+        speech.isSpeaking = true
+        ears.playedHz = NoteMapper().frequencyOf(asked)
+        advanceTimeBy(2_000)
+        runCurrent()
+        assertNull("nothing heard while the voice speaks", vm.heard.value)
+        assertFalse("no answer judged", vm.state.value.answered)
+
+        // The voice has stopped; its echo may still be in the room for a moment.
+        speech.isSpeaking = false
+        advanceTimeBy((ScreenReaderSpeech.TAIL_SECONDS * 1000).toLong() - 60)
+        runCurrent()
+        assertNull("nothing heard in the tail", vm.heard.value)
+        assertFalse(vm.state.value.answered)
+        assertTrue("the voice was never shown as heard", heard.none { it == asked })
+        assertEquals(Tally(), vm.state.value.tally)
+
+        // Now the player plays it.
+        advanceTimeBy(60 + TAIL_AND_SOME_MILLIS + STEADY_MILLIS)
+        runCurrent()
+        assertTrue("found once the voice has gone", vm.state.value.answered)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+    }
+
+    @Test
+    fun `a voice speaking as the question sounds doesn't keep the answer from being judged`() = runTest(dispatcher) {
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        val vm = viewModel(speech = speech)
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        advanceTimeBy(500)
+        // TalkBack still speaks as the question starts to sound, and stops before it fades.
+        vm.show()
+        runCurrent()
+        advanceTimeBy(500)
+        speech.isSpeaking = false
+        advanceTimeBy(1_000)
+        fade()
+        val asked = vm.state.value.notes!!.notes.single()
+        ears.playedHz = NoteMapper().frequencyOf(asked)
+        advanceTimeBy(TAIL_AND_SOME_MILLIS + STEADY_MILLIS)
+        runCurrent()
+        assertTrue("the player's note is judged", vm.state.value.answered)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+    }
+
+    @Test
+    fun `with no screen reader speaking the player's note is heard as before`() = runTest(dispatcher) {
+        val speech = FakeScreenReaderSpeech()
+        val vm = viewModel(speech = speech)
+        vm.setMicAllowed(true)
+        val shown = backgroundScope.launch { vm.heard.collect {} }
+        vm.show()
+        runCurrent()
+        fade()
+        ears.playedHz = 184.0f
+        advanceTimeBy(500)
+        runCurrent()
+        assertEquals(noteAt(184.0f), vm.heard.value)
+
+        shown.cancel()
+        advanceTimeBy(5_100)
+        runCurrent()
+        assertEquals("let go of with the microphone", 0, speech.watchers)
     }
 
     @Test

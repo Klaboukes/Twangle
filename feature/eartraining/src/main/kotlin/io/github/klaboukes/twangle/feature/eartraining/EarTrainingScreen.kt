@@ -81,6 +81,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
@@ -129,7 +130,8 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
  * hidden, and no next question comes until it shows again, when a microphone that stopped meanwhile
  * listens again too; leaving the tool ends the visit (its tally and questions are dropped, never saved), while a
  * turned phone keeps it. [header] is the top row (the back arrow and the picker chip), which `:app` builds, putting
- * the end it is given (the "What is asked" ⋯) at the row's end; note names follow [notation].
+ * the end it is given (the "What is asked" ⋯) at the row's end; note names follow [notation]. While
+ * [screenReaderSpeech] says TalkBack's voice plays, Play it back sets what it hears aside (Phase 81).
  */
 @Composable
 fun EarTrainingScreen(
@@ -140,9 +142,10 @@ fun EarTrainingScreen(
     header: @Composable (end: @Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
     savedSettings: AppSettings = AppSettings(),
+    screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) {
     val viewModel: EarTrainingViewModel = viewModel {
-        EarTrainingViewModel(listener, tonePlayer, settingsRepository, savedSettings)
+        EarTrainingViewModel(listener, tonePlayer, settingsRepository, savedSettings, screenReaderSpeech = screenReaderSpeech)
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val heard by viewModel.heard.collectAsStateWithLifecycle()

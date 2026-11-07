@@ -6,6 +6,8 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
+import io.github.klaboukes.twangle.core.audio.watching
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.ceil
 
 /**
  * The metronome screen's state: tempo, meter, the click's sound, the clicks between the beats and the
@@ -73,6 +76,10 @@ import kotlinx.coroutines.withTimeoutOrNull
  * suggested ([ListenPhase.FOUND]): nothing changes until [use]. The clicks come back afterwards only
  * if they were playing before.
  *
+ * While a screen reader's voice plays ([screenReaderSpeech], Phase 81: TalkBack saying the tempo through the speaker)
+ * and for [ScreenReaderSpeech.TAIL_SECONDS] after, the detector hears silence in place of the microphone's chunks, so
+ * the voice's syllables are never taken for beats; the time it keeps counts on, so the beats heard after line up.
+ *
  * [tools] says which music tools show (Phase 28): Practice (Phase 32) and the capo helper
  * (Phase 33) come only with their switches. Tests get every tool unless they say otherwise; the app
  * passes its build's.
@@ -93,6 +100,7 @@ class MetronomeViewModel(
     private val nanoTime: () -> Long = System::nanoTime,
     private val detectorFor: (sampleRate: Int) -> TempoDetector = ::OnsetTempoDetector,
     val tools: ToolSwitches = ToolSwitches.ALL_ON,
+    private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) : ViewModel() {
 
     private val savedPlan = MutableStateFlow(savedTrainer)
@@ -511,7 +519,8 @@ class MetronomeViewModel(
 
     /**
      * Feeds the microphone to the detector until it is steady or time is up; the tempo found (steady,
-     * or still settling when time ran out), or null for no beat. Runs on [dspDispatcher].
+     * or still settling when time ran out), or null for no beat. Runs on [dspDispatcher]. A screen reader's voice is
+     * watched for as long as it listens ([watching]); while it plays, and its tail after, the detector is fed silence.
      */
     private suspend fun hear(recorder: AudioRecorder): Found? {
         var detector: TempoDetector? = this.detector?.also { it.reset() }
@@ -519,34 +528,48 @@ class MetronomeViewModel(
         var firstSampleNanos = Long.MAX_VALUE
         var shownBpm = -1
         var shownBeat = Long.MIN_VALUE
+        // Samples still to hear as silence: a screen reader's voice plays, or its echo may still be in the room.
+        var ignoredSamples = 0L
+        // What the detector hears meanwhile; made once, again only for a longer chunk.
+        var silence = FloatArray(0)
         withTimeoutOrNull(LISTEN_MILLIS) {
-            recorder.chunks().first { chunk ->
-                val rate = recorder.config.sampleRate
-                val d = detector?.takeIf { it.sampleRate == rate } ?: detectorFor(rate)
-                if (d !== detector) {
-                    detector = d
-                    this@MetronomeViewModel.detector = d
+            screenReaderSpeech.watching { speaking ->
+                recorder.chunks().first { chunk ->
+                    val rate = recorder.config.sampleRate
+                    val d = detector?.takeIf { it.sampleRate == rate } ?: detectorFor(rate)
+                    if (d !== detector) {
+                        detector = d
+                        this@MetronomeViewModel.detector = d
+                    }
+                    if (speaking.value) ignoredSamples = maxOf(ignoredSamples, speechTailSamples(rate) + chunk.size)
+                    if (ignoredSamples > 0L) {
+                        // The microphone would hear the voice: silence in its place keeps the detector's time going.
+                        if (silence.size < chunk.size) silence = FloatArray(chunk.size)
+                        d.process(silence, 0, chunk.size)
+                        ignoredSamples -= chunk.size
+                    } else {
+                        d.process(chunk, 0, chunk.size)
+                    }
+                    // When the first sample was heard: the earliest the chunks could have come, since a
+                    // chunk never arrives before it is recorded.
+                    val start = nanoTime() - samplesToNanos(d.samplesProcessed, rate)
+                    if (start < firstSampleNanos) firstSampleNanos = start
+                    val settled = d.status == TempoStatus.SETTLING || d.status == TempoStatus.STEADY
+                    val estimate = if (settled) d.bpm else 0
+                    if (estimate != shownBpm) {
+                        shownBpm = estimate
+                        // Only while this listening lasts: Stop on the main thread may have ended it meanwhile.
+                        _listen.update { if (it.listening && it.startedAtNanos == session) it.copy(estimate = estimate) else it }
+                    }
+                    if (settled && d.lastBeatSample >= 0L && d.beatIntervalSamples > 0f && d.lastBeatSample != shownBeat) {
+                        shownBeat = d.lastBeatSample
+                        _heard.value = HeardBeats(
+                            lastBeatNanos = firstSampleNanos + samplesToNanos(d.lastBeatSample, rate),
+                            intervalNanos = (d.beatIntervalSamples.toDouble() * NANOS_PER_SECOND / rate).toLong(),
+                        )
+                    }
+                    d.status == TempoStatus.STEADY
                 }
-                d.process(chunk, 0, chunk.size)
-                // When the first sample was heard: the earliest the chunks could have come, since a
-                // chunk never arrives before it is recorded.
-                val start = nanoTime() - samplesToNanos(d.samplesProcessed, rate)
-                if (start < firstSampleNanos) firstSampleNanos = start
-                val settled = d.status == TempoStatus.SETTLING || d.status == TempoStatus.STEADY
-                val estimate = if (settled) d.bpm else 0
-                if (estimate != shownBpm) {
-                    shownBpm = estimate
-                    // Only while this listening lasts: Stop on the main thread may have ended it meanwhile.
-                    _listen.update { if (it.listening && it.startedAtNanos == session) it.copy(estimate = estimate) else it }
-                }
-                if (settled && d.lastBeatSample >= 0L && d.beatIntervalSamples > 0f && d.lastBeatSample != shownBeat) {
-                    shownBeat = d.lastBeatSample
-                    _heard.value = HeardBeats(
-                        lastBeatNanos = firstSampleNanos + samplesToNanos(d.lastBeatSample, rate),
-                        intervalNanos = (d.beatIntervalSamples.toDouble() * NANOS_PER_SECOND / rate).toLong(),
-                    )
-                }
-                d.status == TempoStatus.STEADY
             }
         }
         val d = detector ?: return null
@@ -571,6 +594,9 @@ class MetronomeViewModel(
         private const val NANOS_PER_SECOND = 1_000_000_000.0
 
         private fun samplesToNanos(samples: Long, rate: Int): Long = (samples * NANOS_PER_SECOND / rate).toLong()
+
+        /** [ScreenReaderSpeech.TAIL_SECONDS] in samples at [rate], rounded up. */
+        private fun speechTailSamples(rate: Int): Long = ceil(ScreenReaderSpeech.TAIL_SECONDS.toDouble() * rate).toLong()
     }
 }
 

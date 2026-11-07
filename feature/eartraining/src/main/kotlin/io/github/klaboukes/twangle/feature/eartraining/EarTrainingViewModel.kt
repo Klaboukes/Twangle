@@ -2,7 +2,9 @@ package io.github.klaboukes.twangle.feature.eartraining
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.audio.watching
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestion
 import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
@@ -144,8 +146,10 @@ enum class ChordsUnavailable {
  * back ([shownAgain]) or ▶ sounds the question again, as the watch's tuner. While the
  * question sounds, and for [TONE_TAIL_SECONDS] after it has faded from the speaker, the microphone
  * stays open but what it hears is set aside and the smoothing starts afresh, so the question's own
- * sound (or its echo in the room) is never taken for the player's answer. The heard note is the
- * tuner's ([PitchSmoother.note]), smoothed on [dspDispatcher].
+ * sound (or its echo in the room) is never taken for the player's answer. The same while a screen
+ * reader's voice plays ([screenReaderSpeech], Phase 81: TalkBack reading the screen through the speaker)
+ * and for [ScreenReaderSpeech.TAIL_SECONDS] after, so its speech is never judged as an answer. The heard
+ * note is the tuner's ([PitchSmoother.note]), smoothed on [dspDispatcher].
  *
  * **Play it back's answer.** How long the heard note is held is counted frame by frame ([HeldNote]),
  * and the question's [PlayBackAnswer] judges each change on the main thread: the right note held
@@ -161,6 +165,7 @@ class EarTrainingViewModel(
     savedSettings: AppSettings = AppSettings(),
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val random: () -> Random = { Random(System.nanoTime()) },
+    private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) : ViewModel() {
 
     /** The saved settings: the instrument and tuning the questions are asked on, its voice and A4, and the microphone's refusal. */
@@ -590,7 +595,8 @@ class EarTrainingViewModel(
 
     /** Judges a change in what Play it back hears against its question, on the main thread. */
     private fun judge(hearing: Hearing) {
-        if (hearing.aside) awaitingAside = false
+        // Only the question's own setting aside says the question has reached the microphone, not a screen reader's.
+        if (hearing.aside && !hearing.spoken) awaitingAside = false
         if (awaitingAside || shown.value.exercise != Exercise.PLAY_IT_BACK) return
         val visit = playBack ?: return
         val answer = playAnswer ?: return
@@ -682,47 +688,57 @@ class EarTrainingViewModel(
     /**
      * What the microphone hears, frame by frame, as changes only: the note heard (a MIDI number, or
      * [HeldNote.NO_NOTE]) and how long it has been held, or [Hearing.ASIDE] while the question sounds
-     * (and first of all, so nothing from before this session is judged). A new [Hearing] is made only
-     * when it changes, a few times a second at most; nothing is allocated per frame.
+     * (and first of all, so nothing from before this session is judged), or [Hearing.SPOKEN] while a screen reader's
+     * voice plays. A new [Hearing] is made only when it changes, a few times a second at most; nothing is allocated
+     * per frame. The voice is watched for as long as this listens ([watching]).
      */
     private fun hear(): Flow<Hearing> = flow {
         val smoother = PitchSmoother()
         val held = HeldNote()
         val tailFrames = ceil(TONE_TAIL_SECONDS / listener.frameSeconds).toInt()
+        val speechTailFrames = ScreenReaderSpeech.tailFrames(listener.frameSeconds)
+        // Frames still to set aside: the question (or its echo), or a screen reader's voice (or its echo).
         var ignoredFrames = 0
+        var spokenFrames = 0
         var mapper = NoteMapper(settings.value.a4Hz)
         var last = Hearing.ASIDE
         emit(last)
-        listener.frames(range = { range.value }).collect { frame ->
-            if (questionSounding()) ignoredFrames = tailFrames + 1
-            val next = if (ignoredFrames > 0) {
-                // The microphone would hear the question itself: set aside, and the smoothing starts afresh after.
-                ignoredFrames--
-                smoother.reset()
-                held.reset()
-                Hearing.ASIDE
-            } else {
-                val a4 = settings.value.a4Hz
-                if (a4 != mapper.a4Hz) {
-                    mapper = NoteMapper(a4)
+        screenReaderSpeech.watching { speaking ->
+            listener.frames(range = { range.value }).collect { frame ->
+                if (questionSounding()) ignoredFrames = tailFrames + 1
+                if (speaking.value) spokenFrames = speechTailFrames + 1
+                val next = if (ignoredFrames > 0 || spokenFrames > 0) {
+                    // The microphone would hear the question itself or the screen reader's voice: set aside, and the
+                    // smoothing starts afresh after. The question's own wins, so its sounding is always seen ([judge]).
+                    val question = ignoredFrames > 0
+                    if (ignoredFrames > 0) ignoredFrames--
+                    if (spokenFrames > 0) spokenFrames--
                     smoother.reset()
-                }
-                if (frame.isPitched) {
-                    smoother.update(mapper.midiOf(frame.frequencyHz), frame.confidence, frame.loudEnough)
+                    held.reset()
+                    if (question) Hearing.ASIDE else Hearing.SPOKEN
                 } else {
-                    smoother.noReading(frame.sustained)
+                    val a4 = settings.value.a4Hz
+                    if (a4 != mapper.a4Hz) {
+                        mapper = NoteMapper(a4)
+                        smoother.reset()
+                    }
+                    if (frame.isPitched) {
+                        smoother.update(mapper.midiOf(frame.frequencyHz), frame.confidence, frame.loudEnough)
+                    } else {
+                        smoother.noReading(frame.sustained)
+                    }
+                    val midi = if (smoother.hasReading) smoother.note.midi else HeldNote.NO_NOTE
+                    val hold = held.update(midi, listener.frameSeconds)
+                    when {
+                        !last.aside && last.midi == midi && last.hold == hold -> last
+                        midi == HeldNote.NO_NOTE -> Hearing.NOTHING
+                        else -> Hearing(midi, hold)
+                    }
                 }
-                val midi = if (smoother.hasReading) smoother.note.midi else HeldNote.NO_NOTE
-                val hold = held.update(midi, listener.frameSeconds)
-                when {
-                    !last.aside && last.midi == midi && last.hold == hold -> last
-                    midi == HeldNote.NO_NOTE -> Hearing.NOTHING
-                    else -> Hearing(midi, hold)
+                if (next !== last) {
+                    last = next
+                    emit(next)
                 }
-            }
-            if (next !== last) {
-                last = next
-                emit(next)
             }
         }
     }.flowOn(dspDispatcher)
@@ -733,10 +749,14 @@ class EarTrainingViewModel(
     private fun rangeOf(settings: AppSettings): PitchRange =
         PitchRange.forLowestNote(NoteMapper(settings.a4Hz).frequencyOf(settings.tuning.lowestNote))
 
-    /** One change in what the microphone hears: the note ([HeldNote.NO_NOTE] for none) and its [hold], or set [aside]. */
-    private data class Hearing(val midi: Int, val hold: Hold, val aside: Boolean = false) {
+    /**
+     * One change in what the microphone hears: the note ([HeldNote.NO_NOTE] for none) and its [hold], or set [aside]:
+     * for the question's own sound, or for a screen reader's voice ([spoken]).
+     */
+    private data class Hearing(val midi: Int, val hold: Hold, val aside: Boolean = false, val spoken: Boolean = false) {
         companion object {
             val ASIDE = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING, aside = true)
+            val SPOKEN = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING, aside = true, spoken = true)
             val NOTHING = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING)
         }
     }

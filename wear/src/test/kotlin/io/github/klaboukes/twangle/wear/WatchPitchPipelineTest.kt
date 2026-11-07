@@ -4,6 +4,8 @@ import io.github.klaboukes.twangle.core.audio.AudioConfig
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
@@ -11,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -135,6 +138,53 @@ class WatchPitchPipelineTest {
 
         assertFalse(firstE4.inTune)
         assertTrue(states.lastDetected().inTune)
+    }
+
+    // Phase 81: TalkBack saying the reading through the watch's speaker is never read as a note.
+
+    /** Every state, with the virtual time it came at, while [speech] says the voice plays (from [speakFrom] to [speakUntil] ms). */
+    private suspend fun TestScope.statesOver(
+        signal: FloatArray,
+        speech: FakeScreenReaderSpeech,
+        speakFrom: Long? = null,
+        speakUntil: Long? = null,
+    ): List<Pair<Long, WatchTunerState>> {
+        if (speakFrom != null) backgroundScope.launch { delay(speakFrom); speech.isSpeaking = true }
+        if (speakUntil != null) backgroundScope.launch { delay(speakUntil); speech.isSpeaking = false }
+        val states = mutableListOf<Pair<Long, WatchTunerState>>()
+        WatchPitchPipeline(FakeAudioRecorder(signal), dspDispatcher = StandardTestDispatcher(testScheduler), screenReaderSpeech = speech)
+            .states().collect { states += testScheduler.currentTime to it }
+        return states
+    }
+
+    @Test
+    fun `nothing is read while the voice speaks, nor in its tail, and the note is after`() = runTest {
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        val states = statesOver(TestSignals.sine(440f, length = 48_000 * 3), speech, speakUntil = 1_000)
+        val firstAt = states.first { it.second is WatchTunerState.Detected }.first
+        val tailMillis = (ScreenReaderSpeech.TAIL_SECONDS * 1000).toLong()
+        assertTrue("first reading at $firstAt ms, after the voice and its tail", firstAt >= 1_000 + tailMillis)
+        assertEquals(WatchTunerState.Detected(Note.of(PitchClass.A, 4), 0, inTune = true), states.map { it.second }.lastDetected())
+        assertEquals("let go of with the microphone", 0, speech.watchers)
+    }
+
+    @Test
+    fun `a voice over a note holds the reading still and is never read`() = runTest {
+        // A4 rings; TalkBack speaks (heard as E5) from 1.3 s to 2.5 s, its voice in the sound from 1.5 s to 2.5 s.
+        val a4 = TestSignals.sine(440f, length = 48_000 * 3 / 2)
+        val voice = TestSignals.sawtooth(659.26f, length = 48_000)
+        val speech = FakeScreenReaderSpeech()
+        val states = statesOver(a4 + voice + a4, speech, speakFrom = 1_300, speakUntil = 2_500).map { it.second }
+        val detected = states.filterIsInstance<WatchTunerState.Detected>()
+        assertTrue("the voice is no note: $states", detected.none { it.note != Note.of(PitchClass.A, 4) })
+        assertTrue("never back to listening: $states", states.drop(1).none { it == WatchTunerState.Listening })
+        assertTrue(states.lastDetected().inTune)
+    }
+
+    @Test
+    fun `with no screen reader speaking the watch reads what it read before`() = runTest {
+        val signal = TestSignals.sine(440f, length = 48_000)
+        assertEquals(statesFor(signal), statesOver(signal, FakeScreenReaderSpeech()).map { it.second })
     }
 
     @Test

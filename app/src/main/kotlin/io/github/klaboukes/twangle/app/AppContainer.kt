@@ -97,13 +97,14 @@ class AppContainer(private val appContext: Context) {
 
     /** Listen in Chords: each strummed chord named from [chordsRecorder], or from a test's [testAudioRecorder]. */
     val chordListener: ChordListener
-        get() = testAudioRecorder?.let { ChordListener(it) } ?: micChordListener
+        get() = testAudioRecorder?.let { ChordListener(it, screenReaderSpeech = screenReaderSpeech) } ?: micChordListener
 
-    private val micChordListener: ChordListener by lazy { ChordListener(chordsRecorder) }
+    private val micChordListener: ChordListener by lazy { ChordListener(chordsRecorder, screenReaderSpeech = screenReaderSpeech) }
 
     /**
      * Whether a screen reader's voice plays now (Phase 81), so what listens sets the microphone's frames aside while it
-     * does. Watched only while a listener collects it, and only while a screen reader is on.
+     * does: the tuner and its tools, the pitch trail, the metronome's Listen, Chords' Listen and Ear training's Play it
+     * back. Watched only while a listener collects it, and only while a screen reader is on.
      */
     val screenReaderSpeech: ScreenReaderSpeech by lazy { AndroidScreenReaderSpeech(appContext) }
 

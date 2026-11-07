@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.wear
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,13 +22,15 @@ import kotlinx.coroutines.flow.stateIn
  * doesn't restart it (CLAUDE.md, hard rule 4). When the watch's screen turns off or goes ambient
  * ([setScreenOn] false) the microphone is let go of at once, without that grace, and opened again
  * when the screen comes back on. A failure shows as [WatchTunerState.Failed] until [retry].
+ * While [screenReaderSpeech] says TalkBack's voice plays, the reading holds still (Phase 81, [WatchPitchPipeline]).
  */
 class WatchTunerViewModel(
     recorder: AudioRecorder,
     dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) : ViewModel() {
 
-    private val pipeline = WatchPitchPipeline(recorder, dspDispatcher = dspDispatcher)
+    private val pipeline = WatchPitchPipeline(recorder, dspDispatcher = dspDispatcher, screenReaderSpeech = screenReaderSpeech)
     private val attempt = MutableStateFlow(0)
     private val screenOn = MutableStateFlow(true)
 

@@ -69,6 +69,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
 import io.github.klaboukes.twangle.core.designsystem.FloatingPanel
 import io.github.klaboukes.twangle.core.designsystem.MoreButton
@@ -116,7 +117,8 @@ import kotlin.math.roundToInt
  * screen timeout doesn't stop it.
  *
  * Listen (Phase 27) hears music nearby through [recorder], only while listening, after asking for the
- * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before).
+ * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before). While [screenReaderSpeech] says
+ * TalkBack's voice plays, Listen hears silence in its place (Phase 81).
  *
  * The speed trainer (Phase 62) comes with its switch ([ToolSwitches.speedTrainer]): its plan and
  * whether it is on, saved last ([savedTrainer], [savedTrainerOn]).
@@ -145,6 +147,7 @@ fun MetronomeScreen(
     savedTrainerOn: Boolean = false,
     header: (@Composable () -> Unit)? = null,
     title: String? = null,
+    screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) {
     val viewModel: MetronomeViewModel = viewModel {
         MetronomeViewModel(
@@ -160,6 +163,7 @@ fun MetronomeScreen(
             savedTrainerOn = savedTrainerOn,
             savedMicRefused = savedMicRefused,
             tools = tools,
+            screenReaderSpeech = screenReaderSpeech,
         )
     }
     val bpm by viewModel.bpm.collectAsStateWithLifecycle()

@@ -428,6 +428,7 @@ class MainActivity : AppCompatActivity() {
             savedTrainerOn = settings.metronomeTrainerOn,
             header = gear,
             title = stringResource(R.string.nav_metronome),
+            screenReaderSpeech = container.screenReaderSpeech,
         )
     }
 
@@ -533,6 +534,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     },
                     savedSettings = settings,
+                    screenReaderSpeech = container.screenReaderSpeech,
                 )
             }
             PracticeTool.PITCH_TRAIL -> PitchTrailScreen(

@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.wear.tiles.TileService
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
 import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
+import io.github.klaboukes.twangle.core.audio.AndroidScreenReaderSpeech
 
 /**
  * The watch app's one activity: the tuner, after the microphone permission, and with the metronome's switch
@@ -37,7 +38,13 @@ class WatchActivity : ComponentActivity() {
         // Only a fresh start opens on the page asked for; a remade activity keeps the page it showed.
         val opening = if (savedInstanceState == null) pageOf(intent) ?: WatchPage.TUNER else WatchPage.TUNER
         val factory = viewModelFactory {
-            initializer { WatchTunerViewModel(AndroidAudioRecorder(applicationContext)) }
+            initializer {
+                // TalkBack's voice through the watch's speaker is set aside as on the phone (Phase 81).
+                WatchTunerViewModel(
+                    AndroidAudioRecorder(applicationContext),
+                    screenReaderSpeech = AndroidScreenReaderSpeech(applicationContext),
+                )
+            }
             initializer {
                 WatchMetronomeViewModel(
                     player = AndroidMetronomePlayer(applicationContext),

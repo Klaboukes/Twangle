@@ -1,12 +1,16 @@
 package io.github.klaboukes.twangle.feature.practice
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -59,5 +63,47 @@ class ChordListenerTest {
         val c = strum(midiHz(48, 52, 55, 60, 64))
         assertEquals(listOf(Chord.of(PitchClass.C, ChordQuality.MAJOR)), heard(c + c))
         assertEquals(emptyList<Chord>(), heard(strum(midiHz(45))))
+    }
+
+    // Phase 81: TalkBack saying the chord through the speaker is never named as one.
+
+    private val am get() = strum(midiHz(45, 52, 57, 60, 64))
+    private val g get() = strum(midiHz(43, 47, 50, 55, 59, 67))
+
+    /** What [ChordListener] names of [signal] while [speech] says the voice plays; [stopAtMillis] stops it then. */
+    private suspend fun TestScope.heardOver(signal: FloatArray, speech: FakeScreenReaderSpeech, stopAtMillis: Long? = null): List<Chord> {
+        if (stopAtMillis != null) {
+            backgroundScope.launch {
+                delay(stopAtMillis)
+                speech.isSpeaking = false
+            }
+        }
+        return ChordListener(FakeAudioRecorder(signal), StandardTestDispatcher(testScheduler), speech).chords(440f).toList()
+    }
+
+    @Test
+    fun `nothing is named while the voice speaks`() = runTest {
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        assertEquals(emptyList<Chord>(), heardOver(am + g, speech))
+        assertEquals("let go of with the microphone", 0, speech.watchers)
+    }
+
+    @Test
+    fun `a strum after the voice and its tail is named`() = runTest {
+        // A minor rings while the voice speaks (0–3 s); G is strummed at 3.6 s, after the tail.
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        assertEquals(listOf(Chord.of(PitchClass.G, ChordQuality.MAJOR)), heardOver(am + g, speech, stopAtMillis = 3_000))
+    }
+
+    @Test
+    fun `a strum within the tail is not named`() = runTest {
+        // The voice stops 0.15 s before G's strum: its echo may still be in the room then.
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        assertEquals(emptyList<Chord>(), heardOver(am + g, speech, stopAtMillis = 3_450))
+    }
+
+    @Test
+    fun `with no screen reader speaking it names what it named before`() = runTest {
+        assertEquals(heard(am + g), heardOver(am + g, FakeScreenReaderSpeech()))
     }
 }
