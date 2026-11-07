@@ -82,8 +82,7 @@ import kotlinx.coroutines.launch
  * scale is zoomed in ([rulerWarp]), so the last cents to the note slide it far enough to tune by, and as the note gets
  * within 30 cents marks every 5 cents fade in round it, with the in-tune zone a green band on the line
  * ([rulerMarksShown]). Upright it is [large] (taller, its names bigger and further apart, in the room the word and the
- * pegs left); on its side and in focus mode it keeps 2.0's first size, so the lens keeps its height there. (The signal
- * bars stood beside its heard note until then; they moved to the strum check's row.)
+ * pegs left); on its side and in focus mode it keeps 2.0's first size, so the lens keeps its height there.
  *
  * Its height is fixed ([rulerHeight]) and its names do not grow with the font size: the ruler is a
  * drawing, like the meter's scale. Nothing here allocates while drawing: the names are measured once.
@@ -158,7 +157,7 @@ fun Ruler(
         Spacer(
             Modifier
                 .fillMaxSize()
-                // The drawing alone: the signal bars beside it keep their own semantics.
+                // The drawing alone.
                 .clearAndSetSemantics {
                     testTag = TunerTestTags.RULER
                     rulerNote = shownName

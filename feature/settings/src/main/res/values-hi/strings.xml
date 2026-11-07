@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">नोट सही पिच पर पहुँचते ही हल्का-सा वाइब्रेशन</string>
     <string name="settings_string_tick_off_title">ट्यून हुए तारों पर टिक</string>
     <string name="settings_string_tick_off_summary">सुर में आते ही हर तार पर टिक, और सब सुर में होने पर “सुर में। अब बजाएँ।”</string>
-    <string name="settings_show_signal_bars_title">सिग्नल बार दिखाएँ</string>
-    <string name="settings_show_signal_bars_summary">जिज्ञासुओं के लिए: तारों के ऊपर छोटे बार दिखाते हैं कि ट्यूनर आपको कितनी अच्छी तरह सुन रहा है। आँकड़े देखने के लिए उन पर टैप करें</string>
 
     <string name="settings_language_title">भाषा</string>
     <string name="settings_language_phone">फ़ोन की भाषा</string>

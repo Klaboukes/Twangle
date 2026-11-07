@@ -14,7 +14,6 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [Noise floor, SNR and clarity](#noise-floor-snr-and-clarity)
 - [Reception](#reception)
 - [Tips](#tips)
-- [Signal bars (optional)](#signal-bars-optional)
 - [Pitch detection (YIN)](#pitch-detection-yin)
 - [Smoothing](#smoothing)
 - [Edge cases (measured, EdgeCaseTest)](#edge-cases-measured-edgecasetest)
@@ -130,13 +129,13 @@ How well the tuner hears the guitar. Every `PitchReading` carries these besides 
 - **SNR** while a note sounds: `10 · log10(10^((level − floor) / 10) − 1)`, the frame's power minus the background's (as in Boll's spectral subtraction), at least −20 dB; NaN without a pitch or floor. Measured within 1 dB from 0 to 40 dB SNR.
 - **Clarity** (`pitch/Clarity`): 0..1 from YIN's confidence `c = 1 − d′(τ)`. `d′(τ)` is the aperiodic share of the power, so `10 · log10(c / (1 − c))` is a periodic-to-aperiodic ratio in dB, like Boersma's (1993) harmonics-to-noise ratio. It depends only on the noise, not pitch or timbre, and sits ≈ 7.8 dB above broadband SNR (YIN's low-pass removes most hiss). Mapped linearly from 7.5 dB (`d′` = 0.15: 0) to 20 dB (`d′` = 0.01: 1): 20 dB SNR or cleaner gives 1, 10 dB ≈ 0.8, 6 dB ≈ 0.5, 0 dB ≈ 0.
 
-All allocation-free (byte-counting tests). **No meters** for these (owner's decision, 2026-10-12): they become one *reception* figure the display shows, tips only when the player can fix something, and optional signal bars behind a setting.
+All allocation-free (byte-counting tests). **No meters** for these (owner's decision, 2026-10-12): they become one *reception* figure the display shows, tips only when the player can fix something (and, until 2026-11-07, optional signal bars behind a setting: [history](history.md)).
 
 ## Reception
 `level/ReceptionTracker` (pure, counted in frames) turns each pitched frame's level, SNR and clarity into one steady 0..1 figure: 1 for a strong, clean note, towards 0 when it is quiet, sinks into the room or loses its period.
 - **Scores:** level 0 at −50 dBFS to 1 from −35 dBFS; SNR 0 at 0 dB to 1 from 20 dB (unknown room counts as 1); clarity as is. Linear in dB.
 - **Smoothing:** a one-pole filter per factor, 0.15 s towards better and 0.5 s towards worse, so a rough frame or two barely dims it. In a note's first 0.1 s a factor rises at once (the window still holds the silence before it). `reset()` (note gone) returns to 1.
-- **The figure** is the lowest of the three; `limit` (`ReceptionLimit`: `NONE` from 0.95, else `LEVEL`, `NOISE`, `CLARITY`) names the one holding it down. The smoothed scores and a smoothed `levelDbfs` are public for the signal bars.
+- **The figure** is the lowest of the three; `limit` (`ReceptionLimit`: `NONE` from 0.95, else `LEVEL`, `NOISE`, `CLARITY`) names the one holding it down.
 
 `TunerInterpreter` feeds one tracker every pitched frame and resets it when the reading is lost; `Detected.reception` carries it. On screen (`components/ReceptionLook.kt`) it changes **only opacity and sharpness**, never colour, shape or motion, which stay the tuning cue: at worst reception the needle layer and wave fade to 0.62 of their opacity with up to 2 dp blur (`BlurEffect`, 8 steps made once; Android 12+, older phones only fade). The effect scales with how far the picture is from its resting look, so resting looks unchanged, and `HeldReception` keeps the last value while a note fades out. Text never fades.
 
@@ -150,13 +149,6 @@ All allocation-free (byte-counting tests). **No meters** for these (owner's deci
 The wanted tip passes through its own `SteadyHint<ReceptionTip>` (not restarted per note): settles in 0.5 s (loud), 0.6 s (soft) or 1 s (noisy), stays at least **3 s**, then the line stays tip-free for 1 s. `Detected.tip` and `Listening.tip` carry it.
 
 On screen (the word under the lens, `TuneWordLine`, since 2.0's Phase 71; `NoteDisplay` before) a tip **replaces something less needed, so nothing moves**: the cents in the small line under the word, with a note and without (so the word itself stays). In 1.1 it took "Play a string" without a note, the direction in the wave's pill, or the frequency under the needle. One line, set smaller (down to 11 sp) when it doesn't fit; its line keeps the height of a full-size line (measured with a `TextMeasurer`), the shrunk text centred in it. Without that it came out a pixel taller at 1.25× text and pushed what was above it up: under Android 14's non-linear font scaling Compose keeps an sp line height in proportion to the font size, and a smaller font is enlarged by a larger factor. TalkBack: "E 2, 12 cents flat, Play a bit louder".
-
-## Signal bars (optional)
-Behind "Show signal bars" (off by default). Since the owner's review of 2026-11-03 four bars at the start of the strum check's row over the pegs, upright ([Tuner screen](ui-tuner.md), *Ruler*; beside the ruler's heard note from Phase 71); where there are no pegs or no room (Any note, a tool's panel, a phone on its side) at the start of the picker chip's row (`ChipRow` in `TunerLayouts.kt`), after the gear, across from focus mode's button. Until Phase 71 always in the row: the top start corner upright, the top of the controls pane on its side. From 2026-10-20 (owner's pick, from `docs/design/1.x/signal-bars-place-preview.html`) to 2026-10-25 they sat at the row's end, where a phone shows its own; focus mode's button took that place (Phase 43), and beside it the bars pushed the switch off centre, or squeezed it, so they went to the other end, where the switch stays centred whether they show or not. They never move with what the tuner hears. Focus mode, with its controls hidden, leaves them out.
-- **Count** (`SignalBars`, pure): reception lights bars 1–4 from 0.05, 0.35, 0.65 and 0.9, each going out 0.08 below its threshold. Without a note the last count stays, dimmed to 45 %.
-- **Drawing** (`components/SignalBarsButton.kt`): a `Canvas` in `onSurface`, unlit bars at 20 %; the count is a `derivedStateOf`, so only a changed count recomposes. Hosted in `movableContentOf`, so the count and an open panel survive layout changes.
-- **Place and touch area:** the bars are drawn 24 dp, centred in a 48 dp slot at the row's start (`SIGNAL_BARS_SLOT`); the button around them is 48 × 48 dp (`touchArea`). In the chip's row (the shared `TopBar`) they stand after the gear; the chip keeps clear of two equal slots at the row's ends, as wide as the wider end, so it stays centred, and a long name at a large font ends in "…" instead of running under the bars or focus mode's button. `SIGNAL_BARS` tags the button, `SIGNAL_BARS_ICON` the drawn bars (the layout tests' bounds).
-- **Figures:** a tap (TalkBack "Signal bars: 3 of 4", action "show the figures") opens a small panel "How well Twangle hears you": volume, background and clarity. `TunerViewModel.signalFigures` updates them 4×/s, only while the setting is on.
 
 ## Pitch detection (YIN)
 `YinPitchDetector` follows de Cheveigné & Kawahara (2002), steps 2–5, with `d(τ)` computed by FFT (`FftDifference`, [Threading and performance](performance.md)) and three additions that measurements showed were needed for ±1 cent:

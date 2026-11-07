@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah pas</string>
     <string name="settings_string_tick_off_title">Centang senar yang sudah pas</string>
     <string name="settings_string_tick_off_summary">Centang di tiap senar begitu pas, dan “Sudah pas. Ayo main.” jika semuanya pas</string>
-    <string name="settings_show_signal_bars_title">Tampilkan bar sinyal</string>
-    <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di atas senar menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
 
     <string name="settings_language_title">Bahasa</string>
     <string name="settings_language_phone">Bahasa ponsel</string>

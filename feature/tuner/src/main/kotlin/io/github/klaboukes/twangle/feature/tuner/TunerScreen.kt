@@ -30,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.structuralEqualityPolicy
@@ -99,7 +98,6 @@ import io.github.klaboukes.twangle.feature.tuner.components.rulerHeardMidi
 import io.github.klaboukes.twangle.feature.tuner.components.rulerNames
 import io.github.klaboukes.twangle.feature.tuner.components.rulerPosition
 import io.github.klaboukes.twangle.feature.tuner.components.rulerRestMidi
-import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckButton
@@ -110,8 +108,6 @@ import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationPanel
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationStatus
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
@@ -205,7 +201,6 @@ fun TunerScreen(
     val inTunePrecision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     val stringTickOff by viewModel.stringTickOff.collectAsStateWithLifecycle()
     val underMeter by viewModel.underMeter.collectAsStateWithLifecycle()
-    val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
     val tunedStrings by viewModel.tunedStrings.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
@@ -283,8 +278,6 @@ fun TunerScreen(
                     animationsOff = animationsOff,
                     stringTickOff = stringTickOff,
                     underMeter = underMeter,
-                    showSignalBars = showSignalBars,
-                    signalFigures = viewModel.signalFigures,
                     focusMode = focusMode,
                     heard = heard,
                     tunerTools = tunerTools,
@@ -330,7 +323,6 @@ fun TunerScreen(
                     Box(Modifier.padding(top = EDGE_INSET).padding(horizontal = COLUMN_PADDING)) {
                         ChipRow(
                             chip = { if (shown != null) TunerPickerChip(mode, shown, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) }) },
-                            bars = null,
                             button = null,
                             gear = settingsButton,
                             title = title,
@@ -408,10 +400,8 @@ private fun KeepScreenOn() {
  * Loosen · In tune, Too low · Too high in Any note, "Play a string" while nothing is heard) with the cents small
  * under it, always there: the tuner's one item TalkBack speaks. The
  * reading's tone ([rememberLiveTone]) is the lens's border, the word's colour and, while the app gives a
- * [io.github.klaboukes.twangle.core.designsystem.ScreenTint], the whole screen's tint ([ScreenTintFrom]). [showSignalBars]
- * adds small signal bars beside the ruler's heard note (at the start of the top row, [ChipRow], while a tool's panel
- * stands in the ruler's and the lens's place), which open the live [signalFigures] when tapped; focus mode, with its
- * controls hidden, leaves them out. The app's [settingsButton] (the gear, Phase 69) stands at the very start of the
+ * [io.github.klaboukes.twangle.core.designsystem.ScreenTint], the whole screen's tint ([ScreenTintFrom]). The app's
+ * [settingsButton] (the gear, Phase 69) stands at the very start of the
  * top row, across from focus mode's button, which [onFocusModeChange] adds at its end, and [title] ("Tune") in its middle
  * (Phase 77). On its own line under the row (in its middle on a phone on its side, [ChipRow]) the picker chip (2.0, Phase 70: "Guitar · Drop D ▾", the player's own tuning by its
  * name, "Any note ▾" in chromatic mode) calls [onPickerOpenChange] with true. While [pickerOpen] the
@@ -470,8 +460,6 @@ fun TunerContent(
     animationsOff: Boolean = false,
     stringTickOff: Boolean = false,
     underMeter: UnderMeter = UnderMeter.DEFAULT,
-    showSignalBars: Boolean = false,
-    signalFigures: Flow<SignalFigures?> = emptyFlow(),
     focusMode: Boolean = false,
     instrument: Instrument = instrumentOf(state),
     onInstrumentChange: (Instrument) -> Unit = {},
@@ -497,15 +485,6 @@ fun TunerContent(
     settingsButton: (@Composable () -> Unit)? = null,
     title: String? = null,
 ) {
-    // Movable, so the bars keep their count (and an open figures panel stays open) when the layout
-    // changes and the header is built afresh around them.
-    val currentReception by rememberUpdatedState(reception)
-    val currentFigures by rememberUpdatedState(signalFigures)
-    val movableSignalBars = remember {
-        movableContentOf {
-            SignalBarsButton({ currentReception() }, currentFigures, MaterialTheme.colorScheme.onSurface, Modifier.fillMaxSize())
-        }
-    }
     // While focus mode's controls are up, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
     val shownTuning = when (state) {
@@ -514,9 +493,8 @@ fun TunerContent(
         is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
-    // barsInRow: the signal bars in the top row, where they don't stand over the pegs; chipInRow: the chip in the row's
-    // middle, in the name's place (a phone on its side, [ChipRow]).
-    val header = @Composable { barsInRow: Boolean, chipInRow: Boolean ->
+    // chipInRow: the chip in the row's middle, in the name's place (a phone on its side, [ChipRow]).
+    val header = @Composable { chipInRow: Boolean ->
         // The picker chip on its line under the top row (2.0, Phase 70; Phase 77); none over an error, where the sheet can't open.
         val chip = @Composable {
             if (shownTuning != null) {
@@ -540,7 +518,6 @@ fun TunerContent(
         }
         ChipRow(
             chip = chip,
-            bars = if (showSignalBars && barsInRow) ({ movableSignalBars() }) else null,
             button = focusButton,
             gear = settingsButton,
             title = title,
@@ -566,11 +543,8 @@ fun TunerContent(
             toleranceCents = StrumCheckInterpreter.toleranceFor(inTunePrecision),
         ).takeIf { strumCheck }
     }
-    // The signal bars at the start of the strum check's row over the pegs, upright in guitar mode (the owner's review of
-    // 2026-11-03); elsewhere (Any note, a tool's panel, on its side) at the start of the chip's row, by the gear.
-    val barsByPegs = showSignalBars && mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening)
-    // wide: the pegs in the wide layout's one row (Phase 73), where the bars stay in the chip's row; withBars: upright.
-    val guitarSlotWith = @Composable { wide: Boolean, withBars: Boolean ->
+    // wide: the pegs in the wide layout's one row (Phase 73).
+    val guitarSlotWith = @Composable { wide: Boolean ->
         // No marks over the pegs: the panel's columns show the strum (the marks stay for the other layouts' tests).
         val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, null)
         // The strum check's button above the pegs at their end (beside them, after the last, on its side).
@@ -578,9 +552,9 @@ fun TunerContent(
         val strumButton = onStrumCheckChange?.takeIf { TunerTool.STRUM_CHECK in tunerTools && mode == TunerMode.AUTO }?.let { onStrum ->
             @Composable { StrumCheckButton(on = strumCheck, onChange = onStrum) }
         }
-        GuitarSlotFor(state, mode, strings, strumButton, wide = wide, bars = if (barsByPegs && withBars) ({ movableSignalBars() }) else null)
+        GuitarSlotFor(state, mode, strings, strumButton, wide = wide)
     }
-    val guitarSlot = @Composable { guitarSlotWith(false, false) }
+    val guitarSlot = @Composable { guitarSlotWith(false) }
     val gauge = @Composable {
         // The 12th-fret check takes the lens's place, at the old meter's shape.
         if (state is TunerUiState.IntonationCheck) {
@@ -606,7 +580,7 @@ fun TunerContent(
             )
         }
     }
-    // Kept here, as the bars are: TalkBack's pacing carries over when the word is built afresh (another layout),
+    // Kept here: TalkBack's pacing carries over when the word is built afresh (another layout),
     // so a note fading to "Play a string" (or a short drop-out) isn't said at once.
     val speech = rememberPacedSpeech()
     val detected = state as? TunerUiState.Detected
@@ -705,8 +679,7 @@ fun TunerContent(
             TwoPaneLayout(
                 error = error,
                 onRetry = onRetry,
-                // On its side the signal bars stay in the chip's row.
-                header = { header(true, chipInRow) },
+                header = { header(chipInRow) },
                 guitarSlot = guitarSlot,
                 gauge = gauge,
                 status = status,
@@ -725,29 +698,28 @@ fun TunerContent(
                     height = maxHeight / scale,
                     error = error,
                     onRetry = onRetry,
-                    header = { header(!barsByPegs, false) },
+                    header = { header(false) },
                     gauge = { rulerAndGauge(largeRuler, rulerGap) },
                     status = { status(false) },
                     lensGivesWay = plainMeter,
-                    // Upright the signal bars stand in the strum check's row over the pegs.
-                    guitarSlot = { guitarSlotWith(false, true) },
+                    guitarSlot = guitarSlot,
                     overLens = if (ruler != null) rulerHeight(largeRuler) + rulerGap else 0.dp,
                 )
             }
         }
         val windowHeight = maxHeight
         // The wide layout (Phase 73) with the pegs, or in focus mode without: the ruler, the lens and the word, the
-        // string small beside the word (no signal bars there: they open a panel, a control).
+        // string small beside the word.
         val wide = @Composable { focus: Boolean ->
             WideLayout(
                 height = windowHeight,
                 error = error,
                 onRetry = onRetry,
-                header = if (focus) null else ({ header(true, chipInRow) }),
+                header = if (focus) null else ({ header(chipInRow) }),
                 ruler = rulerShown?.let { if (focus) ({ rulerWith(false, WIDE_RULER_CLEAR) }) else ruler },
                 gauge = gauge,
                 word = { word(true, true) },
-                pegs = if (focus) null else ({ guitarSlotWith(true, false) }),
+                pegs = if (focus) null else ({ guitarSlotWith(true) }),
                 string = if (focus) ({ FocusString(state) }) else null,
             )
         }

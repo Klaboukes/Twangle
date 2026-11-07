@@ -112,7 +112,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
         assertEquals("the word under the meter on a fresh install", UnderMeter.WORDS, settings.underMeter)
-        assertEquals(false, settings.showSignalBars)
         assertEquals("a fresh install's meter shows the Classic needle", LensLook.CLASSIC, settings.lensLook)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
@@ -151,7 +150,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setVibrateInTune(false)
         repo.setStringTickOff(true)
         repo.setUnderMeter(UnderMeter.CENTS)
-        repo.setShowSignalBars(true)
         repo.setLensLook(LensLook.STROBE)
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
@@ -190,7 +188,6 @@ class DataStoreSettingsRepositoryTest {
             vibrateInTune = false,
             stringTickOff = true,
             underMeter = UnderMeter.CENTS,
-            showSignalBars = true,
             lensLook = LensLook.STROBE,
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
@@ -757,7 +754,6 @@ class DataStoreSettingsRepositoryTest {
         // Look: Retro, Bold and the Loupe go; the strobe wave under the Loupe makes the lens the strobe
         assertEquals(ThemeMode.DARK, settings.theme)
         assertFalse("1.1's default, never switched, gives Ink (2026-11-03)", settings.dynamicColor)
-        assertTrue(settings.showSignalBars)
         assertEquals(LensLook.STROBE, settings.lensLook)
         // Metronome
         assertEquals(97, settings.metronomeBpm)
@@ -981,6 +977,22 @@ class DataStoreSettingsRepositoryTest {
         repo.forgetDroppedSettings()
         val saved = store.data.first()
         assertEquals("the switch is removed", null, saved[booleanPreferencesKey("show_intonation_check")])
+        assertEquals("the rest stays", 442f, saved[floatPreferencesKey("a4_hz")])
+        assertEquals("it was never read", before, repo.settings.first())
+    }
+
+    @Test
+    fun `the signal bars' old switch is removed at start, changing nothing else`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[booleanPreferencesKey("show_signal_bars")] = true
+            it[floatPreferencesKey("a4_hz")] = 442f
+        }
+        val repo = repository(store)
+        val before = repo.settings.first()
+        repo.forgetDroppedSettings()
+        val saved = store.data.first()
+        assertEquals("the switch is removed", null, saved[booleanPreferencesKey("show_signal_bars")])
         assertEquals("the rest stays", 442f, saved[floatPreferencesKey("a4_hz")])
         assertEquals("it was never read", before, repo.settings.first())
     }
@@ -1321,7 +1333,6 @@ class DataStoreSettingsRepositoryTest {
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
             "setUnderMeter" to { repo.setUnderMeter(UnderMeter.CENTS) },
-            "setShowSignalBars" to { repo.setShowSignalBars(!before.showSignalBars) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
             // 1.1's focus mode switch is there (below), so the read once tries to remove it.
             "takeOldFocusMode" to { assertTrue("it was on", repo.takeOldFocusMode()) },

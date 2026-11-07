@@ -96,7 +96,6 @@ class SettingsContentTest {
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tickOffChanges = mutableListOf<Boolean>()
     private val underMeterChanges = mutableListOf<UnderMeter>()
-    private val signalBarsChanges = mutableListOf<Boolean>()
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private var backs = 0
@@ -156,7 +155,6 @@ class SettingsContentTest {
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onStringTickOffChange = { tickOffChanges += it },
                         onUnderMeterChange = { underMeterChanges += it },
-                        onShowSignalBarsChange = { signalBarsChanges += it },
                         onLensLookChange = { lensLookChanges += it },
                         onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
@@ -526,14 +524,6 @@ class SettingsContentTest {
     }
 
     @Test
-    fun signalBarsSwitchIsOffByDefaultAndToggles() {
-        show(AppSettings())
-        val bars = compose.onNodeWithText(context.getString(R.string.settings_show_signal_bars_title))
-        bars.performScrollTo().assertIsOff().performClick()
-        assertEquals(listOf(true), signalBarsChanges)
-    }
-
-    @Test
     fun leftHandedSwitchIsOffByDefaultAndToggles() {
         show(AppSettings())
         val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
@@ -644,7 +634,6 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_string_tick_off_title)),
-            top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.settings_group_tuning)),
             top(context.getString(R.string.settings_notation_title)),
             top(context.getString(R.string.settings_precise_title)),

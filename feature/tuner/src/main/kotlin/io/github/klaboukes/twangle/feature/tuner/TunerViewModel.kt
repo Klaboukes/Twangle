@@ -150,23 +150,10 @@ class TunerViewModel(
         .map { it.underMeter }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.underMeter)
 
-    /** Whether small signal bars by the note show how well the tuner hears (a saved setting, off by default). */
-    val showSignalBars: StateFlow<Boolean> = settingsRepository.settings
-        .map { it.showSignalBars }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.showSignalBars)
-
-    private val signal = MutableStateFlow<SignalFigures?>(null)
-
     /** What the tuner's meter draws: the saved look (Classic, the Light arc or the strobe; Phase 78). */
     val lensLook: StateFlow<LensLook> = settingsRepository.settings
         .map { it.lensLook }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.lensLook)
-
-    /**
-     * What the tuner hears now, for the signal bars' figures: updated about [SIGNAL_UPDATES_PER_SECOND]
-     * times a second while listening and [showSignalBars] is on, else left as it is (null until then).
-     */
-    val signalFigures: StateFlow<SignalFigures?> = signal
 
     /** How close to the note counts as in tune: Relaxed or Precise (a saved setting), for the meter's in-tune window. */
     val inTunePrecision: StateFlow<InTunePrecision> = settingsRepository.settings
@@ -562,9 +549,6 @@ class TunerViewModel(
     }
 
     companion object {
-        /** The signal bars' figures change this often: often enough to follow, slow enough to read. */
-        private const val SIGNAL_UPDATES_PER_SECOND = 4f
-
         /**
          * After a reference tone has left the speaker the microphone is ignored this much longer, so
          * the room's echo of it isn't read as a note either.
@@ -606,10 +590,8 @@ class TunerViewModel(
         var ratingArmed = false
         val initial = options.filterNotNull().first()
         emit(if (initial.intonationChecking) intonationInterpreter.shown(initial) else interpreter.listening(initial))
-        val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
         val tailFrames = ceil(TONE_TAIL_SECONDS / pipeline.frameSeconds).toInt()
         val speechTailFrames = ScreenReaderSpeech.tailFrames(pipeline.frameSeconds)
-        var frame = 0
         // Frames still to set aside: the tone or a screen reader's voice sounds, or its echo may still be in the room.
         var ignoredFrames = 0
         // Whether the last reading was the 12th-fret check's: the tuner's smoothing starts afresh after it.
@@ -682,16 +664,7 @@ class TunerViewModel(
                 // What the tuner heard besides one string follows the tuner's own reading; while a strum rings, the
                 // note read is one of the strum's, so the tuner waits instead (the lens and the ruler quiet).
                 publishHeard(heardShown.tuner(own))
-                val state = if (heardShown.setsAside && own is TunerUiState.Detected) interpreter.listening(current) else own
-                if (showSignalBars.value && frame++ % framesPerFigure == 0) {
-                    val reception = interpreter.reception
-                    signal.value = SignalFigures(
-                        levelDbfs = if (reception.hasNote) reception.levelDbfs else reading.levelDbfs,
-                        noiseFloorDbfs = reading.noiseFloorDbfs,
-                        clarity = if (reception.hasNote) reception.clarity else Float.NaN,
-                    )
-                }
-                state
+                if (heardShown.setsAside && own is TunerUiState.Detected) interpreter.listening(current) else own
             }.onEach {
                 val completed = allInTune.update(it, InTuneDetector.exitCentsFor((options.value ?: initial).inTunePrecision))
                 publishTuned(allInTune)

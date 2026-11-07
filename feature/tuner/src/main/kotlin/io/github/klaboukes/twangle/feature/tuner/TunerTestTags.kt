@@ -30,13 +30,6 @@ object TunerTestTags {
     const val WORD_TEXT = "tuner_word_text"
     const val WORD_CENTS = "tuner_word_cents"
 
-    /** The optional signal bars by the ruler's heard note (in the chip row while a tool's panel takes the lens's place), and the figures panel a tap on them opens. */
-    const val SIGNAL_BARS = "tuner_signal_bars"
-    const val SIGNAL_FIGURES = "tuner_signal_figures"
-
-    /** The signal bars as drawn, in their small slot; [SIGNAL_BARS] is the 48 dp button around them. */
-    const val SIGNAL_BARS_ICON = "tuner_signal_bars_icon"
-
     /** The picker sheet, "What are you tuning?", opened from the picker chip. */
     const val PICKER_PANEL = "tuner_picker_panel"
 

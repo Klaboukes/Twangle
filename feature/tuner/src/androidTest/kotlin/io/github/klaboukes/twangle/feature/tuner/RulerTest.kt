@@ -44,8 +44,8 @@ import kotlin.math.abs
  * The ruler at the top of the tuner (2.0, Phase 71): the heard note under its pointer in the notation
  * setting's names (a string in its tuning's spelling, a string tuned far off as the note it sounds), the
  * quiet state (resting on the last note, a locked string or the first string, muted), above the lens
- * upright, on its side and in focus mode (since the big note went, Phase 71's last step), not spoken, the signal
- * bars beside the heard note (none in focus mode), none with a tool's panel, and the scale sliding with the reading.
+ * upright, on its side and in focus mode (since the big note went, Phase 71's last step), not spoken, none with a
+ * tool's panel, and the scale sliding with the reading.
  */
 @RunWith(AndroidJUnit4::class)
 class RulerTest {
@@ -61,7 +61,7 @@ class RulerTest {
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
 
-    private fun show(state: TunerUiState, size: DpSize = PHONE_UPRIGHT, signalBars: Boolean = false, focus: Boolean = false) {
+    private fun show(state: TunerUiState, size: DpSize = PHONE_UPRIGHT, focus: Boolean = false) {
         shownState.value = state
         shownSize.value = size
         compose.setContent {
@@ -76,7 +76,6 @@ class RulerTest {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        showSignalBars = signalBars,
                         // On its side the two panes, or focus mode's full-screen ruler and lens.
                         focusMode = focus,
                         onFocusModeChange = {},
@@ -215,17 +214,13 @@ class RulerTest {
 
     /**
      * With the big note gone (Phase 71's last step) a phone on its side has room for the ruler over the lens and the
-     * word (until then it had none). Its signal bars stand in the chip's row (beside the heard note until 2026-11-03).
+     * word (until then it had none).
      */
     @Test
-    fun aPhoneOnItsSideHasTheRulerAndTheBarsInTheChipRow() {
-        show(string(-12.3f), size = PHONE_ON_ITS_SIDE, signalBars = true)
-        val box = ruler.assertIsDisplayed().getBoundsInRoot()
+    fun aPhoneOnItsSideHasTheRulerAndTheWord() {
+        show(string(-12.3f), size = PHONE_ON_ITS_SIDE)
+        ruler.assertIsDisplayed()
         assertRulerShows("E")
-        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        assertTrue("bars $bars not in the chip's row $chip", bars.top < chip.bottom && bars.bottom > chip.top)
-        assertTrue("bars $bars over the ruler $box", bars.bottom <= box.top)
         val word = compose.onNodeWithTag(TunerTestTags.WORD).assertIsDisplayed().getBoundsInRoot()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         assertTrue("word $word below the window $window", word.bottom <= window.bottom)
@@ -234,11 +229,11 @@ class RulerTest {
     /**
      * Focus mode (2.0, Phase 73, the wide layout): the ruler across the full width names the note, more of the scale
      * shown than upright, over the lens; the exit button in the top end corner stands over its end, where it draws
-     * no name ([rulerEdgeFade]'s clear zone); no signal bars.
+     * no name ([rulerEdgeFade]'s clear zone).
      */
     @Test
     fun focusModeShowsTheRulerAcrossTheWidthOverTheLens() {
-        show(string(-12.3f), size = PHONE_ON_ITS_SIDE, signalBars = true, focus = true)
+        show(string(-12.3f), size = PHONE_ON_ITS_SIDE, focus = true)
         val box = ruler.assertIsDisplayed().getBoundsInRoot()
         assertRulerShows("E")
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
@@ -247,35 +242,6 @@ class RulerTest {
         assertTrue("the exit button $exit over the ruler's end $box", exit.right <= box.right && exit.top >= box.top)
         val meter = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
         assertTrue("ruler $box not over the lens $meter", box.bottom <= meter.top)
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertDoesNotExist()
-    }
-
-    /**
-     * Upright the signal bars stand at the start of the strum check's row over the pegs, their left edge over the first
-     * peg's (the owner's review of 2026-11-03: beside the ruler's heard note they read as the next note's); not in the
-     * ruler, and they stay put when the note goes. In Any note, with no pegs, they stand in the top row.
-     */
-    @Test
-    fun theSignalBarsStandAtTheStartOfTheRowOverThePegs() {
-        show(string(-12.3f), signalBars = true)
-        val box = ruler.getBoundsInRoot()
-        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        val firstPeg = compose.onNodeWithText("E2").getBoundsInRoot()
-        val word = compose.onNodeWithTag(TunerTestTags.WORD).getBoundsInRoot()
-        assertTrue("bars $bars in the ruler $box", bars.top >= box.bottom)
-        assertTrue("bars $bars not between the word $word and the first peg $firstPeg", bars.top >= word.bottom && bars.bottom <= firstPeg.top)
-        assertTrue("bars $bars not over the first peg $firstPeg", bars.left >= firstPeg.left && bars.left <= firstPeg.left + 12.dp)
-        // Quiet, they stay put.
-        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
-        compose.waitForIdle()
-        assertTrue(bars == compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot())
-        // Any note: no pegs, so the chip's row.
-        shownState.value = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD)
-        compose.waitForIdle()
-        val chromatic = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        // The top row, over the chip's own line (Phase 77).
-        assertTrue("Any note: bars $chromatic not in the top row over the chip $chip", chromatic.bottom <= chip.top && chromatic.top >= 0.dp)
     }
 
     /** Upright the ruler is the big needle where the column has room (the Xiaomi's), the plain one on a short screen (the S26's). */
@@ -288,15 +254,11 @@ class RulerTest {
         assertEquals("short", 78f, ruler.getBoundsInRoot().height.value, 0.5f)
     }
 
-    /** The 12th-fret check's panel takes the ruler's and the meter's place; the signal bars go back to the top row. */
+    /** The 12th-fret check's panel takes the ruler's and the meter's place. */
     @Test
     fun aToolsPanelHasNoRuler() {
-        show(TunerUiState.IntonationCheck(Tunings.STANDARD), signalBars = true)
+        show(TunerUiState.IntonationCheck(Tunings.STANDARD))
         ruler.assertDoesNotExist()
-        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).assertIsDisplayed().getBoundsInRoot()
-        val chip = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP).getBoundsInRoot()
-        // The top row, over the chip's own line (Phase 77).
-        assertTrue("bars $bars not in the top row over the chip $chip", bars.bottom <= chip.top && bars.top >= 0.dp)
     }
 
     /** The scale slides with the reading: the same note 40 cents sharp is drawn elsewhere than in tune. */

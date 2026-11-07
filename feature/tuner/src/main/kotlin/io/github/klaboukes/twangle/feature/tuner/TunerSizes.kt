@@ -33,10 +33,6 @@ internal val RULER_METER_GAP = 12.dp
  */
 internal val MARKS_ROOM = MARK_SIZE + MARK_GAP + 2.dp
 
-/** The signal bars as drawn, and their touch area's width at the picker chip row's start. */
-internal val SIGNAL_BARS_SIZE = 24.dp
-internal val SIGNAL_BARS_SLOT = 48.dp
-
 /** The single column's text margin at each side. */
 internal val COLUMN_PADDING = 16.dp
 

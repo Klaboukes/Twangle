@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Every tab's top row, one rhythm (owner's pick 1 of the review of 2026-11-03, docs/design/v2-ruler-needle-preview.html):
- * the app's gear ([start], with the tuner's signal bars after it where they stand there) at the start, the screen's
+ * the app's gear ([start]) at the start, the screen's
  * name in the [middle] ([TopBarTitle]: the tab's, or a Practice tool's; until 2026-11-04 the tuner and the tools had
  * the picker chip there, which now has its own line under the row, [PickerLine]), and the tab's own button ([end]:
  * focus mode, the metronome's ⋯) at the end. Each tab puts it [TOP_BAR_MARGIN] from the sides and [TOP_BAR_TOP] down,

@@ -58,10 +58,6 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setUnderMeter(choice) }
     }
 
-    fun setShowSignalBars(enabled: Boolean) {
-        viewModelScope.launch { repository.setShowSignalBars(enabled) }
-    }
-
     fun setLensLook(look: LensLook) {
         viewModelScope.launch { repository.setLensLook(look) }
     }

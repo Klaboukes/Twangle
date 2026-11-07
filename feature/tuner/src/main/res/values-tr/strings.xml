@@ -109,13 +109,6 @@
     <string name="tuner_tip_too_soft">Biraz daha güçlü çal</string>
     <string name="tuner_tip_too_noisy">Çok gürültülü, telefonu yaklaştır</string>
     <string name="tuner_tip_too_loud">Çok yüksek, telefonu uzaklaştır</string>
-    <string name="tuner_signal_bars">Sinyal çubukları: %1$d / %2$d</string>
-    <string name="tuner_signal_no_note">Sinyal: henüz nota yok</string>
-    <string name="tuner_signal_show_figures">değerleri göster</string>
-    <string name="tuner_signal_title">Twangle seni ne kadar iyi duyuyor</string>
-    <string name="tuner_signal_volume">Ses düzeyi</string>
-    <string name="tuner_signal_background">Arka plan</string>
-    <string name="tuner_signal_clarity">Netlik</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
@@ -82,9 +81,6 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.tuner.components.RulerNote
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentNameRes
 import io.github.klaboukes.twangle.feature.tuner.components.tuningNameRes
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -143,7 +139,6 @@ class TunerContentTest {
     /** Whether [show] says focus mode is on; set it to switch while the tuner is shown. */
     private val shownCompact = mutableStateOf(false)
 
-    private val shownSignalBars = mutableStateOf(false)
 
     /** Whether the picker sheet shows ([openPanel]; the picker chip opens it). */
     private val shownPickerOpen = mutableStateOf(false)
@@ -181,14 +176,11 @@ class TunerContentTest {
         stringTickOff: Boolean = false,
         locale: String? = null,
         focusMode: Boolean = false,
-        signalBars: Boolean = false,
-        signalFigures: Flow<SignalFigures?> = emptyFlow(),
         underMeter: UnderMeter = UnderMeter.DEFAULT,
     ) {
         shownMode.value = mode
         shownState.value = state
         shownCompact.value = focusMode
-        shownSignalBars.value = signalBars
         shownSounding.value = null
         shownTuned.value = null
         shownPickerOpen.value = false
@@ -223,8 +215,6 @@ class TunerContentTest {
                         stringTickOff = stringTickOff,
                         underMeter = shownUnderMeter.value,
                         focusMode = shownCompact.value,
-                        showSignalBars = shownSignalBars.value,
-                        signalFigures = signalFigures,
                         onFullScreenChange = { fullScreenReports += it },
                         onFocusModeChange = { focusChanges += it },
                     )
@@ -1461,39 +1451,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun signalBarsAreHiddenByDefault() {
-        show(detected(-12.3f))
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assertDoesNotExist()
-    }
-
-    @Test
-    fun signalBarsShowHowWellTheNoteIsHeard() {
-        show(detected(-12.3f).copy(reception = 0.7f), signalBars = true)
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS)
-            .assertIsDisplayed()
-            .assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 3, 4)))
-        shownState.value = detected(-12.3f).copy(reception = 1f)
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 4, 4)))
-        // Between notes the last count stays (dimmed).
-        shownState.value = listening
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 4, 4)))
-    }
-
-    @Test
-    fun signalBarsAreNotInsideTheReadingsLiveRegion() {
-        show(detected(-12.3f).copy(reception = 0.7f), signalBars = true)
-        // A change inside a live region could make TalkBack read the whole reading again, early.
-        var node: SemanticsNode? = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).fetchSemanticsNode()
-        while (node != null) {
-            assertFalse(node.config.contains(SemanticsProperties.LiveRegion))
-            node = node.parent
-        }
-        // The reading is still one live region.
-        compose.onNode(hasContentDescription("E 2, 12 cents flat, Tighten"))
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
-    }
-
-    @Test
     fun theReadingIsNotDroppedTheMomentTheNoteFades() {
         show(detected(-12.3f))
         assertSpokenSoon("E 2, 12 cents flat, Tighten")
@@ -1612,106 +1569,6 @@ class TunerContentTest {
                 assertTrue("$locale $error: '$spoken' names '$button'", spoken.contains(button))
             }
         }
-    }
-
-    @Test
-    fun signalBarsBeforeAnyNoteSayNoNoteYet() {
-        show(listening, signalBars = true)
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_no_note)))
-    }
-
-    @Test
-    fun theSignalBarsButtonIsAtLeast48DpEachWayAroundTheBars() {
-        show(detected(-12.3f), signalBars = true)
-        val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
-        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
-        // A hair of slack: px back to dp can come out at 47.99997.
-        assertTrue("button ${button.width} wide", button.width >= 47.9.dp)
-        assertTrue("button ${button.height} tall", button.height >= 47.9.dp)
-        assertEquals("centred across the bars", (bars.left + bars.right).value / 2, (button.left + button.right).value / 2, 1f)
-        assertEquals("centred on the bars", (bars.top + bars.bottom).value / 2, (button.top + button.bottom).value / 2, 1f)
-    }
-
-    @Test
-    fun tappingTheSignalBarsShowsTheFigures() {
-        show(detected(-12.3f), signalBars = true, signalFigures = flowOf(SignalFigures(-31.6f, -55.2f, 0.92f)))
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performClick()
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_signal_title)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_signal_db, -32)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_signal_db, -55)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_signal_percent, 92)).assertIsDisplayed()
-    }
-
-    @Test
-    fun theFiguresStayOpenWhenTheNoteStops() {
-        show(detected(-12.3f), signalBars = true, signalFigures = flowOf(SignalFigures(-31.6f, -55.2f, 0.92f)))
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performClick()
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertIsDisplayed()
-        shownState.value = listening
-        compose.waitForIdle()
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertIsDisplayed()
-    }
-
-    @Test
-    fun withoutANoteTheFiguresLeaveClarityOpen() {
-        show(listening, signalBars = true, signalFigures = flowOf(SignalFigures(-60f, Float.NaN, Float.NaN)))
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performClick()
-        compose.onNodeWithText(context.getString(R.string.tuner_signal_db, -60)).assertIsDisplayed()
-        compose.onAllNodesWithText(context.getString(R.string.tuner_signal_unknown)).assertCountEquals(2)
-    }
-
-    @Test
-    fun signalBarsMoveNothingUnderTheNeedle() {
-        show(detected(-12.3f))
-        val lens = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
-        val hint = word.getBoundsInRoot()
-        val switch = pickerChip.getBoundsInRoot()
-        shownSignalBars.value = true
-        compose.waitForIdle()
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assertIsDisplayed()
-        assertEquals(lens, compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot())
-        assertEquals(hint, word.getBoundsInRoot())
-        assertEquals("the picker chip stays centred", switch, pickerChip.getBoundsInRoot())
-    }
-
-    // Over the pegs since the owner's review of 2026-11-03 (RulerTest has where exactly); beside the ruler's heard note before.
-    @Test
-    fun theSignalBarsSitOverThePegsUnderTheWord() {
-        show(detected(-12.3f), size = PHONE_UPRIGHT, signalBars = true)
-        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
-        val ruler = compose.onNodeWithTag(TunerTestTags.RULER).getBoundsInRoot()
-        val wordBox = word.getBoundsInRoot()
-        assertTrue("bars $bars in the ruler $ruler", bars.top >= ruler.bottom)
-        assertTrue("bars $bars not under the word $wordBox", bars.top >= wordBox.bottom)
-    }
-
-    // By the note they rode along with its text ("Play a string", "12 cents flat"); in the corner they stay put.
-    @Test
-    fun theSignalBarsStayPutWhateverTheNoteSays() {
-        show(listening, signalBars = true)
-        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
-        for (state in listOf(detected(-12.3f), detected(-12.3f).copy(tip = ReceptionTip.TOO_SOFT), detected(0f).copy(inTune = true), listening)) {
-            shownState.value = state
-            compose.waitForIdle()
-            assertEquals("$state", bars, compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot())
-        }
-    }
-
-    // The chip, taller at the largest font, never runs into the bars' touch area under it in the ruler.
-    @Test
-    fun withTheLargestFontThePickerChipKeepsClearOfTheSignalBars() {
-        show(detected(-12.3f), fontScale = 2f, size = PHONE, signalBars = true)
-        val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
-        val strings = pickerChip.getBoundsInRoot()
-        assertTrue("chip $strings runs into the bars $button", strings.bottom <= button.top + 0.5.dp)
-    }
-
-    @Test
-    fun signalBarsCanBeReachedOnAPhoneOnItsSideWithTheLargestFont() {
-        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, signalBars = true)
-        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performScrollTo().assertIsDisplayed()
     }
 
     @Test

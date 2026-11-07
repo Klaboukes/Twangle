@@ -209,23 +209,6 @@
     <string name="tuner_tip_too_noisy">Too noisy, move the phone closer</string>
     <!-- Tip under the note when the sound is so loud it distorts: hold the phone further away. Short, one line. -->
     <string name="tuner_tip_too_loud">Too loud, move the phone back</string>
-    <!-- The optional signal bars by the note: %1$d bars lit of %2$d (TalkBack). -->
-    <string name="tuner_signal_bars">Signal bars: %1$d of %2$d</string>
-    <!-- TalkBack: the signal bars by the note while no note is heard yet. -->
-    <string name="tuner_signal_no_note">Signal: no note yet</string>
-    <!-- TalkBack: what tapping the signal bars does: opens the panel with the figures ("Double-tap to …" is added by Android). Lower case. -->
-    <string name="tuner_signal_show_figures">show the figures</string>
-    <!-- The panel a tap on the signal bars opens. -->
-    <string name="tuner_signal_title">How well Twangle hears you</string>
-    <!-- Signal panel: the row with how loud the note is heard (in dB). -->
-    <string name="tuner_signal_volume">Volume</string>
-    <!-- Signal panel: the row with how loud the background noise is (in dB). -->
-    <string name="tuner_signal_background">Background</string>
-    <!-- Signal panel: the row with how clear the pitch is (in %). -->
-    <string name="tuner_signal_clarity">Clarity</string>
-    <string name="tuner_signal_db" translatable="false">%1$d dB</string>
-    <string name="tuner_signal_percent" translatable="false">%1$d%%</string>
-    <string name="tuner_signal_unknown" translatable="false">–</string>
 
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cents flat" or "in tune". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>

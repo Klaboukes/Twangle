@@ -314,8 +314,6 @@ feature/settings settings_notation_solfege 86108139
 feature/settings settings_notation_title dab557ae
 feature/settings settings_precise_summary cdda877b
 feature/settings settings_precise_title 3e2f8bc4
-feature/settings settings_show_signal_bars_summary 40e652c8
-feature/settings settings_show_signal_bars_title 76f1f602
 feature/settings settings_string_tick_off_summary f5894e6f
 feature/settings settings_string_tick_off_title be2c9e21
 feature/settings settings_theme_dark 60acc53f
@@ -426,13 +424,6 @@ feature/tuner tuner_picker_title 71814833
 feature/tuner tuner_screen_off_keep_on f5aa7013
 feature/tuner tuner_screen_off_soon 8f7398a9
 feature/tuner tuner_show_controls e3e3f1ac
-feature/tuner tuner_signal_background ea2b8a87
-feature/tuner tuner_signal_bars 7d13fc8c
-feature/tuner tuner_signal_clarity 3861619d
-feature/tuner tuner_signal_no_note 42dd20ca
-feature/tuner tuner_signal_show_figures 15e756f3
-feature/tuner tuner_signal_title 6e324896
-feature/tuner tuner_signal_volume b10fb966
 feature/tuner tuner_spoken_octave_course 6b5c678f
 feature/tuner tuner_spoken_picker 75e53fce
 feature/tuner tuner_spoken_reading 6a076bf0

@@ -40,8 +40,6 @@
     <string name="settings_vibrate_in_tune_summary">Коротка вібрація, коли нота досягає потрібної висоти</string>
     <string name="settings_string_tick_off_title">Позначати налаштовані струни</string>
     <string name="settings_string_tick_off_summary">Позначка на кожній струні, щойно вона налаштована, і «Налаштовано. Грай.», коли всі</string>
-    <string name="settings_show_signal_bars_title">Смужки сигналу</string>
-    <string name="settings_show_signal_bars_summary">Для допитливих: смужки над струнами показують, як добре тюнер тебе чує. Торкнися їх, щоб побачити цифри</string>
     <string name="settings_language_title">Мова</string>
     <string name="settings_language_phone">Мова телефону</string>
     <string name="settings_language_cancel">Скасувати</string>

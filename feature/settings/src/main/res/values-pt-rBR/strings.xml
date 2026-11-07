@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota fica afinada</string>
     <string name="settings_string_tick_off_title">Marcar cordas afinadas</string>
     <string name="settings_string_tick_off_summary">Uma marca em cada corda afinada, e “Tudo afinado. Pode tocar.” quando todas estiverem</string>
-    <string name="settings_show_signal_bars_title">Mostrar barras de sinal</string>
-    <string name="settings_show_signal_bars_summary">Para curiosos: barrinhas acima das cordas mostram se o afinador ouve você bem. Toque nelas para ver os números</string>
 
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_phone">Idioma do celular</string>

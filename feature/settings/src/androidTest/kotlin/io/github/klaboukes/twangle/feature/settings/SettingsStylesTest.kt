@@ -92,7 +92,6 @@ class SettingsStylesTest {
                             onVibrateInTuneChange = {},
                             onStringTickOffChange = {},
                             onUnderMeterChange = {},
-                            onShowSignalBarsChange = {},
                             onLensLookChange = {},
                             onLeftHandedChange = {},
                             modifier = Modifier.testTag(WINDOW),
@@ -159,7 +158,6 @@ class SettingsStylesTest {
             R.string.settings_keep_screen_on_title,
             R.string.settings_vibrate_in_tune_title,
             R.string.settings_string_tick_off_title,
-            R.string.settings_show_signal_bars_title,
             R.string.settings_group_look,
             // Light or dark's row shows the picked one; Light and Dark are in its list.
             R.string.settings_theme_title,

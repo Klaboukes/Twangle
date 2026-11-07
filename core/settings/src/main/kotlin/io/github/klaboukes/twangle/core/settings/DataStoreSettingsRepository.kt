@@ -266,10 +266,6 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
-    override suspend fun setShowSignalBars(enabled: Boolean) {
-        save { it[SHOW_SIGNAL_BARS] = enabled }
-    }
-
     override suspend fun setLensLook(look: LensLook) {
         save {
             it[METER_LOOK] = look.name
@@ -434,7 +430,6 @@ class DataStoreSettingsRepository internal constructor(
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
             underMeter = underMeter(prefs),
-            showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             lensLook = lensLook(prefs) ?: defaults.lensLook,
             micRefused = device[MIC_REFUSED] ?: defaults.micRefused,
             firstUseMillis = prefs[FIRST_USE_MILLIS] ?: defaults.firstUseMillis,
@@ -502,7 +497,6 @@ class DataStoreSettingsRepository internal constructor(
          * under the meter ([underMeter]), and removed once a choice is made.
          */
         private val OLD_SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
-        private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
         /** The meter's look ([LensLook]), under 1.1's meter look's key, where 1.1's Classic and Light arc keep their names. */
         private val METER_LOOK = stringPreferencesKey("meter_look")
 
@@ -528,10 +522,14 @@ class DataStoreSettingsRepository internal constructor(
         private val OLD_FOCUS_MODE = booleanPreferencesKey("focus_mode")
 
         /**
-         * Settings that went before 2.0 reached players, removed at start ([forgetDroppedSettings]): Phase 71's switch
-         * for the 12th-fret check's way in on the tuner screen (the check is opened from the picker sheet since).
+         * Settings that went, removed at start ([forgetDroppedSettings]): Phase 71's switch for the 12th-fret check's
+         * way in on the tuner screen (the check is opened from the picker sheet since), and "Show signal bars", in versions up
+         * to 2.0 (the owner dropped the bars on 2026-11-07; the tips say what to fix).
          */
-        private val DROPPED_KEYS = listOf(booleanPreferencesKey("show_intonation_check"))
+        private val DROPPED_KEYS = listOf(
+            booleanPreferencesKey("show_intonation_check"),
+            booleanPreferencesKey("show_signal_bars"),
+        )
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 
         /** The metronome's [Meter], by its name. */

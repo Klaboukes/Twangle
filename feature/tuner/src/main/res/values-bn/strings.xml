@@ -104,13 +104,6 @@
     <string name="tuner_tip_too_soft">আরেকটু জোরে বাজান</string>
     <string name="tuner_tip_too_noisy">খুব শব্দ, ফোন একটু কাছে আনুন</string>
     <string name="tuner_tip_too_loud">খুব জোরে, ফোন একটু দূরে নিন</string>
-    <string name="tuner_signal_bars">সিগন্যাল বার: %2$d-এর মধ্যে %1$d</string>
-    <string name="tuner_signal_no_note">সিগন্যাল: এখনো কোনো নোট নেই</string>
-    <string name="tuner_signal_show_figures">সংখ্যাগুলো দেখান</string>
-    <string name="tuner_signal_title">Twangle আপনাকে কতটা ভালো শুনছে</string>
-    <string name="tuner_signal_volume">ভলিউম</string>
-    <string name="tuner_signal_background">পেছনের শব্দ</string>
-    <string name="tuner_signal_clarity">স্পষ্টতা</string>
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_separator">", "</string>

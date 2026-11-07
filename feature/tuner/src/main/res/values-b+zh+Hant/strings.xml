@@ -105,13 +105,6 @@
     <string name="tuner_tip_too_soft">彈大聲一點</string>
     <string name="tuner_tip_too_noisy">太吵了，把手機拿近一點</string>
     <string name="tuner_tip_too_loud">太大聲了，把手機拿遠一點</string>
-    <string name="tuner_signal_bars">訊號格：%2$d 格中亮 %1$d 格</string>
-    <string name="tuner_signal_no_note">訊號：還沒聽到音</string>
-    <string name="tuner_signal_show_figures">查看數值</string>
-    <string name="tuner_signal_title">Twangle 聽得有多清楚</string>
-    <string name="tuner_signal_volume">音量</string>
-    <string name="tuner_signal_background">背景噪音</string>
-    <string name="tuner_signal_clarity">清晰度</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d，%3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d，%3$s，%4$s</string>

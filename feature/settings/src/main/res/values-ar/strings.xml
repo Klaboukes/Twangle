@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
     <string name="settings_string_tick_off_title">وضع علامة على الأوتار المضبوطة</string>
     <string name="settings_string_tick_off_summary">علامة على كل وتر حين يُضبط، و«مضبوط. اعزف.» حين تُضبط كلها</string>
-    <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
-    <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة فوق الأوتار تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
 
     <string name="settings_language_title">اللغة</string>
     <string name="settings_language_phone">لغة الهاتف</string>

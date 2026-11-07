@@ -105,13 +105,6 @@
     <string name="tuner_tip_too_soft">Mainkan lebih keras</string>
     <string name="tuner_tip_too_noisy">Terlalu bising, dekatkan ponsel</string>
     <string name="tuner_tip_too_loud">Terlalu keras, jauhkan ponsel</string>
-    <string name="tuner_signal_bars">Bar sinyal: %1$d dari %2$d</string>
-    <string name="tuner_signal_no_note">Sinyal: belum ada nada</string>
-    <string name="tuner_signal_show_figures">tampilkan angka</string>
-    <string name="tuner_signal_title">Seberapa baik Twangle mendengar Anda</string>
-    <string name="tuner_signal_volume">Volume</string>
-    <string name="tuner_signal_background">Latar</string>
-    <string name="tuner_signal_clarity">Kejernihan</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

@@ -116,7 +116,6 @@ fun SettingsScreen(
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onStringTickOffChange = viewModel::setStringTickOff,
         onUnderMeterChange = viewModel::setUnderMeter,
-        onShowSignalBarsChange = viewModel::setShowSignalBars,
         onLensLookChange = viewModel::setLensLook,
         onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
@@ -155,7 +154,6 @@ fun SettingsContent(
     onVibrateInTuneChange: (Boolean) -> Unit,
     onStringTickOffChange: (Boolean) -> Unit,
     onUnderMeterChange: (UnderMeter) -> Unit,
-    onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -183,7 +181,6 @@ fun SettingsContent(
                 onVibrateInTuneChange = onVibrateInTuneChange,
                 onStringTickOffChange = onStringTickOffChange,
                 onUnderMeterChange = onUnderMeterChange,
-                onShowSignalBarsChange = onShowSignalBarsChange,
                 onLensLookChange = onLensLookChange,
                 onLeftHandedChange = onLeftHandedChange,
                 dynamicColorAvailable = dynamicColorAvailable,
@@ -322,7 +319,6 @@ private fun SettingsGroups(
     onVibrateInTuneChange: (Boolean) -> Unit,
     onStringTickOffChange: (Boolean) -> Unit,
     onUnderMeterChange: (UnderMeter) -> Unit,
-    onShowSignalBarsChange: (Boolean) -> Unit,
     onLensLookChange: (LensLook) -> Unit,
     onLeftHandedChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
@@ -397,12 +393,6 @@ private fun SettingsGroups(
                     summary = stringResource(R.string.settings_string_tick_off_summary),
                     checked = settings.stringTickOff,
                     onCheckedChange = onStringTickOffChange,
-                )
-                SwitchSetting(
-                    title = stringResource(R.string.settings_show_signal_bars_title),
-                    summary = stringResource(R.string.settings_show_signal_bars_summary),
-                    checked = settings.showSignalBars,
-                    onCheckedChange = onShowSignalBarsChange,
                 )
             }
         }
@@ -570,7 +560,6 @@ private fun SettingsContentPreview() {
             onVibrateInTuneChange = {},
             onStringTickOffChange = {},
             onUnderMeterChange = {},
-            onShowSignalBarsChange = {},
             onLensLookChange = {},
             onLeftHandedChange = {},
         )

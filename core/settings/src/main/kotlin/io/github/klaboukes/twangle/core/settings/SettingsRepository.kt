@@ -100,8 +100,6 @@ interface SettingsRepository {
     /** What goes under the meter. Also removes 1.1's `show_tune_hint`, which decides only until one is picked. */
     suspend fun setUnderMeter(choice: UnderMeter)
 
-    suspend fun setShowSignalBars(enabled: Boolean)
-
     /**
      * The lens's look. Also removes 1.1's display, wave-view switch and wave look, which the lens look's rule reads
      * only until a look is picked (docs/architecture/v2-plan.md, *Settings from 1.1*).
@@ -116,10 +114,10 @@ interface SettingsRepository {
     suspend fun takeOldFocusMode(): Boolean
 
     /**
-     * Removes what is left of settings that went before 2.0 reached players: `show_intonation_check`, Phase 71's
-     * switch for the 12th-fret check's way in, which went when the owner put the check in the picker sheet
-     * (2026-11-03). Called at every start; writes nothing where none is left (docs/architecture/v2-plan.md, *Settings
-     * from 1.1*).
+     * Removes what is left of settings that went: `show_intonation_check`, Phase 71's switch for the 12th-fret check's
+     * way in, which went when the owner put the check in the picker sheet (2026-11-03), and `show_signal_bars`, the
+     * signal bars' switch, which went with the bars (2026-11-07). Called at every start; writes nothing where none is
+     * left (docs/architecture/lifecycle.md).
      */
     suspend fun forgetDroppedSettings()
 

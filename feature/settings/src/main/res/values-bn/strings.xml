@@ -40,8 +40,6 @@
     <string name="settings_vibrate_in_tune_summary">নোট ঠিক পিচে পৌঁছালে একটি ছোট ভাইব্রেশন</string>
     <string name="settings_string_tick_off_title">টিউন হওয়া তারে টিক দিন</string>
     <string name="settings_string_tick_off_summary">প্রতিটি তার সুরে এলে তাতে একটি টিক, আর সব সুরে এলে “সুরে আছে। এবার বাজান।”</string>
-    <string name="settings_show_signal_bars_title">সিগন্যাল বার দেখান</string>
-    <string name="settings_show_signal_bars_summary">কৌতূহলীদের জন্য: তারগুলোর উপরে ছোট বারগুলো দেখায় টিউনার আপনাকে কতটা ভালো শুনছে। সংখ্যা দেখতে সেগুলোতে ট্যাপ করুন</string>
     <string name="settings_language_title">ভাষা</string>
     <string name="settings_language_phone">ফোনের ভাষা</string>
     <string name="settings_language_cancel">বাতিল</string>

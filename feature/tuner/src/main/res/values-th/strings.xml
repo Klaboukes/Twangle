@@ -105,13 +105,6 @@
     <string name="tuner_tip_too_soft">เล่นดังขึ้นอีกนิด</string>
     <string name="tuner_tip_too_noisy">เสียงรบกวนเยอะ วางโทรศัพท์ให้ใกล้ขึ้น</string>
     <string name="tuner_tip_too_loud">ดังเกินไป วางโทรศัพท์ให้ห่างขึ้น</string>
-    <string name="tuner_signal_bars">แถบสัญญาณ: %1$d จาก %2$d</string>
-    <string name="tuner_signal_no_note">สัญญาณ: ยังไม่มีโน้ต</string>
-    <string name="tuner_signal_show_figures">แสดงตัวเลข</string>
-    <string name="tuner_signal_title">Twangle ได้ยินคุณชัดแค่ไหน</string>
-    <string name="tuner_signal_volume">ความดัง</string>
-    <string name="tuner_signal_background">เสียงรอบข้าง</string>
-    <string name="tuner_signal_clarity">ความชัด</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

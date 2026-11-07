@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
     <string name="settings_string_tick_off_title">Odhaczaj nastrojone struny</string>
     <string name="settings_string_tick_off_summary">Znaczek na każdej strunie, gdy jest nastrojona, i „Nastrojone. Graj.”, gdy wszystkie</string>
-    <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
-    <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski nad strunami pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
 
     <string name="settings_language_title">Język</string>
     <string name="settings_language_phone">Język telefonu</string>

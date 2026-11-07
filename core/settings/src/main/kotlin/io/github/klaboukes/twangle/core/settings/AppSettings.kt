@@ -178,8 +178,6 @@ data class AppSettings(
      * hint" (`show_tune_hint`) decides: a player who had turned it off gets [UnderMeter.CENTS].
      */
     val underMeter: UnderMeter = UnderMeter.DEFAULT,
-    /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
-    val showSignalBars: Boolean = false,
     /**
      * What the tuner's lens draws (read from Phase 71 on). 1.1's display, wave look and Calm or Bold glow are no
      * longer settings: the tuner has one meter and one glow.

@@ -108,13 +108,6 @@
     <string name="tuner_tip_too_soft">थोड़ा ज़ोर से बजाएँ</string>
     <string name="tuner_tip_too_noisy">बहुत शोर है, फ़ोन को पास रखें</string>
     <string name="tuner_tip_too_loud">बहुत तेज़ है, फ़ोन को दूर रखें</string>
-    <string name="tuner_signal_bars">सिग्नल बार: %2$d में से %1$d</string>
-    <string name="tuner_signal_no_note">सिग्नल: अभी कोई नोट नहीं</string>
-    <string name="tuner_signal_show_figures">आँकड़े दिखाएँ</string>
-    <string name="tuner_signal_title">Twangle आपको कितनी अच्छी तरह सुनता है</string>
-    <string name="tuner_signal_volume">वॉल्यूम</string>
-    <string name="tuner_signal_background">बैकग्राउंड शोर</string>
-    <string name="tuner_signal_clarity">स्पष्टता</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

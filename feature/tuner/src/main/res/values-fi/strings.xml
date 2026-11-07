@@ -110,13 +110,6 @@
     <string name="tuner_tip_too_soft">Soita vähän kovempaa</string>
     <string name="tuner_tip_too_noisy">Liian meluisaa, tuo puhelin lähemmäs</string>
     <string name="tuner_tip_too_loud">Liian kovaa, vie puhelin kauemmas</string>
-    <string name="tuner_signal_bars">Signaalipalkit: %1$d, yhteensä %2$d</string>
-    <string name="tuner_signal_no_note">Signaali: ei vielä säveltä</string>
-    <string name="tuner_signal_show_figures">näytä luvut</string>
-    <string name="tuner_signal_title">Kuinka hyvin Twangle kuulee sinut</string>
-    <string name="tuner_signal_volume">Voimakkuus</string>
-    <string name="tuner_signal_background">Taustamelu</string>
-    <string name="tuner_signal_clarity">Selkeys</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

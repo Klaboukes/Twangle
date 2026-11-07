@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">Lyhyt värähdys, kun sävel osuu vireeseen</string>
     <string name="settings_string_tick_off_title">Merkitse viritetyt kielet</string>
     <string name="settings_string_tick_off_summary">Merkki kieleen, kun se on vireessä, ja ”Vireessä. Soita.”, kun kaikki ovat</string>
-    <string name="settings_show_signal_bars_title">Näytä signaalipalkit</string>
-    <string name="settings_show_signal_bars_summary">Uteliaille: pienet palkit kielten yläpuolella näyttävät, kuinka hyvin viritin kuulee sinut. Napauta niitä, niin näet luvut</string>
 
     <string name="settings_language_title">Kieli</string>
     <string name="settings_language_phone">Puhelimen kieli</string>

@@ -92,7 +92,6 @@ class TunerStylesTest {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        showSignalBars = true,
                         focusMode = false,
                     )
                 }
@@ -124,7 +123,6 @@ class TunerStylesTest {
         add("meter" to gauge)
         add("cents" to compose.onNodeWithText(twelveCentsFlat))
         add("word" to compose.onNodeWithText(context.getString(R.string.tuner_word_tighten)))
-        add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON))
         strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
     }
 
@@ -301,8 +299,6 @@ class TunerStylesTest {
                 val (b, second) = bounds[j]
                 // The mode switch's two segments share their border.
                 if (a.startsWith("mode switch") && b.startsWith("mode switch")) continue
-                // The signal bars stand inside the ruler, beside its heard note.
-                if (setOf(a, b) == setOf("ruler", "signal bars")) continue
                 if (first.overlaps(second)) fail("$case $a $first overlaps $b $second")
             }
         }

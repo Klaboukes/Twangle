@@ -115,13 +115,6 @@
     <string name="tuner_tip_too_soft">Играй чуть громче</string>
     <string name="tuner_tip_too_noisy">Слишком шумно, придвинь телефон</string>
     <string name="tuner_tip_too_loud">Слишком громко, отодвинь телефон</string>
-    <string name="tuner_signal_bars">Индикатор сигнала: %1$d из %2$d</string>
-    <string name="tuner_signal_no_note">Сигнал: ноты пока нет</string>
-    <string name="tuner_signal_show_figures">показать цифры</string>
-    <string name="tuner_signal_title">Как хорошо Twangle тебя слышит</string>
-    <string name="tuner_signal_volume">Громкость</string>
-    <string name="tuner_signal_background">Фон</string>
-    <string name="tuner_signal_clarity">Чёткость</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

@@ -115,13 +115,6 @@
     <string name="tuner_tip_too_soft">Graj trochę głośniej</string>
     <string name="tuner_tip_too_noisy">Za dużo hałasu, przysuń telefon</string>
     <string name="tuner_tip_too_loud">Za głośno, odsuń telefon</string>
-    <string name="tuner_signal_bars">Paski sygnału: %1$d z %2$d</string>
-    <string name="tuner_signal_no_note">Sygnał: jeszcze brak dźwięku</string>
-    <string name="tuner_signal_show_figures">pokaż wartości</string>
-    <string name="tuner_signal_title">Jak dobrze Twangle cię słyszy</string>
-    <string name="tuner_signal_volume">Głośność</string>
-    <string name="tuner_signal_background">Tło</string>
-    <string name="tuner_signal_clarity">Wyrazistość</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

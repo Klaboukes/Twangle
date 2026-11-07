@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">Rung ngắn khi nốt đạt đúng cao độ</string>
     <string name="settings_string_tick_off_title">Đánh dấu dây đã chuẩn</string>
     <string name="settings_string_tick_off_summary">Dấu tích trên mỗi dây khi đã chuẩn, và “Đã chuẩn. Đàn thôi.” khi tất cả đều chuẩn</string>
-    <string name="settings_show_signal_bars_title">Hiện vạch tín hiệu</string>
-    <string name="settings_show_signal_bars_summary">Cho người tò mò: các vạch nhỏ phía trên các dây cho thấy máy lên dây nghe bạn rõ đến đâu. Chạm vào để xem số liệu</string>
 
     <string name="settings_language_title">Ngôn ngữ</string>
     <string name="settings_language_phone">Ngôn ngữ của điện thoại</string>

@@ -109,13 +109,6 @@
     <string name="tuner_tip_too_soft">Spiel etwas lauter</string>
     <string name="tuner_tip_too_noisy">Zu viel Lärm, Handy näher ran</string>
     <string name="tuner_tip_too_loud">Zu laut, Handy weiter weg</string>
-    <string name="tuner_signal_bars">Signalbalken: %1$d von %2$d</string>
-    <string name="tuner_signal_no_note">Signal: noch kein Ton</string>
-    <string name="tuner_signal_show_figures">Werte zeigen</string>
-    <string name="tuner_signal_title">Wie gut Twangle dich hört</string>
-    <string name="tuner_signal_volume">Lautstärke</string>
-    <string name="tuner_signal_background">Hintergrund</string>
-    <string name="tuner_signal_clarity">Klarheit</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>

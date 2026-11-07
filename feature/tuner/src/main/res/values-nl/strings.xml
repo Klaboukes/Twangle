@@ -115,13 +115,6 @@
     <string name="tuner_tip_too_soft">Speel wat harder</string>
     <string name="tuner_tip_too_noisy">Te veel lawaai, leg de telefoon dichterbij</string>
     <string name="tuner_tip_too_loud">Te hard, leg de telefoon verder weg</string>
-    <string name="tuner_signal_bars">Signaalstreepjes: %1$d van %2$d</string>
-    <string name="tuner_signal_no_note">Signaal: nog geen noot</string>
-    <string name="tuner_signal_show_figures">de cijfers tonen</string>
-    <string name="tuner_signal_title">Hoe goed Twangle je hoort</string>
-    <string name="tuner_signal_volume">Volume</string>
-    <string name="tuner_signal_background">Achtergrond</string>
-    <string name="tuner_signal_clarity">Helderheid</string>
 
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cent te laag" or "zuiver". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>

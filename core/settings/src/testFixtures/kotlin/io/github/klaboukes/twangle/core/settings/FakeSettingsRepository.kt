@@ -132,8 +132,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setUnderMeter(choice: UnderMeter) = write { it.copy(underMeter = choice) }
 
-    override suspend fun setShowSignalBars(enabled: Boolean) = write { it.copy(showSignalBars = enabled) }
-
     override suspend fun setLensLook(look: LensLook) = write { it.copy(lensLook = look) }
 
     /** 1.1's saved focus mode switch, null without one; [takeOldFocusMode] hands it over once. */

@@ -15,7 +15,7 @@ In this file:
 
 Topic files:
 - §3 Signal pipeline:
-  - **[Signal pipeline](docs/architecture/signal-pipeline.md)**: Pipeline · Key numbers · Other sample rates · Frame assembly · Low notes · Signal gate · Sustain check (ticks and clicks) · Noise floor, SNR and clarity · Reception · Tips · Signal bars (optional) · Pitch detection (YIN) · Smoothing · Edge cases (measured, EdgeCaseTest)
+  - **[Signal pipeline](docs/architecture/signal-pipeline.md)**: Pipeline · Key numbers · Other sample rates · Frame assembly · Low notes · Signal gate · Sustain check (ticks and clicks) · Noise floor, SNR and clarity · Reception · Tips · Pitch detection (YIN) · Smoothing · Edge cases (measured, EdgeCaseTest)
   - **[Notes, tunings and audio](docs/architecture/notes-and-audio.md)**: Note math · Tunings · Instruments · Chord shapes and scales · Capo · Ear training questions · Intonation check · Strobe model · Pitch history · Audio source selection · Audio capture · Reference tone · Drone
   - **[Strum check and metronome](docs/architecture/strum-and-metronome.md)**: Strum check (polyphonic) · Chord naming · The strum check's button · Metronome · Tempo from music
 - §4 **[Threading and performance](docs/architecture/performance.md)**: Threads and the main thread · Measured on the Galaxy S26 · Low-note window on the Xiaomi 12X · Watch CPU and the native detector · Meter looks · Baseline Profile · Release build: shrinking and signing
@@ -188,13 +188,12 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     TunerViewModel, TunerUiState, TunerOptions, TunerInterpreter, TunerLayout, TunerScreen,
     PitchPipeline (+ PitchReading), TunerError, MicPermission, InTunePrecisionDetector (forPrecision),
     InTuneGlowRule, TunerHint (+ TuningCue), SteadyHint, ReceptionTip (+ TipCue),
-    SignalBars (+ SignalFigures),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter),
     HeardStrum (HeardReading, HeardStrumInterpreter, HeardShown: what was heard besides one string, and how long it shows),
     IntonationCheck (+ TunerTool), PitchTrailFeed, PitchTrailDescription, ScreenAwake
     components/ Lens, Ruler (+ RulerGeometry), TuneWord, ReadingTone, StringSelector (the pegs, + StringRowFit),
                 InstrumentTuningPanel (the picker sheet + TuningRow, LowerByRow, AnyNoteRow), MyTunings, PickerNames, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
-                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumCheckButton, StrumMark, strumCountText), StrumPanel,
+                PermissionPrompt, StrumCheckView (StrumCheckButton, StrumMark, strumCountText), StrumPanel,
                 IntonationView, FocusModeButton, LiveFloat (a per-frame reading, unboxed)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
 

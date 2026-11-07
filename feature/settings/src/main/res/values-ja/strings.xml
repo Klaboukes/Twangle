@@ -47,8 +47,6 @@
     <string name="settings_vibrate_in_tune_summary">音が合うと短く振動します</string>
     <string name="settings_string_tick_off_title">合った弦にチェック</string>
     <string name="settings_string_tick_off_summary">合った弦にチェックを付け、すべて合うと「合っています。弾きましょう。」と表示します</string>
-    <string name="settings_show_signal_bars_title">信号バーを表示</string>
-    <string name="settings_show_signal_bars_summary">気になる方へ：弦の上の小さなバーで、チューナーがどれだけよく聞き取れているかがわかります。タップすると数値を表示します</string>
 
     <string name="settings_language_title">言語</string>
     <string name="settings_language_phone">スマートフォンの言語</string>

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -216,11 +215,10 @@ internal fun TwoPaneLayout(
     }
 }
 /**
- * The controls pane's [header] (the picker chip, focus mode's button and the signal bars) over the
- * [guitarSlot], [SECTION_SPACING] apart, the header as wide as the string buttons' faces
- * ([StringFacesSpan]), so on its side focus mode's button ends where the last string's button and the
- * tools button do, and the signal bars start where the first string's button does (Phase 65: they stood a
- * few dp further out, the header taking the pane's whole width). Without strings it takes the width.
+ * The controls pane's [header] (the picker chip and focus mode's button) over the [guitarSlot],
+ * [SECTION_SPACING] apart, the header as wide as the string buttons' faces ([StringFacesSpan]), so on its
+ * side focus mode's button ends where the last string's button and the tools button do (Phase 65: it stood
+ * a few dp further out, the header taking the pane's whole width). Without strings it takes the width.
  */
 @Composable
 internal fun HeaderOverSlot(header: @Composable () -> Unit, guitarSlot: @Composable () -> Unit) {
@@ -305,8 +303,7 @@ internal fun CompactLayout(
 /**
  * The tuner's top: its [TopBar], the tab's name in the middle ([title], "Tune", a heading, as the metronome and Practice
  * name theirs; none where not given), focus mode's [button] at the end (owner, 2026-10-25: the same place in both modes,
- * never moving), and the app's [gear] (Settings, Phase 69) at the start with the signal [bars] right after it, where
- * they stand in this row (Any note, a tool's panel, on its side; over the pegs otherwise). Under the row, on its own
+ * never moving), and the app's [gear] (Settings, Phase 69) at the start. Under the row, on its own
  * centred line ([PickerLine]), the picker [chip] (2.0, Phase 70, in the mode switch's place), as on every Practice
  * tool, so it stands in one place wherever it is (the owner, 2026-11-04: "each screen should just have the screen's
  * name there"; until then the chip stood in the row's middle). A long name at a large font ends in "…". None of them
@@ -321,24 +318,13 @@ internal fun CompactLayout(
 @Composable
 internal fun ChipRow(
     chip: @Composable () -> Unit,
-    bars: (@Composable () -> Unit)?,
     button: (@Composable () -> Unit)?,
     gear: (@Composable () -> Unit)? = null,
     title: String? = null,
     chipInRow: Boolean = false,
     hasChip: Boolean = true,
 ) {
-    val start = if (gear == null && bars == null) {
-        null
-    } else {
-        @Composable {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (gear != null) gear()
-                // The bars in the middle of their 48 dp touch area, after the gear's.
-                if (bars != null) Box(Modifier.size(SIGNAL_BARS_SLOT), contentAlignment = Alignment.Center) { Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
-            }
-        }
-    }
+    val start = gear
     if (chipInRow) {
         TopBar(middle = chip, start = start, end = button)
     } else {

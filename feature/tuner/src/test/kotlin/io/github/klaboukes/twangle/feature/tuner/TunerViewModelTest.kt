@@ -358,7 +358,6 @@ class TunerViewModelTest {
             inTunePrecision = InTunePrecision.entries.first { it != InTunePrecision.DEFAULT },
             stringTickOff = !AppSettings().stringTickOff,
             underMeter = UnderMeter.CENTS,
-            showSignalBars = !AppSettings().showSignalBars,
             keepScreenOn = !AppSettings().keepScreenOn,
             vibrateInTune = !AppSettings().vibrateInTune,
         )
@@ -368,7 +367,6 @@ class TunerViewModelTest {
         assertEquals(saved.inTunePrecision, vm.inTunePrecision.value)
         assertEquals(saved.stringTickOff, vm.stringTickOff.value)
         assertEquals(saved.underMeter, vm.underMeter.value)
-        assertEquals(saved.showSignalBars, vm.showSignalBars.value)
         assertEquals(saved.keepScreenOn, vm.keepScreenOn.value)
         assertEquals(saved.vibrateInTune, vm.vibrateInTune.value)
     }
@@ -549,32 +547,6 @@ class TunerViewModelTest {
         settings.setUnderMeter(UnderMeter.CENTS)
         runCurrent()
         assertEquals(UnderMeter.CENTS, vm.underMeter.value)
-    }
-
-    @Test
-    fun `signal bars are off by default and their figures stay empty`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        backgroundScope.launch { vm.showSignalBars.collect {} }
-        advanceTimeBy(500)
-        assertFalse(vm.showSignalBars.value)
-        assertNull(vm.signalFigures.value)
-    }
-
-    @Test
-    fun `with signal bars on, the figures follow the note`() = runTest(dispatcher) {
-        settings.setShowSignalBars(true)
-        val vm = viewModel(a2Recorder())
-        vm.onPermissionChanged(true)
-        backgroundScope.launch { vm.state.collect {} }
-        backgroundScope.launch { vm.showSignalBars.collect {} }
-        advanceTimeBy(500)
-        assertTrue(vm.showSignalBars.value)
-        val figures = vm.signalFigures.value!!
-        // A loud, clean sawtooth: its level is high and its pitch clear.
-        assertTrue("level ${figures.levelDbfs}", figures.levelDbfs > -20f)
-        assertTrue("clarity ${figures.clarity}", figures.clarity > 0.9f)
     }
 
     @Test

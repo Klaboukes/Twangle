@@ -89,7 +89,6 @@ class CompactLandscapeStylesTest {
                         onStringClick = {},
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().background(BACKGROUND).testTag(WINDOW),
-                        showSignalBars = true,
                         focusMode = shownCompact.value,
                         onFocusModeChange = {},
                     )
@@ -113,12 +112,11 @@ class CompactLandscapeStylesTest {
     private val gauge get() = compose.onNodeWithTag(TunerTestTags.GAUGE)
     private val cents get() = compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12))
     private val focusString get() = compose.onNodeWithTag(TunerTestTags.FOCUS_STRING, useUnmergedTree = true)
-    private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON)
     private val pickerChip get() = compose.onNodeWithTag(TunerTestTags.PICKER_CHIP)
 
     /**
      * Guitar mode, then chromatic mode: the ruler across the top, the lens wide under it, the word under the lens,
-     * the string small at the end of its line in guitar mode, and nothing else shows (no pegs, chip or signal bars).
+     * the string small at the end of its line in guitar mode, and nothing else shows (no pegs or chip).
      */
     @Test
     fun onItsSideTheMeterFillsTheScreen() {
@@ -185,7 +183,6 @@ class CompactLandscapeStylesTest {
         cents.assertIsDisplayed()
         pickerChip.assertDoesNotExist()
         compose.onNodeWithText("E2").assertDoesNotExist()
-        signalBars.assertDoesNotExist()
     }
 
     @Test
@@ -316,30 +313,6 @@ class CompactLandscapeStylesTest {
         abs(((a shr 8) and 0xFF) - ((b shr 8) and 0xFF)),
         abs((a and 0xFF) - (b and 0xFF)),
     )
-
-    /**
-     * The signal bars stand out from what is behind them in the app's colours, light and dark, in the
-     * wide layout with its controls (focus mode leaves them out).
-     */
-    @Test
-    fun theSignalBarsAreDrawn() {
-        shownCompact.value = false
-        show()
-        forEachLook(bothThemes = true) { case ->
-            compose.waitForIdle()
-            val pixels = signalBars.captureToImage().toPixelMap()
-            // The top-left corner is above the shortest bar: what is behind them.
-            val behind = pixels[0, 0]
-            var drawn = 0
-            for (x in 0 until pixels.width) for (y in 0 until pixels.height) {
-                val p = pixels[x, y]
-                val distance = maxOf(abs(p.red - behind.red), abs(p.green - behind.green), abs(p.blue - behind.blue))
-                if (distance > 0.3f) drawn++
-            }
-            val share = drawn / (pixels.width * pixels.height).toFloat()
-            assertTrue("$case: bars cover ${(share * 100).toInt()} % clearly", share > 0.1f)
-        }
-    }
 
     private fun assertInside(window: DpRect, name: String, rect: DpRect, case: String) {
         // Half a dp of slack for rounding.

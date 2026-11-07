@@ -105,13 +105,6 @@
     <string name="tuner_tip_too_soft">強めに弾いてください</string>
     <string name="tuner_tip_too_noisy">周りがうるさすぎます。スマホを近づけてください</string>
     <string name="tuner_tip_too_loud">音が大きすぎます。スマホを離してください</string>
-    <string name="tuner_signal_bars">信号バー：%2$d 本中 %1$d 本</string>
-    <string name="tuner_signal_no_note">信号：まだ音がありません</string>
-    <string name="tuner_signal_show_figures">数値を表示</string>
-    <string name="tuner_signal_title">Twangle の聞き取り具合</string>
-    <string name="tuner_signal_volume">音量</string>
-    <string name="tuner_signal_background">周囲の雑音</string>
-    <string name="tuner_signal_clarity">明瞭さ</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d、%3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d、%3$s、%4$s</string>

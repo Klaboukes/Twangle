@@ -76,7 +76,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `saves theme, wallpaper colours, layout, keep screen on, vibration and tune hint and signal bars`() = runTest(dispatcher) {
+    fun `saves theme, wallpaper colours, layout, keep screen on, vibration and tune hint`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)
         vm.setDynamicColor(false)
@@ -84,7 +84,6 @@ class SettingsViewModelTest {
         vm.setVibrateInTune(false)
         vm.setStringTickOff(true)
         vm.setUnderMeter(UnderMeter.CENTS)
-        vm.setShowSignalBars(true)
         vm.setLeftHanded(true)
         runCurrent()
 
@@ -94,7 +93,6 @@ class SettingsViewModelTest {
         assertEquals(false, repository.current.vibrateInTune)
         assertEquals(true, repository.current.stringTickOff)
         assertEquals(UnderMeter.CENTS, repository.current.underMeter)
-        assertEquals(true, repository.current.showSignalBars)
         assertEquals(true, repository.current.leftHanded)
     }
 

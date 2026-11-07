@@ -111,13 +111,6 @@
     <string name="tuner_tip_too_soft">Toca un poco más fuerte</string>
     <string name="tuner_tip_too_noisy">Demasiado ruido, acerca el teléfono</string>
     <string name="tuner_tip_too_loud">Muy fuerte, aleja el teléfono</string>
-    <string name="tuner_signal_bars">Barras de señal: %1$d de %2$d</string>
-    <string name="tuner_signal_no_note">Señal: aún sin nota</string>
-    <string name="tuner_signal_show_figures">ver las cifras</string>
-    <string name="tuner_signal_title">Cómo te oye Twangle</string>
-    <string name="tuner_signal_volume">Volumen</string>
-    <string name="tuner_signal_background">Ruido de fondo</string>
-    <string name="tuner_signal_clarity">Claridad</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
