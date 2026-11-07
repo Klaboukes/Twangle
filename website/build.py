@@ -32,8 +32,10 @@ STATIC = HERE / "static"
 # The top bar's icon and name (Phase 79): scripts/launcher-icon.py and scripts/wordmark.py draw them.
 TWANGLE_NAME = "".join((HERE / f).read_text(encoding="utf-8").split("-->\n", 1)[1].strip()
                        for f in ("twangle-icon.svg", "twangle-name.svg"))
-# The home page's large plucked mark (Phase 83, scripts/launcher-icon.py), where a page has {hero}.
+# The home page's banner (Phase 83): the plucked mark (scripts/launcher-icon.py) where a page has {hero}, and the
+# name beside it (scripts/wordmark.py) where it has {name}.
 HERO = (HERE / "twangle-hero.svg").read_text(encoding="utf-8").split("-->\n", 1)[1].strip()
+NAME = (HERE / "twangle-name.svg").read_text(encoding="utf-8").split("-->\n", 1)[1].strip()
 # A tool page's group (its header's `group:`), drawn with the harmonic the home page gives the group's heading:
 # its crumb and the wash at the page's top (site.css).
 GROUPS = ("tuning", "listening", "practice", "more")
@@ -205,7 +207,7 @@ def build(out):
                 raise Problem(f"pages/{lang}/{name}: group {meta['group']} is none of {', '.join(GROUPS)}")
             classes = (["home"] if name == "index.html" else []) + ([f"g-{meta['group']}"] if meta.get("group") else [])
             body = coffee_line(tool_cards(body, lambda n: (PAGES / lang / n).exists())) \
-                .replace("{play}", PLAY_URL).replace("{root}", root).replace("{hero}", HERO)
+                .replace("{play}", PLAY_URL).replace("{root}", root).replace("{hero}", HERO).replace("{name}", NAME)
             # A page made of sections (`layout: full`, the home page) has a .wrap inside each, so a section
             # can run the window's full width; any other page sits in one.
             if meta.get("layout") != "full":

@@ -77,16 +77,17 @@ p { margin: 0 0 14px; }
 
 /* ---- Home ---------------------------------------------------------------------------------------------------- */
 /* The top bar on the home page sits on the stage, dark in both themes. */
+.home header .brand { visibility: hidden; } /* the banner below is the name on the home page */
 .home header { background: var(--stage); --ink: var(--stage-ink); --muted: var(--stage-muted); --track: #262C35; color-scheme: dark; }
 .home main { padding: 0 0 24px; }
 .home section { padding: 72px 0 0; }
 
-/* The stage: the logo, large, plucked once as the page opens (the app's opening animation, its maths from
-   scripts/launcher-icon.py), and again on each tap. A tap on the mark toggles a hidden checkbox, which switches
-   every animation to its twin of another name, so each starts over; nothing runs. With less motion asked for,
-   it stands still. */
+/* The stage: a banner of the logo and the name beside it, the logo plucked once as the page opens (the app's opening
+   animation, its maths from scripts/launcher-icon.py), and again on each tap. A tap on the banner toggles a hidden
+   checkbox, which switches every animation to its twin of another name, so each starts over; nothing runs. With less
+   motion asked for, it stands still. */
 .home .stage {
-  position: relative; padding: 24px 0 88px; text-align: center; color: var(--stage-ink); overflow: clip;
+  position: relative; padding: 64px 0 88px; text-align: center; color: var(--stage-ink); overflow: clip;
   background:
     radial-gradient(60% 50% at 50% 38%, rgba(95, 196, 255, .10), transparent 70%),
     radial-gradient(40% 40% at 30% 30%, rgba(255, 182, 72, .07), transparent 70%),
@@ -95,26 +96,30 @@ p { margin: 0 0 14px; }
   --ink: var(--stage-ink); --muted: var(--stage-muted); --accent: #5FC4FF; color-scheme: dark;
 }
 .stage .pluck { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+/* The banner (owner, 2026-11-07: the logo alone was too big; with the name beside it instead), sized by the mark's
+   height --h: the mark 76 by 44 units, its string 29 units down (65.9 %); the name's capitals 0.6 --h tall, standing
+   on the string (its baseline at 78.1 of its 100.8 units), so the halves and the thirds dip below it as the g's tail
+   does. About 5.4 --h wide in all, so it fits a 320 px phone. */
 .stage .mark {
-  position: relative; display: block; width: min(100%, 560px); margin: 0 auto; aspect-ratio: 76 / 44;
+  --h: clamp(48px, 16vw, 120px);
+  position: relative; display: flex; align-items: flex-start; gap: calc(var(--h) * .22); width: max-content; margin: 0 auto;
   cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
 }
-.stage .twangle-hero { position: relative; z-index: 1; display: block; width: 100%; height: 100%; overflow: visible; }
-/* The string itself, at rest, running out past the mark to the stage's edges (57 of the mark's 28..72 units) */
-.stage .mark::before {
-  content: ""; position: absolute; top: 65.9%; left: -100vw; right: -100vw; height: 1px; z-index: 0;
-  background: linear-gradient(90deg, transparent 20%, rgba(238, 241, 245, .22) 46%, rgba(238, 241, 245, .22) 54%, transparent 80%);
+.stage .twangle-hero { position: relative; z-index: 1; display: block; flex: none; height: var(--h); width: auto; aspect-ratio: 76 / 44; overflow: visible; }
+.stage .twangle-name {
+  position: relative; z-index: 1; display: block; flex: none; color: var(--stage-ink);
+  height: calc(var(--h) * .774); width: auto; aspect-ratio: 449.7 / 100.8; margin-top: calc(var(--h) * .059);
 }
-/* What the pluck sends out: a soft glow under the string (no rings: the owner had them taken out, 2026-11-07) */
+/* What the pluck sends out: a soft glow under the mark's string (no rings: the owner had them taken out, 2026-11-07) */
 .stage .glow {
-  position: absolute; left: 50%; top: 65.9%; width: 90%; aspect-ratio: 2.2; transform: translate(-50%, -50%); pointer-events: none;
+  position: absolute; left: calc(var(--h) * .864); top: calc(var(--h) * .659); width: calc(var(--h) * 2.4); aspect-ratio: 2.2; transform: translate(-50%, -50%); pointer-events: none;
   background: radial-gradient(closest-side, rgba(255, 182, 72, .22), rgba(95, 196, 255, .12) 55%, transparent);
   animation: glow 2600ms ease-out 150ms both;
 }
 .stage .pluck:checked + .mark .glow { animation-name: glow-b; }
 @keyframes glow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
 @keyframes glow-b { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
-.stage .hint { font-size: 14px; color: var(--stage-muted); margin: 4px 0 28px; opacity: 0; animation: arrive 900ms ease-out 2300ms both; }
+.stage .hint { font-size: 14px; color: var(--stage-muted); margin: 22px 0 30px; opacity: 0; animation: arrive 900ms ease-out 2300ms both; }
 .stage h1 { max-width: 15em; margin: 0 auto 18px; animation: arrive 800ms ease-out 700ms both; }
 .stage .lead { margin: 0 auto 26px; color: var(--stage-muted); animation: arrive 800ms ease-out 900ms both; }
 .stage .play { animation: arrive 800ms ease-out 1100ms both; }
@@ -243,7 +248,7 @@ footer a { overflow-wrap: anywhere; }
   nav { gap: 16px; }
   header .lang { display: none; } /* on a phone the language link is in the footer only */
   .home section { padding-top: 56px; }
-  .home .stage { padding: 12px 0 64px; }
+  .home .stage { padding: 36px 0 64px; }
   .stage .hint { margin-bottom: 20px; }
   .lead { font-size: 18px; }
   .tool { grid-template-columns: 1fr; gap: 28px; }
