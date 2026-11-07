@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.designsystem.LocalTopScale
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
@@ -71,7 +72,8 @@ import io.github.klaboukes.twangle.feature.tuner.rulerFor
  * Its [header] is the Practice tools' top row, which `:app` builds (the back arrow, "Pitch trail"; no instrument: it
  * listens for any note). Under it the tuner's ruler names the note, the trail fills the height left, and the word
  * under it says what to do (Too low · Too high · In tune), with the trail's motion after it for TalkBack ("wavering",
- * "bending up"). The microphone is asked for as on the tuner and open only while this is shown.
+ * "bending up"). The microphone is asked for as on the tuner and open only while this is shown. While
+ * [screenReaderSpeech] says TalkBack's voice plays, its speech is set aside as the tuner sets it aside (Phase 81).
  */
 @Composable
 fun PitchTrailScreen(
@@ -80,10 +82,11 @@ fun PitchTrailScreen(
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     saved: AppSettings = AppSettings(),
+    screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) {
     val language = appLanguage()
     val viewModel: PitchTrailViewModel = viewModel {
-        PitchTrailViewModel(audioRecorder, settingsRepository, saved = saved, language = language)
+        PitchTrailViewModel(audioRecorder, settingsRepository, saved = saved, language = language, screenReaderSpeech = screenReaderSpeech)
     }
     LaunchedEffect(language) { viewModel.setLanguage(language) }
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()

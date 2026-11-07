@@ -58,6 +58,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.ScaledUp
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
@@ -138,6 +139,7 @@ import kotlinx.coroutines.flow.emptyFlow
  * [settingsButton] is the app's gear that opens Settings (2.0, Phase 69), given where the screen holds it
  * (upright; on its side it is at the rail's top): at the start of the header row, across from focus
  * mode's button, and in the same top start corner over the permission prompt.
+ * [screenReaderSpeech] says when TalkBack's voice plays, whose speech the tuner then sets aside (Phase 81).
  */
 @Composable
 fun TunerScreen(
@@ -157,6 +159,7 @@ fun TunerScreen(
     focusMode: Boolean = false,
     onFocusModeChange: ((Boolean) -> Unit)? = null,
     title: String? = null,
+    screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -167,6 +170,7 @@ fun TunerScreen(
             saved = saved,
             language = language,
             tools = tools,
+            screenReaderSpeech = screenReaderSpeech,
         )
     }
     LaunchedEffect(closeToolsRequest) { viewModel.closeToolsOnRequest(closeToolsRequest) }

@@ -5,10 +5,12 @@ import androidx.annotation.VisibleForTesting
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
 import io.github.klaboukes.twangle.core.audio.AndroidDronePlayer
 import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
+import io.github.klaboukes.twangle.core.audio.AndroidScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.AndroidTonePlayer
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
@@ -98,6 +100,12 @@ class AppContainer(private val appContext: Context) {
         get() = testAudioRecorder?.let { ChordListener(it) } ?: micChordListener
 
     private val micChordListener: ChordListener by lazy { ChordListener(chordsRecorder) }
+
+    /**
+     * Whether a screen reader's voice plays now (Phase 81), so what listens sets the microphone's frames aside while it
+     * does. Watched only while a listener collects it, and only while a screen reader is on.
+     */
+    val screenReaderSpeech: ScreenReaderSpeech by lazy { AndroidScreenReaderSpeech(appContext) }
 
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
     val tonePlayer: TonePlayer

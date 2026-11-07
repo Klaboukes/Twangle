@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.audio.watching
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationInstruments
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -68,6 +70,10 @@ import kotlin.math.ceil
  * sounds, and for [TONE_TAIL_SECONDS] after, the microphone stays open but its readings are set
  * aside, so the tuner shows the listening state instead of measuring its own tone.
  *
+ * The same while a screen reader's voice plays ([screenReaderSpeech], Phase 81: TalkBack saying "12 cents flat" through
+ * the speaker) and for [ScreenReaderSpeech.TAIL_SECONDS] after, so its speech is never read as a note and a spoken
+ * reading can't set off the next one. Every tool beside the tuner hears nothing then either.
+ *
  * [tools] says which music tools show (Phase 28): the tuner modes of Phases 29–31 come only
  * with their switches. Tests get every tool unless they say otherwise; the app passes its build's.
  *
@@ -90,6 +96,7 @@ class TunerViewModel(
     language: String = "",
     val tools: ToolSwitches = ToolSwitches.ALL_ON,
     private val clock: () -> Long = System::currentTimeMillis,
+    private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) : ViewModel() {
 
     /** The app's language, whose usual notation is used while the player hasn't picked one. */
@@ -565,7 +572,31 @@ class TunerViewModel(
         const val TONE_TAIL_SECONDS = 0.3f
     }
 
+    /**
+     * The readings while the microphone is open. A screen reader's voice is watched for as long as it is ([watching]:
+     * nothing is asked of the system once the tuner stops listening).
+     */
     private fun listen(): Flow<TunerUiState> = flow {
+        screenReaderSpeech.watching { speaking -> emitAll(readings(speaking)) }
+    }
+        // Leaving the tuner ends the wait: the window comes only right after the tuning, never on coming back.
+        // The strings ticked off go too: they say what was tuned since the tuner opened.
+        .onCompletion {
+            ratingWait?.cancel()
+            ratingWait = null
+            tunedNow.value = null
+            heardNow.value = HeardStrum.None
+            strumOn.value = false
+        }
+        // Most frames look the same on screen as the last state sent: an equal Listening state in
+        // silence, or a note whose readout and needle moved less than the screen shows. Dropping
+        // them here, on the DSP thread, keeps them from waking the main thread ~47 times a second.
+        .distinctUntilChanged { old, new -> old.looksLike(new) }
+        .catch { emit(TunerUiState.Error(it.toTunerError())) }
+        .flowOn(dspDispatcher)
+
+    /** What the tuner shows of each frame; [speaking] says whether a screen reader's voice plays now. */
+    private fun readings(speaking: StateFlow<Boolean>): Flow<TunerUiState> = flow {
         var interpreter = TunerInterpreter(pipeline.frameSeconds)
         val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val heardInterpreter = HeardStrumInterpreter()
@@ -577,17 +608,20 @@ class TunerViewModel(
         emit(if (initial.intonationChecking) intonationInterpreter.shown(initial) else interpreter.listening(initial))
         val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
         val tailFrames = ceil(TONE_TAIL_SECONDS / pipeline.frameSeconds).toInt()
+        val speechTailFrames = ScreenReaderSpeech.tailFrames(pipeline.frameSeconds)
         var frame = 0
-        // Frames still to set aside: the tone sounds, or its echo may still be in the room.
+        // Frames still to set aside: the tone or a screen reader's voice sounds, or its echo may still be in the room.
         var ignoredFrames = 0
         // Whether the last reading was the 12th-fret check's: the tuner's smoothing starts afresh after it.
         var elsewhere = false
         // The strum analysis beside the tuner hears what the tuner hears while the strum check's button is on, unless
-        // the app's own tone (or its echo) would be heard. Every sound is then a strum: the player said one comes.
+        // the app's own tone or a screen reader's voice (or its echo) would be heard. Every sound is then a strum: the
+        // player said one comes.
         val hearing = object : StrumHearing {
             override fun a4Hz(): Float {
                 val current = options.value ?: initial
-                return if (current.strumChecking && ignoredFrames == 0 && !tonePlayer.isPlaying.value) current.a4Hz else Float.NaN
+                val quiet = ignoredFrames == 0 && !tonePlayer.isPlaying.value && !speaking.value
+                return if (current.strumChecking && quiet) current.a4Hz else Float.NaN
             }
 
             override fun openStrings(): FloatArray? = (options.value ?: initial).heardStrings
@@ -632,10 +666,11 @@ class TunerViewModel(
                     elsewhere = false
                     interpreter = TunerInterpreter(pipeline.frameSeconds)
                 }
-                if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
+                if (tonePlayer.isPlaying.value) ignoredFrames = maxOf(ignoredFrames, tailFrames + 1)
+                if (speaking.value) ignoredFrames = maxOf(ignoredFrames, speechTailFrames + 1)
                 if (ignoredFrames > 0) {
-                    // The mic would hear the app's own tone: show the listening state instead, and
-                    // start the smoothing afresh afterwards so nothing of the tone carries over.
+                    // The mic would hear the app's own tone or the screen reader's voice: show the listening state
+                    // instead, and start the smoothing afresh afterwards so nothing of that sound carries over.
                     if (--ignoredFrames == 0) interpreter = TunerInterpreter(pipeline.frameSeconds)
                     return@map if (current.intonationChecking) intonationInterpreter.shown(current) else interpreter.listening(current)
                 }
@@ -664,21 +699,6 @@ class TunerViewModel(
             },
         )
     }
-        // Leaving the tuner ends the wait: the window comes only right after the tuning, never on coming back.
-        // The strings ticked off go too: they say what was tuned since the tuner opened.
-        .onCompletion {
-            ratingWait?.cancel()
-            ratingWait = null
-            tunedNow.value = null
-            heardNow.value = HeardStrum.None
-            strumOn.value = false
-        }
-        // Most frames look the same on screen as the last state sent: an equal Listening state in
-        // silence, or a note whose readout and needle moved less than the screen shows. Dropping
-        // them here, on the DSP thread, keeps them from waking the main thread ~47 times a second.
-        .distinctUntilChanged { old, new -> old.looksLike(new) }
-        .catch { emit(TunerUiState.Error(it.toTunerError())) }
-        .flowOn(dspDispatcher)
 }
 
 /** The string the 12th-fret check checks (null: none chosen), and a count that starts it afresh when it goes up. */

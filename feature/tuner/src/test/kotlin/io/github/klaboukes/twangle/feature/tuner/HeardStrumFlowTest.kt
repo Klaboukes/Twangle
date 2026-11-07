@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
@@ -266,5 +267,18 @@ class HeardStrumFlowTest {
         vm.playString(1)
         advanceTimeBy(3_000)
         assertSame(HeardStrum.None, vm.heardStrum.value)
+    }
+
+    @Test
+    fun `a screen reader's voice is never analysed`() = runTest(dispatcher) {
+        // TalkBack speaks over the strum (Phase 81): the strum check hears nothing of it.
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        val vm = TunerViewModel(FakeAudioRecorder(openStrum), settings, tones, StandardTestDispatcher(testScheduler), screenReaderSpeech = speech)
+        vm.setStrumCheck(true)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(3_000)
+        assertSame(HeardStrum.None, vm.heardStrum.value)
+        assertTrue("the button still waits for a strum", vm.strumCheck.value)
     }
 }

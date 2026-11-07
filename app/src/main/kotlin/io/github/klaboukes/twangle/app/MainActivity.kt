@@ -348,6 +348,7 @@ class MainActivity : AppCompatActivity() {
                                         title = stringResource(R.string.nav_tuner),
                                         focusMode = focusMode,
                                         onFocusModeChange = { container.focusMode.value = it },
+                                        screenReaderSpeech = container.screenReaderSpeech,
                                     )
                                 }
                                 Screen.METRONOME -> MetronomeTab(container, settings, tools, gear)
@@ -542,6 +543,7 @@ class MainActivity : AppCompatActivity() {
                     BackAndTuningRow(tool = PracticeTool.PITCH_TRAIL, onBack = onBack, tuningName = null, spokenTuningName = "", onPickInstrument = null)
                 },
                 saved = settings,
+                screenReaderSpeech = container.screenReaderSpeech,
             )
         }
     }

@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.feature.tuner.trail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
+import io.github.klaboukes.twangle.core.audio.watching
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -45,6 +47,9 @@ import kotlinx.coroutines.launch
  * The microphone is open only while [state] is collected and the permission is granted
  * ([SharingStarted.WhileSubscribed], hard rule 4); each opening starts the line afresh. [language] is the app's
  * language, whose usual notation names the note until the player picks one.
+ *
+ * While a screen reader's voice plays ([screenReaderSpeech]) and for [ScreenReaderSpeech.TAIL_SECONDS] after, the
+ * readings are set aside as the tuner sets them aside (Phase 81): the trail shows a gap, not TalkBack's speech.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PitchTrailViewModel(
@@ -53,6 +58,7 @@ class PitchTrailViewModel(
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     saved: AppSettings = AppSettings(),
     language: String = "",
+    private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
 ) : ViewModel() {
 
     private val appLanguage = MutableStateFlow(language)
@@ -110,23 +116,40 @@ class PitchTrailViewModel(
         attempt.value++
     }
 
+    /** The readings while the microphone is open, a screen reader's voice watched as long ([watching]). */
     private fun listen(): Flow<TunerUiState> = flow {
-        val interpreter = TunerInterpreter(pipeline.frameSeconds)
-        val initial = options.filterNotNull().first()
-        feed.start()
-        emit(interpreter.listening(initial))
-        val frameSeconds = pipeline.frameSeconds
-        emitAll(
-            pipeline.readings(range = { (options.value ?: initial).pitchRange }).map { reading ->
-                val state = interpreter.interpret(reading, options.value ?: initial)
-                feed.record(state, frameSeconds)
-                state
-            },
-        )
+        screenReaderSpeech.watching { speaking -> emitAll(readings(speaking)) }
     }
         // Most frames look the same on screen as the last one sent; dropped here, on the DSP thread. The history has
         // every reading already.
         .distinctUntilChanged { old, new -> old.looksLike(new) }
         .catch { emit(TunerUiState.Error(it.toTunerError())) }
         .flowOn(dspDispatcher)
+
+    /** What the trail shows of each frame; [speaking] says whether a screen reader's voice plays now. */
+    private fun readings(speaking: StateFlow<Boolean>): Flow<TunerUiState> = flow {
+        var interpreter = TunerInterpreter(pipeline.frameSeconds)
+        val initial = options.filterNotNull().first()
+        feed.start()
+        emit(interpreter.listening(initial))
+        val frameSeconds = pipeline.frameSeconds
+        val tailFrames = ScreenReaderSpeech.tailFrames(frameSeconds)
+        // Frames still to set aside: the voice plays, or its echo may still be in the room.
+        var ignoredFrames = 0
+        emitAll(
+            pipeline.readings(range = { (options.value ?: initial).pitchRange }).map { reading ->
+                val current = options.value ?: initial
+                if (speaking.value) ignoredFrames = tailFrames + 1
+                val state = if (ignoredFrames > 0) {
+                    // The smoothing starts afresh afterwards, so nothing of the voice carries over.
+                    if (--ignoredFrames == 0) interpreter = TunerInterpreter(frameSeconds)
+                    interpreter.listening(current)
+                } else {
+                    interpreter.interpret(reading, current)
+                }
+                feed.record(state, frameSeconds)
+                state
+            },
+        )
+    }
 }

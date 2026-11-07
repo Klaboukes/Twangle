@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.feature.tuner.trail
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
+import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
@@ -76,6 +78,22 @@ class PitchTrailViewModelTest {
         assertTrue("a note: $shown", shown is TunerUiState.Detected)
         assertEquals(TunerMode.CHROMATIC, (shown as TunerUiState.Detected).mode)
         assertEquals("the tuner's saved mode is left as it was", TunerMode.AUTO, settings.current.mode)
+    }
+
+    @Test
+    fun `a screen reader's voice leaves a gap, and the note comes back after its tail`() = runTest(dispatcher) {
+        val speech = FakeScreenReaderSpeech(speaking = true)
+        val vm = PitchTrailViewModel(note(), FakeSettingsRepository(), StandardTestDispatcher(testScheduler), screenReaderSpeech = speech)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(1_000)
+        assertTrue("listening while TalkBack speaks: ${vm.state.value}", vm.state.value is TunerUiState.Listening)
+        assertTrue(vm.history.end > 30)
+        vm.history.forEachWithin { _, target, _, _ -> assertEquals("TalkBack's speech is no note", PitchHistory.NO_NOTE, target) }
+
+        speech.isSpeaking = false
+        advanceTimeBy((ScreenReaderSpeech.TAIL_SECONDS * 1000).toLong() + 500)
+        assertTrue("a note after the tail: ${vm.state.value}", vm.state.value is TunerUiState.Detected)
     }
 
     @Test
