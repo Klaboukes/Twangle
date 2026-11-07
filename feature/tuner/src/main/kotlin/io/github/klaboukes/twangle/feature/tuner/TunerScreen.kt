@@ -104,6 +104,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckButton
 import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
 import io.github.klaboukes.twangle.feature.tuner.components.strumCountText
+import io.github.klaboukes.twangle.feature.tuner.components.strumHasLessSure
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationPanel
 import io.github.klaboukes.twangle.feature.tuner.components.IntonationStatus
@@ -616,8 +617,13 @@ fun TunerContent(
         val noteSpeech = rememberNoteNameSpeech()
         // The strum check's button on and no strum read yet: what to do.
         val strumWaiting = stringResource(R.string.tuner_strum_waiting)
+        // A string read less surely is drawn pale; the line under the count says what to do about it (TalkBack hears
+        // "less sure" on the string itself).
+        val lessSure = stringResource(R.string.tuner_strum_less_sure_tip)
         val heardQuiet = listening?.takeIf { soundingString == null }?.let {
-            strumShown?.let { check -> strumCountText(check)?.let { count -> HeardWords(count, count) } }
+            strumShown?.let { check ->
+                strumCountText(check)?.let { count -> HeardWords(count, count, lessSure.takeIf { strumHasLessSure(check) }) }
+            }
                 ?: HeardWords(strumWaiting, strumWaiting).takeIf { strumCheck && mode == TunerMode.AUTO }
         }
         // Every string of the strum in tune: its line in the in-tune colour, as the tick-off's "In tune. Play." is.
@@ -628,6 +634,7 @@ fun TunerContent(
             chromatic = mode == TunerMode.CHROMATIC,
             quiet = heardQuiet?.shown ?: listening?.let { listeningHint(mode, it, soundingString, allTuned = allTuned) }.orEmpty(),
             spokenQuiet = heardQuiet?.spoken ?: listening?.let { listeningHint(mode, it, soundingString, noteSpeech, allTuned) }.orEmpty(),
+            quietSmall = heardQuiet?.small,
             quietInTune = (allTuned && soundingString == null && heardQuiet == null) || strumAllInTune,
             // While a reference tone sounds its line says which, not a tip about the mic.
             // Nor while a strum's count stands there: a strum's many notes read as noise to the tuner.
@@ -841,8 +848,11 @@ fun TunerContent(
     }
 }
 
-/** A chord's words in the word's place: as [shown], and as TalkBack says them ([spoken], "B flat major"). */
-private class HeardWords(val shown: String, val spoken: String)
+/**
+ * A chord's words in the word's place: as [shown], and as TalkBack says them ([spoken], "B flat major"), with [small]
+ * on the line under them (shown only: TalkBack hears it where it applies).
+ */
+private class HeardWords(val shown: String, val spoken: String, val small: String? = null)
 
 /** What the ruler shows: its 12 [names], where it rests while quiet ([rest]) and the [heard] note (null while quiet). */
 internal class RulerShown(val names: List<String>, val rest: Int, val heard: Int?)

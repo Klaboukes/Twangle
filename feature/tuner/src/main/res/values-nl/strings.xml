@@ -166,6 +166,7 @@
     <string name="tuner_strum_close">Strumcheck sluiten</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, niet gehoord</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, minder zeker</string>
+    <string name="tuner_strum_less_sure_tip">Tokkel de bleke snaren apart</string>
     <string name="tuner_strum_all_in_tune">Alle snaren zijn zuiver</string>
     <plurals name="tuner_strum_count">
         <item quantity="one">%1$d van de %2$d zuiver</item>

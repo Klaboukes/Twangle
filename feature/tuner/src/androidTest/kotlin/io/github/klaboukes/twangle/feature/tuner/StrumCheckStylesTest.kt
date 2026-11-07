@@ -123,6 +123,7 @@ class StrumCheckStylesTest {
     private fun peg(index: Int) = compose.onNodeWithText(strings[index])
     private val panel get() = compose.onNodeWithTag(TunerTestTags.STRUM_PANEL, useUnmergedTree = true)
     private val wordText get() = compose.onNodeWithTag(TunerTestTags.WORD_TEXT, useUnmergedTree = true)
+    private val wordSmall get() = compose.onNodeWithTag(TunerTestTags.WORD_CENTS, useUnmergedTree = true)
     private fun strumButton() = compose.onNodeWithTag(TunerTestTags.STRUM_BUTTON, useUnmergedTree = true)
     private fun count(tag: String) = compose.onAllNodesWithTag(tag, useUnmergedTree = true).fetchSemanticsNodes().size
 
@@ -185,6 +186,17 @@ class StrumCheckStylesTest {
         shownHeard.value = HeardStrum.OpenStrings(strum(StrumPhase.DONE, allInTune = true), 1)
         compose.waitForIdle()
         assertEquals(context.getString(R.string.tuner_strum_all_in_tune), wordText.text())
+    }
+
+    /** With a string read less surely (the E 4, drawn pale) the line under the count says to pluck it alone; with none, nothing. */
+    @Test
+    fun aLessSureStringIsExplainedUnderTheCount() {
+        show()
+        assertEquals(count(3, 6), wordText.text())
+        assertEquals(context.getString(R.string.tuner_strum_less_sure_tip), wordSmall.text())
+        shownHeard.value = HeardStrum.OpenStrings(strum(StrumPhase.DONE, allInTune = true), 1)
+        compose.waitForIdle()
+        assertEquals("", wordSmall.text())
     }
 
     /** The panel's ×, then Back, close it: the lens comes back. */

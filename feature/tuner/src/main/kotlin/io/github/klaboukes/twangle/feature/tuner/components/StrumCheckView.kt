@@ -146,6 +146,10 @@ fun strumCountText(check: TunerUiState.StrumCheck): String? {
     }
 }
 
+/** Whether a heard string of [check] was read less surely ([StrumString.sure]), so it is drawn pale. */
+fun strumHasLessSure(check: TunerUiState.StrumCheck): Boolean =
+    check.strings.any { !it.sure && it.verdict != StrumVerdict.NOT_HEARD }
+
 /**
  * The strum check's button (2.0, Phase 74, the owner's pick of 2026-11-03 after the guitar check: deciding by itself
  * whether a sound was one string, a strum or a chord flickered): above the pegs at the row's end, its outline in line

@@ -307,6 +307,8 @@
     <string name="tuner_strum_spoken_waiting">%1$s, not strummed yet</string>
     <!-- A string read from sounds that overlap another string's, so the reading is less certain. -->
     <string name="tuner_strum_spoken_less_sure">%1$s, less sure</string>
+    <!-- Strum check, on the small line under "4 of 6 in tune", only while some strings were read less surely (drawn pale, their sounds overlapping another string's): pluck each of those strings by itself to read it surely. Short. -->
+    <string name="tuner_strum_less_sure_tip">Pluck the pale strings on their own</string>
     <!-- TalkBack and the tooltip of the small × in the strum check's panel's corner: closes the panel, the tuner's own meter comes back. -->
     <string name="tuner_strum_close">Close the strum check</string>
     <!-- After the player strums all the open strings at once, in the word's place under the meter: every string is in tune. -->

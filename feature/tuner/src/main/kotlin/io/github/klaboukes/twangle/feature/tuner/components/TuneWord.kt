@@ -83,7 +83,8 @@ data class NoteReadout(
  * green, green in tune; at rest nearly the ink, [REST_WORD_INK], not the muted colour, which read too faint on a
  * dimmed screen, the owner's review of 2026-11-03), read while drawing, so a reading recolours it without recomposing; on a
  * light background it is taken a little toward the ink, as much as the amber needs to read ([wordInkShare]). A
- * [tip] about the sound ("Play a bit louder") takes the small line's place, in the accent colour. With [quietInTune]
+ * [tip] about the sound ("Play a bit louder") takes the small line's place, in the accent colour; without a note,
+ * [quietSmall] goes there too, in the cents' colour (the strum check's "Pluck the pale ones on their own"). With [quietInTune]
  * (every string ticked off, the string tick-off's "In tune. Play.") the [quiet] text is in the in-tune colour,
  * taken toward the ink as the word is.
  *
@@ -106,6 +107,7 @@ fun TuneWordLine(
     quiet: String,
     modifier: Modifier = Modifier,
     spokenQuiet: String = quiet,
+    quietSmall: String? = null,
     tip: ReceptionTip? = null,
     motion: String? = null,
     tone: LiveTone? = null,
@@ -140,7 +142,7 @@ fun TuneWordLine(
     val tipText = tip?.let { stringResource(it.label) }
     val small = when {
         tipText != null -> tipText
-        readout == null -> ""
+        readout == null -> quietSmall.orEmpty()
         readout.inTune -> centsAmountText(readout.cents)
         centsInPlace -> ""
         else -> centsText(readout.cents)

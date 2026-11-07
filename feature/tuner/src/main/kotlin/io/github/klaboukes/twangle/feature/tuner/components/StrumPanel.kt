@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -63,8 +64,9 @@ import kotlin.math.roundToInt
  * each column stands over its peg's side of the screen. Each shows the string's name, a short upright scale (sharp
  * up, flat down, ±50 cents, the in-tune band round its centre, neutral until the string reads in tune, then in the
  * in-tune colour; its centre mark muted until the string is heard) with a marker at the string's reading, and under it
- * a check mark in the in-tune colour, or the cents off in the accent ("−12", "+8"), or "–" for a string that wasn't
- * heard. A less sure string (read from peaks merged with another string's, [StrumString.sure]) gets a hollow marker
+ * a check mark in the in-tune colour, or the cents off in the amber of a string far off ("−12", "+8"; taken toward the
+ * ink as the word's colour is, [wordInkShare], so the marks over the pegs and the tuner's own tone say off the same
+ * way), or "–" for a string that wasn't heard. A less sure string (read from peaks merged with another string's, [StrumString.sure]) gets a hollow marker
  * and paler figures. While a new strum is heard, the strum before stays faded; before any strum ([state]'s strings
  * empty) the columns wait, empty. After the strum each string played on its own moves its own marker (`HeardShown`).
  * Drawn in the look's colours on a calm field like the 12th-fret check's, sized by its width (not the font size);
@@ -75,13 +77,18 @@ import kotlin.math.roundToInt
 fun StrumPanel(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier, onClose: (() -> Unit)? = null) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
+    val ink = scheme.onSurface
+    val background = scheme.background
+    val offTune = remember(tokens.farOff, tokens.inTune, ink, background) {
+        mixColour(tokens.farOff, ink, wordInkShare(tokens.farOff, tokens.inTune, ink, background))
+    }
     val colours = PanelColours(
-        ink = scheme.onSurface,
+        ink = ink,
         muted = scheme.onSurfaceVariant,
         track = scheme.outlineVariant,
-        accent = scheme.primary,
+        offTune = offTune,
         inTune = tokens.inTune,
-        background = scheme.background,
+        background = background,
     )
     val nameStyle = MaterialTheme.typography.displayLarge.copy(lineHeight = TextUnit.Unspecified)
     val numberStyle = TextStyle(fontFamily = NumberFont, fontFeatureSettings = "lnum")
@@ -199,18 +206,18 @@ private fun StrumCell(
     val inTune = string?.verdict == StrumVerdict.IN_TUNE
     val sure = string?.sure != false
     val dim = if (faded) FADED_ALPHA else 1f
-    val markerColour = if (inTune) colours.inTune else colours.accent
+    val markerColour = if (inTune) colours.inTune else colours.offTune
     // Green only ever means in tune: the band round the centre is neutral until this string reads in
     // tune, so a panel still waiting for its strum doesn't look like six strings in tune.
     val bandColour = if (inTune) colours.inTune else colours.muted
-    // Its centre mark is muted until the string is heard: an accent there read as a marker resting in tune.
-    val centreColour = if (heard) colours.accent else colours.muted
+    // Its centre mark is muted until the string is heard: a colour there read as a marker resting in tune.
+    val centreColour = if (heard) colours.ink else colours.muted
     Box(
         modifier.drawWithCache {
             val u = size.height / UNITS_HIGH
             val maxTextWidth = size.width * TEXT_WIDTH_SHARE
             val nameLayout = measurer.fitted(name, nameStyle.copy(color = colours.ink, fontSize = (NAME_UNITS * u).toSpNoScale(this)), maxTextWidth)
-            val labelColour = if (string?.verdict == StrumVerdict.NOT_HEARD) colours.muted else colours.accent
+            val labelColour = if (string?.verdict == StrumVerdict.NOT_HEARD) colours.muted else colours.offTune
             val labelLayout = if (label.isEmpty()) {
                 null
             } else {
@@ -276,7 +283,7 @@ private class PanelColours(
     val ink: Color,
     val muted: Color,
     val track: Color,
-    val accent: Color,
+    val offTune: Color,
     val inTune: Color,
     val background: Color,
 )
