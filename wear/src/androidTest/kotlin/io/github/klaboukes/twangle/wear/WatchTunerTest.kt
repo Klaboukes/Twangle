@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
@@ -47,6 +49,8 @@ class WatchTunerTest {
     private var state by mutableStateOf<WatchTunerState>(WatchTunerState.Listening)
     private var dial by mutableStateOf(225.dp)
     private var retries = 0
+    private var guideOn by mutableStateOf(false)
+    private val guideFlips = mutableListOf<Boolean>()
 
     /** The tuner's pacing of what TalkBack hears, kept here so a wait on the test's clock can read it. */
     private val speech = WatchPacedSpeech()
@@ -57,7 +61,7 @@ class WatchTunerTest {
             val tuner = @Composable {
                 WatchTheme {
                     Box(Modifier.size(dial).background(Color.Black)) {
-                        WatchTuner(state, onRetry = { retries++ }, speech = speech)
+                        WatchTuner(state, onRetry = { retries++ }, speech = speech, guideOn = guideOn, onGuide = { guideFlips += it })
                     }
                 }
             }
@@ -251,6 +255,54 @@ class WatchTunerTest {
             for (bounds in listOf(word.fetchSemanticsNode().boundsInRoot, compose.onNodeWithText("48 cents flat", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot)) {
                 assertBetweenTheArcsEnds(bounds, shown)
             }
+        }
+    }
+
+    /** The tuner's one setting (Phase 85): a switch TalkBack names "Vibration guide", with its state, that flips. */
+    @Test
+    fun theVibrationGuideIsASwitchTalkBackNames() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
+        val switch = compose.onNodeWithTag(WatchDial.GUIDE_TAG)
+        switch
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Vibration guide")))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState.Off))
+        switch.performClick()
+        assertEquals(listOf(true), guideFlips)
+
+        guideOn = true
+        compose.waitForIdle()
+        switch.assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState.On))
+        switch.performClick()
+        assertEquals(listOf(true, false), guideFlips)
+    }
+
+    @Test
+    fun theVibrationGuideIsNamedInDutch() {
+        show(WatchTunerState.Listening, language = "nl")
+        compose.onNodeWithTag(WatchDial.GUIDE_TAG)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Stemmen op gevoel")))
+    }
+
+    /** The switch sits in the arc's opening, under the longest cents and clear of them, on small and large screens. */
+    @Test
+    fun theGuideSwitchSitsUnderTheCentsInTheArcsOpening() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.C_SHARP, 3), -48))
+        for (size in listOf(170.dp, 192.dp, 210.dp, 225.dp)) {
+            dial = size
+            compose.waitForIdle()
+            val shown = compose.onNodeWithTag(WatchDial.TAG).fetchSemanticsNode().boundsInRoot
+            val cents = compose.onNodeWithText("48 cents flat", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val switch = compose.onNodeWithTag(WatchDial.GUIDE_TAG).fetchSemanticsNode().boundsInRoot
+            assertTrue("at ${shown.dp()}: the switch $switch runs into the cents $cents", switch.top >= cents.bottom - 0.5f)
+            val c = shown.center
+            for (corner in listOf(switch.topLeft, switch.topRight)) {
+                val dx = corner.x - c.x
+                val dy = corner.y - c.y
+                assertTrue("at ${shown.dp()}: corner $corner is outside the arc's opening", dy > 0 && kotlin.math.abs(dx) < dy)
+            }
+            assertTrue("at ${shown.dp()}: the switch reaches below the screen", switch.bottom <= shown.bottom + 0.5f)
         }
     }
 

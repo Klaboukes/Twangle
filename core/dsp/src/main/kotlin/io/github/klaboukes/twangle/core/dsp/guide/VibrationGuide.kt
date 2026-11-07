@@ -52,10 +52,13 @@ enum class GuidePulse {
  * - Nothing while no note is heard ([GuideCue.NONE]) or its direction isn't settled ([GuideCue.WAIT]); a new note
  *   ([update]'s target changing) or a silence starts the taps afresh.
  *
+ * The lengths and times are [timing]'s: the phone's by default ([GuideTiming.PHONE], the numbers below), the watch's
+ * longer ones on the wrist ([GuideTiming.WATCH]).
+ *
  * Time is counted in analysis frames (each [update] adds its frame's duration), as [GuideCue]'s source does, so it
  * needs no clock. Allocation-free and not thread-safe.
  */
-class VibrationGuide {
+class VibrationGuide(val timing: GuideTiming = GuideTiming.PHONE) {
     private var nowSeconds = 0.0
 
     /** The note the taps are about, or [NO_TARGET]. */
@@ -92,7 +95,7 @@ class VibrationGuide {
                 direction = GuidePulse.NONE
                 if (buzz) {
                     lastStart = nowSeconds
-                    buzzEndsAt = nowSeconds + IN_TUNE_BUZZ_SECONDS
+                    buzzEndsAt = nowSeconds + timing.buzzSeconds
                     GuidePulse.IN_TUNE
                 } else {
                     GuidePulse.NONE
@@ -118,11 +121,11 @@ class VibrationGuide {
     private fun taps(wanted: GuidePulse, cents: Float, edgeCents: Float): GuidePulse {
         val gap = when {
             lastStart == NEVER -> 0.0
-            wanted != direction -> NEAR_INTERVAL_SECONDS.toDouble()
-            else -> intervalSeconds(cents, edgeCents).toDouble()
+            wanted != direction -> timing.nearIntervalSeconds.toDouble()
+            else -> timing.intervalSeconds(cents, edgeCents).toDouble()
         }
         // Never over the buzz: its last part would hide the first tap.
-        val due = maxOf(lastStart + gap, buzzEndsAt + BUZZ_GAP_SECONDS)
+        val due = maxOf(lastStart + gap, buzzEndsAt + timing.buzzGapSeconds)
         if (nowSeconds < due - EPSILON_SECONDS) return GuidePulse.NONE
         lastStart = nowSeconds
         direction = wanted
@@ -173,23 +176,75 @@ class VibrationGuide {
         /** After the buzz, this much stillness before a tap, so the two are felt apart. */
         const val BUZZ_GAP_SECONDS = 0.15f
 
-        /**
-         * The time between tap groups [cents] off a target whose in-tune window ends at [edgeCents]: a straight line
-         * from [NEAR_INTERVAL_SECONDS] at the edge (or nearer) to [FAR_INTERVAL_SECONDS] at [FAR_CENTS] (or further),
-         * a Geiger counter's way of saying "closer" (the mock-up's rule, docs/design/tuning-guide-preview.html, with the
-         * phone's numbers).
-         */
-        fun intervalSeconds(cents: Float, edgeCents: Float = DEFAULT_EDGE_CENTS): Float {
-            val off = abs(cents)
-            if (off.isNaN()) return FAR_INTERVAL_SECONDS
-            val span = FAR_CENTS - edgeCents
-            if (span <= 0f) return FAR_INTERVAL_SECONDS
-            val t = ((off - edgeCents) / span).coerceIn(0f, 1f)
-            return NEAR_INTERVAL_SECONDS + t * (FAR_INTERVAL_SECONDS - NEAR_INTERVAL_SECONDS)
-        }
+        /** The phone's time between tap groups [cents] off ([GuideTiming.intervalSeconds] with [GuideTiming.PHONE]). */
+        fun intervalSeconds(cents: Float, edgeCents: Float = DEFAULT_EDGE_CENTS): Float =
+            GuideTiming.PHONE.intervalSeconds(cents, edgeCents)
 
         private const val NO_TARGET = Int.MIN_VALUE
         private const val NEVER = -1e9
         private const val EPSILON_SECONDS = 1e-4
+    }
+}
+
+/**
+ * How long the guide's pulses last and how far apart its groups come, in seconds: [tapSeconds] for a tap, the loosen
+ * pair's second tap [pairSeconds] after its first (onset to onset), the in-tune buzz [buzzSeconds] with [buzzGapSeconds]
+ * of stillness after it, and the groups [farIntervalSeconds] apart [VibrationGuide.FAR_CENTS] off or more, easing to
+ * [nearIntervalSeconds] at the in-tune window's edge. [nearIntervalSeconds] stays more than three times [pairSeconds],
+ * so two single taps are never felt as a double.
+ */
+data class GuideTiming(
+    val tapSeconds: Float,
+    val pairSeconds: Float,
+    val buzzSeconds: Float,
+    val buzzGapSeconds: Float,
+    val farIntervalSeconds: Float,
+    val nearIntervalSeconds: Float,
+) {
+    /** How long a loosen pair keeps the motor busy, from its first tap's start to its second's end. */
+    val pairLengthSeconds: Float get() = pairSeconds + tapSeconds
+
+    /**
+     * The time between tap groups [cents] off a target whose in-tune window ends at [edgeCents]: a straight line from
+     * [nearIntervalSeconds] at the edge (or nearer) to [farIntervalSeconds] at [VibrationGuide.FAR_CENTS] (or further),
+     * a Geiger counter's way of saying "closer" (the mock-up's rule, docs/design/tuning-guide-preview.html).
+     */
+    fun intervalSeconds(cents: Float, edgeCents: Float = VibrationGuide.DEFAULT_EDGE_CENTS): Float {
+        val off = abs(cents)
+        if (off.isNaN()) return farIntervalSeconds
+        val span = VibrationGuide.FAR_CENTS - edgeCents
+        if (span <= 0f) return farIntervalSeconds
+        val t = ((off - edgeCents) / span).coerceIn(0f, 1f)
+        return nearIntervalSeconds + t * (farIntervalSeconds - nearIntervalSeconds)
+    }
+
+    companion object {
+        /** The phone's: a 25 ms tap, the pair 90 ms apart, a 375 ms buzz, the groups 700 ms easing to 300 ms apart. */
+        val PHONE = GuideTiming(
+            tapSeconds = VibrationGuide.TAP_SECONDS,
+            pairSeconds = VibrationGuide.PAIR_SECONDS,
+            buzzSeconds = VibrationGuide.IN_TUNE_BUZZ_SECONDS,
+            buzzGapSeconds = VibrationGuide.BUZZ_GAP_SECONDS,
+            farIntervalSeconds = VibrationGuide.FAR_INTERVAL_SECONDS,
+            nearIntervalSeconds = VibrationGuide.NEAR_INTERVAL_SECONDS,
+        )
+
+        /**
+         * The watch's (Phase 85): its motor must run far longer to be felt while playing. On the owner's Galaxy Watch 5
+         * with a guitar (2026-10-31) a 40 ms pulse wasn't felt at all, 80 ms only with the arm still, a double of 80 ms
+         * not while playing, and 150 ms came through (the in-tune tap's length). So a tap is 150 ms, the pair's two
+         * 100 ms apart (the watch metronome's least stillness for two taps to be felt as two), the buzz 600 ms, four
+         * taps long, with 200 ms of stillness after it, and the groups 1.5 s easing to 0.8 s apart (more than three
+         * pairs' onsets). Slower than the phone's, which also leaves the watch's microphone, in the same case as the
+         * motor, time to listen between the groups.
+         */
+        val WATCH = GuideTiming(
+            tapSeconds = 0.15f,
+            pairSeconds = 0.25f,
+            buzzSeconds = 0.6f,
+            buzzGapSeconds = 0.2f,
+            farIntervalSeconds = 1.5f,
+            nearIntervalSeconds = 0.8f,
+        )
     }
 }

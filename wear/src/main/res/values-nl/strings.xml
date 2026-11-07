@@ -18,6 +18,7 @@
     <string name="wear_word_tighten">Strakker</string>
     <string name="wear_word_loosen">Losser</string>
     <string name="wear_spoken_sharp">%1$s kruis</string>
+    <string name="wear_vibration_guide">Stemmen op gevoel</string>
     <string name="wear_mic_needed">Twangle luistert met de microfoon van je horloge naar je instrument.</string>
     <string name="wear_allow_mic">Microfoon toestaan</string>
     <string name="wear_open_settings">Instellingen openen</string>

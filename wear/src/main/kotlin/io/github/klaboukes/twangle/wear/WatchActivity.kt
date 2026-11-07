@@ -39,10 +39,13 @@ class WatchActivity : ComponentActivity() {
         val opening = if (savedInstanceState == null) pageOf(intent) ?: WatchPage.TUNER else WatchPage.TUNER
         val factory = viewModelFactory {
             initializer {
-                // TalkBack's voice through the watch's speaker is set aside as on the phone (Phase 81).
+                // TalkBack's voice through the watch's speaker is set aside as on the phone (Phase 81); the
+                // vibration guide taps the wrist (Phase 85).
                 WatchTunerViewModel(
                     AndroidAudioRecorder(applicationContext),
                     screenReaderSpeech = AndroidScreenReaderSpeech(applicationContext),
+                    store = WatchTunerStore.of(applicationContext),
+                    guideVibrator = AndroidWatchGuideVibrator(applicationContext),
                 )
             }
             initializer {

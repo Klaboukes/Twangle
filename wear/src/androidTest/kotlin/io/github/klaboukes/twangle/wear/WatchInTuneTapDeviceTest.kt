@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.dsp.guide.GuidePulse
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import org.junit.Assert.assertEquals
@@ -66,6 +68,32 @@ class WatchInTuneTapDeviceTest {
         restoration.emulateSavedInstanceStateRestore()
         compose.waitForIdle()
         assertEquals(1, taps)
+    }
+
+    /** With the vibration guide on its long buzz says "in tune": the screen's tap never plays too (Phase 85). */
+    @Test
+    fun noTapWhileTheVibrationGuideIsOn() {
+        var guideOn by mutableStateOf(true)
+        compose.setContent { WatchInTuneTapEffect(state, tap = { taps++ }, clock = { now }, guideOn = guideOn) }
+        set(WatchTunerState.Detected(a2, -9), 100)
+        set(WatchTunerState.Detected(a2, 0, inTune = true), 500)
+        assertEquals(0, taps)
+
+        // Turned off on a note in tune: no tap for it either, the next note taps again.
+        guideOn = false
+        set(WatchTunerState.Detected(a2, 1, inTune = true), 600)
+        assertEquals(0, taps)
+        set(WatchTunerState.Detected(Note.of(PitchClass.D, 3), 0), 1_000)
+        set(WatchTunerState.Detected(Note.of(PitchClass.D, 3), 0, inTune = true), 1_300)
+        assertEquals(1, taps)
+    }
+
+    @Test
+    fun theRealGuidePulsesPlayWithoutTrouble() {
+        val motor = AndroidWatchGuideVibrator(InstrumentationRegistry.getInstrumentation().targetContext)
+        for (pulse in GuidePulse.entries) motor.play(pulse)
+        motor.stop()
+        motor.stop()
     }
 
     @Test

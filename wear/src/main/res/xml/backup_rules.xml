@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Android 11 (Wear OS 3): what Android's backup leaves out. Everything the watch keeps stays on the watch:
      whether the microphone was refused on this watch (MicPermission.kt), which a new watch must not take
-     over, and the metronome's tempo and click choice (WatchMetronomeStore.kt; the privacy policy says
-     "on the watch itself"). -->
+     over, the metronome's tempo and click choice (WatchMetronomeStore.kt) and whether the tuner's vibration
+     guide is on (WatchTunerStore.kt; the privacy policy says "on the watch itself"). -->
 <full-backup-content>
     <exclude domain="sharedpref" path="twangle_wear.xml" />
     <exclude domain="file" path="datastore/watch_metronome.preferences_pb" />
+    <exclude domain="file" path="datastore/watch_tuner.preferences_pb" />
 </full-backup-content>

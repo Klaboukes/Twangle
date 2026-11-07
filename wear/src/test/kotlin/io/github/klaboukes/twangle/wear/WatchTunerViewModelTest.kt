@@ -2,6 +2,8 @@ package io.github.klaboukes.twangle.wear
 
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
+import io.github.klaboukes.twangle.core.dsp.guide.GuidePulse
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
@@ -149,6 +151,97 @@ class WatchTunerViewModelTest {
         vm.shown()
         advanceTimeBy(1_000)
         assertEquals("a working mic isn't restarted", 2, recorder.startCount)
+    }
+
+    // Phase 85: the vibration guide.
+
+    /** The guide's motor, counting what it plays and how often it is stopped. */
+    private class CountingMotor : WatchGuideVibrator {
+        val played = mutableListOf<GuidePulse>()
+        var stops = 0
+
+        override fun play(pulse: GuidePulse) {
+            if (pulse != GuidePulse.NONE) played += pulse
+        }
+
+        override fun stop() {
+            stops++
+        }
+    }
+
+    /** A string 20 cents flat, held on a loop: the guide taps to tighten. */
+    private fun flatRecorder() = FakeAudioRecorder(TestSignals.sawtooth(110f * 0.98851f, length = 48_000), loop = true)
+
+    private fun TestScope.guidedViewModel(
+        recorder: FakeAudioRecorder,
+        motor: CountingMotor,
+        speech: FakeScreenReaderSpeech = FakeScreenReaderSpeech(),
+        store: WatchTunerStore = WatchTunerStore.inMemory(),
+    ) = WatchTunerViewModel(recorder, StandardTestDispatcher(testScheduler), speech, store, motor)
+
+    @Test
+    fun `the guide is on by itself while a screen reader is, until the player chooses`() = runTest(dispatcher) {
+        val speech = FakeScreenReaderSpeech(on = false)
+        val vm = guidedViewModel(e4Recorder(), CountingMotor(), speech)
+        advanceTimeBy(1)
+        assertFalse(vm.guideOn.value)
+        speech.isOn = true
+        advanceTimeBy(1)
+        assertTrue("on with TalkBack", vm.guideOn.value)
+
+        vm.setVibrationGuide(false)
+        advanceTimeBy(1)
+        assertFalse("the player's choice wins", vm.guideOn.value)
+        speech.isOn = false
+        vm.setVibrationGuide(true)
+        advanceTimeBy(1)
+        assertTrue(vm.guideOn.value)
+    }
+
+    @Test
+    fun `off by default, the guide plays nothing`() = runTest(dispatcher) {
+        val motor = CountingMotor()
+        val vm = guidedViewModel(flatRecorder(), motor)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(3_000)
+        assertTrue(vm.state.value is WatchTunerState.Detected)
+        assertTrue(motor.played.isEmpty())
+    }
+
+    @Test
+    fun `on, a flat string taps, and leaving the page stops it at once`() = runTest(dispatcher) {
+        val motor = CountingMotor()
+        val vm = guidedViewModel(flatRecorder(), motor, store = WatchTunerStore.inMemory(choice = true))
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(3_000)
+        assertTrue("taps: ${motor.played}", motor.played.size >= 2)
+        assertTrue(motor.played.all { it == GuidePulse.TIGHTEN })
+
+        vm.setShown(false)
+        assertEquals(1, motor.stops)
+        val before = motor.played.size
+        advanceTimeBy(3_000)
+        assertEquals("nothing while the page is away", before, motor.played.size)
+
+        vm.setShown(true)
+        advanceTimeBy(2_000)
+        assertTrue("taps again on coming back", motor.played.size > before)
+    }
+
+    @Test
+    fun `the screen going off stops the guide with the microphone`() = runTest(dispatcher) {
+        val motor = CountingMotor()
+        val vm = guidedViewModel(flatRecorder(), motor, store = WatchTunerStore.inMemory(choice = true))
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(2_000)
+        assertTrue(motor.played.isNotEmpty())
+
+        vm.setScreenOn(false)
+        advanceTimeBy(1)
+        assertTrue("stopped", motor.stops >= 1)
+        val before = motor.played.size
+        advanceTimeBy(3_000)
+        assertEquals(before, motor.played.size)
     }
 
     @Test

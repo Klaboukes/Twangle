@@ -152,6 +152,53 @@ class VibrationGuideTest {
     }
 
     @Test
+    fun `the phone's timing is the guide's numbers`() {
+        val phone = GuideTiming.PHONE
+        assertEquals(VibrationGuide.TAP_SECONDS, phone.tapSeconds)
+        assertEquals(VibrationGuide.PAIR_SECONDS, phone.pairSeconds)
+        assertEquals(VibrationGuide.IN_TUNE_BUZZ_SECONDS, phone.buzzSeconds)
+        assertEquals(VibrationGuide.FAR_INTERVAL_SECONDS, phone.farIntervalSeconds)
+        assertEquals(VibrationGuide.NEAR_INTERVAL_SECONDS, phone.nearIntervalSeconds)
+        assertEquals(phone, guide.timing)
+    }
+
+    @Test
+    fun `both timings keep two singles from feeling like a double, and the buzz longer than any group`() {
+        for (timing in listOf(GuideTiming.PHONE, GuideTiming.WATCH)) {
+            assertTrue("$timing", timing.nearIntervalSeconds > 3 * timing.pairSeconds)
+            assertTrue("$timing", timing.pairSeconds > timing.tapSeconds)
+            assertTrue("$timing", timing.buzzSeconds > timing.pairLengthSeconds)
+            assertTrue("$timing", timing.farIntervalSeconds > timing.nearIntervalSeconds)
+            // Each group ends before the next can start.
+            assertTrue("$timing", timing.nearIntervalSeconds > timing.pairLengthSeconds)
+        }
+    }
+
+    @Test
+    fun `on the watch the groups come 1_5 s apart far off, 0_8 s at the edge, and the taps follow the same rule`() {
+        val watch = VibrationGuide(GuideTiming.WATCH)
+        assertEquals(1.5f, GuideTiming.WATCH.intervalSeconds(40f), 1e-6f)
+        assertEquals(0.8f, GuideTiming.WATCH.intervalSeconds(-5f), 1e-6f)
+        val played = mutableListOf<Pair<Float, GuidePulse>>()
+        for (i in 0 until (4f / FRAME).toInt()) {
+            val pulse = watch.update(GuideCue.TIGHTEN, -40f, E2, FRAME)
+            if (pulse != GuidePulse.NONE) played += i * FRAME to pulse
+        }
+        assertEquals(0f, played.first().first, 1e-6f)
+        gaps(played).forEach { assertEquals(1.5f, it, FRAME + 1e-4f) }
+        // In tune: one buzz, and the next tap not before its 600 ms and the 200 ms after it.
+        assertEquals(GuidePulse.IN_TUNE, watch.update(GuideCue.IN_TUNE, 0f, E2, FRAME))
+        var t = 0f
+        var next = GuidePulse.NONE
+        while (next == GuidePulse.NONE && t < 2f) {
+            t += FRAME
+            next = watch.update(GuideCue.LOOSEN, 8f, E2, FRAME)
+        }
+        assertEquals(GuidePulse.LOOSEN, next)
+        assertTrue("first tap $t s after the buzz", t >= 0.8f - FRAME && t < 0.8f + 2 * FRAME)
+    }
+
+    @Test
     fun `reset forgets the note`() {
         run(GuideCue.IN_TUNE, 0f, 1f)
         guide.reset()

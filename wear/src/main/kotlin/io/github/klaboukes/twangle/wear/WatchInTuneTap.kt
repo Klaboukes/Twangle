@@ -39,20 +39,24 @@ class WatchInTuneTap(initiallyInTune: Boolean = false) {
 /**
  * Plays [tap] on the wrist when [state] comes in tune ([WatchInTuneTap]). Whether it was in tune
  * survives the activity being made again, so coming back to a note still in tune doesn't tap twice.
- * The watch only hears while the tuner is on screen, so it only taps then too.
+ * The watch only hears while the tuner is on screen, so it only taps then too. While the vibration guide is on
+ * ([guideOn], Phase 85) it never taps: the guide's long buzz says "in tune" instead (the rule still follows the note,
+ * so turning the guide off on a note in tune doesn't tap).
  */
 @Composable
 fun WatchInTuneTapEffect(
     state: WatchTunerState,
     tap: () -> Unit = rememberWristTap(),
     clock: () -> Long = SystemClock::uptimeMillis,
+    guideOn: Boolean = false,
 ) {
     val currentState by rememberUpdatedState(state)
     val currentTap by rememberUpdatedState(tap)
+    val currentGuideOn by rememberUpdatedState(guideOn)
     val inTune = (state as? WatchTunerState.Detected)?.inTune == true
     val rule = rememberSaveable(saver = TAP_RULE_SAVER) { WatchInTuneTap(initiallyInTune = inTune) }
     LaunchedEffect(inTune) {
-        if (rule.update(currentState, clock())) currentTap()
+        if (rule.update(currentState, clock()) && !currentGuideOn) currentTap()
     }
 }
 

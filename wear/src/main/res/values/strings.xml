@@ -29,6 +29,8 @@
     <string name="wear_word_loosen">Loosen</string>
     <!-- Watch, TalkBack: a note name with a sharp read aloud, e.g. "A sharp". %1$s is the letter or syllable ("A", "La"). In languages whose letter names are said in one word (Dutch ais, German Ais) only used for Do Re Mi. -->
     <string name="wear_spoken_sharp">%1$s sharp</string>
+    <!-- Watch tuner, TalkBack: the name of the small round switch at the bottom of the tuner (a vibrating-watch sign). On, the watch taps the wrist while a note rings so the player can tune without looking: one tap means tighten the string, two taps loosen it, a long buzz means in tune. On by itself while TalkBack is on. The phone's Settings switch of the same name. -->
+    <string name="wear_vibration_guide">Vibration guide</string>
     <!-- Microphone permission on the watch. -->
     <string name="wear_mic_needed">Twangle listens to your instrument with the watch\'s microphone.</string>
     <!-- Watch: button under the microphone message that asks for the microphone permission. Short (small round screen). -->

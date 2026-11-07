@@ -19,16 +19,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -44,6 +49,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
@@ -66,7 +72,9 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.Button
@@ -144,12 +152,16 @@ fun WatchTunerPage(tuner: @Composable () -> WatchTunerViewModel) {
             if (on) awake.touched()
         }
         LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.shown() }
+        // The vibration guide plays only while this page shows (the microphone outlives it by 5 s).
+        ReportShown(viewModel::setShown)
         val state by viewModel.state.collectAsStateWithLifecycle()
-        // One soft tap on the wrist as the note comes in tune, as the arc turns green.
-        WatchInTuneTapEffect(state)
+        val guideOn by viewModel.guideOn.collectAsStateWithLifecycle()
+        // One soft tap on the wrist as the note comes in tune, as the arc turns green; with the vibration
+        // guide on, its long buzz says so instead (never both).
+        WatchInTuneTapEffect(state, guideOn = guideOn)
         // The arc runs along the edge, where the time would be, so the tuner leaves it out.
         ScreenScaffold(timeText = {}) {
-            WatchTuner(state, onRetry = viewModel::retry)
+            WatchTuner(state, onRetry = viewModel::retry, guideOn = guideOn, onGuide = viewModel::setVibrationGuide)
         }
     } else {
         ScreenScaffold {
@@ -176,9 +188,19 @@ fun WatchTunerPage(tuner: @Composable () -> WatchTunerViewModel) {
  * For TalkBack the dial is one polite live region under the rest that says the reading in words, "A sharp 2,
  * 12 cents flat, Tighten", "E 2, in tune" or "Play a note" ([spokenWatchReading]), paced as on the phone by [speech]
  * ([WatchPacedSpeech]); the texts on screen are hidden from it.
+ *
+ * The tuner's one setting sits small at the bottom, in the arc's opening: the vibration guide's switch (Phase 85,
+ * [guideOn], flipped through [onGuide]), a round button with a vibrating watch in it, lit in the accent while on, as the
+ * metronome's speaker. TalkBack hears it as the switch "Vibration guide", on or off.
  */
 @Composable
-fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit, speech: WatchPacedSpeech = rememberWatchPacedSpeech()) {
+fun WatchTuner(
+    state: WatchTunerState,
+    onRetry: () -> Unit,
+    speech: WatchPacedSpeech = rememberWatchPacedSpeech(),
+    guideOn: Boolean = false,
+    onGuide: (Boolean) -> Unit = {},
+) {
     if (state is WatchTunerState.Failed) {
         Message(
             text = stringResource(
@@ -292,6 +314,77 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit, speech: WatchPacedSp
                     .absoluteOffset(y = dial * WatchDial.CENTS_Y)
                     .semantics { hideFromAccessibility() },
             )
+        }
+        GuideSwitch(guideOn, onGuide, dial)
+    }
+}
+
+/**
+ * The vibration guide's switch, small in the arc's opening under the cents: its touch area wider and taller than the
+ * circle drawn, reaching down to the screen's edge, clear of the cents above it.
+ */
+@Composable
+private fun GuideSwitch(on: Boolean, onGuide: (Boolean) -> Unit, dial: Dp) {
+    val label = stringResource(R.string.wear_vibration_guide)
+    Box(
+        Modifier
+            .absoluteOffset(y = dial * WatchDial.GUIDE_Y)
+            .size(width = dial * WatchDial.GUIDE_TOUCH_WIDTH, height = dial * WatchDial.GUIDE_TOUCH_HEIGHT)
+            .testTag(WatchDial.GUIDE_TAG)
+            .toggleable(value = on, role = Role.Switch, onValueChange = onGuide)
+            .semantics { contentDescription = label },
+    ) {
+        Canvas(Modifier.fillMaxSize()) { drawGuideSwitch(on, dial.toPx()) }
+    }
+}
+
+/**
+ * The guide switch's circle and sign, centred in this box at the top of its touch area, sized to the [dial]: a small
+ * watch (a rounded body with a strap stub above and below), with two short lines either side while on, as it buzzes;
+ * off, the watch alone in the muted colour on a plain circle (the metronome speaker's way).
+ */
+private fun DrawScope.drawGuideSwitch(on: Boolean, dial: Float) {
+    val r = dial * WatchDial.GUIDE_RADIUS
+    val c = Offset(center.x, r + dial * WatchDial.GUIDE_TOP)
+    if (on) {
+        drawCircle(WatchColors.accent.copy(alpha = WatchDial.GUIDE_ON_FILL), r, c)
+        drawCircle(WatchColors.accent, r, c, style = Stroke(dial * WatchDial.GUIDE_RING))
+    } else {
+        drawCircle(WatchColors.surface, r, c)
+    }
+    val colour = if (on) WatchColors.accent else WatchColors.muted
+    val u = dial * WatchDial.GUIDE_ICON
+    // The strap, then the body over it.
+    drawRoundRect(colour, topLeft = Offset(c.x - u * 0.3f, c.y - u), size = Size(u * 0.6f, u * 2f), cornerRadius = CornerRadius(u * 0.15f))
+    drawRoundRect(colour, topLeft = Offset(c.x - u * 0.5f, c.y - u * 0.6f), size = Size(u, u * 1.2f), cornerRadius = CornerRadius(u * 0.3f))
+    if (on) {
+        val line = u * 0.16f
+        for (side in floatArrayOf(-1f, 1f)) {
+            for (step in floatArrayOf(0.8f, 1.15f)) {
+                val x = c.x + side * u * step
+                drawLine(colour, Offset(x, c.y - u * 0.35f), Offset(x, c.y + u * 0.35f), line, StrokeCap.Round)
+            }
+        }
+    }
+}
+
+/** Tells [setShown] whether the tuner's page shows: true once started, false when stopped or gone from the composition. */
+@Composable
+private fun ReportShown(setShown: (Boolean) -> Unit) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val currentSetShown by rememberUpdatedState(setShown)
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> currentSetShown(true)
+                Lifecycle.Event.ON_STOP -> currentSetShown(false)
+                else -> Unit
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+            currentSetShown(false)
         }
     }
 }
@@ -488,6 +581,21 @@ object WatchDial {
     /** The cents under the word. */
     const val CENTS_SIZE = 0.055f
     const val CENTS_Y = 0.30f
+
+    /** The vibration guide's switch (Phase 85), in the arc's opening under the cents. */
+    const val GUIDE_TAG = "watchGuide"
+
+    /** Its touch area: from 34.5 % below the middle nearly to the screen's edge, 26 % wide. */
+    const val GUIDE_Y = 0.42f
+    const val GUIDE_TOUCH_WIDTH = 0.26f
+    const val GUIDE_TOUCH_HEIGHT = 0.15f
+
+    /** The circle drawn at the top of it (smaller than the metronome's speaker), its ring while on, and the sign's size. */
+    const val GUIDE_RADIUS = 0.045f
+    const val GUIDE_TOP = 0f
+    const val GUIDE_RING = 0.008f
+    const val GUIDE_ON_FILL = 0.18f
+    const val GUIDE_ICON = 0.025f
 
     /** The arc's green eases in and out over this long: calm, never a flash. */
     const val GLOW_MILLIS = 700

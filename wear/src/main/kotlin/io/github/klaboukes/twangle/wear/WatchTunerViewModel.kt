@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * Holds the watch tuner's [state]. The microphone is open only while someone collects [state]
@@ -23,14 +24,34 @@ import kotlinx.coroutines.flow.stateIn
  * ([setScreenOn] false) the microphone is let go of at once, without that grace, and opened again
  * when the screen comes back on. A failure shows as [WatchTunerState.Failed] until [retry].
  * While [screenReaderSpeech] says TalkBack's voice plays, the reading holds still (Phase 81, [WatchPitchPipeline]).
+ *
+ * The vibration guide (Phase 85) is [guideOn]: the player's choice kept in [store], else on while a screen reader is.
+ * While it is on, [guideVibrator] taps the wrist as the pipeline says, and only while the tuner is on screen ([setShown])
+ * and listening; the screen's in-tune tap gives way to its long buzz.
  */
 class WatchTunerViewModel(
     recorder: AudioRecorder,
     dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
+    private val store: WatchTunerStore = WatchTunerStore.inMemory(),
+    private val guideVibrator: WatchGuideVibrator = WatchGuideVibrator.NONE,
 ) : ViewModel() {
 
-    private val pipeline = WatchPitchPipeline(recorder, dspDispatcher = dspDispatcher, screenReaderSpeech = screenReaderSpeech)
+    /** Whether the vibration guide is on: the player's choice on the tuner's switch, else on while a screen reader is. */
+    val guideOn: StateFlow<Boolean> = combine(store.vibrationGuide, screenReaderSpeech.screenReaderOn) { choice, reader -> watchVibrationGuideOn(choice, reader) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /** Whether the tuner's page is shown ([setShown]): the guide plays only then. */
+    @Volatile
+    private var shown = true
+
+    private val pipeline = WatchPitchPipeline(
+        recorder,
+        dspDispatcher = dspDispatcher,
+        screenReaderSpeech = screenReaderSpeech,
+        guideVibrator = guideVibrator,
+        guideOn = { guideOn.value && shown },
+    )
     private val attempt = MutableStateFlow(0)
     private val screenOn = MutableStateFlow(true)
 
@@ -64,6 +85,24 @@ class WatchTunerViewModel(
      */
     fun shown() {
         if (state.value is WatchTunerState.Failed) retry()
+    }
+
+    /**
+     * The tuner's page is [shown] or not (the app in the background, the metronome's page). The microphone stays open
+     * 5 s after it goes (hard rule 4), but the guide stops at once: a player who left the tuner shouldn't feel it.
+     */
+    fun setShown(shown: Boolean) {
+        this.shown = shown
+        if (!shown) guideVibrator.stop()
+    }
+
+    /** The player turns the vibration guide [on] or off; from then on it no longer follows the screen reader. */
+    fun setVibrationGuide(on: Boolean) {
+        viewModelScope.launch { store.setVibrationGuide(on) }
+    }
+
+    override fun onCleared() {
+        guideVibrator.stop()
     }
 
     companion object {
