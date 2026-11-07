@@ -105,29 +105,15 @@ p { margin: 0 0 14px; }
   content: ""; position: absolute; top: 65.9%; left: -100vw; right: -100vw; height: 1px; z-index: 0;
   background: linear-gradient(90deg, transparent 20%, rgba(238, 241, 245, .22) 46%, rgba(238, 241, 245, .22) 54%, transparent 80%);
 }
-/* What the pluck sends out: a soft glow under the string and three rings in the harmonics' colours */
-.stage .burst { position: absolute; inset: 0; pointer-events: none; }
-.stage .burst .glow {
-  position: absolute; left: 50%; top: 65.9%; width: 90%; aspect-ratio: 2.2; transform: translate(-50%, -50%);
+/* What the pluck sends out: a soft glow under the string (no rings: the owner had them taken out, 2026-11-07) */
+.stage .glow {
+  position: absolute; left: 50%; top: 65.9%; width: 90%; aspect-ratio: 2.2; transform: translate(-50%, -50%); pointer-events: none;
   background: radial-gradient(closest-side, rgba(255, 182, 72, .22), rgba(95, 196, 255, .12) 55%, transparent);
   animation: glow 2600ms ease-out 150ms both;
 }
-.stage .burst i {
-  position: absolute; left: 50%; top: 65.9%; width: 42%; aspect-ratio: 1; border-radius: 50%;
-  border: 2px solid var(--c); opacity: 0; transform: translate(-50%, -50%) scale(.2);
-  animation: ring 2400ms cubic-bezier(.2, .7, .3, 1) both;
-}
-.stage .burst i:nth-of-type(1) { --c: rgba(255, 182, 72, .7); animation-delay: 220ms; }
-.stage .burst i:nth-of-type(2) { --c: rgba(95, 196, 255, .6); animation-delay: 420ms; }
-.stage .burst i:nth-of-type(3) { --c: rgba(61, 220, 132, .55); animation-delay: 620ms; }
 .stage .pluck:checked + .mark .glow { animation-name: glow-b; }
-.stage .pluck:checked + .mark .burst i { animation-name: ring-b; }
 @keyframes glow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
 @keyframes glow-b { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
-@keyframes ring { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 12% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); } }
-@keyframes ring-b { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); } 12% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); } }
 .stage .hint { font-size: 14px; color: var(--stage-muted); margin: 4px 0 28px; opacity: 0; animation: arrive 900ms ease-out 2300ms both; }
 .stage h1 { max-width: 15em; margin: 0 auto 18px; animation: arrive 800ms ease-out 700ms both; }
 .stage .lead { margin: 0 auto 26px; color: var(--stage-muted); animation: arrive 800ms ease-out 900ms both; }
@@ -237,7 +223,7 @@ footer a { overflow-wrap: anywhere; }
 
 /* Less motion asked for: everything stands still, the logo in its resting pose, nothing to tap for */
 @media (prefers-reduced-motion: reduce) {
-  .stage .burst, .stage .hint { display: none; }
+  .stage .glow, .stage .hint { display: none; }
   .stage .mark { cursor: default; }
   .stage h1, .stage .lead, .stage .play { animation: none; }
   .tools > * { transition: none; }
