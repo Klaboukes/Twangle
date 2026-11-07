@@ -91,7 +91,10 @@ class DataStoreSettingsRepository internal constructor(
         if (deviceStore === dataStore) {
             readable(dataStore).map { parse(it, it) }
         } else {
-            combine(readable(dataStore), readable(deviceStore), ::parse)
+            // This phone's file is read only once the settings have been read the first time, which is after
+            // their migration moved `mic_refused` into it ([MoveMicRefused]). Read side by side, the moved
+            // settings could pair with this phone's file from before the move: not refused, for a moment.
+            combine(readable(dataStore), readable(deviceStore, after = dataStore), ::parse)
         }.distinctUntilChanged()
 
     /** The last files read and the settings made of them, shared by every collector of [settings]. */
@@ -116,8 +119,16 @@ class DataStoreSettingsRepository internal constructor(
      * [store]'s data, where a read that fails (an I/O error, not a damaged file: that is replaced,
      * see [create]) shows empty preferences (the defaults) if nothing was shown yet, then tries again,
      * so one failed read doesn't keep the settings at their defaults, or stop later changes, for the session.
+     * With [after], [store] is read once [after] has been read the first time (or failed to be).
      */
-    private fun readable(store: DataStore<Preferences>): Flow<Preferences> = flow {
+    private fun readable(store: DataStore<Preferences>, after: DataStore<Preferences>? = null): Flow<Preferences> = flow {
+        if (after != null) {
+            try {
+                after.data.first()
+            } catch (_: IOException) {
+                // Its own reading tries again; this one need not wait for that.
+            }
+        }
         var shown = false
         store.data
             .retryWhen { cause, attempt ->
