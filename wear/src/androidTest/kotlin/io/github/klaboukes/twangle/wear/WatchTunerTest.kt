@@ -174,6 +174,22 @@ class WatchTunerTest {
         assertEquals("E 2, 6 cents sharp, Loosen", spoken())
     }
 
+    /**
+     * A reading is said once (Phase 81): its cents moving, near the note across it too, never change what TalkBack was
+     * given, however long, so a reading it misheard can't set off the next one.
+     */
+    @Test
+    fun onlyTheCentsMovingIsNeverSaidAgain() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
+        assertSpoken("E 2, 12 cents flat, Tighten")
+        for (cents in listOf(-9, -14, -3, 2, -1)) {
+            state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), cents)
+            compose.mainClock.advanceTimeBy(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 500)
+            compose.waitForIdle()
+            assertEquals("$cents cents", "E 2, 12 cents flat, Tighten", spoken())
+        }
+    }
+
     /** "Play a note" is said at first, but not again after every note dies away: TalkBack reads it on touch. */
     @Test
     fun playANoteAfterANoteIsHeldForATouch() {

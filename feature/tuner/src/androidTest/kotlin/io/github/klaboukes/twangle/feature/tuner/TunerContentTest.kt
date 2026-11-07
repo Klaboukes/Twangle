@@ -1559,6 +1559,34 @@ class TunerContentTest {
     }
 
     /**
+     * With a screen reader on, a reading is said once (Phase 81): only its cents moving, near the note and across it
+     * while the word still says Tighten, never changes what TalkBack was given, however long, so a sound it misheard
+     * (TalkBack's own voice) can't set off the next reading in a loop. In tune, Tighten ↔ Loosen and another note are
+     * each said.
+     */
+    @Test
+    fun theSpokenReadingDoesNotChangeOnItsOwn() {
+        val first = "E 2, 12 cents flat, Tighten"
+        show(detected(-12.3f))
+        assertSpokenSoon(first)
+        // The tuner holds the word near the note (SteadyHint), so it still says Tighten at 0 and +1.
+        for (cents in listOf(-9f, -14f, -3f, 0f, 1.2f, -1f)) {
+            shownState.value = detected(cents).copy(hint = TunerHint.TUNE_UP)
+            compose.mainClock.advanceTimeBy(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 500)
+            compose.waitForIdle()
+            compose.onAllNodes(hasContentDescription(first)).assertCountEquals(1)
+            reading(first).assert(polite)
+        }
+        shownState.value = detected(-1f, inTune = true)
+        assertSpokenSoon("E 2, in tune")
+        shownState.value = detected(9f)
+        assertSpokenSoon("E 2, 9 cents sharp, Loosen")
+        shownState.value = detected(-12.3f, targetString = 1, noteName = "A")
+        assertSpokenSoon("A 2, 12 cents flat, Tighten")
+        reading("A 2, 12 cents flat, Tighten").assert(polite)
+    }
+
+    /**
      * A microphone error is said as it comes (a polite live region) and says what to do: every one but
      * the permission's (which asks to allow it) names the Try again button. In English and Dutch, the
      * languages written by day.

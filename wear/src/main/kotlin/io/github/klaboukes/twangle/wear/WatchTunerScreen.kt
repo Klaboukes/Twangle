@@ -201,7 +201,7 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit, speech: WatchPacedSp
     val playNote = stringResource(R.string.wear_play_note)
     val spoken = watchPacedSpeech(
         text = if (detected != null) spokenWatchReading(detected, word) else playNote,
-        key = detected?.let(::watchReadingKey),
+        key = detected?.let { watchReadingKey(it, word) },
         speech = speech,
     )
     val glow by animateFloatAsState(

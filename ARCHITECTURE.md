@@ -148,7 +148,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
                 open string
     buffer/     FrameAssembler
     awake/      ScreenAwakeRule (+ ScreenAwakePhase): Keep screen on's quiet timer, for the phone's tuner and the watch's
-    speech/     SpokenReadingThrottle (TalkBack's pacing of a live reading), SpokenSide (its key's flat/sharp/in tune),
+    speech/     SpokenReadingThrottle (TalkBack's pacing of a live reading), SpokenSide and SpokenReadingKey (a reading's key: note, flat/sharp/in tune, said once),
                 NoteNameSpeech (+ LetterNames, noteNameSpeech): note names as said, phone and watch
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
                 TestSignals (sine, saw, square, weak fundamental, pluck, noise, hum, mix, band-limit)

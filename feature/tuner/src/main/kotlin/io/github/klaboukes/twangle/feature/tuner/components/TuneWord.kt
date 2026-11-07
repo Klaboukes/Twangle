@@ -46,6 +46,7 @@ import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.tintedBackground
+import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingKey
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenSide
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
@@ -91,7 +92,8 @@ data class NoteReadout(
  * For TalkBack it is the tuner's one speaking item (the lens and the ruler are silent): a polite live region that
  * says "E 2, 12 cents flat, Tighten", "E 2, in tune", "A 3, 8 cents sharp, Too high" (the [tip] in the word's place,
  * then the trail's [motion]: "…, Tighten, wavering"), or [spokenQuiet] without a note, paced by [speech] so it
- * doesn't talk over itself (pass the screen's one [PacedSpeech]). Each line keeps its height whatever it says, and
+ * doesn't talk over itself (pass the screen's one [PacedSpeech]): a reading once its note has settled, then again
+ * only for in tune, Tighten ↔ Loosen or another note, never while only its cents move ([spokenReadingKey]). Each line keeps its height whatever it says, and
  * keeps to one line, set smaller where it doesn't fit, so nothing under it moves. [compact] sets both smaller.
  * [start] sets both lines at the start, not centred (the wide layout's word in its bottom start corner, Phase 73).
  *
@@ -149,7 +151,7 @@ fun TuneWordLine(
     }
     val spoken = pacedSpeech(
         text = if (readout != null) spokenReading(readout, directionText, tipText, motion) else tipText ?: spokenQuiet,
-        key = readout?.let(::spokenReadingKey),
+        key = readout?.let { spokenReadingKey(it, word, tipText, motion) },
         speech = speech,
     )
     val colors = MaterialTheme.colorScheme
@@ -424,14 +426,25 @@ internal val ReceptionTip.label: Int
     }
 
 /**
- * The situation a spoken reading belongs to, for its pacing ([PacedSpeech]): the note and which side
- * of it the string is, flat, sharp or in tune. A new one is said after 400 ms; only the cents moving
- * at most every 2 s. With the side in it, turning a string past the note ("12 cents flat" to "5 cents
- * sharp") is said as soon as a new note would be, not up to 2 s late (Phase 65). The watch keys its
- * reading the same way ([SpokenSide]).
+ * The situation a spoken reading belongs to, for its pacing ([PacedSpeech], [SpokenReadingKey]): the note and which
+ * way the [word] on screen says to turn the peg (Tighten or Too low, Loosen or Too high, In tune; none while it hasn't
+ * settled), and the [tip] or the trail's [motion] said with it. The reading is said once it has lasted 400 ms, then not
+ * again while only its cents move (Phase 81): a new note, in tune, Tighten ↔ Loosen, or a tip or motion coming or
+ * going is a new situation. Each is held steady where it comes from (the word near the note by [SteadyHint] with
+ * [TuningCue]'s margins), so a reading wobbling across the note doesn't make TalkBack speak. The watch keys its
+ * reading the same way.
  */
-internal fun spokenReadingKey(readout: NoteReadout): String =
-    "${readout.noteName}${readout.octave}/${SpokenSide.of(readout.cents.roundToInt(), readout.inTune)}"
+internal fun spokenReadingKey(readout: NoteReadout, word: TuneWord, tip: String? = null, motion: String? = null): SpokenReadingKey =
+    SpokenReadingKey("${readout.noteName}${readout.octave}", word.spokenSide, words = if (tip == null && motion == null) null else "$tip/$motion")
+
+/** Which side of the note the word says the string is, as TalkBack's pacing takes it; null for no direction yet. */
+private val TuneWord.spokenSide: SpokenSide?
+    get() = when (this) {
+        TuneWord.TIGHTEN, TuneWord.TOO_LOW -> SpokenSide.FLAT
+        TuneWord.LOOSEN, TuneWord.TOO_HIGH -> SpokenSide.SHARP
+        TuneWord.IN_TUNE -> SpokenSide.IN_TUNE
+        TuneWord.PLAY -> null
+    }
 
 /**
  * "E 2, 12 cents flat, Tighten", "C sharp 4, in tune": the readout as a screen reader says it, since TalkBack

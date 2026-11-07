@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.speech.NoteNameSpeech
+import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingKey
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.dsp.speech.SpokenSide
 import io.github.klaboukes.twangle.core.dsp.speech.noteNameSpeech
@@ -21,8 +22,8 @@ import kotlin.math.abs
 
 /**
  * What the watch's polite live region gives TalkBack, paced by the phone's [SpokenReadingThrottle]
- * (`:core:dsp`): the first text at once, a new note or side (flat, sharp, in tune) after 400 ms, losing
- * the note after 1.5 s, the cents alone at most every 2 s; "Play a note" again after a pluck dies away
+ * (`:core:dsp`): the first text at once, a new note or word (Tighten, Loosen, In tune) after 400 ms, losing
+ * the note after 1.5 s, the cents alone never (Phase 81: a reading is said once); "Play a note" again after a pluck dies away
  * is held for a touch, not announced ([announced]). The phone's `PacedSpeech` does the same; this one
  * keeps the watch free of the phone's design system. Remember it above the tuner's states, so the
  * pacing carries over from a note to "Play a note".
@@ -60,11 +61,22 @@ fun watchPacedSpeech(text: String, key: Any?, speech: WatchPacedSpeech): String 
 }
 
 /**
- * The situation a spoken reading belongs to, for its pacing: the note and which side of it the
- * string is ([SpokenSide]), as on the phone, so turning a peg past the note is said after 400 ms.
+ * The situation a spoken reading belongs to, for its pacing ([SpokenReadingKey]), as on the phone: the note and which
+ * way the [word] under it says to turn the peg (Tighten, Loosen, In tune; none while there is none yet). The reading is
+ * said once it has lasted 400 ms, then not again while only its cents move (Phase 81): a new note, in tune, or
+ * Tighten ↔ Loosen is a new situation. The word keeps its direction near the note ([WatchWord.of]), so a reading
+ * wobbling across the note doesn't make TalkBack speak.
  */
-internal fun watchReadingKey(reading: WatchTunerState.Detected): String =
-    "${reading.note.pitchClass}${reading.note.octave}/${SpokenSide.of(reading.cents, reading.inTune)}"
+internal fun watchReadingKey(reading: WatchTunerState.Detected, word: WatchWord?): SpokenReadingKey =
+    SpokenReadingKey(
+        "${reading.note.pitchClass}${reading.note.octave}",
+        when (word) {
+            WatchWord.TIGHTEN -> SpokenSide.FLAT
+            WatchWord.LOOSEN -> SpokenSide.SHARP
+            WatchWord.IN_TUNE -> SpokenSide.IN_TUNE
+            null -> null
+        },
+    )
 
 /**
  * The reading as TalkBack says it, in words as on the phone: "A sharp 2, 12 cents flat, Tighten", "E 2, in tune",
