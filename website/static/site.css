@@ -119,8 +119,7 @@ p { margin: 0 0 14px; }
 .stage .pluck:checked + .mark .glow { animation-name: glow-b; }
 @keyframes glow { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
 @keyframes glow-b { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: .45; } }
-.stage .hint { font-size: 14px; color: var(--stage-muted); margin: 22px 0 30px; opacity: 0; animation: arrive 900ms ease-out 2300ms both; }
-.stage h1 { max-width: 15em; margin: 0 auto 18px; animation: arrive 800ms ease-out 700ms both; }
+.stage h1 { max-width: 15em; margin: 52px auto 18px; animation: arrive 800ms ease-out 700ms both; }
 .stage .lead { margin: 0 auto 26px; color: var(--stage-muted); animation: arrive 800ms ease-out 900ms both; }
 .stage .play { animation: arrive 800ms ease-out 1100ms both; }
 @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -228,7 +227,7 @@ footer a { overflow-wrap: anywhere; }
 
 /* Less motion asked for: everything stands still, the logo in its resting pose, nothing to tap for */
 @media (prefers-reduced-motion: reduce) {
-  .stage .glow, .stage .hint { display: none; }
+  .stage .glow { display: none; }
   .stage .mark { cursor: default; }
   .stage h1, .stage .lead, .stage .play { animation: none; }
   .tools > * { transition: none; }
@@ -249,7 +248,7 @@ footer a { overflow-wrap: anywhere; }
   header .lang { display: none; } /* on a phone the language link is in the footer only */
   .home section { padding-top: 56px; }
   .home .stage { padding: 36px 0 64px; }
-  .stage .hint { margin-bottom: 20px; }
+  .stage h1 { margin-top: 36px; }
   .lead { font-size: 18px; }
   .tool { grid-template-columns: 1fr; gap: 28px; }
   .tool .shot { position: static; max-width: 170px; order: -1; }
