@@ -16,11 +16,11 @@ STATIC="$ROOT/website/static"
 
 # The screens the pages show, by their number in docs/store-listing.md's table (2.0's listing,
 # 2026-11-05): the home page 1 (hero), 5 (the Practice tab's cards), 6, metronome and 7, the tuner's
-# page 3, the strum check's 4, the chord name's and Chords' 6, the metronome's page "metronome"
-# (saved with store screenshot 5, no store picture of its own), the instruments' 7. 2 (the microphone
+# page 2, the strum check's 4, the chord name's and Chords' 6, the metronome's page "metronome"
+# (saved with store screenshot 5, no store picture of its own), the instruments' 7. 3 (the microphone
 # prompt) and 8 (TalkBack at twice the text) show nothing a page needs; Capo and the pitch trail have
 # no 2.0 screen in the set, so their pages have none.
-SHOTS="1 3 4 5 6 7 metronome"
+SHOTS="1 2 4 5 6 7 metronome"
 # Play locale -> the site's language folder.
 LOCALES="en-US:en nl-NL:nl"
 

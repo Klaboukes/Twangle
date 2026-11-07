@@ -95,18 +95,19 @@ class StoreScreenshots(private val shot: Shot) {
     /**
      * The eight screenshots of the plan, in its order, each in its theme, with the part of the
      * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
-     * screens fit whole). The first two tell what sets Twangle apart, nothing to sign up for and nothing
-     * leaving the phone (2.0's listing, 2026-11-05).
+     * screens fit whole). The first three tell what sets Twangle apart, nothing to sign up for, which way to turn
+     * and nothing leaving the phone (2.0's listing, 2026-11-05; the microphone prompt third since the review of
+     * 2026-11-07, a plain screen in the second place, which most people see).
      */
     enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
         /** The top row with no sign-in in the way, the chip, the ruler's A, the needle and "In tune" (the pegs left out). */
         IN_TUNE(dark = true, focus = 0f..0.62f),
 
-        /** The tuner's microphone prompt, which says the sound is analysed on the phone and never recorded or sent. */
-        PRIVACY(dark = true, focus = 0.30f..0.72f),
-
         /** The ruler's E, the needle left of the zone, "Tighten" and the cents. */
         TUNE_UP(dark = true, focus = 0f..0.68f),
+
+        /** The tuner's microphone prompt, which says the sound is analysed on the phone and never recorded or sent. */
+        PRIVACY(dark = true, focus = 0.30f..0.72f),
 
         /** The strum check after the open strings were strummed, two of them off: each string's column and "4 of 6 in tune". */
         STRUM_CHECK(dark = true, focus = 0f..0.56f),
