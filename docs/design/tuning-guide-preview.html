@@ -1,0 +1,340 @@
+<!doctype html>
+<!--
+  Rough mock-up, 2026-11-07, Phase 85 (a tuning guide without words): what a player who can't see the screen
+  would feel or hear while the string rings. One string drifts into tune (from flat, or from sharp with an
+  overshoot); each guide plays that drift and stops by itself after 8 s. The vibration guide is played as a soft
+  low thump, since a PC can't vibrate. Nothing loops and no tone is steady.
+  Decisions: waiting on the owner's pick (the section "Your pick" at the end).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Tuning guide</title>
+<style>
+  :root { --page: #F2F3F5; --card: #FFFFFF; --text: #1B1F24; --muted: #4F5864; --line: #D5DAE0;
+          --accent: #1E7FE0; --flat: #B4630A; --sharp: #7A3FC4; --ok: #1F8A4C; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 32px 0 6px; }
+  p.lead { margin: 0 0 12px; color: var(--muted); max-width: 70ch; }
+  ul.say { margin: 6px 0 0; padding-left: 20px; }
+  ul.say li { margin: 4px 0; }
+  a { color: var(--accent); }
+  .bar { position: sticky; top: 0; z-index: 1; background: var(--page); padding: 10px 0; margin: 0 0 4px;
+         border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  .read { font-variant-numeric: tabular-nums; font-size: 18px; min-width: 15ch; }
+  .read b { display: inline-block; min-width: 7ch; }
+  .dir { color: var(--muted); }
+  .dir.flat { color: var(--flat); } .dir.sharp { color: var(--sharp); } .dir.ok { color: var(--ok); }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--line);
+         vertical-align: -2px; margin-right: 6px; transition: background .25s; }
+  .dot.hit { background: var(--accent); transition: none; }
+  .dot.tune { background: var(--ok); transition: none; }
+  .now { color: var(--muted); font-size: 14px; }
+  .opts { display: grid; gap: 8px; margin-top: 8px; }
+  .opt { display: flex; gap: 12px; align-items: baseline; background: var(--card); border-radius: 12px; padding: 10px 12px; }
+  .opt b { white-space: nowrap; }
+  button { font: inherit; padding: 6px 14px; border-radius: 16px; border: 1px solid #B8BEC7; background: #fff;
+           cursor: pointer; flex: none; min-width: 64px; }
+  button.play { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.playing { background: #0F5AA6; border-color: #0F5AA6; }
+  #stop { border-color: #B3261E; color: #B3261E; }
+  label { cursor: pointer; }
+  .rule { background: var(--card); border-radius: 12px; padding: 10px 12px; margin-top: 8px; max-width: 70ch; }
+  fieldset { border: 1px solid var(--line); border-radius: 12px; background: var(--card); margin: 10px 0; padding: 8px 14px 10px; }
+  legend { font-weight: 600; padding: 0 4px; }
+  fieldset label { display: block; margin: 3px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>A tuning guide without words</h1>
+<p class="lead">For a player who can't see the screen. TalkBack needs 1–1.5 s for "12 cents flat" while the string
+rings 2–4 s, so the guide says only how far off and which way, all the time, without words. Each button plays one
+string drifting into tune; it stops by itself after 8 s.</p>
+
+<h2>What blind players say</h2>
+<ul class="say">
+  <li><b>Vibration is what they praise.</b> A Roadie user tunes by vibration so no sound has to come out, a whole
+    electric guitar in under 25 s (<a href="https://www.applevis.com/forum/ios-ipados/apps-tuning-guitar">AppleVis</a>).
+    Anthony Ferraro couldn't tune alone until a tuner pedal was modded to vibrate under his foot
+    (<a href="https://www.guitarworld.com/artists/guitarists/anthony-ferraro-blind-guitarist-haptic-guitar-tuner-that-vibrates">Guitar World, March 2026</a>).</li>
+  <li><b>Speed matters.</b> On stage there are 10–20 s between songs
+    (<a href="https://www.applevis.com/forum/ios-ipados/apps-tuning-guitar">same AppleVis thread</a>).</li>
+  <li><b>Noise is the main complaint</b> about phone tuners: "decent as long as you don't have anything else making
+    sound in the room" (<a href="https://www.applevis.com/forum/ios-ipados/accessible-ios-tuner-app">AppleVis</a>).
+    A guide that adds sound adds to that; vibration adds none.</li>
+  <li><b>Where it's felt matters.</b> Roadie buzzes at the peg, Ferraro's pedal under the foot. A phone on a table is
+    heard more than felt.</li>
+  <li><b>Direction, as others do it.</b> HapTone: a short pulse is too low, a long pulse too high, a brief pulse in tune
+    (<a href="https://blindsystems.org/en/haptone-smart-accessible-tuner/">Blind Systems</a>). A home-made tuner clicks
+    in an earpiece, faster as the string gets closer (<a href="https://hackaday.io/project/26255-accesible-guitar-tuner">Hackaday</a>).</li>
+  <li><b>Speech that waits.</b> Talking Tuner speaks only once the note has ended, so it never talks over the string
+    (<a href="https://www.applevis.com/apps/ios/music/talking-tuner">AppleVis</a>).</li>
+  <li><b>Left out:</b> StroboPro's steady guiding tone. It would put the very note being tuned into the microphone.</li>
+</ul>
+
+<h2>The string</h2>
+<p class="lead">Every guide plays the same drift. The numbers below are what the tuner reads; the player doesn't see them.</p>
+<div class="bar">
+  <label><input type="radio" name="scn" value="flat" checked> From 40 cents flat</label>
+  <label><input type="radio" name="scn" value="sharp"> From 35 cents sharp, overshoots</label>
+  <label><input type="checkbox" id="withString" checked> The string rings under it</label>
+  <button id="stop">Stop</button>
+  <span class="read"><span class="dot" id="dot"></span><b id="cents">–</b> <span class="dir" id="dir"></span></span>
+  <span class="now" id="now"></span>
+</div>
+<div class="opts">
+  <div class="opt"><button class="play" data-demo="string">Play</button>
+    <span><b>The string alone.</b> No guide: what the player hears today between TalkBack's sentences.</span></div>
+</div>
+
+<div class="rule"><b>The rate rule, the same for every guide:</b> the gap after each pulse goes from 600 ms at 30 cents
+off or more down to 120 ms at 3 cents, in a straight line. Within ±3 cents for 0.2 s it is in tune: one long buzz (or
+the chime), then quiet while the string holds. It starts again once the string drifts more than 6 cents off.</div>
+
+<h2>Vibration (heard here as a soft thump)</h2>
+<p class="lead">The phone in a pocket or on the lap: felt, not heard, so it adds no sound to the room.</p>
+<div class="opts">
+  <div class="opt"><button class="play" data-demo="vib-none">Play</button>
+    <span><b>a · Rate only.</b> Quicker means closer, but which way? Try "from sharp": the overshoot feels the same.</span></div>
+  <div class="opt"><button class="play" data-demo="vib-double">Play</button>
+    <span><b>b · Single and double.</b> One pulse: too low, tighten. Two pulses: too high, loosen.</span></div>
+  <div class="opt"><button class="play" data-demo="vib-long">Play</button>
+    <span><b>c · Short and long.</b> A short pulse: too low, tighten. A long pulse: too high, loosen (HapTone's way).</span></div>
+</div>
+
+<h2>Ticks</h2>
+<p class="lead">Short ticks by the same rule: a low tick is too low (tighten), a high tick too high (loosen), a short
+chime in tune. Through the phone's speaker the tuner sets each tick and a short tail aside, as it does the reference
+tone, so it never reads its own tick; through earbuds the microphone never hears them (the Hackaday tuner's way).</p>
+<div class="opts">
+  <div class="opt"><button class="play" data-demo="ticks">Play</button>
+    <span><b>Ticks.</b> Low and high ticks, the chime once in tune.</span></div>
+  <div class="opt"><button class="play" data-demo="both">Play</button>
+    <span><b>Both.</b> The ticks with b's pulses under them.</span></div>
+</div>
+
+<h2>Where the phone is</h2>
+<p class="lead">In a pocket or on the lap, not on the table, where a vibration is heard more than felt (and the
+microphone hears it too). Later, the watch on the hand that turns the peg is the best spot of all.</p>
+
+<h2>Your pick</h2>
+<p class="lead">These boxes do nothing; they only help to think it through. Tell Claude what you picked.</p>
+<fieldset><legend>Which guides</legend>
+  <label><input type="radio" name="g"> Vibration</label>
+  <label><input type="radio" name="g"> Ticks</label>
+  <label><input type="radio" name="g"> Both, each its own choice</label>
+</fieldset>
+<fieldset><legend>The vibration's direction cue</legend>
+  <label><input type="radio" name="d"> b · Single to tighten, double to loosen</label>
+  <label><input type="radio" name="d"> c · Short to tighten, long to loosen</label>
+</fieldset>
+<fieldset><legend>How it's turned on</legend>
+  <label><input type="checkbox"> A row in Settings' <i>While tuning</i>, next to <i>Vibrate when in tune</i></label>
+  <label><input type="radio" name="on"> On by itself while a screen reader is on</label>
+  <label><input type="radio" name="on"> Only when the player turns it on</label>
+</fieldset>
+<fieldset><legend>An extra idea: speech waits for the string to fade before it speaks (Talking Tuner's way)</legend>
+  <label><input type="radio" name="s"> Yes, in this phase</label>
+  <label><input type="radio" name="s"> No</label>
+  <label><input type="radio" name="s"> Later (IDEAS.md)</label>
+</fieldset>
+</main>
+
+<script>
+// ---- The scenarios: what the tuner reads, cents over time (straight lines between the points). ----
+const SCENARIOS = {
+  flat:  { keys: [[0,-40],[1.2,-38],[2.6,-22],[3.8,-10],[4.8,-4],[5.4,-1],[8,0]], plucks: [0, 2.7, 5.4] },
+  sharp: { keys: [[0,35],[1.0,33],[2.2,14],[3.0,12],[3.5,-7],[4.4,-7],[5.2,-2],[5.8,0],[8,0]], plucks: [0, 2.7, 5.4] },
+};
+const DURATION = 8;           // seconds; every demo ends by itself
+const STRING_HZ = 196;        // the G string
+
+function centsAt(s, t) {
+  const k = s.keys;
+  if (t <= k[0][0]) return k[0][1];
+  for (let i = 1; i < k.length; i++) {
+    if (t <= k[i][0]) {
+      const [t0, c0] = k[i-1], [t1, c1] = k[i];
+      return c0 + (c1 - c0) * (t - t0) / (t1 - t0);
+    }
+  }
+  return k[k.length-1][1];
+}
+
+// ---- The rule: the gap after a pulse, from cents. ----
+const IN_TUNE = 3, LEAVE = 6, HOLD = 0.2, FAR = 30, SLOW = 0.6, QUICK = 0.12;
+function gap(c) {
+  const a = Math.min(FAR, Math.max(IN_TUNE, Math.abs(c)));
+  return QUICK + (SLOW - QUICK) * (a - IN_TUNE) / (FAR - IN_TUNE);
+}
+
+// The pulses one cue makes for a reading: a list of [start, length] in seconds, and the group's whole length.
+const CUES = {
+  plain:  c => [[0, 0.06]],
+  double: c => c < 0 ? [[0, 0.06]] : [[0, 0.06], [0.13, 0.06]],
+  long:   c => c < 0 ? [[0, 0.05]] : [[0, 0.22]],
+  tick:   c => [[0, 0.02]],
+};
+function groupLength(parts) { const l = parts[parts.length-1]; return l[0] + l[1]; }
+
+// Walks the scenario in 10 ms steps and lists every pulse and the in-tune moment.
+function plan(s, cue) {
+  const events = [];
+  let next = 0, inTune = false, since = null;
+  for (let t = 0; t < DURATION - 0.3; t += 0.01) {
+    const c = centsAt(s, t);
+    if (inTune) {
+      if (Math.abs(c) > LEAVE) { inTune = false; since = null; next = t; }
+      continue;
+    }
+    if (Math.abs(c) <= IN_TUNE) {
+      if (since === null) since = t;
+      if (t - since >= HOLD) { inTune = true; events.push({ t, kind: "tune" }); continue; }
+    } else since = null;
+    if (t >= next) {
+      const parts = CUES[cue](c);
+      events.push({ t, kind: "pulse", c, parts });
+      next = t + groupLength(parts) + gap(c);
+    }
+  }
+  return events;
+}
+
+// ---- Sound. ----
+let ctx = null, master = null, nodes = [], t0 = 0, playing = null, raf = 0, endTimer = 0, flashTimer = 0;
+
+function keep(n) { nodes.push(n); return n; }
+function env(g, at, len, peak) {
+  g.gain.setValueAtTime(0, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.005);
+  g.gain.setValueAtTime(peak, at + Math.max(0.006, len - 0.03));
+  g.gain.exponentialRampToValueAtTime(0.0005, at + len);
+}
+// A vibration heard: a low, slightly buzzy thump (laptop speakers can't play the motor's real 150 Hz hum well).
+function thump(at, len) {
+  const g = ctx.createGain(); g.connect(master); env(g, at, len, 0.55);
+  const o = keep(ctx.createOscillator()); o.type = "sine";
+  o.frequency.setValueAtTime(210, at); o.frequency.exponentialRampToValueAtTime(120, at + Math.min(len, 0.08));
+  o.connect(g); o.start(at); o.stop(at + len + 0.02);
+  const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 520; f.connect(g);
+  const gb = ctx.createGain(); gb.gain.value = 0.18; gb.connect(f);
+  const b = keep(ctx.createOscillator()); b.type = "square"; b.frequency.value = 120;
+  b.connect(gb); b.start(at); b.stop(at + len + 0.02);
+}
+function tick(at, hz) {
+  const g = ctx.createGain(); g.connect(master);
+  g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(0.45, at + 0.001);
+  g.gain.exponentialRampToValueAtTime(0.0005, at + 0.03);
+  const o = keep(ctx.createOscillator()); o.type = "triangle"; o.frequency.value = hz;
+  o.connect(g); o.start(at); o.stop(at + 0.04);
+}
+function chime(at) {
+  [[1046.5, 0.22], [1568, 0.14]].forEach(([hz, peak]) => {
+    const g = ctx.createGain(); g.connect(master);
+    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(peak, at + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0005, at + 0.55);
+    const o = keep(ctx.createOscillator()); o.type = "sine"; o.frequency.value = hz;
+    o.connect(g); o.start(at); o.stop(at + 0.6);
+  });
+}
+// The string: a few harmonics that fade, plucked again now and then, its pitch following the reading.
+function string(s, start) {
+  s.plucks.forEach((p, i) => {
+    const end = Math.min(DURATION, i + 1 < s.plucks.length ? s.plucks[i+1] + 0.15 : DURATION);
+    for (let h = 1; h <= 6; h++) {
+      const g = ctx.createGain(); g.connect(master);
+      const at = start + p, peak = 0.11 / h;
+      g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(peak, at + 0.004);
+      const fade = 1.1 / h, cut = end - 0.08;
+      g.gain.setTargetAtTime(0, at + 0.004, fade);
+      g.gain.setValueAtTime(peak * Math.exp(-(cut - p - 0.004) / fade), start + cut);
+      g.gain.linearRampToValueAtTime(0, start + end);
+      const o = keep(ctx.createOscillator()); o.type = "sine";
+      o.frequency.setValueAtTime(h * STRING_HZ * Math.pow(2, centsAt(s, p) / 1200), at);
+      for (let t = p + 0.05; t <= end; t += 0.05)
+        o.frequency.linearRampToValueAtTime(h * STRING_HZ * Math.pow(2, centsAt(s, t) / 1200), start + t);
+      o.connect(g); o.start(at); o.stop(start + end + 0.01);
+    }
+  });
+}
+
+const DEMOS = {
+  "string":     { name: "The string alone", parts: [] },
+  "vib-none":   { name: "Vibration a · rate only", parts: [["thump", "plain"]] },
+  "vib-double": { name: "Vibration b · single and double", parts: [["thump", "double"]] },
+  "vib-long":   { name: "Vibration c · short and long", parts: [["thump", "long"]] },
+  "ticks":      { name: "Ticks", parts: [["tick", "tick"]] },
+  "both":       { name: "Ticks and b's pulses", parts: [["tick", "tick"], ["thump", "double"]] },
+};
+
+let shown = [];
+function play(id, button) {
+  stop();
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === "suspended") ctx.resume();
+  const s = SCENARIOS[document.querySelector('input[name="scn"]:checked').value];
+  master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+  t0 = ctx.currentTime + 0.08;
+  const demo = DEMOS[id];
+  if (document.getElementById("withString").checked || id === "string") string(s, t0);
+  shown = [];
+  demo.parts.forEach(([voice, cue]) => {
+    plan(s, cue).forEach(e => {
+      const at = t0 + e.t;
+      if (e.kind === "tune") { if (voice === "tick") chime(at); else thump(at, 0.6); shown.push({ t: e.t, tune: true }); return; }
+      e.parts.forEach(([off, len]) => {
+        if (voice === "tick") tick(at + off, e.c < 0 ? 620 : 1560); else thump(at + off, len);
+      });
+      shown.push({ t: e.t, tune: false });
+    });
+  });
+  shown.sort((a, b) => a.t - b.t);
+  playing = { s, button, next: 0 };
+  button.classList.add("playing");
+  document.getElementById("now").textContent = "Playing: " + demo.name;
+  endTimer = setTimeout(stop, (DURATION + 0.3) * 1000);
+  raf = requestAnimationFrame(draw);
+}
+
+function draw() {
+  if (!playing) return;
+  const t = Math.min(DURATION, ctx.currentTime - t0);
+  const c = centsAt(playing.s, Math.max(0, t));
+  const a = Math.abs(c);
+  document.getElementById("cents").textContent = (c > 0.05 ? "+" : c < -0.05 ? "−" : "") + a.toFixed(0) + " cents";
+  const dir = document.getElementById("dir");
+  if (a <= IN_TUNE) { dir.textContent = "in tune"; dir.className = "dir ok"; }
+  else if (c < 0) { dir.textContent = "too low · tighten"; dir.className = "dir flat"; }
+  else { dir.textContent = "too high · loosen"; dir.className = "dir sharp"; }
+  while (playing.next < shown.length && shown[playing.next].t <= t) {
+    const dot = document.getElementById("dot");
+    dot.className = "dot " + (shown[playing.next].tune ? "tune" : "hit");
+    clearTimeout(flashTimer); flashTimer = setTimeout(() => dot.className = "dot", 70);
+    playing.next++;
+  }
+  raf = requestAnimationFrame(draw);
+}
+
+function stop() {
+  clearTimeout(endTimer); cancelAnimationFrame(raf);
+  nodes.forEach(n => { try { n.stop(); } catch (e) {} });
+  nodes = [];
+  if (master) { master.disconnect(); master = null; }
+  if (playing) playing.button.classList.remove("playing");
+  playing = null;
+  document.getElementById("now").textContent = "";
+  document.getElementById("dot").className = "dot";
+}
+
+document.querySelectorAll("button[data-demo]").forEach(b => b.addEventListener("click", () => play(b.dataset.demo, b)));
+document.getElementById("stop").addEventListener("click", stop);
+</script>
+</body>
+</html>
