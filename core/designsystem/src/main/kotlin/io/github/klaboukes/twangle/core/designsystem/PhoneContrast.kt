@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
+import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -39,11 +40,14 @@ fun phoneHighContrastFlow(context: Context): Flow<Boolean> = callbackFlow {
     }
     val resolver = app.contentResolver
     resolver.registerContentObserver(Settings.Secure.getUriFor(HIGH_TEXT_CONTRAST_KEY), false, observer)
-    val contrastListener = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) addContrastListener(app) { send() } else null
+    // Held as a plain object: a ContrastChangeListener named here crashed the release build on Android 13 (the Xiaomi,
+    // 2026-11-09: R8 folded the listener's code into this one, which every phone runs, and Android 13 hasn't the class).
+    val contrastListener: Any? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ContrastListener.add(app) { send() } else null
     awaitClose {
         resolver.unregisterContentObserver(observer)
         if (contrastListener != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            app.getSystemService(UiModeManager::class.java)?.removeContrastChangeListener(contrastListener)
+            ContrastListener.remove(app, contrastListener)
         }
     }
 }.distinctUntilChanged()
@@ -57,12 +61,26 @@ private fun contrastIsHigh(context: Context): Boolean {
     return uiMode.contrast >= HIGH_CONTRAST_LEVEL
 }
 
+/**
+ * Android 14's contrast listener, in a class of its own that only Android 14 and later load, so no code an older phone
+ * runs names `UiModeManager.ContrastChangeListener`: the listener goes out and comes back as a plain object, and only
+ * [remove] casts it back. Both are kept, so R8 doesn't inline them into their caller, which every phone runs.
+ */
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-private fun addContrastListener(context: Context, changed: () -> Unit): UiModeManager.ContrastChangeListener? {
-    val uiMode = context.getSystemService(UiModeManager::class.java) ?: return null
-    val listener = UiModeManager.ContrastChangeListener { changed() }
-    uiMode.addContrastChangeListener(context.mainExecutor, listener)
-    return listener
+private object ContrastListener {
+    @Keep
+    fun add(context: Context, changed: () -> Unit): Any? {
+        val uiMode = context.getSystemService(UiModeManager::class.java) ?: return null
+        val listener = UiModeManager.ContrastChangeListener { changed() }
+        uiMode.addContrastChangeListener(context.mainExecutor, listener)
+        return listener
+    }
+
+    @Keep
+    fun remove(context: Context, listener: Any) {
+        val uiMode = context.getSystemService(UiModeManager::class.java) ?: return
+        uiMode.removeContrastChangeListener(listener as UiModeManager.ContrastChangeListener)
+    }
 }
 
 /**
