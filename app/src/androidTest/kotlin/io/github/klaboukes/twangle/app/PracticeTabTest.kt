@@ -73,6 +73,7 @@ class PracticeTabTest {
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
         // Focus mode's full-screen tuner hides the bar these tests open Practice from.
         .around(FocusModeOffRule())
+        .around(HighContrastPassRule())
         .around(QuietMicrophoneRule())
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container

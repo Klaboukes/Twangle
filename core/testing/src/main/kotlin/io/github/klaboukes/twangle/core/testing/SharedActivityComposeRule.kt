@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.LocalHighContrastByDefault
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
@@ -61,6 +62,7 @@ private class SharedActivityComposeRule(
     override fun setContent(composable: @Composable () -> Unit) {
         val activity = SharedActivity.open()
         val store = ViewModelStore().also { viewModels = it }
+        val highContrast = isHighContrastPass
         val owner = object : ViewModelStoreOwner {
             override val viewModelStore = store
         }
@@ -69,7 +71,12 @@ private class SharedActivityComposeRule(
                 "setContent can only be called once per test"
             }
             activity.setContent {
-                CompositionLocalProvider(LocalViewModelStoreOwner provides owner, content = composable)
+                CompositionLocalProvider(
+                    LocalViewModelStoreOwner provides owner,
+                    // The high-contrast pass shows every test's screens in that look (isHighContrastPass).
+                    LocalHighContrastByDefault provides highContrast,
+                    content = composable,
+                )
             }
         }
         rule.waitForIdle()

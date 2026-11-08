@@ -262,6 +262,10 @@ class DataStoreSettingsRepositoryTest {
         assertTrue("turned on, it stays on", repo.settings.first().highContrastOn(phoneHighContrast = false))
         close()
         assertEquals("the choice survives a restart", true, repository().settings.first().highContrast)
+        close()
+        val again = repository()
+        again.setHighContrast(null)
+        assertEquals("forgotten, it follows the phone again", null, again.settings.first().highContrast)
     }
 
     @Test

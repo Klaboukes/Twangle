@@ -29,6 +29,8 @@ dependencies {
     api(platform(libs.androidx.compose.bom))
     api(libs.androidx.compose.ui.test.junit4)
     implementation(libs.androidx.activity.compose)
+    // The high-contrast pass (HighContrastPass.kt) sets the look every TwangleTheme in a test takes.
+    implementation(project(":core:designsystem"))
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.junit)
     api(libs.androidx.test.runner)

@@ -169,19 +169,28 @@ internal fun hueOf(c: Color): Float {
 private const val GREY_CHROMA = 1e-4f
 
 /**
+ * The look a [TwangleTheme] given no `highContrast` of its own takes: false (Ink), except in the full check's
+ * high-contrast pass (Phase 86), where `:core:testing` provides true round every test's content, so each UI test that
+ * shows a screen light and dark checks it in the high-contrast look's light and dark as well.
+ */
+val LocalHighContrastByDefault = staticCompositionLocalOf { false }
+
+/**
  * The app's theme: Ink, the one look (Phase 67), its colours, the phone's plain sans and its rounded
  * shapes, in light or [darkTheme]. With [dynamicColor] (Android 12+) the colours come from the
  * wallpaper, but for the in-tune green and the far-off amber ([keepingInTuneApart]). A change of
  * brightness fades the colours over [COLOR_FADE_MS] rather than jumping. A press lights a button up
  * ([PressIndication], [pressFeedback]) instead of Material's ripple. With [highContrast] (Phase 86) it is the
- * high-contrast look, black and white in light or dark, whatever [dynamicColor] says.
+ * high-contrast look, black and white in light or dark, whatever [dynamicColor] says. Without a [highContrast] of
+ * its own it takes [LocalHighContrastByDefault]'s: Ink in the app (which always passes its own), the high-contrast
+ * look in the UI tests' high-contrast pass.
  */
 @Composable
 fun TwangleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     animate: Boolean = true,
-    highContrast: Boolean = false,
+    highContrast: Boolean = LocalHighContrastByDefault.current,
     content: @Composable () -> Unit,
 ) {
     val useDynamic = usesWallpaperColors(dynamicColor)

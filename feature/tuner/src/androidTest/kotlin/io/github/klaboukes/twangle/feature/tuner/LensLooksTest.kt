@@ -96,6 +96,7 @@ class LensLooksTest {
                         ink = MaterialTheme.colorScheme.onSurface,
                         farOff = MaterialTheme.styleTokens.farOff,
                         green = MaterialTheme.styleTokens.inTune,
+                        highContrast = MaterialTheme.styleTokens.highContrast,
                     )
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerContent(
@@ -202,7 +203,12 @@ class LensLooksTest {
             shownState.value = detected(1f, inTune = true)
             compose.waitForIdle()
             val tuned = capture()
-            assertTrue("$case in tune: a green needle", tuned.needleAt(1f, mix(colours.ink, colours.green, 0.9f)))
+            // The high-contrast look keeps the needle the ink in tune: its zone, the mark and the word say it (Phase 86).
+            if (colours.highContrast) {
+                assertTrue("$case in tune, high contrast: still an ink needle", tuned.needleAt(1f, colours.ink))
+            } else {
+                assertTrue("$case in tune: a green needle", tuned.needleAt(1f, mix(colours.ink, colours.green, 0.9f)))
+            }
         }
     }
 
@@ -505,7 +511,7 @@ class LensLooksTest {
     private fun mix(a: Color, b: Color, t: Float): Color =
         Color(a.red + (b.red - a.red) * t, a.green + (b.green - a.green) * t, a.blue + (b.blue - a.blue) * t)
 
-    private data class Colours(val ink: Color, val farOff: Color, val green: Color)
+    private data class Colours(val ink: Color, val farOff: Color, val green: Color, val highContrast: Boolean = false)
 
     companion object {
         val listening = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)

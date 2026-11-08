@@ -128,6 +128,18 @@ class RulerGeometryTest {
     }
 
     @Test
+    fun `in high contrast a name at the ends shows whole or not at all`() {
+        for (x in listOf(0f, 4f, 15.9f, 334.1f, 346f, 350f)) {
+            assertEquals("hidden at $x, where Ink would show it under half", 0f, rulerEdgeFade(x, 350f, 32f, hard = true), 0f)
+        }
+        for (x in listOf(16f, 20f, 31f, 175f, 319f, 334f)) {
+            assertEquals("whole at $x, never faded", 1f, rulerEdgeFade(x, 350f, 32f, hard = true), 0f)
+        }
+        assertEquals("focus mode's clear zone still holds", 0f, rulerEdgeFade(70f, 800f, 32f, clear = 64f, hard = true), 0f)
+        assertEquals(1f, rulerEdgeFade(80f, 800f, 32f, clear = 64f, hard = true), 0f)
+    }
+
+    @Test
     fun `focus mode keeps the ends clear, then the names fade in`() {
         assertEquals("under the exit button", 0f, rulerEdgeFade(740f, 800f, 32f, clear = 64f), 0f)
         assertEquals("at the clear zone's edge", 0f, rulerEdgeFade(64f, 800f, 32f, clear = 64f), 0f)

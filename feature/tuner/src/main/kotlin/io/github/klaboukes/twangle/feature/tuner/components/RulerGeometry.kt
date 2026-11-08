@@ -70,10 +70,13 @@ fun rulerEmphasis(midi: Int, position: Float): Float {
 
 /**
  * How much of a name at [x] shows on a ruler [width] wide: none within [clear] of either end (focus mode keeps its
- * exit button's corner clear, Phase 73), then fading in over [fade].
+ * exit button's corner clear, Phase 73), then fading in over [fade]. With [hard] (the high-contrast look, Phase 86,
+ * which fades nothing that carries meaning) a name and its mark show whole or not at all: whole from where the fade
+ * would be halfway, so a name at the end is never a grey half of one.
  */
-fun rulerEdgeFade(x: Float, width: Float, fade: Float, clear: Float = 0f): Float {
+fun rulerEdgeFade(x: Float, width: Float, fade: Float, clear: Float = 0f, hard: Boolean = false): Float {
     val fromEnd = minOf(x, width - x) - clear
+    if (hard) return if (fromEnd >= fade / 2f) 1f else 0f
     return if (fade <= 0f) (if (fromEnd >= 0f) 1f else 0f) else (fromEnd / fade).coerceIn(0f, 1f)
 }
 

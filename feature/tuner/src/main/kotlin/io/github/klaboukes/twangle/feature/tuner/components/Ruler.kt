@@ -147,6 +147,8 @@ fun Ruler(
     val centAlpha = tokens.fade(CENT_ALPHA)
     val smallAlpha = tokens.fade(SMALL_ALPHA)
     val zoneAlpha = tokens.fade(ZONE_ALPHA)
+    // Nor at the ends: each name and mark there shows whole or not at all (rulerEdgeFade).
+    val hardEdges = tokens.highContrast
 
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer(cacheSize = 0)
@@ -207,7 +209,7 @@ fun Ruler(
                         val last = rulerLastMidi(position, size.width, step)
                         for (midi in first..last) {
                             val x = rulerNoteX(midi, position, pointerX, step)
-                            val edge = rulerEdgeFade(x, size.width, fade, clear)
+                            val edge = rulerEdgeFade(x, size.width, fade, clear, hardEdges)
                             if (edge <= 0f) continue
                             drawLine(muted.copy(alpha = tickAlpha * edge), Offset(x, tickTop), Offset(x, baseY), line)
                             val emphasis = rulerEmphasis(midi, position)
@@ -232,7 +234,7 @@ fun Ruler(
                             while (mark <= MARKS_REACH_CENTS) {
                                 if (mark != 0) {
                                     val x = rulerPlaceX(target + mark / CENTS_PER_SEMITONE, position, pointerX, step)
-                                    val edge = rulerEdgeFade(x, size.width, fade, clear)
+                                    val edge = rulerEdgeFade(x, size.width, fade, clear, hardEdges)
                                     val length = if (mark % 10 == 0) tenCentTick else centTick
                                     if (edge > 0f) drawLine(muted.copy(alpha = centAlpha * near * edge), Offset(x, baseY - length), Offset(x, baseY), line)
                                 }
@@ -315,7 +317,7 @@ private val POINTER_BOTTOM = 11.dp
 /** The high-contrast look's pointer is this much larger (the mock-up's, 18 wide instead of 12). */
 private const val HIGH_CONTRAST_POINTER = 1.5f
 
-/** Names fade out over this much at each end of the ruler. */
+/** Names fade out over this much at each end of the ruler (in Ink; the high-contrast look cuts them halfway). */
 private val EDGE_FADE = 32.dp
 
 /** The needle's cent marks round the note: every [MARK_STEP_CENTS] out to [MARKS_REACH_CENTS], the tens longer. */

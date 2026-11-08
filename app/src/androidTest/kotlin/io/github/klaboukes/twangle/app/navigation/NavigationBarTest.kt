@@ -42,6 +42,7 @@ import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.isHighContrastPass
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -390,7 +391,8 @@ class NavigationBarTest {
     }
 
     /** The accent the theme gives Material's primary role. */
-    private fun accentOf(dark: Boolean): Int = tokensFor(dark).scheme.primary.toArgb()
+    // The high-contrast pass shows the bar in that look, whose accent is its ink (Phase 86).
+    private fun accentOf(dark: Boolean): Int = tokensFor(dark, isHighContrastPass).scheme.primary.toArgb()
 
     private fun near(a: Int, b: Int): Boolean =
         abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)) <= COLOR_TOLERANCE &&

@@ -58,6 +58,7 @@ import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.isHighContrastPass
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -483,7 +484,8 @@ class ScalesScreenTest {
         val long = inkAlong(1, 1) + inkAlong(1, 3)
         if (long.min() < level * 0.6f) fail("$case: the long string beside it not solid: $long")
         val faded = (1..4).flatMap { inkAlong(0, it) }
-        if (faded.max() > level * 0.75f) fail("$case: the short string below its start not faded, or a note there: $faded (solid $level)")
+        // The high-contrast look fades nothing (Phase 86): there the dashes alone say where the string isn't.
+        if (!isHighContrastPass && faded.max() > level * 0.75f) fail("$case: the short string below its start not faded, or a note there: $faded (solid $level)")
         if (faded.count { it > level * 0.2f } < 3) fail("$case: the short string below its start not drawn: $faded (solid $level)")
         if (faded.count { it < level * 0.15f } < 3) fail("$case: the short string below its start not dashed: $faded (solid $level)")
         // The dot off its middle (clear of its name), against the field beside the 4th fret's space, clear of every dot.

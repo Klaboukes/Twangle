@@ -215,7 +215,7 @@ internal fun TempoRuler(
                     val last = floor(at + centre / step).toInt().coerceAtMost(ClickTrack.MAX_BPM)
                     for (mark in first..last) {
                         val x = centre + (mark - at) * step
-                        val edge = (minOf(x, size.width - x) / fade).coerceIn(0f, 1f)
+                        val edge = tempoEdgeFade(x, size.width, fade, highContrast)
                         if (edge <= 0f) continue
                         val top = if (mark % 10 == 0) tenTop else if (mark % 5 == 0) fiveTop else minorTop
                         drawLine(if (mark % 5 == 0) major else minor, Offset(x, top), Offset(x, base), tick, StrokeCap.Round, alpha = edge)
@@ -227,19 +227,19 @@ internal fun TempoRuler(
                                 number,
                                 color = major,
                                 topLeft = Offset(x - number.size.width / 2f, numberBaseline - number.firstBaseline),
-                                alpha = edge * (NUMBER_FAINT + (1f - NUMBER_FAINT) * clear),
+                                alpha = edge * tempoNumberShown(clear, highContrast),
                             )
                         }
                     }
                     if (goalBpm > 0) {
                         val x = centre + (goalBpm - at) * step
-                        val edge = (minOf(x, size.width - x) / fade).coerceIn(0f, 1f)
+                        val edge = tempoEdgeFade(x, size.width, fade, highContrast)
                         if (edge > 0f) drawCircle(accent, goalRadius, Offset(x, goalY), alpha = edge)
                     }
                     val listening = ringBpm()
                     if (listening > 0f) {
                         val x = centre + (listening - at) * step
-                        val edge = (minOf(x, size.width - x) / fade).coerceIn(0f, 1f)
+                        val edge = tempoEdgeFade(x, size.width, fade, highContrast)
                         val alpha = ringAlpha().coerceIn(0f, 1f) * edge
                         if (alpha > 0f) drawCircle(accent, ringRadius, Offset(x, ringY), alpha = alpha, style = ring)
                     }
@@ -277,8 +277,27 @@ private const val NUMBER_COUNT = (250 - FIRST_NUMBER) / NUMBER_EVERY + 1
 /** A number right under the cursor is faded to this, so the cursor reads. */
 private const val NUMBER_FAINT = 0.25f
 
-/** Marks and numbers fade out over this much at each end. */
+/** Marks and numbers fade out over this much at each end (in Ink; the high-contrast look cuts them halfway). */
 private val EDGE_FADE = 40.dp
+
+/**
+ * How much of a mark or number at [x] shows on a ruler [width] wide: fading in over [fade] from either end. With [hard]
+ * (the high-contrast look, Phase 86, which fades nothing that carries meaning) whole or not at all, whole from where the
+ * fade would be halfway, as the tuner's ruler does (`rulerEdgeFade`).
+ */
+internal fun tempoEdgeFade(x: Float, width: Float, fade: Float, hard: Boolean = false): Float {
+    val fromEnd = minOf(x, width - x)
+    if (hard) return if (fromEnd >= fade / 2f) 1f else 0f
+    return if (fade <= 0f) (if (fromEnd >= 0f) 1f else 0f) else (fromEnd / fade).coerceIn(0f, 1f)
+}
+
+/**
+ * How much of a number shows as the cursor passes it, [clear] 0 right under it to 1 clear of it: faded to [NUMBER_FAINT]
+ * under it, so the cursor reads. With [hard] (high contrast) it steps aside wholly instead of turning grey: the tempo
+ * under the cursor is the big number above.
+ */
+internal fun tempoNumberShown(clear: Float, hard: Boolean = false): Float =
+    if (hard) (if (clear >= 1f) 1f else 0f) else NUMBER_FAINT + (1f - NUMBER_FAINT) * clear
 
 /** The cursor: 3 dp in the accent from under the numbers to the line, with a soft glow either side. */
 private val CURSOR_TOP = 18.dp

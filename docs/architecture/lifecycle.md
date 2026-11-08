@@ -73,7 +73,7 @@ What each does:
 | `inTunePrecision` | `RELAXED` | `PRECISE`; key `in_tune_precision` |
 | `theme` | `SYSTEM` | `LIGHT`, `DARK` |
 | `dynamicColor` | false | the wallpaper's colours (on by default until 2026-11-03) on Android 12+ (Contemporary's only in 1.1, every install's since Phase 67). 1.1's `visual_style` (six styles) is no longer read: it stays in the file and every style shows as Ink |
-| `highContrast` | none (follows the phone) | Phase 86; key `high_contrast`, written only by the player's own flip. Missing, the look is on while the phone's contrast is high or its high-contrast text is on (`AppSettings.highContrastOn(phoneWantsHighContrast)`) |
+| `highContrast` | none (follows the phone) | Phase 86; key `high_contrast`, written only by the player's own flip (and by the UI tests' high-contrast pass, `HighContrastPassRule`, which then puts back what it found, removing the key with `setHighContrast(null)`). Missing, the look is on while the phone's contrast is high or its high-contrast text is on (`AppSettings.highContrastOn(phoneWantsHighContrast)`) |
 | `keepScreenOn`, `vibrateInTune` | true | |
 | `vibrationGuide` | none (follows the screen reader) | Phase 85; key `vibration_guide`, written only by the player's own flip. Missing, the guide is on while a screen reader is (`AppSettings.vibrationGuideOn(screenReaderOn)`) |
 | (signal bars) | | Not a setting since 2026-11-07: the owner dropped the bars (the tips say what to fix). Versions up to 2.0 saved them under `show_signal_bars`, removed at every start where one is left (`forgetDroppedSettings()`) |

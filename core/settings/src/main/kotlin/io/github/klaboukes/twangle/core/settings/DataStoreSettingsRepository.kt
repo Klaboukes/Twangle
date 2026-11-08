@@ -246,8 +246,8 @@ class DataStoreSettingsRepository internal constructor(
         save { it[DYNAMIC_COLOR] = enabled }
     }
 
-    override suspend fun setHighContrast(enabled: Boolean) {
-        save { it[HIGH_CONTRAST] = enabled }
+    override suspend fun setHighContrast(enabled: Boolean?) {
+        save { if (enabled == null) it.remove(HIGH_CONTRAST) else it[HIGH_CONTRAST] = enabled }
     }
 
     override suspend fun setKeepScreenOn(enabled: Boolean) {

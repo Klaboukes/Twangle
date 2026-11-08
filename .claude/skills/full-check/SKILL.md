@@ -1,14 +1,14 @@
 ---
 name: full-check
-description: Run Twangle's full on-device check unattended, whenever the owner starts it (about 35 minutes; until 2026-11-06 it was the overnight run) — first the translations (/translate), then every UI test (light and dark), then every language at 2× text where a screen changed since it last passed — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything, and summarize it at the end. Use when the owner says "start the full check", "run the full check", "/full-check", or the older "start the overnight run", "/overnight-run", or plugs the phone in for the tests the roadmap left for it.
-argument-hint: "[optional: --sweep or --languages to run only one part, --full to skip no language check, --store for the store screenshots]"
+description: Run Twangle's full on-device check unattended, whenever the owner starts it (about 45 minutes; until 2026-11-06 it was the overnight run) — first the translations (/translate), then every UI test (light and dark), then the screens' tests again in the high-contrast look, then every language at 2× text where a screen changed since it last passed — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything, and summarize it at the end. Use when the owner says "start the full check", "run the full check", "/full-check", or the older "start the overnight run", "/overnight-run", or plugs the phone in for the tests the roadmap left for it.
+argument-hint: "[optional: --sweep, --contrast or --languages to run only one part, --full to skip no language check, --store for the store screenshots]"
 ---
 
 # The full check
 
 The owner starts it whenever suits them, over lunch or at bedtime, with a test phone on USB and leaves it
 alone (owner, 2026-11-06: at about 35 minutes it no longer needs the night, so it is no longer the
-overnight run), taking turns between the Xiaomi 12X and the Galaxy S26 from one run to the next; say in
+overnight run; about 45 since Phase 86's high-contrast pass, 2026-11-08), taking turns between the Xiaomi 12X and the Galaxy S26 from one run to the next; say in
 the summary which phone it was. It runs unattended, so the owner isn't asked anything: take the
 recommended answer to every question, note it, and put it in the summary at the end for them to double-check. That never covers a step that reaches Google Play
 (`scripts/release.sh upload`, `promote`, `rollout`, `halt`, `listing`) or publishes anything (the website,
@@ -64,11 +64,14 @@ export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run p
 
 ```bash
 scripts/full-check.sh --dry-run                     # which language checks this run does (no phone)
-scripts/full-check.sh > build/full-check.txt 2>&1   # in the background, ~35 min (less when little changed)
+scripts/full-check.sh > build/full-check.txt 2>&1   # in the background, ~45 min (less when little changed)
 ```
 It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
 time, waiting while the phone is 37 °C or warmer; 1.1's six styles took about 55 minutes, 2.0's one
-look about 16 minutes, 2026-11-05), then the `@EveryLanguage`
+look about 16 minutes, 2026-11-05), then the screens' modules again in the high-contrast look
+(`scripts/ui-tests.sh <the six screen modules> --high-contrast --thorough --cool`, its white on black and
+black on white in one pass, as each test loops over light and dark itself; about 12 minutes, 2026-11-08;
+testing.md, *Every screen light and dark*; `--contrast` runs only it), then the `@EveryLanguage`
 checks one module at a time with cooling pauses, and writes `build/full-check/summary.txt`. A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.

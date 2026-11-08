@@ -91,8 +91,12 @@ interface SettingsRepository {
 
     suspend fun setDynamicColor(enabled: Boolean)
 
-    /** The player's own choice for the high-contrast look ([AppSettings.highContrast]): from then on it no longer follows the phone. */
-    suspend fun setHighContrast(enabled: Boolean)
+    /**
+     * The player's own choice for the high-contrast look ([AppSettings.highContrast]): from then on it no longer follows
+     * the phone. Null forgets the choice, so it follows the phone again (only the UI tests' high-contrast pass, which
+     * puts back what it found).
+     */
+    suspend fun setHighContrast(enabled: Boolean?)
 
     suspend fun setKeepScreenOn(enabled: Boolean)
 

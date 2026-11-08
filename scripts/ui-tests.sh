@@ -14,6 +14,9 @@
 #                                                another instrumentation argument (-a key=value, repeatable)
 #   scripts/ui-tests.sh --thorough ...           also the double checks: the @Thorough tests (other
 #                                                font sizes, languages, orientations)
+#   scripts/ui-tests.sh --high-contrast ...      every screen in the high-contrast look (Phase 86), in its
+#                                                light and dark where a test checks both: the full
+#                                                check's third pass (-a highContrast=true, so no pass is noted)
 #   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
 #                                                warmer than COOL_BELOW (default 37 °C): long runs
 #   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests, in the testers'
@@ -56,7 +59,7 @@ COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
-usage() { sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
@@ -111,6 +114,7 @@ while [ $# -gt 0 ]; do
         --since-pass) since_pass=1 ;;
         --thorough) thorough=1 ;;
         --quick) thorough=0 ;;
+        --high-contrast) extra+=("highContrast=true") ;;
         --cool) cool=1 ;;
         --languages) languages=1 ;;
         --all-languages) languages=2 ;;
