@@ -1,0 +1,6 @@
+<resources>
+    <string name="spoken_sharp">%1$s शार्प</string>
+    <string name="spoken_flat">%1$s फ्लॅट</string>
+
+    <string name="instrument_button_action">वाद्य किंवा ट्यूनिंग बदला</string>
+</resources>

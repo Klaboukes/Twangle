@@ -1,0 +1,74 @@
+<resources>
+    <string name="metronome_beats_in_bar">बारमधील बीट</string>
+    <string name="metronome_tempo">टेम्पो</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d बीट प्रति मिनिट, %2$s</item>
+        <item quantity="other">%1$d बीट प्रति मिनिट, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">बीट प्रति मिनिट · %1$s</string>
+    <string name="metronome_slower">हळू</string>
+    <string name="metronome_faster">जलद</string>
+    <string name="metronome_tap">बीटवर टॅप करा</string>
+    <string name="metronome_start">सुरू करा</string>
+    <string name="metronome_stop">थांबवा</string>
+    <string name="metronome_vibrate">बीटवर व्हायब्रेट करा</string>
+    <string name="metronome_sound">आवाज</string>
+    <string name="metronome_sound_wood_block">वुड ब्लॉक</string>
+    <string name="metronome_sound_cowbell">काउबेल</string>
+    <string name="metronome_sound_claves">क्लेव्ह्ज</string>
+    <string name="metronome_sound_rim_click">रिम क्लिक</string>
+    <string name="metronome_subdivision">बीटच्या मध्ये</string>
+    <string name="metronome_subdivision_none">काहीही नाही</string>
+    <string name="metronome_subdivision_eighths">एट्थ नोट्स</string>
+    <string name="metronome_subdivision_triplets">ट्रिप्लेट</string>
+    <string name="metronome_subdivision_sixteenths">सिक्स्टीन्थ नोट्स</string>
+    <string name="metronome_options">पर्याय</string>
+    <string name="metronome_trainer">स्पीड ट्रेनर</string>
+    <string name="metronome_trainer_start">सुरुवातीचा टेम्पो</string>
+    <string name="metronome_trainer_goal">लक्ष्य</string>
+    <string name="metronome_trainer_start_slower">सुरुवातीचा टेम्पो कमी करा</string>
+    <string name="metronome_trainer_start_faster">सुरुवातीचा टेम्पो वाढवा</string>
+    <string name="metronome_trainer_goal_slower">लक्ष्य कमी करा</string>
+    <string name="metronome_trainer_goal_faster">लक्ष्य वाढवा</string>
+    <string name="metronome_trainer_step">पायरी</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">बार</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s बार</item>
+        <item quantity="other">%1$s बार</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$s बारनंतर %1$s</item>
+        <item quantity="other">%2$s बारनंतर %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">प्रत्येक बारला %1$s</item>
+        <item quantity="other">दर %2$s बारला %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">लक्ष्य गाठले · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">स्पीड ट्रेनर, %1$s BPM, %2$s कडे वाढत आहे, %3$s</string>
+    <string name="metronome_trainer_spoken_set">स्पीड ट्रेनर, %1$s ते %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">स्पीड ट्रेनर, लक्ष्य गाठले, %1$s BPM</string>
+    <string name="metronome_meter_2_4_spoken">टू-फोर टाइम</string>
+    <string name="metronome_meter_3_4_spoken">थ्री-फोर टाइम</string>
+    <string name="metronome_meter_4_4_spoken">फोर-फोर टाइम</string>
+    <string name="metronome_meter_5_4_spoken">फाइव्ह-फोर टाइम</string>
+    <string name="metronome_meter_6_8_spoken">सिक्स-एट टाइम</string>
+    <string name="metronome_meter_7_8_spoken">सेव्हन-एट टाइम</string>
+    <string name="metronome_listen">ऐका</string>
+    <string name="metronome_listen_stop_spoken">ऐकणे थांबवा</string>
+    <string name="metronome_listening">ऐकत आहे…</string>
+    <string name="metronome_heard">ऐकलेला टेम्पो</string>
+    <string name="metronome_use">वापरा</string>
+    <string name="metronome_not_now">आता नको</string>
+    <string name="metronome_listen_speed">गती</string>
+    <string name="metronome_pick_half">अर्धा</string>
+    <string name="metronome_pick_as_heard">ऐकल्याप्रमाणे</string>
+    <string name="metronome_pick_double">दुप्पट</string>
+    <string name="metronome_no_beat">स्थिर बीट ऐकू आला नाही</string>
+    <string name="metronome_try_again">पुन्हा</string>
+    <string name="metronome_mic_busy">मायक्रोफोन व्यस्त</string>
+    <string name="metronome_mic_off">मायक्रोफोन बंद</string>
+    <string name="metronome_open_settings">सेटिंग्ज</string>
+</resources>

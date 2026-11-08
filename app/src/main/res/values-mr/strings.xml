@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">ट्यून</string>
+    <string name="nav_metronome">मेट्रोनोम</string>
+    <string name="nav_practice">सराव</string>
+    <string name="nav_settings">सेटिंग्ज</string>
+    <string name="widget_name">ट्यूनर</string>
+    <string name="widget_description">तुमचे वाद्य आणि ट्यूनिंग दाखवते. एका टॅपने ट्यूनर उघडतो.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">ट्यूनर उघडा</string>
+    <string name="widget_preview_title">गिटार · स्टँडर्ड</string>
+</resources>

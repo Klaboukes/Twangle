@@ -1,0 +1,79 @@
+<resources>
+    <string name="settings_title">सेटिंग्ज</string>
+    <string name="settings_back">मागे</string>
+
+    <string name="settings_group_tuning">ट्यूनिंग</string>
+    <string name="settings_group_while_tuning">ट्यून करताना</string>
+    <string name="settings_group_look">रूपरंग</string>
+
+    <string name="settings_a4_title">संदर्भ पिच (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">बहुतेक संगीत ४४० Hz वर असते. ऑर्केस्ट्रा अनेकदा ४४२ Hz वर, तर बरोक वादकवृंद ४१५ Hz वर ट्यून करतात.</string>
+    <string name="settings_a4_lower">A4 १ Hz ने कमी करा</string>
+    <string name="settings_a4_raise">A4 १ Hz ने वाढवा</string>
+    <string name="settings_a4_reset">%1$d Hz वर रीसेट करा</string>
+
+    <string name="settings_precise_title">अचूक ट्यूनिंग</string>
+    <string name="settings_precise_summary">५ ऐवजी २ सेंटच्या आत सुरात</string>
+
+    <string name="settings_notation_title">स्वरांची नावे</string>
+    <string name="settings_notation_sharps">शार्प: C, C♯, D …</string>
+    <string name="settings_notation_flats">फ्लॅट: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">आपोआप: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">जर्मन: C, C♯, D … H</string>
+
+    <string name="settings_theme_title">लाइट किंवा डार्क</string>
+    <string name="settings_high_contrast_title">उच्च कॉन्ट्रास्ट</string>
+    <string name="settings_high_contrast_summary">जाड रेषांसह काळे-पांढरे; फोनचा कॉन्ट्रास्ट जास्त असल्यास आपोआप सुरू</string>
+    <string name="settings_theme_system">फोनप्रमाणे</string>
+    <string name="settings_theme_light">लाइट</string>
+    <string name="settings_theme_dark">डार्क</string>
+    <string name="settings_dynamic_color_title">वॉलपेपरचे रंग</string>
+    <string name="settings_dynamic_color_summary">तुमच्या वॉलपेपरमधील रंग वापरा</string>
+
+    <string name="settings_meter_title">मीटर</string>
+    <string name="settings_meter_classic">क्लासिक</string>
+    <string name="settings_meter_light_arc">दिव्यांची कमान</string>
+    <string name="settings_meter_strobe">स्ट्रोब</string>
+
+    <string name="settings_left_handed_title">डावखुरे</string>
+    <string name="settings_left_handed_summary">कॉर्ड चार्ट आणि स्केलचा फिंगरबोर्ड उलट्या बाजूने धरलेल्या गिटारसाठी काढलेले</string>
+
+    <string name="settings_under_meter_title">मीटरखाली</string>
+    <string name="settings_under_meter_words">शब्द: ताणा किंवा सैल करा</string>
+    <string name="settings_under_meter_cents">सेंट: −१२</string>
+
+    <string name="settings_keep_screen_on_title">स्क्रीन चालू ठेवा</string>
+    <string name="settings_keep_screen_on_summary">तुम्ही ट्यून करत असताना स्क्रीन चालू राहते</string>
+
+    <string name="settings_vibrate_in_tune_title">सुरात आल्यावर व्हायब्रेट करा</string>
+    <string name="settings_vibrate_in_tune_summary">स्वर अचूक पिचवर पोहोचताच छोटेसे व्हायब्रेशन</string>
+    <string name="settings_vibration_guide_title">व्हायब्रेशन मार्गदर्शक</string>
+    <string name="settings_vibration_guide_summary">ट्यून करताना टॅप: एक म्हणजे ताणा, दोन म्हणजे सैल करा, सुरात आल्यावर लांब</string>
+    <string name="settings_string_tick_off_title">ट्यून झालेल्या तारांवर खूण</string>
+    <string name="settings_string_tick_off_summary">प्रत्येक तार सुरात येताच तिच्यावर खूण, आणि सर्व सुरात आल्यावर “सुरात. आता वाजवा.”</string>
+
+    <string name="settings_language_title">भाषा</string>
+    <string name="settings_language_phone">फोनची भाषा</string>
+    <string name="settings_language_cancel">रद्द करा</string>
+
+    <string name="about_title">Twangle विषयी</string>
+    <string name="settings_about_link_summary">आवृत्ती %1$s, मदत, गोपनीयता आणि परवाने</string>
+    <string name="settings_about_name_title">नाव</string>
+    <string name="settings_about_name_meaning">Twang म्हणजे इंग्रजीत छेडलेल्या तारेचा घुमणारा नाद.</string>
+    <string name="settings_about_version">आवृत्ती %1$s</string>
+    <string name="settings_about_free_title">कायम मोफत</string>
+    <string name="settings_about_free_summary">जाहिराती नाहीत, खाते नाही, ॲपमधील खरेदी नाही आणि ट्रॅकिंग नाही. आता नाही, नंतरही नाही.</string>
+    <string name="settings_about_privacy_title">गोपनीयता</string>
+    <string name="settings_about_privacy_summary">Twangle तुमच्याबद्दल कोणताही डेटा गोळा करत नाही. ऐकणारी स्क्रीन उघडी असतानाच मायक्रोफोन चालू असतो: ट्यूनर, मेट्रोनोमचे “ऐका” किंवा कानाच्या सरावातील “ऐकून वाजवा”. आवाजाचे विश्लेषण त्याच क्षणी होते; तो कधीही रेकॉर्ड, सेव्ह किंवा पाठवला जात नाही. Twangle ला इंटरनेटची परवानगी नाही, त्यामुळे ते काहीही कुठेही पाठवू शकत नाही. तुमची सेटिंग्ज याच डिव्हाइसवर राहतात (आणि तुम्ही Android चा स्वतःचा बॅकअप सुरू केला असल्यास त्यातही).</string>
+    <string name="settings_about_rate_title">Twangle ला रेटिंग द्या</string>
+    <string name="settings_about_rate_summary">Google Play वर Twangle</string>
+    <string name="settings_about_website_title">मदत आणि वेबसाइट</string>
+    <string name="settings_about_website_summary">प्रत्येक टूल कसे काम करते आणि सामान्य प्रश्नांची उत्तरे (इंग्रजीत)</string>
+    <string name="settings_about_credits_title">फॉन्ट आणि ओपन-सोर्स सॉफ्टवेअर</string>
+    <string name="settings_about_credits_summary">Twangle हे यांच्या मदतीने बनले आहे. परवाना वाचण्यासाठी एखाद्यावर टॅप करा.</string>
+    <string name="settings_about_licence_open">परवाना वाचा</string>
+    <string name="settings_about_licence_close">बंद करा</string>
+</resources>
