@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.core.audio
 
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -106,6 +107,27 @@ class ChunkReaderTest {
         val chunksIn2s = Math.ceil(RATE * ChunkReader.SILENT_SECONDS / 1024.0).toInt()
         repeat(chunksIn2s - 1) { reader.fill(chunk) }
         failure<AudioRecorderException.MicrophoneBusy> { reader.fill(chunk) }
+    }
+
+    @Test
+    fun `zeros from the very first sample are told apart from a microphone that fell silent`() {
+        val chunk = FloatArray(1024)
+        val chunksIn2s = Math.ceil(RATE * ChunkReader.SILENT_SECONDS / 1024.0).toInt()
+
+        val never = reader(FakeMic(samples = { 0f }))
+        repeat(chunksIn2s - 1) { never.fill(chunk) }
+        failure<AudioRecorderException.MicrophoneBusy> { never.fill(chunk) }
+        assertFalse(never.heardRoom)
+        assertTrue(never.silentFromStart)
+
+        var muted = false
+        val fell = reader(FakeMic(samples = { i -> if (muted) 0f else 1e-4f * sin(i * 0.1).toFloat() }))
+        fell.fill(chunk)
+        assertTrue(fell.heardRoom)
+        muted = true
+        repeat(chunksIn2s - 1) { fell.fill(chunk) }
+        failure<AudioRecorderException.MicrophoneBusy> { fell.fill(chunk) }
+        assertFalse(fell.silentFromStart)
     }
 
     @Test

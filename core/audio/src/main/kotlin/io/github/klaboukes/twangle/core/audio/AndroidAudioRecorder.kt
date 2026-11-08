@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.flowOn
  * device's native rate ([SampleRateSelector]), inputs from [AudioSourceSelector] (unprocessed
  * first, voice recognition as the fallback). If no input opens at that rate, the next rate the
  * device accepts is tried ([openFirst]) and [config] changes to it, for this and later sessions.
+ * An input that records only exact zeros from its first sample gives way to the next one within
+ * the session ([FallbackReader]), and is skipped for the app's life once that one hears the room.
  * While a Bluetooth headset is connected it asks for the built-in mic ([InputDeviceSelector]).
  * Chunks last about 21 ms at any rate unless [chunkSize] is given.
  *
@@ -49,7 +51,7 @@ class AndroidAudioRecorder(
     override var config: AudioConfig = configFor(rates.firstOrNull() ?: AudioConfig.DEFAULT_SAMPLE_RATE)
         private set
 
-    private val inputs: List<AudioInput> =
+    private val allInputs: List<AudioInput> =
         AudioSourceSelector.candidates(AudioSourceSelector.supportsUnprocessed(audioManager))
 
     private val readDispatcher = Dispatchers.IO.limitedParallelism(1)
@@ -66,16 +68,23 @@ class AndroidAudioRecorder(
         ) {
             throw AudioRecorderException.PermissionMissing()
         }
-        val (record, rate, input) = open()
-        val mic = RecordInput(record)
+        val inputs = skippedInputs.usable(allInputs)
+        val (record, rate, input) = open(inputs)
+        val reader = FallbackReader(
+            first = begin(record, input),
+            firstInput = input,
+            inputs = inputs,
+            sampleRate = rate,
+            skipped = skippedInputs,
+            open = { next ->
+                Log.w(TAG, "$activeInput recorded only zeros from its first sample: trying $next")
+                tryBuild(rate, next)?.let { begin(it, next) }
+            },
+            release = { it.end() },
+        )
         try {
-            mic.watch()
-            start(record)
-            mic.checkSilenced()
-            activeInput = input
             val opened = configFor(rate)
             config = opened
-            val reader = ChunkReader(mic, rate)
             val pool = Array(POOL_SIZE) { FloatArray(opened.chunkSize) }
             var next = 0
             while (true) {
@@ -86,9 +95,7 @@ class AndroidAudioRecorder(
             }
         } finally {
             activeInput = null
-            mic.unwatch()
-            if (record.recordingState == AudioRecord.RECORDSTATE_RECORDING) record.stop()
-            record.release()
+            reader.close()
         }
     }
         // The collector holds 1 chunk, the channel up to CHANNEL_CAPACITY and the reader fills 1
@@ -100,40 +107,66 @@ class AndroidAudioRecorder(
         if (chunkSize == null) AudioConfig.forSampleRate(rate) else AudioConfig(rate, chunkSize)
 
     /**
-     * Opens the first input that initializes, at the current rate first and then at the device's
-     * other rates, best first.
+     * Opens the first of [inputs] that initializes, at the current rate first and then at the
+     * device's other rates, best first.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun open(): OpenedMic<AudioRecord> {
+    private fun open(inputs: List<AudioInput>): OpenedMic<AudioRecord> {
         val current = config.sampleRate
         val tried = (listOf(current) + rates).distinct()
         var lastFailure: Exception? = null
         val opened = openFirst(tried, inputs) { rate, input ->
-            val record = try {
-                build(rate, input)
-            } catch (e: SecurityException) {
-                throw AudioRecorderException.PermissionMissing(e)
-            } catch (e: UnsupportedOperationException) {
-                lastFailure = e
-                null
-            } catch (e: IllegalArgumentException) {
-                lastFailure = e
-                null
-            }
-            if (record != null && record.state != AudioRecord.STATE_INITIALIZED) {
-                record.release()
-                null
-            } else {
-                record
-            }
+            tryBuild(rate, input) { lastFailure = it }
         } ?: throw AudioRecorderException.InitializationFailed(
             "No audio input could be opened at $tried Hz (tried $inputs)",
             lastFailure,
         )
         if (opened.sampleRate != current) Log.i(TAG, "No input opened at $current Hz: recording at ${opened.sampleRate} Hz")
-        // Keep a Bluetooth headset's call-quality mic out of the way (null = Android decides).
-        InputDeviceSelector.preferredInput(audioManager)?.let { opened.mic.setPreferredDevice(it) }
         return opened
+    }
+
+    /**
+     * An initialized [AudioRecord] for [input] at [rate], or null when the phone refuses that
+     * combination ([onFailure] gets why, when Android said). A missing permission throws.
+     */
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    private fun tryBuild(rate: Int, input: AudioInput, onFailure: (Exception) -> Unit = {}): AudioRecord? {
+        val record = try {
+            build(rate, input)
+        } catch (e: SecurityException) {
+            throw AudioRecorderException.PermissionMissing(e)
+        } catch (e: UnsupportedOperationException) {
+            onFailure(e)
+            return null
+        } catch (e: IllegalArgumentException) {
+            onFailure(e)
+            return null
+        }
+        if (record.state != AudioRecord.STATE_INITIALIZED) {
+            record.release()
+            return null
+        }
+        // Keep a Bluetooth headset's call-quality mic out of the way (null = Android decides).
+        InputDeviceSelector.preferredInput(audioManager)?.let { record.setPreferredDevice(it) }
+        return record
+    }
+
+    /**
+     * Starts recording [record] and follows Android's silencing of it; [input] becomes
+     * [activeInput]. Releases it if it can't start (the microphone is busy).
+     */
+    private fun begin(record: AudioRecord, input: AudioInput): RecordInput {
+        val mic = RecordInput(record)
+        try {
+            mic.watch()
+            start(record)
+            mic.checkSilenced()
+        } catch (e: Throwable) {
+            mic.end()
+            throw e
+        }
+        activeInput = input
+        return mic
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
@@ -200,6 +233,13 @@ class AndroidAudioRecorder(
         fun unwatch() {
             callback?.let { runCatching { audioManager.unregisterAudioRecordingCallback(it) } }
         }
+
+        /** Stops following, stops recording and lets go of the microphone. */
+        fun end() {
+            unwatch()
+            if (record.recordingState == AudioRecord.RECORDSTATE_RECORDING) record.stop()
+            record.release()
+        }
     }
 
     /** Copies Android's "silenced" for the recording with [sessionId] to [input]. */
@@ -214,6 +254,12 @@ class AndroidAudioRecorder(
     }
 
     companion object {
+        /**
+         * The inputs found to record nothing at all on this phone, for every recorder in the app
+         * (the tuner's, the metronome's Listen, ear training's) until the app's process ends.
+         */
+        internal val skippedInputs = SkippedInputs()
+
         private const val TAG = "AudioRecorder"
         private const val CHANNEL_MASK = AudioFormat.CHANNEL_IN_MONO
         private const val ENCODING = AudioFormat.ENCODING_PCM_FLOAT

@@ -26,7 +26,9 @@ internal interface MicInput {
  * - nothing but exact zeros for [SILENT_SECONDS] with [AudioRecorderException.MicrophoneBusy] as
  *   well: a muted or blocked microphone (the privacy switch, another app muting it) delivers
  *   digital silence, while a working one always hears at least a whisper of noise, even in a
- *   quiet room. The wait also covers a microphone that starts with a few silent chunks.
+ *   quiet room. The wait also covers a microphone that starts with a few silent chunks. When those
+ *   zeros came from the very first sample ([silentFromStart]), the input itself may be what
+ *   records nothing, and [FallbackReader] tries the next one before calling it busy.
  *
  * Allocates nothing per chunk.
  */
@@ -37,6 +39,17 @@ internal class ChunkReader(
 ) {
     private val silentLimit: Long = (sampleRate * SILENT_SECONDS).toLong()
     private var silentSamples = 0L
+
+    /** Whether any sample so far was not exactly 0: this input hears the room. */
+    var heardRoom = false
+        private set
+
+    /**
+     * Whether the last [AudioRecorderException.MicrophoneBusy] came from exact zeros that began
+     * with this input's very first sample (not from Android silencing it for another app).
+     */
+    var silentFromStart = false
+        private set
 
     /** Blocks until [chunk] is full, then checks that the microphone is still really listening. */
     fun fill(chunk: FloatArray) {
@@ -49,8 +62,14 @@ internal class ChunkReader(
             },
         ) { done -> input.read(chunk, done, chunk.size - done) }
         if (input.isSilenced) throw AudioRecorderException.MicrophoneBusy("Android silenced the microphone for another app")
-        silentSamples = if (isDigitalSilence(chunk)) silentSamples + chunk.size else 0L
+        if (isDigitalSilence(chunk)) {
+            silentSamples += chunk.size
+        } else {
+            silentSamples = 0L
+            heardRoom = true
+        }
         if (silentSamples >= silentLimit) {
+            silentFromStart = !heardRoom
             throw AudioRecorderException.MicrophoneBusy("The microphone delivered only zeros for $SILENT_SECONDS s (muted or blocked)")
         }
     }
