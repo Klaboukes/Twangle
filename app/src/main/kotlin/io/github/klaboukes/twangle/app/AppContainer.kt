@@ -143,12 +143,12 @@ class AppContainer(private val appContext: Context) {
 
     /**
      * Google Play's own rating window (Phase 50), which the tuner asks for at most once, at a good
-     * moment. Nothing of it runs until then.
+     * moment. Nothing of it runs until then. The free build (-Ptwangle.foss=true) has none.
      */
     val ratingWindow: RatingWindow
-        get() = testRatingWindow ?: playRatingWindow
+        get() = testRatingWindow ?: buildRatingWindow
 
-    private val playRatingWindow: RatingWindow by lazy { PlayRatingWindow(appContext) }
+    private val buildRatingWindow: RatingWindow by lazy { storeRatingWindow(appContext) }
 
     /** A test's stand-in for Google's rating window, or null for the real one (see [testAudioRecorder]). */
     @VisibleForTesting

@@ -13,6 +13,13 @@ plugins {
 // Version and upload key: shared with the watch app, see the root build.gradle.kts.
 val keystoreProperties = rootProject.extra["twangleKeystoreProperties"] as Properties?
 
+// -Ptwangle.foss=true makes the free build for F-Droid and IzzyOnDroid (Phase 58): the same app
+// without Google Play's rating library, which is not open source. Only src/play (Google's rating
+// window) gives way to src/foss (none). A property, not a product flavour, so every task keeps its
+// name (scripts/, the release, the Baseline Profile). docs/architecture/lifecycle.md, *Google's
+// rating window*.
+val freeBuild = providers.gradleProperty("twangle.foss").map { it.toBoolean() }.getOrElse(false)
+
 android {
     namespace = "io.github.klaboukes.twangle.app"
     compileSdk = 37
@@ -56,6 +63,10 @@ android {
         compose = true
         // BuildConfig.VERSION_NAME is shown in the About group of settings.
         buildConfig = true
+    }
+
+    sourceSets {
+        getByName("main").kotlin.srcDir(if (freeBuild) "src/foss/kotlin" else "src/play/kotlin")
     }
 
     androidResources {
@@ -269,7 +280,8 @@ dependencies {
     // from somewhere other than the Play Store, e.g. adb or a sideloaded APK.
     implementation(libs.androidx.profileinstaller)
     // Google Play's own rating window (In-App Review, Phase 50): PlayRatingWindow. No permission of its own.
-    implementation(libs.play.review)
+    // Left out of the free build (freeBuild above).
+    if (!freeBuild) implementation(libs.play.review)
     debugImplementation(libs.androidx.compose.ui.tooling)
     // Generates the profile on demand: ./gradlew :app:generateBaselineProfile (device required).
     baselineProfile(project(":baselineprofile"))
@@ -287,4 +299,18 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// The free build must hold nothing of Google Play's, Play services' or Firebase's: a library that
+// brings one along stops the build here rather than in F-Droid's scanner.
+if (freeBuild) {
+    val nonFreeGroups = listOf("com.google.android.play", "com.google.android.gms", "com.google.firebase")
+    configurations.matching { it.name.endsWith("RuntimeClasspath") }.configureEach {
+        val configurationName = name
+        incoming.afterResolve {
+            val nonFree = resolutionResult.allComponents.mapNotNull { it.moduleVersion?.group }
+                .filter { group -> nonFreeGroups.any { group.startsWith(it) } }.distinct()
+            check(nonFree.isEmpty()) { "The free build holds Google libraries in $configurationName: $nonFree" }
+        }
+    }
 }

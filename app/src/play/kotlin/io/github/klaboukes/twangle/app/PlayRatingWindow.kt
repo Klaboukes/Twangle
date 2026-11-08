@@ -6,6 +6,9 @@ import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
 import io.github.klaboukes.twangle.feature.tuner.RatingWindow
 
+/** The Play build's rating window; the free build's twin in src/foss has none (Phase 58). */
+fun storeRatingWindow(appContext: Context): RatingWindow = PlayRatingWindow(appContext)
+
 /**
  * Google Play's own rating window (In-App Review, Phase 50). The Play Store app draws it and talks
  * to Google; Twangle hands it nothing but the request, and adds no permission (the library's merged

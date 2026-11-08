@@ -42,6 +42,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew :core:dsp:test                # DSP tests only (fast, no Android)
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
+./gradlew :app:assembleRelease -Ptwangle.foss=true  # the free build for F-Droid: no Google Play library (lifecycle.md, *Google's rating window*)
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
