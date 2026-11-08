@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">ចង្វាក់\u200Bក្នុង\u200Bមួយ\u200Bរង្វាស់</string>
+    <string name="metronome_tempo">ល្បឿន</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">%1$d ចង្វាក់\u200Bក្នុង\u200Bមួយ\u200Bនាទី, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">ចង្វាក់\u200Bក្នុង\u200Bមួយ\u200Bនាទី · %1$s</string>
+    <string name="metronome_slower">យឺត\u200Bជាង</string>
+    <string name="metronome_faster">លឿន\u200Bជាង</string>
+    <string name="metronome_tap">ចុច\u200Bតាម\u200Bចង្វាក់</string>
+    <string name="metronome_start">ចាប់\u200Bផ្ដើម</string>
+    <string name="metronome_stop">បញ្ឈប់</string>
+    <string name="metronome_vibrate">ញ័រ\u200Bតាម\u200Bចង្វាក់</string>
+    <string name="metronome_sound">សំឡេង</string>
+    <string name="metronome_sound_wood_block">ប្លុ\u2060ក\u200Bឈើ</string>
+    <string name="metronome_sound_cowbell">កណ្ដឹង\u200Bគោ</string>
+    <string name="metronome_sound_claves">ឈើ\u200Bគោះ</string>
+    <string name="metronome_sound_rim_click">គោះ\u200Bគែម\u200Bស្គរ</string>
+    <string name="metronome_subdivision">ចន្លោះ\u200Bចង្វាក់</string>
+    <string name="metronome_subdivision_none">គ្មាន</string>
+    <string name="metronome_subdivision_eighths">ភាគ\u200Bប្រាំបី</string>
+    <string name="metronome_subdivision_triplets">ទ្រី\u2060ផ្លេ\u2060ត</string>
+    <string name="metronome_subdivision_sixteenths">ភាគ\u200Bដប់\u200Bប្រាំមួយ</string>
+    <string name="metronome_options">ជម្រើស</string>
+    <string name="metronome_trainer">ហាត់\u200Bល្បឿន</string>
+    <string name="metronome_trainer_start">ល្បឿន\u200Bចាប់\u200Bផ្ដើម</string>
+    <string name="metronome_trainer_goal">គោល\u200Bដៅ</string>
+    <string name="metronome_trainer_start_slower">បន្ថយ\u200Bល្បឿន\u200Bចាប់\u200Bផ្ដើម</string>
+    <string name="metronome_trainer_start_faster">បង្កើន\u200Bល្បឿន\u200Bចាប់\u200Bផ្ដើម</string>
+    <string name="metronome_trainer_goal_slower">បន្ថយ\u200Bគោល\u200Bដៅ</string>
+    <string name="metronome_trainer_goal_faster">បង្កើន\u200Bគោល\u200Bដៅ</string>
+    <string name="metronome_trainer_step">ជំហាន</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">រង្វាស់</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s រង្វាស់</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%1$s ក្រោយ %2$s រង្វាស់</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%1$s រៀង\u200Bរាល់ %2$s រង្វាស់</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">ដល់\u200Bគោល\u200Bដៅ · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">ហាត់\u200Bល្បឿន, %1$s BPM, កំពុង\u200Bឡើង\u200Bទៅ %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">ហាត់\u200Bល្បឿន, ពី %1$s ដល់ %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">ហាត់\u200Bល្បឿន, ដល់\u200Bគោល\u200Bដៅ, %1$s BPM</string>
+    <string name="metronome_meter_2_4_spoken">ចង្វាក់ ពីរ-បួន</string>
+    <string name="metronome_meter_3_4_spoken">ចង្វាក់ បី-បួន</string>
+    <string name="metronome_meter_4_4_spoken">ចង្វាក់ បួន-បួន</string>
+    <string name="metronome_meter_5_4_spoken">ចង្វាក់ ប្រាំ-បួន</string>
+    <string name="metronome_meter_6_8_spoken">ចង្វាក់ ប្រាំមួយ-ប្រាំបី</string>
+    <string name="metronome_meter_7_8_spoken">ចង្វាក់ ប្រាំពីរ-ប្រាំបី</string>
+    <string name="metronome_listen">ស្ដាប់</string>
+    <string name="metronome_listen_stop_spoken">ឈប់\u200Bស្ដាប់</string>
+    <string name="metronome_listening">កំពុង\u200Bស្ដាប់…</string>
+    <string name="metronome_heard">បាន\u200Bឮ</string>
+    <string name="metronome_use">ប្រើ</string>
+    <string name="metronome_not_now">ពេល\u200Bក្រោយ</string>
+    <string name="metronome_listen_speed">ល្បឿន</string>
+    <string name="metronome_pick_half">ពាក់\u200Bកណ្ដាល</string>
+    <string name="metronome_pick_as_heard">ដូច\u200Bបាន\u200Bឮ</string>
+    <string name="metronome_pick_double">ទ្វេ\u200Bដង</string>
+    <string name="metronome_no_beat">មិន\u200Bឮ\u200Bចង្វាក់\u200Bទៀង\u200Bទាត់</string>
+    <string name="metronome_try_again">ម្ដង\u200Bទៀត</string>
+    <string name="metronome_mic_busy">មី\u2060ក្រូ\u2060ហ្វូ\u2060ន\u200Bជាប់\u200Bរវល់</string>
+    <string name="metronome_mic_off">មី\u2060ក្រូ\u2060ហ្វូ\u2060ន\u200Bបិទ</string>
+    <string name="metronome_open_settings">ការ\u200Bកំណត់</string>
+</resources>

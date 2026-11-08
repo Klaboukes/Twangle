@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_tuner">តម្រូវ\u200Bសំឡេង</string>
+    <string name="nav_metronome">មេ\u2060ត្រូ\u2060ណូ\u2060ម</string>
+    <string name="nav_practice">ហាត់\u200Bរៀន</string>
+    <string name="nav_settings">ការ\u200Bកំណត់</string>
+    <string name="widget_name">ឧបករណ៍\u200Bតម្រូវ\u200Bសំឡេង</string>
+    <string name="widget_description">បង្ហាញ\u200Bឧបករណ៍\u200Bភ្លេង និង\u200Bការ\u200Bតម្រូវ\u200Bខ្សែ\u200Bរបស់\u200Bអ្នក។ ចុច\u200Bម្ដង ដើម្បី\u200Bបើក\u200Bឧបករណ៍\u200Bតម្រូវ\u200Bសំឡេង។</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">បើក\u200Bឧបករណ៍\u200Bតម្រូវ\u200Bសំឡេង</string>
+    <string name="widget_preview_title">ហ្គី\u2060តា · ស្ត\u2060ង់\u2060ដា\u2060រ</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spoken_sharp">%1$s ស្ហា\u2060ប</string>
+    <string name="spoken_flat">%1$s ហ្វ្លា\u2060ត</string>
+    <string name="instrument_button_action">ប្ដូរ\u200Bឧបករណ៍\u200Bភ្លេង ឬ\u200Bការ\u200Bតម្រូវ\u200Bខ្សែ</string>
+</resources>

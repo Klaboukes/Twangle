@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wear_play_note">លេង\u200Bណុ\u2060ត\u200Bមួយ</string>
+    <plurals name="wear_cents">
+        <item quantity="other">%1$s សេ\u2060ន</item>
+    </plurals>
+    <string name="wear_in_tune">ត្រូវ\u200Bសំឡេង</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="other">ទាប %1$d សេ\u2060ន</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="other">ខ្ពស់ %1$d សេ\u2060ន</item>
+    </plurals>
+    <string name="wear_word_tighten">រឹត</string>
+    <string name="wear_word_loosen">បន្ធូរ</string>
+    <string name="wear_spoken_sharp">%1$s ស្ហា\u2060ប</string>
+    <string name="wear_vibration_guide">ការ\u200Bណែនាំ\u200Bដោយ\u200Bញ័រ</string>
+    <string name="wear_mic_needed">Twangle ស្ដាប់\u200Bឧបករណ៍\u200Bភ្លេង\u200Bរបស់\u200Bអ្នក\u200Bតាម\u200Bមី\u2060ក្រូ\u2060ហ្វូ\u2060ន\u200Bនាឡិកា។</string>
+    <string name="wear_allow_mic">អនុញ្ញាត\u200Bមី\u2060ក្រូ\u2060ហ្វូ\u2060ន</string>
+    <string name="wear_open_settings">បើក\u200Bការ\u200Bកំណត់</string>
+    <string name="wear_mic_busy">កម្មវិធី\u200Bផ្សេង\u200Bកំពុង\u200Bប្រើ\u200Bមី\u2060ក្រូ\u2060ហ្វូ\u2060ន។</string>
+    <string name="wear_mic_unavailable">មិន\u200Bអាច\u200Bបើក\u200Bមី\u2060ក្រូ\u2060ហ្វូ\u2060ន\u200Bបាន\u200Bទេ។</string>
+    <string name="wear_try_again">ព្យាយាម\u200Bម្ដង\u200Bទៀត</string>
+    <string name="wear_tile_tune">តម្រូវ\u200Bសំឡេង</string>
+    <string name="wear_tile_metronome">មេ\u2060ត្រូ\u2060ណូ\u2060ម</string>
+    <string name="wear_tile_open_metronome">បើក\u200Bមេ\u2060ត្រូ\u2060ណូ\u2060ម, %1$s</string>
+    <string name="wear_shortcut_tune">តម្រូវ</string>
+    <string name="wear_shortcut_open">បើក\u200Bឧបករណ៍\u200Bតម្រូវ\u200Bសំឡេង</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="other">%1$d ចង្វាក់\u200Bក្នុង\u200Bមួយ\u200Bនាទី</item>
+    </plurals>
+    <string name="wear_metronome_playing">កំពុង\u200Bលេង</string>
+    <string name="wear_metronome_stopped">បាន\u200Bឈប់</string>
+    <string name="wear_metronome_start">ចាប់\u200Bផ្ដើម</string>
+    <string name="wear_metronome_stop">បញ្ឈប់</string>
+    <string name="wear_metronome_click">សំឡេង\u200Bក្លិ\u2060ក</string>
+</resources>
