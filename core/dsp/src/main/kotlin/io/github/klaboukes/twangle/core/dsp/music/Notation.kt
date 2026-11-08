@@ -61,12 +61,12 @@ enum class Notation(
          * How players who speak [language] (an ISO 639 code, e.g. "de", as `Locale.getLanguage`
          * gives it) usually write note names: German letters (H for B) in German, Polish, Russian,
          * Ukrainian, Danish, Finnish, Czech and Norwegian (Bokmål "nb"; Nynorsk "nn" and plain "no" as a safeguard,
-         * though Android reports the locale whose texts it found, and the texts are Bokmål), fixed-do solfège in French, Italian, Spanish, Portuguese, Romanian, Turkish and
-         * Arabic, [DEFAULT] otherwise (Swedish too: Sweden moved from H to B). Only the default: a notation the player picks always wins. A new language that has a habit of its own is added here.
+         * though Android reports the locale whose texts it found, and the texts are Bokmål), fixed-do solfège in French, Italian, Spanish, Portuguese, Romanian, Turkish,
+         * Arabic and Greek, [DEFAULT] otherwise (Swedish too: Sweden moved from H to B). Only the default: a notation the player picks always wins. A new language that has a habit of its own is added here.
          */
         fun forLanguage(language: String): Notation = when (language) {
             "de", "pl", "ru", "uk", "da", "nb", "nn", "no", "fi", "cs" -> GERMAN
-            "fr", "it", "es", "pt", "ro", "tr", "ar" -> SOLFEGE
+            "fr", "it", "es", "pt", "ro", "tr", "ar", "el" -> SOLFEGE
             else -> DEFAULT
         }
     }

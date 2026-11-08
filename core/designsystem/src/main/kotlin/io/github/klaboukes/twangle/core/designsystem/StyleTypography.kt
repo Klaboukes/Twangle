@@ -12,10 +12,12 @@ import androidx.compose.ui.text.font.FontWeight
  * Twangle's own face, Nunito (Phase 79, the owner's pick of 2026-11-05 after a branding review): rounded ends like
  * the name's Comfortaa and the icon's harmonics, but sturdy and open at small sizes, so the app looks the same on
  * every brand of phone (until then it took the phone's own font: MiSans on a Xiaomi, One UI Sans on a Galaxy).
- * Bundled whole and unchanged ([R.font.nunito], one variable file, SIL OFL 1.1, credited on the About page),
- * one [Font] for each weight the app asks for. It covers the Latin, Cyrillic and Vietnamese letters, 17 of the 25
- * languages; Chinese, Japanese, Korean, Arabic, Hindi, Bengali and Thai letters, which it lacks, come from the
- * phone's own font, glyph by glyph, as Android does for any face. Its figures are lining and all one width, so a
+ * Bundled whole ([R.font.nunito], one variable file, SIL OFL 1.1, credited on the About page), with one change:
+ * its character map leaves out the five Greek letters it drew as maths signs (Δ Σ Ω μ π), so a Greek word is all
+ * in the phone's font rather than a lighter letter here and there (Phase 87, `TwangleFontCoverageTest`). One
+ * [Font] for each weight the app asks for. It covers the Latin, Cyrillic and Vietnamese letters; the letters it
+ * lacks (Chinese, Japanese, Korean, Arabic, Greek, the Indian scripts, Thai, Amharic) come from the phone's own
+ * font, glyph by glyph, as Android does for any face. Its figures are lining and all one width, so a
  * changing number never shifts.
  */
 @OptIn(ExperimentalTextApi::class)

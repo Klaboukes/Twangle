@@ -1,0 +1,42 @@
+<resources>
+    <string name="wear_play_note">Παίξτε μια νότα</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s σεντ</item>
+        <item quantity="other">%1$s σεντ</item>
+    </plurals>
+    <string name="wear_in_tune">κουρδισμένη</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d σεντ χαμηλά</item>
+        <item quantity="other">%1$d σεντ χαμηλά</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d σεντ ψηλά</item>
+        <item quantity="other">%1$d σεντ ψηλά</item>
+    </plurals>
+    <string name="wear_word_tighten">Σφίξτε</string>
+    <string name="wear_word_loosen">Χαλαρώστε</string>
+    <string name="wear_spoken_sharp">%1$s δίεση</string>
+    <string name="wear_vibration_guide">Οδηγός δόνησης</string>
+    <string name="wear_mic_needed">Το Twangle ακούει το όργανό σας με το μικρόφωνο του ρολογιού.</string>
+    <string name="wear_allow_mic">Άδεια μικροφώνου</string>
+    <string name="wear_open_settings">Ρυθμίσεις</string>
+    <string name="wear_mic_busy">Μια άλλη εφαρμογή χρησιμοποιεί το μικρόφωνο.</string>
+    <string name="wear_mic_unavailable">Το μικρόφωνο δεν μπορεί να ανοίξει.</string>
+    <string name="wear_try_again">Δοκιμάστε ξανά</string>
+    <string name="wear_tile_tune">Κούρδισμα</string>
+    <string name="wear_tile_metronome">Μετρονόμος</string>
+    <string name="wear_tile_open_metronome">Άνοιγμα μετρονόμου, %1$s</string>
+    <string name="wear_shortcut_tune">Tuner</string>
+    <string name="wear_shortcut_open">Άνοιγμα κουρδιστηριού</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d χτύπος ανά λεπτό</item>
+        <item quantity="other">%1$d χτύποι ανά λεπτό</item>
+    </plurals>
+    <string name="wear_metronome_playing">Παίζει</string>
+    <string name="wear_metronome_stopped">Σταματημένος</string>
+    <string name="wear_metronome_start">Έναρξη</string>
+    <string name="wear_metronome_stop">Διακοπή</string>
+    <string name="wear_metronome_click">Ήχος κλικ</string>
+</resources>

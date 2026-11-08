@@ -38,7 +38,7 @@ class NotationTest {
         for (language in listOf("de", "pl", "ru", "uk", "da", "nb", "nn", "no", "fi", "cs")) {
             assertEquals(language, Notation.GERMAN, Notation.forLanguage(language))
         }
-        for (language in listOf("fr", "it", "es", "pt", "ro", "tr", "ar")) {
+        for (language in listOf("fr", "it", "es", "pt", "ro", "tr", "ar", "el")) {
             assertEquals(language, Notation.SOLFEGE, Notation.forLanguage(language))
         }
         for (language in listOf("en", "nl", "zh", "ja", "ko", "hi", "in", "id", "vi", "th", "bn", "sv", "ta", "te", "mr", "sw", "am", "")) {

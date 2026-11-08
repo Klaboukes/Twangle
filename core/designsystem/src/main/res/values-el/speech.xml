@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Τα ονόματα των νοτών με ελληνικά γράμματα, για να τα λέει το TalkBack όπως οι μουσικοί (η οθόνη δείχνει Do Re Mi). -->
+    <string name="spoken_solfege" translatable="false" tools:ignore="ExtraTranslation">Ντο Ρε Μι Φα Σολ Λα Σι</string>
+</resources>

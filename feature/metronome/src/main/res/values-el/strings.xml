@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Χρόνοι ανά μέτρο</string>
+    <string name="metronome_tempo">Τέμπο</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d χτύπος ανά λεπτό, %2$s</item>
+        <item quantity="other">%1$d χτύποι ανά λεπτό, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">χτύποι ανά λεπτό · %1$s</string>
+    <string name="metronome_slower">Πιο αργά</string>
+    <string name="metronome_faster">Πιο γρήγορα</string>
+    <string name="metronome_tap">Χτύπημα ρυθμού</string>
+    <string name="metronome_start">Έναρξη</string>
+    <string name="metronome_stop">Διακοπή</string>
+    <string name="metronome_vibrate">Δόνηση σε κάθε χτύπο</string>
+    <string name="metronome_sound">Ήχος</string>
+    <string name="metronome_sound_wood_block">Ξύλινο μπλοκ</string>
+    <string name="metronome_sound_cowbell">Κουδούνα</string>
+    <string name="metronome_sound_claves">Κλάβες</string>
+    <string name="metronome_sound_rim_click">Χτύπημα στο στεφάνι</string>
+    <string name="metronome_subdivision">Ανάμεσα στους χτύπους</string>
+    <string name="metronome_subdivision_none">Κανένα</string>
+    <string name="metronome_subdivision_eighths">Όγδοα</string>
+    <string name="metronome_subdivision_triplets">Τρίηχα</string>
+    <string name="metronome_subdivision_sixteenths">Δέκατα έκτα</string>
+    <string name="metronome_options">Επιλογές</string>
+
+    <string name="metronome_trainer">Σταδιακή επιτάχυνση</string>
+    <string name="metronome_trainer_start">Αρχικό τέμπο</string>
+    <string name="metronome_trainer_goal">Στόχος</string>
+    <string name="metronome_trainer_start_slower">Χαμηλότερο αρχικό τέμπο</string>
+    <string name="metronome_trainer_start_faster">Υψηλότερο αρχικό τέμπο</string>
+    <string name="metronome_trainer_goal_slower">Χαμηλότερος στόχος</string>
+    <string name="metronome_trainer_goal_faster">Υψηλότερος στόχος</string>
+    <string name="metronome_trainer_step">Βήμα</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Μέτρα</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s μέτρο</item>
+        <item quantity="other">%1$s μέτρα</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s σε %2$s μέτρο</item>
+        <item quantity="other">%1$s σε %2$s μέτρα</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s κάθε μέτρο</item>
+        <item quantity="other">%1$s κάθε %2$s μέτρα</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Στον στόχο · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Σταδιακή επιτάχυνση, %1$s BPM, ανεβαίνει στα %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Σταδιακή επιτάχυνση, από %1$s έως %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Σταδιακή επιτάχυνση, στον στόχο, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">Δύο τέταρτα</string>
+    <string name="metronome_meter_3_4_spoken">Τρία τέταρτα</string>
+    <string name="metronome_meter_4_4_spoken">Τέσσερα τέταρτα</string>
+    <string name="metronome_meter_5_4_spoken">Πέντε τέταρτα</string>
+    <string name="metronome_meter_6_8_spoken">Έξι όγδοα</string>
+    <string name="metronome_meter_7_8_spoken">Επτά όγδοα</string>
+
+    <string name="metronome_listen">Ακρόαση</string>
+    <string name="metronome_listen_stop_spoken">Διακοπή ακρόασης</string>
+    <string name="metronome_listening">Ακρόαση…</string>
+    <string name="metronome_heard">Ακούστηκε</string>
+    <string name="metronome_use">Χρήση</string>
+    <string name="metronome_not_now">Όχι τώρα</string>
+    <string name="metronome_listen_speed">Ταχύτητα</string>
+    <string name="metronome_pick_half">Μισό</string>
+    <string name="metronome_pick_as_heard">Όπως ακούστηκε</string>
+    <string name="metronome_pick_double">Διπλό</string>
+    <string name="metronome_no_beat">Κανένας σταθερός ρυθμός</string>
+    <string name="metronome_try_again">Ξανά</string>
+    <string name="metronome_mic_busy">Μικρόφωνο σε χρήση</string>
+    <string name="metronome_mic_off">Μικρόφωνο κλειστό</string>
+    <string name="metronome_open_settings">Ρυθμίσεις</string>
+</resources>

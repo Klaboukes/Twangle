@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Κούρδισμα</string>
+    <string name="nav_metronome">Μετρονόμος</string>
+    <string name="nav_practice">Εξάσκηση</string>
+    <string name="nav_settings">Ρυθμίσεις</string>
+    <string name="widget_name">Κουρδιστήρι</string>
+    <string name="widget_description">Δείχνει το όργανο και το κούρδισμά σας. Ένα πάτημα ανοίγει το κουρδιστήρι.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Άνοιγμα κουρδιστηριού</string>
+    <string name="widget_preview_title">Κιθάρα · Κανονικό</string>
+</resources>

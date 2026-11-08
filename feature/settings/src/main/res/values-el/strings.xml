@@ -1,0 +1,76 @@
+<resources>
+    <string name="settings_title">Ρυθμίσεις</string>
+    <string name="settings_back">Πίσω</string>
+
+    <string name="settings_group_tuning">Κούρδισμα</string>
+    <string name="settings_group_while_tuning">Κατά το κούρδισμα</string>
+    <string name="settings_group_look">Εμφάνιση</string>
+
+    <string name="settings_a4_title">Τόνος αναφοράς (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Η περισσότερη μουσική χρησιμοποιεί 440 Hz. Οι ορχήστρες κουρδίζουν συχνά στα 442 Hz, τα μπαρόκ σύνολα στα 415 Hz.</string>
+    <string name="settings_a4_lower">Μείωση A4 κατά 1 Hz</string>
+    <string name="settings_a4_raise">Αύξηση A4 κατά 1 Hz</string>
+    <string name="settings_a4_reset">Επαναφορά στα %1$d Hz</string>
+
+    <string name="settings_precise_title">Ακριβές κούρδισμα</string>
+    <string name="settings_precise_summary">Κουρδισμένη εντός 2 σεντ αντί για 5</string>
+    <string name="settings_notation_title">Ονόματα νοτών</string>
+    <string name="settings_notation_sharps">Διέσεις: C, C♯, D …</string>
+    <string name="settings_notation_flats">Υφέσεις: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Ντο Ρε Μι: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Αυτόματα: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Γερμανικά: C, C♯, D … H</string>
+
+
+    <string name="settings_theme_title">Φωτεινό ή σκοτεινό</string>
+    <string name="settings_high_contrast_title">Υψηλή αντίθεση</string>
+    <string name="settings_high_contrast_summary">Ασπρόμαυρο με πιο χοντρές γραμμές· ανοίγει μόνο του όταν η αντίθεση του κινητού είναι υψηλή</string>
+    <string name="settings_theme_system">Όπως το κινητό</string>
+    <string name="settings_theme_light">Φωτεινό</string>
+    <string name="settings_theme_dark">Σκοτεινό</string>
+    <string name="settings_dynamic_color_title">Χρώματα ταπετσαρίας</string>
+    <string name="settings_dynamic_color_summary">Χρήση χρωμάτων από την ταπετσαρία σας</string>
+
+    <string name="settings_meter_title">Ένδειξη</string>
+    <string name="settings_meter_classic">Κλασική</string>
+    <string name="settings_meter_light_arc">Τόξο φώτων</string>
+    <string name="settings_meter_strobe">Στρόμπο</string>
+
+    <string name="settings_left_handed_title">Για αριστερόχειρες</string>
+    <string name="settings_left_handed_summary">Διαγράμματα συγχορδιών και μπράτσο κλιμάκων για κιθάρα που κρατιέται ανάποδα</string>
+
+    <string name="settings_under_meter_title">Κάτω από την ένδειξη</string>
+    <string name="settings_under_meter_words">Λέξεις: Σφίξτε ή Χαλαρώστε</string>
+    <string name="settings_under_meter_cents">Σεντ: −12</string>
+    <string name="settings_keep_screen_on_title">Οθόνη πάντα αναμμένη</string>
+    <string name="settings_keep_screen_on_summary">Η οθόνη μένει αναμμένη όσο κουρδίζετε</string>
+    <string name="settings_vibrate_in_tune_title">Δόνηση όταν κουρδιστεί</string>
+    <string name="settings_vibrate_in_tune_summary">Μια σύντομη δόνηση όταν η νότα φτάσει στον τόνο της</string>
+    <string name="settings_vibration_guide_title">Οδηγός δόνησης</string>
+    <string name="settings_vibration_guide_summary">Χτυπήματα όσο κουρδίζετε: ένα για σφίξιμο, δύο για χαλάρωμα, μακρύ όταν είναι κουρδισμένη</string>
+    <string name="settings_string_tick_off_title">Σημάδι στις κουρδισμένες χορδές</string>
+    <string name="settings_string_tick_off_summary">Ένα τικ σε κάθε χορδή μόλις κουρδιστεί, και «Κουρδισμένο. Παίξτε.» όταν κουρδιστούν όλες</string>
+
+    <string name="settings_language_title">Γλώσσα</string>
+    <string name="settings_language_phone">Γλώσσα του κινητού</string>
+    <string name="settings_language_cancel">Ακύρωση</string>
+    <string name="about_title">Σχετικά με το Twangle</string>
+    <string name="settings_about_link_summary">Έκδοση %1$s, βοήθεια, απόρρητο και άδειες</string>
+    <string name="settings_about_name_title">Το όνομα</string>
+    <string name="settings_about_name_meaning">Twang είναι η αγγλική λέξη για τον ήχο που αντηχεί όταν τσιμπάτε μια χορδή.</string>
+    <string name="settings_about_version">Έκδοση %1$s</string>
+    <string name="settings_about_free_title">Δωρεάν για πάντα</string>
+    <string name="settings_about_free_summary">Χωρίς διαφημίσεις, χωρίς λογαριασμό, χωρίς αγορές εντός εφαρμογής και χωρίς παρακολούθηση. Ούτε τώρα, ούτε αργότερα.</string>
+    <string name="settings_about_privacy_title">Απόρρητο</string>
+    <string name="settings_about_privacy_summary">Το Twangle δεν συλλέγει κανένα δεδομένο για εσάς. Το μικρόφωνο είναι ανοιχτό μόνο όσο είναι ανοιχτή μια οθόνη που ακούει: το κουρδιστήρι, η «Ακρόαση» του μετρονόμου ή το «Παίξτε το ξανά» της Εκπαίδευσης ακοής. Ο ήχος αναλύεται ζωντανά και δεν ηχογραφείται, δεν αποθηκεύεται και δεν στέλνεται ποτέ. Το Twangle δεν έχει άδεια πρόσβασης στο διαδίκτυο, άρα δεν μπορεί να στείλει τίποτα πουθενά. Οι ρυθμίσεις σας μένουν σε αυτή τη συσκευή (και στο αντίγραφο ασφαλείας του Android, αν το έχετε ενεργοποιήσει).</string>
+    <string name="settings_about_rate_title">Αξιολογήστε το Twangle</string>
+    <string name="settings_about_rate_summary">Το Twangle στο Google Play</string>
+    <string name="settings_about_website_title">Βοήθεια και ιστότοπος</string>
+    <string name="settings_about_website_summary">Πώς λειτουργεί κάθε εργαλείο και απαντήσεις σε συχνές ερωτήσεις</string>
+    <string name="settings_about_credits_title">Γραμματοσειρές και λογισμικό ανοιχτού κώδικα</string>
+    <string name="settings_about_credits_summary">Το Twangle είναι φτιαγμένο με αυτά. Πατήστε ένα για να διαβάσετε την άδειά του.</string>
+    <string name="settings_about_licence_open">Ανάγνωση της άδειας</string>
+    <string name="settings_about_licence_close">Κλείσιμο</string>
+</resources>
