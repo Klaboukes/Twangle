@@ -197,7 +197,7 @@ owner's yes:
 **Once, in the Play Console, before the first `upload watch`** (the owner, with Claude reading along):
 - [ ] *Test and release → Advanced settings → Form factors → + Add form factor → Wear OS*, and under
       *Releases* choose *Use a dedicated release track for Wear OS* if Play still offers the choice.
-- [ ] The Wear OS screenshots in the store listing (Phase 56, *The watch app in the listing*).
+- [ ] The Wear OS screenshots in the store listing (Phase 88, *The Wear OS screenshots*).
 - [ ] After the first watch release is on its closed test: the same page, *Wear OS → Manage*, *Opt in
       to Wear OS* and agree to its review, then *Start rollout* once Google has approved it.
 
