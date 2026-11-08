@@ -19,6 +19,12 @@ owner's own message asks for that very step ("halt the rollout", "raise it to 50
 yes. Everything else only builds or reads (`bump`, `notes`, `profile`, `bundle`, `status`, `health`,
 `reviews`, `listing-changes`) and needs no ask.
 
+**Managed publishing is on** (owner, 2026-11-08): a promotion, a rollout raise, a halt and the store
+listing don't go out by themselves. They wait in the Play Console's *Publishing overview*: the owner
+sends them for review, then publishes them once Google has approved them (docs/release.md, *What
+the owner does*, step 4). After each such step, tell the owner those two clicks. Only the internal
+track and a raise to 100 % go at once. `status` reads a change that waits there as live.
+
 ## Where to start
 Begin every request with `scripts/release.sh status`: what is on each Play track now. For a release
 that is already tagged, check that `twangle.version` in `gradle.properties` is that version.
@@ -136,10 +142,13 @@ Only after the Xiaomi check passed. Nothing is built or uploaded again: the buil
 moves on.
 - **Closed test** (until Google gives production access): ask "Move Twangle <version>, the build you
   checked, from the internal track to the closed test, as a draft?" → `scripts/release.sh promote closed`.
-  The owner starts the draft in *Closed testing*, as in step 4.
-- **Production:** ask "Move Twangle <version> to production for 20 % of people? Google reviews it
-  first, a few hours to a few days." → `scripts/release.sh promote production`
-  (`promote production draft` leaves it for the owner to start in the Play Console). Then offer the
+  The owner starts the draft in *Closed testing*, as in step 4, then sends it for review and
+  publishes it once approved.
+- **Production:** ask "Move Twangle <version> to production for 20 % of people? You send it for
+  review in Publishing overview; Google takes a few hours to a few days, then you publish it." →
+  `scripts/release.sh promote production`
+  (`promote production draft` leaves it for the owner to start in the Play Console). When the store
+  listing changed too, send it first (step 8), so both go to Google's review as one. Then offer the
   rollout watch (step 7).
 
 ## 7. The staged rollout (ask first)
@@ -149,10 +158,12 @@ moves on.
   "No data yet" (few users) is not a fault: say so, and lean on the owner's own look in *Quality →
   Android vitals*.
 - **Raise:** after two or three quiet days, ask "Raise Twangle <version> on production from 20 % to
-  50 %?" → `scripts/release.sh rollout 50`. A few days later the same for 100 % (`rollout 100`:
-  everyone, the staged rollout ends).
+  50 %?" → `scripts/release.sh rollout 50`; it waits for the owner's *Publish changes* (no
+  review). A few days later the same for 100 % (`rollout 100`: everyone, the staged rollout ends;
+  it goes at once).
 - **Halt:** ask "Halt Twangle <version> on production? Nobody new gets it; who has it keeps it." →
-  `scripts/release.sh halt`. Then fix it through a `fix/` branch and make the next release (a halted
+  `scripts/release.sh halt`, then ask the owner to look in *Publishing overview* and publish it if
+  it waits there. Then fix it through a `fix/` branch and make the next release (a halted
   version can't be uploaded again). A false alarm: `rollout <percent>` starts it again, also behind a yes.
 - **The rollout watch:** after the promotion to production, offer a daily look while the rollout
   runs. On a yes, make a scheduled task (`create_scheduled_task`, taskId `twangle-rollout-watch`,
@@ -180,7 +191,8 @@ moves on.
 - Ask: "Send the store listing to Google Play in all <n> languages: the texts, screenshots, icon,
   feature graphic and contact details? It replaces what is there, also anything changed by hand in the
   Play Console." On a yes: `scripts/release.sh listing` (it tags the send `listing/<date-time>` for
-  next time), then offer to look at it with the owner in the Play Console.
+  next time), then offer to look at it with the owner in the Play Console. It waits in *Publishing
+  overview* with the release it goes with, for one review.
 
 ## The watch app (with the update that brings it)
 Play takes a watch bundle only on the watch's own Wear OS tracks, never on the phone's

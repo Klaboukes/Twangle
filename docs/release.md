@@ -28,6 +28,12 @@ further, and does the few things only the Play Console can do (the checklist bel
   production, so what people get is exactly what was checked.
 - **Production in steps** (a staged rollout: 20 %, then 50 %, then everyone), so a problem can be
   halted before it reaches everyone.
+- **Managed publishing is on** (owner, 2026-11-08): what Claude sends to the closed test, production
+  or the store listing waits in the Play Console's *Publishing overview* until the owner sends it for
+  review, and once Google has approved it, until the owner publishes it (*What the owner does*, step
+  4). So a new version and its store listing go to Google's review as one, and go live when the owner
+  chooses. The internal track isn't covered: an upload there is live within minutes, with no review
+  ([Play Console Help, *Control when app changes are reviewed and published*](https://support.google.com/googleplay/android-developer/answer/9859654)).
 - **Every release is tagged** in git (`v1.0.1` on the commit the bundle was built from), so any
   version can be found again.
 
@@ -105,7 +111,8 @@ command acts on the version in `gradle.properties`, which must be tagged, and se
   with `TWANGLE_PLAY_CLOSED_TRACK`. A draft by default, as `upload`; `promote closed completed` makes
   it live for the testers at once.
 - `scripts/release.sh promote production`: from the internal track to **production** (whether or not
-  it went to the closed test too) as a staged rollout to **20 %** (Google reviews it first). `promote production draft` leaves it a draft to
+  it went to the closed test too) as a staged rollout to **20 %** (Google reviews it first, and it
+  waits for the owner's *Publish changes*). `promote production draft` leaves it a draft to
   start in the Play Console instead.
 - `scripts/release.sh rollout <percent>`: raises the production rollout, a whole number 1–100
   (50, later 100); 100 is everyone and ends the staged rollout. It also starts a halted one again.
@@ -229,26 +236,27 @@ say yes.
 - [ ] Tell Claude it passed, or what is wrong. Nothing is promoted before.
 
 **4. Watch the rollout**
-- [ ] A promotion to the closed test made as a draft (as the owner did it for 2.0, 2026-11-06): in
-      *Closed testing*, *Edit track*, *Next*, *Save*, and *Go to overview* in the popup; then in
-      *Publishing overview*, under *Changes not yet submitted for review*, *Submit 1 change for
-      review*. Play first runs its quick checks (up to about 15 minutes) and sends it once they pass.
-      Unlike the internal track, the closed test is reviewed by Google (a few hours, sometimes a day
-      or two); the internal track has no review and is live within minutes. The store listing sent by
-      `scripts/release.sh listing` the same evening wasn't in that list: with managed publishing off,
-      what the API sends goes to review by itself. *Submit* then asked *"Do you want to restart your
-      review?"*: **Restart review** puts the listing and the release in one review (*Changes in
-      review* lists both), so testers get the app and its store page together; *Cancel* would leave
-      the release unsent until the listing's review ends. Sending the listing first, the release right
-      after, loses only the hour between them.
-- [ ] After the promotion to production Google reviews it (a few hours to a few days); Play then
-      updates phones by itself, starting with 20 % of people.
+- [ ] A promotion made as a draft (as `promote closed` makes it): in *Closed testing*, *Edit
+      track*, *Next*, *Save*, and *Go to overview* in the popup.
+- [ ] **Send it for review** (managed publishing is on, so nothing goes by itself): in *Publishing
+      overview*, under *Changes not yet sent for review*, check the list (the release, and the store
+      listing when Claude sent one with it) and *Send changes for review*. Play first runs its quick
+      checks (up to about 15 minutes). Google then reviews the closed test and production (a few
+      hours, sometimes a few days; the internal track has no review and is live within minutes).
+      Send the listing and the release together, so they are one review: a change sent while another
+      is in review restarts that review (*"Do you want to restart your review?"*, as with 2.0 on
+      2026-11-06, before managed publishing). Something not meant for this review: *Save for later*.
+- [ ] **Publish it:** once everything is under *Changes ready to publish* (nothing left in *Changes
+      in review*), *Publish changes*. It is live within minutes; for production Play then updates
+      phones by itself, starting with 20 % of people.
 - [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;
       Claude shows you `health` and `reviews` too, or the daily rollout watch if you said yes to it),
-      tell Claude to raise it to 50 %, a few days later to 100 %.
+      tell Claude to raise it to 50 %, then *Publish changes* again (a raise waits there too, with no
+      review); a few days later to 100 %, which Google lets through at once.
 - [ ] Something wrong: tell Claude to halt it. Nobody new gets the version; the fix goes on `main`
       and out in the next release (a halted version can't be uploaded again, the fix gets a higher
-      version).
+      version). A halt isn't on Google's list of changes that go through at once, so look in
+      *Publishing overview* right after and *Publish changes* if it waits there.
 
 **Only in the Play Console** (the Google Play API can't do these)
 - [ ] The first time: the *App content* forms (privacy policy, ads, app access, content rating, target
