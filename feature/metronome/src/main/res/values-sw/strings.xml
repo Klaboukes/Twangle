@@ -1,0 +1,77 @@
+<resources>
+    <string name="metronome_beats_in_bar">Midundo kwa kipimo</string>
+    <string name="metronome_tempo">Tempo</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">mdundo %1$d kwa dakika, %2$s</item>
+        <item quantity="other">midundo %1$d kwa dakika, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">midundo kwa dakika · %1$s</string>
+    <string name="metronome_slower">Polepole zaidi</string>
+    <string name="metronome_faster">Haraka zaidi</string>
+    <string name="metronome_tap">Gusa mdundo</string>
+    <string name="metronome_start">Anza</string>
+    <string name="metronome_stop">Simamisha</string>
+    <string name="metronome_vibrate">Tetema kwa kila mdundo</string>
+    <string name="metronome_sound">Sauti</string>
+    <string name="metronome_sound_wood_block">Kibao cha mbao</string>
+    <string name="metronome_sound_cowbell">Kengele ya ng\'ombe</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Kugonga ukingo</string>
+    <string name="metronome_subdivision">Kati ya midundo</string>
+    <string name="metronome_subdivision_none">Hakuna</string>
+    <string name="metronome_subdivision_eighths">Noti za nane</string>
+    <string name="metronome_subdivision_triplets">Tripleti</string>
+    <string name="metronome_subdivision_sixteenths">Noti za kumi na sita</string>
+    <string name="metronome_options">Chaguo</string>
+
+    <string name="metronome_trainer">Mazoezi ya kasi</string>
+    <string name="metronome_trainer_start">Tempo ya kuanza</string>
+    <string name="metronome_trainer_goal">Lengo</string>
+    <string name="metronome_trainer_start_slower">Punguza tempo ya kuanza</string>
+    <string name="metronome_trainer_start_faster">Ongeza tempo ya kuanza</string>
+    <string name="metronome_trainer_goal_slower">Punguza lengo</string>
+    <string name="metronome_trainer_goal_faster">Ongeza lengo</string>
+    <string name="metronome_trainer_step">Hatua</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Vipimo</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">kipimo %1$s</item>
+        <item quantity="other">vipimo %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s baada ya kipimo %2$s</item>
+        <item quantity="other">%1$s baada ya vipimo %2$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s kila kipimo</item>
+        <item quantity="other">%1$s kila baada ya vipimo %2$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Lengo limefikiwa · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Mazoezi ya kasi, %1$s BPM, inapanda hadi %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Mazoezi ya kasi, kutoka %1$s hadi %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Mazoezi ya kasi, lengo limefikiwa, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">Kipimo cha mbili kwa nne</string>
+    <string name="metronome_meter_3_4_spoken">Kipimo cha tatu kwa nne</string>
+    <string name="metronome_meter_4_4_spoken">Kipimo cha nne kwa nne</string>
+    <string name="metronome_meter_5_4_spoken">Kipimo cha tano kwa nne</string>
+    <string name="metronome_meter_6_8_spoken">Kipimo cha sita kwa nane</string>
+    <string name="metronome_meter_7_8_spoken">Kipimo cha saba kwa nane</string>
+
+    <string name="metronome_listen">Sikiliza</string>
+    <string name="metronome_listen_stop_spoken">Acha kusikiliza</string>
+    <string name="metronome_listening">Inasikiliza…</string>
+    <string name="metronome_heard">Imesikika</string>
+    <string name="metronome_use">Tumia</string>
+    <string name="metronome_not_now">Si sasa</string>
+    <string name="metronome_listen_speed">Kasi</string>
+    <string name="metronome_pick_half">Nusu</string>
+    <string name="metronome_pick_as_heard">Kama ilivyosikika</string>
+    <string name="metronome_pick_double">Mara mbili</string>
+    <string name="metronome_no_beat">Hakuna mdundo thabiti uliosikika</string>
+    <string name="metronome_try_again">Jaribu tena</string>
+    <string name="metronome_mic_busy">Maikrofoni inatumika</string>
+    <string name="metronome_mic_off">Maikrofoni imezimwa</string>
+    <string name="metronome_open_settings">Mipangilio</string>
+</resources>

@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Tuner</string>
+    <string name="nav_metronome">Metronomu</string>
+    <string name="nav_practice">Mazoezi</string>
+    <string name="nav_settings">Mipangilio</string>
+    <string name="widget_name">Tuner</string>
+    <string name="widget_description">Huonyesha ala yako na tuning. Mguso mmoja hufungua tuner.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Fungua tuner</string>
+    <string name="widget_preview_title">Gitaa · Kawaida</string>
+</resources>

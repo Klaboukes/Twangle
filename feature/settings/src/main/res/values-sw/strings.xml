@@ -1,0 +1,75 @@
+<resources>
+    <string name="settings_title">Mipangilio</string>
+    <string name="settings_back">Rudi</string>
+
+    <string name="settings_group_tuning">Tuning</string>
+    <string name="settings_group_while_tuning">Unaporekebisha</string>
+    <string name="settings_group_look">Mwonekano</string>
+
+    <string name="settings_a4_title">Sauti ya marejeleo (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Muziki mwingi hutumia 440 Hz. Okestra mara nyingi hutumia 442 Hz, na vikundi vya baroque 415 Hz.</string>
+    <string name="settings_a4_lower">Shusha A4 kwa 1 Hz</string>
+    <string name="settings_a4_raise">Pandisha A4 kwa 1 Hz</string>
+    <string name="settings_a4_reset">Rudisha hadi %1$d Hz</string>
+
+    <string name="settings_precise_title">Usahihi wa juu</string>
+    <string name="settings_precise_summary">Sauti sawa ndani ya senti 2 badala ya 5</string>
+    <string name="settings_notation_title">Majina ya noti</string>
+    <string name="settings_notation_sharps">Shapu: C, C♯, D …</string>
+    <string name="settings_notation_flats">Flati: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Otomatiki: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Kijerumani: C, C♯, D … H</string>
+
+    <string name="settings_theme_title">Mwanga au giza</string>
+    <string name="settings_high_contrast_title">Utofautishaji wa juu</string>
+    <string name="settings_high_contrast_summary">Nyeusi na nyeupe yenye mistari minene; hujiwasha yenyewe utofautishaji wa simu ukiwa juu</string>
+    <string name="settings_theme_system">Kama simu</string>
+    <string name="settings_theme_light">Mwanga</string>
+    <string name="settings_theme_dark">Giza</string>
+    <string name="settings_dynamic_color_title">Rangi za mandhari</string>
+    <string name="settings_dynamic_color_summary">Tumia rangi kutoka kwenye mandhari yako</string>
+
+    <string name="settings_meter_title">Kiashiria</string>
+    <string name="settings_meter_classic">Asili</string>
+    <string name="settings_meter_light_arc">Upinde wa taa</string>
+    <string name="settings_meter_strobe">Strobe</string>
+
+    <string name="settings_left_handed_title">Mkono wa kushoto</string>
+    <string name="settings_left_handed_summary">Chati za kodi na shingo ya skeli zimechorwa kwa gitaa iliyoshikwa upande mwingine</string>
+
+    <string name="settings_under_meter_title">Chini ya kiashiria</string>
+    <string name="settings_under_meter_words">Maneno: Kaza au Legeza</string>
+    <string name="settings_under_meter_cents">Senti: −12</string>
+    <string name="settings_keep_screen_on_title">Skrini ibaki ikiwaka</string>
+    <string name="settings_keep_screen_on_summary">Skrini inaendelea kuwaka unaporekebisha</string>
+    <string name="settings_vibrate_in_tune_title">Tetema sauti ikiwa sawa</string>
+    <string name="settings_vibrate_in_tune_summary">Mtetemo mfupi noti inapofikia sauti sahihi</string>
+    <string name="settings_vibration_guide_title">Mwongozo wa mtetemo</string>
+    <string name="settings_vibration_guide_summary">Mitetemo unaporekebisha: mmoja ni kaza, miwili ni legeza, mrefu ni sauti sawa</string>
+    <string name="settings_string_tick_off_title">Weka alama kwa nyuzi zilizo sawa</string>
+    <string name="settings_string_tick_off_summary">Alama kwenye kila uzi ukishakuwa sawa, na “Sauti sawa. Anza kupiga.” zote zikiwa sawa</string>
+
+    <string name="settings_language_title">Lugha</string>
+    <string name="settings_language_phone">Lugha ya simu</string>
+    <string name="settings_language_cancel">Ghairi</string>
+    <string name="about_title">Kuhusu Twangle</string>
+    <string name="settings_about_link_summary">Toleo %1$s, msaada, faragha na leseni</string>
+    <string name="settings_about_name_title">Jina</string>
+    <string name="settings_about_name_meaning">Twang ni neno la Kiingereza la sauti inayolia ya uzi uliopigwa.</string>
+    <string name="settings_about_version">Toleo %1$s</string>
+    <string name="settings_about_free_title">Bure milele</string>
+    <string name="settings_about_free_summary">Hakuna matangazo, akaunti, ununuzi ndani ya programu wala ufuatiliaji. Si sasa, si baadaye.</string>
+    <string name="settings_about_privacy_title">Faragha</string>
+    <string name="settings_about_privacy_summary">Twangle haikusanyi data yoyote kukuhusu. Maikrofoni huwashwa tu wakati skrini inayosikiliza iko wazi: tuner, Sikiliza ya metronomu au Piga uliyosikia ya Mazoezi ya sikio. Sauti huchanganuliwa papo hapo na hairekodiwi, kuhifadhiwa wala kutumwa kamwe. Twangle haina ruhusa ya intaneti, kwa hivyo haiwezi kutuma chochote popote. Mipangilio yako hubaki kwenye kifaa hiki (na kwenye hifadhi rudufu ya Android yenyewe, ikiwa umeiwasha).</string>
+    <string name="settings_about_rate_title">Kadiria Twangle</string>
+    <string name="settings_about_rate_summary">Twangle kwenye Google Play</string>
+    <string name="settings_about_website_title">Msaada na tovuti</string>
+    <string name="settings_about_website_summary">Jinsi kila zana inavyofanya kazi, na majibu ya maswali ya kawaida</string>
+    <string name="settings_about_credits_title">Fonti na programu huria</string>
+    <string name="settings_about_credits_summary">Twangle imetengenezwa kwa hizi. Gusa moja ili usome leseni yake.</string>
+    <string name="settings_about_licence_open">Kusoma leseni</string>
+    <string name="settings_about_licence_close">Funga</string>
+</resources>

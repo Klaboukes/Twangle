@@ -41,7 +41,7 @@ class NotationTest {
         for (language in listOf("fr", "it", "es", "pt", "tr", "ar")) {
             assertEquals(language, Notation.SOLFEGE, Notation.forLanguage(language))
         }
-        for (language in listOf("en", "nl", "zh", "ja", "ko", "hi", "in", "id", "vi", "th", "bn", "sv", "ta", "te", "mr", "")) {
+        for (language in listOf("en", "nl", "zh", "ja", "ko", "hi", "in", "id", "vi", "th", "bn", "sv", "ta", "te", "mr", "sw", "")) {
             assertEquals(language, Notation.SHARPS, Notation.forLanguage(language))
         }
         assertEquals(Notation.DEFAULT, Notation.forLanguage("xx"))

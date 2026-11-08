@@ -1,0 +1,42 @@
+<resources>
+    <string name="wear_play_note">Piga noti</string>
+    <plurals name="wear_cents">
+        <item quantity="one">senti %1$s</item>
+        <item quantity="other">senti %1$s</item>
+    </plurals>
+    <string name="wear_in_tune">sauti sawa</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">senti %1$d chini</item>
+        <item quantity="other">senti %1$d chini</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">senti %1$d juu</item>
+        <item quantity="other">senti %1$d juu</item>
+    </plurals>
+    <string name="wear_word_tighten">Kaza</string>
+    <string name="wear_word_loosen">Legeza</string>
+    <string name="wear_spoken_sharp">%1$s shapu</string>
+    <string name="wear_vibration_guide">Mwongozo wa mtetemo</string>
+    <string name="wear_mic_needed">Twangle husikiliza ala yako kwa maikrofoni ya saa.</string>
+    <string name="wear_allow_mic">Ruhusu maikrofoni</string>
+    <string name="wear_open_settings">Fungua mipangilio</string>
+    <string name="wear_mic_busy">Programu nyingine inatumia maikrofoni.</string>
+    <string name="wear_mic_unavailable">Maikrofoni haiwezi kufunguliwa.</string>
+    <string name="wear_try_again">Jaribu tena</string>
+    <string name="wear_tile_tune">Tuner</string>
+    <string name="wear_tile_metronome">Metronomu</string>
+    <string name="wear_tile_open_metronome">Fungua metronomu, %1$s</string>
+    <string name="wear_shortcut_tune">Tuner</string>
+    <string name="wear_shortcut_open">Fungua tuner</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">mdundo %1$d kwa dakika</item>
+        <item quantity="other">midundo %1$d kwa dakika</item>
+    </plurals>
+    <string name="wear_metronome_playing">Inacheza</string>
+    <string name="wear_metronome_stopped">Imesimama</string>
+    <string name="wear_metronome_start">Anza</string>
+    <string name="wear_metronome_stop">Simamisha</string>
+    <string name="wear_metronome_click">Sauti ya mbofyo</string>
+</resources>
