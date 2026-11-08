@@ -1,0 +1,5 @@
+<resources>
+    <string name="spoken_sharp">%1$s షార్ప్</string>
+    <string name="spoken_flat">%1$s ఫ్లాట్</string>
+    <string name="instrument_button_action">వాయిద్యం లేదా ట్యూనింగ్ మార్చడం</string>
+</resources>

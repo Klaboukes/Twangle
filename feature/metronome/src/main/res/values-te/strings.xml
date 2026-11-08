@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">ఒక బార్‌లో బీట్‌లు</string>
+    <string name="metronome_tempo">టెంపో</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">నిమిషానికి %1$d బీట్, %2$s</item>
+        <item quantity="other">నిమిషానికి %1$d బీట్‌లు, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">నిమిషానికి బీట్‌లు · %1$s</string>
+    <string name="metronome_slower">మరింత నెమ్మది</string>
+    <string name="metronome_faster">మరింత వేగం</string>
+    <string name="metronome_tap">బీట్ తట్టు</string>
+    <string name="metronome_start">ప్రారంభించు</string>
+    <string name="metronome_stop">ఆపు</string>
+    <string name="metronome_vibrate">ప్రతి బీట్‌కు వైబ్రేట్</string>
+    <string name="metronome_sound">ధ్వని</string>
+    <string name="metronome_sound_wood_block">వుడ్ బ్లాక్</string>
+    <string name="metronome_sound_cowbell">కౌబెల్</string>
+    <string name="metronome_sound_claves">క్లేవ్స్</string>
+    <string name="metronome_sound_rim_click">రిమ్ క్లిక్</string>
+    <string name="metronome_subdivision">బీట్‌ల మధ్య</string>
+    <string name="metronome_subdivision_none">ఏదీ లేదు</string>
+    <string name="metronome_subdivision_eighths">ఎనిమిదో వంతు నోట్‌లు</string>
+    <string name="metronome_subdivision_triplets">ట్రిప్లెట్‌లు</string>
+    <string name="metronome_subdivision_sixteenths">పదహారో వంతు నోట్‌లు</string>
+    <string name="metronome_options">ఎంపికలు</string>
+
+    <string name="metronome_trainer">వేగ సాధన</string>
+    <string name="metronome_trainer_start">ప్రారంభ టెంపో</string>
+    <string name="metronome_trainer_goal">లక్ష్యం</string>
+    <string name="metronome_trainer_start_slower">ప్రారంభ టెంపో తగ్గించు</string>
+    <string name="metronome_trainer_start_faster">ప్రారంభ టెంపో పెంచు</string>
+    <string name="metronome_trainer_goal_slower">లక్ష్యం తగ్గించు</string>
+    <string name="metronome_trainer_goal_faster">లక్ష్యం పెంచు</string>
+    <string name="metronome_trainer_step">స్టెప్</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">బార్‌లు</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s బార్</item>
+        <item quantity="other">%1$s బార్‌లు</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$s బార్‌లో %1$s</item>
+        <item quantity="other">%2$s బార్‌లలో %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">ప్రతి బార్‌కు %1$s</item>
+        <item quantity="other">ప్రతి %2$s బార్‌లకు %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">లక్ష్యం చేరింది · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">వేగ సాధన, %1$s BPM, %2$s వైపు పెరుగుతోంది, %3$s</string>
+    <string name="metronome_trainer_spoken_set">వేగ సాధన, %1$s నుండి %2$s BPM వరకు, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">వేగ సాధన, లక్ష్యం చేరింది, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">టూ-ఫోర్ టైమ్</string>
+    <string name="metronome_meter_3_4_spoken">త్రీ-ఫోర్ టైమ్</string>
+    <string name="metronome_meter_4_4_spoken">ఫోర్-ఫోర్ టైమ్</string>
+    <string name="metronome_meter_5_4_spoken">ఫైవ్-ఫోర్ టైమ్</string>
+    <string name="metronome_meter_6_8_spoken">సిక్స్-ఎయిట్ టైమ్</string>
+    <string name="metronome_meter_7_8_spoken">సెవెన్-ఎయిట్ టైమ్</string>
+
+    <string name="metronome_listen">వినండి</string>
+    <string name="metronome_listen_stop_spoken">వినడం ఆపు</string>
+    <string name="metronome_listening">వింటోంది…</string>
+    <string name="metronome_heard">వినిపించింది</string>
+    <string name="metronome_use">ఉపయోగించు</string>
+    <string name="metronome_not_now">ఇప్పుడు కాదు</string>
+    <string name="metronome_listen_speed">వేగం</string>
+    <string name="metronome_pick_half">సగం</string>
+    <string name="metronome_pick_as_heard">విన్నట్టే</string>
+    <string name="metronome_pick_double">రెట్టింపు</string>
+    <string name="metronome_no_beat">స్థిరమైన బీట్ వినబడలేదు</string>
+    <string name="metronome_try_again">మళ్లీ</string>
+    <string name="metronome_mic_busy">మైక్రోఫోన్ బిజీగా ఉంది</string>
+    <string name="metronome_mic_off">మైక్రోఫోన్ ఆఫ్</string>
+    <string name="metronome_open_settings">సెట్టింగ్‌లు</string>
+</resources>

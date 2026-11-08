@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">ట్యూన్</string>
+    <string name="nav_metronome">మెట్రోనోమ్</string>
+    <string name="nav_practice">సాధన</string>
+    <string name="nav_settings">సెట్టింగ్‌లు</string>
+    <string name="widget_name">ట్యూనర్</string>
+    <string name="widget_description">మీ వాయిద్యాన్ని, ట్యూనింగ్‌ను చూపుతుంది. ఒక్క ట్యాప్‌తో ట్యూనర్ తెరుచుకుంటుంది.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">ట్యూనర్‌ను తెరవండి</string>
+    <string name="widget_preview_title">గిటార్ · స్టాండర్డ్</string>
+</resources>

@@ -1,0 +1,76 @@
+<resources>
+    <string name="settings_title">సెట్టింగ్‌లు</string>
+    <string name="settings_back">వెనుకకు</string>
+
+    <string name="settings_group_tuning">ట్యూనింగ్</string>
+    <string name="settings_group_while_tuning">ట్యూన్ చేస్తున్నప్పుడు</string>
+    <string name="settings_group_look">రూపం</string>
+
+    <string name="settings_a4_title">రిఫరెన్స్ పిచ్ (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">చాలా సంగీతం 440 Hz వాడుతుంది. ఆర్కెస్ట్రాలు తరచుగా 442 Hzకి, బరోక్ బృందాలు 415 Hzకి ట్యూన్ చేస్తాయి.</string>
+    <string name="settings_a4_lower">A4ను 1 Hz తగ్గించు</string>
+    <string name="settings_a4_raise">A4ను 1 Hz పెంచు</string>
+    <string name="settings_a4_reset">%1$d Hzకి రీసెట్ చేయి</string>
+
+    <string name="settings_precise_title">ఖచ్చితమైన ట్యూనింగ్</string>
+    <string name="settings_precise_summary">5కి బదులు 2 సెంట్లలోపే శ్రుతి సరి</string>
+    <string name="settings_notation_title">నోట్ పేర్లు</string>
+    <string name="settings_notation_sharps">షార్ప్‌లు: C, C♯, D …</string>
+    <string name="settings_notation_flats">ఫ్లాట్‌లు: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">ఆటోమేటిక్: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">జర్మన్: C, C♯, D … H</string>
+
+
+    <string name="settings_theme_title">లైట్ లేదా డార్క్</string>
+    <string name="settings_high_contrast_title">అధిక కాంట్రాస్ట్</string>
+    <string name="settings_high_contrast_summary">మందమైన గీతలతో నలుపు, తెలుపు; ఫోన్ కాంట్రాస్ట్ ఎక్కువగా ఉంటే దానంతట అదే ఆన్ అవుతుంది</string>
+    <string name="settings_theme_system">ఫోన్‌లాగే</string>
+    <string name="settings_theme_light">లైట్</string>
+    <string name="settings_theme_dark">డార్క్</string>
+    <string name="settings_dynamic_color_title">వాల్‌పేపర్ రంగులు</string>
+    <string name="settings_dynamic_color_summary">మీ వాల్‌పేపర్ నుండి రంగులను ఉపయోగించండి</string>
+
+    <string name="settings_meter_title">మీటర్</string>
+    <string name="settings_meter_classic">క్లాసిక్</string>
+    <string name="settings_meter_light_arc">కాంతి వంపు</string>
+    <string name="settings_meter_strobe">స్ట్రోబ్</string>
+
+    <string name="settings_left_handed_title">ఎడమచేతి వాటం</string>
+    <string name="settings_left_handed_summary">కార్డ్ చార్ట్‌లు, స్కేల్ నెక్ ఎదురు వైపు పట్టుకున్న గిటార్‌కు తగ్గట్టు చూపుతుంది</string>
+
+    <string name="settings_under_meter_title">మీటర్ కింద</string>
+    <string name="settings_under_meter_words">పదాలు: బిగించండి లేదా సడలించండి</string>
+    <string name="settings_under_meter_cents">సెంట్లు: −12</string>
+    <string name="settings_keep_screen_on_title">స్క్రీన్‌ను ఆన్‌లో ఉంచు</string>
+    <string name="settings_keep_screen_on_summary">మీరు ట్యూన్ చేస్తున్నంత సేపు స్క్రీన్ ఆన్‌లో ఉంటుంది</string>
+    <string name="settings_vibrate_in_tune_title">శ్రుతి సరైనప్పుడు వైబ్రేట్</string>
+    <string name="settings_vibrate_in_tune_summary">నోట్ సరైన పిచ్ చేరగానే చిన్న వైబ్రేషన్</string>
+    <string name="settings_vibration_guide_title">వైబ్రేషన్ గైడ్</string>
+    <string name="settings_vibration_guide_summary">ట్యూన్ చేస్తున్నప్పుడు ట్యాప్‌లు: బిగించడానికి ఒకటి, సడలించడానికి రెండు, శ్రుతి సరైతే పొడవైనది</string>
+    <string name="settings_string_tick_off_title">ట్యూన్ అయిన తీగలకు టిక్</string>
+    <string name="settings_string_tick_off_summary">ప్రతి తీగ శ్రుతిలోకి రాగానే దానిపై టిక్, అన్నీ వచ్చాక “శ్రుతి సరి. వాయించండి.”</string>
+
+    <string name="settings_language_title">భాష</string>
+    <string name="settings_language_phone">ఫోన్ భాష</string>
+    <string name="settings_language_cancel">రద్దు చేయి</string>
+    <string name="about_title">Twangle గురించి</string>
+    <string name="settings_about_link_summary">వెర్షన్ %1$s, సహాయం, గోప్యత, లైసెన్స్‌లు</string>
+    <string name="settings_about_name_title">పేరు</string>
+    <string name="settings_about_name_meaning">Twang అనేది మీటిన తీగ మోగే ధ్వనికి ఇంగ్లీష్ పదం.</string>
+    <string name="settings_about_version">వెర్షన్ %1$s</string>
+    <string name="settings_about_free_title">ఎప్పటికీ ఉచితం</string>
+    <string name="settings_about_free_summary">ప్రకటనలు లేవు, ఖాతా లేదు, యాప్‌లో కొనుగోళ్లు లేవు, ట్రాకింగ్ లేదు. ఇప్పుడూ లేదు, తర్వాతా ఉండదు.</string>
+    <string name="settings_about_privacy_title">గోప్యత</string>
+    <string name="settings_about_privacy_summary">Twangle మీ గురించి ఏ డేటానూ సేకరించదు. వినే స్క్రీన్ తెరిచి ఉన్నప్పుడు మాత్రమే మైక్రోఫోన్ ఆన్‌లో ఉంటుంది: ట్యూనర్, మెట్రోనోమ్‌లోని వినండి, లేదా చెవి శిక్షణలోని తిరిగి వాయించండి. ధ్వనిని అప్పటికప్పుడే విశ్లేషిస్తుంది, ఎప్పుడూ రికార్డ్ చేయదు, సేవ్ చేయదు, పంపదు. Twangleకు ఇంటర్నెట్ అనుమతి లేదు, కాబట్టి అది దేన్నీ ఎక్కడికీ పంపలేదు. మీ సెట్టింగ్‌లు ఈ పరికరంలోనే ఉంటాయి (మీరు Android సొంత బ్యాకప్‌ను ఆన్ చేసి ఉంటే, అందులో కూడా).</string>
+    <string name="settings_about_rate_title">Twangleకు రేటింగ్ ఇవ్వండి</string>
+    <string name="settings_about_rate_summary">Google Playలో Twangle</string>
+    <string name="settings_about_website_title">సహాయం, వెబ్‌సైట్</string>
+    <string name="settings_about_website_summary">ప్రతి టూల్ ఎలా పని చేస్తుంది, సాధారణ ప్రశ్నలకు సమాధానాలు</string>
+    <string name="settings_about_credits_title">ఫాంట్‌లు, ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్</string>
+    <string name="settings_about_credits_summary">Twangle వీటితో తయారైంది. ఏదైనా ఒకదాని లైసెన్స్ చదవడానికి దాన్ని ట్యాప్ చేయండి.</string>
+    <string name="settings_about_licence_open">లైసెన్స్ చదవడం</string>
+    <string name="settings_about_licence_close">మూసివేయి</string>
+</resources>

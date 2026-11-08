@@ -1,0 +1,42 @@
+<resources>
+    <string name="wear_play_note">ఒక నోట్ వాయించండి</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s సెంట్</item>
+        <item quantity="other">%1$s సెంట్లు</item>
+    </plurals>
+    <string name="wear_in_tune">శ్రుతి సరి</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d సెంట్ తక్కువ</item>
+        <item quantity="other">%1$d సెంట్లు తక్కువ</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d సెంట్ ఎక్కువ</item>
+        <item quantity="other">%1$d సెంట్లు ఎక్కువ</item>
+    </plurals>
+    <string name="wear_word_tighten">బిగించండి</string>
+    <string name="wear_word_loosen">సడలించండి</string>
+    <string name="wear_spoken_sharp">%1$s షార్ప్</string>
+    <string name="wear_vibration_guide">వైబ్రేషన్ గైడ్</string>
+    <string name="wear_mic_needed">Twangle వాచ్ మైక్రోఫోన్‌తో మీ వాయిద్యాన్ని వింటుంది.</string>
+    <string name="wear_allow_mic">మైక్‌ను అనుమతించు</string>
+    <string name="wear_open_settings">సెట్టింగ్‌లను తెరువు</string>
+    <string name="wear_mic_busy">మరో యాప్ మైక్రోఫోన్‌ను ఉపయోగిస్తోంది.</string>
+    <string name="wear_mic_unavailable">మైక్రోఫోన్‌ను తెరవడం సాధ్యం కాదు.</string>
+    <string name="wear_try_again">మళ్లీ ప్రయత్నించు</string>
+    <string name="wear_tile_tune">ట్యూన్</string>
+    <string name="wear_tile_metronome">మెట్రోనోమ్</string>
+    <string name="wear_tile_open_metronome">మెట్రోనోమ్‌ను తెరవండి, %1$s</string>
+    <string name="wear_shortcut_tune">ట్యూన్</string>
+    <string name="wear_shortcut_open">ట్యూనర్‌ను తెరవండి</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">నిమిషానికి %1$d బీట్</item>
+        <item quantity="other">నిమిషానికి %1$d బీట్‌లు</item>
+    </plurals>
+    <string name="wear_metronome_playing">వాయిస్తోంది</string>
+    <string name="wear_metronome_stopped">ఆగింది</string>
+    <string name="wear_metronome_start">ప్రారంభించు</string>
+    <string name="wear_metronome_stop">ఆపు</string>
+    <string name="wear_metronome_click">క్లిక్ ధ్వని</string>
+</resources>
