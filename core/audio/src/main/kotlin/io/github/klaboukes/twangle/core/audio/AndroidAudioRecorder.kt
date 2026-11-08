@@ -29,6 +29,10 @@ import kotlinx.coroutines.flow.flowOn
  * Speech effects a maker attached to the recording (automatic gain, noise suppression, echo
  * cancelling) are switched off while it records ([SpeechEffectsOff]); the log says once per input
  * which ones the phone has and what was done.
+ * A phone that refuses float recording at every rate and input records in 16-bit instead
+ * ([SampleFormat.PCM_16BIT], tried only once the whole float search failed); [Pcm16Reads] turns
+ * its samples into floats in −1..1, so the chunks are the same either way. Like the rate, the
+ * format that opened is tried first next time.
  * Chunks last about 21 ms at any rate unless [chunkSize] is given.
  *
  * The blocking `read()` runs on a dedicated single thread so it never starves other coroutines.
@@ -37,21 +41,36 @@ import kotlinx.coroutines.flow.flowOn
  * really listening mid-session; on Android 10+ an `AudioRecordingCallback` tells it when Android
  * silences this recording for another app (a call, an assistant). Failures end the flow with an
  * [AudioRecorderException].
+ *
+ * [formats] are the sample formats to try, in order: both in the app; the on-device tests pass
+ * 16-bit alone to record that way on a phone that would take float.
  */
-class AndroidAudioRecorder(
+class AndroidAudioRecorder internal constructor(
     context: Context,
-    private val chunkSize: Int? = null,
+    private val chunkSize: Int?,
+    private val formats: List<SampleFormat>,
 ) : AudioRecorder {
+
+    constructor(context: Context, chunkSize: Int? = null) : this(context, chunkSize, SampleFormat.entries)
 
     private val appContext: Context = context.applicationContext
     private val audioManager: AudioManager = appContext.getSystemService(AudioManager::class.java)
 
-    // Every rate the device says it can record at, best first.
-    private val rates: List<Int> = SampleRateSelector.candidates(SampleRateSelector.nativeRateProperty(audioManager))
-        .filter { AudioRecord.getMinBufferSize(it, CHANNEL_MASK, ENCODING) > 0 }
+    // Every rate the device says it can record at in each format, best first.
+    private val rates: Map<SampleFormat, List<Int>> =
+        SampleRateSelector.candidates(SampleRateSelector.nativeRateProperty(audioManager)).let { candidates ->
+            formats.associateWith { format ->
+                candidates.filter { AudioRecord.getMinBufferSize(it, CHANNEL_MASK, format.encoding) > 0 }
+            }
+        }
+
+    // The format the microphone opened with last (at first the first one with a rate), tried first.
+    @Volatile
+    private var format: SampleFormat = formats.firstOrNull { rates.getValue(it).isNotEmpty() } ?: formats.first()
 
     @Volatile
-    override var config: AudioConfig = configFor(rates.firstOrNull() ?: AudioConfig.DEFAULT_SAMPLE_RATE)
+    override var config: AudioConfig =
+        configFor(rates.getValue(format).firstOrNull() ?: AudioConfig.DEFAULT_SAMPLE_RATE)
         private set
 
     private val allInputs: List<AudioInput> =
@@ -72,21 +91,22 @@ class AndroidAudioRecorder(
             throw AudioRecorderException.PermissionMissing()
         }
         val inputs = skippedInputs.usable(allInputs)
-        val (record, rate, input) = open(inputs)
+        val (record, rate, input, format) = open(inputs)
+        val opened = configFor(rate)
+        // A switch to another input keeps the session's rate and format, so its chunk size too.
         val reader = FallbackReader(
-            first = begin(record, input),
+            first = begin(record, input, format, opened.chunkSize),
             firstInput = input,
             inputs = inputs,
             sampleRate = rate,
             skipped = skippedInputs,
             open = { next ->
                 Log.w(TAG, "$activeInput recorded only zeros from its first sample: trying $next")
-                tryBuild(rate, next)?.let { begin(it, next) }
+                tryBuild(format, rate, next)?.let { begin(it, next, format, opened.chunkSize) }
             },
             release = { it.end() },
         )
         try {
-            val opened = configFor(rate)
             config = opened
             val pool = Array(POOL_SIZE) { FloatArray(opened.chunkSize) }
             var next = 0
@@ -110,32 +130,43 @@ class AndroidAudioRecorder(
         if (chunkSize == null) AudioConfig.forSampleRate(rate) else AudioConfig(rate, chunkSize)
 
     /**
-     * Opens the first of [inputs] that initializes, at the current rate first and then at the
-     * device's other rates, best first.
+     * Opens the first of [inputs] that initializes, in the format and at the rate that worked last
+     * first, then at the device's other rates, best first; the other format only once none
+     * opened in this one.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun open(inputs: List<AudioInput>): OpenedMic<AudioRecord> {
         val current = config.sampleRate
-        val tried = (listOf(current) + rates).distinct()
+        val currentFormat = format
+        val formatsTried = (listOf(currentFormat) + formats).distinct()
+        val ratesTried = { f: SampleFormat -> (listOf(current) + rates.getValue(f)).distinct() }
         var lastFailure: Exception? = null
-        val opened = openFirst(tried, inputs) { rate, input ->
-            tryBuild(rate, input) { lastFailure = it }
+        val opened = openFirst(formatsTried, ratesTried, inputs) { f, rate, input ->
+            tryBuild(f, rate, input) { lastFailure = it }
         } ?: throw AudioRecorderException.InitializationFailed(
-            "No audio input could be opened at $tried Hz (tried $inputs)",
+            "No audio input could be opened (tried $inputs at ${formatsTried.associateWith(ratesTried)} Hz)",
             lastFailure,
         )
+        if (opened.format != currentFormat) Log.i(TAG, "No input opened in $currentFormat: recording in ${opened.format}")
         if (opened.sampleRate != current) Log.i(TAG, "No input opened at $current Hz: recording at ${opened.sampleRate} Hz")
+        format = opened.format
         return opened
     }
 
     /**
-     * An initialized [AudioRecord] for [input] at [rate], or null when the phone refuses that
-     * combination ([onFailure] gets why, when Android said). A missing permission throws.
+     * An initialized [AudioRecord] for [input] at [rate] in [format], or null when the phone
+     * refuses that combination ([onFailure] gets why, when Android said). A missing permission
+     * throws.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun tryBuild(rate: Int, input: AudioInput, onFailure: (Exception) -> Unit = {}): AudioRecord? {
+    private fun tryBuild(
+        format: SampleFormat,
+        rate: Int,
+        input: AudioInput,
+        onFailure: (Exception) -> Unit = {},
+    ): AudioRecord? {
         val record = try {
-            build(rate, input)
+            build(format, rate, input)
         } catch (e: SecurityException) {
             throw AudioRecorderException.PermissionMissing(e)
         } catch (e: UnsupportedOperationException) {
@@ -157,10 +188,10 @@ class AndroidAudioRecorder(
     /**
      * Starts recording [record], follows Android's silencing of it and switches off the speech
      * effects on it; [input] becomes [activeInput]. Releases it if it can't start (the microphone
-     * is busy).
+     * is busy). [record] records in [format]; reads ask for at most [chunkSize] samples.
      */
-    private fun begin(record: AudioRecord, input: AudioInput): RecordInput {
-        val mic = RecordInput(record)
+    private fun begin(record: AudioRecord, input: AudioInput, format: SampleFormat, chunkSize: Int): RecordInput {
+        val mic = RecordInput(record, format, chunkSize)
         try {
             mic.watch()
             start(record)
@@ -176,17 +207,17 @@ class AndroidAudioRecorder(
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun build(rate: Int, input: AudioInput): AudioRecord {
-        val minBytes = AudioRecord.getMinBufferSize(rate, CHANNEL_MASK, ENCODING)
+    private fun build(format: SampleFormat, rate: Int, input: AudioInput): AudioRecord {
+        val minBytes = AudioRecord.getMinBufferSize(rate, CHANNEL_MASK, format.encoding)
         // Room for a few chunks, so a late collector doesn't make AudioRecord drop samples.
-        val bufferBytes = maxOf(minBytes, configFor(rate).chunkSize * Float.SIZE_BYTES * BUFFERED_CHUNKS)
+        val bufferBytes = maxOf(minBytes, configFor(rate).chunkSize * format.bytesPerSample * BUFFERED_CHUNKS)
         return AudioRecord.Builder()
             .setAudioSource(input.androidSource)
             .setAudioFormat(
                 AudioFormat.Builder()
                     .setSampleRate(rate)
                     .setChannelMask(CHANNEL_MASK)
-                    .setEncoding(ENCODING)
+                    .setEncoding(format.encoding)
                     .build(),
             )
             .setBufferSizeInBytes(bufferBytes)
@@ -210,8 +241,18 @@ class AndroidAudioRecorder(
      * app with priority (a call, an assistant, another recorder in front) silences us with zeros
      * instead of making reads fail, which is "busy" for a tuner. Android reports it to a
      * [SilencingCallback], which only sets a flag, so the read loop pays one volatile read.
+     * A 16-bit recording reads through [Pcm16Reads], its arrays made here, once per recording.
      */
-    private inner class RecordInput(private val record: AudioRecord) : MicInput {
+    private inner class RecordInput(
+        private val record: AudioRecord,
+        format: SampleFormat,
+        chunkSize: Int,
+    ) : MicInput {
+
+        private val pcm16: Pcm16Reads? = if (format == SampleFormat.PCM_16BIT) Pcm16Reads(chunkSize) else null
+        private val readShorts = ShortReads { buffer, offset, count ->
+            record.read(buffer, offset, count, AudioRecord.READ_BLOCKING)
+        }
 
         @Volatile
         var silenced = false
@@ -225,7 +266,8 @@ class AndroidAudioRecorder(
         override val isSilenced: Boolean get() = silenced
 
         override fun read(buffer: FloatArray, offset: Int, count: Int): Int =
-            record.read(buffer, offset, count, AudioRecord.READ_BLOCKING)
+            pcm16?.read(buffer, offset, count, readShorts)
+                ?: record.read(buffer, offset, count, AudioRecord.READ_BLOCKING)
 
         /** Starts following Android's silencing; callbacks come on the main thread, where they only set the flag. */
         fun watch() {
@@ -283,9 +325,15 @@ class AndroidAudioRecorder(
 
         private const val TAG = "AudioRecorder"
         private const val CHANNEL_MASK = AudioFormat.CHANNEL_IN_MONO
-        private const val ENCODING = AudioFormat.ENCODING_PCM_FLOAT
         private const val CHANNEL_CAPACITY = 2
         private const val POOL_SIZE = CHANNEL_CAPACITY + 2
         private const val BUFFERED_CHUNKS = 4
     }
 }
+
+/** The `AudioFormat` encoding an `AudioRecord` is asked for in this format. */
+private val SampleFormat.encoding: Int
+    get() = when (this) {
+        SampleFormat.FLOAT -> AudioFormat.ENCODING_PCM_FLOAT
+        SampleFormat.PCM_16BIT -> AudioFormat.ENCODING_PCM_16BIT
+    }

@@ -48,7 +48,7 @@ Topic files:
 | Build | **Gradle 9 + AGP 9 (built-in Kotlin), Kotlin DSL + version catalog** | Versions live only in `gradle/libs.versions.toml`. |
 | Testing | JUnit 4, kotlinx-coroutines-test, Compose UI test | DSP checked with synthesized signals (see [Testing strategy](docs/architecture/testing.md)). |
 | CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug + unsigned assembleRelease/bundleRelease, once a night on `main` (03:00 UTC, skipped when only documentation changed) and by hand; every change is checked locally first, so per-PR and per-merge runs only duplicated it, and per-merge runs used up the free plan's minutes in a week (2026-10-16). No APK upload: nobody downloaded it, and it filled the free plan's artifact storage (2026-10-16). |
-| Min / target SDK | **26** (Android 8.0) / 37 | `ENCODING_PCM_FLOAT` and `UNPROCESSED` work from API 24+; 26 covers ~97 % of devices and needs no PNG icon fallbacks. |
+| Min / target SDK | **26** (Android 8.0) / 37 | `ENCODING_PCM_FLOAT` and `UNPROCESSED` work from API 24+ (16-bit recording where a phone refuses float); 26 covers ~97 % of devices and needs no PNG icon fallbacks. |
 
 ### Name, app ID and icon
 - **Name:** Twangle (InTune until October 2026, which clashed with Microsoft Intune). Names with "free" in them are out: Google Play bans price words in titles.
@@ -157,7 +157,9 @@ core/dsp/src/testFixtures/…/core/dsp/testsignals/
 core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
     AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector,
-    ChunkReader (+ MicInput: busy, silenced and stuck mics), MicOpener (openFirst: rate fallback),
+    ChunkReader (+ MicInput: busy, silenced and stuck mics), MicOpener (openFirst: format, rate and input fallback),
+    FallbackReader (+ SkippedInputs: a silent input gives way), SpeechEffects (+ SpeechEffectsOff), AndroidSpeechEffects,
+    SampleFormat (+ Pcm16Reads: 16-bit recording as floats),
     BlockingTransfer (transferFully: read/write loops that fail instead of spinning), MicPermissionRules,
     TonePlayer (interface), AndroidTonePlayer, MetronomePlayer (interface, + MetronomeBeat),
     AndroidMetronomePlayer, DronePlayer (interface), AndroidDronePlayer,

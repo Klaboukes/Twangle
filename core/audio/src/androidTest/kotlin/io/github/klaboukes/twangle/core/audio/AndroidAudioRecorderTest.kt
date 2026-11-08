@@ -42,7 +42,10 @@ class AndroidAudioRecorderTest {
     fun picksASupportedNativeRate() {
         val rate = recorder.config.sampleRate
         assertTrue("rate $rate", rate in SampleRateSelector.SUPPORTED_RATES)
-        assertTrue(AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT) > 0)
+        assertTrue(
+            AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT) > 0 ||
+                AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT) > 0,
+        )
     }
 
     @Test
@@ -54,6 +57,25 @@ class AndroidAudioRecorderTest {
             assertEquals(recorder.config.chunkSize, chunk.size)
             assertTrue("samples must be finite", chunk.all { it.isFinite() })
         }
+    }
+
+    @Test
+    fun recordsIn16BitWhereFloatIsRefused() = runBlocking {
+        // As on a phone that refuses float: the 16-bit path alone, on this phone's real microphone.
+        val pcm16 = AndroidAudioRecorder(context, null, listOf(SampleFormat.PCM_16BIT))
+        val chunks = pcm16.chunks().map { it.copyOf() }.take(CHUNKS).toList()
+
+        assertEquals(CHUNKS, chunks.size)
+        for (chunk in chunks) {
+            assertEquals(pcm16.config.chunkSize, chunk.size)
+            for (sample in chunk) {
+                assertTrue("sample $sample outside -1..1", sample >= -1f && sample < 1f)
+                // Every sample is a whole number of 16-bit steps: it came through the conversion.
+                val steps = sample * 32_768f
+                assertEquals("sample $sample", Math.round(steps).toFloat(), steps, 0f)
+            }
+        }
+        assertNull("mic must be released after collection", pcm16.activeInput)
     }
 
     @Test
