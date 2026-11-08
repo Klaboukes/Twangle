@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Hell oder dunkel</string>
+    <string name="settings_high_contrast_title">Hoher Kontrast</string>
+    <string name="settings_high_contrast_summary">Schwarz-Weiß mit dickeren Linien; von selbst an, wenn der Kontrast des Handys hoch ist</string>
     <string name="settings_theme_system">Wie das Handy</string>
     <string name="settings_theme_light">Hell</string>
     <string name="settings_theme_dark">Dunkel</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt beim Stimmen an</string>
     <string name="settings_vibrate_in_tune_title">Vibrieren, wenn gestimmt</string>
     <string name="settings_vibrate_in_tune_summary">Kurzes Vibrieren, sobald der Ton stimmt</string>
+    <string name="settings_vibration_guide_title">Stimmen per Vibration</string>
+    <string name="settings_vibration_guide_summary">Impulse beim Stimmen: einer = spannen, zwei = lockern, lang = gestimmt</string>
     <string name="settings_string_tick_off_title">Gestimmte Saiten abhaken</string>
     <string name="settings_string_tick_off_summary">Ein Haken an jeder Saite, sobald sie gestimmt ist, und „Gestimmt. Spiel los.“, wenn alle stimmen</string>
 

@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Claro u oscuro</string>
+    <string name="settings_high_contrast_title">Alto contraste</string>
+    <string name="settings_high_contrast_summary">Blanco y negro con líneas más gruesas; se activa solo si el contraste del teléfono es alto</string>
     <string name="settings_theme_system">Igual que el teléfono</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
     <string name="settings_vibrate_in_tune_title">Vibrar al estar afinado</string>
     <string name="settings_vibrate_in_tune_summary">Una vibración breve cuando la nota queda afinada</string>
+    <string name="settings_vibration_guide_title">Guía por vibración</string>
+    <string name="settings_vibration_guide_summary">Toques al afinar: uno para tensar, dos para aflojar, largo si está afinado</string>
     <string name="settings_string_tick_off_title">Marcar las cuerdas afinadas</string>
     <string name="settings_string_tick_off_summary">Una marca en cada cuerda afinada, y «Todo afinado. ¡A tocar!» cuando lo estén todas</string>
 

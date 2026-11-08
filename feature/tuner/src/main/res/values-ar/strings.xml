@@ -162,6 +162,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s، لم يُضرب بعد</string>
     <string name="tuner_strum_spoken_not_heard">%1$s، لم يُسمع</string>
     <string name="tuner_strum_spoken_less_sure">%1$s، قراءة أقل يقينًا</string>
+    <string name="tuner_strum_less_sure_tip">اعزف كل وتر باهت وحده</string>
     <string name="tuner_strum_close">أغلق فحص بضربة</string>
     <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
     <plurals name="tuner_strum_count">

@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Açık veya koyu</string>
+    <string name="settings_high_contrast_title">Yüksek kontrast</string>
+    <string name="settings_high_contrast_summary">Kalın çizgili siyah beyaz; telefonun kontrastı yüksekse kendiliğinden açılır</string>
     <string name="settings_theme_system">Telefondaki gibi</string>
     <string name="settings_theme_light">Açık</string>
     <string name="settings_theme_dark">Koyu</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Akort ederken ekran kapanmaz</string>
     <string name="settings_vibrate_in_tune_title">Akortlu olunca titreş</string>
     <string name="settings_vibrate_in_tune_summary">Nota akortlu olunca kısa bir titreşim</string>
+    <string name="settings_vibration_guide_title">Titreşim rehberi</string>
+    <string name="settings_vibration_guide_summary">Akort ederken titreşir: bir kez yükselt, iki kez düşür, uzun ise akortlu</string>
     <string name="settings_string_tick_off_title">Akortlu telleri işaretle</string>
     <string name="settings_string_tick_off_summary">Akortlu olan her tele bir işaret, hepsi akortluysa “Akort tamam. Çal.”</string>
 

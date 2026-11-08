@@ -149,6 +149,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, inte anslagen än</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, hördes inte</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre säker</string>
+    <string name="tuner_strum_less_sure_tip">Knäpp de bleka strängarna var för sig</string>
     <string name="tuner_strum_close">Stäng anslagstestet</string>
     <string name="tuner_strum_all_in_tune">Alla strängar är stämda</string>
     <plurals name="tuner_strum_count">

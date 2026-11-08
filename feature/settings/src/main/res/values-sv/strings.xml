@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Ljust eller mörkt</string>
+    <string name="settings_high_contrast_title">Hög kontrast</string>
+    <string name="settings_high_contrast_summary">Svartvitt med tjockare linjer; på automatiskt när telefonens kontrast är hög</string>
     <string name="settings_theme_system">Som telefonen</string>
     <string name="settings_theme_light">Ljust</string>
     <string name="settings_theme_dark">Mörkt</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Skärmen hålls tänd medan du stämmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrera vid stämd ton</string>
     <string name="settings_vibrate_in_tune_summary">En kort vibration när tonen når rätt tonhöjd</string>
+    <string name="settings_vibration_guide_title">Vibrationsguide</string>
+    <string name="settings_vibration_guide_summary">Korta vibrationer när du stämmer: en = spänn, två = slacka, lång = stämd</string>
     <string name="settings_string_tick_off_title">Bocka av stämda strängar</string>
     <string name="settings_string_tick_off_summary">En bock på varje sträng när den är stämd, och ”Stämd. Spela på.” när alla är det</string>
 

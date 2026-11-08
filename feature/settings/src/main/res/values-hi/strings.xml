@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">लाइट या डार्क</string>
+    <string name="settings_high_contrast_title">हाई कॉन्ट्रास्ट</string>
+    <string name="settings_high_contrast_summary">मोटी रेखाओं के साथ काला-सफ़ेद; फ़ोन का कॉन्ट्रास्ट ज़्यादा होने पर अपने-आप चालू</string>
     <string name="settings_theme_system">फ़ोन के अनुसार</string>
     <string name="settings_theme_light">लाइट</string>
     <string name="settings_theme_dark">डार्क</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">ट्यून करते समय स्क्रीन चालू रहती है</string>
     <string name="settings_vibrate_in_tune_title">सुर में आने पर वाइब्रेट करें</string>
     <string name="settings_vibrate_in_tune_summary">नोट सही पिच पर पहुँचते ही हल्का-सा वाइब्रेशन</string>
+    <string name="settings_vibration_guide_title">वाइब्रेशन गाइड</string>
+    <string name="settings_vibration_guide_summary">ट्यून करते समय टैप: एक यानी कसें, दो यानी ढीला करें, सुर में आने पर लंबा</string>
     <string name="settings_string_tick_off_title">ट्यून हुए तारों पर टिक</string>
     <string name="settings_string_tick_off_summary">सुर में आते ही हर तार पर टिक, और सब सुर में होने पर “सुर में। अब बजाएँ।”</string>
 

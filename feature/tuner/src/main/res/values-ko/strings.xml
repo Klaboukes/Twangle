@@ -146,6 +146,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, 아직 치지 않음</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, 들리지 않음</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, 덜 확실함</string>
+    <string name="tuner_strum_less_sure_tip">흐린 줄은 하나씩 따로 튕기세요</string>
     <string name="tuner_strum_close">스트럼 체크 닫기</string>
     <string name="tuner_strum_all_in_tune">모든 줄의 음이 맞아요</string>
     <plurals name="tuner_strum_count">

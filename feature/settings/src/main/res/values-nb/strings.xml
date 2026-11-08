@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Lyst eller mørkt</string>
+    <string name="settings_high_contrast_title">Høy kontrast</string>
+    <string name="settings_high_contrast_summary">Svart-hvitt med tykkere linjer; på automatisk når telefonens kontrast er høy</string>
     <string name="settings_theme_system">Som telefonen</string>
     <string name="settings_theme_light">Lyst</string>
     <string name="settings_theme_dark">Mørkt</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Skjermen holdes på mens du stemmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrer når tonen er stemt</string>
     <string name="settings_vibrate_in_tune_summary">En kort summing når tonen treffer riktig</string>
+    <string name="settings_vibration_guide_title">Vibrasjonsguide</string>
+    <string name="settings_vibration_guide_summary">Korte vibrasjoner mens du stemmer: én = stram, to = slakk, lang = stemt</string>
     <string name="settings_string_tick_off_title">Huk av stemte strenger</string>
     <string name="settings_string_tick_off_summary">En hake på hver streng når den er stemt, og «Stemt. Spill i vei.» når alle er det</string>
 

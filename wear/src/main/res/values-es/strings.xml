@@ -21,6 +21,7 @@
     <string name="wear_word_tighten">Tensa</string>
     <string name="wear_word_loosen">Afloja</string>
     <string name="wear_spoken_sharp">%1$s sostenido</string>
+    <string name="wear_vibration_guide">Guía por vibración</string>
     <string name="wear_mic_needed">Twangle escucha tu instrumento con el micrófono del reloj.</string>
     <string name="wear_allow_mic">Permitir micrófono</string>
     <string name="wear_open_settings">Abrir ajustes</string>

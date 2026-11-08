@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Lys eller mørk</string>
+    <string name="settings_high_contrast_title">Høj kontrast</string>
+    <string name="settings_high_contrast_summary">Sort-hvid med tykkere linjer; slås automatisk til, når telefonens kontrast er høj</string>
     <string name="settings_theme_system">Som telefonen</string>
     <string name="settings_theme_light">Lys</string>
     <string name="settings_theme_dark">Mørk</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Skærmen forbliver tændt, mens du stemmer</string>
     <string name="settings_vibrate_in_tune_title">Vibrér, når tonen er stemt</string>
     <string name="settings_vibrate_in_tune_summary">En kort vibration, når tonen rammer rent</string>
+    <string name="settings_vibration_guide_title">Vibrationsguide</string>
+    <string name="settings_vibration_guide_summary">Korte vibrationer, mens du stemmer: én = stram, to = slæk, lang = stemt</string>
     <string name="settings_string_tick_off_title">Afkryds stemte strenge</string>
     <string name="settings_string_tick_off_summary">Et flueben ved hver streng, når den er stemt, og »Stemt. Spil løs.«, når alle er det</string>
 

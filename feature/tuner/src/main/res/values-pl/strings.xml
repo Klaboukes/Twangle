@@ -156,6 +156,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, jeszcze nie zagrana</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, odczyt niepewny</string>
+    <string name="tuner_strum_less_sure_tip">Zagraj blade struny osobno</string>
     <string name="tuner_strum_close">Zamknij test strun</string>
     <string name="tuner_strum_all_in_tune">Wszystkie struny nastrojone</string>
     <plurals name="tuner_strum_count">

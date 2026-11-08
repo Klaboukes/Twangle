@@ -26,6 +26,8 @@
 
 
     <string name="settings_theme_title">Clair ou sombre</string>
+    <string name="settings_high_contrast_title">Contraste élevé</string>
+    <string name="settings_high_contrast_summary">Noir et blanc aux traits plus épais ; s\'active seul si le contraste du téléphone est élevé</string>
     <string name="settings_theme_system">Comme le téléphone</string>
     <string name="settings_theme_light">Clair</string>
     <string name="settings_theme_dark">Sombre</string>
@@ -46,6 +48,8 @@
     <string name="settings_keep_screen_on_summary">L\'écran reste allumé pendant l\'accordage</string>
     <string name="settings_vibrate_in_tune_title">Vibrer quand c\'est juste</string>
     <string name="settings_vibrate_in_tune_summary">Une courte vibration quand la note est juste</string>
+    <string name="settings_vibration_guide_title">Guidage par vibration</string>
+    <string name="settings_vibration_guide_summary">Vibrations en accordant : une pour tendre, deux pour détendre, longue si c\'est juste</string>
     <string name="settings_string_tick_off_title">Cocher les cordes accordées</string>
     <string name="settings_string_tick_off_summary">Une coche sur chaque corde juste, et « Tout est juste. Jouez. » quand toutes le sont</string>
 

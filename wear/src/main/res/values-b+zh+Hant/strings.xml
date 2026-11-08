@@ -15,6 +15,7 @@
     <string name="wear_word_tighten">調緊</string>
     <string name="wear_word_loosen">調鬆</string>
     <string name="wear_spoken_sharp">升%1$s</string>
+    <string name="wear_vibration_guide">震動引導</string>
     <string name="wear_mic_needed">Twangle 透過手錶的麥克風聆聽你的樂器。</string>
     <string name="wear_allow_mic">允許使用麥克風</string>
     <string name="wear_open_settings">開啟設定</string>

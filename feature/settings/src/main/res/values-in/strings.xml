@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Terang atau gelap</string>
+    <string name="settings_high_contrast_title">Kontras tinggi</string>
+    <string name="settings_high_contrast_summary">Hitam putih dengan garis lebih tebal; aktif sendiri jika kontras ponsel tinggi</string>
     <string name="settings_theme_system">Ikuti ponsel</string>
     <string name="settings_theme_light">Terang</string>
     <string name="settings_theme_dark">Gelap</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>
     <string name="settings_vibrate_in_tune_title">Bergetar saat pas</string>
     <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah pas</string>
+    <string name="settings_vibration_guide_title">Panduan getar</string>
+    <string name="settings_vibration_guide_summary">Ketukan saat menyetem: satu = kencangkan, dua = kendurkan, panjang = pas</string>
     <string name="settings_string_tick_off_title">Centang senar yang sudah pas</string>
     <string name="settings_string_tick_off_summary">Centang di tiap senar begitu pas, dan “Sudah pas. Ayo main.” jika semuanya pas</string>
 

@@ -153,6 +153,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ainda não tocada</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, não ouvida</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, com menos certeza</string>
+    <string name="tuner_strum_less_sure_tip">Toque uma a uma as cordas pálidas</string>
     <string name="tuner_strum_close">Fechar o teste com batida</string>
     <string name="tuner_strum_all_in_tune">Todas as cordas afinadas</string>
     <plurals name="tuner_strum_count">

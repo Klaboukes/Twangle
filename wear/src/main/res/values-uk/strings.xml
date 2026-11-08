@@ -24,6 +24,7 @@
     <string name="wear_word_tighten">Підтягни</string>
     <string name="wear_word_loosen">Послаб</string>
     <string name="wear_spoken_sharp">%1$s дієз</string>
+    <string name="wear_vibration_guide">Підказка вібрацією</string>
     <string name="wear_mic_needed">Twangle слухає твій інструмент через мікрофон годинника.</string>
     <string name="wear_allow_mic">Дозволити мікрофон</string>
     <string name="wear_open_settings">Відкрити налаштування</string>

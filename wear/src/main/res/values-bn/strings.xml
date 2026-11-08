@@ -18,6 +18,7 @@
     <string name="wear_word_tighten">টাইট করুন</string>
     <string name="wear_word_loosen">ঢিলা করুন</string>
     <string name="wear_spoken_sharp">%1$s শার্প</string>
+    <string name="wear_vibration_guide">ভাইব্রেশন গাইড</string>
     <string name="wear_mic_needed">Twangle ঘড়ির মাইক্রোফোন দিয়ে আপনার বাদ্যযন্ত্র শোনে।</string>
     <string name="wear_allow_mic">মাইক্রোফোনের অনুমতি দিন</string>
     <string name="wear_open_settings">সেটিংস খুলুন</string>

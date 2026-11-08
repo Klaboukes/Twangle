@@ -149,6 +149,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, अभी स्ट्रम नहीं हुआ</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, सुनाई नहीं दिया</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, कम पक्का</string>
+    <string name="tuner_strum_less_sure_tip">फीके तारों को अलग-अलग बजाएँ</string>
     <string name="tuner_strum_close">स्ट्रम चेक बंद करें</string>
     <string name="tuner_strum_all_in_tune">सभी तार सुर में हैं</string>
     <plurals name="tuner_strum_count">

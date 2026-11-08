@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">ライト / ダーク</string>
+    <string name="settings_high_contrast_title">高コントラスト</string>
+    <string name="settings_high_contrast_summary">白黒と太い線で表示します。スマートフォンのコントラストが高いと自動でオンになります</string>
     <string name="settings_theme_system">スマートフォンと同じ</string>
     <string name="settings_theme_light">ライト</string>
     <string name="settings_theme_dark">ダーク</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">チューニング中は画面が消えません</string>
     <string name="settings_vibrate_in_tune_title">合ったら振動</string>
     <string name="settings_vibrate_in_tune_summary">音が合うと短く振動します</string>
+    <string name="settings_vibration_guide_title">振動ガイド</string>
+    <string name="settings_vibration_guide_summary">チューニング中に振動：1回は締める、2回は緩める、長いと合っています</string>
     <string name="settings_string_tick_off_title">合った弦にチェック</string>
     <string name="settings_string_tick_off_summary">合った弦にチェックを付け、すべて合うと「合っています。弾きましょう。」と表示します</string>
 

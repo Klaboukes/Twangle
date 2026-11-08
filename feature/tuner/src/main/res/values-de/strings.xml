@@ -150,6 +150,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, noch nicht angeschlagen</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, nicht gehört</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, weniger sicher</string>
+    <string name="tuner_strum_less_sure_tip">Zupf die blassen Saiten einzeln</string>
     <string name="tuner_strum_close">Anschlag-Check schließen</string>
     <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
     <plurals name="tuner_strum_count">

@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Jasny czy ciemny</string>
+    <string name="settings_high_contrast_title">Wysoki kontrast</string>
+    <string name="settings_high_contrast_summary">Tryb czarno-biały z grubszymi liniami; włącza się sam przy wysokim kontraście telefonu</string>
     <string name="settings_theme_system">Jak w telefonie</string>
     <string name="settings_theme_light">Jasny</string>
     <string name="settings_theme_dark">Ciemny</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Ekran nie gaśnie podczas strojenia</string>
     <string name="settings_vibrate_in_tune_title">Wibruj po nastrojeniu</string>
     <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
+    <string name="settings_vibration_guide_title">Podpowiedź wibracją</string>
+    <string name="settings_vibration_guide_summary">Impulsy podczas strojenia: jeden – podciągnij, dwa – popuść, długi – nastrojone</string>
     <string name="settings_string_tick_off_title">Odhaczaj nastrojone struny</string>
     <string name="settings_string_tick_off_summary">Znaczek na każdej strunie, gdy jest nastrojona, i „Nastrojone. Graj.”, gdy wszystkie</string>
 

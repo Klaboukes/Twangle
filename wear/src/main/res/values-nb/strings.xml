@@ -18,6 +18,7 @@
     <string name="wear_word_tighten">Stram</string>
     <string name="wear_word_loosen">Slakk</string>
     <string name="wear_spoken_sharp">%1$s kryss</string>
+    <string name="wear_vibration_guide">Vibrasjonsguide</string>
     <string name="wear_mic_needed">Twangle lytter til instrumentet ditt med mikrofonen på klokken.</string>
     <string name="wear_allow_mic">Tillat mikrofon</string>
     <string name="wear_open_settings">Åpne innstillinger</string>

@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Vaalea vai tumma</string>
+    <string name="settings_high_contrast_title">Suuri kontrasti</string>
+    <string name="settings_high_contrast_summary">Mustavalkoinen ja paksummat viivat; päällä itsestään, kun puhelimen kontrasti on suuri</string>
     <string name="settings_theme_system">Kuten puhelimessa</string>
     <string name="settings_theme_light">Vaalea</string>
     <string name="settings_theme_dark">Tumma</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Näyttö pysyy päällä, kun virität</string>
     <string name="settings_vibrate_in_tune_title">Värinä vireessä</string>
     <string name="settings_vibrate_in_tune_summary">Lyhyt värähdys, kun sävel osuu vireeseen</string>
+    <string name="settings_vibration_guide_title">Viritys värinällä</string>
+    <string name="settings_vibration_guide_summary">Napautuksia virittäessä: yksi = kiristä, kaksi = löysää, pitkä = vireessä</string>
     <string name="settings_string_tick_off_title">Merkitse viritetyt kielet</string>
     <string name="settings_string_tick_off_summary">Merkki kieleen, kun se on vireessä, ja ”Vireessä. Soita.”, kun kaikki ovat</string>
 

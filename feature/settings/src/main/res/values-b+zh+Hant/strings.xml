@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">淺色或深色</string>
+    <string name="settings_high_contrast_title">高對比</string>
+    <string name="settings_high_contrast_summary">黑白配色，線條更粗；手機對比度調高時自動開啟</string>
     <string name="settings_theme_system">與手機相同</string>
     <string name="settings_theme_light">淺色</string>
     <string name="settings_theme_dark">深色</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">調音時螢幕保持開啟</string>
     <string name="settings_vibrate_in_tune_title">調準時震動</string>
     <string name="settings_vibrate_in_tune_summary">音準到位時短暫震動一下</string>
+    <string name="settings_vibration_guide_title">震動引導</string>
+    <string name="settings_vibration_guide_summary">調音時震動提示：一下調緊，兩下調鬆，長震即已調準</string>
     <string name="settings_string_tick_off_title">為調準的弦打勾</string>
     <string name="settings_string_tick_off_summary">每根弦調準後打勾，全部調準時顯示「已調準。開彈吧。」</string>
 

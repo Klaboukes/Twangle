@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Светлая или тёмная тема</string>
+    <string name="settings_high_contrast_title">Высокий контраст</string>
+    <string name="settings_high_contrast_summary">Чёрно-белая тема с толстыми линиями; сама включается при высоком контрасте телефона</string>
     <string name="settings_theme_system">Как на телефоне</string>
     <string name="settings_theme_light">Светлая</string>
     <string name="settings_theme_dark">Тёмная</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>
     <string name="settings_vibrate_in_tune_title">Вибрация, когда настроено</string>
     <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
+    <string name="settings_vibration_guide_title">Подсказка вибрацией</string>
+    <string name="settings_vibration_guide_summary">Импульсы при настройке: один — подтяни, два — ослабь, длинный — настроено</string>
     <string name="settings_string_tick_off_title">Отмечать настроенные струны</string>
     <string name="settings_string_tick_off_summary">Галочка на каждой струне, когда она настроена, и «Настроено. Играй.», когда все</string>
 

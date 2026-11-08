@@ -25,6 +25,7 @@
     <string name="wear_word_tighten">Подтяни</string>
     <string name="wear_word_loosen">Ослабь</string>
     <string name="wear_spoken_sharp">%1$s диез</string>
+    <string name="wear_vibration_guide">Подсказка вибрацией</string>
     <string name="wear_mic_needed">Twangle слушает твой инструмент через микрофон часов.</string>
     <string name="wear_allow_mic">Разрешить микрофон</string>
     <string name="wear_open_settings">Открыть настройки</string>

@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">สว่างหรือมืด</string>
+    <string name="settings_high_contrast_title">คอนทราสต์สูง</string>
+    <string name="settings_high_contrast_summary">ขาวดำและเส้นหนาขึ้น เปิดเองเมื่อคอนทราสต์ของโทรศัพท์สูง</string>
     <string name="settings_theme_system">ตามโทรศัพท์</string>
     <string name="settings_theme_light">สว่าง</string>
     <string name="settings_theme_dark">มืด</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">หน้าจอเปิดอยู่ตลอดขณะที่คุณจูน</string>
     <string name="settings_vibrate_in_tune_title">สั่นเมื่อตรงเสียง</string>
     <string name="settings_vibrate_in_tune_summary">สั่นสั้นๆ เมื่อโน้ตตรงเสียง</string>
+    <string name="settings_vibration_guide_title">สั่นช่วยจูน</string>
+    <string name="settings_vibration_guide_summary">สั่นขณะจูน หนึ่งครั้งให้จูนขึ้น สองครั้งให้จูนลง สั่นยาวเมื่อตรงเสียง</string>
     <string name="settings_string_tick_off_title">ติ๊กสายที่จูนแล้ว</string>
     <string name="settings_string_tick_off_summary">ติ๊กที่สายแต่ละสายเมื่อตรงเสียง และขึ้น “ตรงเสียงแล้ว เล่นได้เลย” เมื่อครบทุกสาย</string>
 

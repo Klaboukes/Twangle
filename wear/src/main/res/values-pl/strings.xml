@@ -25,6 +25,7 @@
     <string name="wear_word_tighten">Podciągnij</string>
     <string name="wear_word_loosen">Popuść</string>
     <string name="wear_spoken_sharp">%1$s z krzyżykiem</string>
+    <string name="wear_vibration_guide">Podpowiedź wibracją</string>
     <string name="wear_mic_needed">Twangle słucha twojego instrumentu przez mikrofon zegarka.</string>
     <string name="wear_allow_mic">Zezwól na mikrofon</string>
     <string name="wear_open_settings">Otwórz ustawienia</string>

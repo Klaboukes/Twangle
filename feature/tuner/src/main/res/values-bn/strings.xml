@@ -141,6 +141,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, এখনো স্ট্রাম হয়নি</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, শোনা যায়নি</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, কম নিশ্চিত</string>
+    <string name="tuner_strum_less_sure_tip">ফিকে তারগুলো আলাদা করে বাজান</string>
     <string name="tuner_strum_close">স্ট্রাম চেক বন্ধ করুন</string>
     <string name="tuner_strum_all_in_tune">সব তার সুরে আছে</string>
     <plurals name="tuner_strum_count">

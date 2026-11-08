@@ -149,6 +149,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ikke slått an ennå</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, ikke hørt</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, mindre sikker</string>
+    <string name="tuner_strum_less_sure_tip">Spill de bleke strengene hver for seg</string>
     <string name="tuner_strum_close">Lukk strumsjekken</string>
     <string name="tuner_strum_all_in_tune">Alle strengene er stemt</string>
     <plurals name="tuner_strum_count">

@@ -152,6 +152,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, aún sin rasguear</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, no se oyó</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, menos seguro</string>
+    <string name="tuner_strum_less_sure_tip">Toca una a una las cuerdas pálidas</string>
     <string name="tuner_strum_close">Cerrar la prueba de rasgueo</string>
     <string name="tuner_strum_all_in_tune">Todas las cuerdas afinadas</string>
     <plurals name="tuner_strum_count">

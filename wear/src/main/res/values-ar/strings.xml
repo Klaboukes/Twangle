@@ -31,6 +31,7 @@
     <string name="wear_word_tighten">شُدّ</string>
     <string name="wear_word_loosen">أرخِ</string>
     <string name="wear_spoken_sharp">%1$s دييز</string>
+    <string name="wear_vibration_guide">الضبط بالاهتزاز</string>
     <string name="wear_mic_needed">يستمع Twangle إلى آلتك عبر ميكروفون الساعة.</string>
     <string name="wear_allow_mic">اسمح بالميكروفون</string>
     <string name="wear_open_settings">افتح الإعدادات</string>

@@ -146,6 +146,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s，還沒刷弦</string>
     <string name="tuner_strum_spoken_not_heard">%1$s，沒聽到</string>
     <string name="tuner_strum_spoken_less_sure">%1$s，不太確定</string>
+    <string name="tuner_strum_less_sure_tip">單獨彈一下淡色的弦</string>
     <string name="tuner_strum_close">關閉刷弦檢查</string>
     <string name="tuner_strum_all_in_tune">所有弦都已調準</string>
     <plurals name="tuner_strum_count">

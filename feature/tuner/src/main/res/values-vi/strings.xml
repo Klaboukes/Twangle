@@ -146,6 +146,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, chưa quét</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, chưa nghe được</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, chưa chắc lắm</string>
+    <string name="tuner_strum_less_sure_tip">Gảy riêng từng dây bị mờ</string>
     <string name="tuner_strum_close">Đóng quét kiểm tra</string>
     <string name="tuner_strum_all_in_tune">Tất cả dây đều chuẩn</string>
     <plurals name="tuner_strum_count">

@@ -20,6 +20,8 @@
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Німецькі: C, C♯, D … H</string>
     <string name="settings_theme_title">Світла чи темна тема</string>
+    <string name="settings_high_contrast_title">Високий контраст</string>
+    <string name="settings_high_contrast_summary">Чорно-біла тема з товстими лініями; вмикається сама, коли на телефоні високий контраст</string>
     <string name="settings_theme_system">Як на телефоні</string>
     <string name="settings_theme_light">Світла</string>
     <string name="settings_theme_dark">Темна</string>
@@ -38,6 +40,8 @@
     <string name="settings_keep_screen_on_summary">Екран не гасне, поки ти налаштовуєш</string>
     <string name="settings_vibrate_in_tune_title">Вібрація, коли налаштовано</string>
     <string name="settings_vibrate_in_tune_summary">Коротка вібрація, коли нота досягає потрібної висоти</string>
+    <string name="settings_vibration_guide_title">Підказка вібрацією</string>
+    <string name="settings_vibration_guide_summary">Імпульси під час налаштування: один — підтягни, два — послаб, довгий — налаштовано</string>
     <string name="settings_string_tick_off_title">Позначати налаштовані струни</string>
     <string name="settings_string_tick_off_summary">Позначка на кожній струні, щойно вона налаштована, і «Налаштовано. Грай.», коли всі</string>
     <string name="settings_language_title">Мова</string>

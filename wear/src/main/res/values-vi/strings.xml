@@ -15,6 +15,7 @@
     <string name="wear_word_tighten">Căng lên</string>
     <string name="wear_word_loosen">Chùng xuống</string>
     <string name="wear_spoken_sharp">%1$s thăng</string>
+    <string name="wear_vibration_guide">Rung chỉ dẫn</string>
     <string name="wear_mic_needed">Twangle nghe nhạc cụ của bạn qua micrô của đồng hồ.</string>
     <string name="wear_allow_mic">Cho phép micrô</string>
     <string name="wear_open_settings">Mở cài đặt</string>

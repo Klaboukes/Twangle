@@ -151,6 +151,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ei vielä soitettu</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, ei kuultu</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, epävarmempi</string>
+    <string name="tuner_strum_less_sure_tip">Näppää haaleat kielet yksitellen</string>
     <string name="tuner_strum_close">Sulje lyöntitesti</string>
     <string name="tuner_strum_all_in_tune">Kaikki kielet vireessä</string>
     <plurals name="tuner_strum_count">

@@ -294,6 +294,8 @@ feature/settings settings_dynamic_color_title 8599705a
 feature/settings settings_group_look a0de5719
 feature/settings settings_group_tuning 2abeefba
 feature/settings settings_group_while_tuning d30f1d0c
+feature/settings settings_high_contrast_summary 0bbdf3c5
+feature/settings settings_high_contrast_title 415a8336
 feature/settings settings_keep_screen_on_summary 9d43b861
 feature/settings settings_keep_screen_on_title 177d4076
 feature/settings settings_language_cancel 19766ed6
@@ -326,6 +328,8 @@ feature/settings settings_under_meter_title 83b31fa4
 feature/settings settings_under_meter_words dc53fffe
 feature/settings settings_vibrate_in_tune_summary 02746485
 feature/settings settings_vibrate_in_tune_title e04e7ba3
+feature/settings settings_vibration_guide_summary b8fac57e
+feature/settings settings_vibration_guide_title 838d56b4
 feature/tuner error_mic_busy 8ccd1b60
 feature/tuner error_mic_permission 2c1c3f10
 feature/tuner error_mic_stopped 66053f9d
@@ -446,6 +450,7 @@ feature/tuner tuner_strum_all_in_tune 42d1c72b
 feature/tuner tuner_strum_check 3def8cd5
 feature/tuner tuner_strum_close a6c45ff7
 feature/tuner tuner_strum_count fe322fd7
+feature/tuner tuner_strum_less_sure_tip 4d9d27c1
 feature/tuner tuner_strum_not_heard 882de4e9
 feature/tuner tuner_strum_spoken_less_sure e604de2d
 feature/tuner tuner_strum_spoken_not_heard d80d4133
@@ -530,5 +535,6 @@ wear wear_tile_metronome 3634f122
 wear wear_tile_open_metronome bca7059f
 wear wear_tile_tune 22c58d84
 wear wear_try_again d8b8392e
+wear wear_vibration_guide 838d56b4
 wear wear_word_loosen aca993ac
 wear wear_word_tighten 7d2a57a6

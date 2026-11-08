@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">라이트 또는 다크</string>
+    <string name="settings_high_contrast_title">고대비</string>
+    <string name="settings_high_contrast_summary">흑백과 더 굵은 선, 휴대폰 대비가 높으면 자동으로 켜져요</string>
     <string name="settings_theme_system">휴대폰과 같음</string>
     <string name="settings_theme_light">라이트</string>
     <string name="settings_theme_dark">다크</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">튜닝하는 동안 화면이 꺼지지 않아요</string>
     <string name="settings_vibrate_in_tune_title">음이 맞으면 진동</string>
     <string name="settings_vibrate_in_tune_summary">음이 맞으면 짧게 진동해요</string>
+    <string name="settings_vibration_guide_title">진동 가이드</string>
+    <string name="settings_vibration_guide_summary">튜닝 중 진동: 한 번은 조이기, 두 번은 풀기, 길면 음이 맞음</string>
     <string name="settings_string_tick_off_title">맞춘 줄 체크 표시</string>
     <string name="settings_string_tick_off_summary">음이 맞은 줄에 체크 표시, 모두 맞으면 “음이 맞아요. 연주하세요.”</string>
 

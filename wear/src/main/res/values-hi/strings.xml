@@ -19,6 +19,7 @@
     <string name="wear_word_tighten">कसें</string>
     <string name="wear_word_loosen">ढीला करें</string>
     <string name="wear_spoken_sharp">%1$s शार्प</string>
+    <string name="wear_vibration_guide">वाइब्रेशन गाइड</string>
     <string name="wear_mic_needed">Twangle घड़ी के माइक्रोफ़ोन से आपका वाद्य सुनता है।</string>
     <string name="wear_allow_mic">माइक्रोफ़ोन की अनुमति दें</string>
     <string name="wear_open_settings">सेटिंग्स खोलें</string>

@@ -146,6 +146,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, ยังไม่ได้ตี</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, ไม่ได้ยิน</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, ไม่ค่อยแน่ใจ</string>
+    <string name="tuner_strum_less_sure_tip">เล่นสายที่สีจางทีละสาย</string>
     <string name="tuner_strum_close">ปิดเช็กทุกสาย</string>
     <string name="tuner_strum_all_in_tune">ทุกสายตรงเสียง</string>
     <plurals name="tuner_strum_count">

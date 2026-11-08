@@ -21,6 +21,7 @@
     <string name="wear_word_tighten">Aperte</string>
     <string name="wear_word_loosen">Afrouxe</string>
     <string name="wear_spoken_sharp">%1$s sustenido</string>
+    <string name="wear_vibration_guide">Guia por vibração</string>
     <string name="wear_mic_needed">O Twangle ouve seu instrumento pelo microfone do relógio.</string>
     <string name="wear_allow_mic">Permitir microfone</string>
     <string name="wear_open_settings">Abrir configurações</string>

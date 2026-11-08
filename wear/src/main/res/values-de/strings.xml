@@ -19,6 +19,7 @@
     <string name="wear_word_tighten">Spannen</string>
     <string name="wear_word_loosen">Lockern</string>
     <string name="wear_spoken_sharp">%1$s erhöht</string>
+    <string name="wear_vibration_guide">Stimmen per Vibration</string>
     <string name="wear_mic_needed">Twangle hört dein Instrument über das Mikrofon der Uhr.</string>
     <string name="wear_allow_mic">Mikrofon erlauben</string>
     <string name="wear_open_settings">Einstellungen öffnen</string>

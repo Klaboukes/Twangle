@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">Chiaro o scuro</string>
+    <string name="settings_high_contrast_title">Contrasto elevato</string>
+    <string name="settings_high_contrast_summary">Bianco e nero con linee più spesse; si attiva da solo se il contrasto del telefono è alto</string>
     <string name="settings_theme_system">Come il telefono</string>
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_dark">Scuro</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso durante l\'accordatura</string>
     <string name="settings_vibrate_in_tune_title">Vibra quando è intonato</string>
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
+    <string name="settings_vibration_guide_title">Guida a vibrazione</string>
+    <string name="settings_vibration_guide_summary">Colpetti mentre accordi: uno per tendere, due per allentare, lungo se è intonato</string>
     <string name="settings_string_tick_off_title">Spunta le corde intonate</string>
     <string name="settings_string_tick_off_summary">Una spunta su ogni corda intonata, e «Tutto intonato. Suona!» quando lo sono tutte</string>
 

@@ -25,6 +25,8 @@
 
 
     <string name="settings_theme_title">فاتح أو داكن</string>
+    <string name="settings_high_contrast_title">تباين عالٍ</string>
+    <string name="settings_high_contrast_summary">أبيض وأسود بخطوط أسمك؛ يعمل تلقائيًا عندما يكون تباين الهاتف عاليًا</string>
     <string name="settings_theme_system">حسب الهاتف</string>
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
@@ -45,6 +47,8 @@
     <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة أثناء الدوزنة</string>
     <string name="settings_vibrate_in_tune_title">اهتزاز عند الضبط</string>
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
+    <string name="settings_vibration_guide_title">الضبط بالاهتزاز</string>
+    <string name="settings_vibration_guide_summary">نقرات أثناء الضبط: نقرة للشدّ، نقرتان للإرخاء، وطويلة حين يصبح مضبوطًا</string>
     <string name="settings_string_tick_off_title">وضع علامة على الأوتار المضبوطة</string>
     <string name="settings_string_tick_off_summary">علامة على كل وتر حين يُضبط، و«مضبوط. اعزف.» حين تُضبط كلها</string>
 

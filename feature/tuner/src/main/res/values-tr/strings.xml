@@ -150,6 +150,7 @@
     <string name="tuner_strum_spoken_waiting">%1$s, henüz çalınmadı</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, duyulmadı</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, daha az kesin</string>
+    <string name="tuner_strum_less_sure_tip">Soluk telleri tek tek çal</string>
     <string name="tuner_strum_close">Tel kontrolünü kapat</string>
     <string name="tuner_strum_all_in_tune">Tüm teller akortlu</string>
     <plurals name="tuner_strum_count">
