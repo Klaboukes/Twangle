@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 7 november 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 8 november 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -33,7 +33,7 @@ De website wordt gehost door GitHub (GitHub Pages). Zoals elke webhost ziet GitH
 ## Instellingen blijven op je telefoon
 Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan alleen op je telefoon:
 - **Stemmen:** het instrument en de stemming (en hoeveel lager je die hebt gezet), stemmingen die je zelf hebt gemaakt, of Elke noot aan staat, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
-- **Uiterlijk:** de meter (klassieke naald, lichtboog of stroboscoop), of er woorden of cents onder de meter staan, licht of donker, kleuren van je achtergrond, en de taal van de app als je die hebt gekozen.
+- **Uiterlijk:** de meter (klassieke naald, lichtboog of stroboscoop), of er woorden of cents onder de meter staan, licht of donker, kleuren van je achtergrond, hoog contrast (zodra je het zelf aan- of uitgezet hebt; tot dan volgt het de contrastinstelling van de telefoon, waar Twangle alleen naar kijkt en niets van bewaart), en de taal van de app als je die hebt gekozen.
 - **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd, stemmen op gevoel (zodra je het zelf aan- of uitzet) en of gestemde snaren worden afgevinkt.
 - **Metronoom:** het tempo, de maatsoort en het klikgeluid, de tikken tussen de tellen en of hij trilt op de tel; het begintempo, het doel, de stap en het aantal maten per stap van de tempotrainer, en of die aan staat.
 - **Oefenen:** de tool die je het laatst gebruikte; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.

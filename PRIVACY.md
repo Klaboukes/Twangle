@@ -1,6 +1,6 @@
 # Twangle privacy policy
 
-*Effective date: 7 November 2026* · [Nederlands](PRIVACY.nl.md)
+*Effective date: 8 November 2026* · [Nederlands](PRIVACY.nl.md)
 
 Twangle is a guitar tuner for Android, with a metronome and practice tools, made by the developer Klaboukes. In short: **Twangle collects no data about you.** Nothing you play and nothing about you leaves your phone.
 
@@ -33,7 +33,7 @@ The website is hosted by GitHub (GitHub Pages). Like any web host, GitHub sees t
 ## Settings stay on your phone
 Twangle remembers the choices you make in the app, and nothing else. These are stored only on your phone:
 - **Tuning:** the instrument and its tuning (and how far you lowered it), tunings you made yourself, whether Any note is on, the A4 reference pitch, how note names are written and how precise "in tune" is.
-- **Look:** the meter (classic needle, light arc or strobe), whether words or cents show under the meter, light or dark mode, wallpaper colours, and the app's language if you picked one.
+- **Look:** the meter (classic needle, light arc or strobe), whether words or cents show under the meter, light or dark mode, wallpaper colours, high contrast (once you have turned it on or off yourself; until then it follows the phone's own contrast setting, which Twangle only looks at and keeps nothing of), and the app's language if you picked one.
 - **While tuning:** keep screen on, vibrate when in tune, the vibration guide (once you have turned it on or off yourself) and whether tuned strings are ticked off.
 - **Metronome:** its tempo, meter, click sound, the clicks between the beats and whether it vibrates on the beat; the speed trainer's start tempo, goal, step and number of bars per step, and whether it is on.
 - **Practice:** the tool you used last; the chord or scale you looked at last; the drone's sound, its notes and whether it plays an octave lower; the Capo helper's key and fret; whether the chord charts and the scale neck are drawn left-handed; and the Ear training exercise you used last with what it asks (which notes, how many in a row and whether any octave counts; which intervals, and whether they are played up, down or together; which chord types), never your answers or a score.
