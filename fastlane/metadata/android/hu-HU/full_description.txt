@@ -31,7 +31,7 @@ MINDENKINEK
 • Működik a TalkBackkel: a Twangle kimondja a hangot és az eltérést („E 2, 12 centtel mélyebb, Feszítsd”), húronként felolvassa az akkordábrákat és a skálákat, minden gombnak egyértelmű neve van, és sosem áraszt el beszéddel
 • Minden képernyő működik nagy betűmérettel, egészen a normál méret kétszereséig
 • Rövid rezgés, ha egy húr tiszta, így érezheted is
-• 29 nyelven: magyar, angol, arab, bengáli, dán, finn, francia, hindi, holland, indonéz, japán, kínai (egyszerűsített), kínai (hagyományos), koreai, lengyel, maráthi, német, norvég, olasz, orosz, portugál, spanyol, svéd, tamil, telugu, thai, török, ukrán és vietnámi
+• 36 nyelven: magyar, amhara, angol, arab, bengáli, burmai, cseh, dán, finn, francia, görög, hindi, holland, indonéz, japán, khmer, kínai (egyszerűsített), kínai (hagyományos), koreai, lengyel, maráthi, német, norvég, olasz, orosz, portugál, román, spanyol, svéd, szuahéli, tamil, telugu, thai, török, ukrán és vietnámi
 • Hangnevek úgy, ahogy tanultad: C D E … H, angol betűkkel (B) vagy Do Re Mi
 
 A TE STÍLUSOD

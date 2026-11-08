@@ -31,7 +31,7 @@ PRO KAŽDÉHO
 • Funguje s TalkBack: Twangle řekne tón a jak moc je mimo („E 2, o 12 centů níž, přitáhni“), čte hmaty akordů a stupnice strunu po struně, každé tlačítko má jasný název a nikdy tě nezahltí řečí
 • Každá obrazovka funguje s velkým písmem, až do dvojnásobku běžné velikosti
 • Krátké zavibrování, když je struna naladěná, takže to i ucítíš
-• V 29 jazycích: čeština, angličtina, arabština, bengálština, čínština (zjednodušená), čínština (tradiční), dánština, finština, francouzština, hindština, indonéština, italština, japonština, korejština, maráthština, němčina, nizozemština, norština, polština, portugalština, ruština, španělština, švédština, tamilština, telugština, thajština, turečtina, ukrajinština a vietnamština
+• V 36 jazycích: čeština, amharština, angličtina, arabština, barmština, bengálština, čínština (zjednodušená), čínština (tradiční), dánština, finština, francouzština, hindština, indonéština, italština, japonština, khmérština, korejština, maďarština, maráthština, němčina, nizozemština, norština, polština, portugalština, rumunština, ruština, řečtina, svahilština, španělština, švédština, tamilština, telugština, thajština, turečtina, ukrajinština a vietnamština
 • Názvy tónů po tvém: C D E … H, anglicky s B, nebo Do Re Mi
 
 PO SVÉM

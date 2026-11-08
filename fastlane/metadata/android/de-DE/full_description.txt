@@ -31,12 +31,12 @@ FÜR ALLE GEMACHT
 • Funktioniert mit TalkBack: Twangle sagt den Ton und wie weit er danebenliegt („E 2, 12 Cent zu tief, spannen“), liest Akkordgriffe und Tonleitern Saite für Saite vor, jede Schaltfläche hat einen klaren Namen, und es überflutet dich nie mit Sprache
 • Jeder Bildschirm funktioniert mit großer Schrift, bis zur doppelten Größe
 • Eine kurze Vibration, wenn eine Saite gestimmt ist, damit du es auch spürst
-• In 25 Sprachen: Deutsch, Arabisch, Bengalisch, Chinesisch (vereinfacht und traditionell), Dänisch, Englisch, Finnisch, Französisch, Hindi, Indonesisch, Italienisch, Japanisch, Koreanisch, Niederländisch, Norwegisch, Polnisch, Portugiesisch, Russisch, Schwedisch, Spanisch, Thai, Türkisch, Ukrainisch und Vietnamesisch
+• In 36 Sprachen: Deutsch, Amharisch, Arabisch, Bengalisch, Birmanisch, Chinesisch (vereinfacht und traditionell), Dänisch, Englisch, Finnisch, Französisch, Griechisch, Hindi, Indonesisch, Italienisch, Japanisch, Khmer, Koreanisch, Marathi, Niederländisch, Norwegisch, Polnisch, Portugiesisch, Rumänisch, Russisch, Schwedisch, Spanisch, Swahili, Tamil, Telugu, Thai, Tschechisch, Türkisch, Ukrainisch, Ungarisch und Vietnamesisch
 • Notennamen, wie du sie gelernt hast: C D E … H, international mit B oder Do Re Mi
 
 GANZ NACH DEINEM GESCHMACK
 • Hell, dunkel oder wie dein Handy, ab Android 12 mit den Farben deines Hintergrundbilds
-• Drei Anzeigen zur Wahl: der Tonverlauf, der LED-Bogen oder das Stroboskop
+• Drei Anzeigen zur Wahl: die klassische Nadel, der LED-Bogen oder das Stroboskop
 • Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy, gut aus der Ferne lesbar
 
 AUSSERDEM

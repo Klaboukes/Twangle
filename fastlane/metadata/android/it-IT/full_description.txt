@@ -31,12 +31,12 @@ PER TUTTI
 • Funziona con TalkBack: Twangle dice la nota e quanto è lontana («Mi 2, 12 cent calante, tendi»), legge diagrammi degli accordi e scale corda per corda, ogni pulsante ha un nome chiaro e non ti sommerge mai di parole
 • Ogni schermata funziona con il testo grande, fino al doppio della dimensione normale
 • Una breve vibrazione quando una corda è intonata, per sentirlo anche al tatto
-• In 25 lingue: italiano, arabo, bengalese, cinese semplificato, cinese tradizionale, coreano, danese, finlandese, francese, giapponese, hindi, indonesiano, inglese, norvegese, olandese, polacco, portoghese, russo, spagnolo, svedese, tailandese, tedesco, turco, ucraino e vietnamita
+• In 36 lingue: italiano, amarico, arabo, bengalese, birmano, ceco, cinese semplificato, cinese tradizionale, coreano, danese, finlandese, francese, giapponese, greco, hindi, indonesiano, inglese, khmer, marathi, norvegese, olandese, polacco, portoghese, rumeno, russo, spagnolo, svedese, swahili, tailandese, tamil, tedesco, telugu, turco, ucraino, ungherese e vietnamita
 • I nomi delle note come li hai imparati: Do Re Mi, oppure le lettere C D E, anche con la H alla tedesca
 
 A MODO TUO
 • Chiaro, scuro o come il telefono, con i colori dello sfondo da Android 12 in poi
-• Tre indicatori tra cui scegliere: la scia, l'arco di luci o lo stroboscopio
+• Tre indicatori tra cui scegliere: la lancetta classica, l'arco di luci o lo stroboscopio
 • Modalità concentrazione: l'accordatore a schermo intero con il telefono in orizzontale, facile da leggere a distanza
 
 INOLTRE

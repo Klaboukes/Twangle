@@ -31,12 +31,12 @@ MADE FOR EVERYONE
 • Works with TalkBack: Twangle says the note and how far off it is ("E 2, 12 cents flat, tighten"), reads chord charts and scales string by string, every button has a clear name, and it never floods you with speech
 • Every screen works with large text, up to twice the normal size
 • A short vibration when a string is in tune, so you can feel it too
-• In 25 languages: English, Arabic, Bengali, Chinese (Simplified), Chinese (Traditional), Danish, Dutch, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Norwegian, Polish, Portuguese, Russian, Spanish, Swedish, Thai, Turkish, Ukrainian and Vietnamese
+• In 36 languages: English, Amharic, Arabic, Bengali, Burmese, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, Finnish, French, German, Greek, Hindi, Hungarian, Indonesian, Italian, Japanese, Khmer, Korean, Marathi, Norwegian, Polish, Portuguese, Romanian, Russian, Spanish, Swahili, Swedish, Tamil, Telugu, Thai, Turkish, Ukrainian and Vietnamese
 • Note names the way you learned them: C D E, with H for B, or Do Re Mi
 
 MAKE IT YOURS
 • Light, dark, or following your phone, with your wallpaper's colours on Android 12 and newer
-• Three meters to choose from: the pitch trail, the light arc or the strobe
+• Three meters to choose from: the classic needle, the light arc or the strobe
 • Focus mode: the tuner full screen on a phone on its side, easy to read from a distance
 
 ALSO

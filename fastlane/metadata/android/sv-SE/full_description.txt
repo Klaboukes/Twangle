@@ -31,12 +31,12 @@ FÖR ALLA
 • Fungerar med TalkBack: Twangle säger tonen och hur långt ifrån den är (”E 2, 12 cent för lågt, spänn”), läser upp ackordscheman och skalor sträng för sträng, varje knapp har ett tydligt namn och du dränks aldrig i tal
 • Varje skärm fungerar med stor text, upp till dubbel normal storlek
 • En kort vibration när en sträng är stämd, så att du kan känna det också
-• På 25 språk: svenska, arabiska, bengali, danska, engelska, finska, franska, hindi, indonesiska, italienska, japanska, kinesiska (förenklad), kinesiska (traditionell), koreanska, nederländska, norska, polska, portugisiska, ryska, spanska, thailändska, turkiska, tyska, ukrainska och vietnamesiska
+• På 36 språk: svenska, amhariska, arabiska, bengali, burmesiska, danska, engelska, finska, franska, grekiska, hindi, indonesiska, italienska, japanska, khmer, kinesiska (förenklad), kinesiska (traditionell), koreanska, marathi, nederländska, norska, polska, portugisiska, rumänska, ryska, spanska, swahili, tamil, telugu, thailändska, tjeckiska, turkiska, tyska, ukrainska, ungerska och vietnamesiska
 • Tonnamn som du lärde dig dem: C D E, med H för B, eller Do Re Mi
 
 GÖR DEN TILL DIN
 • Ljust, mörkt eller som telefonen, med bakgrundsbildens färger på Android 12 och senare
-• Tre mätare att välja mellan: tonkurvan, LED-bågen eller stroboskopet
+• Tre mätare att välja mellan: den klassiska nålen, LED-bågen eller stroboskopet
 • Fokusläge: stämmaren i helskärm på en telefon som ligger på sidan, lätt att läsa på avstånd
 
 DESSUTOM

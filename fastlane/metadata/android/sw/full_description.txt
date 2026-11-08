@@ -31,12 +31,12 @@ IMETENGENEZWA KWA AJILI YA KILA MTU
 • Inafanya kazi na TalkBack: Twangle inatamka noti na umbali wake ("E 2, senti 12 chini, kaza"), inasoma chati za kodi na skeli uzi kwa uzi, kila kitufe kina jina wazi, na haikujazi maneno mengi kupita kiasi
 • Kila skrini inafanya kazi na maandishi makubwa, hadi mara mbili ya ukubwa wa kawaida
 • Mtetemo mfupi uzi unapokuwa sawa, ili uweze kuuhisi pia
-• Katika lugha 29: Kiswahili, Kiingereza, Kiarabu, Kibengali, Kichina (Kilichorahisishwa), Kichina (Cha Jadi), Kidenmaki, Kifaransa, Kifini, Kihindi, Kihispania, Kiholanzi, Kiindonesia, Kiitaliano, Kijapani, Kijerumani, Kikorea, Kimarathi, Kinorwe, Kipolandi, Kireno, Kirusi, Kiswidi, Kitamili, Kitelugu, Kithai, Kituruki, Kiukreni na Kivietinamu
+• Katika lugha 36: Kiswahili, Kiingereza, Kiamhari, Kiarabu, Kibengali, Kiburma, Kicheki, Kichina (Kilichorahisishwa), Kichina (Cha Jadi), Kidenmaki, Kifaransa, Kifini, Kigiriki, Kihindi, Kihispania, Kiholanzi, Kihungaria, Kiindonesia, Kiitaliano, Kijapani, Kijerumani, Kikambodia, Kikorea, Kimarathi, Kinorwe, Kipolandi, Kireno, Kiromania, Kirusi, Kiswidi, Kitamili, Kitelugu, Kithai, Kituruki, Kiukreni na Kivietinamu
 • Majina ya noti jinsi ulivyojifunza: C D E, H badala ya B, au Do Re Mi
 
 IFANYE IWE YAKO
 • Mwanga, giza, au kufuata simu yako, pamoja na rangi za mandhari yako kwenye Android 12 na mpya zaidi
-• Viashiria vitatu vya kuchagua: mstari wa sauti, upinde wa taa au strobe
+• Viashiria vitatu vya kuchagua: sindano ya asili, upinde wa taa au strobe
 • Hali ya umakini: tuner kwenye skrini nzima simu ikiwa imelazwa, rahisi kusoma ukiwa mbali
 
 PIA

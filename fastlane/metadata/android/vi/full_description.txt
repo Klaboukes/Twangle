@@ -31,12 +31,12 @@ DÀNH CHO MỌI NGƯỜI
 • Hoạt động với TalkBack: Twangle đọc nốt và độ lệch ("E 2, thấp 12 cent, căng lên"), đọc sơ đồ hợp âm và âm giai từng dây một, mỗi nút đều có tên rõ ràng, và không bao giờ nói dồn dập
 • Mọi màn hình đều dùng được với chữ lớn, tới gấp đôi cỡ thường
 • Rung ngắn khi một dây đã chuẩn, để bạn cảm nhận được
-• Có 25 ngôn ngữ: tiếng Việt, Anh, Ả Rập, Ba Lan, Bengal, Bồ Đào Nha, Đan Mạch, Đức, Hà Lan, Hàn, Hindi, Indonesia, Na Uy, Nga, Nhật, Pháp, Phần Lan, Tây Ban Nha, Thái, Thổ Nhĩ Kỳ, Thụy Điển, Trung (giản thể), Trung (phồn thể), Ukraina và Ý
+• Có 36 ngôn ngữ: tiếng Việt, Amharic, Anh, Ả Rập, Ba Lan, Bengal, Bồ Đào Nha, Đan Mạch, Đức, Hà Lan, Hàn, Hindi, Hungary, Hy Lạp, Indonesia, Khmer, Marathi, Miến Điện, Na Uy, Nga, Nhật, Pháp, Phần Lan, Romania, Séc, Swahili, Tamil, Tây Ban Nha, Telugu, Thái, Thổ Nhĩ Kỳ, Thụy Điển, Trung (giản thể), Trung (phồn thể), Ukraina và Ý
 • Tên nốt theo cách bạn đã học: C D E, kiểu Đức với H thay cho B, hoặc Đô Rê Mi
 
 THEO CÁCH CỦA BẠN
 • Sáng, tối, hoặc theo điện thoại, với màu từ hình nền trên Android 12 trở lên
-• Ba kiểu đồng hồ đo để chọn: đường cao độ, cung đèn hoặc strobe
+• Ba kiểu đồng hồ đo để chọn: kim cổ điển, cung đèn hoặc strobe
 • Chế độ tập trung: máy lên dây toàn màn hình trên điện thoại xoay ngang, dễ đọc từ xa
 
 NGOÀI RA

@@ -31,16 +31,16 @@ POUR TOUT LE MONDE
 • Fonctionne avec TalkBack : Twangle dit la note et son écart (« Mi 2, 12 cents trop bas, tendez »), lit les diagrammes d'accords et les gammes corde par corde, chaque bouton a un nom clair, et il ne vous submerge jamais de paroles
 • Chaque écran fonctionne avec un texte agrandi, jusqu'à deux fois la taille normale
 • Une courte vibration quand une corde est juste, pour la sentir aussi
-• En 25 langues : français, allemand, anglais, arabe, bengali, chinois (simplifié et traditionnel), coréen, danois, espagnol, finnois, hindi, indonésien, italien, japonais, néerlandais, norvégien, polonais, portugais, russe, suédois, thaï, turc, ukrainien et vietnamien
+• En 36 langues : français, allemand, amharique, anglais, arabe, bengali, birman, chinois (simplifié et traditionnel), coréen, danois, espagnol, finnois, grec, hindi, hongrois, indonésien, italien, japonais, khmer, marathi, néerlandais, norvégien, polonais, portugais, roumain, russe, suédois, swahili, tamoul, tchèque, télougou, thaï, turc, ukrainien et vietnamien
 • Les noms de notes comme vous les avez appris : Do Ré Mi, ou les lettres C D E, à l'anglaise ou à l'allemande
 
 À VOTRE GOÛT
 • Clair, sombre ou selon le téléphone, avec les couleurs de votre fond d'écran sur Android 12 et plus
-• Trois affichages au choix : la trace, l'arc lumineux ou le stroboscope
+• Trois affichages au choix : l'aiguille classique, l'arc lumineux ou le stroboscope
 • Mode concentration : l'accordeur en plein écran sur le téléphone à l'horizontale, facile à lire de loin
 
 AUSSI
-• Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une seule touche
+• Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une touche
 • Garde l'écran allumé pendant que vous accordez
 
 Twangle restera gratuit et hors ligne, pour de bon.

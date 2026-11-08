@@ -31,7 +31,7 @@ FĂCUT PENTRU TOȚI
 • Funcționează cu TalkBack: Twangle spune nota și cât de departe este („Mi 2, 12 cenți mai jos, întindeți”), citește diagramele de acorduri și gamele coardă cu coardă, fiecare buton are un nume clar și nu vă copleșește niciodată cu vorbe
 • Fiecare ecran funcționează cu text mare, de până la două ori dimensiunea normală
 • O vibrație scurtă când o coardă este acordată, ca s-o simțiți și la atingere
-• În 29 de limbi: română, engleză, arabă, bengaleză, chineză (simplificată), chineză (tradițională), coreeană, daneză, finlandeză, franceză, germană, hindi, indoneziană, italiană, japoneză, marathi, neerlandeză, norvegiană, poloneză, portugheză, rusă, spaniolă, suedeză, tamilă, telugu, thailandeză, turcă, ucraineană și vietnameză
+• În 36 de limbi: română, engleză, amharică, arabă, bengaleză, birmană, cehă, chineză (simplificată), chineză (tradițională), coreeană, daneză, finlandeză, franceză, germană, greacă, hindi, indoneziană, italiană, japoneză, khmeră, maghiară, marathi, neerlandeză, norvegiană, poloneză, portugheză, rusă, spaniolă, suedeză, swahili, tamilă, telugu, thailandeză, turcă, ucraineană și vietnameză
 • Numele notelor așa cum le-ați învățat: Do Re Mi sau literele C D E, inclusiv cu H în loc de B
 
 CUM VĂ PLACE

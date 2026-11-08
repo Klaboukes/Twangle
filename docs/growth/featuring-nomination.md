@@ -27,7 +27,7 @@ The ten requirements, and how Twangle meets them:
 3. *Rating of 3.0 or higher:* there are no public ratings before launch. The closed test keeps going.
 4. *Launch within 4 months of the featuring date:* yes, with the dates above.
 5. *Device support:* phones, tablets (a layout of its own, checked on the Lenovo Tab M11); the watch follows in an update.
-7. *Localised where it would be featured:* 25 languages, store listing included.
+7. *Localised where it would be featured:* 36 languages, store listing included.
 8. *Material Design UI:* yes, Material 3 with Twangle's own styles.
 9. *(Recommended) alpha/beta first:* yes, the closed test since 2026-10-22.
 10. *(Recommended) send 8 weeks ahead:* see *When to send*.
@@ -65,12 +65,12 @@ The ten requirements, and how Twangle meets them:
 **Will you launch on all major platforms simultaneously?** **No: Android-First.** It is the closest true answer: Twangle is made for Android only, and no version for another platform is planned.
 
 **Why featuring is important now:**
-> Many guitars are given at Christmas, and in Google Trends the week of 24–28 December is the busiest of the year for tuner searches in nearly every country we checked. Twangle launches in November as a free tuner with no ads, no account and no internet permission, in 25 languages. It has no advertising budget and never will (it is free for good, with nothing to sell), so being seen in the store when new players look for a tuner is how it reaches them.
+> Many guitars are given at Christmas, and in Google Trends the week of 24–28 December is the busiest of the year for tuner searches in nearly every country we checked. Twangle launches in November as a free tuner with no ads, no account and no internet permission, in 36 languages. It has no advertising budget and never will (it is free for good, with nothing to sell), so being seen in the store when new players look for a tuner is how it reaches them.
 
 **Of the targeted markets, are there any being prioritized with additional marketing campaigns or events?** **No.**
 
 **Provide context for these markets or regions:**
-> No paid campaigns anywhere. The store listing, screenshots and app are in 25 languages, so every region gets the same app in its own language.
+> No paid campaigns anywhere. The store listing, screenshots and app are in 36 languages, so every region gets the same app in its own language.
 
 **Would you like to provide more info on your featuring request?** **Yes.**
 
@@ -87,7 +87,7 @@ Twangle measures nothing in the app (no analytics, hard rule 9), and the closed 
 
 ### Launch details
 **What is your marketing/user acquisition plan?**
-> No paid advertising; the budget is zero. The store listing in 25 languages, a website with a help page for every tool, and honest posts by the developer in guitar, ukulele and Android communities. Twangle will also be offered to app directories for blind and low-vision Android users, because it works with TalkBack.
+> No paid advertising; the budget is zero. The store listing in 36 languages, a website with a help page for every tool, and honest posts by the developer in guitar, ukulele and Android communities. Twangle will also be offered to app directories for blind and low-vision Android users, because it works with TalkBack.
 
 **What is your main monetization model?** **Other:** "None. Every feature is free for good: no ads, no in-app purchases, no subscription."
 
@@ -95,12 +95,12 @@ Twangle measures nothing in the app (no analytics, hard rule 9), and the closed 
 
 ## The pitch
 
-> Twangle is a guitar tuner in which every feature is free, with no ads, no account, no in-app purchases and no tracking. It doesn't even have the internet permission: the microphone's sound is analysed on the phone and never recorded or sent, and its Data safety section says no data is collected or shared. It tunes guitar (6, 7, 8 and 12 strings), bass, ukulele, the 5-string banjo, violin, viola, cello and mandolin, precise to a cent, and it listens to more than one string: the strum check shows which strings of a strum are out of tune, the chord name names the chord you play, the pitch trail shows how steady a held note or a bend is, and the 12th-fret check tells whether a saddle should move. A Practice tab adds chord charts, scales with a drone, a capo helper, a metronome with tap tempo, and ear training that listens to the player's answer on the instrument. It speaks 25 languages, among them Arabic (right to left), Bengali, Thai, Vietnamese and Traditional Chinese, and it works with TalkBack, which says the note and how far off it is, and with text at twice the normal size. Twangle is made by one person who wanted a tuner like this.
+> Twangle is a guitar tuner in which every feature is free, with no ads, no account, no in-app purchases and no tracking. It doesn't even have the internet permission: the microphone's sound is analysed on the phone and never recorded or sent, and its Data safety section says no data is collected or shared. It tunes guitar (6, 7, 8 and 12 strings), bass, ukulele, the 5-string banjo, violin, viola, cello and mandolin, precise to a cent, and it listens to more than one string: the strum check shows which strings of a strum are out of tune, the chord name names the chord you play, the pitch trail shows how steady a held note or a bend is, and the 12th-fret check tells whether a saddle should move. A Practice tab adds chord charts, scales with a drone, a capo helper, a metronome with tap tempo, and ear training that listens to the player's answer on the instrument. It speaks 36 languages, among them Arabic (right to left), Bengali, Thai, Vietnamese and Traditional Chinese, and it works with TalkBack, which says the note and how far off it is, and with text at twice the normal size. Twangle is made by one person who wanted a tuner like this.
 
 For the pitch document, below that paragraph, a few short lines:
 - **Private by design:** no internet permission at all; Data safety: no data collected, no data shared.
 - **Free for good:** no ads, no purchases, no subscription, no account.
-- **For everyone:** 25 languages, right to left included; TalkBack says the note, the cents and which way to turn the peg; every screen works at 2× text.
+- **For everyone:** 36 languages, right to left included; TalkBack says the note, the cents and which way to turn the peg; every screen works at 2× text.
 - **Listens like a teacher:** strum check, chord name, pitch trail, 12th-fret check.
 - **Practice in the same app:** chord charts and scales for the instrument and tuning picked (left-handed too), capo helper, metronome, ear training.
 - **Instruments:** guitar (6, 7, 8 and 12 strings), bass, ukulele, 5-string banjo, violin, viola, cello, mandolin, and a chromatic tuner for anything else.
@@ -121,4 +121,4 @@ Send this when the update with the watch app is ready (decision 3, Phase 56), at
 **Why featuring is important now:**
 > This update adds a Wear OS app: a chromatic tuner that runs on the watch by itself, with the watch's own microphone and no phone needed. It is as private as the phone app: no internet permission, nothing recorded or sent. With the tuner on the wrist, a player can tune with both hands on the instrument.
 
-**Markets prioritized:** **No.** **Context:** "No paid campaigns; the same app in 25 languages everywhere."
+**Markets prioritized:** **No.** **Context:** "No paid campaigns; the same app in 36 languages everywhere."
