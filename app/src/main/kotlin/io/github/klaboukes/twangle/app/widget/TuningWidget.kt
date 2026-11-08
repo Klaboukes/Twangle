@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.core.designsystem.colorSchemeFor
+import io.github.klaboukes.twangle.core.designsystem.phoneWantsHighContrast
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -114,10 +115,12 @@ object TuningWidget {
      * The app's colours (Ink, or the wallpaper's), as the tuner's top: its background on the tile, the chip as the
      * picker chip (the surface, a fine line in the outline colour, the tuning in ink) and the muted colour under it.
      * With the theme set to follow the phone (Android 12+), the launcher picks the light or dark set itself, so a
-     * switch of the phone's dark mode needs no redraw.
+     * switch of the phone's dark mode needs no redraw. In the high-contrast look (Phase 86: the player's choice, else
+     * the phone's contrast as it is when the widget is drawn) black and white, as the app.
      */
     private fun RemoteViews.paint(context: Context, state: WidgetState) {
-        fun colors(dark: Boolean) = colorSchemeFor(context, dark, state.dynamicColor).let {
+        val highContrast = state.highContrast ?: phoneWantsHighContrast(context)
+        fun colors(dark: Boolean) = colorSchemeFor(context, dark, state.dynamicColor, highContrast).let {
             intArrayOf(
                 it.background.toArgb(),
                 it.outlineVariant.toArgb(),

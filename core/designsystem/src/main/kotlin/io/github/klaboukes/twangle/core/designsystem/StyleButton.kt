@@ -44,8 +44,11 @@ import androidx.compose.ui.unit.isSpecified
  * and the steppers (Settings' A4, the tuning sheet's "Lower by") use it too.
  */
 
-/** How the buttons look, [shape] the theme's `shapes.small`, in the colours of [scheme]. */
-class ButtonLook(val shape: Shape, private val scheme: ColorScheme) {
+/**
+ * How the buttons look, [shape] the theme's `shapes.small`, in the colours of [scheme]; in the [highContrast] look
+ * (Phase 86) their outlines are [HIGH_CONTRAST_LINES] times as thick.
+ */
+class ButtonLook(val shape: Shape, private val scheme: ColorScheme, private val highContrast: Boolean = false) {
     /** A button's face ([StyleButton]): a circle (1.1's Contemporary; 2.0 has one look). */
     val buttonShape: Shape = CircleShape
 
@@ -54,7 +57,9 @@ class ButtonLook(val shape: Shape, private val scheme: ColorScheme) {
 
     /** A see-through button's outline: muted ([controlOutline]), [picked] ones 2 dp in the accent. */
     fun outline(picked: Boolean = false): BorderStroke =
-        if (picked) BorderStroke(2.dp, scheme.primary) else BorderStroke(1.dp, controlOutline(scheme))
+        if (picked) BorderStroke(2.dp * lines, scheme.primary) else BorderStroke(1.dp * lines, controlOutline(scheme))
+
+    private val lines: Float get() = if (highContrast) HIGH_CONTRAST_LINES else 1f
 
     /** A main button's fill: the accent. */
     val mainFill: Color
@@ -66,7 +71,7 @@ class ButtonLook(val shape: Shape, private val scheme: ColorScheme) {
 
 /** The theme's [ButtonLook]. */
 @Composable
-fun buttonLook(): ButtonLook = ButtonLook(MaterialTheme.shapes.small, MaterialTheme.colorScheme)
+fun buttonLook(): ButtonLook = ButtonLook(MaterialTheme.shapes.small, MaterialTheme.colorScheme, MaterialTheme.styleTokens.highContrast)
 
 /** The button face shape ([ButtonLook.buttonShape]), for a button of the same kind drawn by hand. */
 @Composable
@@ -216,8 +221,10 @@ private const val DISABLED_ALPHA = 0.38f
  * to stand 3:1 against the background, light and dark (WCAG's rule for a control's edge, checked in
  * StylePaletteTest). A light ground needs more of it than a dark one: 80 % in light (Ink's light muted
  * at 1.1's 75 % gave 2.97:1), 60 % in dark. The buttons ([ButtonLook.outline]) and the string buttons use it.
+ * In the high-contrast look ([isHighContrast], Phase 86) it is the ink in full.
  */
 fun controlOutline(scheme: ColorScheme): Color {
+    if (scheme.isHighContrast) return scheme.onSurface
     val light = scheme.background.luminance() >= LIGHT_GROUND
     return scheme.onSurfaceVariant.copy(alpha = if (light) MUTED_OUTLINE_LIGHT else MUTED_OUTLINE_DARK)
 }

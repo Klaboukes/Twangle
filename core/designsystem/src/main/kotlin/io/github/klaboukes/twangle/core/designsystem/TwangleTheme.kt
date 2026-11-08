@@ -41,6 +41,8 @@ fun ThemeMode.useDarkTheme(systemDark: Boolean): Boolean = when (this) {
  * What Ink, the one look, adds to Material 3: whether it is [dark], the "in tune" pair and the amber of a
  * note far off ([farOff]), which stay the app's own also with the wallpaper's colours. [scheme] is the
  * colour scheme as it ends up, not faded, for drawings that cross-fade as a whole (the background).
+ * [highContrast] (Phase 86): the high-contrast look, black and white, whose drawings draw their lines thicker
+ * ([lineScale]), nothing that carries meaning faded ([fade]), and no glow or screen tint.
  */
 @Immutable
 data class StyleTokens(
@@ -49,7 +51,17 @@ data class StyleTokens(
     val onInTune: Color,
     val farOff: Color,
     val scheme: ColorScheme,
-)
+    val highContrast: Boolean = false,
+) {
+    /** How much thicker a drawing's lines are: [HIGH_CONTRAST_LINES] in the high-contrast look, else 1. */
+    val lineScale: Float get() = if (highContrast) HIGH_CONTRAST_LINES else 1f
+
+    /** A faded part's opacity: [alpha] in Ink; 1 in the high-contrast look, where nothing that carries meaning is faded. */
+    fun fade(alpha: Float): Float = if (highContrast) 1f else alpha
+}
+
+/** The high-contrast look's lines (the needle, the scale's marks, the pegs' edges) are this much thicker (the mock-up's). */
+const val HIGH_CONTRAST_LINES = 2f
 
 /** The tokens of the surrounding [TwangleTheme]; outside one, light Ink. */
 val LocalStyleTokens = staticCompositionLocalOf { tokensFor(dark = false) }
@@ -58,9 +70,9 @@ val LocalStyleTokens = staticCompositionLocalOf { tokensFor(dark = false) }
 val MaterialTheme.styleTokens: StyleTokens
     @Composable get() = LocalStyleTokens.current
 
-fun tokensFor(dark: Boolean): StyleTokens {
-    val palette = paletteFor(dark)
-    return StyleTokens(dark, palette.inTune, palette.onInTune, palette.farOff, palette.toColorScheme(dark))
+fun tokensFor(dark: Boolean, highContrast: Boolean = false): StyleTokens {
+    val palette = paletteFor(dark, highContrast)
+    return StyleTokens(dark, palette.inTune, palette.onInTune, palette.farOff, palette.toColorScheme(dark), highContrast)
 }
 
 /**
@@ -73,14 +85,14 @@ fun usesWallpaperColors(dynamicColor: Boolean): Boolean =
 
 /**
  * The colour scheme [TwangleTheme] settles on, light or [dark], for drawings made outside Compose (the
- * home-screen widget).
+ * home-screen widget). The high-contrast look ([highContrast]) sets the wallpaper's colours aside: they can't promise 7:1.
  */
-fun colorSchemeFor(context: Context, dark: Boolean, dynamicColor: Boolean): ColorScheme =
-    if (usesWallpaperColors(dynamicColor)) {
+fun colorSchemeFor(context: Context, dark: Boolean, dynamicColor: Boolean, highContrast: Boolean = false): ColorScheme =
+    if (!highContrast && usesWallpaperColors(dynamicColor)) {
         val wallpaper = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         wallpaper.keepingInTuneApart(dark).withReadableMuted()
     } else {
-        tokensFor(dark).scheme
+        tokensFor(dark, highContrast).scheme
     }
 
 /**
@@ -161,21 +173,23 @@ private const val GREY_CHROMA = 1e-4f
  * shapes, in light or [darkTheme]. With [dynamicColor] (Android 12+) the colours come from the
  * wallpaper, but for the in-tune green and the far-off amber ([keepingInTuneApart]). A change of
  * brightness fades the colours over [COLOR_FADE_MS] rather than jumping. A press lights a button up
- * ([PressIndication], [pressFeedback]) instead of Material's ripple.
+ * ([PressIndication], [pressFeedback]) instead of Material's ripple. With [highContrast] (Phase 86) it is the
+ * high-contrast look, black and white in light or dark, whatever [dynamicColor] says.
  */
 @Composable
 fun TwangleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     animate: Boolean = true,
+    highContrast: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val useDynamic = usesWallpaperColors(dynamicColor)
     val context = LocalContext.current
-    // Built once per brightness: the same value keeps the background and fade still.
-    val tokens = remember(darkTheme, useDynamic) {
+    // Built once per brightness and look: the same value keeps the background and fade still.
+    val tokens = remember(darkTheme, useDynamic, highContrast) {
         // The wallpaper's scheme keeps Ink's own "in tune" pair and amber.
-        tokensFor(darkTheme).copy(scheme = colorSchemeFor(context, darkTheme, dynamicColor))
+        tokensFor(darkTheme, highContrast).copy(scheme = colorSchemeFor(context, darkTheme, dynamicColor, highContrast))
     }
     val target = tokens.scheme
     val colorScheme = if (animate) animatedColorScheme(target) else target

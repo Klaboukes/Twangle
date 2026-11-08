@@ -61,6 +61,7 @@ import io.github.klaboukes.twangle.core.designsystem.LocalScreenTint
 import io.github.klaboukes.twangle.core.designsystem.ScreenTint
 import io.github.klaboukes.twangle.core.designsystem.StyleTokens
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
+import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -177,6 +178,7 @@ class TunerContentTest {
         locale: String? = null,
         focusMode: Boolean = false,
         underMeter: UnderMeter = UnderMeter.DEFAULT,
+        highContrast: Boolean = false,
     ) {
         shownMode.value = mode
         shownState.value = state
@@ -190,7 +192,13 @@ class TunerContentTest {
         compose.setContent {
             val content = @Composable {
                 backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-                MaterialTheme {
+                // The high-contrast look (Phase 86) through the app's own theme; otherwise Material's, with Ink's tokens.
+                val theme: @Composable (@Composable () -> Unit) -> Unit = if (highContrast) {
+                    { inner -> TwangleTheme(darkTheme = true, animate = false, highContrast = true, content = inner) }
+                } else {
+                    { inner -> MaterialTheme(content = inner) }
+                }
+                theme {
                     tokens = MaterialTheme.styleTokens
                     if (!shownGone.value) CompositionLocalProvider(LocalScreenTint provides screenTint) {
                     TunerContent(
@@ -224,6 +232,32 @@ class TunerContentTest {
             PhoneScreen(shownSize.value ?: PHONE, SystemBars.NONE, fontScale ?: 1f, locale, content)
         }
     }
+
+    /**
+     * The high-contrast look (Phase 86): in tune reads by a mark before the word as well as by the word, not by colour
+     * alone; off the note there is no mark.
+     */
+    @Test
+    fun inTuneHasItsMarkInHighContrast() {
+        val mark = compose.onNodeWithTag(TunerTestTags.IN_TUNE_MARK, useUnmergedTree = true)
+        show(detected(1f, inTune = true), highContrast = true)
+        assertTrue("high contrast", tokens.highContrast)
+        mark.assertIsDisplayed()
+        compose.onNodeWithText(inTuneLabel()).assertIsDisplayed()
+        compose.runOnIdle { shownState.value = detected(-18f) }
+        mark.assertDoesNotExist()
+    }
+
+    /** Ink shows in tune by the word and its colour, with no mark. */
+    @Test
+    fun inTuneHasNoMarkInInk() {
+        show(detected(1f, inTune = true))
+        compose.onNodeWithText(inTuneLabel()).assertIsDisplayed()
+        compose.onNodeWithTag(TunerTestTags.IN_TUNE_MARK, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    private fun inTuneLabel() =
+        context.getString(R.string.tuner_in_tune).replaceFirstChar { it.titlecase(context.resources.configuration.locales[0]) }
 
     private fun detected(cents: Float, targetString: Int? = 0, inTune: Boolean = false, noteName: String = "E") =
         TunerUiState.Detected(

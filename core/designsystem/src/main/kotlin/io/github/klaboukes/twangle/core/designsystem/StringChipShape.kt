@@ -21,9 +21,14 @@ val StringChipSize: DpSize = DpSize(40.dp, 40.dp)
  * A string button's fill when it isn't picked: the high surface container at 85 % on the background.
  * Its name is in the ink on it and its edge [controlOutline] (Phase 65: the string buttons, the tuner's
  * main control, had their name in the muted colour and a track-coloured edge, about 1.3:1 against the
- * background, fainter than the round buttons above them); StylePaletteTest checks both, light and dark.
+ * background, fainter than the round buttons above them); StylePaletteTest checks both, light and dark. In the
+ * high-contrast look ([isHighContrast], Phase 86) the background itself, the edge in the ink, as the mock-up's pegs.
  */
 fun stringChipFill(scheme: ColorScheme): Color =
-    scheme.surfaceContainerHigh.copy(alpha = STRING_CHIP_FILL_ALPHA).compositeOver(scheme.background)
+    if (scheme.isHighContrast) {
+        scheme.background
+    } else {
+        scheme.surfaceContainerHigh.copy(alpha = STRING_CHIP_FILL_ALPHA).compositeOver(scheme.background)
+    }
 
 private const val STRING_CHIP_FILL_ALPHA = 0.85f

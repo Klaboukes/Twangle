@@ -249,6 +249,22 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun `high contrast follows the phone until the player sets it`() = runTest {
+        val repo = repository()
+        val fresh = repo.settings.first()
+        assertTrue("on while the phone's contrast is high", fresh.highContrastOn(phoneHighContrast = true))
+        assertFalse("off otherwise", fresh.highContrastOn(phoneHighContrast = false))
+
+        repo.setHighContrast(false)
+        assertFalse("turned off, it stays off", repo.settings.first().highContrastOn(phoneHighContrast = true))
+
+        repo.setHighContrast(true)
+        assertTrue("turned on, it stays on", repo.settings.first().highContrastOn(phoneHighContrast = false))
+        close()
+        assertEquals("the choice survives a restart", true, repository().settings.first().highContrast)
+    }
+
+    @Test
     fun `settings survive an app restart`() = runTest {
         repository().apply {
             setA4(442f)
@@ -1350,6 +1366,7 @@ class DataStoreSettingsRepositoryTest {
             "setInTunePrecision" to { repo.setInTunePrecision(InTunePrecision.entries.last()) },
             "setTheme" to { repo.setTheme(ThemeMode.entries.last()) },
             "setDynamicColor" to { repo.setDynamicColor(!before.dynamicColor) },
+            "setHighContrast" to { repo.setHighContrast(true) },
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setVibrationGuide" to { repo.setVibrationGuide(true) },

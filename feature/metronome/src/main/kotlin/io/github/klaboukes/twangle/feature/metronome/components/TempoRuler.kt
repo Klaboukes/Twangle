@@ -48,6 +48,7 @@ import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoMarking
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -116,6 +117,7 @@ internal fun TempoRuler(
     val minor = scheme.outlineVariant
     val major = scheme.onSurfaceVariant
     val accent = scheme.primary
+    val highContrast = MaterialTheme.styleTokens.highContrast
     val measurer = rememberTextMeasurer(cacheSize = 0)
     val locale = appLocale()
     val numberStyle = TextStyle(
@@ -241,7 +243,8 @@ internal fun TempoRuler(
                         val alpha = ringAlpha().coerceIn(0f, 1f) * edge
                         if (alpha > 0f) drawCircle(accent, ringRadius, Offset(x, ringY), alpha = alpha, style = ring)
                     }
-                    drawRect(glow, glowTopLeft, glowSize, alpha = GLOW_ALPHA)
+                    // No glow in the high-contrast look (Phase 86): the cursor alone, in the ink.
+                    if (!highContrast) drawRect(glow, glowTopLeft, glowSize, alpha = GLOW_ALPHA)
                     drawLine(accent, Offset(centre, cursorTop), Offset(centre, base), cursor, StrokeCap.Round)
                 }
             },

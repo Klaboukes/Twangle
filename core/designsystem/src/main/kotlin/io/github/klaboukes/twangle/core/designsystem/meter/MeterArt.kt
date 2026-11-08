@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import io.github.klaboukes.twangle.core.designsystem.HIGH_CONTRAST_LINES
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 
 /*
@@ -46,7 +47,18 @@ internal data class MeterRoles(
     /** The style's "in tune" colour. */
     val inTune: Color,
     val dark: Boolean,
+    /**
+     * The high-contrast look (Phase 86): lines [lineScale] times thicker, nothing that carries meaning faded ([fade]),
+     * no glow and no marker shadow.
+     */
+    val highContrast: Boolean = false,
 ) {
+    /** How much thicker the look's lines are ([io.github.klaboukes.twangle.core.designsystem.StyleTokens.lineScale]). */
+    val lineScale: Float get() = if (highContrast) HIGH_CONTRAST_LINES else 1f
+
+    /** A faded part's opacity: [alpha], or 1 in the high-contrast look. */
+    fun fade(alpha: Float): Float = if (highContrast) 1f else alpha
+
     /**
      * The Light arc's centre mark's colour, [tuned] (0..1) of the way to "in tune": muted off the note, so it
      * has no colour of its own (since Phase 72, the lens: the lens shows only muted, the reading's tone and the
@@ -81,6 +93,7 @@ internal fun meterRoles(): MeterRoles {
         accent = scheme.primary,
         inTune = tokens.inTune,
         dark = tokens.dark,
+        highContrast = tokens.highContrast,
     )
 }
 
@@ -133,9 +146,11 @@ internal class GlowArt(private val radius: Float, color: Color) {
  * middle and radius in px from [place] (made once per size), at [MeterRoles.tuneGlowAlpha] when fully lit. It
  * is drawn once, in a layer of its own under the look's marker; [MeterReading.glow] only sets that layer's
  * opacity, so easing it in and out redraws nothing and allocates nothing. Nothing clips it: it fades out on the page.
+ * The high-contrast look has none (Phase 86): in tune shows there by the zone, the mark and the word.
  */
 @Composable
 internal fun BoxScope.TuneGlow(roles: MeterRoles, reading: MeterReading, place: CacheDrawScope.() -> Pair<Offset, Float>) {
+    if (roles.highContrast) return
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
             alpha = reading.glow.coerceIn(0f, 1f)

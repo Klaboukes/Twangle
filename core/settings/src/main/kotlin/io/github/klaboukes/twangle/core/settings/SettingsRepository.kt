@@ -91,6 +91,9 @@ interface SettingsRepository {
 
     suspend fun setDynamicColor(enabled: Boolean)
 
+    /** The player's own choice for the high-contrast look ([AppSettings.highContrast]): from then on it no longer follows the phone. */
+    suspend fun setHighContrast(enabled: Boolean)
+
     suspend fun setKeepScreenOn(enabled: Boolean)
 
     suspend fun setVibrateInTune(enabled: Boolean)

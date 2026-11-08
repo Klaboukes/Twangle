@@ -26,6 +26,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -207,6 +208,10 @@ private class NeckPaint(
     val names: Map<PitchClass, String>,
     /** [NeckGeometry.NUMBERED_FRETS] in the app language's digits. */
     val fretNumbers: List<Pair<Int, String>>,
+    /** The high-contrast look (Phase 86): the frets and a short string's start in full, every line this much thicker. */
+    val fretAlpha: Float = FRET_ALPHA,
+    val fadedAlpha: Float = FADED_ALPHA,
+    val lines: Float = 1f,
 )
 
 @Composable
@@ -226,6 +231,9 @@ private fun rememberNeckPaint(scale: Scale, notes: List<FretNote>, notation: Not
         base = MaterialTheme.typography.labelLarge.copy(lineHeight = TextUnit.Unspecified),
         names = scale.notes.associateWith { scale.nameOf(it, notation) },
         fretNumbers = NeckGeometry.NUMBERED_FRETS.filter { it <= ScaleFinder.HIGHEST_FRET }.map { it to localDigits(it, locale) },
+        fretAlpha = MaterialTheme.styleTokens.fade(FRET_ALPHA),
+        fadedAlpha = MaterialTheme.styleTokens.fade(FADED_ALPHA),
+        lines = MaterialTheme.styleTokens.lineScale,
     )
 }
 
@@ -275,20 +283,20 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
         )
         val thinnest = g.stringLine(g.strings - 1)
         val thickest = g.stringLine(0)
-        val line = LINE_WIDTH * u
+        val line = LINE_WIDTH * paint.lines * u
         val dashes = PathEffect.dashPathEffect(floatArrayOf(DASH * u, DASH * u))
         onDrawBehind {
             val centre = Offset(size.width / 2f, size.height / 2f)
             scale(1f, size.height / size.width, centre) { drawCircle(field, size.width * 0.62f, centre) }
             // The frets, the nut thick in the ink colour.
             for (fret in 1..g.frets) {
-                drawLine(muted.copy(alpha = FRET_ALPHA), at(g.fretLine(fret), thickest), at(g.fretLine(fret), thinnest), line)
+                drawLine(muted.copy(alpha = paint.fretAlpha), at(g.fretLine(fret), thickest), at(g.fretLine(fret), thinnest), line)
             }
             // The strings; a short one (the banjo's fifth) faded and dashed from the nut to where it starts, no notes there.
             for (string in 0 until g.strings) {
                 val across = g.stringLine(string)
                 val start = g.startOf(string)
-                if (start > 0) drawLine(muted.copy(alpha = FADED_ALPHA), at(g.fretLine(0), across), at(g.fretLine(start), across), line, pathEffect = dashes)
+                if (start > 0) drawLine(muted.copy(alpha = paint.fadedAlpha), at(g.fretLine(0), across), at(g.fretLine(start), across), line, pathEffect = dashes)
                 drawLine(muted, at(g.fretLine(start), across), at(g.fretLine(g.frets), across), line)
             }
             drawLine(ink, at(g.fretLine(0), thickest - NUT_OVERHANG), at(g.fretLine(0), thinnest + NUT_OVERHANG), NUT_WIDTH * u, StrokeCap.Round)

@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.dialogEdge
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
@@ -98,6 +99,7 @@ fun <T> ChoiceDialogSetting(
     if (open) {
         AlertDialog(
             onDismissRequest = { open = false },
+            modifier = Modifier.dialogEdge(),
             confirmButton = {
                 TwangleTextButton(onClick = { open = false }) { Text(stringResource(R.string.settings_language_cancel)) }
             },

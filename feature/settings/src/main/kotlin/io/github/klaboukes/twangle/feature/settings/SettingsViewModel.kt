@@ -54,6 +54,11 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setDynamicColor(enabled) }
     }
 
+    /** The player's own choice: from now on the high-contrast look no longer follows the phone. */
+    fun setHighContrast(enabled: Boolean) {
+        viewModelScope.launch { repository.setHighContrast(enabled) }
+    }
+
     fun setKeepScreenOn(enabled: Boolean) {
         viewModelScope.launch { repository.setKeepScreenOn(enabled) }
     }

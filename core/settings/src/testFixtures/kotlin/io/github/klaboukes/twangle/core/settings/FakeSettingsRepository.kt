@@ -124,6 +124,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setDynamicColor(enabled: Boolean) = write { it.copy(dynamicColor = enabled) }
 
+    override suspend fun setHighContrast(enabled: Boolean) = write { it.copy(highContrast = enabled) }
+
     override suspend fun setKeepScreenOn(enabled: Boolean) = write { it.copy(keepScreenOn = enabled) }
 
     override suspend fun setVibrateInTune(enabled: Boolean) = write { it.copy(vibrateInTune = enabled) }

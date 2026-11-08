@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.designsystem.dialogEdge
 import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_MARGIN
 import io.github.klaboukes.twangle.core.designsystem.TOP_BAR_TOP
@@ -288,7 +289,7 @@ internal fun TuningEditor(
 private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Unit) {
     AlertDialog(
         onDismissRequest = onKeepEditing,
-        modifier = Modifier.testTag(TuningEditorTestTags.DISCARD_DIALOG),
+        modifier = Modifier.dialogEdge().testTag(TuningEditorTestTags.DISCARD_DIALOG),
         title = {
             // As the delete question's: the dialog's own headline size is too big at 2× text in the wider faces.
             val title = MaterialTheme.typography.titleMedium

@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.meter.GlowArt
@@ -136,6 +138,12 @@ private class BeatLights(
     private val restingAlpha = if (roles.dark) 0.26f else 0.2f
     private val glowPeak = if (roles.dark) 0.34f else 0.2f
 
+    /**
+     * The high-contrast look (Phase 86): a mark at rest is an outline in the ink, a lit one filled in full, with no
+     * glow, so the beats and the one that sounds stand apart without a grey.
+     */
+    private val outline = if (roles.highContrast) Stroke(OUTLINE_DP * dx) else null
+
     fun x(i: Int): Float = left + i * spacing
 
     /**
@@ -145,6 +153,15 @@ private class BeatLights(
      */
     fun drawSmallMark(scope: DrawScope, i: Int, j: Int, level: Float) = with(scope) {
         val x = x(i) + j * spacing / between
+        val radius = BAR_WIDTH_DP * dx * DOT_SHARE / 2f
+        if (outline != null) {
+            if (level >= HIGH_CONTRAST_LIT) {
+                drawCircle(roles.ink, radius, Offset(x, y))
+            } else {
+                drawCircle(roles.ink, radius - outline.width / 2f, Offset(x, y), style = outline)
+            }
+            return@with
+        }
         val rest = roles.ink.faded(restingAlpha * SMALL_REST_SHARE)
         val color = if (level > 0f) lerp(rest, roles.accent.faded(SMALL_LIT_ALPHA), level) else rest
         drawCircle(color, BAR_WIDTH_DP * dx * DOT_SHARE / 2f, Offset(x, y))
@@ -162,6 +179,23 @@ private class BeatLights(
         val base = if (lit) roles.accent else roles.ink
         val a = if (lit) 0.5f + 0.5f * level else restingAlpha + 0.06f * tier
         val x = x(i)
+        if (outline != null) {
+            val w = BAR_WIDTH_DP * dx * max(0.8f, sz)
+            val h = BAR_HEIGHT_DP * d * sz
+            if (level >= HIGH_CONTRAST_LIT) {
+                drawLine(roles.ink, Offset(x, y - h / 2f + w / 2f), Offset(x, y + h / 2f - w / 2f), w, StrokeCap.Round)
+            } else {
+                val inset = outline.width / 2f
+                drawRoundRect(
+                    roles.ink,
+                    topLeft = Offset(x - w / 2f + inset, y - h / 2f + inset),
+                    size = Size(w - 2f * inset, h - 2f * inset),
+                    cornerRadius = CornerRadius(w / 2f),
+                    style = outline,
+                )
+            }
+            return@with
+        }
         if (lit) glows[tier].draw(this, x, y, level * glowPeak)
         val w = BAR_WIDTH_DP * dx * max(0.8f, sz)
         val h = BAR_HEIGHT_DP * d * sz
@@ -190,5 +224,9 @@ private class BeatLights(
 
         /** A lit small dot's strength at its click: below a lit beat's full accent. */
         const val SMALL_LIT_ALPHA = 0.7f
+
+        /** High contrast: a mark at rest is outlined this many dp wide, and filled while its light is at least this. */
+        const val OUTLINE_DP = 2f
+        const val HIGH_CONTRAST_LIT = 0.15f
     }
 }

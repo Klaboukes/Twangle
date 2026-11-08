@@ -99,6 +99,7 @@ class SettingsContentTest {
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private val guideChanges = mutableListOf<Boolean>()
+    private val highContrastChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
     private var rates = 0
@@ -130,6 +131,7 @@ class SettingsContentTest {
         appLanguage: String? = null,
         settingsBack: Boolean = false,
         screenReaderOn: Boolean = false,
+        phoneHighContrast: Boolean = false,
     ) {
         shownArea = size ?: PHONE
         shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
@@ -166,6 +168,8 @@ class SettingsContentTest {
                         onAppLanguageChange = { languageChanges += it },
                         screenReaderOn = screenReaderOn,
                         onVibrationGuideChange = { guideChanges += it },
+                        phoneHighContrast = phoneHighContrast,
+                        onHighContrastChange = { highContrastChanges += it },
                         onBack = if (settingsBack) ({ backs++ }) else null,
                     )
                 }
@@ -524,6 +528,40 @@ class SettingsContentTest {
         compose.onNodeWithText(context.getString(R.string.settings_vibration_guide_summary)).assertIsDisplayed()
         guide.performClick()
         assertEquals("turned off with TalkBack on", listOf(false), guideChanges)
+    }
+
+    /**
+     * The high-contrast switch (Phase 86) in Look, beside Light or dark: TalkBack hears it as a switch with its name;
+     * never set, it shows on while the phone asks for high contrast, and the wallpaper colours' row, which it sets
+     * aside, is gone; a tap saves the player's own choice.
+     */
+    @Test
+    fun theHighContrastSwitchFollowsThePhoneUntilSet() {
+        val title = context.getString(R.string.settings_high_contrast_title)
+        show(AppSettings(), phoneHighContrast = true)
+        val contrast = compose.onNode(hasText(title) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+        contrast.performScrollTo().assertIsOn().assertHasClickAction()
+        compose.onNodeWithText(context.getString(R.string.settings_high_contrast_summary)).assertIsDisplayed()
+        compose.onAllNodesWithText(context.getString(R.string.settings_dynamic_color_title)).assertCountEquals(0)
+        contrast.performClick()
+        assertEquals("turned off with the phone's contrast high", listOf(false), highContrastChanges)
+    }
+
+    /** The player's choice holds whatever the phone says; off, the wallpaper colours' row is back. */
+    @Test
+    fun theHighContrastSwitchKeepsThePlayersChoice() {
+        show(AppSettings(highContrast = false), phoneHighContrast = true)
+        compose.onNodeWithText(context.getString(R.string.settings_high_contrast_title)).performScrollTo().assertIsOff().performClick()
+        assertEquals(listOf(true), highContrastChanges)
+        compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title)).performScrollTo().assertIsDisplayed()
+    }
+
+    /** Never set and a phone at its usual contrast: off, in Dutch "Hoog contrast". */
+    @Test
+    fun dutchHighContrastSwitchIsOffOnAPlainPhone() {
+        show(AppSettings(), locale = "nl")
+        assertEquals("Hoog contrast", resourcesIn("nl").getString(R.string.settings_high_contrast_title))
+        compose.onNodeWithText("Hoog contrast").performScrollTo().assertIsOff()
     }
 
     /** The player's choice holds whatever the screen reader does. */

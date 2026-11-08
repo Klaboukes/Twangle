@@ -163,6 +163,13 @@ data class AppSettings(
      * switched it on keeps it, one who left it at 1.1's default gets Ink.
      */
     val dynamicColor: Boolean = false,
+    /**
+     * The high-contrast look (Phase 86): black and white (white on black in dark, black on white in light), every text
+     * and meaningful line at 7:1 or more, thicker lines, no glow or tint; it sets [dynamicColor] aside. null while the
+     * player has never set it: it then follows the phone, on while the phone's contrast is high or its high-contrast
+     * text is on ([highContrastOn]); once they flip it, their choice holds.
+     */
+    val highContrast: Boolean? = null,
     /** Stop the screen from dimming while the tuner is open and hears playing (it lets go after a quiet spell). */
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
@@ -267,6 +274,9 @@ data class AppSettings(
 
     /** Whether the vibration guide is on: the player's choice ([vibrationGuide]), else on while a [screenReaderOn]. */
     fun vibrationGuideOn(screenReaderOn: Boolean): Boolean = vibrationGuide ?: screenReaderOn
+
+    /** Whether the high-contrast look is on: the player's choice ([highContrast]), else on while the [phoneHighContrast]. */
+    fun highContrastOn(phoneHighContrast: Boolean): Boolean = highContrast ?: phoneHighContrast
 
     /** [tuning] as written, before the player lowered it. */
     val tuningAsWritten: Tuning

@@ -3,6 +3,9 @@ package io.github.klaboukes.twangle.feature.tuner.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.InTuneMark
 import io.github.klaboukes.twangle.core.designsystem.NumberFont
 import io.github.klaboukes.twangle.core.designsystem.PacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.SCREEN_TINT_SHARE
@@ -166,17 +170,26 @@ fun TuneWordLine(
     }
     val green = tokens.inTune
     val allInTune = word == TuneWord.PLAY && quietInTuneShown
+    // The high-contrast look (Phase 86): the word in the ink, never a tone, and in tune also marked (InTuneMark).
+    val highContrast = tokens.highContrast
+    val marked = highContrast && (word == TuneWord.IN_TUNE || allInTune)
     // "Play a string" in nearly the ink: the reading's tone comes in over it as a note does.
     val restWord = mixColour(muted, ink, REST_WORD_INK)
-    val wordColour = remember(tone, ink, inkShare, restWord, green, allInTune) {
+    val wordColour = remember(tone, ink, inkShare, restWord, green, allInTune, highContrast) {
         when {
+            highContrast -> ColorProducer { ink }
             allInTune -> ColorProducer { mixColour(green, ink, inkShare) }
             tone == null -> ColorProducer { restWord }
             else -> ColorProducer { mixColour(mixColour(restWord, tone.heard, tone.presence), ink, inkShare) }
         }
     }
     val big = if (compact) COMPACT_WORD_SIZE else WORD_SIZE
-    val wordStyle = MaterialTheme.typography.headlineSmall.copy(fontSize = big, lineHeight = WORD_LINE_HEIGHT, fontWeight = FontWeight.Bold, textAlign = textAlign)
+    val wordStyle = MaterialTheme.typography.headlineSmall.copy(
+        fontSize = big,
+        lineHeight = WORD_LINE_HEIGHT,
+        fontWeight = if (highContrast) FontWeight.ExtraBold else FontWeight.Bold,
+        textAlign = textAlign,
+    )
     val quietStyle = wordStyle.copy(fontSize = if (compact) COMPACT_QUIET_SIZE else QUIET_SIZE, fontWeight = FontWeight.SemiBold)
     // The big cents in the numbers' face, so their width doesn't jump as they change.
     val shownStyle = when {
@@ -204,27 +217,33 @@ fun TuneWordLine(
             horizontalAlignment = if (start) Alignment.Start else Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(WORD_SPACING),
         ) {
-            BasicText(
-                text = musicText(wordText),
-                style = shownStyle,
-                color = wordColour,
-                maxLines = 1,
-                // Never wrapped, so the auto-size sees a word too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
-                softWrap = false,
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = with(density) { WORD_MIN_SIZE.toSp() },
-                    maxFontSize = shownStyle.fontSize,
-                    stepSize = 1.sp,
-                ),
-                modifier = Modifier
-                    .keepLineHeight(wordLine)
-                    .testTag(TunerTestTags.WORD_TEXT)
-                    .semantics { hideFromAccessibility() },
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (marked) {
+                    val markSize = with(density) { (shownStyle.fontSize * IN_TUNE_MARK_SIZE).toDp() }
+                    InTuneMark(Modifier.padding(end = IN_TUNE_MARK_GAP).size(markSize).testTag(TunerTestTags.IN_TUNE_MARK))
+                }
+                BasicText(
+                    text = musicText(wordText),
+                    style = shownStyle,
+                    color = wordColour,
+                    maxLines = 1,
+                    // Never wrapped, so the auto-size sees a word too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
+                    softWrap = false,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = with(density) { WORD_MIN_SIZE.toSp() },
+                        maxFontSize = shownStyle.fontSize,
+                        stepSize = 1.sp,
+                    ),
+                    modifier = Modifier
+                        .keepLineHeight(wordLine)
+                        .testTag(TunerTestTags.WORD_TEXT)
+                        .semantics { hideFromAccessibility() },
+                )
+            }
             Text(
                 text = small,
                 style = smallStyle,
-                color = if (tipText != null) colors.primary else quietInk,
+                color = if (tipText != null) colors.primary else if (highContrast) ink else quietInk,
                 textAlign = textAlign,
                 maxLines = 1,
                 softWrap = false,
@@ -359,6 +378,10 @@ private val SMALL_MIN_SIZE = 10.dp
 
 /** Between the word and the cents under it. */
 private val WORD_SPACING = 2.dp
+
+/** The high-contrast look's in-tune mark before the word: this much of the word's size, this far from it. */
+private const val IN_TUNE_MARK_SIZE = 0.95f
+private val IN_TUNE_MARK_GAP = 8.dp
 
 /** "12 cents flat", "1 cent sharp" or "0 cents", rounded to whole cents. */
 @Composable

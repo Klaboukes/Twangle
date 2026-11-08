@@ -50,6 +50,10 @@
     <!-- Look. -->
     <!-- Setting title over the light, dark and system default choices. -->
     <string name="settings_theme_title">Light or dark</string>
+    <!-- Switch title under Light or dark: a look for players who see poorly, pure black and white with thicker lines (white on black with dark, black on white with light). On by itself when the phone's own contrast setting is high. -->
+    <string name="settings_high_contrast_title">High contrast</string>
+    <!-- The line under the High contrast switch: what the look is, and that it comes on by itself when the phone's own contrast (or its high-contrast text) is turned up. -->
+    <string name="settings_high_contrast_summary">Black and white with thicker lines; on by itself when the phone\'s contrast is high</string>
     <!-- Light or dark: the first choice in its list (and the value under the title when picked): follow the phone's own light or dark setting. -->
     <string name="settings_theme_system">Same as the phone</string>
     <!-- Light or dark: a choice in its list (and the value under the title when picked): always the light look. -->

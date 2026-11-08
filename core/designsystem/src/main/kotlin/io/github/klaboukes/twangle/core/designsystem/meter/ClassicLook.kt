@@ -28,6 +28,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
@@ -96,7 +97,7 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
     val locale = appLocale()
     StaticArt {
         val dial = ClassicDial(size)
-        val track = Stroke(TRACK_WIDTH_UNITS * dial.u)
+        val track = Stroke(TRACK_WIDTH_UNITS * roles.lineScale * dial.u)
         val scale = ClassicScale(dial, roles, measurer, this, numbers, locale)
         val draw: DrawScope.() -> Unit = {
             drawArc(
@@ -121,17 +122,19 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
     Spacer(
         Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val dial = ClassicDial(size)
-            val zone = Stroke(ZONE_WIDTH_UNITS * dial.u, cap = StrokeCap.Round)
-            val markTop = Offset(dial.cx, dial.cy - dial.r - 2f * dial.u)
+            // In high contrast the zone is wider and drawn in full: the ink off the note, green in tune.
+            val zone = Stroke(ZONE_WIDTH_UNITS * roles.lineScale * dial.u, cap = StrokeCap.Round)
+            val markTop = Offset(dial.cx, dial.cy - dial.r - 2f * roles.lineScale * dial.u)
             val markBottom = Offset(dial.cx, dial.cy - dial.r + 16f * dial.u)
-            val markWidth = 3.5f * dial.u
+            val markWidth = 3.5f * roles.lineScale * dial.u
+            val zoneAlpha = roles.fade(ZONE_ALPHA)
             onDrawBehind {
                 val tuned = reading.tuned
                 val colour = roles.centre(tuned)
                 val window = reading.inTuneWindow
                 val sweep = window / METER_RANGE_CENTS * 90f
                 drawArc(
-                    colour.copy(alpha = ZONE_ALPHA + (1f - ZONE_ALPHA) * tuned),
+                    colour.copy(alpha = zoneAlpha + (1f - zoneAlpha) * tuned),
                     startAngle = -90f - sweep,
                     sweepAngle = 2f * sweep,
                     useCenter = false,
@@ -143,8 +146,9 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
             }
         },
     )
-    // The needle's shadow, turned with it and then shifted down and right, so it always falls the same way.
-    Spacer(
+    // The needle's shadow, turned with it and then shifted down and right, so it always falls the same way. None in
+    // high contrast, where the needle stands alone on the page.
+    if (!roles.highContrast) Spacer(
         Modifier.matchParentSize().graphicsLayer {
             turnAboutPivot(reading.cents)
             val u = ClassicDial(size).u
@@ -162,7 +166,9 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
             reading.applyMarkerLook(this)
         }.drawWithCache {
             val needle = ClassicNeedle(ClassicDial(size), roles)
-            onDrawBehind { needle.draw(this, mix(roles.ink, roles.inTune, reading.tuned * NEEDLE_GREEN)) }
+            // In high contrast the needle stays the ink: in tune shows by the zone, the mark and the word.
+            val green = if (roles.highContrast) 0f else NEEDLE_GREEN
+            onDrawBehind { needle.draw(this, mix(roles.ink, roles.inTune, reading.tuned * green)) }
         },
     )
     // The hub, which doesn't turn: a plain ink dot with the needle's shadow.
@@ -170,9 +176,11 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
         Modifier.matchParentSize().drawWithCache {
             val dial = ClassicDial(size)
             val shadow = markerShadow(dial.u, roles.dark)
-            val radius = HUB_UNITS * dial.u
+            val radius = HUB_UNITS * (if (roles.highContrast) HIGH_CONTRAST_HUB else 1f) * dial.u
             onDrawBehind {
-                drawIntoCanvas { it.nativeCanvas.drawCircle(dial.cx + SHADOW_X_UNITS * dial.u, dial.cy + SHADOW_Y_UNITS * dial.u, radius, shadow) }
+                if (!roles.highContrast) {
+                    drawIntoCanvas { it.nativeCanvas.drawCircle(dial.cx + SHADOW_X_UNITS * dial.u, dial.cy + SHADOW_Y_UNITS * dial.u, radius, shadow) }
+                }
                 drawCircle(roles.ink, radius, Offset(dial.cx, dial.cy))
             }
         },
@@ -205,14 +213,22 @@ private class ClassicScale(
     private val ticks = FloatArray(TICK_COUNT * 5)
     private val major = BooleanArray(TICK_COUNT)
     private val ink = roles.ink
-    private val minorInk = roles.ink.copy(alpha = MINOR_TICK_INK)
-    private val numberInk = roles.ink.copy(alpha = NUMBER_INK)
+    private val minorInk = roles.ink.copy(alpha = roles.fade(MINOR_TICK_INK))
+    private val numberInk = roles.ink.copy(alpha = roles.fade(NUMBER_INK))
+
+    /** High contrast's ticks are squared off, as the mock-up's, so their thicker ends don't run together. */
+    private val cap = if (roles.highContrast) StrokeCap.Butt else StrokeCap.Round
     private val texts = arrayOfNulls<TextLayoutResult>(NUMBER_COUNT)
     private val textAt = FloatArray(NUMBER_COUNT * 2)
 
     init {
         val u = dial.u
-        val style = TextStyle(fontFamily = numbers, fontSize = with(density) { (NUMBER_SIZE_UNITS * u).toSp() }, fontFeatureSettings = LINING_FIGURES)
+        val style = TextStyle(
+            fontFamily = numbers,
+            fontSize = with(density) { (NUMBER_SIZE_UNITS * u).toSp() },
+            fontWeight = if (roles.highContrast) FontWeight.ExtraBold else null,
+            fontFeatureSettings = LINING_FIGURES,
+        )
         val measured = (1..5).map { measurer.measure(localDigits(it * 10, locale), style) }
         var t = 0
         var n = 0
@@ -221,12 +237,12 @@ private class ClassicScale(
             if (cents != 0f) {
                 val isMajor = cents.toInt() % 10 == 0
                 val base = dial.r - TICK_IN_UNITS * u
-                val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u
+                val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * (if (roles.highContrast) HIGH_CONTRAST_TICK_LENGTH else 1f) * u
                 ticks[t * 5] = dial.x(base, cents)
                 ticks[t * 5 + 1] = dial.y(base, cents)
                 ticks[t * 5 + 2] = dial.x(base - length, cents)
                 ticks[t * 5 + 3] = dial.y(base - length, cents)
-                ticks[t * 5 + 4] = (if (isMajor) MAJOR_TICK_WIDTH_UNITS else MINOR_TICK_WIDTH_UNITS) * u
+                ticks[t * 5 + 4] = (if (isMajor) MAJOR_TICK_WIDTH_UNITS else MINOR_TICK_WIDTH_UNITS) * roles.lineScale * u
                 major[t] = isMajor
                 t++
                 if (isMajor) {
@@ -248,7 +264,7 @@ private class ClassicScale(
                 Offset(ticks[t * 5], ticks[t * 5 + 1]),
                 Offset(ticks[t * 5 + 2], ticks[t * 5 + 3]),
                 ticks[t * 5 + 4],
-                StrokeCap.Round,
+                cap,
             )
         }
         for (k in texts.indices) {
@@ -272,7 +288,7 @@ private class ClassicScale(
  * for the shadow layer under it.
  */
 private class ClassicNeedle(dial: ClassicDial, roles: MeterRoles) {
-    private val half = NEEDLE_WIDTH_UNITS * dial.u / 2f
+    private val half = NEEDLE_WIDTH_UNITS * (if (roles.highContrast) HIGH_CONTRAST_NEEDLE else 1f) * dial.u / 2f
     private val body = Path().apply {
         addRoundRect(
             RoundRect(dial.cx - half, dial.cy - dial.needleLength - half, dial.cx + half, dial.cy + half, CornerRadius(half)),
@@ -327,6 +343,14 @@ private const val GLOW_UNITS = 80f
 private const val GLOW_DOWN_UNITS = 14f
 
 private const val NEEDLE_WIDTH_UNITS = 2.6f
+
+/**
+ * The high-contrast look (Phase 86, the mock-up's): the needle 6 units wide instead of 2.6, the hub this much larger,
+ * the ticks this much longer (and [MeterRoles.lineScale] thicker), so they read at arm's length and through a blur.
+ */
+private const val HIGH_CONTRAST_NEEDLE = 2.3f
+private const val HIGH_CONTRAST_HUB = 1.6f
+private const val HIGH_CONTRAST_TICK_LENGTH = 1.3f
 
 /** In tune, the needle goes this far towards the "in tune" colour. */
 private const val NEEDLE_GREEN = 0.9f

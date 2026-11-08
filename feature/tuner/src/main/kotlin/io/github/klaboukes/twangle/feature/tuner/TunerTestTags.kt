@@ -30,6 +30,9 @@ object TunerTestTags {
     const val WORD_TEXT = "tuner_word_text"
     const val WORD_CENTS = "tuner_word_cents"
 
+    /** The high-contrast look's in-tune mark before "In tune" (Phase 86). */
+    const val IN_TUNE_MARK = "tuner_in_tune_mark"
+
     /** The picker sheet, "What are you tuning?", opened from the picker chip. */
     const val PICKER_PANEL = "tuner_picker_panel"
 

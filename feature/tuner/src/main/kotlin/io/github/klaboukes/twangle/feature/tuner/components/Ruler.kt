@@ -141,15 +141,25 @@ fun Ruler(
     val track = colors.outlineVariant
     val farOff = tokens.farOff
     val green = tokens.inTune
+    // The high-contrast look (Phase 86): thicker lines and pointer, every name and mark in full, the names heavier.
+    val lines = tokens.lineScale
+    val tickAlpha = tokens.fade(TICK_ALPHA)
+    val centAlpha = tokens.fade(CENT_ALPHA)
+    val smallAlpha = tokens.fade(SMALL_ALPHA)
+    val zoneAlpha = tokens.fade(ZONE_ALPHA)
 
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer(cacheSize = 0)
     // Sizes in dp, not sp: the ruler is a drawing, and a 2× font would not fit its height.
     // In the app's face, as every text (a measurer's own default would be the phone's).
     val bigStyle = TextStyle(fontFamily = TwangleFont, fontSize = with(density) { sizes.bigName.toSp() }, fontWeight = FontWeight.ExtraBold)
-    val smallStyle = TextStyle(fontFamily = TwangleFont, fontSize = with(density) { sizes.smallName.toSp() }, fontWeight = FontWeight.Medium)
+    val smallStyle = TextStyle(
+        fontFamily = TwangleFont,
+        fontSize = with(density) { sizes.smallName.toSp() },
+        fontWeight = if (tokens.highContrast) FontWeight.ExtraBold else FontWeight.Medium,
+    )
     val big = remember(names, density, sizes) { Array(names.size) { measurer.measure(musicText(names[it]), bigStyle) } }
-    val small = remember(names, density, sizes) { Array(names.size) { measurer.measure(musicText(names[it]), smallStyle) } }
+    val small = remember(names, density, sizes, tokens.highContrast) { Array(names.size) { measurer.measure(musicText(names[it]), smallStyle) } }
 
     val shownMidi = heard ?: rest
     val shownName = names[shownMidi.mod(names.size)]
@@ -170,7 +180,7 @@ fun Ruler(
                     val pointerX = size.width / 2f
                     val baseY = sizes.base.toPx()
                     val tickTop = baseY - TICK_LENGTH.toPx()
-                    val line = LINE_WIDTH.toPx()
+                    val line = LINE_WIDTH.toPx() * lines
                     val inset = LINE_INSET.toPx()
                     val fade = EDGE_FADE.toPx()
                     val clear = edgeClear.toPx()
@@ -181,10 +191,11 @@ fun Ruler(
                     val centTick = CENT_TICK.toPx()
                     val tenCentTick = TEN_CENT_TICK.toPx()
                     val zoneHalf = ZONE_HALF_HEIGHT.toPx()
-                    val half = POINTER_HALF_WIDTH.toPx()
+                    val half = POINTER_HALF_WIDTH.toPx() * lines.coerceAtMost(HIGH_CONTRAST_POINTER)
+                    val pointerBottom = POINTER_BOTTOM.toPx() * lines.coerceAtMost(HIGH_CONTRAST_POINTER)
                     val pointer = Path().apply {
-                        moveTo(pointerX - half, baseY + POINTER_BOTTOM.toPx())
-                        lineTo(pointerX + half, baseY + POINTER_BOTTOM.toPx())
+                        moveTo(pointerX - half, baseY + pointerBottom)
+                        lineTo(pointerX + half, baseY + pointerBottom)
                         lineTo(pointerX, baseY + POINTER_TIP.toPx())
                         close()
                     }
@@ -198,13 +209,13 @@ fun Ruler(
                             val x = rulerNoteX(midi, position, pointerX, step)
                             val edge = rulerEdgeFade(x, size.width, fade, clear)
                             if (edge <= 0f) continue
-                            drawLine(muted.copy(alpha = TICK_ALPHA * edge), Offset(x, tickTop), Offset(x, baseY), line)
+                            drawLine(muted.copy(alpha = tickAlpha * edge), Offset(x, tickTop), Offset(x, baseY), line)
                             val emphasis = rulerEmphasis(midi, position)
                             val index = midi.mod(names.size)
                             val textPx = smallPx + (bigPx - smallPx) * emphasis
                             val baseline = smallBaseline + (bigBaseline - smallBaseline) * emphasis
                             val color = mix(muted, ink, emphasis * shown)
-                            val alpha = edge * (SMALL_ALPHA + (1f - SMALL_ALPHA) * emphasis)
+                            val alpha = edge * (smallAlpha + (1f - smallAlpha) * emphasis)
                             // The bold big name fades in over the plain small one as the note nears the pointer.
                             if (emphasis > 0f) drawName(big[index], x, baseline, textPx / bigPx, color, alpha * emphasis)
                             if (emphasis < 1f) drawName(small[index], x, baseline, textPx / smallPx, color, alpha * (1f - emphasis))
@@ -216,14 +227,14 @@ fun Ruler(
                             val target = position - cents / CENTS_PER_SEMITONE
                             val zoneFrom = rulerPlaceX(target - window / CENTS_PER_SEMITONE, position, pointerX, step)
                             val zoneTo = rulerPlaceX(target + window / CENTS_PER_SEMITONE, position, pointerX, step)
-                            drawRect(green.copy(alpha = ZONE_ALPHA * near), Offset(zoneFrom, baseY - zoneHalf), Size(zoneTo - zoneFrom, 2f * zoneHalf))
+                            drawRect(green.copy(alpha = zoneAlpha * near), Offset(zoneFrom, baseY - zoneHalf), Size(zoneTo - zoneFrom, 2f * zoneHalf))
                             var mark = -MARKS_REACH_CENTS
                             while (mark <= MARKS_REACH_CENTS) {
                                 if (mark != 0) {
                                     val x = rulerPlaceX(target + mark / CENTS_PER_SEMITONE, position, pointerX, step)
                                     val edge = rulerEdgeFade(x, size.width, fade, clear)
                                     val length = if (mark % 10 == 0) tenCentTick else centTick
-                                    if (edge > 0f) drawLine(muted.copy(alpha = CENT_ALPHA * near * edge), Offset(x, baseY - length), Offset(x, baseY), line)
+                                    if (edge > 0f) drawLine(muted.copy(alpha = centAlpha * near * edge), Offset(x, baseY - length), Offset(x, baseY), line)
                                 }
                                 mark += MARK_STEP_CENTS
                             }
@@ -300,6 +311,9 @@ private val LINE_INSET = 8.dp
 private val POINTER_HALF_WIDTH = 6.dp
 private val POINTER_TIP = 2.dp
 private val POINTER_BOTTOM = 11.dp
+
+/** The high-contrast look's pointer is this much larger (the mock-up's, 18 wide instead of 12). */
+private const val HIGH_CONTRAST_POINTER = 1.5f
 
 /** Names fade out over this much at each end of the ruler. */
 private val EDGE_FADE = 32.dp

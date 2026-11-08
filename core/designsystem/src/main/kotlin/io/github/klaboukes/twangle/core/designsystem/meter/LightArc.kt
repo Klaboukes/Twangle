@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import io.github.klaboukes.twangle.core.designsystem.lens.LensReading
 import kotlinx.coroutines.flow.first
@@ -150,8 +151,15 @@ internal fun BoxScope.LightArcLook(reading: LensReading, wide: Boolean) {
     StaticArt {
         val lights = FanGeometry(size, wide, density).lights
         val unlit = roles.track.copy(alpha = if (roles.dark) 0.75f else 0.7f)
+        // In high contrast (Phase 86) the track is the ink, so an unlit light is an empty ring in it and a lit one a
+        // full disc: unlit and lit stay apart without a grey.
+        val ring = if (roles.highContrast) Stroke(lights[2] * UNLIT_RING_SHARE) else null
         val draw: DrawScope.() -> Unit = {
-            for (i in 0 until LIGHT_ARC_LIGHTS) drawCircle(unlit, lights[i * 3 + 2], Offset(lights[i * 3], lights[i * 3 + 1]))
+            for (i in 0 until LIGHT_ARC_LIGHTS) {
+                val radius = lights[i * 3 + 2]
+                val middle = Offset(lights[i * 3], lights[i * 3 + 1])
+                if (ring != null) drawCircle(roles.ink, radius - ring.width / 2f, middle, style = ring) else drawCircle(unlit, radius, middle)
+            }
         }
         draw
     }
@@ -184,7 +192,7 @@ internal fun BoxScope.LightArcLook(reading: LensReading, wide: Boolean) {
         val fan = FanGeometry(size, wide, density)
         val marks = lightArcMarks(reading.inTuneWindow).flatMap { (out, mark) ->
             listOf(-1, 1).map { side ->
-                Triple(fan.markAt(LIGHT_ARC_CENTRE_RAY + side * out), mark.radiusUnits * fan.u, roles.ink.copy(alpha = mark.ink))
+                Triple(fan.markAt(LIGHT_ARC_CENTRE_RAY + side * out), mark.radiusUnits * roles.lineScale * fan.u, roles.ink.copy(alpha = roles.fade(mark.ink)))
             }
         }.toTypedArray()
         val draw: DrawScope.() -> Unit = {
@@ -242,7 +250,7 @@ private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
             val middle = Offset(lights[i * 3], lights[i * 3 + 1])
             val radius = lights[i * 3 + 2]
             val lit = if (closing > heat[i]) centre else tone
-            if (closing <= heat[i]) {
+            if (closing <= heat[i] && !roles.highContrast) {
                 // The halo, from the outside in, each ring adding a little.
                 for (ring in HALO_RINGS downTo 1) {
                     drawCircle(lit, radius * (1f + (HALO_SIZE - 1f) * ring / HALO_RINGS), middle, alpha = ringAlpha * glow)
@@ -280,6 +288,9 @@ private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
         const val CENTRE_OUTER = 0.14f
     }
 }
+
+/** In high contrast an unlit light is a ring this much of the first light's radius wide. */
+private const val UNLIT_RING_SHARE = 0.35f
 
 /** The light arc's in-tune glow reaches this many units from its middle. */
 private const val LIGHT_ARC_GLOW_UNITS = 90f

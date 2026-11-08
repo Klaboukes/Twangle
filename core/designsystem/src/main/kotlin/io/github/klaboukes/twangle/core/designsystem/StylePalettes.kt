@@ -47,8 +47,12 @@ data class Palette(
 
 private const val SURFACE_CONTAINER_INK = 0.06f
 
-/** Ink's palette, light or [dark]. */
-fun paletteFor(dark: Boolean): Palette = if (dark) InkDark else InkLight
+/** Ink's palette, light or [dark]; with [highContrast] (Phase 86) the high-contrast look's black and white one. */
+fun paletteFor(dark: Boolean, highContrast: Boolean = false): Palette = when {
+    highContrast -> if (dark) HighContrastDark else HighContrastLight
+    dark -> InkDark
+    else -> InkLight
+}
 
 /** A selected container: the surface mixed with [color], 22 % in light and 32 % in dark (the mock-up's). */
 internal fun Palette.container(color: Color, dark: Boolean): Color = lerp(surface, color, if (dark) 0.32f else 0.22f)
@@ -98,6 +102,14 @@ fun Palette.toColorScheme(dark: Boolean): ColorScheme {
     )
 }
 
+/**
+ * Whether this is the high-contrast look's scheme (Phase 86): one ink, its muted text and its lines (outline variant)
+ * the ink itself. Neither Ink nor a wallpaper's scheme is ever so; the helpers that take only a scheme
+ * ([controlOutline], [stringChipFill]) draw their edges in full and their fills plain by it.
+ */
+val ColorScheme.isHighContrast: Boolean
+    get() = onSurfaceVariant == onSurface && outlineVariant == onSurface
+
 /** Of the palette's ink and surface, the one that reads best on [fill]; black or white if neither reaches 4.5:1. */
 internal fun Palette.readableOn(fill: Color): Color {
     val own = listOf(ink, surface).maxBy { contrast(it, fill) }
@@ -122,6 +134,12 @@ internal const val AA_TEXT = 4.5f
  * taken toward its ink as far as it needs ([withReadableMuted]).
  */
 internal const val MUTED_TEXT = 7f
+
+/**
+ * The high-contrast look's floor (Phase 86, WCAG AAA): every text and every line that carries meaning reads at 7:1 or
+ * more on what it sits on (StylePaletteTest).
+ */
+internal const val HIGH_CONTRAST_TEXT = 7f
 
 // Ink: a calm stage, one blue accent, amber far off and green in tune.
 private val InkLight = Palette(
@@ -152,4 +170,41 @@ private val InkDark = Palette(
     farOff = Color(0xFFFFB648),
     second = Color(0xFF5FC4FF),
     third = Color(0xFF8D96A3),
+)
+
+/*
+ * The high-contrast look (Phase 86, the owner's pick of 2026-11-08 from docs/design/high-contrast-preview.html): pure
+ * black or white, one ink and no grey (muted, the track and the accent are the ink), so every text and line reads at
+ * 21:1. Colour is kept for the two meanings only: the in-tune green, and the far-off amber, which stays apart from the
+ * green and from the accent (the ink, no hue at all); in light both are darkened until they read at 7:1 on white.
+ * Low-vision players asked for few strong colours, not a dark mode of greys (Perkins; Apple).
+ */
+private val HighContrastDark = Palette(
+    background = Color(0xFF000000),
+    surface = Color(0xFF000000),
+    ink = Color(0xFFFFFFFF),
+    muted = Color(0xFFFFFFFF),
+    track = Color(0xFFFFFFFF),
+    accent = Color(0xFFFFFFFF),
+    onAccent = Color(0xFF000000),
+    inTune = Color(0xFF3DDC84),
+    onInTune = Color(0xFF000000),
+    farOff = Color(0xFFFFB648),
+    second = Color(0xFFFFFFFF),
+    third = Color(0xFFFFFFFF),
+)
+
+private val HighContrastLight = Palette(
+    background = Color(0xFFFFFFFF),
+    surface = Color(0xFFFFFFFF),
+    ink = Color(0xFF000000),
+    muted = Color(0xFF000000),
+    track = Color(0xFF000000),
+    accent = Color(0xFF000000),
+    onAccent = Color(0xFFFFFFFF),
+    inTune = Color(0xFF005A28),
+    onInTune = Color(0xFFFFFFFF),
+    farOff = Color(0xFF7A4000),
+    second = Color(0xFF000000),
+    third = Color(0xFF000000),
 )

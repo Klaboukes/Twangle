@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShape
@@ -202,6 +203,9 @@ private class ChartPaint(
     val notes: List<Pair<PitchClass, String>?>,
     /** Per string, the finger as written in its dot ("" for none), in the app language's digits. */
     val fingers: List<String>,
+    /** The high-contrast look (Phase 86): the frets in full and every line this much thicker. */
+    val fretAlpha: Float = FRET_ALPHA,
+    val lines: Float = 1f,
 )
 
 @Composable
@@ -221,6 +225,8 @@ private fun rememberChartPaint(shape: ChordShape, tuning: Tuning, notation: Nota
         fretLabel = if (start > 1) stringResource(R.string.practice_chart_fret, start) else null,
         notes = shape.notesIn(tuning).map { note -> note?.let { it.pitchClass to ChordSpelling.nameOf(it.pitchClass, shape.chord, notation) } },
         fingers = shape.fingers.map { if (it > 0) localDigits(it, locale) else "" },
+        fretAlpha = MaterialTheme.styleTokens.fade(FRET_ALPHA),
+        lines = MaterialTheme.styleTokens.lineScale,
     )
 }
 
@@ -263,7 +269,7 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
             val centre = Offset(size.width / 2f, size.height / 2f)
             scale(1f, size.height / size.width, centre) { drawCircle(field, size.width * 0.62f, centre) }
             val bottom = g.gridBottom * u
-            val line = LINE_WIDTH * u
+            val line = LINE_WIDTH * paint.lines * u
             // Fret lines, the top one as the nut when the chart starts at the first fret; each only as wide as the strings
             // already there (above the banjo's short string's own nut, the long strings).
             for (row in 0..g.rows) {
@@ -272,7 +278,7 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
                 if (row == 0 && start == 1) {
                     drawLine(ink, Offset(left - line, y), Offset(right + line, y), NUT_WIDTH * u, StrokeCap.Round)
                 } else {
-                    drawLine(muted.copy(alpha = FRET_ALPHA), Offset(left, y), Offset(right, y), line)
+                    drawLine(muted.copy(alpha = paint.fretAlpha), Offset(left, y), Offset(right, y), line)
                 }
             }
             // The strings, from where each starts on to just past the last row; a short one from its own nut, with its peg.

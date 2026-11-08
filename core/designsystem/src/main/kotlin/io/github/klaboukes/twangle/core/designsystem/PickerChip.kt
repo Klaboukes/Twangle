@@ -46,7 +46,7 @@ fun PickerChip(label: String, spoken: String, onClick: () -> Unit, modifier: Mod
             .pressSink(press)
             .clip(CircleShape)
             .background(scheme.surface, CircleShape)
-            .border(1.dp, scheme.outlineVariant, CircleShape)
+            .border(1.dp * MaterialTheme.styleTokens.lineScale, scheme.outlineVariant, CircleShape)
             .clickable(interactionSource = press, indication = PressIndication(CircleShape), onClickLabel = action, role = Role.Button) {
                 press.pressFlash()
                 onClick()

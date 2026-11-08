@@ -75,7 +75,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.HIGH_CONTRAST_LINES
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -334,6 +336,8 @@ private fun StringChip(
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
+    // The high-contrast look (Phase 86): the edge and the heard ring thicker, no glow round the ring.
+    val highContrast = MaterialTheme.styleTokens.highContrast
     // The ring's colour without a reading's tone (the tools' rows): the accent, green in tune.
     val accent = animateInTuneColor(inTune, colors.primary, "pegAccent")
     val ringColour = remember(tone, accent) { ColorProducer { tone?.colour ?: accent.value } }
@@ -385,7 +389,7 @@ private fun StringChip(
                 scale = { lock.value },
             )
             // The heard peg's ring and its glow, over the face's edge and in the room round it.
-            .heardRing(ringGap, ringColour) { ringShown.value }
+            .heardRing(ringGap, ringColour, highContrast) { ringShown.value }
             .pressSink(press)
             .clip(shape)
             .then(
@@ -413,7 +417,7 @@ private fun StringChip(
             .padding(ringGap)
             .background(stringChipFill(colors), shape)
             // An edge 3:1 against the background, as the round buttons' (Phase 65); the heard ring lies over it.
-            .border(1.dp, controlOutline(colors), shape)
+            .border(if (highContrast) HIGH_CONTRAST_EDGE else 1.dp, controlOutline(colors), shape)
             .indication(press, PressIndication(shape))
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
@@ -530,7 +534,7 @@ private fun Modifier.soundingRings(shape: Shape, inset: Dp, color: Color, steady
  * [HEARD_GLOW_ALPHA], in the room outside the face, at most [HEARD_GLOW] wide. [shown] (0..1, read while drawing)
  * fades both; the colour is read while drawing too, so a reading's tone recolours it without recomposing.
  */
-private fun Modifier.heardRing(inset: Dp, colour: ColorProducer, shown: () -> Float): Modifier = drawWithContent {
+private fun Modifier.heardRing(inset: Dp, colour: ColorProducer, highContrast: Boolean, shown: () -> Float): Modifier = drawWithContent {
     drawContent()
     val alpha = shown()
     if (alpha <= 0f) return@drawWithContent
@@ -538,9 +542,9 @@ private fun Modifier.heardRing(inset: Dp, colour: ColorProducer, shown: () -> Fl
     val face = (minOf(size.width, size.height) / 2f - gap).coerceAtLeast(0f)
     if (face <= 0f) return@drawWithContent
     val tone = colour()
-    val stroke = HEARD_RING_STROKE.toPx()
+    val stroke = HEARD_RING_STROKE.toPx() * (if (highContrast) HIGH_CONTRAST_LINES else 1f)
     val glow = minOf(HEARD_GLOW.toPx(), gap)
-    if (glow > 0f) {
+    if (glow > 0f && !highContrast) {
         drawCircle(tone.copy(alpha = tone.alpha * HEARD_GLOW_ALPHA * alpha), radius = face + glow / 2f, style = Stroke(glow))
     }
     drawCircle(tone.copy(alpha = tone.alpha * alpha), radius = face - stroke / 2f, style = Stroke(stroke))
@@ -632,6 +636,9 @@ private val SMALL_CHIP_SIZE = 32.dp
 
 /** The heard peg's ring over its face's edge, its glow outside it (the mock-up's 2 px and 3 px at 22 %), and how long it takes to come or go. */
 private val HEARD_RING_STROKE = 2.dp
+
+/** The high-contrast look's edge round each string button (the mock-up's pegs). */
+private val HIGH_CONTRAST_EDGE = 2.5.dp
 private val HEARD_GLOW = 3.dp
 private const val HEARD_GLOW_ALPHA = 0.22f
 private const val RING_FADE_MS = 250

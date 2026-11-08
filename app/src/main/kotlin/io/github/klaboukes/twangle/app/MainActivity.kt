@@ -56,6 +56,8 @@ import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.LocalScreenTint
 import io.github.klaboukes.twangle.core.designsystem.ScreenTint
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
+import io.github.klaboukes.twangle.core.designsystem.phoneHighContrastFlow
+import io.github.klaboukes.twangle.core.designsystem.phoneWantsHighContrast
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordInstruments
@@ -172,6 +174,11 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
+        // The high-contrast look (Phase 86): the player's switch, else the phone's own contrast (high, or high-contrast
+        // text). Read at once for the first frame, so the look never flashes, then followed while the app shows.
+        val phoneHighContrast by remember { phoneHighContrastFlow(applicationContext) }
+            .collectAsStateWithLifecycle(initialValue = remember { phoneWantsHighContrast(applicationContext) })
+        val highContrast = settings.highContrastOn(phoneHighContrast)
 
         // Status and navigation bar icons follow the app's theme, not just the phone's. Both bars are
         // see-through, so the app's background runs to every edge, under the gesture handle and under
@@ -215,11 +222,12 @@ class MainActivity : AppCompatActivity() {
         // Practice's tools; with none (its switch off) there is no Practice tab, and the metronome keeps its own.
         val practiceTools = practiceToolsFor(tools)
         val screenTint = remember { ScreenTint() }
-        TwangleTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
+        TwangleTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor, highContrast = highContrast) {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
             Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
                 // The tuner tints the whole screen toward its reading (Phase 71): the backdrop and the bar's and rail's fields read it.
-                CompositionLocalProvider(LocalScreenTint provides screenTint) {
+                // Not in the high-contrast look, whose page stays pure black or white.
+                CompositionLocalProvider(LocalScreenTint provides screenTint.takeUnless { highContrast }) {
                     var picked by rememberSaveable { mutableStateOf(Screen.TUNER) }
                     // Practice without a tool is no tab (its switch off): the metronome then, never an empty screen;
                     // a tool whose switch is off shows the cards.
@@ -382,6 +390,7 @@ class MainActivity : AppCompatActivity() {
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
                                     onBack = { picked = settingsOpener },
                                     screenReaderOn = container.screenReaderSpeech.screenReaderOn,
+                                    phoneHighContrast = phoneHighContrast,
                                 )
                                 Screen.ABOUT -> AboutScreen(
                                     appVersion = BuildConfig.VERSION_NAME,

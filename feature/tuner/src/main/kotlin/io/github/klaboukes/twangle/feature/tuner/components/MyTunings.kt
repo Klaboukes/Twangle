@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.dialogEdge
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
@@ -157,7 +158,7 @@ private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> U
 private fun DeleteTuningDialog(name: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        modifier = Modifier.testTag(TunerTestTags.DELETE_TUNING_DIALOG),
+        modifier = Modifier.dialogEdge().testTag(TunerTestTags.DELETE_TUNING_DIALOG),
         // The name goes in the text, not the title: in a style's large title face a long name would
         // take a line per word at large text.
         title = {

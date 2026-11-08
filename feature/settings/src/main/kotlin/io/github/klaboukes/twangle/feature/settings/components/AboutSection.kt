@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.dialogEdge
 import io.github.klaboukes.twangle.core.designsystem.TwangleName
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
@@ -175,6 +176,7 @@ private fun LicenceDialog(credit: Credit, onDismiss: () -> Unit) {
     }
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.dialogEdge(),
         confirmButton = {
             TwangleTextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_about_licence_close)) }
         },

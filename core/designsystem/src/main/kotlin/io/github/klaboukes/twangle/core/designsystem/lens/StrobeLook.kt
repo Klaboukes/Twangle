@@ -17,6 +17,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.dial.STROBE_ROWS
 import io.github.klaboukes.twangle.core.designsystem.dial.drawStrobeBand
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion
@@ -50,11 +52,12 @@ internal fun BoxScope.StrobeLook(reading: LensReading) {
     LaunchedEffect(drift) { runStrobe(reading, drift, frames) }
     val background = MaterialTheme.colorScheme.background
     val ink = MaterialTheme.colorScheme.onSurface
+    val highContrast = MaterialTheme.styleTokens.highContrast
     Spacer(
         Modifier
             .matchParentSize()
             .drawWithCache {
-                val art = StrobeArt(StrobeGeometry(size.width, size.height, density), background, ink)
+                val art = StrobeArt(StrobeGeometry(size.width, size.height, density), background, ink, highContrast)
                 onDrawBehind {
                     // Redraws on every frame the stripes move.
                     frames.intValue
@@ -175,16 +178,24 @@ internal class StrobeGeometry(val width: Float, val height: Float, private val d
     }
 }
 
-/** The strobe's pieces for one size and colours: the bands' ground and the centre line's colour. */
-private class StrobeArt(private val geometry: StrobeGeometry, background: Color, ink: Color) {
+/**
+ * The strobe's pieces for one size and colours: the bands' ground and the centre line's colour. In [highContrast]
+ * (Phase 86) the centre line is the ink in full and twice as wide, the stripes are in full, and each band is edged in
+ * the ink, so the bands keep their shape on a pure black or white page.
+ */
+private class StrobeArt(private val geometry: StrobeGeometry, background: Color, ink: Color, highContrast: Boolean) {
     private val ground = background.copy(alpha = GROUND_ALPHA)
-    private val line = ink.copy(alpha = LINE_ALPHA)
+    private val line = ink.copy(alpha = if (highContrast) 1f else LINE_ALPHA)
+    private val lineWidth = geometry.lineWidth * (if (highContrast) 2f else 1f)
+    private val edge = if (highContrast) ink else null
+    private val edgeStroke = Stroke(geometry.lineWidth)
+    private val liveAlpha = if (highContrast) 1f else LIVE_ALPHA
     private val bandSize = Size(geometry.bandWidth, geometry.bandHeight)
     private val corner = CornerRadius(geometry.corner)
 
     fun draw(scope: DrawScope, drift: StrobeDrift, reading: LensReading) = with(scope) {
         val presence = reading.presence.coerceIn(0f, 1f)
-        val stripes = reading.tone.copy(alpha = REST_ALPHA + (LIVE_ALPHA - REST_ALPHA) * presence)
+        val stripes = reading.tone.copy(alpha = REST_ALPHA + (liveAlpha - REST_ALPHA) * presence)
         for (band in 0 until STROBE_ROWS) {
             val top = geometry.bandTop(band)
             drawRoundRect(ground, topLeft = Offset(geometry.left, top), size = bandSize, cornerRadius = corner)
@@ -197,8 +208,9 @@ private class StrobeArt(private val geometry: StrobeGeometry, background: Color,
                 phase = drift.bandPhase(band),
                 color = stripes,
             )
+            if (edge != null) drawRoundRect(edge, topLeft = Offset(geometry.left, top), size = bandSize, cornerRadius = corner, style = edgeStroke)
         }
-        drawLine(line, Offset(geometry.centreX, geometry.lineTop), Offset(geometry.centreX, geometry.lineBottom), geometry.lineWidth)
+        drawLine(line, Offset(geometry.centreX, geometry.lineTop), Offset(geometry.centreX, geometry.lineBottom), lineWidth)
     }
 
     private companion object {

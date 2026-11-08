@@ -90,7 +90,8 @@ import kotlinx.coroutines.flow.flowOf
  * follows, for what lives outside them (the home-screen widget).
  *
  * [screenReaderOn] says whether TalkBack (or another screen reader) is on: the vibration guide's switch shows on while
- * it is, until the player sets the guide themselves (Phase 85).
+ * it is, until the player sets the guide themselves (Phase 85). [phoneHighContrast] says whether the phone asks for high
+ * contrast: the high-contrast switch shows on while it does, until the player sets it (Phase 86).
  */
 @Composable
 fun SettingsScreen(
@@ -102,6 +103,7 @@ fun SettingsScreen(
     onLanguageChange: () -> Unit = {},
     onBack: (() -> Unit)? = null,
     screenReaderOn: Flow<Boolean> = flowOf(false),
+    phoneHighContrast: Boolean = false,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository, screenReaderOn) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -128,6 +130,8 @@ fun SettingsScreen(
         modifier = modifier,
         screenReaderOn = screenReader,
         onVibrationGuideChange = viewModel::setVibrationGuide,
+        phoneHighContrast = phoneHighContrast,
+        onHighContrastChange = viewModel::setHighContrast,
         onBack = onBack,
         languages = languageTags,
         appLanguage = appLanguage,
@@ -172,6 +176,8 @@ fun SettingsContent(
     onAppLanguageChange: (String?) -> Unit = {},
     screenReaderOn: Boolean = false,
     onVibrationGuideChange: (Boolean) -> Unit = {},
+    phoneHighContrast: Boolean = false,
+    onHighContrastChange: (Boolean) -> Unit = {},
     onBack: (() -> Unit)? = null,
 ) {
     SettingsPage(title = stringResource(R.string.settings_title), onBack = onBack, modifier = modifier) {
@@ -197,6 +203,8 @@ fun SettingsContent(
                 dynamicColorAvailable = dynamicColorAvailable,
                 screenReaderOn = screenReaderOn,
                 onVibrationGuideChange = onVibrationGuideChange,
+                phoneHighContrast = phoneHighContrast,
+                onHighContrastChange = onHighContrastChange,
             )
         }
     }
@@ -337,6 +345,8 @@ private fun SettingsGroups(
     dynamicColorAvailable: Boolean,
     screenReaderOn: Boolean,
     onVibrationGuideChange: (Boolean) -> Unit,
+    phoneHighContrast: Boolean,
+    onHighContrastChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
@@ -370,8 +380,20 @@ private fun SettingsGroups(
                     rowTag = THEME_SETTING_TAG,
                     optionTag = ::themeOptionTag,
                 )
-                // Android 12 and later only: older phones have no wallpaper colours to take.
-                if (dynamicColorAvailable) {
+                // The high-contrast look (Phase 86), a switch beside light or dark (the owner's pick, 2026-11-08), so it
+                // follows light or dark: white on black or black on white. On by itself while the phone asks for high
+                // contrast, until the player sets it. Here, not in an Accessibility group: it helps in daylight too.
+                val highContrast = settings.highContrastOn(phoneHighContrast)
+                SwitchSetting(
+                    title = stringResource(R.string.settings_high_contrast_title),
+                    summary = stringResource(R.string.settings_high_contrast_summary),
+                    checked = highContrast,
+                    onCheckedChange = onHighContrastChange,
+                    modifier = Modifier.testTag(HIGH_CONTRAST_SETTING_TAG),
+                )
+                // Android 12 and later only: older phones have no wallpaper colours to take. Not while high contrast is
+                // on, which sets them aside (they can't promise 7:1).
+                if (dynamicColorAvailable && !highContrast) {
                     SwitchSetting(
                         title = stringResource(R.string.settings_dynamic_color_title),
                         summary = stringResource(R.string.settings_dynamic_color_summary),
@@ -552,6 +574,9 @@ fun notationOptionTag(notation: Notation?): String = "notation:${notation?.name 
 
 /** Test tag of the Light or dark row in Settings. */
 const val THEME_SETTING_TAG = "settings_theme"
+
+/** Test tag of the High contrast switch in Settings. */
+const val HIGH_CONTRAST_SETTING_TAG = "settings_high_contrast"
 
 /** Test tag of a choice in the Light or dark list: its mode's name. */
 fun themeOptionTag(theme: ThemeMode): String = "theme:${theme.name}"

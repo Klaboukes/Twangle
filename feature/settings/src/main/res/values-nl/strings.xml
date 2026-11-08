@@ -29,6 +29,8 @@
 
     <!-- Look. -->
     <string name="settings_theme_title">Licht of donker</string>
+    <string name="settings_high_contrast_title">Hoog contrast</string>
+    <string name="settings_high_contrast_summary">Zwart-wit met dikkere lijnen; vanzelf aan als het contrast van de telefoon hoog staat</string>
     <string name="settings_theme_system">Zoals de telefoon</string>
     <string name="settings_theme_light">Licht</string>
     <string name="settings_theme_dark">Donker</string>

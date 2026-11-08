@@ -246,6 +246,10 @@ class DataStoreSettingsRepository internal constructor(
         save { it[DYNAMIC_COLOR] = enabled }
     }
 
+    override suspend fun setHighContrast(enabled: Boolean) {
+        save { it[HIGH_CONTRAST] = enabled }
+    }
+
     override suspend fun setKeepScreenOn(enabled: Boolean) {
         save { it[KEEP_SCREEN_ON] = enabled }
     }
@@ -430,6 +434,7 @@ class DataStoreSettingsRepository internal constructor(
             inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
+            highContrast = prefs[HIGH_CONTRAST] ?: defaults.highContrast,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             vibrationGuide = prefs[VIBRATION_GUIDE] ?: defaults.vibrationGuide,
@@ -489,6 +494,9 @@ class DataStoreSettingsRepository internal constructor(
         private val IN_TUNE_PRECISION = stringPreferencesKey("in_tune_precision")
         private val THEME = stringPreferencesKey("theme")
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+
+        /** The high-contrast look (Phase 86), written only by the player's own flip; missing, it follows the phone. */
+        private val HIGH_CONTRAST = booleanPreferencesKey("high_contrast")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
 
