@@ -1,0 +1,458 @@
+<!doctype html>
+<!--
+  Rough mock-up, 2026-11-08, Phase 86 (a high-contrast look for low-vision players): the tuner (a string
+  18 cents flat, and one in tune), Chords and Settings in Ink light, Ink dark and three high-contrast
+  candidates (white on black, black on white, yellow on black), side by side; the two ways it could be chosen
+  and whether it comes on by itself; what low-vision people say, with sources; the contrast of every colour,
+  measured by the page itself with WCAG 2.2's formula.
+  Open it in Firefox from a local server at the repo root (python -I -m http.server 8765 --bind 127.0.0.1),
+  then http://127.0.0.1:8765/docs/design/high-contrast-preview.html (the root gives it Twangle's Nunito).
+  Decisions: waiting on the owner's pick (the section "Your pick" at the end).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>High contrast</title>
+<style>
+  @font-face { font-family: "Nunito"; src: url("../../core/designsystem/src/main/res/font/nunito.ttf") format("truetype");
+               font-weight: 200 900; }
+  :root { --page: #F2F3F5; --card: #FFFFFF; --text: #1B1F24; --muted: #4F5864; --line: #D5DAE0; --accent: #1A6FC4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 56px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1320px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 36px 0 6px; }
+  h3 { font-size: 16px; margin: 18px 0 4px; }
+  p.lead { margin: 0 0 12px; color: var(--muted); max-width: 80ch; }
+  a { color: var(--accent); }
+  ul.say { margin: 6px 0 0; padding-left: 20px; max-width: 95ch; }
+  ul.say li { margin: 5px 0; }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--page); padding: 10px 0; margin: 0 0 8px;
+         border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; }
+  .bar label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+  .bar input[type=range] { width: 160px; }
+  .bar .v { font-variant-numeric: tabular-nums; min-width: 6ch; font-weight: 600; }
+  .row { display: flex; gap: 18px; overflow-x: auto; padding: 4px 2px 10px; }
+  figure { margin: 0; flex: none; width: 236px; }
+  figcaption { font-size: 13px; margin-top: 6px; color: var(--muted); }
+  figcaption b { color: var(--text); display: block; font-size: 14px; }
+  .phone { width: 236px; height: 486px; background: #0b0c0f; border-radius: 30px; padding: 3px;
+           box-shadow: 0 10px 26px rgba(0,0,0,.22), inset 0 0 0 2px #2b2f36; }
+  .screen { width: 230px; height: 480px; border-radius: 27px; overflow: hidden; }
+  .screen svg { display: block; width: 230px; height: 480px; }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .box { background: var(--card); border-radius: 12px; padding: 12px 14px; }
+  .box h3 { margin-top: 0; }
+  .rec { border-left: 4px solid var(--accent); }
+  table { border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; font-size: 13.5px; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: #E7EAEE; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  td.low { font-weight: 700; text-decoration: underline; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid #8a919b; vertical-align: -1px; margin-right: 3px; }
+  fieldset { border: 1px solid var(--line); border-radius: 12px; background: var(--card); margin: 10px 0; padding: 8px 14px 10px; max-width: 760px; }
+  legend { font-weight: 600; padding: 0 4px; }
+  fieldset label { display: block; margin: 3px 0; }
+  .mini { width: 300px; border-radius: 18px; padding: 14px 16px; font-family: "Nunito", system-ui, sans-serif; }
+  .mini .t { font-weight: 800; font-size: 17px; margin-bottom: 8px; }
+  .mini .r { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; gap: 12px; }
+  .mini .r small { display: block; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<main>
+<h1>High contrast, for players who see a little</h1>
+<p class="lead">The same three screens in Ink as it is today (light and dark) and in three high-contrast candidates.
+In high contrast: one ink and no grey, a pure black or white page, thicker needle, scale and strings, no glow and no
+tint, in tune shown by a mark and the word, the note and the word bigger and heavier. The sliders blur and dim every
+screen at once: a rough way to see what still reads at a glance, not how any one eye sees.</p>
+
+<div class="bar">
+  <label>Blurred sight <input id="blur" type="range" min="0" max="5" step="0.5" value="0"> <span class="v" id="blurv"></span></label>
+  <label>Screen brightness <input id="dim" type="range" min="25" max="100" step="5" value="100"> <span class="v" id="dimv"></span></label>
+  <label><input id="far" type="checkbox"> At arm's length (smaller)</label>
+</div>
+
+<h2>The tuner, a string 18 cents flat</h2>
+<div class="row" id="r-flat"></div>
+<h2>The tuner, in tune</h2>
+<div class="row" id="r-tune"></div>
+<h2>A Practice tool: Chords</h2>
+<div class="row" id="r-chords"></div>
+<h2>Settings</h2>
+<div class="row" id="r-settings"></div>
+
+<h2>What low-vision players say</h2>
+<ul class="say">
+  <li><b>High contrast is not dark mode.</b> Dark modes are greys for dim rooms; high contrast is pure black and a few
+    strong colours (<a href="https://www.perkins.org/resource/dark-mode-for-low-vision/">Perkins School for the Blind</a>).
+    Apple warns that grey-on-black "may be more difficult to read for those with low vision"
+    (<a href="https://developer.apple.com/help/app-store-connect/manage-app-accessibility/sufficient-contrast-evaluation-criteria">App Store Connect</a>).
+    Ink dark is a dark mode: its scale's arc is 1.35:1 on its background, its light twin's 1.18:1 (table below).</li>
+  <li><b>No one scheme suits all.</b> One player with retinitis pigmentosa found light backgrounds intolerable and inverted
+    every app without a dark theme (<a href="https://www.applevis.com/forum/low-vision-accessibility-apple-products/high-functioning-apple-workflows-peripheral-vision">AppleVis, May 2026</a>);
+    another reads best as black on mustard or yellow (<a href="https://applevis.com/forum/low-vision-accessibility-apple-products/black-text-colored-background">AppleVis, 2025</a>);
+    a dark screen is hard to read in bright light (halation, Perkins). Yellow on black is the old favourite of
+    magnifiers and large-print keyboards (<a href="https://www.applevis.com/comment/60298">HI VIZ on AppleVis</a>).</li>
+  <li><b>They turn it on for the whole phone.</b> Apple: most users who need higher contrast switch on Increase Contrast and
+    Bold Text phone-wide (App Store Connect, above). Samsung's high-contrast theme had passed 15 million downloads by
+    One UI 2 (<a href="https://www.samsungmobilepress.com/feature-stories/accessibility-for-all-one-ui-2-brings-enhanced-accessibility-features-to-the-galaxy-range">Samsung</a>).
+    An app that follows the phone is found; one that hides it in its settings is not.</li>
+  <li><b>What tuners for them advertise:</b> "high contrast, high visibility" (<a href="https://apps.apple.com/us/app/aptuner/id6449228938">APTuner</a>),
+    a high-contrast display (<a href="https://apps.apple.com/us/app/id1290537116">Airyware</a>), a high-contrast dark mode
+    (AccessMusic). A clip-on buyer with poor eyesight praised big characters, colour contrast and clear coloured bands.
+    Big, bold, few, and nothing faint.</li>
+  <li><b>Not to rely on colour:</b> colour inversion turns green to pink and amber to blue, and many low-vision players see
+    colour poorly (Perkins). So in tune is a mark plus the word, and the direction is the needle's side.</li>
+  <li><b>Reddit</b> couldn't be read this time (the built-in browser refuses reddit.com now); Phase 56's post asks low-vision
+    players directly after launch.</li>
+</ul>
+
+<h3>What phones offer by themselves</h3>
+<ul class="say">
+  <li><b>Android 14 and up: a contrast level</b> (on Pixels <i>Accessibility › Colour and motion › Colour contrast</i>:
+    Standard, Medium, High). Apps can read it, <code>UiModeManager.getContrast()</code>, 0 standard to 1 high, with a
+    listener for changes (<a href="https://developer.android.com/reference/android/app/UiModeManager">Android</a>).
+    Material's own colours follow it; Twangle's Ink doesn't, as its colours are its own. To check on the S26.</li>
+  <li><b>High-contrast text</b> (every Android since 5; "Maximise text contrast" on newer Pixels): the phone outlines the
+    text itself, in every app. The <b>Xiaomi 12X</b> (Android 13, HyperOS 1.0, read by adb today) has this and colour
+    inversion, but no contrast level: on it, high-contrast text is the only sign an app can read.</li>
+  <li><b>Samsung:</b> <i>Visibility enhancements</i> holds a high-contrast theme (from Galaxy Themes), high-contrast fonts
+    (outlined), a high-contrast keyboard, colour inversion and colour adjustment
+    (<a href="https://www.samsung.com/ca/support/mobile-devices/galaxy-phone-visibility-enhancements/">Samsung</a>).
+    The theme recolours Samsung's own apps; an app can't ask whether it is on.</li>
+  <li><b>Colour inversion and bold text</b> work on any app by themselves. The high-contrast look inverted is still high
+    contrast (white on black becomes black on white).</li>
+</ul>
+
+<h2>How it is chosen</h2>
+<div class="two">
+  <div class="box"><h3>a · A fourth choice in Light or dark</h3>
+    <div id="mini-a"></div>
+    <p>One list, no new row. But high contrast then has one face only: the player who needs white on black and the one
+    who needs black on white (or dark at night, light in daylight) can't both have it.</p></div>
+  <div class="box rec"><h3>b · A row of its own in Look (Claude's pick)</h3>
+    <div id="mini-b"></div>
+    <p>A switch beside Light or dark: high contrast follows light or dark, so white on black in dark and black on white in
+    light, the phone's or the player's choice. Players differ (above), and the same player differs between a dark stage and
+    daylight. lifecycle.md already puts it in Look.</p></div>
+</div>
+
+<h3>Comes on by itself?</h3>
+<div class="box rec" style="max-width:820px">
+  <p style="margin-top:0"><b>Claude's pick: yes,</b> as the vibration guide does with TalkBack. While the player has never
+  flipped the switch, it is on when the phone's contrast is <b>High</b> (Android 14+) or its <b>high-contrast text</b> is on,
+  and off otherwise; the first flip saves their choice. Medium stays Ink (Ink already reads at 4.5:1, its secondary text 7:1).
+  Why: the players who need it set the phone, not every app (Apple, Samsung's 15 million), and on the Xiaomi's Android 13
+  high-contrast text is the only sign there is. Samsung's theme can't be read; its players find the switch in Look.</p>
+</div>
+
+<h2>Contrast, measured</h2>
+<p class="lead">WCAG 2.2's contrast ratio, worked out by this page from the colours drawn above. The aim for high
+contrast is 7:1 or more for every text and every line that carries meaning; underlined values fall short of it.</p>
+<div style="overflow-x:auto"><table id="ratios"></table></div>
+
+<h2>Your pick</h2>
+<p class="lead">These boxes do nothing; they only help to think it through. Tell Claude what you picked.</p>
+<fieldset><legend>The look</legend>
+  <label><input type="radio" name="l"> Black and white: white on black in dark, black on white in light (Claude's pick)</label>
+  <label><input type="radio" name="l"> Yellow on black, always</label>
+  <label><input type="radio" name="l"> Both, yellow as a third face</label>
+</fieldset>
+<fieldset><legend>How it is chosen</legend>
+  <label><input type="radio" name="c"> a · A fourth choice in Light or dark</label>
+  <label><input type="radio" name="c"> b · A row of its own in Look, next to Light or dark (Claude's pick)</label>
+</fieldset>
+<fieldset><legend>Comes on by itself</legend>
+  <label><input type="radio" name="o"> When the phone's contrast is High or its high-contrast text is on, until the player flips it (Claude's pick)</label>
+  <label><input type="radio" name="o"> Only when the player turns it on</label>
+</fieldset>
+<p class="lead">Claude's reasons, in short: black and white gives both faces from the light or dark choice the app
+already has, and is the strongest contrast there is (21:1); yellow can come later if players ask (IDEAS.md). A row of
+its own keeps both faces. Coming on by itself reaches the players who need it most without their looking for it.</p>
+</main>
+
+<script>
+// ---------- the looks ----------
+const LOOKS = [
+  { id: 'inkL', name: 'Ink light', note: 'today', hc: false, dark: false,
+    bg: '#F6F7F9', surface: '#FFFFFF', ink: '#14181D', muted: '#4D5560', track: '#E1E5EA', accent: '#1A6FC4',
+    onAccent: '#FFFFFF', inTune: '#107E46', onInTune: '#FFFFFF', farOff: '#D98400' },
+  { id: 'inkD', name: 'Ink dark', note: 'today', hc: false, dark: true,
+    bg: '#0E1116', surface: '#171B22', ink: '#EEF1F5', muted: '#A8B0BC', track: '#262C35', accent: '#5FC4FF',
+    onAccent: '#0E1116', inTune: '#3DDC84', onInTune: '#0E1116', farOff: '#FFB648' },
+  { id: 'hcD', name: 'High contrast: white on black', note: 'with dark', hc: true, dark: true,
+    bg: '#000000', surface: '#000000', ink: '#FFFFFF', muted: '#FFFFFF', track: '#FFFFFF', accent: '#FFFFFF',
+    onAccent: '#000000', inTune: '#3DDC84', onInTune: '#000000', farOff: '#FFFFFF' },
+  { id: 'hcL', name: 'High contrast: black on white', note: 'with light', hc: true, dark: false,
+    bg: '#FFFFFF', surface: '#FFFFFF', ink: '#000000', muted: '#000000', track: '#000000', accent: '#000000',
+    onAccent: '#FFFFFF', inTune: '#00602A', onInTune: '#FFFFFF', farOff: '#000000' },
+  { id: 'hcY', name: 'Yellow on black', note: 'the variant', hc: true, dark: true,
+    bg: '#000000', surface: '#000000', ink: '#FFE600', muted: '#FFE600', track: '#FFE600', accent: '#FFE600',
+    onAccent: '#000000', inTune: '#3DDC84', onInTune: '#000000', farOff: '#FFE600' },
+];
+
+// ---------- colour helpers ----------
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const toHex = a => '#' + a.map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+const mix = (a, b, k) => toHex(hex(a).map((v, i) => v + (hex(b)[i] - v) * k));
+const lum = h => { const c = hex(h).map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+// Ink's selected fill (Palette.container): the surface mixed 22 % (light) / 32 % (dark) with the accent.
+const container = L => L.hc ? L.ink : mix(L.surface, L.accent, L.dark ? 0.32 : 0.22);
+const onContainer = L => L.hc ? L.bg : L.ink;
+
+const FONT = '"Nunito","Segoe UI",system-ui,sans-serif';
+const NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const T = (x, y, s, size, fill, weight = 600, anchor = 'middle', extra = '') =>
+  `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="${anchor}" dominant-baseline="middle" ${extra}>${esc(s)}</text>`;
+const pol = (cx, cy, r, deg) => [cx + r * Math.sin(deg * Math.PI / 180), cy - r * Math.cos(deg * Math.PI / 180)];
+
+// ---------- shared pieces ----------
+function statusBar(L) { return T(24, 13, '9:41', 10, L.hc ? L.ink : L.muted, 700, 'start') + T(206, 13, '▮▮▮', 9, L.hc ? L.ink : L.muted, 700, 'end'); }
+const GEAR = (x, y, c, w) => `<g transform="translate(${x - 10} ${y - 10}) scale(.83)" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.6"/></g>`;
+const BACK = (x, y, c, w) => `<path d="M${x + 7} ${y - 8} L${x - 2} ${y} L${x + 7} ${y + 8} M${x - 2} ${y} H${x + 12}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+function tabs(L, on) {
+  const y0 = 432, items = [['Tune', 'tune'], ['Metronome', 'metro'], ['Practice', 'practice']];
+  let s = L.hc ? `<line x1="0" y1="${y0}" x2="230" y2="${y0}" stroke="${L.ink}" stroke-width="2"/>`
+               : `<rect x="0" y="${y0}" width="230" height="48" fill="${L.dark ? '#12151B' : '#FFFFFF'}"/><line x1="0" y1="${y0}" x2="230" y2="${y0}" stroke="${L.track}"/>`;
+  items.forEach(([label, id], i) => {
+    const cx = 40 + i * 75, sel = id === on;
+    const ic = sel ? (L.hc ? L.bg : L.accent) : (L.hc ? L.ink : L.muted), w = L.hc ? 2.4 : 1.8;
+    if (sel) s += `<rect x="${cx - 20}" y="${y0 + 6}" width="40" height="22" rx="11" fill="${L.hc ? L.ink : container(L)}"/>`;
+    const g = id === 'tune' ? `<path d="M${cx - 8} ${y0 + 22}a8 8 0 0 1 16 0M${cx} ${y0 + 22}l4-7" />`
+      : id === 'metro' ? `<path d="M${cx - 4} ${y0 + 10}h8l3 14h-14z M${cx} ${y0 + 20}l5-8"/>`
+      : `<rect x="${cx - 7}" y="${y0 + 10}" width="6" height="6" rx="1.2"/><rect x="${cx + 1}" y="${y0 + 10}" width="6" height="6" rx="1.2"/><rect x="${cx - 7}" y="${y0 + 18}" width="6" height="6" rx="1.2"/><rect x="${cx + 1}" y="${y0 + 18}" width="6" height="6" rx="1.2"/>`;
+    s += `<g fill="none" stroke="${ic}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${g}</g>`;
+    s += T(cx, y0 + 38, label, L.hc ? 10.5 : 9.5, sel || L.hc ? L.ink : L.muted, sel || L.hc ? 800 : 600);
+  });
+  return s;
+}
+
+// ---------- the tuner ----------
+function tuner(L, cents, inTune) {
+  const W = 230, tone = inTune ? L.inTune : L.farOff;
+  let s = `<rect width="${W}" height="480" fill="${L.bg}"/>`;
+  if (!L.hc) s += `<rect width="${W}" height="480" fill="${tone}" opacity="${L.dark ? .12 : .10}"/>`;   // Ink's tint toward the tone
+  s += statusBar(L);
+  const thin = L.hc ? 2.6 : 1.8;
+  s += GEAR(22, 42, L.hc ? L.ink : L.muted, thin) + T(46, 42, 'Tune', L.hc ? 18 : 17, L.ink, 800, 'start');
+  s += `<g fill="none" stroke="${L.hc ? L.ink : L.muted}" stroke-width="${thin}" stroke-linecap="round"><path d="M200 37v-6h6M214 31h6v6M200 47v6h6M220 47v6h-6"/></g>`;
+  // the picker chip
+  s += `<rect x="58" y="62" width="114" height="24" rx="12" fill="${L.hc ? L.bg : L.surface}" stroke="${L.hc ? L.ink : L.track}" stroke-width="${L.hc ? 2 : 1}"/>`;
+  s += T(115, 74.5, 'Guitar · Standard ▾', 11, L.ink, L.hc ? 800 : 700);
+  // the ruler: the note under the pointer
+  const midi = 40, pos = midi + cents / 100, step = L.hc ? 46 : 38;
+  for (let m = midi - 3; m <= midi + 3; m++) {
+    const x = 115 + (m - pos) * step; if (x < 6 || x > 224) continue;
+    const cur = m === midi, nm = NAMES[((m % 12) + 12) % 12];
+    s += cur ? T(x, 112, nm, L.hc ? 50 : 36, L.ink, L.hc ? 900 : 800)
+             : T(x, 118, nm, L.hc ? 19 : 15, L.hc ? L.ink : L.muted, L.hc ? 800 : 500, 'middle', L.hc ? '' : 'opacity=".9"');
+    s += `<line x1="${x}" y1="142" x2="${x}" y2="${cur ? 132 : 136}" stroke="${L.hc ? L.ink : L.muted}" stroke-width="${L.hc ? 3 : 1.5}"/>`;
+  }
+  s += `<line x1="8" y1="142" x2="222" y2="142" stroke="${L.hc ? L.ink : L.track}" stroke-width="${L.hc ? 3 : 1.5}"/>`;
+  s += `<path d="M${115 - (L.hc ? 9 : 6)} ${L.hc ? 158 : 153}h${L.hc ? 18 : 12}l-${L.hc ? 9 : 6} -${L.hc ? 13 : 9}z" fill="${L.hc ? L.ink : tone}"/>`;
+  // the Classic dial: ±50 cents over ±70°
+  const cx = 115, cy = 300, R = 98, A = c => c / 50 * 70;
+  const arcPath = (r, a0, a1) => { const [x0, y0] = pol(cx, cy, r, a0), [x1, y1] = pol(cx, cy, r, a1);
+    return `M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}`; };
+  s += `<path d="${arcPath(R, -72, 72)}" fill="none" stroke="${L.track}" stroke-width="${L.hc ? 3.5 : 1.5}"/>`;
+  // the in-tune zone (5 cents each way)
+  if (L.hc) {
+    const [a, b] = [A(-5), A(5)];
+    const [x0, y0] = pol(cx, cy, R + 6, a), [x1, y1] = pol(cx, cy, R + 6, b), [x2, y2] = pol(cx, cy, R - 14, b), [x3, y3] = pol(cx, cy, R - 14, a);
+    s += `<path d="M${x0} ${y0} A${R + 6} ${R + 6} 0 0 1 ${x1} ${y1} L${x2} ${y2} A${R - 14} ${R - 14} 0 0 0 ${x3} ${y3}Z" fill="${inTune ? L.inTune : 'none'}" stroke="${L.ink}" stroke-width="3"/>`;
+  } else {
+    if (inTune) s += `<circle cx="${cx}" cy="${cy - R}" r="34" fill="${L.inTune}" opacity=".28" filter="url(#glow)"/>`;
+    s += `<path d="${arcPath(R, A(-5), A(5))}" fill="none" stroke="${inTune ? L.inTune : L.muted}" stroke-opacity="${inTune ? 1 : .55}" stroke-width="4" stroke-linecap="round"/>`;
+  }
+  for (let c = -50; c <= 50; c += 5) {
+    if (c === 0) continue;
+    const ten = c % 10 === 0, len = L.hc ? (ten ? 17 : 10) : (ten ? 11 : 6);
+    const [x0, y0] = pol(cx, cy, R - 4, A(c)), [x1, y1] = pol(cx, cy, R - 4 - len, A(c));
+    s += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${L.ink}" stroke-opacity="${L.hc || ten ? 1 : .5}" stroke-width="${L.hc ? (ten ? 3.5 : 2.5) : 1.4}" stroke-linecap="${L.hc ? 'butt' : 'round'}"/>`;
+    if (ten) { const [tx, ty] = pol(cx, cy, R - (L.hc ? 38 : 26), A(c)); s += T(tx, ty, String(Math.abs(c)), L.hc ? 11.5 : 10, L.ink, L.hc ? 800 : 600, 'middle', L.hc ? '' : 'opacity=".8"'); }
+  }
+  const [mx0, my0] = pol(cx, cy, R + 7, 0), [mx1, my1] = pol(cx, cy, R - 7, 0);
+  s += `<line x1="${mx0}" y1="${my0}" x2="${mx1}" y2="${my1}" stroke="${L.ink}" stroke-width="${L.hc ? 4 : 2}"/>`;
+  s += T(18, cy - 6, '♭', L.hc ? 24 : 17, L.hc ? L.ink : L.muted, 700) + T(212, cy - 6, '♯', L.hc ? 24 : 17, L.hc ? L.ink : L.muted, 700);
+  // the needle
+  const [nx, ny] = pol(cx, cy, R - 6, A(cents));
+  const needle = L.hc ? L.ink : (inTune ? mix(L.ink, L.inTune, .9) : L.ink);
+  if (!L.hc) s += `<line x1="${cx + 1.5}" y1="${cy + 2}" x2="${nx + 1.5}" y2="${ny + 2}" stroke="#000" stroke-opacity=".18" stroke-width="3"/>`;
+  s += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${needle}" stroke-width="${L.hc ? 6 : 2.6}" stroke-linecap="round"/>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="${L.hc ? 8 : 5}" fill="${needle}"/>`;
+  // the word and the cents under it
+  if (L.hc) {
+    if (inTune) {
+      s += `<circle cx="38" cy="340" r="17" fill="${L.inTune}" stroke="${L.ink}" stroke-width="2.5"/><path d="M30 340l6 6 11-12" fill="none" stroke="${L.onInTune}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
+      s += T(64, 341, 'In tune', 33, L.ink, 900, 'start');
+    } else {
+      s += T(115, 341, 'Tighten', 34, L.ink, 900);
+      s += T(115, 372, '18 cents flat', 16, L.ink, 800);
+    }
+  } else {
+    s += T(115, 340, inTune ? 'In tune' : 'Tighten', 26, tone, 800);
+    if (!inTune) s += T(115, 366, '18 cents flat', 12.5, L.muted, 600);
+  }
+  // the pegs
+  ['E', 'A', 'D', 'G', 'B', 'E'].forEach((n, i) => {
+    const x = 30 + i * 34, sel = i === 0, y = 405;
+    if (L.hc) {
+      s += `<circle cx="${x}" cy="${y}" r="14" fill="${sel ? L.ink : L.bg}" stroke="${L.ink}" stroke-width="2.5"/>`;
+      s += T(x, y + 1, n, 14, sel ? L.bg : L.ink, 900);
+    } else {
+      s += `<circle cx="${x}" cy="${y}" r="14" fill="${L.surface}" stroke="${sel ? tone : L.track}" stroke-width="2"/>`;
+      if (sel) s += `<circle cx="${x}" cy="${y}" r="17" fill="none" stroke="${tone}" stroke-opacity=".22" stroke-width="3"/>`;
+      s += T(x, y + 1, n, 12.5, L.ink, 700);
+    }
+  });
+  return s + tabs(L, 'tune');
+}
+
+// ---------- Chords ----------
+function chords(L) {
+  let s = `<rect width="230" height="480" fill="${L.bg}"/>` + statusBar(L);
+  const w = L.hc ? 2.8 : 1.8;
+  s += BACK(18, 42, L.hc ? L.ink : L.ink, w);
+  s += `<rect x="64" y="30" width="114" height="24" rx="12" fill="${L.hc ? L.bg : L.surface}" stroke="${L.hc ? L.ink : L.track}" stroke-width="${L.hc ? 2 : 1}"/>`;
+  s += T(121, 42.5, 'Guitar · Standard ▾', 11, L.ink, L.hc ? 800 : 700);
+  s += T(115, 88, 'A minor', L.hc ? 34 : 28, L.ink, L.hc ? 900 : 800);
+  s += T(115, 115, 'Am  ·  x 0 2 2 1 0', L.hc ? 14 : 12, L.hc ? L.ink : L.muted, L.hc ? 800 : 600);
+  // the chord box
+  const x0 = 55, sx = 24, y0 = 160, sy = 40;
+  s += `<rect x="${x0}" y="${y0 - (L.hc ? 7 : 5)}" width="${sx * 5}" height="${L.hc ? 7 : 5}" fill="${L.ink}"/>`;
+  for (let f = 1; f <= 4; f++) s += `<line x1="${x0}" y1="${y0 + f * sy}" x2="${x0 + 5 * sx}" y2="${y0 + f * sy}" stroke="${L.hc ? L.ink : L.muted}" stroke-width="${L.hc ? 3 : 1.4}"/>`;
+  for (let i = 0; i < 6; i++) s += `<line x1="${x0 + i * sx}" y1="${y0}" x2="${x0 + i * sx}" y2="${y0 + 4 * sy}" stroke="${L.ink}" stroke-width="${L.hc ? 3 : 1.4 + (5 - i) * .15}"/>`;
+  const top = ['×', 'o', '', '', '', 'o'];
+  top.forEach((m, i) => { if (m) s += T(x0 + i * sx, y0 - 18, m, L.hc ? 17 : 14, L.hc ? L.ink : L.muted, L.hc ? 900 : 700); });
+  [[2, 2, '2'], [3, 2, '3'], [4, 1, '1']].forEach(([str, fret, fin]) => {
+    const x = x0 + str * sx, y = y0 + (fret - .5) * sy;
+    s += `<circle cx="${x}" cy="${y}" r="${L.hc ? 11 : 10}" fill="${L.hc ? L.ink : L.accent}"/>`;
+    s += T(x, y + 1, fin, L.hc ? 13 : 11, L.hc ? L.bg : L.onAccent, 900);
+  });
+  // the chord pills
+  const pills = ['C', 'D', 'Em', 'Am', 'G', 'F'];
+  pills.forEach((p, i) => {
+    const x = 14 + i * 34.5, sel = p === 'Am';
+    s += `<rect x="${x}" y="350" width="30" height="28" rx="14" fill="${sel ? container(L) : (L.hc ? L.bg : L.surface)}" stroke="${L.hc ? L.ink : (sel ? L.accent : L.track)}" stroke-width="${L.hc ? 2.2 : 1}"/>`;
+    s += T(x + 15, 365, p, 12, sel ? onContainer(L) : L.ink, sel || L.hc ? 900 : 700);
+  });
+  // the drone / hear-it button
+  s += `<rect x="70" y="390" width="90" height="30" rx="15" fill="${L.accent}"/>`;
+  s += `<path d="M90 398v14l11-7z" fill="${L.onAccent}"/>` + T(124, 405.5, 'Hear it', 12.5, L.onAccent, 800);
+  return s + tabs(L, 'practice');
+}
+
+// ---------- Settings ----------
+function settings(L) {
+  let s = `<rect width="230" height="480" fill="${L.bg}"/>` + statusBar(L);
+  const w = L.hc ? 2.8 : 1.8, sec = L.hc ? L.ink : L.muted, hw = L.hc ? 900 : 800;
+  s += BACK(18, 42, L.ink, w) + T(42, 42, 'Settings', L.hc ? 19 : 18, L.ink, hw, 'start');
+  s += T(14, 72, 'Look', L.hc ? 15 : 13.5, L.hc ? L.ink : L.accent, hw, 'start');
+  s += T(14, 92, 'Meter', 12, L.ink, 700, 'start');
+  ['Classic', 'Light arc', 'Strobe'].forEach((n, i) => {
+    const x = 14 + i * 69, sel = i === 0;
+    s += `<rect x="${x}" y="102" width="64" height="58" rx="10" fill="${L.hc ? L.bg : L.surface}" stroke="${sel ? L.accent : (L.hc ? L.ink : L.track)}" stroke-width="${sel ? (L.hc ? 4 : 2) : (L.hc ? 2 : 1)}"/>`;
+    s += `<path d="M${x + 14} ${131}a18 18 0 0 1 36 0" fill="none" stroke="${L.hc ? L.ink : L.muted}" stroke-width="${L.hc ? 2.5 : 1.4}"/><line x1="${x + 32}" y1="131" x2="${x + 38}" y2="117" stroke="${L.ink}" stroke-width="${L.hc ? 3 : 1.8}" stroke-linecap="round"/>`;
+    s += T(x + 32, 148, n, 10.5, L.ink, sel ? 900 : 700);
+    if (sel && L.hc) s += `<circle cx="${x + 56}" cy="110" r="8" fill="${L.ink}"/><path d="M${x + 52} 110l3 3 5-6" fill="none" stroke="${L.bg}" stroke-width="2.2" stroke-linecap="round"/>`;
+  });
+  // rows
+  const row = (y, title, line, right) => T(14, y, title, 12.5, L.ink, 700, 'start') + (line ? T(14, y + 15, line, 10.5, sec, L.hc ? 700 : 500, 'start') : '') + (right || '');
+  const sw = (y, on) => {
+    const x = 180;
+    if (L.hc) return `<rect x="${x}" y="${y - 10}" width="36" height="20" rx="10" fill="${on ? L.ink : L.bg}" stroke="${L.ink}" stroke-width="2.5"/><circle cx="${on ? x + 26 : x + 10}" cy="${y}" r="${on ? 7 : 5.5}" fill="${on ? L.bg : L.ink}"/>` + (on ? `<path d="M${x + 22} ${y}l3 3 5-6" fill="none" stroke="${L.ink}" stroke-width="2" stroke-linecap="round"/>` : '');
+    return `<rect x="${x}" y="${y - 10}" width="36" height="20" rx="10" fill="${on ? L.accent : 'none'}" stroke="${on ? L.accent : L.muted}" stroke-width="1.6"/><circle cx="${on ? x + 26 : x + 10}" cy="${y}" r="${on ? 7 : 5}" fill="${on ? L.onAccent : L.muted}"/>`;
+  };
+  s += row(182, 'Under the meter', 'Words: Tighten or Loosen');
+  s += row(222, 'Light or dark', L.hc ? (L.dark ? 'Dark' : 'Light') : 'Same as the phone', T(214, 229, '›', 18, L.ink, 700));
+  s += row(262, 'High contrast', 'Black and white, thicker lines', sw(268, L.hc));
+  if (!L.hc) s += `<rect x="8" y="250" width="214" height="36" rx="8" fill="none" stroke="${L.accent}" stroke-dasharray="3 3"/>` + T(214, 247, 'new', 9, L.accent, 800, 'end');
+  s += row(302, 'Wallpaper colours', '', sw(302, false));
+  s += T(14, 336, 'While tuning', L.hc ? 15 : 13.5, L.hc ? L.ink : L.accent, hw, 'start');
+  s += row(360, 'Keep screen on', '', sw(360, true));
+  s += row(392, 'Vibrate when in tune', '', sw(392, true));
+  s += row(424, 'Vibration guide', 'Taps while you tune', sw(430, false));
+  return s;   // Settings is full screen: no navigation bar
+}
+
+// ---------- building the rows ----------
+const DEFS = `<defs><filter id="glow" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="10"/></filter></defs>`;
+function phone(parent, L, svg, caption) {
+  const f = document.createElement('figure');
+  f.innerHTML = `<div class="phone"><div class="screen"><svg viewBox="0 0 230 480" font-family='${FONT}'>${DEFS}${svg}</svg></div></div>
+    <figcaption><b>${L.name}</b>${caption}</figcaption>`;
+  parent.appendChild(f);
+}
+const cap = {
+  flat: L => L.hc ? 'Needle 6 thick, ticks 2.5–3.5, the note 50 and black-heavy, no tint.' : 'Thin needle, grey ticks, the screen tinted amber.',
+  tune: L => L.hc ? 'The zone filled and outlined, a check mark, the word. Still clear with colour inverted or not seen.' : 'Green glow, green word, green tint: colour does the work.',
+  chords: L => L.hc ? 'Every string and fret in the ink, dots filled, the picked chord filled.' : 'Fret lines in grey, the picked chord a pale fill.',
+  settings: L => L.hc ? 'No grey lines; headings in the ink; switches outlined, on is filled with a check.' : 'The new row shown dashed: where it would go.',
+};
+LOOKS.forEach(L => {
+  phone(document.getElementById('r-flat'), L, tuner(L, -18, false), cap.flat(L));
+  phone(document.getElementById('r-tune'), L, tuner(L, 1, true), cap.tune(L));
+  phone(document.getElementById('r-chords'), L, chords(L), cap.chords(L));
+  phone(document.getElementById('r-settings'), L, settings(L), cap.settings(L));
+});
+
+// ---------- the two ways it is chosen ----------
+(function () {
+  const L = LOOKS[0];
+  const radio = on => `<span style="width:18px;height:18px;border-radius:50%;border:2px solid ${on ? L.accent : L.muted};display:inline-flex;align-items:center;justify-content:center">${on ? `<span style="width:9px;height:9px;border-radius:50%;background:${L.accent}"></span>` : ''}</span>`;
+  const a = ['Same as the phone', 'Light', 'Dark', 'High contrast'].map((n, i) =>
+    `<div class="r" style="justify-content:flex-start">${radio(i === 3)}<span>${n}${i === 3 ? '<small style="color:' + L.muted + '">White on black</small>' : ''}</span></div>`).join('');
+  document.getElementById('mini-a').innerHTML = `<div class="mini" style="background:${L.surface};color:${L.ink};border:1px solid ${L.track}"><div class="t">Light or dark</div>${a}</div>`;
+  const tog = on => `<span style="flex:none;width:40px;height:22px;border-radius:11px;background:${on ? L.accent : 'transparent'};border:1.6px solid ${on ? L.accent : L.muted};position:relative"><span style="position:absolute;top:3px;left:${on ? 21 : 4}px;width:${on ? 14 : 12}px;height:${on ? 14 : 12}px;border-radius:50%;background:${on ? '#fff' : L.muted}"></span></span>`;
+  document.getElementById('mini-b').innerHTML = `<div class="mini" style="background:${L.bg};color:${L.ink};border:1px solid ${L.track}">
+    <div class="t" style="color:${L.accent};font-size:14px">Look</div>
+    <div class="r"><span>Light or dark<small style="color:${L.muted}">Same as the phone</small></span><span>›</span></div>
+    <div class="r"><span>High contrast<small style="color:${L.muted}">Black and white, thicker lines. On by itself when the phone's contrast is high</small></span>${tog(true)}</div>
+    <div class="r"><span>Wallpaper colours</span>${tog(false)}</div></div>`;
+})();
+
+// ---------- the contrast table ----------
+(function () {
+  const rows = [
+    ['Text on the page', L => [L.ink, L.bg]],
+    ['Secondary text on the page', L => [L.muted, L.bg]],
+    ['Text on a card or chip', L => [L.ink, L.surface]],
+    ['Picked item: its text on its fill', L => [onContainer(L), container(L)]],
+    ["Scale's arc, ruler line, card edges", L => [L.track, L.bg]],
+    ["Scale's minor ticks", L => [L.hc ? L.ink : mix(L.bg, L.ink, .5), L.bg]],
+    ['Needle, major ticks', L => [L.ink, L.bg]],
+    ['Accent (buttons, chord dots, headings)', L => [L.accent, L.bg]],
+    ['Text on the accent', L => [L.onAccent, L.accent]],
+    ['In-tune mark on the page', L => [L.inTune, L.bg]],
+    ['Check on the in-tune mark', L => [L.onInTune, L.inTune]],
+  ];
+  let h = '<tr><th>What</th>' + LOOKS.map(L => `<th>${L.name}</th>`).join('') + '</tr>';
+  for (const [what, f] of rows) {
+    h += `<tr><td>${what}</td>` + LOOKS.map(L => {
+      const [a, b] = f(L), r = ratio(a, b);
+      return `<td class="n${r < 7 ? ' low' : ''}"><span class="sw" style="background:${a}"></span><span class="sw" style="background:${b}"></span>${r.toFixed(1)}</td>`;
+    }).join('') + '</tr>';
+  }
+  document.getElementById('ratios').innerHTML = h;
+})();
+
+// ---------- blur, dim, distance ----------
+const blur = document.getElementById('blur'), dim = document.getElementById('dim'), far = document.getElementById('far');
+function view() {
+  document.getElementById('blurv').textContent = blur.value === '0' ? 'none' : blur.value + ' px';
+  document.getElementById('dimv').textContent = dim.value + ' %';
+  document.querySelectorAll('.screen').forEach(e => { e.style.filter = `blur(${blur.value}px) brightness(${dim.value}%)`; });
+  document.querySelectorAll('.row figure').forEach(e => { e.style.zoom = far.checked ? .6 : 1; });
+}
+[blur, dim].forEach(e => e.oninput = view); far.onchange = view; view();
+</script>
+</body>
+</html>
