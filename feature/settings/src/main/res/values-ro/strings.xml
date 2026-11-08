@@ -1,0 +1,75 @@
+<resources>
+    <string name="settings_title">Setări</string>
+    <string name="settings_back">Înapoi</string>
+
+    <string name="settings_group_tuning">Acordaj</string>
+    <string name="settings_group_while_tuning">La acordare</string>
+    <string name="settings_group_look">Aspect</string>
+
+    <string name="settings_a4_title">Nota de referință (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Majoritatea muzicii folosește 440 Hz. Orchestrele acordează adesea la 442 Hz, ansamblurile baroce la 415 Hz.</string>
+    <string name="settings_a4_lower">Coborâți A4 cu 1 Hz</string>
+    <string name="settings_a4_raise">Ridicați A4 cu 1 Hz</string>
+    <string name="settings_a4_reset">Reveniți la %1$d Hz</string>
+
+    <string name="settings_precise_title">Acordaj precis</string>
+    <string name="settings_precise_summary">Acordat în limita a 2 cenți, nu 5</string>
+    <string name="settings_notation_title">Numele notelor</string>
+    <string name="settings_notation_sharps">Diezi: C, C♯, D …</string>
+    <string name="settings_notation_flats">Bemoli: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automat: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Germană: C, C♯, D … H</string>
+
+    <string name="settings_theme_title">Luminos sau întunecat</string>
+    <string name="settings_high_contrast_title">Contrast ridicat</string>
+    <string name="settings_high_contrast_summary">Alb-negru cu linii mai groase; pornește singur când contrastul telefonului e ridicat</string>
+    <string name="settings_theme_system">Ca telefonul</string>
+    <string name="settings_theme_light">Luminos</string>
+    <string name="settings_theme_dark">Întunecat</string>
+    <string name="settings_dynamic_color_title">Culorile imaginii de fundal</string>
+    <string name="settings_dynamic_color_summary">Folosiți culorile imaginii de fundal</string>
+
+    <string name="settings_meter_title">Indicator</string>
+    <string name="settings_meter_classic">Clasic</string>
+    <string name="settings_meter_light_arc">Arc de lumini</string>
+    <string name="settings_meter_strobe">Stroboscop</string>
+
+    <string name="settings_left_handed_title">Pentru stângaci</string>
+    <string name="settings_left_handed_summary">Diagramele acordurilor și ale gamelor, desenate pentru chitara ținută invers</string>
+
+    <string name="settings_under_meter_title">Sub indicator</string>
+    <string name="settings_under_meter_words">Cuvinte: Întindeți sau Slăbiți</string>
+    <string name="settings_under_meter_cents">Cenți: −12</string>
+    <string name="settings_keep_screen_on_title">Ecran mereu aprins</string>
+    <string name="settings_keep_screen_on_summary">Ecranul rămâne aprins cât acordați</string>
+    <string name="settings_vibrate_in_tune_title">Vibrație când e acordat</string>
+    <string name="settings_vibrate_in_tune_summary">O vibrație scurtă când nota ajunge la înălțimea corectă</string>
+    <string name="settings_vibration_guide_title">Ghid prin vibrații</string>
+    <string name="settings_vibration_guide_summary">Vibrații cât acordați: una pentru întindere, două pentru slăbire, lungă când e acordat</string>
+    <string name="settings_string_tick_off_title">Bifați corzile acordate</string>
+    <string name="settings_string_tick_off_summary">O bifă pe fiecare coardă acordată și „Acordat. Cântați.” când sunt toate</string>
+
+    <string name="settings_language_title">Limbă</string>
+    <string name="settings_language_phone">Limba telefonului</string>
+    <string name="settings_language_cancel">Anulați</string>
+    <string name="about_title">Despre Twangle</string>
+    <string name="settings_about_link_summary">Versiunea %1$s, ajutor, confidențialitate și licențe</string>
+    <string name="settings_about_name_title">Numele</string>
+    <string name="settings_about_name_meaning">Twang este cuvântul englezesc pentru sunetul vibrant al unei coarde ciupite.</string>
+    <string name="settings_about_version">Versiunea %1$s</string>
+    <string name="settings_about_free_title">Gratuit pentru totdeauna</string>
+    <string name="settings_about_free_summary">Fără reclame, fără cont, fără achiziții în aplicație și fără urmărire. Nici acum, nici mai târziu.</string>
+    <string name="settings_about_privacy_title">Confidențialitate</string>
+    <string name="settings_about_privacy_summary">Twangle nu colectează date despre dumneavoastră. Microfonul este pornit doar cât timp este deschis un ecran care ascultă: acordorul, Ascultați din metronom sau Reproduceți din Auz muzical. Sunetul este analizat pe loc și nu este niciodată înregistrat, salvat sau trimis. Twangle nu are permisiunea de acces la internet, deci nu poate trimite nimic nicăieri. Setările rămân pe acest dispozitiv (și în backupul propriu Android, dacă l-ați activat).</string>
+    <string name="settings_about_rate_title">Evaluați Twangle</string>
+    <string name="settings_about_rate_summary">Twangle pe Google Play</string>
+    <string name="settings_about_website_title">Ajutor și site</string>
+    <string name="settings_about_website_summary">Cum funcționează fiecare funcție și răspunsuri la întrebări frecvente</string>
+    <string name="settings_about_credits_title">Fonturi și software open source</string>
+    <string name="settings_about_credits_summary">Twangle este făcut cu acestea. Atingeți unul pentru a-i citi licența.</string>
+    <string name="settings_about_licence_open">Citiți licența</string>
+    <string name="settings_about_licence_close">Închideți</string>
+</resources>

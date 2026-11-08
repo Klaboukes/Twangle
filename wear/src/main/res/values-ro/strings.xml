@@ -1,0 +1,46 @@
+<resources>
+    <string name="wear_play_note">Cântați o notă</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s cent</item>
+        <item quantity="few">%1$s cenți</item>
+        <item quantity="other">%1$s de cenți</item>
+    </plurals>
+    <string name="wear_in_tune">acordat</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d cent mai jos</item>
+        <item quantity="few">%1$d cenți mai jos</item>
+        <item quantity="other">%1$d de cenți mai jos</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d cent mai sus</item>
+        <item quantity="few">%1$d cenți mai sus</item>
+        <item quantity="other">%1$d de cenți mai sus</item>
+    </plurals>
+    <string name="wear_word_tighten">Întindeți</string>
+    <string name="wear_word_loosen">Slăbiți</string>
+    <string name="wear_spoken_sharp">%1$s diez</string>
+    <string name="wear_vibration_guide">Ghid prin vibrații</string>
+    <string name="wear_mic_needed">Twangle ascultă instrumentul prin microfonul ceasului.</string>
+    <string name="wear_allow_mic">Permiteți microfonul</string>
+    <string name="wear_open_settings">Deschideți setările</string>
+    <string name="wear_mic_busy">Altă aplicație folosește microfonul.</string>
+    <string name="wear_mic_unavailable">Microfonul nu poate fi deschis.</string>
+    <string name="wear_try_again">Reîncercați</string>
+    <string name="wear_tile_tune">Acordare</string>
+    <string name="wear_tile_metronome">Metronom</string>
+    <string name="wear_tile_open_metronome">Deschideți metronomul, %1$s</string>
+    <string name="wear_shortcut_tune">Tuner</string>
+    <string name="wear_shortcut_open">Deschideți acordorul</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d bătaie pe minut</item>
+        <item quantity="few">%1$d bătăi pe minut</item>
+        <item quantity="other">%1$d de bătăi pe minut</item>
+    </plurals>
+    <string name="wear_metronome_playing">Pornit</string>
+    <string name="wear_metronome_stopped">Oprit</string>
+    <string name="wear_metronome_start">Start</string>
+    <string name="wear_metronome_stop">Stop</string>
+    <string name="wear_metronome_click">Sunet de clic</string>
+</resources>

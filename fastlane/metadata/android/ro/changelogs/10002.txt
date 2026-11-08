@@ -1,0 +1,1 @@
+- În turul de la prima pornire, Omiteți turul și Înainte funcționează acum de la prima atingere.

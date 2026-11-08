@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Timpi pe măsură</string>
+    <string name="metronome_tempo">Tempo</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d bătaie pe minut, %2$s</item>
+        <item quantity="few">%1$d bătăi pe minut, %2$s</item>
+        <item quantity="other">%1$d de bătăi pe minut, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">bătăi pe minut · %1$s</string>
+    <string name="metronome_slower">Mai lent</string>
+    <string name="metronome_faster">Mai rapid</string>
+    <string name="metronome_tap">Bateți tempoul</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stop</string>
+    <string name="metronome_vibrate">Vibrație pe fiecare timp</string>
+    <string name="metronome_sound">Sunet</string>
+    <string name="metronome_sound_wood_block">Bloc de lemn</string>
+    <string name="metronome_sound_cowbell">Talangă</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Rim click</string>
+    <string name="metronome_subdivision">Între timpi</string>
+    <string name="metronome_subdivision_none">Nimic</string>
+    <string name="metronome_subdivision_eighths">Optimi</string>
+    <string name="metronome_subdivision_triplets">Triolete</string>
+    <string name="metronome_subdivision_sixteenths">Șaisprezecimi</string>
+    <string name="metronome_options">Opțiuni</string>
+
+    <string name="metronome_trainer">Antrenor de tempo</string>
+    <string name="metronome_trainer_start">Tempo inițial</string>
+    <string name="metronome_trainer_goal">Țintă</string>
+    <string name="metronome_trainer_start_slower">Tempo inițial mai mic</string>
+    <string name="metronome_trainer_start_faster">Tempo inițial mai mare</string>
+    <string name="metronome_trainer_goal_slower">Țintă mai mică</string>
+    <string name="metronome_trainer_goal_faster">Țintă mai mare</string>
+    <string name="metronome_trainer_step">Pas</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Măsuri</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s măsură</item>
+        <item quantity="few">%1$s măsuri</item>
+        <item quantity="other">%1$s de măsuri</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s în %2$s măsură</item>
+        <item quantity="few">%1$s în %2$s măsuri</item>
+        <item quantity="other">%1$s în %2$s de măsuri</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s la fiecare măsură</item>
+        <item quantity="few">%1$s la fiecare %2$s măsuri</item>
+        <item quantity="other">%1$s la fiecare %2$s de măsuri</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">La țintă · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Antrenor de tempo, %1$s BPM, urcă spre %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Antrenor de tempo, de la %1$s la %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Antrenor de tempo, la țintă, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">Două pătrimi</string>
+    <string name="metronome_meter_3_4_spoken">Trei pătrimi</string>
+    <string name="metronome_meter_4_4_spoken">Patru pătrimi</string>
+    <string name="metronome_meter_5_4_spoken">Cinci pătrimi</string>
+    <string name="metronome_meter_6_8_spoken">Șase optimi</string>
+    <string name="metronome_meter_7_8_spoken">Șapte optimi</string>
+
+    <string name="metronome_listen">Ascultați</string>
+    <string name="metronome_listen_stop_spoken">Opriți ascultarea</string>
+    <string name="metronome_listening">Se ascultă…</string>
+    <string name="metronome_heard">Auzit</string>
+    <string name="metronome_use">Folosiți</string>
+    <string name="metronome_not_now">Nu acum</string>
+    <string name="metronome_listen_speed">Viteză</string>
+    <string name="metronome_pick_half">Jumătate</string>
+    <string name="metronome_pick_as_heard">Cum s-a auzit</string>
+    <string name="metronome_pick_double">Dublu</string>
+    <string name="metronome_no_beat">Nu se aude un ritm constant</string>
+    <string name="metronome_try_again">Reîncercați</string>
+    <string name="metronome_mic_busy">Microfon ocupat</string>
+    <string name="metronome_mic_off">Microfon oprit</string>
+    <string name="metronome_open_settings">Setări</string>
+</resources>

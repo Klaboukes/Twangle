@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Acordare</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Exersare</string>
+    <string name="nav_settings">Setări</string>
+    <string name="widget_name">Acordor</string>
+    <string name="widget_description">Afișează instrumentul și acordajul. O atingere deschide acordorul.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Deschideți acordorul</string>
+    <string name="widget_preview_title">Chitară · Standard</string>
+</resources>

@@ -1,0 +1,1 @@
+- Pe telefoanele cu ecran mai scurt, indicatorul își păstrează acum mereu toată lățimea; în schimb, nota de deasupra devine puțin mai mică.
