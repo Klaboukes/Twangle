@@ -1,0 +1,5 @@
+<resources>
+    <string name="spoken_sharp">%1$s ஷார்ப்</string>
+    <string name="spoken_flat">%1$s ஃப்ளாட்</string>
+    <string name="instrument_button_action">இசைக்கருவி அல்லது ட்யூனிங்கை மாற்ற</string>
+</resources>

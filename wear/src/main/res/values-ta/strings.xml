@@ -1,0 +1,42 @@
+<resources>
+    <string name="wear_play_note">ஒரு நோட்டை வாசிக்கவும்</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s சென்ட்</item>
+        <item quantity="other">%1$s சென்ட்</item>
+    </plurals>
+    <string name="wear_in_tune">சுருதி சரி</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d சென்ட் குறைவு</item>
+        <item quantity="other">%1$d சென்ட் குறைவு</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d சென்ட் அதிகம்</item>
+        <item quantity="other">%1$d சென்ட் அதிகம்</item>
+    </plurals>
+    <string name="wear_word_tighten">இறுக்கவும்</string>
+    <string name="wear_word_loosen">தளர்த்தவும்</string>
+    <string name="wear_spoken_sharp">%1$s ஷார்ப்</string>
+    <string name="wear_vibration_guide">அதிர்வு வழிகாட்டி</string>
+    <string name="wear_mic_needed">வாட்ச்சின் மைக்ரோஃபோன் மூலம் Twangle உங்கள் இசைக்கருவியைக் கேட்கிறது.</string>
+    <string name="wear_allow_mic">மைக்கை அனுமதி</string>
+    <string name="wear_open_settings">அமைப்புகளைத் திற</string>
+    <string name="wear_mic_busy">வேறொரு ஆப்ஸ் மைக்ரோஃபோனைப் பயன்படுத்துகிறது.</string>
+    <string name="wear_mic_unavailable">மைக்ரோஃபோனைத் திறக்க முடியவில்லை.</string>
+    <string name="wear_try_again">மீண்டும் முயல்</string>
+    <string name="wear_tile_tune">ட்யூன்</string>
+    <string name="wear_tile_metronome">மெட்ரோனோம்</string>
+    <string name="wear_tile_open_metronome">மெட்ரோனோமைத் திற, %1$s</string>
+    <string name="wear_shortcut_tune">ட்யூன்</string>
+    <string name="wear_shortcut_open">ட்யூனரைத் திற</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">நிமிடத்திற்கு %1$d பீட்</item>
+        <item quantity="other">நிமிடத்திற்கு %1$d பீட்கள்</item>
+    </plurals>
+    <string name="wear_metronome_playing">இயங்குகிறது</string>
+    <string name="wear_metronome_stopped">நின்றது</string>
+    <string name="wear_metronome_start">தொடங்கு</string>
+    <string name="wear_metronome_stop">நிறுத்து</string>
+    <string name="wear_metronome_click">கிளிக் ஒலி</string>
+</resources>

@@ -1,0 +1,75 @@
+<resources>
+    <string name="settings_title">அமைப்புகள்</string>
+    <string name="settings_back">பின்செல்</string>
+
+    <string name="settings_group_tuning">ட்யூனிங்</string>
+    <string name="settings_group_while_tuning">ட்யூன் செய்யும்போது</string>
+    <string name="settings_group_look">தோற்றம்</string>
+
+    <string name="settings_a4_title">அடிப்படைச் சுருதி (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">பெரும்பாலான இசை 440 Hz-ஐப் பயன்படுத்துகிறது. ஆர்கெஸ்ட்ராக்கள் பெரும்பாலும் 442 Hz-க்கும், பரோக் குழுக்கள் 415 Hz-க்கும் ட்யூன் செய்கின்றன.</string>
+    <string name="settings_a4_lower">A4-ஐ 1 Hz குறை</string>
+    <string name="settings_a4_raise">A4-ஐ 1 Hz உயர்த்து</string>
+    <string name="settings_a4_reset">%1$d Hz-க்கு மீட்டமை</string>
+
+    <string name="settings_precise_title">துல்லியமான ட்யூனிங்</string>
+    <string name="settings_precise_summary">5 சென்ட்டுக்குப் பதிலாக 2 சென்ட்டுக்குள் சுருதி சரி</string>
+    <string name="settings_notation_title">நோட் பெயர்கள்</string>
+    <string name="settings_notation_sharps">ஷார்ப்கள்: C, C♯, D …</string>
+    <string name="settings_notation_flats">ஃப்ளாட்கள்: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">தானியங்கு: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">ஜெர்மன்: C, C♯, D … H</string>
+
+    <string name="settings_theme_title">லைட் அல்லது டார்க்</string>
+    <string name="settings_high_contrast_title">அதிக கான்ட்ராஸ்ட்</string>
+    <string name="settings_high_contrast_summary">தடித்த கோடுகளுடன் கருப்பு வெள்ளை; ஃபோனின் கான்ட்ராஸ்ட் அதிகமாக இருந்தால் தானாக இயங்கும்</string>
+    <string name="settings_theme_system">ஃபோனைப் போலவே</string>
+    <string name="settings_theme_light">லைட்</string>
+    <string name="settings_theme_dark">டார்க்</string>
+    <string name="settings_dynamic_color_title">வால்பேப்பர் நிறங்கள்</string>
+    <string name="settings_dynamic_color_summary">உங்கள் வால்பேப்பரின் நிறங்களைப் பயன்படுத்து</string>
+
+    <string name="settings_meter_title">மீட்டர்</string>
+    <string name="settings_meter_classic">கிளாசிக்</string>
+    <string name="settings_meter_light_arc">ஒளி வில்</string>
+    <string name="settings_meter_strobe">ஸ்ட்ரோப்</string>
+
+    <string name="settings_left_handed_title">இடது கை</string>
+    <string name="settings_left_handed_summary">கார்டு சார்ட்டுகளும் ஸ்கேல் நெக்கும் மறுபக்கமாகப் பிடித்த கிட்டாருக்காக வரையப்படும்</string>
+
+    <string name="settings_under_meter_title">மீட்டருக்குக் கீழே</string>
+    <string name="settings_under_meter_words">சொற்கள்: இறுக்கவும் அல்லது தளர்த்தவும்</string>
+    <string name="settings_under_meter_cents">சென்ட்: −12</string>
+    <string name="settings_keep_screen_on_title">திரையை இயக்கத்தில் வை</string>
+    <string name="settings_keep_screen_on_summary">நீங்கள் ட்யூன் செய்யும்போது திரை அணையாது</string>
+    <string name="settings_vibrate_in_tune_title">சுருதி சரியானதும் அதிர்வு</string>
+    <string name="settings_vibrate_in_tune_summary">நோட் சுருதியை அடைந்ததும் சிறு அதிர்வு</string>
+    <string name="settings_vibration_guide_title">அதிர்வு வழிகாட்டி</string>
+    <string name="settings_vibration_guide_summary">ட்யூன் செய்யும்போது தட்டல்கள்: ஒன்று இறுக்க, இரண்டு தளர்த்த, சுருதி சரியானால் நீளமாக</string>
+    <string name="settings_string_tick_off_title">ட்யூன் ஆன கம்பிகளைக் குறி</string>
+    <string name="settings_string_tick_off_summary">ஒவ்வொரு கம்பியும் சுருதி சரியானதும் ஒரு குறி, எல்லாம் சரியானதும் “சுருதி சரி. வாசிக்கவும்.”</string>
+
+    <string name="settings_language_title">மொழி</string>
+    <string name="settings_language_phone">ஃபோனின் மொழி</string>
+    <string name="settings_language_cancel">ரத்துசெய்</string>
+    <string name="about_title">Twangle பற்றி</string>
+    <string name="settings_about_link_summary">பதிப்பு %1$s, உதவி, தனியுரிமை, உரிமங்கள்</string>
+    <string name="settings_about_name_title">பெயர்</string>
+    <string name="settings_about_name_meaning">Twang என்பது மீட்டிய கம்பியின் ஒலிக்கும் ஓசைக்கான ஆங்கிலச் சொல்.</string>
+    <string name="settings_about_version">பதிப்பு %1$s</string>
+    <string name="settings_about_free_title">என்றும் இலவசம்</string>
+    <string name="settings_about_free_summary">விளம்பரங்கள் இல்லை, கணக்கு இல்லை, ஆப்ஸில் வாங்குதல்கள் இல்லை, கண்காணிப்பு இல்லை. இப்போதும் இல்லை, இனியும் இல்லை.</string>
+    <string name="settings_about_privacy_title">தனியுரிமை</string>
+    <string name="settings_about_privacy_summary">Twangle உங்களைப் பற்றி எந்தத் தரவையும் சேகரிப்பதில்லை. கேட்கும் திரை திறந்திருக்கும்போது மட்டுமே மைக்ரோஃபோன் இயங்கும்: ட்யூனர், மெட்ரோனோமின் கேள் அல்லது செவிப் பயிற்சியின் திருப்பி வாசி. ஒலி நேரலையாக ஆராயப்படுகிறது; அது ஒருபோதும் பதிவு செய்யப்படுவதோ சேமிக்கப்படுவதோ அனுப்பப்படுவதோ இல்லை. Twangle-க்கு இணைய அனுமதி இல்லை, எனவே அதனால் எதையும் எங்கும் அனுப்ப முடியாது. உங்கள் அமைப்புகள் இந்தச் சாதனத்திலேயே இருக்கும் (நீங்கள் இயக்கியிருந்தால், Android-இன் சொந்தக் காப்புப்பிரதியிலும்).</string>
+    <string name="settings_about_rate_title">Twangle-ஐ மதிப்பிடு</string>
+    <string name="settings_about_rate_summary">Google Play-இல் Twangle</string>
+    <string name="settings_about_website_title">உதவியும் இணையதளமும்</string>
+    <string name="settings_about_website_summary">ஒவ்வொரு கருவியும் எப்படி வேலை செய்கிறது, பொதுவான கேள்விகளுக்குப் பதில்கள்</string>
+    <string name="settings_about_credits_title">எழுத்துருக்களும் திறந்த மூல மென்பொருளும்</string>
+    <string name="settings_about_credits_summary">Twangle இவற்றைக் கொண்டு உருவாக்கப்பட்டது. உரிமத்தைப் படிக்க ஒன்றைத் தட்டவும்.</string>
+    <string name="settings_about_licence_open">உரிமத்தைப் படிக்க</string>
+    <string name="settings_about_licence_close">மூடு</string>
+</resources>

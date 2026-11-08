@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">ஒரு பாரில் பீட்கள்</string>
+    <string name="metronome_tempo">டெம்போ</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">நிமிடத்திற்கு %1$d பீட், %2$s</item>
+        <item quantity="other">நிமிடத்திற்கு %1$d பீட்கள், %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">நிமிடத்திற்கு பீட்கள் · %1$s</string>
+    <string name="metronome_slower">மெதுவாக</string>
+    <string name="metronome_faster">வேகமாக</string>
+    <string name="metronome_tap">பீட்டைத் தட்டு</string>
+    <string name="metronome_start">தொடங்கு</string>
+    <string name="metronome_stop">நிறுத்து</string>
+    <string name="metronome_vibrate">ஒவ்வொரு பீட்டிலும் அதிர்வு</string>
+    <string name="metronome_sound">ஒலி</string>
+    <string name="metronome_sound_wood_block">வுட் பிளாக்</string>
+    <string name="metronome_sound_cowbell">கவ்பெல்</string>
+    <string name="metronome_sound_claves">கிளேவ்ஸ்</string>
+    <string name="metronome_sound_rim_click">ரிம் கிளிக்</string>
+    <string name="metronome_subdivision">பீட்களுக்கு இடையே</string>
+    <string name="metronome_subdivision_none">இல்லை</string>
+    <string name="metronome_subdivision_eighths">எட்டாம் நோட்டுகள்</string>
+    <string name="metronome_subdivision_triplets">ட்ரிப்லெட்டுகள்</string>
+    <string name="metronome_subdivision_sixteenths">பதினாறாம் நோட்டுகள்</string>
+    <string name="metronome_options">விருப்பங்கள்</string>
+
+    <string name="metronome_trainer">வேகப் பயிற்சி</string>
+    <string name="metronome_trainer_start">தொடக்க டெம்போ</string>
+    <string name="metronome_trainer_goal">இலக்கு</string>
+    <string name="metronome_trainer_start_slower">தொடக்க டெம்போவைக் குறை</string>
+    <string name="metronome_trainer_start_faster">தொடக்க டெம்போவை உயர்த்து</string>
+    <string name="metronome_trainer_goal_slower">இலக்கைக் குறை</string>
+    <string name="metronome_trainer_goal_faster">இலக்கை உயர்த்து</string>
+    <string name="metronome_trainer_step">படி</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">பார்கள்</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s பார்</item>
+        <item quantity="other">%1$s பார்கள்</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$s பாரில் %1$s</item>
+        <item quantity="other">%2$s பார்களில் %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">ஒவ்வொரு பாருக்கும் %1$s</item>
+        <item quantity="other">ஒவ்வொரு %2$s பாருக்கும் %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">இலக்கில் · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">வேகப் பயிற்சி, %1$s BPM, %2$s-க்கு ஏறுகிறது, %3$s</string>
+    <string name="metronome_trainer_spoken_set">வேகப் பயிற்சி, %1$s முதல் %2$s BPM வரை, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">வேகப் பயிற்சி, இலக்கில், %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">இரண்டு-நான்கு தாளம்</string>
+    <string name="metronome_meter_3_4_spoken">மூன்று-நான்கு தாளம்</string>
+    <string name="metronome_meter_4_4_spoken">நான்கு-நான்கு தாளம்</string>
+    <string name="metronome_meter_5_4_spoken">ஐந்து-நான்கு தாளம்</string>
+    <string name="metronome_meter_6_8_spoken">ஆறு-எட்டு தாளம்</string>
+    <string name="metronome_meter_7_8_spoken">ஏழு-எட்டு தாளம்</string>
+
+    <string name="metronome_listen">கேள்</string>
+    <string name="metronome_listen_stop_spoken">கேட்பதை நிறுத்து</string>
+    <string name="metronome_listening">கேட்கிறது…</string>
+    <string name="metronome_heard">கேட்டது</string>
+    <string name="metronome_use">பயன்படுத்து</string>
+    <string name="metronome_not_now">இப்போது வேண்டாம்</string>
+    <string name="metronome_listen_speed">வேகம்</string>
+    <string name="metronome_pick_half">பாதி</string>
+    <string name="metronome_pick_as_heard">கேட்டபடி</string>
+    <string name="metronome_pick_double">இரட்டிப்பு</string>
+    <string name="metronome_no_beat">நிலையான பீட் கேட்கவில்லை</string>
+    <string name="metronome_try_again">மீண்டும்</string>
+    <string name="metronome_mic_busy">மைக்ரோஃபோன் பயன்பாட்டில்</string>
+    <string name="metronome_mic_off">மைக்ரோஃபோன் முடக்கம்</string>
+    <string name="metronome_open_settings">அமைப்புகள்</string>
+</resources>

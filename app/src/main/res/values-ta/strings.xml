@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">ட்யூன்</string>
+    <string name="nav_metronome">மெட்ரோனோம்</string>
+    <string name="nav_practice">பயிற்சி</string>
+    <string name="nav_settings">அமைப்புகள்</string>
+    <string name="widget_name">ட்யூனர்</string>
+    <string name="widget_description">உங்கள் இசைக்கருவியையும் ட்யூனிங்கையும் காட்டும். ஒரு தட்டலில் ட்யூனர் திறக்கும்.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">ட்யூனரைத் திறக்கவும்</string>
+    <string name="widget_preview_title">கிட்டார் · ஸ்டாண்டர்டு</string>
+</resources>
