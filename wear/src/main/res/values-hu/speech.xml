@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Magyar hangnevek, a német betűk magyar írással: Cisz, Desz, Esz, Asz, B (B♭), H … -->
+    <string name="wear_spoken_letter_names" translatable="false" tools:ignore="ExtraTranslation">hungarian</string>
+    <!-- A szolmizációs szótagok magyar írással, hogy a felolvasó jól ejtse őket (Szol, nem „Sol”). -->
+    <string name="wear_spoken_solfege" translatable="false" tools:ignore="ExtraTranslation">Dó Ré Mi Fá Szol Lá Szi</string>
+</resources>

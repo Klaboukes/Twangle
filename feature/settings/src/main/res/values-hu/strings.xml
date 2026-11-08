@@ -1,0 +1,76 @@
+<resources>
+    <string name="settings_title">Beállítások</string>
+    <string name="settings_back">Vissza</string>
+
+    <string name="settings_group_tuning">Hangolás</string>
+    <string name="settings_group_while_tuning">Hangolás közben</string>
+    <string name="settings_group_look">Megjelenés</string>
+
+    <string name="settings_a4_title">Kamarahang (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">A legtöbb zene 440 Hz-et használ. A zenekarok gyakran 442 Hz-re hangolnak, a barokk együttesek 415 Hz-re.</string>
+    <string name="settings_a4_lower">A4 csökkentése 1 Hz-cel</string>
+    <string name="settings_a4_raise">A4 növelése 1 Hz-cel</string>
+    <string name="settings_a4_reset">Vissza %1$d Hz-re</string>
+
+    <string name="settings_precise_title">Pontos hangolás</string>
+    <string name="settings_precise_summary">Tiszta 5 helyett 2 centen belül</string>
+    <string name="settings_notation_title">Hangnevek</string>
+    <string name="settings_notation_sharps">Keresztek: C, C♯, D …</string>
+    <string name="settings_notation_flats">Bék: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automatikus: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Német: C, C♯, D … H</string>
+
+
+    <string name="settings_theme_title">Világos vagy sötét</string>
+    <string name="settings_high_contrast_title">Nagy kontraszt</string>
+    <string name="settings_high_contrast_summary">Fekete-fehér, vastagabb vonalakkal; magától bekapcsol, ha a telefon kontrasztja magas</string>
+    <string name="settings_theme_system">Mint a telefonon</string>
+    <string name="settings_theme_light">Világos</string>
+    <string name="settings_theme_dark">Sötét</string>
+    <string name="settings_dynamic_color_title">Háttérkép színei</string>
+    <string name="settings_dynamic_color_summary">A háttérképed színeinek használata</string>
+
+    <string name="settings_meter_title">Kijelző</string>
+    <string name="settings_meter_classic">Klasszikus</string>
+    <string name="settings_meter_light_arc">Fényív</string>
+    <string name="settings_meter_strobe">Stroboszkóp</string>
+
+    <string name="settings_left_handed_title">Balkezes</string>
+    <string name="settings_left_handed_summary">Az akkordábrák és a skálás gitárnyak fordítva tartott gitárhoz rajzolva</string>
+
+    <string name="settings_under_meter_title">A kijelző alatt</string>
+    <string name="settings_under_meter_words">Szavak: Feszítsd vagy Lazítsd</string>
+    <string name="settings_under_meter_cents">Cent: −12</string>
+    <string name="settings_keep_screen_on_title">Képernyő ébren tartása</string>
+    <string name="settings_keep_screen_on_summary">A képernyő bekapcsolva marad hangolás közben</string>
+    <string name="settings_vibrate_in_tune_title">Rezgés, ha tiszta</string>
+    <string name="settings_vibrate_in_tune_summary">Rövid rezgés, amikor a hang eléri a helyes magasságot</string>
+    <string name="settings_vibration_guide_title">Rezgő útmutató</string>
+    <string name="settings_vibration_guide_summary">Rezgés hangolás közben: egy a feszítéshez, kettő a lazításhoz, hosszú, ha tiszta</string>
+    <string name="settings_string_tick_off_title">Hangolt húrok kipipálása</string>
+    <string name="settings_string_tick_off_summary">Pipa minden húron, ha tiszta, és „Tiszta. Játssz!”, ha mind az</string>
+
+    <string name="settings_language_title">Nyelv</string>
+    <string name="settings_language_phone">A telefon nyelve</string>
+    <string name="settings_language_cancel">Mégse</string>
+    <string name="about_title">A Twangle névjegye</string>
+    <string name="settings_about_link_summary">Verzió: %1$s, súgó, adatvédelem és licencek</string>
+    <string name="settings_about_name_title">A név</string>
+    <string name="settings_about_name_meaning">A twang angolul a megpendített húr csengő hangja.</string>
+    <string name="settings_about_version">Verzió: %1$s</string>
+    <string name="settings_about_free_title">Örökre ingyenes</string>
+    <string name="settings_about_free_summary">Nincs reklám, nincs fiók, nincsenek alkalmazáson belüli vásárlások és nincs követés. Sem most, sem később.</string>
+    <string name="settings_about_privacy_title">Adatvédelem</string>
+    <string name="settings_about_privacy_summary">A Twangle semmilyen adatot nem gyűjt rólad. A mikrofon csak akkor van bekapcsolva, amikor egy figyelő képernyő nyitva van: a hangoló, a metronóm Figyelés funkciója vagy a Hallásfejlesztés Játszd vissza gyakorlata. A hangot élőben elemzi, és soha nem rögzíti, menti vagy küldi el. A Twangle-nek nincs internetengedélye, így semmit sem tud elküldeni sehova. A beállításaid ezen a készüléken maradnak (és az Android saját biztonsági mentésében, ha bekapcsoltad).</string>
+    <string name="settings_about_rate_title">A Twangle értékelése</string>
+    <string name="settings_about_rate_summary">A Twangle a Google Playen</string>
+    <string name="settings_about_website_title">Súgó és weboldal</string>
+    <string name="settings_about_website_summary">Hogyan működnek az eszközök, és válaszok a gyakori kérdésekre</string>
+    <string name="settings_about_credits_title">Betűtípusok és nyílt forráskódú szoftverek</string>
+    <string name="settings_about_credits_summary">A Twangle ezekkel készült. Koppints egyre a licence elolvasásához.</string>
+    <string name="settings_about_licence_open">A licenc elolvasása</string>
+    <string name="settings_about_licence_close">Bezárás</string>
+</resources>

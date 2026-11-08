@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Hangolás</string>
+    <string name="nav_metronome">Metronóm</string>
+    <string name="nav_practice">Gyakorlás</string>
+    <string name="nav_settings">Beállítások</string>
+    <string name="widget_name">Hangoló</string>
+    <string name="widget_description">Mutatja a hangszeredet és a hangolást. Egy koppintás megnyitja a hangolót.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Hangoló megnyitása</string>
+    <string name="widget_preview_title">Gitár · Standard</string>
+</resources>

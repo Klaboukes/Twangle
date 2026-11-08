@@ -1,0 +1,9 @@
+- Új a Gyakorlásban: Hallásfejlesztés.
+- A 12 húros gitár és az 5 húros bendzsó.
+- Open C, a bariton ukulele, legfeljebb 2½ hanggal mélyebb hangolások.
+- Skálák bordunnal; több akkordtípus.
+- Metronóm: négy hang, kattanások az ütések között, tempóemelő.
+- Új kijelzők: Mutatók és Nagyító.
+- A húrok kipipálódnak hangolás közben.
+- Balkezes ábrák, táblagépes elrendezés.
+- Súgó és weboldal a Névjegyben, jobb TalkBack, apró javítások.

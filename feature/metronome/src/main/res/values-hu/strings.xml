@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Ütemmutató</string>
+    <string name="metronome_tempo">Tempó</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d ütés percenként, %2$s</item>
+        <item quantity="other">%1$d ütés percenként, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">ütés percenként · %1$s</string>
+    <string name="metronome_slower">Lassabban</string>
+    <string name="metronome_faster">Gyorsabban</string>
+    <string name="metronome_tap">Koppints ütemre</string>
+    <string name="metronome_start">Indítás</string>
+    <string name="metronome_stop">Leállítás</string>
+    <string name="metronome_vibrate">Rezgés ütemre</string>
+    <string name="metronome_sound">Hang</string>
+    <string name="metronome_sound_wood_block">Fablokk</string>
+    <string name="metronome_sound_cowbell">Kolomp</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Peremütés</string>
+    <string name="metronome_subdivision">Ütések között</string>
+    <string name="metronome_subdivision_none">Nincs</string>
+    <string name="metronome_subdivision_eighths">Nyolcadok</string>
+    <string name="metronome_subdivision_triplets">Triolák</string>
+    <string name="metronome_subdivision_sixteenths">Tizenhatodok</string>
+    <string name="metronome_options">Opciók</string>
+
+    <string name="metronome_trainer">Tempóemelő</string>
+    <string name="metronome_trainer_start">Kezdő tempó</string>
+    <string name="metronome_trainer_goal">Cél</string>
+    <string name="metronome_trainer_start_slower">Kezdő tempó csökkentése</string>
+    <string name="metronome_trainer_start_faster">Kezdő tempó növelése</string>
+    <string name="metronome_trainer_goal_slower">Cél csökkentése</string>
+    <string name="metronome_trainer_goal_faster">Cél növelése</string>
+    <string name="metronome_trainer_step">Lépés</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Ütemek</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s ütem</item>
+        <item quantity="other">%1$s ütem</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%2$s ütem múlva %1$s</item>
+        <item quantity="other">%2$s ütem múlva %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">ütemenként %1$s</item>
+        <item quantity="other">%2$s ütemenként %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Cél elérve · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Tempóemelő, %1$s BPM, emelkedik eddig: %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Tempóemelő, kezdés %1$s, cél %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Tempóemelő, cél elérve, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">Kétnegyedes ütem</string>
+    <string name="metronome_meter_3_4_spoken">Háromnegyedes ütem</string>
+    <string name="metronome_meter_4_4_spoken">Négynegyedes ütem</string>
+    <string name="metronome_meter_5_4_spoken">Ötnegyedes ütem</string>
+    <string name="metronome_meter_6_8_spoken">Hatnyolcados ütem</string>
+    <string name="metronome_meter_7_8_spoken">Hétnyolcados ütem</string>
+
+    <string name="metronome_listen">Figyelés</string>
+    <string name="metronome_listen_stop_spoken">Figyelés leállítása</string>
+    <string name="metronome_listening">Figyelek…</string>
+    <string name="metronome_heard">Hallott tempó</string>
+    <string name="metronome_use">Használd</string>
+    <string name="metronome_not_now">Most nem</string>
+    <string name="metronome_listen_speed">Sebesség</string>
+    <string name="metronome_pick_half">Fele</string>
+    <string name="metronome_pick_as_heard">Ahogy hallottam</string>
+    <string name="metronome_pick_double">Dupla</string>
+    <string name="metronome_no_beat">Nincs egyenletes ütés</string>
+    <string name="metronome_try_again">Újra</string>
+    <string name="metronome_mic_busy">A mikrofon foglalt</string>
+    <string name="metronome_mic_off">Mikrofon kikapcsolva</string>
+    <string name="metronome_open_settings">Beállítások</string>
+</resources>

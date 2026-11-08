@@ -1,0 +1,9 @@
+- Új megjelenés: nyugodt és letisztult, új ikonnal.
+- Három lap: Hangolás, Metronóm, Gyakorlás; Beállítások a fogaskeréknél.
+- Hangszer és hangolás választása a hangoló tetején.
+- A hangoló megmondja: Feszítsd vagy Lazítsd.
+- Három kijelző: Klasszikus, Fényív és Stroboszkóp.
+- Akkordok: koppints a Figyelésre, pengess, és lásd az akkord nevét.
+- Metronóm: húzd a vonalzót a tempó beállításához.
+- Fókuszmód: a hangoló teljes képernyőn, egy koppintásra.
+- A Hanggörbe mostantól a Gyakorlásban van.

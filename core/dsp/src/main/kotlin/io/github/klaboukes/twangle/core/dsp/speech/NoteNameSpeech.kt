@@ -2,10 +2,11 @@ package io.github.klaboukes.twangle.core.dsp.speech
 
 /**
  * How letter names are said: the sign as a word ("C sharp", "Do dièse"), or as one word the Dutch,
- * German or Swedish way ("cis", "Cis", "ciss"). Set per language with the `spoken_letter_names`
- * resource ("words", "dutch", "german" or "swedish"; the watch's `wear_spoken_letter_names`).
+ * German, Swedish or Hungarian way ("cis", "Cis", "ciss", "Cisz"). Set per language with the
+ * `spoken_letter_names` resource ("words", "dutch", "german", "swedish" or "hungarian"; the watch's
+ * `wear_spoken_letter_names`).
  */
-enum class LetterNames { WORDS, DUTCH, GERMAN, SWEDISH }
+enum class LetterNames { WORDS, DUTCH, GERMAN, SWEDISH, HUNGARIAN }
 
 /**
  * How a screen reader says note names. Every TalkBack text that names a note goes through here, so
@@ -22,6 +23,9 @@ enum class LetterNames { WORDS, DUTCH, GERMAN, SWEDISH }
  * - With [LetterNames.SWEDISH], the Dutch way with the s doubled, as Swedish spells it: ciss, fiss,
  *   aiss; dess, ess, ass, bess. A Swedish voice reads the one-s Dutch forms with a long vowel, and
  *   "fis", "as" and "dis" are Swedish words.
+ * - With [LetterNames.HUNGARIAN], the German way spelt as Hungarian writes it, -s becoming -sz:
+ *   Cisz, Disz … Aisz, Hisz; Desz, Esz, Gesz, Asz, and B for B♭. A Hungarian voice reads the German
+ *   "Cis" as "tsish", since a Hungarian s is said sh.
  * - Solfège has no such forms, so "Sol♯" still uses the pattern ("Sol kruis"). [solfege] holds
  *   the seven syllables Do … Si as this language says them (French "Ré", Portuguese "Dó", "Fá",
  *   "Lá"), so the screen reader pronounces them as players do.
@@ -45,6 +49,7 @@ class NoteNameSpeech(
                 LetterNames.DUTCH -> return dutchLetterName(base[0], sign)
                 LetterNames.GERMAN -> return germanLetterName(base[0], sign)
                 LetterNames.SWEDISH -> return swedishLetterName(base[0], sign)
+                LetterNames.HUNGARIAN -> return hungarianLetterName(base[0], sign)
                 LetterNames.WORDS -> Unit
             }
         }
@@ -128,15 +133,25 @@ internal fun germanLetterName(letter: Char, sign: Char?): String = when (sign) {
 }
 
 /**
+ * A letter name the Hungarian way (see [NoteNameSpeech]): the German name with its -s written -sz,
+ * "Cisz", "Desz", "Esz", "Asz", "Hisz", "B" for B♭, or the letter as written for a natural.
+ */
+internal fun hungarianLetterName(letter: Char, sign: Char?): String {
+    val german = germanLetterName(letter, sign)
+    return if (sign != null && german.endsWith('s')) german + "z" else german
+}
+
+/**
  * The [NoteNameSpeech] for a language from its resource values (the phone's `spoken_*` in
  * `:core:designsystem`, the watch's `wear_spoken_*`): [sharp] and [flat] the patterns, [letters] one
- * of "words", "dutch", "german" or "swedish", [solfege] the seven syllables separated by spaces.
+ * of "words", "dutch", "german", "swedish" or "hungarian", [solfege] the seven syllables separated by spaces.
  */
 fun noteNameSpeech(sharp: String, flat: String, letters: String, solfege: String): NoteNameSpeech {
     val style = when (letters) {
         "dutch" -> LetterNames.DUTCH
         "german" -> LetterNames.GERMAN
         "swedish" -> LetterNames.SWEDISH
+        "hungarian" -> LetterNames.HUNGARIAN
         else -> LetterNames.WORDS
     }
     return NoteNameSpeech(sharp, flat, style, solfege.split(' '))

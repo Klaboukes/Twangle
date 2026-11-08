@@ -1,0 +1,42 @@
+<resources>
+    <string name="wear_play_note">Játssz egy hangot</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s cent</item>
+        <item quantity="other">%1$s cent</item>
+    </plurals>
+    <string name="wear_in_tune">tiszta</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d centtel mélyebb</item>
+        <item quantity="other">%1$d centtel mélyebb</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d centtel magasabb</item>
+        <item quantity="other">%1$d centtel magasabb</item>
+    </plurals>
+    <string name="wear_word_tighten">Feszítsd</string>
+    <string name="wear_word_loosen">Lazítsd</string>
+    <string name="wear_spoken_sharp">%1$s kereszt</string>
+    <string name="wear_vibration_guide">Rezgő útmutató</string>
+    <string name="wear_mic_needed">A Twangle az óra mikrofonjával hallgatja a hangszeredet.</string>
+    <string name="wear_allow_mic">Mikrofon engedélyezése</string>
+    <string name="wear_open_settings">Beállítások</string>
+    <string name="wear_mic_busy">Egy másik alkalmazás használja a mikrofont.</string>
+    <string name="wear_mic_unavailable">A mikrofont nem lehet megnyitni.</string>
+    <string name="wear_try_again">Újra</string>
+    <string name="wear_tile_tune">Hangolás</string>
+    <string name="wear_tile_metronome">Metronóm</string>
+    <string name="wear_tile_open_metronome">Metronóm megnyitása, %1$s</string>
+    <string name="wear_shortcut_tune">Hang</string>
+    <string name="wear_shortcut_open">Hangoló megnyitása</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d ütés percenként</item>
+        <item quantity="other">%1$d ütés percenként</item>
+    </plurals>
+    <string name="wear_metronome_playing">Szól</string>
+    <string name="wear_metronome_stopped">Leállítva</string>
+    <string name="wear_metronome_start">Indítás</string>
+    <string name="wear_metronome_stop">Leállítás</string>
+    <string name="wear_metronome_click">Kattogás</string>
+</resources>

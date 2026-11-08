@@ -85,6 +85,26 @@ class NoteNameSpeechTest {
     }
 
     @Test
+    fun `hungarian says every name the german notation can show the way Hungarian musicians do`() {
+        val hungarian = NoteNameSpeech("%1\$s kereszt", "%1\$s bé", LetterNames.HUNGARIAN, "Dó Ré Mi Fá Szol Lá Szi".split(' '))
+        val expected = mapOf(
+            "C" to "C", "C♯" to "Cisz", "D♭" to "Desz", "D" to "D", "D♯" to "Disz", "E♭" to "Esz",
+            "E" to "E", "F" to "F", "F♯" to "Fisz", "G♭" to "Gesz", "G" to "G", "G♯" to "Gisz",
+            "A♭" to "Asz", "A" to "A", "A♯" to "Aisz", "B" to "B", "H" to "H",
+        )
+        assertEquals(expected.keys, namesShown(Notation.GERMAN))
+        expected.forEach { (name, spoken) -> assertEquals(name, spoken, hungarian.name(name)) }
+        assertEquals("B", hungarian.name("B♭"))
+        assertEquals("Hisz", hungarian.name("B♯"))
+        assertEquals("Cesz", hungarian.name("C♭"))
+        assertEquals("Esz Asz Desz Gesz B Esz", hungarian.text("E♭ A♭ D♭ G♭ B♭ E♭"))
+        assertEquals("Német: C, Cisz, D … H", hungarian.text("Német: C, C♯, D … H"))
+        assertEquals("Szol kereszt", hungarian.name("Sol♯"))
+        // The resource value "hungarian" picks this style.
+        assertEquals("Cisz", noteNameSpeech("%1\$s kereszt", "%1\$s bé", "hungarian", "Dó Ré Mi Fá Szol Lá Szi").name("C♯"))
+    }
+
+    @Test
     fun `solfege is said as the language writes it`() {
         assertEquals("Ré", french.name("Re"))
         assertEquals("Ré dièse", french.name("Re♯"))

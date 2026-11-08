@@ -3,7 +3,8 @@
     <!-- The watch's copy of :core:designsystem's speech.xml (WatchSpokenReadingTest keeps them alike). -->
     <!-- How TalkBack says letter names (see NoteNameSpeech): "words" says the sign as a word
          ("C sharp"), "dutch" in one word the Dutch way (cis, des, es …), "german" the German way
-         (Cis, Des, Es … B for B♭), "swedish" the Dutch way with a doubled s (ciss, dess, ess …). -->
+         (Cis, Des, Es … B for B♭), "swedish" the Dutch way with a doubled s (ciss, dess, ess …),
+         "hungarian" the German way spelt -sz (Cisz, Desz, Esz … B for B♭). -->
     <string name="wear_spoken_letter_names" translatable="false">words</string>
     <!-- The solfège syllables Do … Si as this language writes them, so TalkBack says them as
          players do (seven, separated by spaces; the screen still shows Do Re Mi …). -->

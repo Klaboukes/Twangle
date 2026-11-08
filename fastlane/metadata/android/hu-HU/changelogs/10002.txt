@@ -1,0 +1,1 @@
+- Az első indításkor látható bemutatóban a Bemutató kihagyása és a Tovább gomb mostantól az első koppintásra működik.

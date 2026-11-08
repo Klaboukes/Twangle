@@ -1,0 +1,1 @@
+- Rövidebb képernyős telefonokon a kijelző mostantól mindig teljes szélességű marad; helyette a fölötte lévő hang lesz kicsit kisebb.
