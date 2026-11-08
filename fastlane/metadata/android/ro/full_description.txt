@@ -23,13 +23,14 @@ EXERSARE
 • Auz muzical: Reproduceți (cântați la instrument notele auzite), Intervale și Tipul acordului
 • Metronom: de la 30 la 250 de bătăi pe minut, pe o riglă de tempo pe care o glisați, cu tempo prin atingere
 • 2/4, 3/4, 4/4, 5/4, 6/8 și 7/8, cu accent pe primul timp și lumini de urmărit
-• Se aude peste muzica dumneavoastră sau peste un negativ și poate vibra pe fiecare timp
+• Se aude peste muzica dumneavoastră și poate vibra pe fiecare timp
 • Între timpi: clicuri suplimentare în optimi, triolete sau șaisprezecimi
 • Antrenor de tempo: tempoul crește pas cu pas până la ținta dumneavoastră
 
 FĂCUT PENTRU TOȚI
 • Funcționează cu TalkBack: Twangle spune nota și cât de departe este („Mi 2, 12 cenți mai jos, întindeți”), citește diagramele de acorduri și gamele coardă cu coardă, fiecare buton are un nume clar și nu vă copleșește niciodată cu vorbe
 • Fiecare ecran funcționează cu text mare, de până la două ori dimensiunea normală
+• Contrast ridicat: alb-negru pur, cu linii mai groase
 • O vibrație scurtă când o coardă este acordată, ca s-o simțiți și la atingere
 • În 36 de limbi: română, engleză, amharică, arabă, bengaleză, birmană, cehă, chineză (simplificată), chineză (tradițională), coreeană, daneză, finlandeză, franceză, germană, greacă, hindi, indoneziană, italiană, japoneză, khmeră, maghiară, marathi, neerlandeză, norvegiană, poloneză, portugheză, rusă, spaniolă, suedeză, swahili, tamilă, telugu, thailandeză, turcă, ucraineană și vietnameză
 • Numele notelor așa cum le-ați învățat: Do Re Mi sau literele C D E, inclusiv cu H în loc de B
@@ -37,7 +38,7 @@ FĂCUT PENTRU TOȚI
 CUM VĂ PLACE
 • Luminos, întunecat sau ca telefonul, cu culorile imaginii de fundal pe Android 12 și versiunile mai noi
 • Trei indicatoare dintre care să alegeți: clasic, arcul de lumini sau stroboscopul
-• Mod concentrare: acordorul pe tot ecranul, cu telefonul întors pe orizontală, ușor de citit de la distanță
+• Mod concentrare: acordorul pe tot ecranul, cu telefonul întors pe orizontală
 
 ȘI ÎN PLUS
 • Un widget pe ecranul de pornire care deschide acordorul cu o atingere

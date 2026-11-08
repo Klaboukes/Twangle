@@ -99,7 +99,7 @@ class StoreScreenshots(private val shot: Shot) {
      * and nothing leaving the phone (2.0's listing, 2026-11-05; the microphone prompt third since the review of
      * 2026-11-07, a plain screen in the second place, which most people see).
      */
-    enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f) {
+    enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f, val highContrast: Boolean = false) {
         /** The top row with no sign-in in the way, the chip, the ruler's A, the needle and "In tune" (the pegs left out). */
         IN_TUNE(dark = true, focus = 0f..0.62f),
 
@@ -124,8 +124,11 @@ class StoreScreenshots(private val shot: Shot) {
         /** The sheet "What are you tuning?", its instrument pills scrolled to bass, ukulele and violin, and the first tunings. */
         INSTRUMENTS(dark = true, focus = 0.24f..0.80f),
 
-        /** At twice the text size, a string a little sharp: the ruler, the needle, "Loosen" and the cents, and TalkBack's reading. */
-        TALKBACK(dark = true, focus = 0.065f..0.71f),
+        /**
+         * At twice the text size and in the high-contrast look (Phase 86), its canvas too, a string a little sharp: the
+         * ruler, the needle, "Loosen" and the cents, and TalkBack's reading. The picture for players who see poorly.
+         */
+        TALKBACK(dark = true, focus = 0.07f..0.71f, highContrast = true),
         ;
 
         val number: Int get() = ordinal + 1
@@ -163,6 +166,8 @@ class StoreScreenshots(private val shot: Shot) {
         runBlocking {
             container.focusMode.value = false
             settings.setTheme(if (shot.dark) ThemeMode.DARK else ThemeMode.LIGHT)
+            // On or off for this picture, whatever the phone's own contrast.
+            settings.setHighContrast(shot.highContrast)
             // Ink's own colours, not the wallpaper's.
             settings.setDynamicColor(false)
             settings.setA4(NoteMapper.DEFAULT_A4_HZ)
@@ -289,7 +294,7 @@ class StoreScreenshots(private val shot: Shot) {
         val metrics = app.resources.displayMetrics
         val screen = renderCanvas(metrics.widthPixels, metrics.heightPixels) {
             val size = with(LocalDensity.current) { DpSize(metrics.widthPixels.toDp(), metrics.heightPixels.toDp()) }
-            TwangleTheme(darkTheme = shot.dark, animate = false) {
+            TwangleTheme(darkTheme = shot.dark, highContrast = shot.highContrast, animate = false) {
                 // The text colour the tuner's screen gives it, on the theme's background.
                 CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
                     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
@@ -403,7 +408,7 @@ class StoreScreenshots(private val shot: Shot) {
     ) {
         val caption = captions().getOrNull(shot.ordinal) ?: error("no caption ${shot.number} for $locale")
         val canvas = renderCanvas(spec.width, spec.height) {
-            StoreCanvas(caption, rows, shot.dark, spec, bubble, staggered)
+            StoreCanvas(caption, rows, shot.dark, spec, bubble, staggered, shot.highContrast)
         }
         write(canvas, "store-${shot.number}.png")
     }

@@ -30,6 +30,7 @@ HARJOITTELE
 KAIKILLE TEHTY
 • Toimii TalkBackin kanssa: Twangle kertoo sävelen ja kuinka paljon se heittää (”E 2, 12 senttiä matalalla, kiristä”), lukee sointukaaviot ja asteikot kieli kieleltä, jokaisella painikkeella on selkeä nimi, eikä se koskaan hukuta sinua puheeseen
 • Jokainen näkymä toimii suurella tekstillä, aina kaksinkertaiseen kokoon asti
+• Suuri kontrasti: puhdas mustavalkoinen ja paksummat viivat
 • Lyhyt värähdys, kun kieli on vireessä, joten voit myös tuntea sen
 • 36 kielellä: suomi, amhara, arabia, bengali, burma, englanti, espanja, hindi, hollanti, indonesia, italia, japani, khmer, kiina (yksinkertaistettu), kiina (perinteinen), korea, kreikka, marathi, norja, portugali, puola, ranska, romania, ruotsi, saksa, swahili, tamili, tanska, telugu, thai, tšekki, turkki, ukraina, unkari, venäjä ja vietnam
 • Sävelnimet niin kuin olet ne oppinut: C D E, H tai B, tai Do Re Mi

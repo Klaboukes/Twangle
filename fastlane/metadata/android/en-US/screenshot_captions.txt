@@ -5,4 +5,4 @@ Strum once. See every string.
 Tuner, metronome and chords in one app
 Strum a chord. See its name.
 Guitar, bass, ukulele, violin, and your own tunings
-Big and clear. It even speaks the note.
+Big, clear, high contrast. It even speaks the note.

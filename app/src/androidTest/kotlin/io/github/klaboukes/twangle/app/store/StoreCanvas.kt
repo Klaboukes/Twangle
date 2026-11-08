@@ -121,7 +121,8 @@ class Window(val screen: ImageBitmap, val focus: ClosedFloatingPointRange<Float>
  *
  * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in its display face, the
  * phone's own sans in every script (`StyleTypography`), right to left where the language is. [bubble] (the TalkBack screenshot) is what TalkBack says, in a speech bubble between
- * the caption and the phone, pointing at the phone: drawn here, since a picture can't show speech.
+ * the caption and the phone, pointing at the phone: drawn here, since a picture can't show speech. [highContrast] draws the canvas in the
+ * high-contrast look, as the screen on it.
  */
 @Composable
 fun StoreCanvas(
@@ -131,9 +132,10 @@ fun StoreCanvas(
     spec: CanvasSpec = CanvasSpec.PORTRAIT,
     bubble: SpeechBubble? = null,
     staggered: Boolean = false,
+    highContrast: Boolean = false,
 ) {
     CompositionLocalProvider(LocalDensity provides Density(spec.density, fontScale = 1f)) {
-        TwangleTheme(darkTheme = dark, animate = false) {
+        TwangleTheme(darkTheme = dark, highContrast = highContrast, animate = false) {
             Box(
                 Modifier.layout { measurable, _ ->
                     val placeable = measurable.measure(Constraints.fixed(spec.width, spec.height))

@@ -30,6 +30,7 @@ LATIHAN
 UNTUK SEMUA ORANG
 • Bekerja dengan TalkBack: Twangle menyebutkan nada dan seberapa jauh melesetnya ("E 2, 12 sen terlalu rendah, kencangkan"), membacakan diagram akor dan tangga nada senar demi senar, setiap tombol punya nama yang jelas, dan tidak pernah membanjiri Anda dengan suara
 • Setiap layar berfungsi dengan teks besar, hingga dua kali ukuran normal
+• Kontras tinggi: hitam putih murni dengan garis lebih tebal
 • Getaran singkat saat senar sudah pas, jadi Anda juga bisa merasakannya
 • Dalam 36 bahasa: Indonesia, Amharik, Arab, Belanda, Bengali, Burma, Ceko, Denmark, Finlandia, Hindi, Hungaria, Inggris, Italia, Jepang, Jerman, Khmer, Korea, Mandarin (Sederhana), Mandarin (Tradisional), Marathi, Norwegia, Polandia, Portugis, Prancis, Rumania, Rusia, Spanyol, Swahili, Swedia, Tamil, Telugu, Thai, Turki, Ukraina, Vietnam, dan Yunani
 • Nama nada seperti yang Anda pelajari: C D E, gaya Jerman dengan H, atau Do Re Mi

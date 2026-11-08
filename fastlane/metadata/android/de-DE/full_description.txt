@@ -23,13 +23,14 @@ WERKZEUGE, DIE MITHÖREN
 • Gehörbildung: Nachspielen (spiel gehörte Töne auf deinem Instrument), Intervalle und Akkordart
 • Metronom: 30 bis 250 Schläge pro Minute auf einem Tempo-Lineal zum Verschieben, mit Tap-Tempo
 • 2/4, 3/4, 4/4, 5/4, 6/8 und 7/8, mit Betonung auf dem ersten Schlag und Lichtern zum Mitverfolgen
-• Gut hörbar über deiner Musik oder deinem Backing-Track, und kann im Takt vibrieren
+• Gut hörbar über deiner Musik, und kann im Takt vibrieren
 • Zwischen den Schlägen: Klicks in Achteln, Triolen oder Sechzehnteln
 • Tempotrainer: Das Tempo steigt schrittweise bis zu deinem Ziel
 
 FÜR ALLE GEMACHT
 • Funktioniert mit TalkBack: Twangle sagt den Ton und wie weit er danebenliegt („E 2, 12 Cent zu tief, spannen“), liest Akkordgriffe und Tonleitern Saite für Saite vor, jede Schaltfläche hat einen klaren Namen, und es überflutet dich nie mit Sprache
 • Jeder Bildschirm funktioniert mit großer Schrift, bis zur doppelten Größe
+• Hoher Kontrast: Schwarz-Weiß mit dickeren Linien
 • Eine kurze Vibration, wenn eine Saite gestimmt ist, damit du es auch spürst
 • In 36 Sprachen: Deutsch, Amharisch, Arabisch, Bengalisch, Birmanisch, Chinesisch (vereinfacht und traditionell), Dänisch, Englisch, Finnisch, Französisch, Griechisch, Hindi, Indonesisch, Italienisch, Japanisch, Khmer, Koreanisch, Marathi, Niederländisch, Norwegisch, Polnisch, Portugiesisch, Rumänisch, Russisch, Schwedisch, Spanisch, Swahili, Tamil, Telugu, Thai, Tschechisch, Türkisch, Ukrainisch, Ungarisch und Vietnamesisch
 • Notennamen, wie du sie gelernt hast: C D E … H, international mit B oder Do Re Mi
@@ -37,7 +38,7 @@ FÜR ALLE GEMACHT
 GANZ NACH DEINEM GESCHMACK
 • Hell, dunkel oder wie dein Handy, ab Android 12 mit den Farben deines Hintergrundbilds
 • Drei Anzeigen zur Wahl: die klassische Nadel, der LED-Bogen oder das Stroboskop
-• Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy, gut aus der Ferne lesbar
+• Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy
 
 AUSSERDEM
 • Ein Widget für den Startbildschirm, das das Stimmgerät mit einem Tippen öffnet

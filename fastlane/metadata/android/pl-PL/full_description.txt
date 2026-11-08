@@ -30,6 +30,7 @@ NARZĘDZIA, KTÓRE SŁUCHAJĄ
 DLA KAŻDEGO
 • Działa z TalkBack: Twangle mówi, jaki to dźwięk i jak bardzo odbiega („E 2, 12 centów za nisko, podciągnij”), czyta chwyty akordów i skale struna po strunie, każdy przycisk ma jasną nazwę i nigdy nie zasypuje cię mową
 • Każdy ekran działa z dużym tekstem, aż do dwukrotności normalnego rozmiaru
+• Wysoki kontrast: czysta czerń i biel z grubszymi liniami
 • Krótka wibracja, gdy struna jest nastrojona, żeby dało się to też poczuć
 • W 36 językach: polski, amharski, angielski, arabski, bengalski, birmański, chiński (uproszczony), chiński (tradycyjny), czeski, duński, fiński, francuski, grecki, hindi, hiszpański, indonezyjski, japoński, khmerski, koreański, marathi, niderlandzki, niemiecki, norweski, portugalski, rosyjski, rumuński, suahili, szwedzki, tajski, tamilski, telugu, turecki, ukraiński, węgierski, wietnamski i włoski
 • Nazwy dźwięków po twojemu: C D E … H, z B zamiast H albo Do Re Mi

@@ -30,6 +30,7 @@ VÆRKTØJER, DER LYTTER
 LAVET TIL ALLE
 • Virker med TalkBack: Twangle siger tonen, og hvor meget den er ved siden af (»E 2, 12 cent for lav, stram«), læser akkorddiagrammer og skalaer op streng for streng, hver knap har et tydeligt navn, og den overdynger dig aldrig med tale
 • Alle skærme virker med stor tekst, op til dobbelt normal størrelse
+• Høj kontrast: rent sort og hvidt med tykkere streger
 • En kort vibration, når en streng er stemt, så du også kan mærke det
 • På 36 sprog: dansk, amharisk, arabisk, bengalsk, burmesisk, engelsk, finsk, fransk, græsk, hindi, indonesisk, italiensk, japansk, khmer, kinesisk (forenklet), kinesisk (traditionelt), koreansk, marathi, nederlandsk, norsk, polsk, portugisisk, rumænsk, russisk, spansk, svensk, swahili, tamil, telugu, thai, tjekkisk, tyrkisk, tysk, ukrainsk, ungarsk og vietnamesisk
 • Tonenavne, som du har lært dem: C D E … H, med B som på engelsk, eller Do Re Mi

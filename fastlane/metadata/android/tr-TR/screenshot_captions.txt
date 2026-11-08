@@ -5,4 +5,4 @@ Bir kez çal. Her teli gör.
 Akort cihazı, metronom ve akorlar tek uygulamada
 Bir akor çal. Adını gör.
 Gitar, bas, ukulele, keman ve kendi akort düzenlerin
-Büyük ve net. Notayı sesli bile söyler.
+Büyük, net, yüksek kontrast. Notayı sesli bile söyler.

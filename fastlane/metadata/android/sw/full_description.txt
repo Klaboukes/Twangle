@@ -30,6 +30,7 @@ MAZOEZI
 IMETENGENEZWA KWA AJILI YA KILA MTU
 • Inafanya kazi na TalkBack: Twangle inatamka noti na umbali wake ("E 2, senti 12 chini, kaza"), inasoma chati za kodi na skeli uzi kwa uzi, kila kitufe kina jina wazi, na haikujazi maneno mengi kupita kiasi
 • Kila skrini inafanya kazi na maandishi makubwa, hadi mara mbili ya ukubwa wa kawaida
+• Utofautishaji wa juu: nyeusi na nyeupe tupu, mistari minene zaidi
 • Mtetemo mfupi uzi unapokuwa sawa, ili uweze kuuhisi pia
 • Katika lugha 36: Kiswahili, Kiingereza, Kiamhari, Kiarabu, Kibengali, Kiburma, Kicheki, Kichina (Kilichorahisishwa), Kichina (Cha Jadi), Kidenmaki, Kifaransa, Kifini, Kigiriki, Kihindi, Kihispania, Kiholanzi, Kihungaria, Kiindonesia, Kiitaliano, Kijapani, Kijerumani, Kikambodia, Kikorea, Kimarathi, Kinorwe, Kipolandi, Kireno, Kiromania, Kirusi, Kiswidi, Kitamili, Kitelugu, Kithai, Kituruki, Kiukreni na Kivietinamu
 • Majina ya noti jinsi ulivyojifunza: C D E, H badala ya B, au Do Re Mi

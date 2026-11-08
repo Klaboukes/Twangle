@@ -5,4 +5,4 @@ Slå an en gång. Se varje sträng.
 Stämmare, metronom och ackord i en app
 Slå an ett ackord. Se vad det heter.
 Gitarr, bas, ukulele, fiol och dina egna stämningar
-Stort och tydligt. Den säger till och med tonen.
+Stort, tydligt, hög kontrast. Den säger till och med tonen.

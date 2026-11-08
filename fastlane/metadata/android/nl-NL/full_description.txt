@@ -30,6 +30,7 @@ OEFENEN
 VOOR IEDEREEN
 • Werkt met TalkBack: Twangle zegt de noot en hoe ver die ernaast zit ("E 2, 12 cent te laag, strakker"), leest akkoordschema's en toonladders snaar voor snaar voor, elke knop heeft een duidelijke naam, en je wordt nooit bedolven onder spraak
 • Elk scherm werkt met grote tekst, tot twee keer de normale grootte
+• Hoog contrast: puur zwart-wit met dikkere lijnen
 • Een korte trilling als een snaar zuiver is, zodat je het ook voelt
 • In 36 talen: Nederlands, Amhaars, Arabisch, Bengaals, Birmaans, Chinees (vereenvoudigd), Chinees (traditioneel), Deens, Duits, Engels, Fins, Frans, Grieks, Hindi, Hongaars, Indonesisch, Italiaans, Japans, Khmer, Koreaans, Marathi, Noors, Oekraïens, Pools, Portugees, Roemeens, Russisch, Spaans, Swahili, Tamil, Telugu, Thais, Tsjechisch, Turks, Vietnamees en Zweeds
 • Nootnamen zoals jij ze kent: C D E, met H in plaats van B, of Do Re Mi
