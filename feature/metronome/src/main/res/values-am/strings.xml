@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">ምቶች በአንድ ባር</string>
+    <string name="metronome_tempo">ቴምፖ</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d ምት በደቂቃ፣ %2$s</item>
+        <item quantity="other">%1$d ምት በደቂቃ፣ %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">ምት በደቂቃ · %1$s</string>
+    <string name="metronome_slower">ቴምፖ ቀንስ</string>
+    <string name="metronome_faster">ቴምፖ ጨምር</string>
+    <string name="metronome_tap">ምቱን ንካ</string>
+    <string name="metronome_start">ጀምር</string>
+    <string name="metronome_stop">አቁም</string>
+    <string name="metronome_vibrate">በእያንዳንዱ ምት ንዝረት</string>
+    <string name="metronome_sound">ድምፅ</string>
+    <string name="metronome_sound_wood_block">የእንጨት ብሎክ</string>
+    <string name="metronome_sound_cowbell">የላም ቃጭል</string>
+    <string name="metronome_sound_claves">ክላቬስ</string>
+    <string name="metronome_sound_rim_click">የከበሮ ጠርዝ</string>
+    <string name="metronome_subdivision">በምቶቹ መካከል</string>
+    <string name="metronome_subdivision_none">የለም</string>
+    <string name="metronome_subdivision_eighths">ስምንተኛ ኖታዎች</string>
+    <string name="metronome_subdivision_triplets">ሦስትዮሽ</string>
+    <string name="metronome_subdivision_sixteenths">አሥራ ስድስተኛ ኖታዎች</string>
+    <string name="metronome_options">አማራጮች</string>
+
+    <string name="metronome_trainer">የፍጥነት ልምምድ</string>
+    <string name="metronome_trainer_start">መነሻ ቴምፖ</string>
+    <string name="metronome_trainer_goal">ግብ</string>
+    <string name="metronome_trainer_start_slower">መነሻ ቴምፖን ቀንስ</string>
+    <string name="metronome_trainer_start_faster">መነሻ ቴምፖን ጨምር</string>
+    <string name="metronome_trainer_goal_slower">ግቡን ቀንስ</string>
+    <string name="metronome_trainer_goal_faster">ግቡን ጨምር</string>
+    <string name="metronome_trainer_step">ደረጃ</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">ባሮች</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s ባር</item>
+        <item quantity="other">%1$s ባር</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s በ%2$s ባር ውስጥ</item>
+        <item quantity="other">%1$s በ%2$s ባር ውስጥ</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s በየባሩ</item>
+        <item quantity="other">%1$s በየ%2$s ባሩ</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">ግቡ ላይ · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">የፍጥነት ልምምድ፣ %1$s BPM፣ ወደ %2$s እየጨመረ፣ %3$s</string>
+    <string name="metronome_trainer_spoken_set">የፍጥነት ልምምድ፣ ከ%1$s እስከ %2$s BPM፣ %3$s</string>
+    <string name="metronome_trainer_spoken_goal">የፍጥነት ልምምድ፣ ግቡ ላይ፣ %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">ሁለት-አራት ምት</string>
+    <string name="metronome_meter_3_4_spoken">ሦስት-አራት ምት</string>
+    <string name="metronome_meter_4_4_spoken">አራት-አራት ምት</string>
+    <string name="metronome_meter_5_4_spoken">አምስት-አራት ምት</string>
+    <string name="metronome_meter_6_8_spoken">ስድስት-ስምንት ምት</string>
+    <string name="metronome_meter_7_8_spoken">ሰባት-ስምንት ምት</string>
+
+    <string name="metronome_listen">አዳምጥ</string>
+    <string name="metronome_listen_stop_spoken">ማዳመጥ አቁም</string>
+    <string name="metronome_listening">በማዳመጥ ላይ…</string>
+    <string name="metronome_heard">የተሰማው</string>
+    <string name="metronome_use">ተጠቀም</string>
+    <string name="metronome_not_now">አሁን አይደለም</string>
+    <string name="metronome_listen_speed">ፍጥነት</string>
+    <string name="metronome_pick_half">ግማሽ</string>
+    <string name="metronome_pick_as_heard">እንደተሰማው</string>
+    <string name="metronome_pick_double">እጥፍ</string>
+    <string name="metronome_no_beat">ቋሚ ምት አልተሰማም</string>
+    <string name="metronome_try_again">እንደገና</string>
+    <string name="metronome_mic_busy">ማይክሮፎኑ ተይዟል</string>
+    <string name="metronome_mic_off">ማይክሮፎን ጠፍቷል</string>
+    <string name="metronome_open_settings">ቅንብሮች</string>
+</resources>

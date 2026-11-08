@@ -1,0 +1,42 @@
+<resources>
+    <string name="wear_play_note">አንድ ኖታ ይጫወቱ</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s ሴንት</item>
+        <item quantity="other">%1$s ሴንት</item>
+    </plurals>
+    <string name="wear_in_tune">ተቃኝቷል</string>
+    <string name="wear_spoken_reading">%1$s %2$d፣ %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d፣ %3$s፣ %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">%1$d ሴንት ዝቅ</item>
+        <item quantity="other">%1$d ሴንት ዝቅ</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">%1$d ሴንት ከፍ</item>
+        <item quantity="other">%1$d ሴንት ከፍ</item>
+    </plurals>
+    <string name="wear_word_tighten">አጥብቅ</string>
+    <string name="wear_word_loosen">አላላ</string>
+    <string name="wear_spoken_sharp">%1$s ሻርፕ</string>
+    <string name="wear_vibration_guide">የንዝረት መመሪያ</string>
+    <string name="wear_mic_needed">Twangle የሙዚቃ መሣሪያዎን በሰዓቱ ማይክሮፎን ያዳምጣል።</string>
+    <string name="wear_allow_mic">ማይክሮፎን ፍቀድ</string>
+    <string name="wear_open_settings">ቅንብሮችን ክፈት</string>
+    <string name="wear_mic_busy">ሌላ መተግበሪያ ማይክሮፎኑን እየተጠቀመ ነው።</string>
+    <string name="wear_mic_unavailable">ማይክሮፎኑ ሊከፈት አልቻለም።</string>
+    <string name="wear_try_again">እንደገና ሞክር</string>
+    <string name="wear_tile_tune">ቃኝ</string>
+    <string name="wear_tile_metronome">ሜትሮኖም</string>
+    <string name="wear_tile_open_metronome">ሜትሮኖሙን ክፈት፣ %1$s</string>
+    <string name="wear_shortcut_tune">ቃኝ</string>
+    <string name="wear_shortcut_open">መቃኛውን ክፈት</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d ምት በደቂቃ</item>
+        <item quantity="other">%1$d ምት በደቂቃ</item>
+    </plurals>
+    <string name="wear_metronome_playing">በመጫወት ላይ</string>
+    <string name="wear_metronome_stopped">ቆሟል</string>
+    <string name="wear_metronome_start">ጀምር</string>
+    <string name="wear_metronome_stop">አቁም</string>
+    <string name="wear_metronome_click">የጠቅታ ድምፅ</string>
+</resources>

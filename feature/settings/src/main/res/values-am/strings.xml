@@ -1,0 +1,75 @@
+<resources>
+    <string name="settings_title">ቅንብሮች</string>
+    <string name="settings_back">ተመለስ</string>
+
+    <string name="settings_group_tuning">ቅኝት</string>
+    <string name="settings_group_while_tuning">ሲቃኙ</string>
+    <string name="settings_group_look">ገጽታ</string>
+
+    <string name="settings_a4_title">የማጣቀሻ ድምፅ (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">አብዛኛው ሙዚቃ 440 Hz ይጠቀማል። ኦርኬስትራዎች ብዙውን ጊዜ በ442 Hz፣ የባሮክ ቡድኖች በ415 Hz ይቃኛሉ።</string>
+    <string name="settings_a4_lower">A4ን በ1 Hz ዝቅ አድርግ</string>
+    <string name="settings_a4_raise">A4ን በ1 Hz ከፍ አድርግ</string>
+    <string name="settings_a4_reset">ወደ %1$d Hz መልስ</string>
+
+    <string name="settings_precise_title">ትክክለኛ ቅኝት</string>
+    <string name="settings_precise_summary">ተቃኝቷል የሚባለው በ2 ሴንት ውስጥ ብቻ (ከ5 ይልቅ)</string>
+    <string name="settings_notation_title">የኖታ ስሞች</string>
+    <string name="settings_notation_sharps">ሻርፕ፦ C፣ C♯፣ D …</string>
+    <string name="settings_notation_flats">ፍላት፦ C፣ D♭፣ D …</string>
+    <string name="settings_notation_solfege">ዶ ሬ ሚ፦ Do፣ Do♯፣ Re …</string>
+    <string name="settings_notation_automatic">ራስ-ሰር፦ %1$s</string>
+    <string name="settings_notation_sample">%1$s፣ %2$s፣ %3$s … %4$s</string>
+    <string name="settings_notation_german">ጀርመንኛ፦ C፣ C♯፣ D … H</string>
+
+    <string name="settings_theme_title">ብርሃን ወይም ጨለማ</string>
+    <string name="settings_high_contrast_title">ከፍተኛ ንፅፅር</string>
+    <string name="settings_high_contrast_summary">ጥቁር እና ነጭ ከወፍራም መስመሮች ጋር፤ የስልኩ ንፅፅር ከፍ ሲል በራሱ ይበራል</string>
+    <string name="settings_theme_system">እንደ ስልኩ</string>
+    <string name="settings_theme_light">ብርሃን</string>
+    <string name="settings_theme_dark">ጨለማ</string>
+    <string name="settings_dynamic_color_title">የልጣፍ ቀለሞች</string>
+    <string name="settings_dynamic_color_summary">ከልጣፍዎ ቀለሞችን ይጠቀሙ</string>
+
+    <string name="settings_meter_title">መለኪያ</string>
+    <string name="settings_meter_classic">ክላሲክ</string>
+    <string name="settings_meter_light_arc">የብርሃን ቅስት</string>
+    <string name="settings_meter_strobe">ስትሮብ</string>
+
+    <string name="settings_left_handed_title">ለግራ እጅ</string>
+    <string name="settings_left_handed_summary">የኮርድ ሰንጠረዦች እና የስኬሉ አንገት በተገላቢጦሽ ለተያዘ ጊታር ይሳላሉ</string>
+
+    <string name="settings_under_meter_title">ከመለኪያው በታች</string>
+    <string name="settings_under_meter_words">ቃላት፦ አጥብቅ ወይም አላላ</string>
+    <string name="settings_under_meter_cents">ሴንት፦ −12</string>
+    <string name="settings_keep_screen_on_title">ማያ ገጹ እንደበራ ይቆይ</string>
+    <string name="settings_keep_screen_on_summary">በሚቃኙበት ጊዜ ማያ ገጹ እንደበራ ይቆያል</string>
+    <string name="settings_vibrate_in_tune_title">ሲቃኝ ይንዘር</string>
+    <string name="settings_vibrate_in_tune_summary">ኖታው ልክ ሲደርስ አጭር ንዝረት</string>
+    <string name="settings_vibration_guide_title">የንዝረት መመሪያ</string>
+    <string name="settings_vibration_guide_summary">ሲቃኙ ንዝረቶች፦ አንድ ለማጥበቅ፣ ሁለት ለማላላት፣ ሲቃኝ ረጅም</string>
+    <string name="settings_string_tick_off_title">የተቃኙ ክሮችን ምልክት አድርግ</string>
+    <string name="settings_string_tick_off_summary">እያንዳንዱ ክር ሲቃኝ ምልክት፣ ሁሉም ሲቃኙ ደግሞ «ተቃኝቷል። ይጫወቱ።»</string>
+
+    <string name="settings_language_title">ቋንቋ</string>
+    <string name="settings_language_phone">የስልኩ ቋንቋ</string>
+    <string name="settings_language_cancel">ይቅር</string>
+    <string name="about_title">ስለ Twangle</string>
+    <string name="settings_about_link_summary">ስሪት %1$s፣ እገዛ፣ ግላዊነት እና ፈቃዶች</string>
+    <string name="settings_about_name_title">ስሙ</string>
+    <string name="settings_about_name_meaning">Twang በእንግሊዝኛ የተመታ ክር የሚያሰማው የሚያስተጋባ ድምፅ ነው።</string>
+    <string name="settings_about_version">ስሪት %1$s</string>
+    <string name="settings_about_free_title">ለዘላለም ነፃ</string>
+    <string name="settings_about_free_summary">ማስታወቂያ የለም፣ መለያ የለም፣ የውስጠ-መተግበሪያ ግዢ የለም፣ ክትትልም የለም። አሁንም ሆነ ወደፊት።</string>
+    <string name="settings_about_privacy_title">ግላዊነት</string>
+    <string name="settings_about_privacy_summary">Twangle ስለእርስዎ ምንም ውሂብ አይሰበስብም። ማይክሮፎኑ የሚበራው የሚያዳምጥ ማያ ገጽ ክፍት ሲሆን ብቻ ነው፦ መቃኛው፣ የሜትሮኖሙ «አዳምጥ» ወይም የጆሮ ልምምድ «መልሰው ይጫወቱ»። ድምፁ በቀጥታ ይተነተናል፤ በጭራሽ አይቀዳም፣ አይቀመጥም፣ አይላክም። Twangle የኢንተርኔት ፈቃድ የለውም፤ ስለዚህ ምንም ነገር ወደየትም መላክ አይችልም። ቅንብሮችዎ በዚህ መሣሪያ ላይ ይቆያሉ (እና ካበሩት በAndroid የራሱ ምትኬ ውስጥ)።</string>
+    <string name="settings_about_rate_title">Twangleን ደረጃ ይስጡ</string>
+    <string name="settings_about_rate_summary">Twangle በGoogle Play ላይ</string>
+    <string name="settings_about_website_title">እገዛ እና ድር ጣቢያ</string>
+    <string name="settings_about_website_summary">እያንዳንዱ ተግባር እንዴት እንደሚሠራ እና ለተለመዱ ጥያቄዎች መልሶች</string>
+    <string name="settings_about_credits_title">ቅርጸ-ቁምፊዎች እና ክፍት ምንጭ ሶፍትዌር</string>
+    <string name="settings_about_credits_summary">Twangle የተሠራው በእነዚህ ነው። ፈቃዱን ለማንበብ አንዱን መታ ያድርጉ።</string>
+    <string name="settings_about_licence_open">ፈቃዱን ማንበብ</string>
+    <string name="settings_about_licence_close">ዝጋ</string>
+</resources>

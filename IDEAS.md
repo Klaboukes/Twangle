@@ -97,3 +97,6 @@ The tuning guide as sound instead of vibration: short ticks at the vibration gui
 
 ## Speech waits for the string to fade (idea, 2026-11-07, from Phase 85)
 TalkBack says the reading only once the plucked string has died away, as Talking Tuner does, so the voice never talks over the note being tuned and the reading it says is the one the string ended on. Phase 81's pacing (one phrase per note, the voice's own frames set aside) covers most of it, and Phase 85's vibration guide says how far off while the string rings. **Condition:** only if blind players say the speech talks over the string.
+
+## Hausa (idea, 2026-11-08, from Phase 87)
+Twangle in Hausa (`ha`), for Nigeria and Niger. Left out of Phase 87 (2026-11-08): Android offers it as a phone language (`ha-GH`, `ha-NE`, `ha-NG`), but Google Play has no store listing language for it (Play Console's 86 listing languages, https://support.google.com/googleplay/android-developer/answer/9844778, go from Gujarati to Hebrew), so players would find an app in Hausa only behind an English listing, and `StoreListingTest` wants a listing for every language. **Condition:** when Play offers a Hausa store listing; then one `/add-language` like Swahili's (its Latin letters with ɓ ɗ ƙ: check Nunito has them or that they come from the phone's font).

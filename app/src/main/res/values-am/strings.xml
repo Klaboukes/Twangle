@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">ቃኝ</string>
+    <string name="nav_metronome">ሜትሮኖም</string>
+    <string name="nav_practice">ልምምድ</string>
+    <string name="nav_settings">ቅንብሮች</string>
+    <string name="widget_name">መቃኛ</string>
+    <string name="widget_description">መሣሪያዎን እና ቅኝቱን ያሳያል። አንድ ንክኪ መቃኛውን ይከፍታል።</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">መቃኛውን ክፈት</string>
+    <string name="widget_preview_title">ጊታር · መደበኛ</string>
+</resources>
