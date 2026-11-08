@@ -26,6 +26,9 @@ import kotlinx.coroutines.flow.flowOn
  * An input that records only exact zeros from its first sample gives way to the next one within
  * the session ([FallbackReader]), and is skipped for the app's life once that one hears the room.
  * While a Bluetooth headset is connected it asks for the built-in mic ([InputDeviceSelector]).
+ * Speech effects a maker attached to the recording (automatic gain, noise suppression, echo
+ * cancelling) are switched off while it records ([SpeechEffectsOff]); the log says once per input
+ * which ones the phone has and what was done.
  * Chunks last about 21 ms at any rate unless [chunkSize] is given.
  *
  * The blocking `read()` runs on a dedicated single thread so it never starves other coroutines.
@@ -152,8 +155,9 @@ class AndroidAudioRecorder(
     }
 
     /**
-     * Starts recording [record] and follows Android's silencing of it; [input] becomes
-     * [activeInput]. Releases it if it can't start (the microphone is busy).
+     * Starts recording [record], follows Android's silencing of it and switches off the speech
+     * effects on it; [input] becomes [activeInput]. Releases it if it can't start (the microphone
+     * is busy).
      */
     private fun begin(record: AudioRecord, input: AudioInput): RecordInput {
         val mic = RecordInput(record)
@@ -161,6 +165,8 @@ class AndroidAudioRecorder(
             mic.watch()
             start(record)
             mic.checkSilenced()
+            val effects = mic.switchOffEffects()
+            if (loggedEffects.first(input)) Log.i(TAG, "Speech effects on $input: ${effects.summary()}")
         } catch (e: Throwable) {
             mic.end()
             throw e
@@ -210,6 +216,9 @@ class AndroidAudioRecorder(
         @Volatile
         var silenced = false
 
+        // The speech effects held off while this recording runs, let go in end().
+        private var effects: SpeechEffectsOff? = null
+
         private val callback: SilencingCallback? =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) SilencingCallback(record.audioSessionId, this) else null
 
@@ -230,13 +239,22 @@ class AndroidAudioRecorder(
             }
         }
 
+        /**
+         * Once recording: switches off the speech effects a maker attached to it (they exist from
+         * the moment the recording is made; started, any attached on start are there too).
+         */
+        fun switchOffEffects(): SpeechEffectsOff =
+            SpeechEffectsOff.switchOff(AndroidSpeechEffects, record.audioSessionId).also { effects = it }
+
         fun unwatch() {
             callback?.let { runCatching { audioManager.unregisterAudioRecordingCallback(it) } }
         }
 
-        /** Stops following, stops recording and lets go of the microphone. */
+        /** Stops following, lets go of the effects, stops recording and lets go of the microphone. */
         fun end() {
             unwatch()
+            effects?.release()
+            effects = null
             if (record.recordingState == AudioRecord.RECORDSTATE_RECORDING) record.stop()
             record.release()
         }
@@ -259,6 +277,9 @@ class AndroidAudioRecorder(
          * (the tuner's, the metronome's Listen, ear training's) until the app's process ends.
          */
         internal val skippedInputs = SkippedInputs()
+
+        /** The inputs whose speech effects were logged, once each for the app's life. */
+        internal val loggedEffects = LoggedOnce()
 
         private const val TAG = "AudioRecorder"
         private const val CHANNEL_MASK = AudioFormat.CHANNEL_IN_MONO
