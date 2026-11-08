@@ -70,6 +70,14 @@ class HighContrastPaletteTest {
     }
 
     @Test
+    fun `a selected segment is filled with the ink, so it stands out from the page, and its label reads on it`() = forEach { name, p ->
+        val (fill, label) = selectedSegmentColors(p.toColorScheme(dark = p.background == Color.Black))
+        assertEquals("$name: the ink", p.ink, fill)
+        assertContrast("$name selected segment on the page", fill, p.background)
+        assertContrast("$name label on the selected segment", label, fill)
+    }
+
+    @Test
     fun `the in-tune green, the far-off amber and the accent stay apart`() {
         for ((dark, p) in all) {
             assertTrue("in tune is green (dark=$dark): ${hueOf(p.inTune)}", hueOf(p.inTune) in 130f..170f)

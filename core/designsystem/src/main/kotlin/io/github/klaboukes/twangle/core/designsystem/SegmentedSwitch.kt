@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -63,6 +65,7 @@ fun <T> SegmentedSwitch(
     icon: (@Composable (T) -> Painter)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val (selectedFill, selectedContent) = selectedSegmentColors(scheme)
     val crowded = options.size >= CROWDED_SEGMENTS
     // A capsule, as the round buttons beside it (Phase 63's review).
     val base = CircleShape
@@ -87,8 +90,8 @@ fun <T> SegmentedSwitch(
                     // The selected segment takes the accent (Material's default is the secondary
                     // colour). The unselected one gets a backing, so it reads on the background.
                     colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = scheme.primaryContainer,
-                        activeContentColor = scheme.onPrimaryContainer,
+                        activeContainerColor = selectedFill,
+                        activeContentColor = selectedContent,
                         inactiveContainerColor = scheme.surface.copy(alpha = 0.6f),
                         activeBorderColor = scheme.outline,
                         inactiveBorderColor = scheme.outline,
@@ -170,6 +173,14 @@ fun <T> SegmentedSwitch(
         }
     }
 }
+
+/**
+ * The selected segment's fill and its label's colour: the accent container, or in the high-contrast look (Phase 86)
+ * the ink itself with the page's colour on it, since there the container is a grey that barely stands out from the
+ * black or white page (the metronome's 4/4 read as unpicked at low brightness).
+ */
+internal fun selectedSegmentColors(scheme: ColorScheme): Pair<Color, Color> =
+    if (scheme.isHighContrast) scheme.primary to scheme.onPrimary else scheme.primaryContainer to scheme.onPrimaryContainer
 
 /**
  * A segment's label: its intrinsic size, both minimum and maximum, is [whole] (its one line at full
