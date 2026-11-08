@@ -1,5 +1,8 @@
 package io.github.klaboukes.twangle.feature.metronome.components
 
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.Typeface
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,8 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -47,6 +53,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoMarking
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
+import kotlin.math.roundToInt
 
 /*
  * The tempo as the screen (2.0, Phase 75; the first 2.0 mock-up, docs/design/fresh-start-preview.html,
@@ -92,6 +99,8 @@ internal fun TempoHeading(
     val measurer = rememberTextMeasurer()
     val locale = appLocale()
     val widest = localDigits(ClickTrack.MAX_BPM, locale)
+    val allDigits = (0..9).joinToString("") { localDigits(it, locale) }
+    val fonts = LocalFontFamilyResolver.current
     val accent = scheme.primary
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -99,16 +108,26 @@ internal fun TempoHeading(
             val across = maxWidth - (STEP_TOUCH + STEP_GAP) * 2
             val wordsHeight = WORDS_SIZE * WORDS_LINE * density.fontScale.coerceAtMost(MAX_WORDS_SCALE)
             val down = (room - wordsHeight - WORDS_GAP).coerceIn(FIGURES_SMALLEST, FIGURES_LARGEST)
-            val figures = remember(widest, across, down, density) {
-                // The figures' size in dp: as tall as [down] allows, as wide as [across] allows.
+            val figures = remember(widest, allDigits, across, down, density, fonts) {
+                // The figures' size in dp: as tall as [down] allows, as wide as [across] allows, and their ink no
+                // taller than [down] either (Myanmar's ၂ hangs far below the line).
                 val probe = TextStyle(fontFamily = NumberFont, fontSize = with(density) { 100.dp.toSp() }, fontWeight = FIGURES_WEIGHT, letterSpacing = FIGURES_SPACING, fontFeatureSettings = "$LINING_FIGURES, tnum")
                 val width = with(density) { measurer.measure(widest, probe).size.width.toDp() }
-                minOf(down, 100.dp * (across / width).coerceAtLeast(0f))
+                // The digits' ink, from the face and the phone's fallback for the script, at the probe's 100 dp.
+                val ink = Rect()
+                Paint().apply {
+                    typeface = fonts.resolve(NumberFont, FIGURES_WEIGHT).value as? Typeface
+                    textSize = with(density) { 100.dp.toPx() }
+                    fontFeatureSettings = "$LINING_FIGURES, tnum"
+                }.getTextBounds(allDigits, 0, allDigits.length, ink)
+                val (above, below) = with(density) { (-ink.top).toDp() to ink.bottom.toDp() }
+                val size = minOf(down, 100.dp * (across / width).coerceAtLeast(0f), 100.dp * (down / (above + below)).coerceAtLeast(0f))
+                Figures(size, above * (size / 100.dp), below * (size / 100.dp))
             }
             val style = TextStyle(
                 fontFamily = NumberFont,
-                fontSize = with(density) { figures.toSp() },
-                lineHeight = with(density) { figures.toSp() },
+                fontSize = with(density) { figures.size.toSp() },
+                lineHeight = with(density) { figures.size.toSp() },
                 lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
                 fontWeight = FIGURES_WEIGHT,
                 letterSpacing = FIGURES_SPACING,
@@ -154,16 +173,31 @@ internal fun TempoHeading(
     }
 }
 
+/** The figures' font [size] and the ink of the language's ten digits [above] and [below] the baseline at that size. */
+private data class Figures(val size: Dp, val above: Dp, val below: Dp)
+
 /**
- * The figures' box [figures] high, the room they were sized for, the text's own line centred over it.
+ * The figures' box [Figures.size] high, the room they were sized for, the text's own line centred over it.
  * That line is the face's ascent and descent whatever the line height asks (1.36 times the size in
  * Nunito, 1.17 in the phone's font before it), so on its side the tempo took more than its room and
  * pushed the row under the bars out of the window; the figures themselves stand in the middle of it.
+ * Where the digits' ink would leave the box so (Myanmar digits, from the phone's Burmese font, reach
+ * above the size and ၂ hangs far below the line, into the words under it; 2026-11-08), the box is as
+ * tall as the ink and the ink is centred in it instead. Latin digits keep the box and place they had.
  */
-private fun Modifier.figuresHigh(figures: Dp): Modifier = layout { measurable, constraints ->
+private fun Modifier.figuresHigh(figures: Figures): Modifier = layout { measurable, constraints ->
     val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
-    val tall = figures.roundToPx()
-    layout(placeable.width, tall) { placeable.place(0, (tall - placeable.height) / 2) }
+    val tall = maxOf(figures.size, figures.above + figures.below).roundToPx()
+    val centred = (tall - placeable.height) / 2
+    val baseline = placeable[FirstBaseline]
+    val above = figures.above.toPx()
+    val below = figures.below.toPx()
+    val y = when {
+        baseline == AlignmentLine.Unspecified -> centred
+        centred + baseline - above >= 0f && centred + baseline + below <= tall -> centred
+        else -> ((tall - above - below) / 2f + above).roundToInt() - baseline
+    }
+    layout(placeable.width, tall) { placeable.place(0, y) }
 }
 
 /** "beats per minute · Andante" under the figures, muted, one line, set smaller where a language or large text needs it. */

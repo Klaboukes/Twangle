@@ -1,0 +1,5 @@
+<resources>
+    <string name="spoken_sharp">%1$s ရှပ်</string>
+    <string name="spoken_flat">%1$s ဖလက်</string>
+    <string name="instrument_button_action">တူရိယာ သို့မဟုတ် ကြိုးညှိပုံ ပြောင်းရန်</string>
+</resources>

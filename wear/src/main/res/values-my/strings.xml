@@ -1,0 +1,38 @@
+<resources>
+    <string name="wear_play_note">နုတ်တစ်ခု တီးပါ</string>
+    <plurals name="wear_cents">
+        <item quantity="other">%1$s ဆင့်</item>
+    </plurals>
+    <string name="wear_in_tune">အသံမှန်</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="other">%1$d ဆင့် နိမ့်</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="other">%1$d ဆင့် မြင့်</item>
+    </plurals>
+    <string name="wear_word_tighten">တင်းပါ</string>
+    <string name="wear_word_loosen">လျှော့ပါ</string>
+    <string name="wear_spoken_sharp">%1$s ရှပ်</string>
+    <string name="wear_vibration_guide">တုန်ခါမှု လမ်းညွှန်</string>
+    <string name="wear_mic_needed">Twangle သည် နာရီ၏ မိုက်ခရိုဖုန်းဖြင့် သင့်တူရိယာကို နားထောင်သည်။</string>
+    <string name="wear_allow_mic">မိုက် ခွင့်ပြုရန်</string>
+    <string name="wear_open_settings">ဆက်တင်များ ဖွင့်ရန်</string>
+    <string name="wear_mic_busy">အခြားအက်ပ်က မိုက်ခရိုဖုန်းကို သုံးနေသည်။</string>
+    <string name="wear_mic_unavailable">မိုက်ခရိုဖုန်းကို ဖွင့်၍ မရပါ။</string>
+    <string name="wear_try_again">ထပ်စမ်းရန်</string>
+    <string name="wear_tile_tune">အသံညှိ</string>
+    <string name="wear_tile_metronome">မက်ထရိုနုမ်း</string>
+    <string name="wear_tile_open_metronome">မက်ထရိုနုမ်း ဖွင့်ရန်, %1$s</string>
+    <string name="wear_shortcut_tune">ညှိ</string>
+    <string name="wear_shortcut_open">တျူနာ ဖွင့်ရန်</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="other">တစ်မိနစ်လျှင် စည်းချက် %1$d</item>
+    </plurals>
+    <string name="wear_metronome_playing">ဖွင့်နေသည်</string>
+    <string name="wear_metronome_stopped">ရပ်ထားသည်</string>
+    <string name="wear_metronome_start">စတင်ရန်</string>
+    <string name="wear_metronome_stop">ရပ်ရန်</string>
+    <string name="wear_metronome_click">ကလစ် အသံ</string>
+</resources>

@@ -246,10 +246,17 @@ private val BETWEEN_TWO_NON_SPACES = Regex("""(?<=\S)(?=\S)""")
 
 /** [text] with a line break after its first sentence, if it is two sentences; else null. */
 internal fun sentencesOnTheirOwnLines(text: String): String? {
-    val ends = listOf(". ", "。", "। ").mapNotNull { end -> text.indexOf(end).takeIf { it in 1 until text.length - end.length }?.let { it + end.length } }
+    val ends = SENTENCE_ENDS.mapNotNull { end -> text.indexOf(end).takeIf { it in 1 until text.length - end.length }?.let { it + end.length } }
     val cut = ends.minOrNull() ?: return null
     return text.substring(0, cut).trimEnd() + "\n" + text.substring(cut).trimStart()
 }
+
+/**
+ * A sentence's end inside a caption: the full stop and a space; the ideographic full stop (Chinese, Japanese), which
+ * takes no space; the danda (Hindi, Bengali, Marathi), Amharic's ። and Burmese's ။, each with a space; and Khmer's ។,
+ * which Khmer may write without one.
+ */
+private val SENTENCE_ENDS = listOf(". ", "。", "। ", "። ", "။ ", "។")
 
 /** Balanced lines (no single word left on the last one), centred. */
 private fun TextStyle.captionStyle(size: Float) =

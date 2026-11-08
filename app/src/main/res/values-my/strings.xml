@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">အသံညှိ</string>
+    <string name="nav_metronome">မက်ထရိုနုမ်း</string>
+    <string name="nav_practice">လေ့ကျင့်</string>
+    <string name="nav_settings">ဆက်တင်များ</string>
+    <string name="widget_name">တျူနာ</string>
+    <string name="widget_description">သင့်တူရိယာနှင့် ကြိုးညှိပုံကို ပြသည်။ တစ်ချက် တို့လျှင် တျူနာ ပွင့်မည်။</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">တျူနာ ဖွင့်ရန်</string>
+    <string name="widget_preview_title">ဂီတာ · စံ</string>
+</resources>

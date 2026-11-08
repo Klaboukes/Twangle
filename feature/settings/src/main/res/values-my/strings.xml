@@ -1,0 +1,75 @@
+<resources>
+    <string name="settings_title">ဆက်တင်များ</string>
+    <string name="settings_back">နောက်သို့</string>
+
+    <string name="settings_group_tuning">အသံညှိ</string>
+    <string name="settings_group_while_tuning">ညှိနေစဉ်</string>
+    <string name="settings_group_look">အသွင်</string>
+
+    <string name="settings_a4_title">ရည်ညွှန်း အသံ (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">ဂီတအများစုက ၄၄၀ Hz ကို သုံးသည်။ သံစုံတီးဝိုင်းများ မကြာခဏ ၄၄၂ Hz၊ ဘာရုတ် အဖွဲ့များ ၄၁၅ Hz သို့ ညှိကြသည်။</string>
+    <string name="settings_a4_lower">A4 ကို ၁ Hz လျှော့ရန်</string>
+    <string name="settings_a4_raise">A4 ကို ၁ Hz တိုးရန်</string>
+    <string name="settings_a4_reset">%1$d Hz သို့ ပြန်ထားရန်</string>
+
+    <string name="settings_precise_title">တိကျသော ညှိခြင်း</string>
+    <string name="settings_precise_summary">၅ ဆင့်အစား ၂ ဆင့်အတွင်းဆိုမှ အသံမှန်</string>
+    <string name="settings_notation_title">နုတ် အမည်များ</string>
+    <string name="settings_notation_sharps">ရှပ်: C, C♯, D …</string>
+    <string name="settings_notation_flats">ဖလက်: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">အလိုအလျောက်: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">ဂျာမန်: C, C♯, D … H</string>
+
+    <string name="settings_theme_title">အလင်း သို့မဟုတ် အမှောင်</string>
+    <string name="settings_high_contrast_title">အရောင်ခြားနားမှု မြင့်</string>
+    <string name="settings_high_contrast_summary">မျဉ်းထူသော အဖြူအမည်း၊ ဖုန်း၏ ခြားနားမှု မြင့်လျှင် အလိုအလျောက် ဖွင့်သည်</string>
+    <string name="settings_theme_system">ဖုန်းအတိုင်း</string>
+    <string name="settings_theme_light">အလင်း</string>
+    <string name="settings_theme_dark">အမှောင်</string>
+    <string name="settings_dynamic_color_title">နောက်ခံပုံ အရောင်များ</string>
+    <string name="settings_dynamic_color_summary">သင့်နောက်ခံပုံမှ အရောင်များကို သုံးရန်</string>
+
+    <string name="settings_meter_title">မီတာ</string>
+    <string name="settings_meter_classic">ဂန္ထဝင်</string>
+    <string name="settings_meter_light_arc">အလင်းကွေး</string>
+    <string name="settings_meter_strobe">စထရိုဘ်</string>
+
+    <string name="settings_left_handed_title">ဘယ်သန်</string>
+    <string name="settings_left_handed_summary">ကော့ဒ်ဇယားနှင့် စကေးလည်တံကို ဂီတာ ပြောင်းပြန်ကိုင်သူအတွက် ဆွဲပြသည်</string>
+
+    <string name="settings_under_meter_title">မီတာအောက်တွင်</string>
+    <string name="settings_under_meter_words">စကားလုံး: တင်းပါ သို့မဟုတ် လျှော့ပါ</string>
+    <string name="settings_under_meter_cents">ဆင့်: −၁၂</string>
+    <string name="settings_keep_screen_on_title">မျက်နှာပြင် ဖွင့်ထားရန်</string>
+    <string name="settings_keep_screen_on_summary">ညှိနေစဉ် မျက်နှာပြင် ဖွင့်ထားသည်</string>
+    <string name="settings_vibrate_in_tune_title">အသံမှန်လျှင် တုန်ခါရန်</string>
+    <string name="settings_vibrate_in_tune_summary">နုတ် အသံမှန်သည့်အခါ ခဏ တုန်ခါသည်</string>
+    <string name="settings_vibration_guide_title">တုန်ခါမှု လမ်းညွှန်</string>
+    <string name="settings_vibration_guide_summary">ညှိနေစဉ် တုန်ခါချက်: တစ်ချက် တင်းရန်၊ နှစ်ချက် လျှော့ရန်၊ အရှည် အသံမှန်</string>
+    <string name="settings_string_tick_off_title">ညှိပြီး ကြိုးများကို အမှန်ခြစ်ရန်</string>
+    <string name="settings_string_tick_off_summary">ကြိုးတစ်ချောင်း အသံမှန်လျှင် အမှန်ခြစ်၊ အားလုံးမှန်လျှင် “အသံမှန်ပြီ။ တီးပါတော့။”</string>
+
+    <string name="settings_language_title">ဘာသာစကား</string>
+    <string name="settings_language_phone">ဖုန်း၏ ဘာသာစကား</string>
+    <string name="settings_language_cancel">မလုပ်တော့</string>
+    <string name="about_title">Twangle အကြောင်း</string>
+    <string name="settings_about_link_summary">ဗားရှင်း %1$s၊ အကူအညီ၊ ကိုယ်ရေးအချက်အလက်နှင့် လိုင်စင်များ</string>
+    <string name="settings_about_name_title">အမည်</string>
+    <string name="settings_about_name_meaning">Twang သည် ကြိုးကို ဆွဲတီးလိုက်သည့်အခါ မြည်သော အသံအတွက် အင်္ဂလိပ် စကားလုံး ဖြစ်သည်။</string>
+    <string name="settings_about_version">ဗားရှင်း %1$s</string>
+    <string name="settings_about_free_title">အမြဲ အခမဲ့</string>
+    <string name="settings_about_free_summary">ကြော်ငြာ မရှိ၊ အကောင့် မလို၊ အက်ပ်တွင်း ဝယ်ယူမှုနှင့် ခြေရာခံမှု မရှိ။ ယခုလည်း မရှိ၊ နောင်လည်း မရှိ။</string>
+    <string name="settings_about_privacy_title">ကိုယ်ရေးအချက်အလက်</string>
+    <string name="settings_about_privacy_summary">Twangle သည် သင့်အကြောင်း မည်သည့်ဒေတာကိုမျှ မစုဆောင်းပါ။ နားထောင်သော မျက်နှာပြင် ဖွင့်ထားစဉ်သာ မိုက်ခရိုဖုန်း ဖွင့်သည်- တျူနာ၊ မက်ထရိုနုမ်း၏ “နားထောင်ရန်” သို့မဟုတ် နားလေ့ကျင့်ခန်း၏ “ပြန်တီး”။ အသံကို တိုက်ရိုက် စစ်ဆေးပြီး ဘယ်တော့မှ မှတ်တမ်းမတင်၊ မသိမ်း၊ မပို့ပါ။ Twangle တွင် အင်တာနက် ခွင့်ပြုချက် မရှိသဖြင့် ဘယ်ကိုမှ ဘာမှ မပို့နိုင်ပါ။ သင့်ဆက်တင်များသည် ဤစက်ပေါ်တွင်သာ ရှိသည် (Android ၏ ကိုယ်ပိုင် အရန်သိမ်းခြင်းကို ဖွင့်ထားလျှင် ၎င်းထဲတွင်လည်း ရှိသည်)။</string>
+    <string name="settings_about_rate_title">Twangle ကို အဆင့်သတ်မှတ်ရန်</string>
+    <string name="settings_about_rate_summary">Google Play ရှိ Twangle</string>
+    <string name="settings_about_website_title">အကူအညီနှင့် ဝက်ဘ်ဆိုက်</string>
+    <string name="settings_about_website_summary">ကိရိယာတစ်ခုချင်း အလုပ်လုပ်ပုံနှင့် အမေးများသော မေးခွန်းများ၏ အဖြေ</string>
+    <string name="settings_about_credits_title">ဖောင့်များနှင့် open-source ဆော့ဖ်ဝဲ</string>
+    <string name="settings_about_credits_summary">Twangle ကို ဤအရာများဖြင့် ပြုလုပ်ထားသည်။ လိုင်စင် ဖတ်ရန် တစ်ခုကို တို့ပါ။</string>
+    <string name="settings_about_licence_open">လိုင်စင် ဖတ်ရန်</string>
+    <string name="settings_about_licence_close">ပိတ်ရန်</string>
+</resources>

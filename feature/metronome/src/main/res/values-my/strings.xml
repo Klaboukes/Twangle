@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">ဘားတစ်ခုရှိ စည်းချက်များ</string>
+    <string name="metronome_tempo">တမ်ပို</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">တစ်မိနစ်လျှင် စည်းချက် %1$d, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">တစ်မိနစ်လျှင် စည်းချက် · %1$s</string>
+    <string name="metronome_slower">ပိုနှေးရန်</string>
+    <string name="metronome_faster">ပိုမြန်ရန်</string>
+    <string name="metronome_tap">စည်းချက် တို့</string>
+    <string name="metronome_start">စတင်ရန်</string>
+    <string name="metronome_stop">ရပ်ရန်</string>
+    <string name="metronome_vibrate">စည်းချက်တိုင်း တုန်ခါရန်</string>
+    <string name="metronome_sound">အသံ</string>
+    <string name="metronome_sound_wood_block">သစ်သားတုံး</string>
+    <string name="metronome_sound_cowbell">နွားခေါင်းလောင်း</string>
+    <string name="metronome_sound_claves">ကလေးဗ်စ်</string>
+    <string name="metronome_sound_rim_click">ဗုံနှုတ်ခမ်း ခေါက်</string>
+    <string name="metronome_subdivision">စည်းချက်ကြား</string>
+    <string name="metronome_subdivision_none">မရှိ</string>
+    <string name="metronome_subdivision_eighths">ရှစ်ပုံတစ်ပုံ နုတ်များ</string>
+    <string name="metronome_subdivision_triplets">ထရစ်ပလက်များ</string>
+    <string name="metronome_subdivision_sixteenths">ဆယ့်ခြောက်ပုံတစ်ပုံ နုတ်များ</string>
+    <string name="metronome_options">ရွေးစရာများ</string>
+
+    <string name="metronome_trainer">အရှိန်မြှင့် လေ့ကျင့်</string>
+    <string name="metronome_trainer_start">စတင် တမ်ပို</string>
+    <string name="metronome_trainer_goal">ပန်းတိုင်</string>
+    <string name="metronome_trainer_start_slower">စတင် တမ်ပို လျှော့ရန်</string>
+    <string name="metronome_trainer_start_faster">စတင် တမ်ပို တိုးရန်</string>
+    <string name="metronome_trainer_goal_slower">ပန်းတိုင် လျှော့ရန်</string>
+    <string name="metronome_trainer_goal_faster">ပန်းတိုင် တိုးရန်</string>
+    <string name="metronome_trainer_step">အဆင့်</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">ဘားများ</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="other">%1$s ဘား</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="other">%2$s ဘားအကြာ %1$s</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="other">%2$s ဘားတိုင်း %1$s</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">ပန်းတိုင်ရောက် · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">အရှိန်မြှင့် လေ့ကျင့်, %1$s BPM, %2$s သို့ တက်နေသည်, %3$s</string>
+    <string name="metronome_trainer_spoken_set">အရှိန်မြှင့် လေ့ကျင့်, %1$s မှ %2$s BPM အထိ, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">အရှိန်မြှင့် လေ့ကျင့်, ပန်းတိုင်ရောက်, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">နှစ်-လေး စည်း</string>
+    <string name="metronome_meter_3_4_spoken">သုံး-လေး စည်း</string>
+    <string name="metronome_meter_4_4_spoken">လေး-လေး စည်း</string>
+    <string name="metronome_meter_5_4_spoken">ငါး-လေး စည်း</string>
+    <string name="metronome_meter_6_8_spoken">ခြောက်-ရှစ် စည်း</string>
+    <string name="metronome_meter_7_8_spoken">ခုနစ်-ရှစ် စည်း</string>
+
+    <string name="metronome_listen">နားထောင်ရန်</string>
+    <string name="metronome_listen_stop_spoken">နားထောင်ခြင်း ရပ်ရန်</string>
+    <string name="metronome_listening">နားထောင်နေသည်…</string>
+    <string name="metronome_heard">ကြားရသည်</string>
+    <string name="metronome_use">သုံးရန်</string>
+    <string name="metronome_not_now">နောက်မှ</string>
+    <string name="metronome_listen_speed">အမြန်နှုန်း</string>
+    <string name="metronome_pick_half">တစ်ဝက်</string>
+    <string name="metronome_pick_as_heard">ကြားသည့်အတိုင်း</string>
+    <string name="metronome_pick_double">နှစ်ဆ</string>
+    <string name="metronome_no_beat">မှန်မှန် စည်းချက် မကြားရ</string>
+    <string name="metronome_try_again">ထပ်စမ်း</string>
+    <string name="metronome_mic_busy">မိုက် မအား</string>
+    <string name="metronome_mic_off">မိုက် ပိတ်ထား</string>
+    <string name="metronome_open_settings">ဆက်တင်</string>
+</resources>
