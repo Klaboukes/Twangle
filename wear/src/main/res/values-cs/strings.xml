@@ -1,0 +1,51 @@
+<resources>
+    <string name="wear_play_note">Zahraj tón</string>
+    <!-- 1 cent; 2–4 centy; 0, 5 a víc centů; desetinná čísla (many) centu. -->
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s cent</item>
+        <item quantity="few">%1$s centy</item>
+        <item quantity="many">%1$s centu</item>
+        <item quantity="other">%1$s centů</item>
+    </plurals>
+    <string name="wear_in_tune">naladěno</string>
+    <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <plurals name="wear_spoken_cents_flat">
+        <item quantity="one">o %1$d cent níž</item>
+        <item quantity="few">o %1$d centy níž</item>
+        <item quantity="many">o %1$d centu níž</item>
+        <item quantity="other">o %1$d centů níž</item>
+    </plurals>
+    <plurals name="wear_spoken_cents_sharp">
+        <item quantity="one">o %1$d cent výš</item>
+        <item quantity="few">o %1$d centy výš</item>
+        <item quantity="many">o %1$d centu výš</item>
+        <item quantity="other">o %1$d centů výš</item>
+    </plurals>
+    <string name="wear_word_tighten">Přitáhni</string>
+    <string name="wear_word_loosen">Povol</string>
+    <string name="wear_spoken_sharp">%1$s s křížkem</string>
+    <string name="wear_vibration_guide">Vibrační navádění</string>
+    <string name="wear_mic_needed">Twangle poslouchá tvůj nástroj mikrofonem hodinek.</string>
+    <string name="wear_allow_mic">Povolit mikrofon</string>
+    <string name="wear_open_settings">Otevřít nastavení</string>
+    <string name="wear_mic_busy">Mikrofon používá jiná aplikace.</string>
+    <string name="wear_mic_unavailable">Mikrofon nejde otevřít.</string>
+    <string name="wear_try_again">Zkusit znovu</string>
+    <string name="wear_tile_tune">Ladit</string>
+    <string name="wear_tile_metronome">Metronom</string>
+    <string name="wear_tile_open_metronome">Otevřít metronom, %1$s</string>
+    <string name="wear_shortcut_tune">Ladit</string>
+    <string name="wear_shortcut_open">Otevřít ladičku</string>
+    <plurals name="wear_metronome_tempo">
+        <item quantity="one">%1$d úder za minutu</item>
+        <item quantity="few">%1$d údery za minutu</item>
+        <item quantity="many">%1$d úderu za minutu</item>
+        <item quantity="other">%1$d úderů za minutu</item>
+    </plurals>
+    <string name="wear_metronome_playing">Hraje</string>
+    <string name="wear_metronome_stopped">Zastaveno</string>
+    <string name="wear_metronome_start">Start</string>
+    <string name="wear_metronome_stop">Stop</string>
+    <string name="wear_metronome_click">Cvakání</string>
+</resources>

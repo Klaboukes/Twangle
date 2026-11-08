@@ -1,0 +1,46 @@
+Twangle je kytarová ladička, která naladí i baskytaru, ukulele, housle a další nástroje, a všechny její funkce jsou zdarma. Žádné reklamy, žádný účet, žádné nákupy v aplikaci a žádné sledování. Twangle nemá ani oprávnění k internetu: zvuk z mikrofonu se analyzuje živě v telefonu a nikdy se nenahrává ani nikam neodesílá.
+
+Twangle se snadno používá a ladí přesně na jeden cent. Zahraj strunu a Twangle ukáže na velkém, přehledném ukazateli tón a jak daleko je od naladění. „Přitáhni“ nebo „Povol“ ti řekne, kterým směrem otočit kolíkem. Když máš naladěno, Twangle ti pomáhá hrát: pojmenuje akordy, které brnkáš, ukáže hmaty akordů a stupnice, spočítá, kam dát kapodastr, trénuje tvůj sluch a drží tempo.
+
+NALAĎ JAKÝKOLI NÁSTROJ
+• Kytara (6, 7, 8 nebo 12 strun), baskytara (4 nebo 5 strun), ukulele (i barytonové), housle, viola, violoncello, mandolína a 5strunné banjo
+• Kytarová ladění: Standard, Drop D, o půltón níž, o celý tón níž, DADGAD, Open G, Open D, Open E a Open C
+• Vlastní ladění pro jakýkoli nástroj
+• Chromatická ladička pro každý další nástroj nebo tvůj hlas
+• Podrž strunu na obrazovce, uslyšíš její tón a můžeš ladit podle sluchu
+• Ladicí tón A4 od 415 do 466 Hz, například 442 Hz pro hraní s orchestrem
+
+NÁSTROJE, KTERÉ POSLOUCHAJÍ
+• Kontrola brnknutím: brnkni přes všechny struny najednou a uvidíš, které jsou moc nízko, moc vysoko a které jsou naladěné
+• Název akordu: zahraj akord na kytaru, ukulele nebo mandolínu a uvidíš jeho název
+• Stopa tónu: uvidíš, jak stálý je držený tón, bend nebo tvoje vibrato, i pro zpěváky
+• Kontrola 12. pražce: zahraj prázdnou strunu a pak na 12. pražci a zjistíš, jestli posunout sedélko
+
+CVIČENÍ
+• Hmaty akordů pro tvůj nástroj a ladění, i pro vlastní ladění
+• Stupnice na hmatníku: dur, moll, pentatonika a blues, s názvem každého tónu
+• Kapodastr: vyber tóninu písně a hmaty, které ti sedí, a uvidíš, kam dát kapodastr
+• Trénink sluchu: Zahraj po sluchu (zahraj na nástroj tóny, které slyšíš), Intervaly a Typ akordu
+• Metronom: 30 až 250 úderů za minutu na posuvném pravítku tempa, s ťukáním tempa
+• 2/4, 3/4, 4/4, 5/4, 6/8 a 7/8, s důrazem na první dobu a světly, podle kterých se snadno orientuješ
+• Kliká k tvé hudbě nebo doprovodné stopě a umí vibrovat do rytmu
+• Mezi dobami: další kliknutí v osminách, triolách nebo šestnáctinách
+• Trenér tempa: tempo krok za krokem stoupá až k tvému cíli
+
+PRO KAŽDÉHO
+• Funguje s TalkBack: Twangle řekne tón a jak moc je mimo („E 2, o 12 centů níž, přitáhni“), čte hmaty akordů a stupnice strunu po struně, každé tlačítko má jasný název a nikdy tě nezahltí řečí
+• Každá obrazovka funguje s velkým písmem, až do dvojnásobku běžné velikosti
+• Krátké zavibrování, když je struna naladěná, takže to i ucítíš
+• V 29 jazycích: čeština, angličtina, arabština, bengálština, čínština (zjednodušená), čínština (tradiční), dánština, finština, francouzština, hindština, indonéština, italština, japonština, korejština, maráthština, němčina, nizozemština, norština, polština, portugalština, ruština, španělština, švédština, tamilština, telugština, thajština, turečtina, ukrajinština a vietnamština
+• Názvy tónů po tvém: C D E … H, anglicky s B, nebo Do Re Mi
+
+PO SVÉM
+• Světlý, tmavý nebo podle telefonu, s barvami tapety na Androidu 12 a novějším
+• Tři ukazatele na výběr: klasický, světelný oblouk nebo strobo
+• Režim soustředění: ladička přes celou obrazovku telefonu otočeného na šířku, snadno čitelná i z dálky
+
+A TAKÉ
+• Widget na plochu, který jedním klepnutím otevře ladičku
+• Obrazovka zůstane zapnutá, dokud ladíš
+
+Twangle zůstane zdarma a offline, napořád.

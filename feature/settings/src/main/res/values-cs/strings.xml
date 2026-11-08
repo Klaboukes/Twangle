@@ -1,0 +1,75 @@
+<resources>
+    <string name="settings_title">Nastavení</string>
+    <string name="settings_back">Zpět</string>
+
+    <string name="settings_group_tuning">Ladění</string>
+    <string name="settings_group_while_tuning">Při ladění</string>
+    <string name="settings_group_look">Vzhled</string>
+
+    <string name="settings_a4_title">Ladicí tón (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Většina hudby používá 440 Hz. Orchestry často ladí na 442 Hz, barokní soubory na 415 Hz.</string>
+    <string name="settings_a4_lower">Snížit A4 o 1 Hz</string>
+    <string name="settings_a4_raise">Zvýšit A4 o 1 Hz</string>
+    <string name="settings_a4_reset">Vrátit na %1$d Hz</string>
+
+    <string name="settings_precise_title">Přesné ladění</string>
+    <string name="settings_precise_summary">Naladěno do 2 centů místo 5</string>
+    <string name="settings_notation_title">Názvy tónů</string>
+    <string name="settings_notation_sharps">Křížky: C, C♯, D …</string>
+    <string name="settings_notation_flats">Béčka: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automaticky: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Německé: C, C♯, D … H</string>
+
+    <string name="settings_theme_title">Světlý nebo tmavý</string>
+    <string name="settings_high_contrast_title">Vysoký kontrast</string>
+    <string name="settings_high_contrast_summary">Černobílé se silnějšími čarami; zapne se samo, když má telefon vysoký kontrast</string>
+    <string name="settings_theme_system">Podle telefonu</string>
+    <string name="settings_theme_light">Světlý</string>
+    <string name="settings_theme_dark">Tmavý</string>
+    <string name="settings_dynamic_color_title">Barvy tapety</string>
+    <string name="settings_dynamic_color_summary">Použít barvy z tvé tapety</string>
+
+    <string name="settings_meter_title">Ukazatel</string>
+    <string name="settings_meter_classic">Klasický</string>
+    <string name="settings_meter_light_arc">Světelný oblouk</string>
+    <string name="settings_meter_strobe">Strobo</string>
+
+    <string name="settings_left_handed_title">Pro leváky</string>
+    <string name="settings_left_handed_summary">Akordové diagramy a hmatník stupnic kreslené pro kytaru drženou obráceně</string>
+
+    <string name="settings_under_meter_title">Pod ukazatelem</string>
+    <string name="settings_under_meter_words">Slova: Přitáhni nebo Povol</string>
+    <string name="settings_under_meter_cents">Centy: −12</string>
+    <string name="settings_keep_screen_on_title">Nechat obrazovku zapnutou</string>
+    <string name="settings_keep_screen_on_summary">Obrazovka svítí, dokud ladíš</string>
+    <string name="settings_vibrate_in_tune_title">Vibrovat při naladění</string>
+    <string name="settings_vibrate_in_tune_summary">Krátké zavibrování, když tón dosáhne správné výšky</string>
+    <string name="settings_vibration_guide_title">Vibrační navádění</string>
+    <string name="settings_vibration_guide_summary">Ťuknutí při ladění: jedno přitáhni, dvě povol, dlouhé naladěno</string>
+    <string name="settings_string_tick_off_title">Odškrtávat naladěné struny</string>
+    <string name="settings_string_tick_off_summary">Fajfka u každé naladěné struny a „Naladěno. Hraj.“, když jsou všechny</string>
+
+    <string name="settings_language_title">Jazyk</string>
+    <string name="settings_language_phone">Jazyk telefonu</string>
+    <string name="settings_language_cancel">Zrušit</string>
+    <string name="about_title">O aplikaci Twangle</string>
+    <string name="settings_about_link_summary">Verze %1$s, nápověda, soukromí a licence</string>
+    <string name="settings_about_name_title">Název</string>
+    <string name="settings_about_name_meaning">Twang je anglicky zvonivý zvuk drnknuté struny.</string>
+    <string name="settings_about_version">Verze %1$s</string>
+    <string name="settings_about_free_title">Navždy zdarma</string>
+    <string name="settings_about_free_summary">Žádné reklamy, žádný účet, žádné nákupy v aplikaci a žádné sledování. Ani teď, ani později.</string>
+    <string name="settings_about_privacy_title">Soukromí</string>
+    <string name="settings_about_privacy_summary">Twangle o tobě nesbírá žádná data. Mikrofon je zapnutý jen tehdy, když je otevřená obrazovka, která poslouchá: ladička, Poslech v metronomu nebo Zahraj po sluchu v Tréninku sluchu. Zvuk se analyzuje živě a nikdy se nenahrává, neukládá ani neodesílá. Twangle nemá oprávnění k internetu, takže nemůže nic nikam odeslat. Tvá nastavení zůstávají v tomto zařízení (a ve vlastní záloze Androidu, pokud ji máš zapnutou).</string>
+    <string name="settings_about_rate_title">Ohodnotit Twangle</string>
+    <string name="settings_about_rate_summary">Twangle na Google Play</string>
+    <string name="settings_about_website_title">Nápověda a web</string>
+    <string name="settings_about_website_summary">Jak funguje každý nástroj a odpovědi na časté otázky</string>
+    <string name="settings_about_credits_title">Písma a open-source software</string>
+    <string name="settings_about_credits_summary">Twangle používá tato písma a knihovny. Klepnutím si přečteš licenci.</string>
+    <string name="settings_about_licence_open">Přečíst licenci</string>
+    <string name="settings_about_licence_close">Zavřít</string>
+</resources>

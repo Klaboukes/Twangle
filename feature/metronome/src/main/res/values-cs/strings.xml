@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Doby v taktu</string>
+    <string name="metronome_tempo">Tempo</string>
+    <!-- 1 úder; 2–4 údery; 0, 5 a víc úderů; desetinná čísla (many) úderu. -->
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d úder za minutu, %2$s</item>
+        <item quantity="few">%1$d údery za minutu, %2$s</item>
+        <item quantity="many">%1$d úderu za minutu, %2$s</item>
+        <item quantity="other">%1$d úderů za minutu, %2$s</item>
+    </plurals>
+    <string name="metronome_tempo_line">úderů za minutu · %1$s</string>
+    <string name="metronome_slower">Pomaleji</string>
+    <string name="metronome_faster">Rychleji</string>
+    <string name="metronome_tap">Ťukej tempo</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stop</string>
+    <string name="metronome_vibrate">Vibrovat na dobu</string>
+    <string name="metronome_sound">Zvuk</string>
+    <string name="metronome_sound_wood_block">Dřevěný blok</string>
+    <string name="metronome_sound_cowbell">Kravský zvonec</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Úder na ráfek</string>
+    <string name="metronome_subdivision">Mezi dobami</string>
+    <string name="metronome_subdivision_none">Nic</string>
+    <string name="metronome_subdivision_eighths">Osminy</string>
+    <string name="metronome_subdivision_triplets">Trioly</string>
+    <string name="metronome_subdivision_sixteenths">Šestnáctiny</string>
+    <string name="metronome_options">Možnosti</string>
+
+    <string name="metronome_trainer">Trenér tempa</string>
+    <string name="metronome_trainer_start">Počáteční tempo</string>
+    <string name="metronome_trainer_goal">Cíl</string>
+    <string name="metronome_trainer_start_slower">Nižší počáteční tempo</string>
+    <string name="metronome_trainer_start_faster">Vyšší počáteční tempo</string>
+    <string name="metronome_trainer_goal_slower">Nižší cíl</string>
+    <string name="metronome_trainer_goal_faster">Vyšší cíl</string>
+    <string name="metronome_trainer_step">Krok</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Takty</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s takt</item>
+        <item quantity="few">%1$s takty</item>
+        <item quantity="many">%1$s taktu</item>
+        <item quantity="other">%1$s taktů</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s za %2$s takt</item>
+        <item quantity="few">%1$s za %2$s takty</item>
+        <item quantity="many">%1$s za %2$s taktu</item>
+        <item quantity="other">%1$s za %2$s taktů</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s každý takt</item>
+        <item quantity="few">%1$s každé %2$s takty</item>
+        <item quantity="many">%1$s každých %2$s taktu</item>
+        <item quantity="other">%1$s každých %2$s taktů</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">V cíli · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Trenér tempa, %1$s BPM, stoupá na %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Trenér tempa, z %1$s na %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Trenér tempa, v cíli, %1$s BPM</string>
+
+    <string name="metronome_meter_2_4_spoken">Dvoučtvrteční takt</string>
+    <string name="metronome_meter_3_4_spoken">Tříčtvrteční takt</string>
+    <string name="metronome_meter_4_4_spoken">Čtyřčtvrteční takt</string>
+    <string name="metronome_meter_5_4_spoken">Pětičtvrteční takt</string>
+    <string name="metronome_meter_6_8_spoken">Šestiosminový takt</string>
+    <string name="metronome_meter_7_8_spoken">Sedmiosminový takt</string>
+
+    <string name="metronome_listen">Poslech</string>
+    <string name="metronome_listen_stop_spoken">Zastavit poslech</string>
+    <string name="metronome_listening">Poslouchám…</string>
+    <string name="metronome_heard">Slyšeno</string>
+    <string name="metronome_use">Použít</string>
+    <string name="metronome_not_now">Teď ne</string>
+    <string name="metronome_listen_speed">Rychlost</string>
+    <string name="metronome_pick_half">Poloviční</string>
+    <string name="metronome_pick_as_heard">Jak slyšeno</string>
+    <string name="metronome_pick_double">Dvojnásobné</string>
+    <string name="metronome_no_beat">Žádný stálý rytmus</string>
+    <string name="metronome_try_again">Znovu</string>
+    <string name="metronome_mic_busy">Mikrofon je obsazený</string>
+    <string name="metronome_mic_off">Mikrofon je vypnutý</string>
+    <string name="metronome_open_settings">Nastavení</string>
+</resources>

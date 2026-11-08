@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Ladění</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Cvičení</string>
+    <string name="nav_settings">Nastavení</string>
+    <string name="widget_name">Ladička</string>
+    <string name="widget_description">Ukazuje tvůj nástroj a ladění. Jedno klepnutí otevře ladičku.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Otevřít ladičku</string>
+    <string name="widget_preview_title">Kytara · Standard</string>
+</resources>

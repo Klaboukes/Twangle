@@ -35,7 +35,7 @@ class NotationTest {
 
     @Test
     fun `each language gets the notation its players usually write`() {
-        for (language in listOf("de", "pl", "ru", "uk", "da", "nb", "nn", "no", "fi")) {
+        for (language in listOf("de", "pl", "ru", "uk", "da", "nb", "nn", "no", "fi", "cs")) {
             assertEquals(language, Notation.GERMAN, Notation.forLanguage(language))
         }
         for (language in listOf("fr", "it", "es", "pt", "ro", "tr", "ar")) {

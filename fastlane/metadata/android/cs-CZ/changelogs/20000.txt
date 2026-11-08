@@ -1,0 +1,9 @@
+- Úplně nový vzhled: klidný a přehledný, s novou ikonou.
+- Tři karty: Ladění, Metronom a Cvičení; Nastavení pod ozubeným kolečkem.
+- Nástroj a ladění vybereš nahoře v ladičce.
+- Ladička ti řekne: Přitáhni, nebo Povol.
+- Tři ukazatele: Klasický, Světelný oblouk a Strobo.
+- Akordy: klepni na Poslech a brnkni, uvidíš název akordu.
+- Metronom: tempo nastavíš tažením pravítka.
+- Režim soustředění: ladička přes celou obrazovku, na jedno klepnutí.
+- Stopa tónu je teď ve Cvičení.

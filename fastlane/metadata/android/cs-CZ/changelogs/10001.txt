@@ -1,0 +1,1 @@
+- Na telefonech s kratší obrazovkou si ukazatel teď vždy drží plnou šířku; tón nad ním se místo toho trochu zmenší.
