@@ -154,7 +154,15 @@ For each failure decide first: **app bug or outdated test?**
   windows of their own with the phone's language and text size; Android silences the microphone of
   an app with nothing in the foreground; TalkBack's spoken hint is held back up to 2 s; Compose
   takes function references to a local fun for equal, so a button may hold an old one.
-- After a fix run only the failed tests and their area. Land nothing with a red test.
+  Scripts Nunito lacks (Burmese, Arabic's digits) are drawn in the phone's own fallback font, which differs by
+  maker: the tablet has stock Android's, much taller than the Xiaomi's, so a failure on the tablet only is often
+  a real bug the Xiaomi's fonts hide (2026-11-09: Burmese's word lines past their slots; Arabic's tempo dropping
+  its last digit). A test stuck for many minutes on one screen is the screen never settling: a dump of the test
+  process's threads (`adb shell run-as <test package> kill -3 <pid>`, then `adb bugreport` for `FS/data/anr/`)
+  shows where.
+- After a fix run only the failed tests and their area. Land nothing with a red test. A red test on one device
+  only that was red before this run's changes (a pre-existing bug, as Arabic's tempo on the tablet) doesn't hold
+  back the fixes: land them and put the open bug in the summary with a follow-up.
 
 ## 4. Land it
 

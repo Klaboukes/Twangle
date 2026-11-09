@@ -198,8 +198,10 @@ fun TuneWordLine(
         else -> wordStyle
     }
     val smallStyle = MaterialTheme.typography.bodyMedium.let { if (tipText == null && readout != null) it.copy(fontFamily = NumberFont) else it }
-    val wordLine = rememberLineHeight(wordStyle)
-    val smallLine = rememberLineHeight(MaterialTheme.typography.bodyMedium)
+    // The slots' height in the screen's script: "In tune" is always in it, and the same whatever is shown.
+    val lineSample = inTuneLabel()
+    val wordLine = rememberLineHeight(wordStyle, lineSample)
+    val smallLine = rememberLineHeight(MaterialTheme.typography.bodyMedium, lineSample)
     val density = LocalDensity.current
     // The texts are hidden from TalkBack; this layer under them speaks for both, so nothing changing inside can
     // make TalkBack read it again early.
@@ -490,12 +492,18 @@ private fun spokenReading(readout: NoteReadout, word: String?, tip: String?, mot
     }
 }
 
-/** The height in px of one line of [style] at its own size, as a [Text] in it would have. */
+/**
+ * The height in px of one line of [style] at its own size, as a [Text] in it would have, measured on [sample]: a
+ * text in the screen's language, so a script the app's face lacks counts with its fallback font's taller line.
+ * Measured on a space until 2026-11-09, which gave Nunito's line: Burmese lines are about 1.4 times as tall, so
+ * the word and the cents under it reached past their slots, on a phone on its side at 2× text 3 px past the
+ * window's bottom (the full check, on the tablet's density).
+ */
 @Composable
-internal fun rememberLineHeight(style: TextStyle): Int {
+internal fun rememberLineHeight(style: TextStyle, sample: String): Int {
     val measurer = rememberTextMeasurer(cacheSize = 1)
     val merged = LocalTextStyle.current.merge(style)
-    return remember(measurer, merged) { measurer.measure(" ", merged, maxLines = 1).size.height }
+    return remember(measurer, merged, sample) { measurer.measure(sample, merged, maxLines = 1).size.height }
 }
 
 /**

@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.fail
 import kotlin.math.abs
 
@@ -31,9 +32,30 @@ fun assertWhollyShown(node: SemanticsNodeInteraction, what: String, scroll: Bool
     // sized to fit has nothing to scroll. Each fetch and scroll waits for the screen to settle, so
     // fetching once saves most of a check's time (2026-10-30).
     if (checkedWithoutScrolling(semantics, what)) return
-    node.performScrollTo()
+    if (!scrollIntoView(semantics)) node.performScrollTo()
     node.assertIsDisplayed()
     checkWhollyShown(node.fetchSemanticsNode(), what)
+}
+
+/**
+ * Scrolls the vertical scrolling column [semantics] is in once, as far as it goes, to bring all of it into view (its
+ * top, if it is taller than the column); false where it is in none, for performScrollTo. Not performScrollTo there:
+ * it scrolls again until the node is in view, so a text reaching past the end of its column (Burmese's cents line on
+ * the tablet, 3 px past the window's bottom, the full check of 2026-11-09) hung the test for its 40 minutes, where
+ * this lets the check fail at once and say how much shows.
+ */
+private fun scrollIntoView(semantics: SemanticsNode): Boolean {
+    val column = scrollingColumn(semantics) ?: return false
+    if (!column.config.contains(SemanticsProperties.VerticalScrollAxisRange)) return false
+    val view = column.boundsInRoot
+    val top = semantics.positionInRoot.y
+    val bottom = top + semantics.size.height
+    val by = if (top < view.top || semantics.size.height > view.height) top - view.top else bottom - view.bottom
+    if (abs(by) >= 1f) {
+        val scroll = column.config[SemanticsActions.ScrollBy].action
+        InstrumentationRegistry.getInstrumentation().runOnMainSync { scroll?.invoke(0f, by) }
+    }
+    return true
 }
 
 /**
