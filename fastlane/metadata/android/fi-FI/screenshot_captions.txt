@@ -1,8 +1,8 @@
-Avaa ja viritä. Ei tiliä, ei verkkoa.
-Kertoo, kumpaan suuntaan kääntää
-Vain sinä kuulet sen. Mitään ei lähetetä minnekään.
-Lyö kerran. Näe jokainen kieli.
-Viritin, metronomi ja soinnut samassa sovelluksessa
-Soita sointu. Näe sen nimi.
-Kitara, basso, ukulele, viulu ja omat viritykset
-Iso, selkeä, suuri kontrasti. Se jopa sanoo sävelen.
+Tekee sen, mitä tarvitset. *Eikä mitään muuta.*
+Pitää myös *tahdin*.|Metronomi samassa sovelluksessa.
+Vain *sinä* kuulet sen.|Ei tiliä|Toimii ilman internetiä|Mitään ei tallenneta eikä lähetetä
+Yksi vilkaisu riittää|*Sävel, kieli ja kumpaan suuntaan kääntää*
+Soita sointu.|*Näe sen nimi.*
+*Harjoittele* sointuja ja asteikkoja|Myös kapo ja korvaharjoitus
+Lyö kerran.|*Näe jokainen kieli.*
+Iso, selkeä, *suuri kontrasti*.|Se jopa sanoo sävelen.

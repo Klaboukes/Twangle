@@ -15,7 +15,8 @@ import java.util.Properties
  * within Google Play's limits, counted in Unicode code points as Play counts characters. The title
  * also keeps clear of the price and promotion words Google bans there (docs/store-listing.md). Each
  * folder also has the eight captions of the phone screenshots (`screenshot_captions.txt`, one a line,
- * in the order of the plan), which the store-screenshot test draws above each screen: short, and
+ * in the order of the plan: the headline, then the line under it or picture 3's three facts, `|` between, the
+ * coloured words between asterisks), which the store-screenshot test draws over each moment: short, and
  * without those words either, since Google bans them in screenshots too. Each release's notes
  * (`changelogs/<versionCode>.txt`) are there in every language, within Play's 500 characters. The
  * icon (one for every language, `en-US/images/`) and each language's feature graphic (`images/` in its
@@ -135,8 +136,18 @@ class StoreListingTest {
             lines.forEachIndexed { i, caption ->
                 val where = "$folder/$CAPTIONS line ${i + 1}"
                 assertTrue("$where is empty", caption.isNotBlank())
-                val length = caption.codePointCount(0, caption.length)
-                assertTrue("$where has $length characters, more than $CAPTION_LIMIT fit above the screen: $caption", length <= CAPTION_LIMIT)
+                // The headline, then the lines under it, "|" between; the privacy picture's are its facts.
+                val parts = caption.split('|')
+                val wanted = if (i + 1 == FACTS_PICTURE) 1 + FACTS..1 + FACTS else 1..2
+                assertTrue("$where has ${parts.size} parts (\"|\" between), not ${wanted.first}..${wanted.last}: $caption", parts.size in wanted)
+                parts.forEach { part ->
+                    assertTrue("$where has an empty part: $caption", part.isNotBlank())
+                    assertTrue("$where has an asterisk without its pair (the coloured words are *between two*): $part", part.count { it == '*' } % 2 == 0)
+                    // What shows: neither the asterisks nor the invisible joiners that hold a Thai phrase together.
+                    val shown = part.filterNot { it == '*' || it == '\u2060' || it == '\u200B' }
+                    val length = shown.codePointCount(0, shown.length)
+                    assertTrue("$where has a part of $length characters, more than $CAPTION_LIMIT fit large: $part", length <= CAPTION_LIMIT)
+                }
                 BANNED_IN_TITLE.forEach { banned ->
                     assertTrue("$where has \"${banned.pattern}\", which Google bans in screenshots: $caption", !banned.containsMatchIn(caption))
                 }
@@ -233,8 +244,12 @@ class StoreListingTest {
         const val CAPTIONS = "screenshot_captions.txt"
         const val SCREENSHOTS = 8
 
-        /** At most this many characters, so a caption fits in three lines of large type above the screen. */
-        const val CAPTION_LIMIT = 80
+        /** At most this many characters a part (the headline, a line under it), so it stays large in two or three lines. */
+        const val CAPTION_LIMIT = 50
+
+        /** The privacy picture (3): its headline and its three facts, no screen. */
+        const val FACTS_PICTURE = 3
+        const val FACTS = 3
 
         /** Each release's "What's new", one file a language named after its versionCode (docs/release.md). */
         const val CHANGELOGS = "changelogs"

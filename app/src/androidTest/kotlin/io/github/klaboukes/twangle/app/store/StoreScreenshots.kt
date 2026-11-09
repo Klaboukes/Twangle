@@ -10,17 +10,9 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.util.Base64
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntRect
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -36,9 +28,6 @@ import io.github.klaboukes.twangle.app.TwangleApplication
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
-import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
-import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
-import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -52,7 +41,6 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -70,18 +58,18 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The Play Store's phone screenshots, made on the phone in one language (docs/store-listing.md,
- * *Phone screenshots*): each case opens the real app in its theme (Ink light or dark), feeds the tuner a fixed
+ * *Phone screenshots*): each case opens the real app in Ink dark, feeds the tuner a fixed
  * sound through a stand-in microphone ([FixedSoundRecorder], nothing plays out loud), saves the
- * screen as it is (`raw-<n>.png`, without the status bar) and the finished picture
- * (`store-<n>.png`: the screen on a 1080 × 1920 canvas with the caption above, cut in on the part
- * that sells it, [Shot.focus], so its words can be read at Play's size; [StoreCanvas]). All eight stand
- * upright (until 2.0's listing focus mode's stood on its side, 1920 × 1080, breaking the row's rhythm).
+ * screen as it is (`raw-<n>.png`, without the status bar) and the finished picture (`store-<n>.png`,
+ * [StoreCanvas]): the from-scratch set (owner, 2026-11-09), one moment a picture drawn large under its words,
+ * each cut from the real screen by the bounds of the parts that show it ([Shot.parts]), so it fits every phone,
+ * the tablet and every language without fractions to keep up; one whole phone (4), and the privacy picture
+ * drawn, not shot (3).
  *
  * With `storeTablet=true` (a tablet, at least 600 dp the short way) it makes the 10-inch tablet set
  * instead (docs/store-listing.md, *Tablet screenshots*): the tablet locked upright and at the normal
  * text size (its own rotation and text size are put back: `scripts/ui-tests.sh` and [withFontScale]),
- * the screens without the status and navigation bars, each the whole tablet on the same canvases
- * (Phase 65: on its side the tuner's two panes left an empty middle).
+ * the screens without the status and navigation bars, cut the same way.
  *
  * Opt-in, as it only makes files and changes the phone's Twangle (its theme and settings are
  * left as the last picture had them; the app's language is put back): without the instrumentation
@@ -96,42 +84,39 @@ import java.util.concurrent.TimeUnit
 class StoreScreenshots(private val locale: String, private val shot: Shot) {
 
     /**
-     * The eight screenshots of the plan, in its order, each in its theme, with the part of the
-     * phone's screen it must show ([focus], fractions of its height from the top; the tablet's upright
-     * screens fit whole). The first three tell what sets Twangle apart, nothing to sign up for, which way to turn
-     * and nothing leaving the phone (2.0's listing, 2026-11-05; the microphone prompt third since the review of
-     * 2026-11-07, a plain screen in the second place, which most people see).
+     * The eight screenshots of the plan, in its order (the from-scratch set, owner 2026-11-09): the line over the tuner
+     * in tune, the metronome (it is more than a tuner), nothing to sign up for and nothing leaving the phone, then the
+     * whole app, the chord name, the Practice tools, the strum check (late: the owner doubts it yet) and big text.
+     * [accent] colours its marked words; [parts] are the test tags whose bounds, together, are the part of the screen it
+     * shows ([Moment.Cut]), [fade] softening its sides where the tuner's ruler runs to the screen's edges.
      */
-    enum class Shot(val dark: Boolean, val focus: ClosedFloatingPointRange<Float> = 0f..1f, val highContrast: Boolean = false) {
-        /** The top row with no sign-in in the way, the chip, the ruler's A, the needle and "In tune" (the pegs left out). */
-        IN_TUNE(dark = true, focus = 0f..0.62f),
+    enum class Shot(val accent: Accent, val parts: Regex? = null, val fade: Boolean = false, val highContrast: Boolean = false) {
+        /** The line, "It does what you need it to do. And nothing else.", over the A held in tune: the ruler, Classic and "In tune". */
+        LINE(Accent.IN_TUNE, TUNER_PARTS, fade = true),
 
-        /** The ruler's E, the needle left of the zone, "Tighten" and the cents. */
-        TUNE_UP(dark = true, focus = 0f..0.68f),
+        /** The metronome at 120 in 4/4, its first beat lit: the tempo, the ruler, the beat bars, the meters and Start. */
+        METRONOME(Accent.PRIMARY, Regex("metronome_(slower|faster|bpm|lights|tap|start)")),
 
-        /** The tuner's microphone prompt, which says the sound is analysed on the phone and never recorded or sent. */
-        PRIVACY(dark = true, focus = 0.30f..0.72f),
+        /** Drawn, no screen: the microphone and three facts (no sign-up, no internet needed, nothing recorded or sent). */
+        PRIVACY(Accent.PRIMARY),
 
-        /** The strum check after the open strings were strummed, two of them off: each string's column and "4 of 6 in tune". */
-        STRUM_CHECK(dark = true, focus = 0f..0.56f),
-
-        /**
-         * Two phones side by side, each whole: the metronome at 120 with its first beat lit, and Practice's tools
-         * under the "Last used" row. The metronome's screen is also the website's (`raw-metronome.png`).
-         */
-        ALL_IN_ONE(dark = true),
+        /** The whole app on a phone, a bass's low E flat: the note, its peg and "Tighten", the bar's three tabs. */
+        WHOLE_APP(Accent.FAR_OFF),
 
         /** Chords with Listen on: a strummed A minor named and charted. */
-        CHORD_NAME(dark = true, focus = 0f..0.80f),
+        CHORD_NAME(Accent.PRIMARY, Regex("practice_(name_picker|chords_listen|chord_chart)")),
 
-        /** The sheet "What are you tuning?", its instrument pills scrolled to bass, ukulele and violin, and the first tunings. */
-        INSTRUMENTS(dark = true, focus = 0.24f..0.80f),
+        /** The Practice tools' cards under the "Last used" row, large. */
+        PRACTICE(Accent.PRIMARY, Regex("practice_(last_time|card_.+)")),
+
+        /** The strum check after the open strings were strummed, two of them off: each string's column and "4 of 6 in tune". */
+        STRUM_CHECK(Accent.IN_TUNE, Regex("tuner_(strum_panel|strum_close|word)")),
 
         /**
          * At twice the text size and in the high-contrast look (Phase 86), its canvas too, a string a little sharp: the
          * ruler, the needle, "Loosen" and the cents, and TalkBack's reading. The picture for players who see poorly.
          */
-        TALKBACK(dark = true, focus = 0.07f..0.71f, highContrast = true),
+        TALKBACK(Accent.FAR_OFF, TUNER_PARTS, fade = true, highContrast = true),
         ;
 
         val number: Int get() = ordinal + 1
@@ -167,7 +152,7 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
         showLanguage(if (locale == "no-NO") "nb-NO" else locale)
         runBlocking {
             container.focusMode.value = false
-            settings.setTheme(if (shot.dark) ThemeMode.DARK else ThemeMode.LIGHT)
+            settings.setTheme(ThemeMode.DARK)
             // On or off for this picture, whatever the phone's own contrast.
             settings.setHighContrast(shot.highContrast)
             // Ink's own colours, not the wallpaper's.
@@ -204,49 +189,37 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
 
     private fun shoot() {
         when (shot) {
-            Shot.IN_TUNE -> tuner { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
-            Shot.PRIVACY -> save(micPrompt())
-            Shot.TUNE_UP -> tuner { recorder.play(heldLowE(cents = -12.0)); settle(NOTE_SETTLE_MS) }
-            Shot.STRUM_CHECK -> tuner {
-                // The strum check's button, then the open strings strummed, two of them off.
-                click(TunerTestTags.STRUM_BUTTON)
-                waitFor(TunerTestTags.STRUM_PANEL)
-                recorder.play(StoreSounds.strum(StoreSounds.OPEN_STRINGS, STRUM_SECONDS, StoreSounds.OPEN_STRINGS_OFF))
-                settle(OPEN_STRUM_SETTLE_MS)
-            }
-            Shot.ALL_IN_ONE -> {
+            Shot.LINE -> cut { recorder.play(StoreSounds.heldNote(StoreSounds.hz(StoreSounds.A_STRING), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
+            Shot.METRONOME -> {
                 runBlocking {
-                    // "Last used": Chords, C major.
-                    settings.setPracticeTool(PracticeTool.CHORDS)
-                    settings.setPracticeRoot(PitchClass.C)
-                    settings.setPracticeChordQuality(ChordQuality.MAJOR)
                     settings.setMetronomeBpm(METRONOME_BPM)
                     settings.setMetronomeMeter(Meter.FOUR_FOUR)
                 }
-                lateinit var beat: Bitmap
-                lateinit var cards: Bitmap
-                ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-                    opened(scenario)
-                    // 120 beats a minute in 4/4, the first beat lit (the website's metronome picture too).
+                // 120 beats a minute in 4/4, the first beat lit; also the website's metronome picture.
+                cut(after = { click(MetronomeTestTags.START) }) {
                     click(NavigationTestTags.tab(Destination.METRONOME))
                     click(MetronomeTestTags.START)
                     settle(PANEL_SETTLE_MS)
                     metronome.beat(0)
                     SystemClock.sleep(BEAT_LIT_MS)
-                    beat = screenshot(scenario, "metronome")
-                    click(MetronomeTestTags.START)
-                    click(NavigationTestTags.tab(Destination.PRACTICE))
-                    waitFor(PracticeTestTags.LAST_TIME)
-                    settle(PANEL_SETTLE_MS)
-                    cards = screenshot(scenario, "${shot.number}")
                 }
-                compose(listOf(listOf(beat, cards).map { Window(it.asImageBitmap()) }), staggered = true)
+                File(out, "raw-${shot.number}.png").copyTo(File(out, "raw-metronome.png"), overwrite = true)
+            }
+            Shot.PRIVACY -> compose(Moment.Facts(caption().lines))
+            Shot.WHOLE_APP -> {
+                // A bass, so the one picture of the whole app shows it tunes more than a guitar.
+                runBlocking {
+                    settings.setInstrument(Instruments.BASS_4)
+                    settings.setTuning(Instruments.BASS_4.tunings.first())
+                }
+                val screen = capture { recorder.play(StoreSounds.heldNote(StoreSounds.hz(BASS_LOW_E, cents = -12.0), NOTE_SECONDS)); settle(NOTE_SETTLE_MS) }
+                compose(Moment.Phone(screen.asImageBitmap()))
             }
             // Listen in Chords (2.0, Phase 74): C, G, then A minor three times, pictured while one rings. Listen settles a
             // strum behind, and later on a slower device: at a fixed time the tablet still showed G major, or A minor's
             // name over G's chart (2026-11-09). So it waits until A minor is heard (Listen saves the chord heard as a
             // pick), then gives its chart a moment.
-            Shot.CHORD_NAME -> tuner {
+            Shot.CHORD_NAME -> cut {
                 // From C major, so A minor saved means it was heard (the language before leaves it saved).
                 runBlocking {
                     settings.setPracticeRoot(PitchClass.C)
@@ -272,64 +245,94 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
                 ) { "Listen never named the A minor" }
                 settle(CHORD_CHART_SETTLE_MS)
             }
-            Shot.INSTRUMENTS -> tuner {
-                // The panel is a window of its own, whose parts UI Automator can't find by tag; its pill row is the
-                // one short scrollable in it, scrolled on to the bass, the ukulele and the violin.
-                click(TunerTestTags.PICKER_CHIP)
-                settle(SHEET_SETTLE_MS)
-                val pills = device.findObjects(By.scrollable(true)).firstOrNull { it.visibleBounds.height() < it.visibleBounds.width() / 4 }
-                    ?: error("the instrument pills weren't found")
-                // Dragged slowly, so it stops where the finger does (a scroll call stopped after one row's width), against
-                // the reading direction: right to left, the row starts at the right and goes on to the left.
-                val row = pills.visibleBounds
-                val rtl = app.resources.configuration.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL
-                val drag = (row.width() * PILLS_DRAG).toInt() * if (rtl) -1 else 1
-                repeat(PILLS_DRAGS) {
-                    device.swipe(row.centerX() + drag / 2, row.centerY(), row.centerX() - drag / 2, row.centerY(), DRAG_STEPS)
-                    settle(POLL_MS)
+            Shot.PRACTICE -> {
+                runBlocking {
+                    // "Last used": Chords, C major.
+                    settings.setPracticeTool(PracticeTool.CHORDS)
+                    settings.setPracticeRoot(PitchClass.C)
+                    settings.setPracticeChordQuality(ChordQuality.MAJOR)
                 }
-                settle(PANEL_SETTLE_MS)
+                cut {
+                    click(NavigationTestTags.tab(Destination.PRACTICE))
+                    waitFor(PracticeTestTags.LAST_TIME)
+                    settle(PANEL_SETTLE_MS)
+                }
+            }
+            Shot.STRUM_CHECK -> cut {
+                // The strum check's button, then the open strings strummed, two of them off.
+                click(TunerTestTags.STRUM_BUTTON)
+                waitFor(TunerTestTags.STRUM_PANEL)
+                recorder.play(StoreSounds.strum(StoreSounds.OPEN_STRINGS, STRUM_SECONDS, StoreSounds.OPEN_STRINGS_OFF))
+                settle(OPEN_STRUM_SETTLE_MS)
             }
             Shot.TALKBACK -> withFontScale(TALKBACK_FONT_SCALE) {
                 var spoken: SpeechBubble? = null
-                val screen = capture { scenario ->
+                cut(bubble = { spoken ?: error("TalkBack's reading of the note wasn't found") }) {
                     recorder.play(heldLowE(cents = 10.0))
                     settle(NOTE_SETTLE_MS)
                     spoken = reading()
                 }
-                save(screen, bubble = spoken ?: error("TalkBack's reading of the note wasn't found"))
             }
         }
     }
 
     /**
-     * The tuner's microphone prompt as a new player sees it before allowing the microphone, drawn by the app's own
-     * [PermissionPrompt] over the theme's background at the screen's size. Drawn, not opened: the permission is granted
-     * for the whole run, and taking it back would stop the app with the test inside it.
+     * Opens the app, runs [steps] in it, takes the screen and saves it on the canvas cut to [Shot.parts]: their bounds
+     * together, measured on the screen as it stands, the full width and a margin above and below, on the screen's own
+     * background ([edgeColour]). [after] runs with the app still open; [bubble] gives TalkBack's words, read in [steps].
      */
-    private fun micPrompt(): Bitmap {
-        val metrics = app.resources.displayMetrics
-        val screen = renderCanvas(metrics.widthPixels, metrics.heightPixels) {
-            val size = with(LocalDensity.current) { DpSize(metrics.widthPixels.toDp(), metrics.heightPixels.toDp()) }
-            TwangleTheme(darkTheme = shot.dark, highContrast = shot.highContrast, animate = false) {
-                // The text colour the tuner's screen gives it, on the theme's background.
-                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
-                    Box(Modifier.size(size), contentAlignment = Alignment.Center) {
-                        StyleBackdrop(Modifier.fillMaxSize())
-                        PermissionPrompt(MicPermissionStatus.NOT_REQUESTED, onRequest = {}, onOpenSettings = {})
-                    }
-                }
-            }
+    private fun cut(after: () -> Unit = {}, bubble: (() -> SpeechBubble)? = null, steps: () -> Unit) {
+        val parts = shot.parts ?: error("$shot has no parts to cut")
+        lateinit var area: IntRect
+        val screen = capture(after = { after() }) {
+            steps()
+            area = areaOf(parts)
         }
-        write(screen, "raw-${shot.number}.png")
-        return screen
+        compose(Moment.Cut(screen.asImageBitmap(), area, edgeColour(screen, area), shot.fade), bubble = bubble?.invoke())
+    }
+
+    /**
+     * The part of the screen the test tags matching [parts] cover, in the saved screen's pixels ([crop] taken off): their
+     * bounds together, the whole width, [CUT_MARGIN_DP] more above and below. Read from the accessibility tree as it is
+     * now, not through UI Automator, which waits for an idle screen that a moving meter never gives.
+     */
+    private fun areaOf(parts: Regex): IntRect {
+        val root = instrumentation.uiAutomation.rootInActiveWindow ?: error("no window to measure")
+        val bounds = generateSequence(listOf(root)) { level -> level.flatMap { n -> (0 until n.childCount).mapNotNull { n.getChild(it) } }.ifEmpty { null } }
+            .flatten()
+            .filter { node -> node.viewIdResourceName?.let { parts.matches(it) } == true }
+            .map { node -> android.graphics.Rect().also { node.getBoundsInScreen(it) } }
+            .filter { !it.isEmpty }
+            .toList()
+        check(bounds.isNotEmpty()) { "none of ${parts.pattern} is on the screen" }
+        val (top, left, bottom) = crop ?: error("the screen wasn't measured")
+        val margin = (CUT_MARGIN_DP * app.resources.displayMetrics.density).toInt()
+        val full = instrumentation.uiAutomation.takeScreenshot() ?: error("no screenshot")
+        val height = full.height - top - bottom
+        return IntRect(
+            left = 0,
+            top = (bounds.minOf { it.top } - top - margin).coerceAtLeast(0),
+            right = full.width - left,
+            bottom = (bounds.maxOf { it.bottom } - top + margin).coerceAtMost(height),
+        )
+    }
+
+    /**
+     * The screen's background around [area]: the middle colour (by brightness) of pixels along its edges, which lie on
+     * the backdrop (flat, or tinted while the tuner hears a note), so the canvas around the cut is the same colour.
+     */
+    private fun edgeColour(screen: Bitmap, area: IntRect): Color {
+        val right = minOf(area.right, screen.width) - 1
+        val bottom = minOf(area.bottom, screen.height) - 1
+        val xs = area.left..right step EDGE_STEP
+        val ys = area.top..bottom step EDGE_STEP
+        val pixels = xs.flatMap { listOf(screen.getPixel(it, area.top), screen.getPixel(it, bottom)) } +
+            ys.flatMap { listOf(screen.getPixel(area.left, it), screen.getPixel(right, it)) }
+        return Color(pixels.sortedBy { android.graphics.Color.luminance(it) }[pixels.size / 2])
     }
 
     /** The navigation bar: every picture opens upright (focus mode turns it only after the app is open). */
     private val navigation get() = NavigationTestTags.BAR
-
-    /** Opens the tuner, waits for it, runs [steps] and saves the screen, cut in on this shot's focus. */
-    private fun tuner(steps: () -> Unit) = save(capture { steps() })
 
     /**
      * Opens the app on the tuner, runs [steps] in it, takes a picture of the screen (`raw-<name>.png`)
@@ -365,13 +368,6 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
         }
         measureCrop(scenario)
     }
-
-    /**
-     * Places [screen] on the canvas with this shot's caption (and [bubble]) and saves it: on the phone
-     * cut in on [Shot.focus]; the tablet's upright screen whole, which fits about as large.
-     */
-    private fun save(screen: Bitmap, bubble: SpeechBubble? = null) =
-        compose(listOf(listOf(Window(screen.asImageBitmap(), if (tablet) 0f..1f else shot.focus))), bubble = bubble)
 
     /**
      * The whole screen as it is, without the status bar, saved as `raw-<name>.png`. On its side the
@@ -416,19 +412,18 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
         return measured
     }
 
-    /** Places [rows] of screens on [spec]'s canvas with this shot's caption and saves it as `store-<n>.png`. */
-    private fun compose(
-        rows: List<List<Window>>,
-        spec: CanvasSpec = CanvasSpec.PORTRAIT,
-        bubble: SpeechBubble? = null,
-        staggered: Boolean = false,
-    ) {
-        val caption = captions().getOrNull(shot.ordinal) ?: error("no caption ${shot.number} for $locale")
-        val canvas = renderCanvas(spec.width, spec.height) {
-            StoreCanvas(caption, rows, shot.dark, spec, bubble, staggered, shot.highContrast)
+    /** Draws [moment] on the canvas under this shot's caption (and [bubble]) and saves it as `store-<n>.png`. */
+    private fun compose(moment: Moment, bubble: SpeechBubble? = null) {
+        val caption = caption()
+        val canvas = renderCanvas(CanvasSpec.PORTRAIT.width, CanvasSpec.PORTRAIT.height) {
+            StoreCanvas(caption, moment, shot.accent, bubble = bubble, highContrast = shot.highContrast)
         }
         write(canvas, "store-${shot.number}.png")
     }
+
+    /** This shot's line of the locale's captions. */
+    private fun caption(): StoreCaption =
+        StoreCaption.parse(captions().getOrNull(shot.ordinal) ?: error("no caption ${shot.number} for $locale"))
 
     private fun write(bitmap: Bitmap, name: String) {
         File(out, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -585,7 +580,6 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
         /** A held note settles, its glow lit or its hint shown, well within this. */
         private const val NOTE_SETTLE_MS = 3_000L
         private const val PANEL_SETTLE_MS = 1_000L
-        private const val SHEET_SETTLE_MS = 1_500L
 
         /** Each chord rings this long before the next. */
         private const val STRUM_SECONDS = 3.0
@@ -596,20 +590,22 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
         /** The open strings' strum is pictured this long after it starts: its marks stand (after about half a second) while it rings. */
         private const val OPEN_STRUM_SETTLE_MS = 1_800L
 
+        /** The tuner's parts a picture of it shows: the ruler, the meter and the word under it. */
+        private val TUNER_PARTS = Regex("tuner_(ruler|gauge|word)")
+
+        /** The bass's low E (E1), the whole app's note. */
+        private const val BASS_LOW_E = 28
+
+        /** The cut reaches this far above and below its parts; the edges' colour is read every [EDGE_STEP] pixels. */
+        private const val CUT_MARGIN_DP = 8
+        private const val EDGE_STEP = 8
+
         /** The website's metronome picture: its tempo, and how long after the first beat it is taken, still lit. */
         private const val METRONOME_BPM = 120
         private const val BEAT_LIT_MS = 120L
 
         /** The navigation rail's width (NavigationBar.kt, RAIL_WIDTH). */
         private const val RAIL_DP = 80
-
-        /**
-         * The instrument pills are dragged [PILLS_DRAGS] times by [PILLS_DRAG] of their row's width, on to the bass, the
-         * ukulele and the violin, each drag in [DRAG_STEPS] steps of about 5 ms (slow, so the row doesn't fling on).
-         */
-        private const val PILLS_DRAGS = 2
-        private const val PILLS_DRAG = 0.65f
-        private const val DRAG_STEPS = 100
 
         /** TalkBack users often read at large text: the screenshot shows the largest Twangle supports. */
         private const val TALKBACK_FONT_SCALE = 2f

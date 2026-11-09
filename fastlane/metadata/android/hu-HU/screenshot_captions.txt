@@ -1,8 +1,8 @@
-Nyisd meg és hangolj. Regisztráció és térerő nélkül.
-Megmutatja, merre tekerd
-Csak te hallod. Nincs felvétel, nincs küldés.
-Egy pengetés. Minden húr látszik.
-Hangoló, metronóm és akkordok egy appban
-Pengess egy akkordot. Lásd a nevét.
-Gitár, basszus, ukulele, hegedű és saját hangolások
-Nagy, jól olvasható, erős kontraszt. Még ki is mondja a hangot.
+Azt teszi, amire szükséged van. *Semmi mást.*
+*Az ütemet* is tartja.|Metronóm ugyanabban az appban.
+Csak *te* hallod.|Nincs regisztráció|Nem kell internet|Nincs felvétel, nincs küldés
+Egy pillantás elég|*A hang, a húr és hogy merre tekerd*
+Pengess egy akkordot.|*Lásd a nevét.*
+*Gyakorolj* akkordokat és skálákat|Capo és hallásfejlesztés is
+Egy pengetés.|*Minden húr látszik.*
+Nagy, jól olvasható, *erős kontraszt*.|Még ki is mondja a hangot.

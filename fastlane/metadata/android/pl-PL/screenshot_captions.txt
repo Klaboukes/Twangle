@@ -1,8 +1,8 @@
-Otwórz i stroj. Bez konta, bez zasięgu.
-Mówi, w którą stronę kręcić
-Słyszysz tylko ty. Nic nie wychodzi z telefonu.
-Uderz raz. Zobacz każdą strunę.
-Stroik, metronom i akordy w jednej aplikacji
-Zagraj akord. Zobacz jego nazwę.
-Gitara, bas, ukulele, skrzypce i twoje własne stroje
-Duże, czytelne, wysoki kontrast. Nawet mówi, jaka to nuta.
+Robi to, czego potrzebujesz. *I nic więcej.*
+Trzyma też *tempo*.|Metronom w tej samej aplikacji.
+Słyszysz tylko *ty*.|Bez rejestracji|Działa bez internetu|Nic nie jest nagrywane ani wysyłane
+Wystarczy jedno spojrzenie|*Nuta, struna i w którą stronę kręcić*
+Zagraj akord.|*Zobacz jego nazwę.*
+*Ćwicz* akordy i skale|Także kapodaster i trening słuchu
+Uderz raz.|*Zobacz każdą strunę.*
+Duże, czytelne, *wysoki kontrast*.|Nawet mówi, jaka to nuta.

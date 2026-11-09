@@ -14,13 +14,14 @@ JAVA="$JAVA_HOME/bin/java"
 SHRINK="$ROOT/website/tools/ShrinkImage.java"
 STATIC="$ROOT/website/static"
 
-# The screens the pages show, by their number in docs/store-listing.md's table (2.0's listing,
-# 2026-11-05): the home page 1 (hero), 5 (the Practice tab's cards), 6, metronome and 7, the tuner's
-# page 2, the strum check's 4, the chord name's and Chords' 6, the metronome's page "metronome"
-# (saved with store screenshot 5, no store picture of its own), the instruments' 7. 3 (the microphone
-# prompt) and 8 (TalkBack at twice the text) show nothing a page needs; Capo and the pitch trail have
-# no 2.0 screen in the set, so their pages have none.
-SHOTS="1 2 4 5 6 7 metronome"
+# The screens the pages show, as "<raw screen>:<the site's picture>". The site's pictures keep the numbers
+# of 2.0's first listing (2026-11-05): the home page 1 (hero), 5 (the Practice tab's cards), 6, metronome
+# and 7, the tuner's page 2, the strum check's 4, the chord name's and Chords' 6, the metronome's page
+# "metronome", the instruments' 7. The from-scratch set (2026-11-09) numbers its screens anew: 1 the tuner
+# in tune, 2 the metronome (also saved as raw-metronome), 4 a bass flat with "Tighten", 5 Chords, 6 the
+# Practice cards, 7 the strum check. The instruments' sheet is no longer shot, so the site keeps its 7 as
+# it is; 3 (drawn) and 8 (TalkBack at twice the text) show nothing a page needs.
+SHOTS="1:1 4:2 7:4 6:5 5:6 metronome:metronome"
 # Play locale -> the site's language folder.
 LOCALES="en-US:en nl-NL:nl"
 
@@ -29,8 +30,9 @@ LOCALES="en-US:en nl-NL:nl"
 for pair in $LOCALES; do
     locale="${pair%%:*}"
     lang="${pair##*:}"
-    for n in $SHOTS; do
-        raw="$ROOT/build/store-screenshots/$locale/raw-$n.png"
+    for shot in $SHOTS; do
+        n="${shot##*:}"
+        raw="$ROOT/build/store-screenshots/$locale/raw-${shot%%:*}.png"
         if [ ! -f "$raw" ]; then
             echo "Missing $raw: run scripts/store-screenshots.sh $locale first." >&2
             exit 1

@@ -69,118 +69,140 @@ import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import androidx.test.core.app.ActivityScenario
-import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.IntRect
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 
 /**
- * The size and proportions of one store picture: Play's upright screenshot ([PORTRAIT]: the phone's,
- * and the 10-inch tablet's upright set) or one on its side ([LANDSCAPE]: focus mode, on the phone and
- * the tablet), each with its own dp, the device's own text size left out.
+ * The size of one store picture: Play's upright screenshot, 1080 × 1920 px (9:16) with 1080 px = 400 dp, the phone's
+ * and the 10-inch tablet's alike, the device's own text size left out. Until the from-scratch set (2026-11-09) focus
+ * mode had one on its side too.
  */
-enum class CanvasSpec(
-    val width: Int,
-    val height: Int,
-    /** How many dp the canvas's short side is, which sets every size below. */
-    val shortSideDp: Float,
-    val captionHeight: Dp,
-    val captionHeightOverBubble: Dp,
-    val captionGap: Dp,
-    val sideMargin: Dp,
-    val bottomMargin: Dp,
-    val frame: Dp,
-    val corner: Dp,
-    val bubbleMaxWidth: Dp,
-) {
-    /** 1080 × 1920 px (9:16), 1080 px = 400 dp. */
-    PORTRAIT(1080, 1920, 400f, 170.dp, 128.dp, 0.dp, 24.dp, 26.dp, 4.dp, 22.dp, 380.dp),
-
-    /** 1920 × 1080 px (16:9), 1080 px = 450 dp: the caption in a band above, the screen on its side under it. */
-    LANDSCAPE(1920, 1080, 450f, 92.dp, 92.dp, 8.dp, 40.dp, 22.dp, 6.dp, 18.dp, 680.dp),
+enum class CanvasSpec(val width: Int, val height: Int, val shortSideDp: Float) {
+    PORTRAIT(1080, 1920, 400f),
     ;
 
     val density: Float get() = minOf(width, height) / shortSideDp
 }
 
 /**
- * One app screen as a store picture shows it: [screen] (the screen as it was, without the status bar)
- * and the part of its height that must show, [focus] (fractions from its top: the meter, the note and
- * its pill, say). Drawn as large as its place allows, never larger than the screen's own pixels; where
- * its whole height doesn't fit at the place's width, it is cut to [focus] and as much around it as
- * fits, so the app's words can be read at the size Play shows the picture (Phase 65: a whole phone
- * screen under the caption was 630 px wide, its words too small to read in the listing).
+ * A picture's words as `screenshot_captions.txt` gives them, one line a picture: the [headline], then the [lines]
+ * under it, `|` between ("It *keeps time*, too.|A metronome in the same app."). Words between asterisks are drawn in
+ * the picture's colour ([Accent]). The privacy picture's lines are its three facts ([Moment.Facts]).
  */
+class StoreCaption(val headline: String, val lines: List<String>) {
+    companion object {
+        fun parse(line: String): StoreCaption {
+            val parts = line.split('|').map { it.trim() }.filter { it.isNotEmpty() }
+            return StoreCaption(parts.first(), parts.drop(1))
+        }
+    }
+}
+
+/** The one colour a picture has beside the app's own: its marked words and its glow. */
+enum class Accent { IN_TUNE, FAR_OFF, PRIMARY }
+
+@Composable
+private fun Accent.colour(): Color = when (this) {
+    Accent.IN_TUNE -> MaterialTheme.styleTokens.inTune
+    Accent.FAR_OFF -> MaterialTheme.styleTokens.farOff
+    Accent.PRIMARY -> MaterialTheme.colorScheme.primary
+}
+
+/** What a picture shows under its words: one moment, drawn large (the from-scratch set, owner 2026-11-09). */
+sealed interface Moment {
+    /**
+     * The part of [screen] that sells it, [area] in its pixels, drawn without a frame on [background] (the screen's own,
+     * so the cut doesn't show) as large as fits and never larger than its pixels. [fade] softens its sides, where the
+     * tuner's ruler runs on to the screen's edges.
+     */
+    class Cut(val screen: ImageBitmap, val area: IntRect, val background: Color, val fade: Boolean = false) : Moment
+
+    /** The whole [screen] in a phone's frame on a glow of the picture's colour: the one picture of the whole app. */
+    class Phone(val screen: ImageBitmap) : Moment
+
+    /** No screen: the microphone in a disc of the picture's colour and the [facts] under it, each with its mark. */
+    class Facts(val facts: List<String>) : Moment
+}
+
+/** What TalkBack says, drawn as a speech bubble above the screen. */
+data class SpeechBubble(val text: String)
+
+/** An app screen and the part of its height that must show ([focus], fractions from its top); [Device] draws it. */
 class Window(val screen: ImageBitmap, val focus: ClosedFloatingPointRange<Float> = 0f..1f)
 
 /**
- * One store screenshot as Play shows it: [spec]'s pixels in the app's (quiet) background, the
- * caption in large type above, and below it [rows] of app screens ([Window]), each in a slim dark
- * frame with round corners and a soft shadow. One screen takes the whole space under the caption;
- * rows share its height and the screens of a row its width (the six tiles' grid). Two screens alone
- * in a row, [staggered], stand side by side whole, the second lower, as two phones.
+ * One store screenshot as Play shows it: [spec]'s pixels in Ink dark, the [caption]'s headline in large type at the top
+ * with its line under it, and below them the [moment], one thing drawn large (the from-scratch set, owner 2026-11-09;
+ * until then each picture was the app's screen in a phone's frame, its words too small to read at Play's size).
  *
- * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in its display face, the
- * phone's own sans in every script (`StyleTypography`), right to left where the language is. [bubble] (the TalkBack screenshot) is what TalkBack says, in a speech bubble between
- * the caption and the phone, pointing at the phone: drawn here, since a picture can't show speech. [highContrast] draws the canvas in the
- * high-contrast look, as the screen on it.
+ * Drawn with the app's own theme ([TwangleTheme]), so the words are set in its face, the phone's own sans in every
+ * script (`StyleTypography`), right to left where the language is. [bubble] (the TalkBack picture) is what TalkBack
+ * says, in a speech bubble over the screen: drawn here, since a picture can't show speech. [highContrast] draws the
+ * canvas in the high-contrast look, as the screen on it.
  */
 @Composable
 fun StoreCanvas(
-    caption: String,
-    rows: List<List<Window>>,
-    dark: Boolean,
+    caption: StoreCaption,
+    moment: Moment,
+    accent: Accent,
     spec: CanvasSpec = CanvasSpec.PORTRAIT,
     bubble: SpeechBubble? = null,
-    staggered: Boolean = false,
     highContrast: Boolean = false,
 ) {
     CompositionLocalProvider(LocalDensity provides Density(spec.density, fontScale = 1f)) {
-        TwangleTheme(darkTheme = dark, highContrast = highContrast, animate = false) {
+        TwangleTheme(darkTheme = true, highContrast = highContrast, animate = false) {
+            val colour = accent.colour()
+            val background = (moment as? Moment.Cut)?.background ?: MaterialTheme.colorScheme.background
             Box(
-                Modifier.layout { measurable, _ ->
-                    val placeable = measurable.measure(Constraints.fixed(spec.width, spec.height))
-                    layout(spec.width, spec.height) { placeable.place(0, 0) }
-                },
+                Modifier
+                    .layout { measurable, _ ->
+                        val placeable = measurable.measure(Constraints.fixed(spec.width, spec.height))
+                        layout(spec.width, spec.height) { placeable.place(0, 0) }
+                    }
+                    .background(background),
             ) {
-                StyleBackdrop(Modifier.fillMaxSize())
+                if (moment is Moment.Phone) Glow(colour, Modifier.fillMaxSize())
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Caption(
-                        caption,
-                        Modifier
-                            .padding(start = spec.sideMargin, end = spec.sideMargin, top = spec.captionGap / 2, bottom = spec.captionGap)
-                            .fillMaxWidth()
-                            .height(if (bubble == null) spec.captionHeight else spec.captionHeightOverBubble),
-                    )
-                    if (bubble != null) Bubble(bubble.text, maxWidth = spec.bubbleMaxWidth)
+                    Spacer(Modifier.height(TOP_MARGIN))
+                    Headline(caption.headline, colour, Modifier.padding(horizontal = SIDE_MARGIN))
+                    if (moment !is Moment.Facts) {
+                        caption.lines.forEach { Subline(it, colour, Modifier.padding(start = SIDE_MARGIN, end = SIDE_MARGIN, top = SUBLINE_GAP)) }
+                    }
+                    if (bubble != null) {
+                        Spacer(Modifier.height(CONTENT_GAP))
+                        Bubble(bubble.text, maxWidth = BUBBLE_MAX_WIDTH)
+                    }
                     BoxWithConstraints(
                         Modifier
                             .weight(1f)
-                            .padding(bottom = spec.bottomMargin, start = spec.sideMargin, end = spec.sideMargin)
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .padding(top = if (bubble == null) CONTENT_GAP else 0.dp, bottom = BOTTOM_MARGIN),
                         contentAlignment = Alignment.Center,
                     ) {
-                        val space = maxWidth
-                        val tall = maxHeight
-                        val pair = rows.singleOrNull()?.takeIf { staggered && it.size == 2 }
-                        if (pair != null) {
-                            StaggeredPair(pair, space, tall, spec)
-                        } else {
-                            val rowHeight = (tall - WINDOW_GAP * (rows.size - 1)) / rows.size
-                            Column(verticalArrangement = Arrangement.spacedBy(WINDOW_GAP)) {
-                                rows.forEach { row ->
-                                    val cellWidth = (space - WINDOW_GAP * (row.size - 1)) / row.size
-                                    Row(horizontalArrangement = Arrangement.spacedBy(WINDOW_GAP)) {
-                                        row.forEach { window ->
-                                            Box(Modifier.size(cellWidth, rowHeight), contentAlignment = Alignment.Center) {
-                                                Device(window, cellWidth, rowHeight, spec.frame, spec.corner)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        when (moment) {
+                            is Moment.Cut -> Cut(moment, maxWidth, maxHeight)
+                            is Moment.Phone -> Device(Window(moment.screen), maxWidth, maxHeight, PHONE_FRAME, PHONE_CORNER)
+                            is Moment.Facts -> Facts(moment.facts, colour)
                         }
                     }
                 }
@@ -189,50 +211,67 @@ fun StoreCanvas(
     }
 }
 
-/** Two whole screens side by side, each about half the width, the second lower: Chords and the Capo helper. */
+/** A soft round glow of [colour] behind the phone, a little below the middle. */
 @Composable
-private fun StaggeredPair(windows: List<Window>, space: Dp, tall: Dp, spec: CanvasSpec) {
-    val width = (space - WINDOW_GAP) / 2
-    val first = windows.first().screen
-    val height = (width - spec.frame * 2) * (first.height.toFloat() / first.width) + spec.frame * 2
-    val stagger = ((tall - height) * STAGGER_SHARE).coerceAtLeast(0.dp)
-    Row(horizontalArrangement = Arrangement.spacedBy(WINDOW_GAP)) {
-        windows.forEachIndexed { i, window ->
-            Box(Modifier.padding(top = if (i % 2 == 0) 0.dp else stagger, bottom = if (i % 2 == 0) stagger else 0.dp)) {
-                Device(window, width, tall - stagger, spec.frame, spec.corner)
-            }
+private fun Glow(colour: Color, modifier: Modifier) {
+    Spacer(
+        modifier.drawBehind {
+            drawRect(
+                Brush.radialGradient(
+                    listOf(colour.copy(alpha = GLOW_ALPHA), Color.Transparent),
+                    center = Offset(size.width / 2, size.height * GLOW_CENTRE),
+                    radius = size.width * GLOW_RADIUS,
+                ),
+            )
+        },
+    )
+}
+
+/**
+ * The headline, as large as fits: two sentences ("Strum once. See every string.") start a line each, so the second,
+ * often the coloured one, stands on its own; in at most three lines (two at a smaller size left the line, picture 1,
+ * small beside the others). Balanced lines, centred.
+ */
+@Composable
+private fun Headline(headline: String, accent: Color, modifier: Modifier) {
+    val measurer = rememberTextMeasurer()
+    val base = MaterialTheme.typography.headlineLarge
+    BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        val width = constraints.maxWidth
+        val (text, style) = remember(headline, accent, base, width) {
+            val text = koreanWordsKeptWhole(sentencesOnTheirOwnLines(headline) ?: headline)
+            val styles = HEADLINE_SIZES.map { base.headlineStyle(it) }
+            fun fits(style: TextStyle, lines: Int) =
+                measurer.measure(marked(text, accent), style, constraints = Constraints(maxWidth = width)).lineCount <= lines
+            text to (styles.firstOrNull { fits(it, HEADLINE_MAX_LINES) } ?: styles.last())
         }
+        Text(marked(text, accent), style = style, color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
-/** What TalkBack says, drawn as a speech bubble above the phone. */
-data class SpeechBubble(val text: String)
-
-/** The caption, as large as fits in three lines, centred in its space. */
+/** A line under the headline, quieter and smaller, as large as fits in two lines. */
 @Composable
-private fun Caption(caption: String, modifier: Modifier) {
-    val text = remember(caption) { koreanWordsKeptWhole(caption) }
+private fun Subline(line: String, accent: Color, modifier: Modifier) {
     val measurer = rememberTextMeasurer()
-    val base = MaterialTheme.typography.headlineLarge
-    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val widthPx = constraints.maxWidth
-        val heightPx = constraints.maxHeight
-        // Two sentences ("Strum once. See every string.") get a line each, at the largest size where both fit so (also
-        // in the height: the landscape band holds one line at the largest size, two only just), rather than a larger
-        // one that breaks a sentence in two ("No / sign-up"). Otherwise the largest size that fits in two lines, else
-        // the largest in three: a short caption stays large.
-        val (shown, style) = remember(text, base, widthPx, heightPx) {
-            fun fits(candidate: String, style: TextStyle, lines: Int, exactly: Boolean = false): Boolean {
-                val layout = measurer.measure(candidate, style, constraints = Constraints(maxWidth = widthPx))
-                return (if (exactly) layout.lineCount == lines else layout.lineCount <= lines) && layout.size.height <= heightPx
-            }
-            val sizes = CAPTION_SIZES.map { base.captionStyle(it) }
-            val twoLineSizes = sizes.filter { it.fontSize.value >= TWO_LINE_MIN_SIZE }
-            val split = sentencesOnTheirOwnLines(text)
-            split?.let { lines -> twoLineSizes.firstOrNull { fits(lines, it, 2, exactly = true) }?.let { lines to it } }
-                ?: (text to (twoLineSizes.firstOrNull { fits(text, it, 2) } ?: sizes.firstOrNull { fits(text, it, CAPTION_MAX_LINES) } ?: sizes.last()))
+    val base = MaterialTheme.typography.titleLarge
+    BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        val width = constraints.maxWidth
+        val (text, style) = remember(line, accent, base, width) {
+            val text = koreanWordsKeptWhole(line)
+            val styles = SUBLINE_SIZES.map { base.sublineStyle(it) }
+            text to (
+                styles.firstOrNull { measurer.measure(marked(text, accent), it, constraints = Constraints(maxWidth = width)).lineCount <= 2 }
+                    ?: styles.last()
+                )
         }
-        Text(shown, style = style, color = MaterialTheme.colorScheme.onBackground)
+        Text(marked(text, accent), style = style, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** [text] with the words between asterisks in [accent], the asterisks left out. */
+internal fun marked(text: String, accent: Color): AnnotatedString = buildAnnotatedString {
+    text.split('*').forEachIndexed { i, part ->
+        if (i % 2 == 1) withStyle(SpanStyle(color = accent)) { append(part) } else append(part)
     }
 }
 
@@ -259,13 +298,110 @@ internal fun sentencesOnTheirOwnLines(text: String): String? {
 /**
  * A sentence's end inside a caption: the full stop and a space; the ideographic full stop (Chinese, Japanese), which
  * takes no space; the danda (Hindi, Bengali, Marathi), Amharic's ። and Burmese's ။, each with a space; and Khmer's ។,
- * which Khmer may write without one.
+ * which Khmer may write without one. The coloured words' closing asterisk may come between the stop and the space.
  */
-private val SENTENCE_ENDS = listOf(". ", "。", "। ", "። ", "။ ", "។")
+private val SENTENCE_ENDS = listOf(". ", ".* ", "。", "。*", "। ", "।* ", "። ", "።* ", "။ ", "။* ", "។", "។*")
 
-/** Balanced lines (no single word left on the last one), centred. */
-private fun TextStyle.captionStyle(size: Float) =
-    copy(fontSize = size.sp, lineHeight = (size * 1.22f).sp, textAlign = TextAlign.Center, lineBreak = LineBreak.Heading)
+/** The headline: heavy, balanced lines (no single word left on the last one), centred. */
+private fun TextStyle.headlineStyle(size: Float) = copy(
+    fontSize = size.sp,
+    lineHeight = (size * 1.14f).sp,
+    fontWeight = FontWeight.ExtraBold,
+    textAlign = TextAlign.Center,
+    lineBreak = LineBreak.Heading,
+)
+
+private fun TextStyle.sublineStyle(size: Float) = copy(
+    fontSize = size.sp,
+    lineHeight = (size * 1.22f).sp,
+    fontWeight = FontWeight.SemiBold,
+    textAlign = TextAlign.Center,
+    lineBreak = LineBreak.Heading,
+)
+
+/** [cut]'s area of its screen, as large as fits in [maxWidth] × [maxHeight] and never larger than its pixels, unframed. */
+@Composable
+private fun Cut(cut: Moment.Cut, maxWidth: Dp, maxHeight: Dp) {
+    val density = LocalDensity.current
+    val area = cut.area
+    val scale = with(density) { minOf(maxWidth.toPx() / area.width, maxHeight.toPx() / area.height, 1f) }
+    val width = with(density) { (area.width * scale).toDp() }
+    val height = with(density) { (area.height * scale).toDp() }
+    val faded = if (!cut.fade) {
+        Modifier
+    } else {
+        Modifier
+            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+            .drawWithContent {
+                drawContent()
+                drawRect(
+                    Brush.horizontalGradient(0f to Color.Transparent, FADE to Color.Black, 1f - FADE to Color.Black, 1f to Color.Transparent),
+                    blendMode = BlendMode.DstIn,
+                )
+            }
+    }
+    Canvas(Modifier.size(width, height).then(faded)) {
+        drawImage(
+            image = cut.screen,
+            srcOffset = IntOffset(area.left, area.top),
+            srcSize = IntSize(area.width, area.height),
+            dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+            filterQuality = FilterQuality.High,
+        )
+    }
+}
+
+/** The microphone in a glowing disc of [colour], and under it the [facts], each after its mark (no account, no internet, the microphone). */
+@Composable
+private fun Facts(facts: List<String>, colour: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier
+                .size(MIC_DISC * 2)
+                .drawBehind { drawCircle(Brush.radialGradient(listOf(colour.copy(alpha = GLOW_ALPHA), Color.Transparent))) },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(Modifier.size(MIC_DISC).background(colour.copy(alpha = DISC_ALPHA), CircleShape), contentAlignment = Alignment.Center) {
+                Mark(MIC_MARK, colour, MIC_MARK_SIZE)
+            }
+        }
+        Spacer(Modifier.height(FACTS_GAP))
+        Column(Modifier.widthIn(max = FACTS_WIDTH), verticalArrangement = Arrangement.spacedBy(FACT_GAP)) {
+            facts.zip(FACT_MARKS).forEach { (fact, mark) ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Mark(mark, colour, FACT_MARK_SIZE)
+                    Spacer(Modifier.width(FACT_MARK_GAP))
+                    Text(
+                        koreanWordsKeptWhole(fact),
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 25.sp, lineHeight = 31.sp, fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** A line drawing in a 24-unit square ([pathData], SVG's path syntax), stroked in [colour] at [size]. */
+@Composable
+private fun Mark(pathData: String, colour: Color, size: Dp) {
+    val path = remember(pathData) { PathParser().parsePathString(pathData).toPath() }
+    Canvas(Modifier.size(size)) {
+        scale(this.size.width / MARK_UNITS, pivot = Offset.Zero) {
+            drawPath(path, colour, style = Stroke(width = MARK_STROKE, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+    }
+}
+
+/** A microphone, a person struck through (no account) and Wi-Fi struck through (no internet), in 24 units. */
+private const val MIC_MARK = "M9 6a3 3 0 0 1 6 0v5a3 3 0 0 1 -6 0zM5 11a7 7 0 0 0 14 0M12 18v3"
+private const val NO_ACCOUNT_MARK = "M8 8a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M4 21c1-4 4.5-6 8-6s7 2 8 6M3 3l18 18"
+private const val NO_INTERNET_MARK = "M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M11 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0M3 3l18 18"
+
+/** The facts' marks in the captions' order: no sign-up, no internet, nothing recorded or sent. */
+private val FACT_MARKS = listOf(NO_ACCOUNT_MARK, NO_INTERNET_MARK, MIC_MARK)
+private const val MARK_UNITS = 24f
+private const val MARK_STROKE = 1.8f
 
 /**
  * [window]'s screen in a slim, dark frame [frameWidth] wide with round [corner]s and a soft shadow, as
@@ -444,26 +580,50 @@ fun renderCanvas(width: Int = CanvasSpec.PORTRAIT.width, height: Int = CanvasSpe
     }
 }
 
-private val SIDE_MARGIN = 24.dp
+/** The words' margins at the sides and the top, in dp at 1080 px = 400 dp (the mock-up's 50 and about 120 px). */
+private val SIDE_MARGIN = 20.dp
+private val TOP_MARGIN = 44.dp
+private val SUBLINE_GAP = 8.dp
 
-/** Between the screens of a row, and between rows. */
-private val WINDOW_GAP = 14.dp
+/** Between the words (or the bubble) and the moment under them, and under the moment. */
+private val CONTENT_GAP = 22.dp
+private val BOTTOM_MARGIN = 24.dp
 
-/** Two phones stand this share of their free height apart. */
-private const val STAGGER_SHARE = 0.7f
+/** Headline sizes tried, largest first, in sp at 1080 px = 400 dp, the first that fits in three lines. */
+private val HEADLINE_SIZES = listOf(36f, 34f, 32f, 30f, 28f, 26f, 24f, 22f)
+private const val HEADLINE_MAX_LINES = 3
+private val SUBLINE_SIZES = listOf(21f, 20f, 19f, 18f, 17f, 16f)
+
+/** The whole app's phone: a slim frame with round corners and a soft shadow. */
+private val PHONE_FRAME = 4.dp
+private val PHONE_CORNER = 24.dp
 private val PHONE_SHADOW = 14.dp
 private val FRAME_ON_LIGHT = Color(0xFF1C1C1F)
 private val FRAME_ON_DARK = Color(0xFF3A3A40)
 
+/** The picture's colour behind the phone and the microphone: how strong at its heart, where, and how far it reaches. */
+private const val GLOW_ALPHA = 0.36f
+private const val GLOW_CENTRE = 0.62f
+private const val GLOW_RADIUS = 0.8f
+
+/** The tuner's cut fades out over this share of its width at each side. */
+private const val FADE = 0.06f
+
+/** The privacy picture: the microphone's disc, its facts' marks and spacing. */
+private val MIC_DISC = 112.dp
+private val MIC_MARK_SIZE = 62.dp
+private const val DISC_ALPHA = 0.16f
+private val FACTS_GAP = 24.dp
+private val FACTS_WIDTH = 340.dp
+private val FACT_GAP = 30.dp
+private val FACT_MARK_SIZE = 38.dp
+private val FACT_MARK_GAP = 18.dp
+
+private val BUBBLE_MAX_WIDTH = 360.dp
 private val BUBBLE_GAP = 6.dp
 private val BUBBLE_CORNER = 20.dp
 private val BUBBLE_SHADOW = 10.dp
 private val TAIL = 18.dp
-
-/** Caption sizes tried, largest first, in sp at 1080 px = 400 dp. */
-private val CAPTION_SIZES = listOf(34f, 32f, 30f, 28f, 26f, 24f, 22f)
-private const val CAPTION_MAX_LINES = 3
-private const val TWO_LINE_MIN_SIZE = 26f
 
 private const val WAIT_SECONDS = 10L
 private const val SETTLE_MS = 800L
