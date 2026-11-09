@@ -16,9 +16,13 @@
 //             (--no-commit): committed with changesNotSentForReview, so it waits in the Play Console's
 //             Publishing overview until the owner sends it for review (the plugin's own commit sends it
 //             at once), or deleted when a send stopped half way.
+//   track-started <track> - "yes" when the track has a release that went out (live, a staged rollout
+//             or halted), "no" when it never had one: an app's first production release can't be a
+//             staged rollout (Play Console Help, Release app updates with staged rollouts). Read only,
+//             as status.
 //
 // Usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|
-//        edit-delete <id> <key.json> <application id>
+//        edit-delete <id>|track-started <track> <key.json> <application id>
 // Errors go to stderr as "release: ...", like scripts/release.sh, with exit code 1.
 
 import java.io.FileDescriptor;
@@ -72,7 +76,7 @@ public class PlayReports {
     static String app;
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|edit-delete <id> <key.json> <application id>");
+        if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|edit-delete <id>|track-started <track> <key.json> <application id>");
         String command = args[0];
         String extra = args.length > 3 ? args[1] : null;
         Path key = Path.of(args[args.length - 2]);
@@ -84,6 +88,7 @@ public class PlayReports {
             case "reviews" -> reviews(extra == null ? "en" : extra);
             case "edit-commit-unsent" -> editCommitUnsent(needed(extra, "the edit's id"));
             case "edit-delete" -> editDelete(needed(extra, "the edit's id"));
+            case "track-started" -> trackStarted(needed(extra, "the track's name"));
             default -> fail("unknown command " + command);
         }
     }
@@ -283,6 +288,29 @@ public class PlayReports {
         out.println();
         out.println("Read only: a temporary edit was opened, read and deleted; nothing was changed on Google Play.");
         out.println("(Google's review of a release shows only in the Play Console, under Publishing overview.)");
+    }
+
+    // Whether a track ever had a release go out. Only its current releases are there to read, and once
+    // one went out a track always keeps a live (or halted) one, so that's enough.
+    static void trackStarted(String name) throws Exception {
+        String base = PUBLISHER + app + "/edits";
+        Reply opened = expect(call("POST", base, null), "the app's setup");
+        String edit = str(asMap(opened.json), "id");
+        Object tracks;
+        try {
+            tracks = expect(call("GET", base + "/" + edit + "/tracks", null), "the tracks").json;
+        } finally {
+            call("DELETE", base + "/" + edit, null);
+        }
+        boolean started = false;
+        for (Object t : list(tracks, "tracks")) {
+            if (!name.equals(str(asMap(t), "track"))) continue;
+            for (Object r : list(asMap(t), "releases")) {
+                Object state = asMap(r).get("status");
+                if ("completed".equals(state) || "inProgress".equals(state) || "halted".equals(state)) started = true;
+            }
+        }
+        out.println(started ? "yes" : "no");
     }
 
     static String trackLabel(String name) {

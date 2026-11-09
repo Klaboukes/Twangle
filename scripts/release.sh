@@ -34,7 +34,8 @@
 #       notes. A draft by default, as upload; "completed" makes it live for the testers at once.
 #   scripts/release.sh promote [watch] production [draft]
 #       Moves this version from the internal track to production (whether or not it went to the closed
-#       test too) as a staged rollout to 20 % of people (Google reviews it first). "draft" leaves it a
+#       test too) as a staged rollout to 20 % of people (Google reviews it first); the app's first
+#       release there goes to everyone, since Play allows no staged rollout for it. "draft" leaves it a
 #       draft release to start in the Play Console.
 #   scripts/release.sh rollout [watch] <percent>
 #       Raises this version's staged rollout on production to <percent> (1..100); 100 is everyone and
@@ -378,7 +379,7 @@ upload() {
 # closed test or to production. Nothing is built or uploaded again, so what people get is exactly what
 # was checked.
 promote() {
-    local v code target="${1:-}" status="${2:-}" from to name
+    local v code target="${1:-}" status="${2:-}" from to name first="" started
     local -a args
     v="$(version)"
     code="$(app_code "$v")"
@@ -397,6 +398,14 @@ promote() {
             from="$INTERNAL" to="$PRODUCTION" name="production${WATCH_ARG:+ ($PRODUCTION)}"
             if [[ "$status" == draft ]]; then
                 args=(--release-status draft)
+            elif ! started="$(play_read track-started "$PRODUCTION")" || [[ "$started" != yes && "$started" != no ]]; then
+                fail "couldn't read whether production had a release before (above); nothing was sent."
+            elif [[ "$started" == no ]]; then
+                # The app's first release on production: Play allows no staged rollout for it (Play
+                # Console Help, Release app updates with staged rollouts), so it goes to everyone.
+                first=yes
+                status="a release for everyone (the first on production: Play allows no staged rollout for it)"
+                args=(--release-status completed)
             else
                 status="a staged rollout to $FIRST_ROLLOUT %"
                 args=(--release-status inProgress --user-fraction "$(fraction "$FIRST_ROLLOUT")")
@@ -420,6 +429,9 @@ promote() {
     echo "$APP_NAME $v is on $name on Google Play, as $status."
     if [[ "$status" == draft ]]; then
         echo "It is a draft: in the Play Console, Edit track, Next, Save, Go to overview, then Submit for review (docs/release.md)."
+    elif [[ -n "$first" ]]; then
+        echo "Google reviews it first (a few hours to a few days), then it waits for Publish changes. Later"
+        echo "versions start as a staged rollout to $FIRST_ROLLOUT %."
     elif [[ "$to" == "$PRODUCTION" ]]; then
         echo "Google reviews it first (a few hours to a few days). After two or three quiet days, raise it"
         echo "with scripts/release.sh rollout ${WATCH_ARG}50, later rollout ${WATCH_ARG}100; something wrong: scripts/release.sh halt${WATCH_ARG:+ watch}."

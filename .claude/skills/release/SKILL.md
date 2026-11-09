@@ -151,7 +151,9 @@ moves on.
   The owner starts the draft in *Closed testing*, as in step 4, then sends it for review and
   publishes it once approved.
 - **Production:** ask "Move Twangle <version> to production for 20 % of people? It goes to Google's
-  review at once; that takes a few hours to a few days, then you publish it." →
+  review at once; that takes a few hours to a few days, then you publish it." (The first production
+  release: "for everyone", since Play allows no staged rollout for an app's first release; the script
+  finds that out itself, and step 7 starts with the next version.) →
   `scripts/release.sh promote production`
   (`promote production draft` leaves it for the owner to start in the Play Console). When the store
   listing changed too, send it first (step 8) and promote with `draft`: then the owner sends both from
