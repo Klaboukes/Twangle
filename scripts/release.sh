@@ -549,33 +549,86 @@ Make them again with scripts/store-screenshots.sh. Nothing was sent to Google Pl
     echo "Screenshots for every language; the oldest made $(date -r "$oldest" '+%Y-%m-%d %H:%M')."
 }
 
-# Whether the phone screenshots show the app as it is now: the commit scripts/store-screenshots.sh
-# noted after a run of every language (build/phone-screenshots.made-at, shared with the set on GitHub)
-# has no change since to what they show (SCREENSHOT_SOURCES). Says which, and returns 1 when not. They
-# are made before a listing is sent, not every night (owner, 2026-10-30), so this is what keeps a
-# listing from going out with pictures of an older app.
+# Which store pictures a commit can change ("all" unless said): the lines for its pull request (its subject's
+# "(#N)") in scripts/store-picture-scopes.txt, else its message's "Store-pictures:" lines, one scope a line,
+# each "none", "phone", "tablet", picture numbers, or a set and numbers ("tablet 6"; numbers alone are both sets).
+STORE_PICTURE_SCOPES=scripts/store-picture-scopes.txt
+picture_scopes() {
+    local pr scopes=""
+    pr="$(git log -1 --format=%s "$1" | sed -n 's/.*(#\([0-9]*\))$/\1/p')"
+    [[ -n "$pr" && -f "$STORE_PICTURE_SCOPES" ]] &&
+        scopes="$(sed -n "s/^#$pr[[:space:]]\+\(\(none\|phone\|tablet\|[1-8]\)\([ ,]\+\(phone\|tablet\|[1-8]\)\)*\)\([[:space:]].*\)\?$/\1/p" "$STORE_PICTURE_SCOPES")"
+    [[ -z "$scopes" ]] && scopes="$(git log -1 --format=%B "$1" | sed -n 's/^Store-pictures:[[:space:]]*//p')"
+    echo "${scopes:-all}"
+}
+
+# Whether a commit can change picture [n] of the [kind] set (phone or tablet), by its scopes.
+changes_picture() {
+    local commit="$1" kind="$2" n="$3" scope word kinds nums
+    while read -r scope; do
+        [[ -z "$scope" || "$scope" == all ]] && return 0
+        kinds="" nums=""
+        for word in ${scope//,/ }; do
+            case "$word" in
+                none) ;;
+                phone|tablet) kinds+=" $word" ;;
+                [1-8]) nums+=" $word" ;;
+                *) return 0 ;;   # a word it doesn't know: every picture, to be safe
+            esac
+        done
+        [[ "$scope" =~ (^|[[:space:],])none($|[[:space:],]) ]] && continue
+        { [[ -z "$kinds" ]] || [[ " $kinds " == *" $kind "* ]]; } &&
+            { [[ -z "$nums" ]] || [[ " $nums " == *" $n "* ]]; } && return 0
+    done <<< "$(picture_scopes "$commit")"
+    return 1
+}
+
+# Whether the phone screenshots show the app as it is now: for each picture, the commit scripts/store-screenshots.sh
+# noted after a run of every language (build/phone-screenshots.made-at, one line a picture, shared with the set on
+# GitHub; a note of before 2026-11-09 has one line for all eight) has no change since to what they show
+# (SCREENSHOT_SOURCES) that can change that picture (picture_scopes). Says which, with the command that makes
+# just those again, and returns 1 when not. They are made before a listing is sent, not every night (owner,
+# 2026-10-30), so this is what keeps a listing from going out with pictures of an older app.
 screenshots_current() {
-    local made_at="build/phone-screenshots.made-at" commit state when changes
+    local made_at="build/phone-screenshots.made-at" note n line commit state when c stale=() reasons=() newest=""
     if [[ ! -f "$made_at" ]]; then
         echo "Which version of the app the phone screenshots show isn't known (no $made_at: made before 2026-10-30, or only some languages since)."
+        echo "Make them again with the phone connected: scripts/store-screenshots.sh (every language, about 50 minutes)."
         return 1
     fi
-    read -r commit state when < "$made_at"
-    if ! git cat-file -e "$commit^{commit}" 2>/dev/null; then
-        echo "The phone screenshots were made ($when) at ${commit:0:8}, a commit this clone doesn't have."
-        return 1
+    note="$(cat "$made_at")"
+    grep -qE '^[1-8] ' <<< "$note" || note="$(for n in 1 2 3 4 5 6 7 8; do echo "$n $note"; done)"
+    for n in 1 2 3 4 5 6 7 8; do
+        line="$(grep -E "^$n " <<< "$note" | head -1)"
+        read -r _ commit state when <<< "$line"
+        if [[ -z "$line" ]]; then
+            stale+=("$n"); reasons+=("picture $n: not made by a run of every language")
+        elif ! git cat-file -e "$commit^{commit}" 2>/dev/null; then
+            stale+=("$n"); reasons+=("picture $n: made ($when) at ${commit:0:8}, a commit this clone doesn't have")
+        elif [[ "$state" != clean ]]; then
+            stale+=("$n"); reasons+=("picture $n: made ($when) from uncommitted changes")
+        else
+            for c in $(git log --format=%H "$commit..HEAD" -- "${SCREENSHOT_SOURCES[@]}"); do
+                if changes_picture "$c" phone "$n"; then
+                    stale+=("$n"); reasons+=("picture $n (made $when, at ${commit:0:8}): $(git log -1 --format='%h %s' "$c")")
+                    break
+                fi
+            done
+            [[ -z "$newest" || "$when" > "$newest" ]] && newest="$when"
+        fi
+    done
+    if [[ ${#stale[@]} -eq 0 ]]; then
+        echo "The phone screenshots show the app as it is now (made by $newest at the latest)."
+        return 0
     fi
-    if [[ "$state" != clean ]]; then
-        echo "The phone screenshots were made ($when) from uncommitted changes."
-        return 1
+    echo "The phone screenshots are older than what they show, for ${#stale[@]} of the 8 pictures:"
+    printf '  %s\n' "${reasons[@]}"
+    if [[ ${#stale[@]} -eq 8 ]]; then
+        echo "Make them again with the phone connected: scripts/store-screenshots.sh (every language, about 50 minutes)."
+    else
+        echo "Make those again with the phone connected: scripts/store-screenshots.sh --shots $(IFS=,; echo "${stale[*]}") (every language)."
     fi
-    changes="$(git log --oneline "$commit..HEAD" -- "${SCREENSHOT_SOURCES[@]}")"
-    if [[ -n "$changes" ]]; then
-        echo "The app's screens changed since the phone screenshots were made ($when, at ${commit:0:8}):"
-        echo "$changes" | head -10 | sed 's/^/  /'
-        return 1
-    fi
-    echo "The phone screenshots show the app as it is now (made $when, at ${commit:0:8})."
+    return 1
 }
 
 # The store listing as it is on main, for every language, with the app details.
@@ -590,9 +643,7 @@ listing() {
     scripts/share-store-screenshots.sh pull phone || true
     scripts/share-store-screenshots.sh pull tablet || true
     need_screenshots
-    screenshots_current || fail "make the phone screenshots again first, with the phone connected:
-  scripts/store-screenshots.sh
-(every language, about 50 minutes), look them over, then send. Nothing was sent to Google Play."
+    screenshots_current || fail "make the phone screenshots again first (above), look them over, then send. Nothing was sent to Google Play."
     use_java
 
     # Titles, descriptions and captions within Play's limits, the icon and feature graphic at Play's
@@ -648,7 +699,7 @@ listing_changes() {
     else
         echo "The app's screens are unchanged since."
     fi
-    screenshots_current || echo "Before sending, make them again with the phone connected: scripts/store-screenshots.sh (about 50 minutes); listing refuses until then."
+    screenshots_current || echo "listing refuses them until then."
 }
 
 # Runs one of the read-only looks at Play (scripts/PlayReports.java, plain JDK, no Gradle).

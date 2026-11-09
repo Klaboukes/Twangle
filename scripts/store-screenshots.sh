@@ -7,12 +7,18 @@
 # With a tablet connected instead (at least 600 dp the short way) it makes the 10-inch tablet set
 # (*Tablet screenshots*): the tablet's screens upright, on the same canvases with the same captions,
 # the shots in TABLET_SHOTS only, to images/tenInchScreenshots/. Which one it makes follows from the
-# device; there is no switch.
+# device; there is no switch. With a phone and a tablet both connected (and no ANDROID_SERIAL), it
+# makes both sets at once, one on each, built once, each line of output marked "phone" or "tablet".
 #
 #   scripts/store-screenshots.sh                 every language (before a listing is sent; ~80 s a language, built once)
 #   scripts/store-screenshots.sh en-US nl-NL     only these Play locales
 #   scripts/store-screenshots.sh --shots 6 [locale…]   only these pictures (by number, "3,6" for two), the others kept:
 #                                                when one picture changed (~25 s a picture a language instead of ~2 min)
+#
+# STORE_BATCH languages (6) go through one test run, the phone cooled between runs: one run a language
+# cost about 15 s of start-up each (2026-11-09). A language of a run that didn't make all its pictures
+# gets one more try on its own, so one slip (a screen up before its language, 2026-11-06) doesn't spoil
+# an unattended run.
 #
 # The finished pictures go where fastlane and F-Droid look for them,
 #   fastlane/metadata/android/<locale>/images/phoneScreenshots/1.png ... 8.png
@@ -30,13 +36,14 @@ cd "$ROOT"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 COOL_BELOW="${COOL_BELOW:-37}"
+BATCH="${STORE_BATCH:-6}"
 LISTINGS=fastlane/metadata/android
-PULLED=app/build/outputs/connected_android_test_additional_output
 RAW=build/store-screenshots
 SHOTS="1 2 3 4 5 6 7 8"
 FOLDER=phoneScreenshots
 # The tablet set's pictures, by caption number (StoreScreenshots.Shot.onTablet).
 TABLET_SHOTS="1 2 3 4 5 6 7 8"
+args=("$@")
 
 # --shots: only these pictures, each language's others kept as they are.
 only=""
@@ -49,6 +56,36 @@ if [ $# -gt 0 ]; then
     locales=("$@")
 else
     mapfile -t locales < <(find "$LISTINGS" -mindepth 2 -maxdepth 2 -name screenshot_captions.txt | sed 's|.*/android/||; s|/.*||' | sort)
+fi
+
+# A phone and a tablet: both sets at once, each made by this script on its own device. Built here once,
+# so the two don't build over each other; each keeps its own pulled pictures and logs (UI_TESTS_TAG).
+if [ -z "${ANDROID_SERIAL:-}" ]; then
+    . "$ROOT/scripts/devices.sh"
+    phone="$(first_device phone)"
+    tab="$(first_device tablet)"
+    if [ -n "$phone" ] && [ -n "$tab" ]; then
+        echo "A phone and a tablet: both sets at once, on the $(device_name "$phone") and the $(device_name "$tab")."
+        export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
+        if ! ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain > build/store-screenshots-build.log 2>&1; then
+            echo "Build failed (log: build/store-screenshots-build.log)"
+            exit 1
+        fi
+        for kind in phone tablet; do
+            serial="$phone"
+            [ $kind = tablet ] && serial="$tab"
+            ( ANDROID_SERIAL="$serial" STORE_BUILT=1 "$0" "${args[@]}"; echo $? > "build/store-screenshots-$kind.exit" ) 2>&1 |
+                sed -u "s/^/$(printf '%-7s' $kind) /" &
+        done
+        wait
+        status=0
+        for kind in phone tablet; do
+            code="$(cat "build/store-screenshots-$kind.exit" 2>/dev/null)"
+            [ "${code:-1}" = 0 ] || status="${code:-1}"
+            rm -f "build/store-screenshots-$kind.exit"
+        done
+        exit "$status"
+    fi
 fi
 
 # The battery's temperature in whole degrees (the phone reports tenths).
@@ -67,7 +104,7 @@ wait_cool() {
     while [ "$t" -ge "$COOL_BELOW" ] && [ $waited -lt 1800 ]; do
         sleep 30; waited=$((waited + 30)); t="$(phone_temp)"
     done
-    printf ' %ds) ' $waited
+    printf ' %ds)\n' $waited
     adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
 }
 
@@ -89,6 +126,11 @@ if [ -n "$only" ]; then
     echo "Only pictures $SHOTS (the others kept)."
 fi
 total="$(echo $SHOTS | wc -w)"
+kind=phone
+[ "$tablet" = true ] && kind=tablet
+# This kind's own pulled pictures and test logs, so a phone and a tablet can run at once (scripts/ui-tests.sh).
+export UI_TESTS_TAG=$kind
+PULLED="app/build/outputs/connected_android_test_additional_output-$kind"
 
 # The test changes the device's text size and Twangle's own language and puts them back; a test that
 # crashes midway can't, and the next one would take what it left for the device's own (seen on the
@@ -105,71 +147,128 @@ trap put_back EXIT
 # A run of only some languages keeps this PC's pictures of the others: first take the latest set shared
 # on GitHub when it is newer (or the languages this PC lacks), so what it shares afterwards is no older than
 # what the other PC made (share-store-screenshots.sh).
-kind=phone
-[ "$tablet" = true ] && kind=tablet
 { [ $# -gt 0 ] || [ -n "$only" ]; } && scripts/share-store-screenshots.sh pull $kind
 
 mkdir -p build "$RAW"
-# The app these pictures show: after a run of every language, build/<kind>-screenshots.made-at says at
-# which commit, and whether from uncommitted changes, so scripts/release.sh listing can refuse pictures
-# older than the app's screens (made before a listing is sent since 2026-10-30, not every night).
-# Shared on GitHub with the pictures (share-store-screenshots.sh). A run of some languages or pictures leaves it.
+# The app these pictures show: after a run of every language, build/<kind>-screenshots.made-at says for each
+# picture it made at which commit, and whether from uncommitted changes, one line a picture ("<n> <commit>
+# clean|uncommitted <date>"), so scripts/release.sh listing can refuse pictures older than the app's screens
+# (made before a listing is sent since 2026-10-30, not every night); a --shots run of every language updates
+# its pictures' lines only. Shared on GitHub with the pictures (share-store-screenshots.sh). A run of some
+# languages leaves it.
 made_at="$(git rev-parse HEAD) $([ -z "$(git status --porcelain)" ] && echo clean || echo uncommitted) $(date '+%Y-%m-%d %H:%M')"
 status=0
-# Built on the first language, the same tests for the rest (--no-build: 22 s less a language, 2026-11-06).
+# Built on the first run, the same tests for the rest (--no-build: 22 s less a run, 2026-11-06).
 built=()
-for locale in "${locales[@]}"; do
-    captions="$LISTINGS/$locale/screenshot_captions.txt"
-    printf '%-6s ' "$locale"
-    if [ ! -f "$captions" ]; then
-        echo "no $captions"
-        status=1
-        continue
-    fi
-    wait_cool
-    log="build/store-screenshots-$locale.log"
-    [ "$tablet" = true ] && log="build/store-screenshots-tablet-$locale.log"
-    start=$SECONDS
-    # A language that fails gets one more try, so one slip (a screen up before its language, 2026-11-06)
-    # doesn't spoil an unattended run; the failed try's log is kept as <log>.first.
-    for attempt in 1 2; do
-        # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
-        rm -rf "$PULLED"
-        scripts/ui-tests.sh :app "${built[@]}" -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet ${only:+-a storeShots="${SHOTS// /,}"} > "$log" 2>&1
-        code=$?
-        grep -q "^build " "$log" && built=(--no-build)
-        if [ $code -ge 3 ]; then
-            tail -3 "$log"
-            exit $code
-        fi
-        made=0
-        for n in $SHOTS; do
-            [ -f "$PULLED/store-$n.png" ] && made=$((made + 1))
-        done
-        [ $code = 0 ] && [ $made = $total ] && break
-        [ $attempt = 1 ] && mv "$log" "$log.first" && printf '(again) '
+[ -n "${STORE_BUILT:-}" ] && built=(--no-build)
+log_base="build/store-screenshots"
+[ "$tablet" = true ] && log_base="build/store-screenshots-tablet"
+
+# Runs the test once for [locales…] into $PULLED/<locale>/; the test run's exit code.
+run_tests_for() {
+    local list="" captions="" l
+    for l in "$@"; do
+        list+="${list:+,}$l"
+        captions+="${captions:+,}$l:$(base64 -w0 "$LISTINGS/$l/screenshot_captions.txt")"
     done
-    printf '%3ds  %d of %d pictures' $((SECONDS - start)) $made $total
+    # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
+    rm -rf "$PULLED"
+    MODULE_TIMEOUT=$((300 * $#)) scripts/ui-tests.sh :app "${built[@]}" -c StoreScreenshots -a storeScreenshots="$list" \
+        -a storeCaptions="$captions" -a storeTablet=$tablet ${only:+-a storeShots="${SHOTS// /,}"} > "$log" 2>&1
+    local code=$?
+    grep -q "^build " "$log" && built=(--no-build)
+    return $code
+}
+
+# How many of this run's pictures [locale] got.
+made_for() {
+    local n made=0
+    for n in $SHOTS; do
+        [ -f "$PULLED/$1/store-$n.png" ] && made=$((made + 1))
+    done
+    echo $made
+}
+
+# Puts [locale]'s pictures where the store looks, or keeps its earlier ones when it didn't make them all.
+store_locale() {
+    local locale="$1" seconds="$2" made dest kept n
+    made="$(made_for "$locale")"
     dest="$LISTINGS/$locale/images/$FOLDER"
-    if [ $code != 0 ] || [ $made != $total ]; then
+    printf '%-6s %3ds  %d of %d pictures' "$locale" "$seconds" "$made" "$total"
+    if [ "$made" != "$total" ]; then
         # A language that failed keeps the pictures it had: an emptied folder made the next run of some
         # languages take GitHub's older set over this PC's newer ones (2026-11-08, the phone dropped off on zh-TW).
         kept="$(find "$dest" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)"
         echo "  FAILED, kept its $kept earlier pictures (log: $log)"
-        grep -E "FAIL|CRASH|TIMED OUT" "$log" | head -8
-        status=1
+        grep -E "FAIL|CRASH|TIMED OUT" "$log" | grep -F "$locale" | head -8
+        return 1
+    fi
+    # Some pictures: only theirs replaced. All: the folders afresh, so nothing of an older set is left.
+    [ -z "$only" ] && rm -rf "$dest" "$RAW/$locale"
+    mkdir -p "$dest" "$RAW/$locale"
+    for n in $SHOTS; do
+        cp "$PULLED/$locale/store-$n.png" "$dest/$n.png"
+    done
+    cp "$PULLED/$locale"/raw-*.png "$RAW/$locale/" 2>/dev/null
+    echo
+}
+
+todo=()
+for locale in "${locales[@]}"; do
+    if [ -f "$LISTINGS/$locale/screenshot_captions.txt" ]; then
+        todo+=("$locale")
     else
-        # Some pictures: only theirs replaced. All: the folders afresh, so nothing of an older set is left.
-        [ -z "$only" ] && rm -rf "$dest" "$RAW/$locale"
-        mkdir -p "$dest" "$RAW/$locale"
-        for n in $SHOTS; do
-            cp "$PULLED/store-$n.png" "$dest/$n.png"
-        done
-        cp "$PULLED"/raw-*.png "$RAW/$locale/" 2>/dev/null
-        echo
+        echo "$locale  no $LISTINGS/$locale/screenshot_captions.txt"
+        status=1
     fi
 done
-[ $status = 0 ] && [ $# -eq 0 ] && [ -z "$only" ] && echo "$made_at" > "build/$kind-screenshots.made-at"
+for ((i = 0; i < ${#todo[@]}; i += BATCH)); do
+    batch=("${todo[@]:i:BATCH}")
+    wait_cool
+    log="$log_base-${batch[0]}.log"
+    start=$SECONDS
+    run_tests_for "${batch[@]}"
+    code=$?
+    if [ $code -ge 3 ]; then
+        tail -3 "$log"
+        exit $code
+    fi
+    each=$(( (SECONDS - start) / ${#batch[@]} ))
+    # The languages that didn't make all their pictures, once more each on its own: the batch's log is kept.
+    again=()
+    for locale in "${batch[@]}"; do
+        [ "$(made_for "$locale")" = "$total" ] || again+=("$locale")
+    done
+    for locale in "${batch[@]}"; do
+        [[ " ${again[*]} " == *" $locale "* ]] || store_locale "$locale" $each || status=1
+    done
+    if [ ${#again[@]} -gt 0 ]; then
+        mv "$log" "$log.first"
+        # The batch's pictures of the others are stored already; each retry pulls its own.
+        for locale in "${again[@]}"; do
+            log="$log_base-$locale.log"
+            printf '(again) '
+            start=$SECONDS
+            run_tests_for "$locale"
+            code=$?
+            [ $code -ge 3 ] && { tail -3 "$log"; exit $code; }
+            store_locale "$locale" $((SECONDS - start)) || status=1
+        done
+    fi
+done
+# Every language: the pictures made get this commit in the note, each on its own line; a note of the old
+# kind, one line for the whole set, first becomes a line for each picture.
+if [ $status = 0 ] && [ $# -eq 0 ]; then
+    note="build/$kind-screenshots.made-at"
+    old="$(cat "$note" 2>/dev/null)"
+    if [ -n "$old" ] && ! grep -qE '^[1-8] ' <<< "$old"; then
+        old="$(for n in 1 2 3 4 5 6 7 8; do echo "$n $old"; done)"
+    fi
+    {
+        for n in $SHOTS; do echo "$n $made_at"; done
+        grep -vE "^(${SHOTS// /|}) " <<< "$old" | grep . || true
+    } | sort -n > "$note.new" && mv "$note.new" "$note"
+fi
 # Every picture made: share the set with the owner's other PC, but only pictures of what is on main: the shared
 # set is the store's, and a 2.0 branch's pictures in it would go out with 1.1's listing (2026-11-03, a v2 check of
 # one language replaced the shared English pictures).

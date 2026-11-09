@@ -181,7 +181,10 @@ moves on.
   (phone connected, about 80 seconds a language, 37 minutes for all; [docs/store-listing.md](../../../docs/store-listing.md)).
   They are no longer made every night (owner, 2026-10-30), so make them when `listing-changes` says
   the app's screens changed since they were made: `listing` refuses them then (it reads the commit
-  the last run of every language noted, `build/phone-screenshots.made-at`). Look them over as the
+  each picture was last made at, `build/phone-screenshots.made-at`), and names the command, often
+  `--shots` for only the pictures a change can alter. A pull request that touches the screens or the
+  screenshot test but can't change some pictures gets a line in `scripts/store-picture-scopes.txt`
+  (or `Store-pictures: <scope>` in its commit message); without one, every picture counts as changed. Look them over as the
   full-check skill says (*When store screenshots were made*) before asking to send. They are
   git-ignored, but a run that made them all shares them on GitHub, and `listing` first takes that set
   when it is newer than this PC's (`scripts/share-store-screenshots.sh`), so the owner can make them

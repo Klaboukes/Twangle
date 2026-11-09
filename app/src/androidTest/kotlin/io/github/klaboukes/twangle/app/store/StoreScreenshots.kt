@@ -85,14 +85,15 @@ import java.util.concurrent.TimeUnit
  *
  * Opt-in, as it only makes files and changes the phone's Twangle (its theme and settings are
  * left as the last picture had them; the app's language is put back): without the instrumentation
- * argument `storeScreenshots=<Play locale>` it has no cases at all. `storeCaptions` carries that
- * locale's `screenshot_captions.txt` in Base64 (the shell would mangle other scripts); `storeShots` ("6", "3,6")
- * makes only those pictures.
- * `scripts/store-screenshots.sh` passes both, one locale at a time, and puts the pictures where Play
- * and F-Droid look for them.
+ * argument `storeScreenshots=<Play locale>` it has no cases at all. Several locales, commas between, make each
+ * one's pictures in turn in one run, into a folder per locale (`<locale>/store-<n>.png`): one run per language cost
+ * about 15 s of start-up each (2026-11-09). `storeCaptions` carries each locale's `screenshot_captions.txt` as
+ * `<locale>:<Base64>`, commas between (Base64, as the shell would mangle other scripts); `storeShots` ("6", "3,6")
+ * makes only those pictures. `scripts/store-screenshots.sh` passes them, a few locales a run, and puts the
+ * pictures where Play and F-Droid look for them.
  */
 @RunWith(Parameterized::class)
-class StoreScreenshots(private val shot: Shot) {
+class StoreScreenshots(private val locale: String, private val shot: Shot) {
 
     /**
      * The eight screenshots of the plan, in its order, each in its theme, with the part of the
@@ -149,9 +150,8 @@ class StoreScreenshots(private val shot: Shot) {
     private val recorder = FixedSoundRecorder()
     private val metronome = FakeMetronomePlayer()
     private val arguments = InstrumentationRegistry.getArguments()
-    private val locale = arguments.getString(LOCALE_ARGUMENT).orEmpty()
     private val tablet = arguments.getString(TABLET_ARGUMENT).toBoolean()
-    private val out = File(arguments.getString(OUTPUT_DIR_ARGUMENT) ?: error("no $OUTPUT_DIR_ARGUMENT")).apply { mkdirs() }
+    private val out = File(File(arguments.getString(OUTPUT_DIR_ARGUMENT) ?: error("no $OUTPUT_DIR_ARGUMENT")), locale).apply { mkdirs() }
 
     @Before
     fun setUp() {
@@ -434,9 +434,10 @@ class StoreScreenshots(private val shot: Shot) {
         File(out, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    /** This locale's eight captions, from `storeCaptions` (Base64 of `screenshot_captions.txt`). */
+    /** This locale's eight captions, from `storeCaptions` (`<locale>:<Base64 of screenshot_captions.txt>`, commas between). */
     private fun captions(): List<String> {
-        val encoded = arguments.getString(CAPTIONS_ARGUMENT) ?: error("no $CAPTIONS_ARGUMENT")
+        val encoded = (arguments.getString(CAPTIONS_ARGUMENT) ?: error("no $CAPTIONS_ARGUMENT")).split(',')
+            .firstOrNull { it.substringBefore(':') == locale }?.substringAfter(':') ?: error("no captions for $locale")
         return String(Base64.decode(encoded, Base64.DEFAULT), Charsets.UTF_8).replace("\r\n", "\n").trimEnd().lines()
     }
 
@@ -516,13 +517,15 @@ class StoreScreenshots(private val shot: Shot) {
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun shots(): List<Shot> {
+        @Parameterized.Parameters(name = "{0} {1}")
+        fun shots(): List<Array<Any>> {
             val arguments = InstrumentationRegistry.getArguments()
-            if (arguments.getString(LOCALE_ARGUMENT).isNullOrBlank()) return emptyList()
+            val locales = arguments.getString(LOCALE_ARGUMENT).orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }
             // Only these pictures, by number ("6" or "3,6"), so one changed picture needs no run of all eight.
             val only = arguments.getString(SHOTS_ARGUMENT).orEmpty().split(',').mapNotNull { it.trim().toIntOrNull() }
-            return if (only.isEmpty()) Shot.entries else Shot.entries.filter { it.number in only }
+            val shots = if (only.isEmpty()) Shot.entries else Shot.entries.filter { it.number in only }
+            // A locale's pictures one after another, so its language is set once.
+            return locales.flatMap { locale -> shots.map { arrayOf<Any>(locale, it) } }
         }
 
         /** The app's language before the first picture, put back after the last. */
@@ -560,7 +563,7 @@ class StoreScreenshots(private val shot: Shot) {
             }
         }
 
-        /** The instrumentation argument that turns the screenshots on: the Play locale, e.g. `nl-NL`. */
+        /** The instrumentation argument that turns the screenshots on: the Play locales, e.g. `nl-NL` or `nl-NL,de-DE`. */
         const val LOCALE_ARGUMENT = "storeScreenshots"
         const val CAPTIONS_ARGUMENT = "storeCaptions"
 

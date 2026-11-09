@@ -1,0 +1,14 @@
+# Which store pictures a change can alter, for scripts/release.sh listing (docs/store-listing.md, *Phone screenshots*).
+# A change to what the pictures show (SCREENSHOT_SOURCES in release.sh: the app's screens, the screenshot test, the
+# captions) counts for every picture of both sets, unless its pull request is listed here or its commit message says
+# so itself in a line "Store-pictures: <scope>". Listed here, a pull request can be judged after it was merged.
+#
+# One scope a line, a pull request on as many lines as it needs (any of them counts): "none", "phone" or "tablet",
+# picture numbers, or a set and numbers ("tablet 6"); numbers alone mean both sets. Say why after the scope, and when
+# unsure leave the pull request out: then every picture is made again.
+#
+#747 tablet   the tablet's navigation-bar scrim kept out: on the phones the upright canvas fits above the bar either way
+#747 3        ...but the microphone prompt's screen, drawn at the phone's full size, may take the other path (the same picture)
+#748 6        the chord picture waits until Listen named the A minor
+#749 none     --shots (which pictures a run makes), nothing a picture shows
+#751 none     the test makes several locales a run, into a folder each: the same pictures

@@ -52,6 +52,9 @@ cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
+# UI_TESTS_TAG=<name>: this run's logs and pulled files get "-<name>" in their names, so runs on two devices at once
+# (scripts/store-screenshots.sh, a phone and a tablet) keep apart.
+TAG="${UI_TESTS_TAG:+-$UI_TESTS_TAG}"
 # The languages a daytime --languages run checks: twangle.dayLanguages in gradle.properties (en,nl),
 # the ones written by day, as language tags (pt-rBR -> pt-BR, b+zh+Hant -> zh-Hant). The full check checks all.
 DAY_LANGUAGES="${DAY_LANGUAGES:-$(sed -n 's/^twangle\.dayLanguages=//p' gradle.properties | sed 's/-r/-/g; s/b+//g; s/+/-/g')}"
@@ -503,7 +506,7 @@ for module in "${modules[@]}"; do
     start=$SECONDS
     failed=0
     dir="$(dir_of "$module")"
-    log="build/ui-tests${module//:/-}.log"
+    log="build/ui-tests${module//:/-}$TAG.log"
     package="$(test_package "$module")"
     printf '%-18s ' "$module"
     apk="$(find "$dir/build/outputs/apk/androidTest/debug" -name '*.apk' -print -quit 2>/dev/null)"
@@ -544,7 +547,7 @@ for module in "${modules[@]}"; do
         for name in $(test_classes "$module"); do
             wait_cool
             printf '  %-28s ' "$name"
-            run_tests "$module" "$package" "$runner" "build/ui-tests${module//:/-}-$name.log" \
+            run_tests "$module" "$package" "$runner" "build/ui-tests${module//:/-}-$name$TAG.log" \
                 "${args[@]}" -e class "$(qualify "$module" "$name")" || failed=1
         done
     else
@@ -557,7 +560,7 @@ for module in "${modules[@]}"; do
     fi
     if [ $failed = 0 ]; then note_pass "$module"; else status=1; fi
     if [ -n "$(adb shell ls "$outdir" 2>/dev/null | tr -d '\r')" ]; then
-        pulled="$dir/build/outputs/connected_android_test_additional_output"
+        pulled="$dir/build/outputs/connected_android_test_additional_output$TAG"
         rm -rf "$pulled" && mkdir -p "$pulled"
         adb pull "$outdir/." "$pulled" > /dev/null 2>&1
     fi
