@@ -15,7 +15,7 @@ The owner takes turns between the two for the full check. UI tests give the same
 - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
 
 ## Tablet
-**Lenovo Tab M11**, the owner's tablet, for the tablet checks (adb serial `HA244V49`, model TB330FU, Android 15 / API 35 with Lenovo's ZUI 17, 800 × 1280 dp at 240 dpi, 90 Hz, three navigation buttons in a taskbar along the bottom). The owner keeps its text size at 130 % and its screen on its side: leave both. `:app:installDebug` and the UI tests need no app-op like the Xiaomi's, but Play Protect may ask about an install (*Every device* below).
+**Lenovo Tab M11**, the owner's tablet, for the tablet checks (adb serial `HA244V49`, model TB330FU, Android 15 / API 35 with Lenovo's ZUI 17, 800 × 1280 dp at 240 dpi, 90 Hz, three navigation buttons in a taskbar along the bottom). The owner keeps its text size at 130 % and its screen on its side. A run of UI tests (the full check) may set the text size to 100 % for the run and must put 130 % back after it (owner, 2026-11-09: test dialogs take the device's text size); the rotation the scripts put back themselves. `:app:installDebug` and the UI tests need no app-op like the Xiaomi's, but Play Protect may ask about an install (*Every device* below).
 
 ## Watch
 **Samsung Galaxy Watch 5**, the owner's watch, for real-watch checks of `:wear` (model SM-R900, Wear OS 5 / API 34, 396 px round at 320 dpi ≈ 198 dp, smaller than the emulator's 227 dp; set up 2026-10-30).

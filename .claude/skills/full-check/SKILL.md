@@ -29,7 +29,7 @@ gh run list --branch main --limit 3          # a failed nightly run is fixed fir
 "$ADB" devices                                # the phone (f813c98c or R3GL502L08P) "device"; the watch too, when left on
 export ANDROID_SERIAL=<a phone's serial>      # for these checks only (each device in turn): the run picks its devices itself
 "$ADB" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
-"$ADB" shell settings get system font_scale   # 1.0
+"$ADB" shell settings get system font_scale   # 1.0; the tablet's 1.3 (the owner's) is set to 1.0 for the run and put back after (devices.md)
 "$ADB" shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
 ```
 - The script keeps Windows awake while it runs (a sleeping PC drops the phone: on 2026-10-19 it
