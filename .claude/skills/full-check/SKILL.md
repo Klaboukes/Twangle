@@ -157,7 +157,10 @@ For each failure decide first: **app bug or outdated test?**
   Scripts Nunito lacks (Burmese, Arabic's digits) are drawn in the phone's own fallback font, which differs by
   maker: the tablet has stock Android's, much taller than the Xiaomi's, so a failure on the tablet only is often
   a real bug the Xiaomi's fonts hide (2026-11-09: Burmese's word lines past their slots; Arabic's tempo dropping
-  its last digit). A test stuck for many minutes on one screen is the screen never settling: a dump of the test
+  its last digit). But not always: a text whose words change in place (a test switching the language without
+  making the screen anew) can keep its old line height there, which the app never shows, as its language change
+  makes the screen anew; a probe that makes the screen anew (`key(locale)`) tells which (the About row after
+  Hungarian, 2026-11-09). A test stuck for many minutes on one screen is the screen never settling: a dump of the test
   process's threads (`adb shell run-as <test package> kill -3 <pid>`, then `adb bugreport` for `FS/data/anr/`)
   shows where.
 - After a fix run only the failed tests and their area. Land nothing with a red test. A red test on one device

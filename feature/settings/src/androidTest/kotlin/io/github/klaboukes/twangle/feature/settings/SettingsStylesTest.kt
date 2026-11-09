@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.settings
 
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -71,11 +72,15 @@ class SettingsStylesTest {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf<String?>(null)
 
-    /** Settings or, with [about], the About page. */
+    /**
+     * Settings or, with [about], the About page, made anew for each language as the app's own language change
+     * makes the screen anew: a text whose words change in place can keep its old height (Compose's text, on stock
+     * Android: the About row's title, 63 px after Hungarian where Burmese's line is 93, the full check of 2026-11-09).
+     */
     private fun show(about: Boolean = false) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
-                TwangleTheme(darkTheme = shownDark.value, animate = false) {
+                TwangleTheme(darkTheme = shownDark.value, animate = false) { key(shownLocale.value) {
                     if (about) {
                         AboutScreen(appVersion = VERSION, onOpenWebsite = {}, onRate = {}, onBack = {}, modifier = Modifier.testTag(WINDOW))
                     } else {
@@ -98,7 +103,7 @@ class SettingsStylesTest {
                             dynamicColorAvailable = true,
                         )
                     }
-                }
+                } }
             }
         }
     }
