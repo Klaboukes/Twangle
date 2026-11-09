@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -100,6 +101,7 @@ internal fun TempoHeading(
     val locale = appLocale()
     val widest = localDigits(ClickTrack.MAX_BPM, locale)
     val allDigits = (0..9).joinToString("") { localDigits(it, locale) }
+    val spacing = figuresSpacing(allDigits)
     val fonts = LocalFontFamilyResolver.current
     val accent = scheme.primary
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -108,10 +110,10 @@ internal fun TempoHeading(
             val across = maxWidth - (STEP_TOUCH + STEP_GAP) * 2
             val wordsHeight = WORDS_SIZE * WORDS_LINE * density.fontScale.coerceAtMost(MAX_WORDS_SCALE)
             val down = (room - wordsHeight - WORDS_GAP).coerceIn(FIGURES_SMALLEST, FIGURES_LARGEST)
-            val figures = remember(widest, allDigits, across, down, density, fonts) {
+            val figures = remember(widest, allDigits, spacing, across, down, density, fonts) {
                 // The figures' size in dp: as tall as [down] allows, as wide as [across] allows, and their ink no
                 // taller than [down] either (Myanmar's ၂ hangs far below the line).
-                val probe = TextStyle(fontFamily = NumberFont, fontSize = with(density) { 100.dp.toSp() }, fontWeight = FIGURES_WEIGHT, letterSpacing = FIGURES_SPACING, fontFeatureSettings = "$LINING_FIGURES, tnum")
+                val probe = TextStyle(fontFamily = NumberFont, fontSize = with(density) { 100.dp.toSp() }, fontWeight = FIGURES_WEIGHT, letterSpacing = spacing, fontFeatureSettings = "$LINING_FIGURES, tnum")
                 val width = with(density) { measurer.measure(widest, probe).size.width.toDp() }
                 // The digits' ink, from the face and the phone's fallback for the script, at the probe's 100 dp.
                 val ink = Rect()
@@ -130,7 +132,7 @@ internal fun TempoHeading(
                 lineHeight = with(density) { figures.size.toSp() },
                 lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
                 fontWeight = FIGURES_WEIGHT,
-                letterSpacing = FIGURES_SPACING,
+                letterSpacing = spacing,
                 fontFeatureSettings = "$LINING_FIGURES, tnum",
                 textAlign = TextAlign.Center,
                 color = scheme.onBackground,
@@ -255,6 +257,16 @@ private val FIGURES_SMALLEST = 56.dp
 
 /** The figures stand a little closer together, as the mock-up's (−0.05 em). */
 private val FIGURES_SPACING = (-0.04).em
+
+/**
+ * [FIGURES_SPACING] for the bundled face's Latin digits; none for [digits] the phone's fallback font
+ * draws (Arabic, Bengali, Burmese...). With letter spacing Android measures such a run a little wider
+ * when it breaks the line than when it sizes the text, so the tempo's text, as wide as it said it
+ * needs, broke before its last digit and the one line it may have hid it: 120 showed as "١٢" on the
+ * Lenovo tablet's stock Arabic font (2026-11-09). The spacing did not even show on those digits.
+ */
+private fun figuresSpacing(digits: String): TextUnit =
+    if (digits.all { it in '0'..'9' }) FIGURES_SPACING else TextUnit.Unspecified
 
 /** Bold, a step under the mock-up's extra bold: in Nunito that read too heavy (owner, 2026-11-05). */
 private val FIGURES_WEIGHT = FontWeight.Bold
