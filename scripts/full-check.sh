@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
-# The full check: the watch app's tests on the watch when one is connected, every on-device UI test
+# The full check: the watch app's tests on the watch when one is connected, a smoke test of the release
+# build on the phone (scripts/release-smoke.sh: the UI tests run the debug build, which R8 never touches), every on-device UI test
 # (in Ink, light and dark), the screens' tests again in the high-contrast look (its light and dark, Phase
 # 86), then every language at 2× text, kept cool, with one summary at the end. Run it while nobody
 # needs the phone. See
 # .claude/skills/full-check/SKILL.md.
 #
-#   scripts/full-check.sh             the watch, the sweep, high contrast and the languages
+#   scripts/full-check.sh             the watch, the release build, the sweep, high contrast and the languages
 #   scripts/full-check.sh --watch     only the watch app's tests, on the watch
+#   scripts/full-check.sh --release-build  only the release build's smoke test (start, leave, turn; ~4 min)
 #   scripts/full-check.sh --sweep     only the thorough sweep of every module
 #   scripts/full-check.sh --contrast  only the high-contrast pass (the screens' modules)
 #   scripts/full-check.sh --languages only the every-language checks
 #   scripts/full-check.sh --store     only the Play Store screenshots (scripts/store-screenshots.sh)
 #   scripts/full-check.sh --full ...  the languages of every module, none skipped
 #   scripts/full-check.sh --dry-run   only say which every-language checks would run (no phone)
-# (--watch, --sweep, --contrast, --languages and --store may be combined.)
+# (--watch, --release-build, --sweep, --contrast, --languages and --store may be combined.)
 #
 # The every-language checks of a module that passed whole are noted at that commit, like a
 # module's pass (scripts/ui-tests.sh): build/ui-tests-passed/languages/feature-tuner holds
@@ -25,7 +27,7 @@
 # owner, 2026-10-30: skip what hasn't changed, and make the store screenshots only before a listing is
 # sent (scripts/release.sh listing refuses screenshots older than the app's screens), not every run.
 #
-# Logs go to build/full-check/ (sweep.txt, contrast.txt, languages.txt, store.txt, summary.txt); pictures of screens
+# Logs go to build/full-check/ (watch.txt, release-build.txt, sweep.txt, contrast.txt, languages.txt, store.txt, summary.txt); pictures of screens
 # where a language didn't fit go to each module's build/outputs/connected_android_test_additional_output,
 # the store screenshots to fastlane/metadata/android/<locale>/images/phoneScreenshots/. Each module the
 # sweep passes is noted as passed at this commit (scripts/ui-tests.sh, --since-pass), for the release.
@@ -54,20 +56,21 @@ read -ra CONTRAST_MODULES <<<"${CONTRAST_MODULES:-:feature:tuner :feature:settin
 
 LANGUAGES_MAX_AGE_DAYS="${LANGUAGES_MAX_AGE_DAYS:-7}"
 
-watch=0 sweep=0 contrast=0 languages=0 store=0 full=0 dry_run=0 picked=0
+watch=0 release_build=0 sweep=0 contrast=0 languages=0 store=0 full=0 dry_run=0 picked=0
 for arg in "$@"; do
     case "$arg" in
         --watch) watch=1 picked=1 ;;
+        --release-build) release_build=1 picked=1 ;;
         --sweep) sweep=1 picked=1 ;;
         --contrast) contrast=1 picked=1 ;;
         --languages) languages=1 picked=1 ;;
         --store) store=1 picked=1 ;;
         --full) full=1 ;;
         --dry-run) dry_run=1 ;;
-        *) sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+        *) sed -n '2,39p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
     esac
 done
-[ $picked = 1 ] || { watch=1; sweep=1; contrast=1; languages=1; }
+[ $picked = 1 ] || { watch=1; release_build=1; sweep=1; contrast=1; languages=1; }
 mkdir -p "$OUT"
 
 # Where the passes of the every-language checks are noted: next to the modules' (scripts/ui-tests.sh),
@@ -100,6 +103,7 @@ languages_still_good() {
 if [ $dry_run = 1 ]; then
     rm -f "$OUT"/reached-*.txt
     echo "Records in ${OUT#"$ROOT"/}/."
+    [ $release_build = 1 ] && echo "release build: start, leave, turn, on the phone (scripts/release-smoke.sh)"
     [ $sweep = 1 ] && echo "sweep: every module, Ink light and dark (scripts/ui-tests.sh --all --thorough --cool)"
     [ $contrast = 1 ] && echo "high contrast, light and dark: ${CONTRAST_MODULES[*]} (scripts/ui-tests.sh --high-contrast --thorough --cool)"
     would=0
@@ -191,6 +195,13 @@ if [ $watch = 1 ]; then
         fi
     fi
 fi
+if [ $release_build = 1 ]; then
+    # Before the sweep, which puts its own debug build on anyway.
+    logs+=("$OUT/release-build.txt")
+    echo "== The release build: start, leave, turn ($(date +%H:%M))" | tee "$OUT/release-build.txt"
+    scripts/release-smoke.sh 2>&1 | tee -a "$OUT/release-build.txt"
+    [ "${PIPESTATUS[0]}" = 0 ] || status=1
+fi
 if [ $sweep = 1 ]; then
     logs+=("$OUT/sweep.txt")
     echo "== Thorough sweep of every module ($(date +%H:%M))" | tee "$OUT/sweep.txt"
@@ -242,9 +253,9 @@ tested="at $(git rev-parse --short HEAD)"
 {
     echo "Full check: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
     [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module checks ran; $skipped passed earlier with nothing they show changed since"
-    [ $sweep = 1 ] || [ $contrast = 1 ] || [ $languages = 1 ] || [ $store = 1 ] && echo "Phone: the $phone_name"
+    [ $release_build = 1 ] || [ $sweep = 1 ] || [ $contrast = 1 ] || [ $languages = 1 ] || [ $store = 1 ] && echo "Phone: the $phone_name"
     [ $watch = 1 ] && echo "Watch: $watch_result"
-    cat "${logs[@]}" 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off" || true
+    cat "${logs[@]}" 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off|crashed or stopped|didn't install|is locked" || true
 } > "$OUT/summary.txt"
 cat "$OUT/summary.txt"
 exit $status

@@ -66,7 +66,11 @@ export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run p
 scripts/full-check.sh --dry-run                     # which language checks this run does (no phone)
 scripts/full-check.sh > build/full-check.txt 2>&1   # in the background, ~45 min (less when little changed)
 ```
-It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
+It starts with a smoke test of the release build on the phone (`scripts/release-smoke.sh`, about 4
+minutes: R8's build started, left with Home, started again, turned on its side and back; the UI tests
+run the debug build, which missed 2.1's crash on Android 13, 2026-11-09). A crash there is an app bug:
+its log (`build/full-check/release-build.txt`) has the stack; reproduce it with the same script.
+Then it runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
 time, waiting while the phone is 37 °C or warmer; 1.1's six styles took about 55 minutes, 2.0's one
 look about 16 minutes, 2026-11-05), then the screens' modules again in the high-contrast look
 (`scripts/ui-tests.sh <the six screen modules> --high-contrast --thorough --cool`, its white on black and

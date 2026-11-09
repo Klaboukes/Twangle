@@ -89,7 +89,8 @@ put_back() {
 trap put_back EXIT
 
 # A run of only some languages keeps this PC's pictures of the others: first take the latest set shared
-# on GitHub, so what it shares afterwards is no older than what the other PC made (share-store-screenshots.sh).
+# on GitHub when it is newer (or the languages this PC lacks), so what it shares afterwards is no older than
+# what the other PC made (share-store-screenshots.sh).
 kind=phone
 [ "$tablet" = true ] && kind=tablet
 [ $# -gt 0 ] && scripts/share-store-screenshots.sh pull $kind
@@ -127,23 +128,29 @@ for locale in "${locales[@]}"; do
             tail -3 "$log"
             exit $code
         fi
-        dest="$LISTINGS/$locale/images/$FOLDER"
-        rm -rf "$dest" "$RAW/$locale"
-        mkdir -p "$dest" "$RAW/$locale"
         made=0
         for n in $SHOTS; do
-            [ -f "$PULLED/store-$n.png" ] && cp "$PULLED/store-$n.png" "$dest/$n.png" && made=$((made + 1))
+            [ -f "$PULLED/store-$n.png" ] && made=$((made + 1))
         done
-        cp "$PULLED"/raw-*.png "$RAW/$locale/" 2>/dev/null
         [ $code = 0 ] && [ $made = $total ] && break
         [ $attempt = 1 ] && mv "$log" "$log.first" && printf '(again) '
     done
     printf '%3ds  %d of %d pictures' $((SECONDS - start)) $made $total
+    dest="$LISTINGS/$locale/images/$FOLDER"
     if [ $code != 0 ] || [ $made != $total ]; then
-        echo "  FAILED (log: $log)"
+        # A language that failed keeps the pictures it had: an emptied folder made the next run of some
+        # languages take GitHub's older set over this PC's newer ones (2026-11-08, the phone dropped off on zh-TW).
+        kept="$(find "$dest" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)"
+        echo "  FAILED, kept its $kept earlier pictures (log: $log)"
         grep -E "FAIL|CRASH|TIMED OUT" "$log" | head -8
         status=1
     else
+        rm -rf "$dest" "$RAW/$locale"
+        mkdir -p "$dest" "$RAW/$locale"
+        for n in $SHOTS; do
+            cp "$PULLED/store-$n.png" "$dest/$n.png"
+        done
+        cp "$PULLED"/raw-*.png "$RAW/$locale/" 2>/dev/null
         echo
     fi
 done
