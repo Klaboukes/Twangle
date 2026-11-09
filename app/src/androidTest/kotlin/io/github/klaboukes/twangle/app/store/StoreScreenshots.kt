@@ -86,7 +86,8 @@ import java.util.concurrent.TimeUnit
  * Opt-in, as it only makes files and changes the phone's Twangle (its theme and settings are
  * left as the last picture had them; the app's language is put back): without the instrumentation
  * argument `storeScreenshots=<Play locale>` it has no cases at all. `storeCaptions` carries that
- * locale's `screenshot_captions.txt` in Base64 (the shell would mangle other scripts).
+ * locale's `screenshot_captions.txt` in Base64 (the shell would mangle other scripts); `storeShots` ("6", "3,6")
+ * makes only those pictures.
  * `scripts/store-screenshots.sh` passes both, one locale at a time, and puts the pictures where Play
  * and F-Droid look for them.
  */
@@ -516,8 +517,13 @@ class StoreScreenshots(private val shot: Shot) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun shots(): List<Shot> =
-            if (InstrumentationRegistry.getArguments().getString(LOCALE_ARGUMENT).isNullOrBlank()) emptyList() else Shot.entries
+        fun shots(): List<Shot> {
+            val arguments = InstrumentationRegistry.getArguments()
+            if (arguments.getString(LOCALE_ARGUMENT).isNullOrBlank()) return emptyList()
+            // Only these pictures, by number ("6" or "3,6"), so one changed picture needs no run of all eight.
+            val only = arguments.getString(SHOTS_ARGUMENT).orEmpty().split(',').mapNotNull { it.trim().toIntOrNull() }
+            return if (only.isEmpty()) Shot.entries else Shot.entries.filter { it.number in only }
+        }
 
         /** The app's language before the first picture, put back after the last. */
         private var languageBefore: String? = null
@@ -557,6 +563,9 @@ class StoreScreenshots(private val shot: Shot) {
         /** The instrumentation argument that turns the screenshots on: the Play locale, e.g. `nl-NL`. */
         const val LOCALE_ARGUMENT = "storeScreenshots"
         const val CAPTIONS_ARGUMENT = "storeCaptions"
+
+        /** Only these pictures, by number, commas between (`scripts/store-screenshots.sh --shots`); all eight without it. */
+        const val SHOTS_ARGUMENT = "storeShots"
 
         /** `true` makes the 10-inch tablet set (on a tablet only). */
         const val TABLET_ARGUMENT = "storeTablet"

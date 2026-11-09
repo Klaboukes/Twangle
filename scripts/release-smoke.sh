@@ -70,6 +70,7 @@ if ! timeout 300 "$ADB_EXE" install -g "$apk" >> "$LOG" 2>&1; then
     echo "FAILED: the release-type build didn't install (log: $LOG)"
     exit 1
 fi
+dismiss_play_protect $PKG
 adb shell cmd package compile -m speed -f $PKG > /dev/null
 
 adb logcat -b crash -b events -c

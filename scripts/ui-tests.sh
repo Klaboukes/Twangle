@@ -412,17 +412,35 @@ ms_since_screen_off() {
     adb shell dumpsys power 2>/dev/null | tr -d '\r' | sed -n 's/.*mLastSleepTime=[0-9-]* (\([0-9]*\) ms ago).*/\1/p' | head -1
 }
 
-# Installs an APK (relative path); prints why not on failure. A package signed by the owner's other
-# machine (INSTALL_FAILED_UPDATE_INCOMPATIBLE) is uninstalled and installed again, the owner's rule:
-# on 2026-10-26 it failed every install of the overnight run.
+# Whether [package] on the device is this very APK (relative path), byte for byte: then installing it
+# again changes nothing. A run per language (scripts/store-screenshots.sh) installed the same two APKs
+# 36 times, and on the tablet each install brought Play Protect's prompt up (2026-11-09).
+installed_already() {
+    local path there here
+    path="$(adb shell pm path "$2" 2>/dev/null | tr -d '\r' | sed -n 's/^package://p')"
+    # Not installed, or in parts (ours are single APKs).
+    [ -n "$path" ] && [ "$(wc -l <<< "$path")" -eq 1 ] || return 1
+    there="$(adb shell sha256sum "$path" 2>/dev/null | tr -d '\r' | cut -d' ' -f1)"
+    here="$(sha256sum "$1" | cut -d' ' -f1)"
+    [ -n "$there" ] && [ "$there" = "$here" ]
+}
+
+# Installs an APK (relative path) as [package], unless the device has that very APK already; prints
+# why not on failure. A package signed by the owner's other machine (INSTALL_FAILED_UPDATE_INCOMPATIBLE)
+# is uninstalled and installed again, the owner's rule: on 2026-10-26 it failed every install of the
+# overnight run.
 install_apk() {
     local out package
-    out="$(adb install -r -t -g "$1" 2>&1)" && return 0
+    installed_already "$1" "$2" && return 0
+    if out="$(adb install -r -t -g "$1" 2>&1)"; then
+        dismiss_play_protect "$2"
+        return 0
+    fi
     package="$(echo "$out" | tr -d '\r' | sed -n 's/.*INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package \([^ ]*\) signatures.*/\1/p' | head -1)"
     if [ -n "$package" ]; then
         echo "$package was signed on the other machine: uninstalling it" >&2
         adb uninstall "$package" > /dev/null 2>&1
-        out="$(adb install -r -t -g "$1" 2>&1)" && return 0
+        out="$(adb install -r -t -g "$1" 2>&1)" && { dismiss_play_protect "$2"; return 0; }
     fi
     echo "could not install $1: $(echo "$out" | tr -d '\r' | grep -E 'Failure|INSTALL_|error' | head -1)"
     return 1
@@ -495,9 +513,9 @@ for module in "${modules[@]}"; do
         continue
     fi
     if [ "$module" = ":app" ] || [ "$module" = ":wear" ]; then
-        install_apk "$(find "$dir/build/outputs/apk/debug" -name '*.apk' -print -quit)" || { status=1; continue; }
+        install_apk "$(find "$dir/build/outputs/apk/debug" -name '*.apk' -print -quit)" "${package%.test}" || { status=1; continue; }
     fi
-    install_apk "$apk" || { status=1; continue; }
+    install_apk "$apk" "$package" || { status=1; continue; }
     wake_phone
     runner="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:\($package/[^ ]*\) .*|\1|p" | head -1)"
 

@@ -11,6 +11,8 @@
 #
 #   scripts/store-screenshots.sh                 every language (before a listing is sent; ~80 s a language, built once)
 #   scripts/store-screenshots.sh en-US nl-NL     only these Play locales
+#   scripts/store-screenshots.sh --shots 6 [locale…]   only these pictures (by number, "3,6" for two), the others kept:
+#                                                when one picture changed (~25 s a picture a language instead of ~2 min)
 #
 # The finished pictures go where fastlane and F-Droid look for them,
 #   fastlane/metadata/android/<locale>/images/phoneScreenshots/1.png ... 8.png
@@ -36,6 +38,13 @@ FOLDER=phoneScreenshots
 # The tablet set's pictures, by caption number (StoreScreenshots.Shot.onTablet).
 TABLET_SHOTS="1 2 3 4 5 6 7 8"
 
+# --shots: only these pictures, each language's others kept as they are.
+only=""
+if [ "${1:-}" = "--shots" ]; then
+    only="${2:-}"
+    [[ "$only" =~ ^[1-8](,[1-8])*$ ]] || { echo "usage: scripts/store-screenshots.sh [--shots <n>[,<n>…]] [locale…]" >&2; exit 2; }
+    shift 2
+fi
 if [ $# -gt 0 ]; then
     locales=("$@")
 else
@@ -74,6 +83,11 @@ if [[ "${size_w:-}" =~ ^[0-9]+$ && "${size_h:-}" =~ ^[0-9]+$ && "${density:-}" =
     RAW=build/store-screenshots-tablet
     echo "A tablet: the 10-inch tablet set ($(echo $SHOTS | wc -w) pictures a language, to images/$FOLDER/)."
 fi
+if [ -n "$only" ]; then
+    SHOTS="$(for n in ${only//,/ }; do [[ " $SHOTS " == *" $n "* ]] && echo $n; done | sort -nu | paste -sd ' ')"
+    [ -n "$SHOTS" ] || { echo "None of pictures $only is in this device's set." >&2; exit 2; }
+    echo "Only pictures $SHOTS (the others kept)."
+fi
 total="$(echo $SHOTS | wc -w)"
 
 # The test changes the device's text size and Twangle's own language and puts them back; a test that
@@ -93,13 +107,13 @@ trap put_back EXIT
 # what the other PC made (share-store-screenshots.sh).
 kind=phone
 [ "$tablet" = true ] && kind=tablet
-[ $# -gt 0 ] && scripts/share-store-screenshots.sh pull $kind
+{ [ $# -gt 0 ] || [ -n "$only" ]; } && scripts/share-store-screenshots.sh pull $kind
 
 mkdir -p build "$RAW"
 # The app these pictures show: after a run of every language, build/<kind>-screenshots.made-at says at
 # which commit, and whether from uncommitted changes, so scripts/release.sh listing can refuse pictures
 # older than the app's screens (made before a listing is sent since 2026-10-30, not every night).
-# Shared on GitHub with the pictures (share-store-screenshots.sh). A run of some languages leaves it.
+# Shared on GitHub with the pictures (share-store-screenshots.sh). A run of some languages or pictures leaves it.
 made_at="$(git rev-parse HEAD) $([ -z "$(git status --porcelain)" ] && echo clean || echo uncommitted) $(date '+%Y-%m-%d %H:%M')"
 status=0
 # Built on the first language, the same tests for the rest (--no-build: 22 s less a language, 2026-11-06).
@@ -121,7 +135,7 @@ for locale in "${locales[@]}"; do
     for attempt in 1 2; do
         # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
         rm -rf "$PULLED"
-        scripts/ui-tests.sh :app "${built[@]}" -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet > "$log" 2>&1
+        scripts/ui-tests.sh :app "${built[@]}" -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet ${only:+-a storeShots="${SHOTS// /,}"} > "$log" 2>&1
         code=$?
         grep -q "^build " "$log" && built=(--no-build)
         if [ $code -ge 3 ]; then
@@ -145,7 +159,8 @@ for locale in "${locales[@]}"; do
         grep -E "FAIL|CRASH|TIMED OUT" "$log" | head -8
         status=1
     else
-        rm -rf "$dest" "$RAW/$locale"
+        # Some pictures: only theirs replaced. All: the folders afresh, so nothing of an older set is left.
+        [ -z "$only" ] && rm -rf "$dest" "$RAW/$locale"
         mkdir -p "$dest" "$RAW/$locale"
         for n in $SHOTS; do
             cp "$PULLED/store-$n.png" "$dest/$n.png"
@@ -154,7 +169,7 @@ for locale in "${locales[@]}"; do
         echo
     fi
 done
-[ $status = 0 ] && [ $# -eq 0 ] && echo "$made_at" > "build/$kind-screenshots.made-at"
+[ $status = 0 ] && [ $# -eq 0 ] && [ -z "$only" ] && echo "$made_at" > "build/$kind-screenshots.made-at"
 # Every picture made: share the set with the owner's other PC, but only pictures of what is on main: the shared
 # set is the store's, and a 2.0 branch's pictures in it would go out with 1.1's listing (2026-11-03, a v2 check of
 # one language replaced the shared English pictures).

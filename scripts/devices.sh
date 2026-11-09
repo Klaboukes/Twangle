@@ -47,3 +47,30 @@ first_device() {
 device_name() {
     echo "$(adb -s "$1" shell getprop ro.product.manufacturer < /dev/null 2>/dev/null | tr -d '\r') $(adb -s "$1" shell getprop ro.product.model < /dev/null 2>/dev/null | tr -d '\r') ($1)"
 }
+
+# Play Protect asks "Send app for a security check?" a few seconds after an app from this PC is installed (the
+# tablet, each install; docs/devices.md), and its dialog covers the screen of what runs next (scripts/ui-tests.sh,
+# scripts/release-smoke.sh). The owner's standing rule is Don't send: so after an install this watches for the
+# dialog for PROTECT_WAIT seconds and taps that button, never another.
+# A dialog in another language than English is left, and said so. Its adb calls read no stdin (see first_device).
+PROTECT_WAIT="${PROTECT_WAIT:-10}"
+dismiss_play_protect() {
+    local end=$((SECONDS + PROTECT_WAIT)) dump bounds
+    while [ $SECONDS -lt $end ]; do
+        if adb shell dumpsys window < /dev/null 2>/dev/null | tr -d '\r' | grep -m1 mCurrentFocus | grep -q PlayProtectDialogsActivity; then
+            adb shell uiautomator dump /sdcard/twangle-ui.xml < /dev/null > /dev/null 2>&1
+            dump="$(adb exec-out cat /sdcard/twangle-ui.xml < /dev/null 2>/dev/null)"
+            bounds="$(tr '>' '\n' <<< "$dump" | grep "text=\"Don't send\"" | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p' | head -1)"
+            if [ -z "$bounds" ]; then
+                echo "Play Protect's dialog is up but has no \"Don't send\" (another language?): tap it on the device" >&2
+                return 1
+            fi
+            read -r x1 y1 x2 y2 <<< "$bounds"
+            adb shell input tap $(( (x1 + x2) / 2 )) $(( (y1 + y2) / 2 )) < /dev/null
+            echo "Play Protect asked to check $1: tapped Don't send" >&2
+            sleep 1
+            return 0
+        fi
+        sleep 0.5
+    done
+}
