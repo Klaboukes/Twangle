@@ -1,0 +1,6 @@
+- Vysoký kontrast: černobílé se silnějšími čarami (Nastavení, Vzhled).
+- Vibrační navádění: ťuknutí ti řeknou, kterým směrem otočit, na telefonu i na hodinkách (Nastavení, Při ladění).
+- Se zapnutým TalkBack už ladička neslyší jeho hlas a každý tón řekne jen jednou.
+- Mikrofon teď funguje na více telefonech.
+- Kontrola brnknutím: rozladěné struny se ukážou jantarově.
+- O 11 jazyků víc, celkem 36.

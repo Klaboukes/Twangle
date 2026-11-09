@@ -1,0 +1,6 @@
+- Contrasto elevato: bianco e nero con linee più spesse (Impostazioni, Aspetto).
+- Guida a vibrazione: brevi colpetti ti dicono da che parte girare, sul telefono e sull'orologio (Impostazioni, Mentre accordi).
+- Con TalkBack l'accordatore non sente più la voce di TalkBack e dice ogni nota una sola volta.
+- Il microfono ora funziona su più telefoni.
+- Controllo a pennata: le corde stonate appaiono in ambra.
+- 11 lingue in più, 36 in tutto.

@@ -1,0 +1,6 @@
+- Alto contraste: preto e branco com linhas mais grossas (Configurações, Aparência).
+- Guia por vibração: toques indicam para que lado girar, no celular e no relógio (Configurações, Ao afinar).
+- Com o TalkBack, o afinador não ouve mais a voz do TalkBack e fala cada nota uma vez só.
+- O microfone agora funciona em mais celulares.
+- Teste com batida: as cordas desafinadas aparecem em âmbar.
+- 11 idiomas a mais, 36 no total.

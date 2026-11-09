@@ -1,0 +1,6 @@
+- Yüksek kontrast: kalın çizgilerle siyah beyaz (Ayarlar, Görünüm).
+- Titreşim rehberi: kısa titreşimler hangi yöne çevireceğini söyler, telefonda ve saatte (Ayarlar, Akort sırasında).
+- TalkBack açıkken akort aleti artık TalkBack'in sesini duymuyor ve her notayı bir kez söylüyor.
+- Mikrofon artık daha çok telefonda çalışıyor.
+- Tel kontrolü: akordu bozuk teller kehribar renginde görünür.
+- 11 yeni dil, toplam 36.

@@ -1,0 +1,6 @@
+- Nagy kontraszt: fekete-fehér, vastagabb vonalakkal (Beállítások, Megjelenés).
+- Rezgő útmutató: rövid rezgések jelzik, merre tekerj, a telefonon és az órán (Beállítások, Hangolás közben).
+- Bekapcsolt TalkBack mellett a hangoló már nem hallja a felolvasó hangját, és minden hangot csak egyszer mond be.
+- A mikrofon most már több telefonon működik.
+- Pengetéspróba: a hamis húrok borostyánszínűek.
+- 11 új nyelv, összesen 36.

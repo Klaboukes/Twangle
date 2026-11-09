@@ -1,0 +1,6 @@
+- Hoher Kontrast: Schwarz-Weiß mit dickeren Linien (Einstellungen, Aussehen).
+- Stimmen per Vibration: Impulse zeigen dir, wohin du drehst, auf Handy und Uhr (Einstellungen, Beim Stimmen).
+- Mit TalkBack hört das Stimmgerät die TalkBack-Stimme nicht mehr und sagt jeden Ton einmal.
+- Das Mikrofon funktioniert jetzt auf mehr Handys.
+- Anschlag-Check: verstimmte Saiten erscheinen bernsteinfarben.
+- 11 neue Sprachen, insgesamt 36.

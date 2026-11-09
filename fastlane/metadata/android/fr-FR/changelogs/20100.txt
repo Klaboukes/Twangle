@@ -1,0 +1,6 @@
+- Contraste élevé : noir et blanc aux traits plus épais (Paramètres, Apparence).
+- Guidage par vibration : de petites vibrations vous disent dans quel sens tourner, sur le téléphone et la montre (Paramètres, Pendant l'accordage).
+- Avec TalkBack, l'accordeur n'entend plus la voix de TalkBack et annonce chaque note une seule fois.
+- Le micro fonctionne désormais sur plus de téléphones.
+- Test en grattant : les cordes fausses s'affichent en ambre.
+- 11 langues de plus, 36 en tout.

@@ -1,0 +1,6 @@
+- Høj kontrast: sort og hvid med tykkere streger (Indstillinger, Udseende).
+- Vibrationsguide: korte vibrationer viser, hvilken vej du skal dreje, på telefonen og uret (Indstillinger, Mens du stemmer).
+- Med TalkBack hører stemmeapparatet ikke længere TalkBacks stemme og siger hver tone én gang.
+- Mikrofonen virker nu på flere telefoner.
+- Anslagstjek: strenge, der ikke er stemt, vises i ravgult.
+- 11 nye sprog, 36 i alt.

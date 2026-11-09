@@ -1,0 +1,6 @@
+- Hoog contrast: zwart en wit met dikkere lijnen (Instellingen, Uiterlijk).
+- Stemmen op gevoel: tikjes vertellen welke kant je op moet draaien, op de telefoon en het horloge (Instellingen, Tijdens het stemmen).
+- Met TalkBack hoort de stemmer de stem van TalkBack niet meer, en zegt hij elke noot één keer.
+- De microfoon werkt nu op meer telefoons.
+- Strumcheck: snaren die niet zuiver zijn, worden amber.
+- 11 talen erbij, 36 in totaal.

@@ -1,0 +1,6 @@
+- Contrast ridicat: alb-negru, cu linii mai groase (Setări, Aspect).
+- Ghid prin vibrații: vibrații scurte vă arată în ce parte să rotiți, pe telefon și pe ceas (Setări, La acordare).
+- Cu TalkBack, acordorul nu mai aude vocea TalkBack și spune fiecare notă o singură dată.
+- Microfonul funcționează acum pe mai multe telefoane.
+- Test pe toate corzile: corzile dezacordate apar în culoarea chihlimbarului.
+- Încă 11 limbi, 36 în total.

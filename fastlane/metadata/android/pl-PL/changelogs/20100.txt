@@ -1,0 +1,6 @@
+- Wysoki kontrast: czerń i biel z grubszymi liniami (Ustawienia, Wygląd).
+- Podpowiedź wibracją: krótkie impulsy mówią, w którą stronę kręcić, na telefonie i zegarku (Ustawienia, Podczas strojenia).
+- Z włączonym TalkBack tuner nie słyszy już jego głosu i mówi każdą nutę tylko raz.
+- Mikrofon działa teraz na większej liczbie telefonów.
+- Test strun: rozstrojone struny są bursztynowe.
+- 11 nowych języków, razem 36.

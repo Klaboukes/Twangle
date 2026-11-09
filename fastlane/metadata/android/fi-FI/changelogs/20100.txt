@@ -1,0 +1,6 @@
+- Suuri kontrasti: mustavalkoinen ja paksummat viivat (Asetukset, Ulkoasu).
+- Viritys värinällä: napautukset kertovat, kumpaan suuntaan kiertää, puhelimessa ja kellossa (Asetukset, Viritettäessä).
+- Kun TalkBack on päällä, viritin ei enää kuule sen ääntä ja sanoo jokaisen sävelen kerran.
+- Mikrofoni toimii nyt useammissa puhelimissa.
+- Lyöntitesti: epävireiset kielet näkyvät meripihkan värisinä.
+- 11 kieltä lisää, yhteensä 36.

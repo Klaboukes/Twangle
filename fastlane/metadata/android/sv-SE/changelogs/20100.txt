@@ -1,0 +1,6 @@
+- Hög kontrast: svartvitt med tjockare linjer (Inställningar, Utseende).
+- Vibrationsguide: korta vibrationer visar åt vilket håll du ska vrida, i telefonen och klockan (Inställningar, Medan du stämmer).
+- Med TalkBack hör stämapparaten inte längre TalkBacks röst och säger varje ton en gång.
+- Mikrofonen fungerar nu på fler telefoner.
+- Anslagstest: ostämda strängar visas i bärnstensgult.
+- 11 nya språk, 36 totalt.

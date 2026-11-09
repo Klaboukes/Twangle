@@ -1,0 +1,6 @@
+- High contrast: black and white with thicker lines (Settings, Look).
+- Vibration guide: taps tell you which way to turn, on the phone and the watch (Settings, While tuning).
+- With TalkBack the tuner no longer hears TalkBack's voice, and says each note once.
+- The microphone now works on more phones.
+- Strum check: strings that are off show in amber.
+- 11 more languages, 36 in all.

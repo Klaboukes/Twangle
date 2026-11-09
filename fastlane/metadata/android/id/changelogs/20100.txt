@@ -1,0 +1,6 @@
+- Kontras tinggi: hitam putih dengan garis lebih tebal (Setelan, Tampilan).
+- Panduan getar: getaran singkat memberi tahu ke arah mana Anda memutar, di ponsel dan jam tangan (Setelan, Saat menyetem).
+- Dengan TalkBack, tuner tidak lagi mendengar suara TalkBack dan menyebut setiap nada sekali saja.
+- Mikrofon kini berfungsi di lebih banyak ponsel.
+- Cek genjreng: senar yang fals tampil berwarna kuning amber.
+- 11 bahasa baru, total 36.

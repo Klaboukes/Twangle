@@ -1,0 +1,6 @@
+- Tương phản cao: đen trắng với nét dày hơn (Cài đặt, Giao diện).
+- Rung chỉ dẫn: những nhịp rung cho bạn biết nên vặn về phía nào, trên điện thoại và đồng hồ (Cài đặt, Khi lên dây).
+- Khi dùng TalkBack, bộ lên dây không còn nghe nhầm giọng của TalkBack và đọc mỗi nốt một lần.
+- Micrô nay hoạt động trên nhiều điện thoại hơn.
+- Quét kiểm tra: dây chưa chuẩn hiện màu hổ phách.
+- Thêm 11 ngôn ngữ, tổng cộng 36.
