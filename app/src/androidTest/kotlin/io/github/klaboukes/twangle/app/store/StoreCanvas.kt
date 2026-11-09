@@ -63,6 +63,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import androidx.test.core.app.ActivityScenario
@@ -376,9 +379,11 @@ private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f
 
 /**
  * Draws [content] in a fresh activity of its own and returns the [width] × [height] pixels it drew.
- * Where they fit in the window they are read back as the screen shows them (PixelCopy); a picture
- * larger than the window (one on its side, drawn on a phone or tablet held upright) is recorded into
- * a graphics layer of its full size instead, as the window can't show it whole.
+ * Where they fit in the window clear of the navigation bar they are read back as the screen shows them
+ * (PixelCopy); a picture larger than that (one on its side, drawn on a phone or tablet held upright; the
+ * upright canvas on the tablet, whose three-button bar Android underlays with a light scrim in the
+ * window's own pixels, a grey band across every tablet picture's foot, 2026-11-09) is recorded into a
+ * graphics layer of its full size instead, as the window can't show it whole.
  */
 fun renderCanvas(width: Int = CanvasSpec.PORTRAIT.width, height: Int = CanvasSpec.PORTRAIT.height, content: @Composable () -> Unit): Bitmap {
     ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
@@ -386,8 +391,11 @@ fun renderCanvas(width: Int = CanvasSpec.PORTRAIT.width, height: Int = CanvasSpe
         var origin = Offset.Zero
         var layer: GraphicsLayer? = null
         var window = IntSize.Zero
+        var navigation = Insets.NONE
         scenario.onActivity { activity ->
             window = IntSize(activity.window.decorView.width, activity.window.decorView.height)
+            navigation = ViewCompat.getRootWindowInsets(activity.window.decorView)
+                ?.getInsets(WindowInsetsCompat.Type.navigationBars()) ?: Insets.NONE
             activity.setContent {
                 val recorded = rememberGraphicsLayer().also { layer = it }
                 // Top left in every language: TopStart in a right-to-left one pinned a canvas wider
@@ -408,7 +416,8 @@ fun renderCanvas(width: Int = CanvasSpec.PORTRAIT.width, height: Int = CanvasSpe
         Thread.sleep(SETTLE_MS)
         val x = origin.x.toInt()
         val y = origin.y.toInt()
-        val fits = x + width <= window.width && y + height <= window.height
+        val fits = x >= navigation.left && x + width <= window.width - navigation.right &&
+            y + height <= window.height - navigation.bottom
         val copied = CountDownLatch(1)
         var bitmap: Bitmap? = null
         var result = -1
