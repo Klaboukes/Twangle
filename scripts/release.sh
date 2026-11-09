@@ -52,7 +52,8 @@
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
 #       git-ignored; it first takes the latest set the other PC shared on GitHub, scripts/share-store-screenshots.sh), and checks the texts and pictures against Play's rules first.
-#       Each send is noted as a tag listing/<date-time> on the commit sent.
+#       Not sent for review: it waits in the Play Console's Publishing overview until the owner sends it,
+#       with the release it goes with. Each send is noted as a tag listing/<date-time> on the commit sent.
 #   scripts/release.sh listing-changes
 #       Whether the store listing needs sending: what changed in its texts and pictures since the last
 #       listing/* tag, and the app's screen changes since then (do the screenshots still match?).
@@ -653,14 +654,32 @@ listing() {
         fail "the store listing doesn't meet Play's rules (StoreListingTest above). Nothing was sent to Google Play."
 
     echo "Sending the store listing in $(locales | wc -l) languages to Google Play..."
+    # Each part is committed "not sent for review", so the listing waits in the Play Console's
+    # Publishing overview until the owner sends it with the release it goes with. The plugin's own
+    # commit sends the changes to Google's review at once, managed publishing or not (2026-11-09), so it
+    # fills its edit without committing it (--no-commit), leaving the edit's id in app/build/gpp/<app id>.txt,
+    # and PlayReports.java commits it. (The plugin always opens a fresh edit; it can't be handed one.)
+    local gpp="app/build/gpp" edit
+    into_play() {
+        rm -rf "$gpp"
+        if play_gradle :app:publishReleaseListing --rerun --no-commit "$@" && [[ -s "$gpp/$APP_ID.txt" ]]; then
+            edit="$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
+            rm -rf "$gpp"
+            play_read edit-commit-unsent "$edit" && return
+        else
+            [[ ! -s "$gpp/$APP_ID.txt" ]] || play_read edit-delete "$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
+            rm -rf "$gpp"
+        fi
+        fail "this part of the store listing didn't reach Google Play (above); a part sent before it waits, not sent for review."
+    }
     # --rerun sends everything, also what an earlier run sent: the Play Console may have been edited
     # since. Pictures Play already has (the same file) are skipped by the plugin.
     # Texts first: Play takes a language's pictures only once that language has a listing, and the
     # plugin sends both side by side (app/build.gradle.kts, playListingTextsOnly).
     echo "  1/2: the texts and app details..."
-    play_gradle :app:publishReleaseListing --rerun -Ptwangle.playListingTextsOnly=true
+    into_play -Ptwangle.playListingTextsOnly=true
     echo "  2/2: the screenshots, icon and feature graphic..."
-    play_gradle :app:publishReleaseListing --rerun
+    into_play
 
     # The mark listing-changes compares with next time.
     local mark="listing/$(date '+%Y-%m-%d-%H%M')"
@@ -670,7 +689,8 @@ listing() {
     echo
     echo "The store listing is on Google Play in every language: title, short and full description,"
     echo "screenshots, icon and feature graphic, and the contact email, website and default language."
-    echo "Check it in the Play Console: Grow users -> Store presence -> Main store listing."
+    echo "It is not sent for review: in the Play Console, Publishing overview, it waits under Changes not"
+    echo "yet sent for review; send it with the release it goes with, so both are one review (docs/release.md)."
 }
 
 # What changed for the store listing since it was last sent (the newest listing/* tag): its texts and

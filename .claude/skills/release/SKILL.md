@@ -19,11 +19,17 @@ owner's own message asks for that very step ("halt the rollout", "raise it to 50
 yes. Everything else only builds or reads (`bump`, `notes`, `profile`, `bundle`, `status`, `health`,
 `reviews`, `listing-changes`) and needs no ask.
 
-**Managed publishing is on** (owner, 2026-11-08): a promotion, a rollout raise, a halt and the store
-listing don't go out by themselves. They wait in the Play Console's *Publishing overview*: the owner
-sends them for review, then publishes them once Google has approved them (docs/release.md, *What
-the owner does*, step 4). After each such step, tell the owner those two clicks. Only the internal
-track and a raise to 100 % go at once. `status` reads a change that waits there as live.
+**Managed publishing is on** (owner, 2026-11-08): nothing Claude sends goes live by itself. Once
+Google has approved a change it waits in the Play Console's *Publishing overview* until the owner
+publishes it (docs/release.md, *What the owner does*, step 4). It does **not** hold back the review:
+whatever the Google Play API commits plainly goes to Google's review at once (2026-11-09, when the
+listing went into review before the owner sent it). So `upload` and `promote closed` make drafts,
+which nothing reviews until the owner starts them in the Console and sends them; `listing` commits
+"not sent for review", so it waits under *Changes not yet sent for review* until the owner sends it
+with the release it goes with; `promote production` (not `draft`) goes to review as soon as it is
+sent; a rollout raise and a halt need no review but wait for *Publish changes*. After each such
+step, tell the owner what is left to click. Only the internal track and a raise to 100 % go at once.
+`status` reads a change that waits there as live.
 
 ## Where to start
 Begin every request with `scripts/release.sh status`: what is on each Play track now. For a release
@@ -144,12 +150,13 @@ moves on.
   checked, from the internal track to the closed test, as a draft?" → `scripts/release.sh promote closed`.
   The owner starts the draft in *Closed testing*, as in step 4, then sends it for review and
   publishes it once approved.
-- **Production:** ask "Move Twangle <version> to production for 20 % of people? You send it for
-  review in Publishing overview; Google takes a few hours to a few days, then you publish it." →
+- **Production:** ask "Move Twangle <version> to production for 20 % of people? It goes to Google's
+  review at once; that takes a few hours to a few days, then you publish it." →
   `scripts/release.sh promote production`
   (`promote production draft` leaves it for the owner to start in the Play Console). When the store
-  listing changed too, send it first (step 8), so both go to Google's review as one. Then offer the
-  rollout watch (step 7).
+  listing changed too, send it first (step 8) and promote with `draft`: then the owner sends both from
+  *Publishing overview* as one review (a plain promotion would go to review on its own, and the listing
+  sent later would restart that review). Then offer the rollout watch (step 7).
 
 ## 7. The staged rollout (ask first)
 - **Before every raise:** `scripts/release.sh health` (crash and ANR rates per version against Play's
@@ -194,8 +201,9 @@ moves on.
 - Ask: "Send the store listing to Google Play in all <n> languages: the texts, screenshots, icon,
   feature graphic and contact details? It replaces what is there, also anything changed by hand in the
   Play Console." On a yes: `scripts/release.sh listing` (it tags the send `listing/<date-time>` for
-  next time), then offer to look at it with the owner in the Play Console. It waits in *Publishing
-  overview* with the release it goes with, for one review.
+  next time), then offer to look at it with the owner in the Play Console. It is committed "not sent
+  for review": it waits in *Publishing overview*, under *Changes not yet sent for review*, until the
+  owner sends it with the release it goes with, for one review. Tell the owner so.
 
 ## The watch app (with the update that brings it)
 Play takes a watch bundle only on the watch's own Wear OS tracks, never on the phone's

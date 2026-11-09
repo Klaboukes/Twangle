@@ -28,12 +28,18 @@ further, and does the few things only the Play Console can do (the checklist bel
   production, so what people get is exactly what was checked.
 - **Production in steps** (a staged rollout: 20 %, then 50 %, then everyone), so a problem can be
   halted before it reaches everyone.
-- **Managed publishing is on** (owner, 2026-11-08): what Claude sends to the closed test, production
-  or the store listing waits in the Play Console's *Publishing overview* until the owner sends it for
-  review, and once Google has approved it, until the owner publishes it (*What the owner does*, step
-  4). So a new version and its store listing go to Google's review as one, and go live when the owner
-  chooses. The internal track isn't covered: an upload there is live within minutes, with no review
-  ([Play Console Help, *Control when app changes are reviewed and published*](https://support.google.com/googleplay/android-developer/answer/9859654)).
+- **Managed publishing is on** (owner, 2026-11-08): once Google has approved a change, it waits in the
+  Play Console's *Publishing overview* until the owner publishes it (*What the owner does*, step 4),
+  so nothing goes live before the owner chooses. It doesn't hold back the review: a change the Google
+  Play API commits plainly goes to Google's review at once (on 2026-11-09 the store listing went into
+  review before the owner sent it). So Claude sends what should wait for the owner's *Send changes for
+  review* either as a draft (`upload`, `promote closed`, `promote production draft`: nothing reviews a
+  draft until the owner starts it in the Console) or, the store listing, committed *not sent for
+  review* (`changesNotSentForReview`, scripts/PlayReports.java): it waits under *Changes not yet sent
+  for review*. That way a new version and its store listing go to Google's review as one. The internal
+  track isn't covered: an upload there is live within minutes, with no review
+  ([Play Console Help, *Control when app changes are reviewed and published*](https://support.google.com/googleplay/android-developer/answer/9859654);
+  [edits.commit](https://developers.google.com/android-publisher/api-ref/rest/v3/edits/commit)).
 - **Every release is tagged** in git (`v1.0.1` on the commit the bundle was built from), so any
   version can be found again.
 
@@ -238,9 +244,9 @@ say yes.
 **4. Watch the rollout**
 - [ ] A promotion made as a draft (as `promote closed` makes it): in *Closed testing*, *Edit
       track*, *Next*, *Save*, and *Go to overview* in the popup.
-- [ ] **Send it for review** (managed publishing is on, so nothing goes by itself): in *Publishing
-      overview*, under *Changes not yet sent for review*, check the list (the release, and the store
-      listing when Claude sent one with it) and *Send changes for review*. Play first runs its quick
+- [ ] **Send it for review**: in *Publishing overview*, under *Changes not yet sent for review*,
+      check the list (the release, and the store listing when Claude sent one with it, which waits
+      there unsent) and *Send changes for review*. Play first runs its quick
       checks (up to about 15 minutes). Google then reviews the closed test and production (a few
       hours, sometimes a few days; the internal track has no review and is live within minutes).
       Send the listing and the release together, so they are one review: a change sent while another

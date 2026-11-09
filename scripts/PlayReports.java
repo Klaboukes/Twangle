@@ -1,5 +1,6 @@
 // Read-only looks at Twangle on Google Play, for scripts/release.sh status | health | reviews
-// (docs/release.md; docs/architecture/performance.md, *Release build*).
+// (docs/release.md; docs/architecture/performance.md, *Release build*), and the edit that
+// scripts/release.sh listing sends the store listing in.
 //
 // Plain JDK, run as a single source file by Android Studio's Java (java PlayReports.java ...), so it
 // needs nothing installed beyond what builds the app, and nothing of it goes into the app. It signs in
@@ -11,8 +12,13 @@
 //   health  - Play Developer Reporting API v1beta1: vitals.crashrate and vitals.anrrate, DAILY per
 //             versionCode over the last N days up to Play's newest data (freshnessInfo).
 //   reviews - Android Publisher API v3 reviews.list: the reviews with text of the last week.
+//   edit-commit-unsent <id>, edit-delete <id> - an edit Gradle Play Publisher filled but didn't commit
+//             (--no-commit): committed with changesNotSentForReview, so it waits in the Play Console's
+//             Publishing overview until the owner sends it for review (the plugin's own commit sends it
+//             at once), or deleted when a send stopped half way.
 //
-// Usage: java PlayReports.java status|health [days]|reviews [language] <key.json> <application id>
+// Usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|
+//        edit-delete <id> <key.json> <application id>
 // Errors go to stderr as "release: ...", like scripts/release.sh, with exit code 1.
 
 import java.io.FileDescriptor;
@@ -66,7 +72,7 @@ public class PlayReports {
     static String app;
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language] <key.json> <application id>");
+        if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|edit-delete <id> <key.json> <application id>");
         String command = args[0];
         String extra = args.length > 3 ? args[1] : null;
         Path key = Path.of(args[args.length - 2]);
@@ -76,6 +82,8 @@ public class PlayReports {
             case "status" -> status();
             case "health" -> health(extra == null ? 7 : Integer.parseInt(extra));
             case "reviews" -> reviews(extra == null ? "en" : extra);
+            case "edit-commit-unsent" -> editCommitUnsent(needed(extra, "the edit's id"));
+            case "edit-delete" -> editDelete(needed(extra, "the edit's id"));
             default -> fail("unknown command " + command);
         }
     }
@@ -83,6 +91,11 @@ public class PlayReports {
     static void fail(String message) {
         System.err.println("release: " + message);
         System.exit(1);
+    }
+
+    static String needed(String value, String what) {
+        if (value == null) fail("missing " + what);
+        return value;
     }
 
     // ---- Sign-in -------------------------------------------------------------------------------------
@@ -190,6 +203,30 @@ public class PlayReports {
         fail("Google Play could not show " + what + " (HTTP " + reply.code + " " + reply.errorStatus() + "): "
             + reply.errorMessage() + "\nNothing was changed on Play.");
         return reply;
+    }
+
+    // ---- The store listing's edit --------------------------------------------------------------------
+
+    /**
+     * Commits the edit without sending it for review (edits.commit, changesNotSentForReview): its changes
+     * join the Publishing overview's "Changes not yet sent for review", for the owner to send. Without it
+     * a commit sends them to Google's review at once, managed publishing or not (2026-11-09).
+     */
+    static void editCommitUnsent(String edit) throws Exception {
+        Reply reply = call("POST", PUBLISHER + app + "/edits/" + enc(edit) + ":commit?changesNotSentForReview=true", null);
+        if (reply.code / 100 != 2) {
+            fail("Google Play did not take the store listing (HTTP " + reply.code + " " + reply.errorStatus() + "): "
+                + reply.errorMessage() + "\nThis part was not committed: it is not on Play.");
+        }
+    }
+
+    /** Deletes an edit that was never committed (a send that stopped half way): nothing of it reaches Play. */
+    static void editDelete(String edit) throws Exception {
+        Reply reply = call("DELETE", PUBLISHER + app + "/edits/" + enc(edit), null);
+        if (reply.code / 100 != 2 && reply.code != 404) {
+            out.println("(The edit could not be deleted: " + reply.errorMessage()
+                + ". It was never committed, so nothing changed; Play drops it by itself.)");
+        }
     }
 
     // ---- status --------------------------------------------------------------------------------------
