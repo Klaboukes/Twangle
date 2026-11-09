@@ -43,6 +43,21 @@ first_device() {
     return 1
 }
 
+# Every ready device of the kinds named, kind by kind in that order: `devices_of phone tablet` is the
+# phones, then the tablets (the full check's devices, one queue between them).
+devices_of() {
+    local i want
+    local -a serials kinds=()
+    mapfile -t serials < <(ready_devices)
+    for i in "${!serials[@]}"; do kinds[i]="$(device_kind "${serials[i]}")"; done
+    for want in "$@"; do
+        for i in "${!serials[@]}"; do
+            [ "${kinds[i]}" = "$want" ] && echo "${serials[i]}"
+        done
+    done
+    return 0
+}
+
 # "Xiaomi 2112123AG (f813c98c)": the maker, model and serial, for the logs and the summary.
 device_name() {
     echo "$(adb -s "$1" shell getprop ro.product.manufacturer < /dev/null 2>/dev/null | tr -d '\r') $(adb -s "$1" shell getprop ro.product.model < /dev/null 2>/dev/null | tr -d '\r') ($1)"

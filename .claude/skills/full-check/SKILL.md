@@ -8,8 +8,9 @@ argument-hint: "[optional: --sweep, --contrast or --languages to run only one pa
 
 The owner starts it whenever suits them, over lunch or at bedtime, with a test phone on USB and leaves it
 alone (owner, 2026-11-06: at about 35 minutes it no longer needs the night, so it is no longer the
-overnight run; about 45 since Phase 86's high-contrast pass, 2026-11-08), taking turns between the Xiaomi 12X and the Galaxy S26 from one run to the next; say in
-the summary which phone it was. It runs unattended, so the owner isn't asked anything: take the
+overnight run; about 45 since Phase 86's high-contrast pass, 2026-11-08), taking turns between the Xiaomi 12X and the Galaxy S26 from one run to the next.
+With a second device connected (the other phone or the Lenovo tablet) it shares the jobs between them
+and takes less time: a little over half with two phones, about two thirds with a phone and the tablet (owner, 2026-11-09). Say in the summary which devices ran it. It runs unattended, so the owner isn't asked anything: take the
 recommended answer to every question, note it, and put it in the summary at the end for them to double-check. That never covers a step that reaches Google Play
 (`scripts/release.sh upload`, `promote`, `rollout`, `halt`, `listing`) or publishes anything (the website,
 the privacy policy): those wait for the owner's yes after the summary. CLAUDE.md's hard rules, Git workflow and
@@ -26,7 +27,7 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"   # adb is not on PATH (C
 git status --short && git switch main && git pull
 gh run list --branch main --limit 3          # a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
 "$ADB" devices                                # the phone (f813c98c or R3GL502L08P) "device"; the watch too, when left on
-export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run picks the phone and the watch itself
+export ANDROID_SERIAL=<a phone's serial>      # for these checks only (each device in turn): the run picks its devices itself
 "$ADB" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
 "$ADB" shell settings get system font_scale   # 1.0
 "$ADB" shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
@@ -35,13 +36,21 @@ export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run p
   cost the night, and on 2026-10-27 again, as the keep-awake never loaded until it was fixed that
   day). It prints a warning in its first ten seconds when it can't; then put that in the summary.
   A closed laptop lid still sleeps it, so the laptop stays open.
-- **The devices** (owner, 2026-11-06): the run picks its phone (else the tablet) and the Galaxy Watch 5
-  once at the start (`scripts/devices.sh`), so a device that comes or goes during the run changes
+- **The devices** (owner, 2026-11-06 and 2026-11-09): the run takes every phone and tablet connected,
+  and the Galaxy Watch 5, once at the start (`scripts/devices.sh`). One build, then each phone or tablet takes the
+  next job from one queue whenever it is free (a module's sweep, its high-contrast run, its every-language check;
+  `--dry-run` lists them in order), so a faster device simply does more of them, and one does them all, as before.
+  Check each device as above (charging, cool, unlocked, its screen kept on). Start the run without
+  `ANDROID_SERIAL`: with it set the run uses that device alone (`FULL_CHECK_SERIALS="<serial> <serial>"` names several).
+  A device that drops off mid-job puts that job back for the others, and the summary says so. A device that
+  comes or goes during the run changes
   nothing (on 2026-11-05 the watch came on over Wi-Fi a minute in and every phone install stopped on
   "more than one device"). With the watch connected, the watch app's tests run on it first
   (`scripts/ui-tests.sh :wear --thorough`, a few minutes, its screen kept on and its time-out put back).
   No watch: the stage is skipped, which is no failure; a watch that drops off mid-stage isn't either.
-  The summary names the phone and what the watch did.
+  The summary names the devices (with more than one, how many jobs each did) and what the watch did.
+  Each device's lines in the log start with its tag (`[phone] `, `[tablet] `), and with more than one
+  its logs and pulled pictures carry the tag too (`connected_android_test_additional_output-tablet`).
 - A Twangle on the phone signed by the owner's other machine is uninstalled and installed again by
   `scripts/ui-tests.sh` (the owner's rule); it says so in the log.
 - The run works on either test phone, the Xiaomi 12X or the Galaxy S26 (`R3GL502L08P`, API 37):
@@ -66,17 +75,19 @@ export ANDROID_SERIAL=<the phone's serial>    # for these checks only: the run p
 scripts/full-check.sh --dry-run                     # which language checks this run does (no phone)
 scripts/full-check.sh > build/full-check.txt 2>&1   # in the background, ~45 min (less when little changed)
 ```
-It starts with a smoke test of the release build on the phone (`scripts/release-smoke.sh`, about 4
+It builds every test app once, then starts the watch's tests on the watch beside the phones' and a smoke
+test of the release build on the first phone (`scripts/release-smoke.sh`, about 4
 minutes: R8's build started, left with Home, started again, turned on its side and back; the UI tests
 run the debug build, which missed 2.1's crash on Android 13, 2026-11-09). A crash there is an app bug:
 its log (`build/full-check/release-build.txt`) has the stack; reproduce it with the same script.
-Then it runs `scripts/ui-tests.sh --all --thorough --cool` (every module, light and dark, one class at a
+Then the devices share these jobs, one module each (`scripts/ui-tests.sh <module> --built`): `--thorough --cool` (every module, light and dark, one class at a
 time, waiting while the phone is 37 °C or warmer; 1.1's six styles took about 55 minutes, 2.0's one
 look about 16 minutes, 2026-11-05), then the screens' modules again in the high-contrast look
 (`scripts/ui-tests.sh <the six screen modules> --high-contrast --thorough --cool`, its white on black and
 black on white in one pass, as each test loops over light and dark itself; about 12 minutes, 2026-11-08;
 testing.md, *Every screen light and dark*; `--contrast` runs only it), then the `@EveryLanguage`
-checks one module at a time with cooling pauses, and writes `build/full-check/summary.txt`. A screen where a
+checks one module at a time with cooling pauses (each device cools on its own), and writes `build/full-check/summary.txt`
+(each stage's log, `sweep.txt`, `contrast.txt` and `languages.txt`, has its jobs in order, each saying which device ran it). A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
 
@@ -97,8 +108,8 @@ an older app ([release skill](../release/SKILL.md), step 8). Make them only when
 when the summary should show a change to them: `scripts/full-check.sh --store` (or
 `scripts/store-screenshots.sh`).
 
-- **While it runs, don't edit code, tests or scripts**: each language run rebuilds from the working
-  tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
+- **While it runs, don't edit code, tests or scripts**: a module's pass is noted only from a clean
+  working tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
   safe to edit.
 - Don't poll; you are told when it finishes. To start on failures early (the sweep prints each
   class as it finishes, e.g. `  PhoneScreenTest   3s  1 tests, 0 failed, 2s on the phone`), watch
@@ -162,6 +173,6 @@ For each failure decide first: **app bug or outdated test?**
 ## 5. The summary at the end
 
 Its first line says which branch the run checked and why (`--which`'s reason, or "you asked for
-it"), then which phone, and what the watch did (the summary's *Phone* and *Watch* lines). Then plain language, short: what ran and how long, what it found (app bugs first), what was fixed and
+it"), then which phone or devices, and what the watch did (the summary's *Phone* or *Devices* and *Watch* lines). Then plain language, short: what ran and how long, what it found (app bugs first), what was fixed and
 how it was checked, what is left, and every choice made on the owner's behalf as a question to
 double-check ("I picked X because Y — fine?"). Picture-worthy changes get a phone screenshot.
