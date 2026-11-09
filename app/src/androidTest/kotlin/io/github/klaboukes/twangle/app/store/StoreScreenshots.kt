@@ -53,6 +53,7 @@ import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.AfterClass
@@ -240,9 +241,16 @@ class StoreScreenshots(private val shot: Shot) {
                 }
                 compose(listOf(listOf(beat, cards).map { Window(it.asImageBitmap()) }), staggered = true)
             }
-            // Listen in Chords (2.0, Phase 74): C, G, then A minor twice, pictured while the last rings. Listen settles a
-            // strum behind, so the A minor strummed again is what shows it named and charted.
+            // Listen in Chords (2.0, Phase 74): C, G, then A minor three times, pictured while one rings. Listen settles a
+            // strum behind, and later on a slower device: at a fixed time the tablet still showed G major, or A minor's
+            // name over G's chart (2026-11-09). So it waits until A minor is heard (Listen saves the chord heard as a
+            // pick), then gives its chart a moment.
             Shot.CHORD_NAME -> tuner {
+                // From C major, so A minor saved means it was heard (the language before leaves it saved).
+                runBlocking {
+                    settings.setPracticeRoot(PitchClass.C)
+                    settings.setPracticeChordQuality(ChordQuality.MAJOR)
+                }
                 click(NavigationTestTags.tab(Destination.PRACTICE))
                 click(PracticeTestTags.card(PracticeTool.CHORDS))
                 waitFor(PracticeTestTags.CHORDS)
@@ -251,9 +259,17 @@ class StoreScreenshots(private val shot: Shot) {
                     StoreSounds.strum(StoreSounds.C_MAJOR, STRUM_SECONDS) +
                         StoreSounds.strum(StoreSounds.G_MAJOR, STRUM_SECONDS) +
                         StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS) +
+                        StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS) +
                         StoreSounds.strum(StoreSounds.A_MINOR, STRUM_SECONDS),
                 )
-                settle((3 * STRUM_SECONDS * 1000).toLong() + LAST_STRUM_SETTLE_MS)
+                settle((2 * STRUM_SECONDS * 1000).toLong())
+                check(
+                    waitUntil {
+                        val shown = runBlocking { settings.settings.first() }
+                        shown.practiceRoot == PitchClass.A && shown.practiceChordQuality == ChordQuality.MINOR
+                    },
+                ) { "Listen never named the A minor" }
+                settle(CHORD_CHART_SETTLE_MS)
             }
             Shot.INSTRUMENTS -> tuner {
                 // The panel is a window of its own, whose parts UI Automator can't find by tag; its pill row is the
@@ -559,9 +575,11 @@ class StoreScreenshots(private val shot: Shot) {
         private const val PANEL_SETTLE_MS = 1_000L
         private const val SHEET_SETTLE_MS = 1_500L
 
-        /** Each chord rings this long before the next; the last is pictured this long after it starts, bright and named. */
+        /** Each chord rings this long before the next. */
         private const val STRUM_SECONDS = 3.0
-        private const val LAST_STRUM_SETTLE_MS = 1_800L
+
+        /** After Listen names the A minor, its chart takes this to replace the one before. */
+        private const val CHORD_CHART_SETTLE_MS = 1_000L
 
         /** The open strings' strum is pictured this long after it starts: its marks stand (after about half a second) while it rings. */
         private const val OPEN_STRUM_SETTLE_MS = 1_800L
