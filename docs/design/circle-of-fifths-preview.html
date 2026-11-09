@@ -1,0 +1,184 @@
+<!doctype html>
+<!--
+  Rough mock-up, 2026-11-09 (Phase 92): the circle of fifths as a way to pick a key in Chords,
+  answering "which chords go together in this key?". Ink light only, no sound, no real chord charts.
+  Decisions: the owner made it Phase 92 on 2026-11-09 with every recommendation below (ROADMAP.md).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Chords by key</title>
+<style>
+  :root { --page: #F2F3F5; --card: #FFFFFF; --text: #1B1F24; --muted: #4F5864; --line: #D5DAE0;
+          --accent: #1E7FE0; --accent-soft: #D9E9FB; --accent-softer: #EEF5FD; --ok: #1F8A4C; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 820px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 32px 0 6px; }
+  p.lead { margin: 0 0 16px; color: var(--muted); max-width: 72ch; }
+  .phones { display: flex; flex-wrap: wrap; gap: 24px; }
+  .phone { width: 300px; height: 620px; background: var(--card); border-radius: 28px; padding: 14px 14px;
+           box-sizing: border-box; box-shadow: 0 2px 14px rgba(0,0,0,.10); display: flex; flex-direction: column; }
+  .cap { font-size: 13px; color: var(--muted); margin: 0 0 6px 6px; }
+  .top { display: flex; align-items: center; justify-content: space-between; height: 40px; }
+  .top b { font-size: 18px; }
+  .chip { font-size: 13px; padding: 4px 10px; border-radius: 14px; background: var(--page); color: var(--muted); }
+  .name { margin-top: 10px; display: flex; gap: 8px; align-items: center; }
+  .name .pick { flex: 1; font-size: 19px; font-weight: 600; padding: 8px 12px; border-radius: 14px; background: var(--page); }
+  .name .listen { width: 40px; height: 40px; border-radius: 50%; background: var(--page); display: grid; place-items: center; }
+  .panel { margin-top: 6px; border-radius: 16px; background: var(--card); box-shadow: 0 4px 18px rgba(0,0,0,.16);
+           padding: 10px; }
+  .seg { display: flex; background: var(--page); border-radius: 12px; padding: 3px; font-size: 14px; }
+  .seg span { flex: 1; text-align: center; padding: 5px 0; border-radius: 9px; color: var(--muted); }
+  .seg span.on { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  svg.circle { display: block; margin: 8px auto 2px; cursor: pointer; user-select: none; }
+  svg.circle text { font-size: 13px; text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: var(--text); }
+  svg.circle text.minor { font-size: 11px; fill: var(--muted); }
+  svg.circle text.alt { font-size: 9px; fill: var(--muted); }
+  svg.circle path { stroke: var(--card); stroke-width: 2; fill: var(--page); transition: fill .2s; }
+  svg.circle path.in { fill: var(--accent-soft); }
+  svg.circle path.home { fill: var(--accent); }
+  svg.circle text.home { fill: #fff; font-weight: 700; }
+  .keyline { text-align: center; font-size: 13px; color: var(--muted); }
+  .keyline b { color: var(--text); }
+  .inkey { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .chords { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 6px; }
+  .chords button { font: inherit; font-size: 14px; padding: 8px 0; border-radius: 12px; border: none;
+                   background: var(--page); cursor: pointer; color: var(--text); }
+  .chords button.home { box-shadow: inset 0 0 0 2px var(--accent); }
+  .chords button.on { background: var(--accent); color: #fff; font-weight: 600; }
+  .chart { flex: 1; margin-top: 14px; border-radius: 16px; background: var(--page); display: grid; place-items: center;
+           color: var(--muted); font-size: 13px; text-align: center; }
+  .chart b { display: block; font-size: 30px; color: var(--text); margin-bottom: 4px; }
+  .toscale { margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: var(--accent-softer);
+             color: var(--accent); font-size: 14px; display: flex; justify-content: space-between; }
+  ol.pick { padding-left: 20px; max-width: 72ch; }
+  ol.pick li { margin: 8px 0; }
+  .rec { color: var(--ok); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+<h1>Chords by key</h1>
+<p class="lead">The circle of fifths as a key picker inside Chords. Pick a key, get the six chords that belong
+together in it, and play their charts. Tap any key on the circle (the outer ring is major, the inner ring minor).
+On the circle, those six chords are always the key and its two neighbours, in both rings.</p>
+
+<div class="phones">
+  <div>
+    <p class="cap">1 · The chord picker, “Key” side</p>
+    <div class="phone">
+      <div class="top"><span>←&nbsp; <b>Chords</b></span><span class="chip">Guitar · Standard ▾</span></div>
+      <div class="name"><div class="pick" id="name1">G major ⌃</div><div class="listen">🎤</div></div>
+      <div class="panel">
+        <div class="seg"><span>Chord</span><span class="on">Key</span></div>
+        <svg class="circle" id="circle" width="252" height="252" viewBox="-126 -126 252 252"></svg>
+        <div class="keyline" id="keyline"></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <p class="cap">2 · Back on Chords, playing the key</p>
+    <div class="phone">
+      <div class="top"><span>←&nbsp; <b>Chords</b></span><span class="chip">Guitar · Standard ▾</span></div>
+      <div class="name"><div class="pick" id="name2">G major ⌄</div><div class="listen">🎤</div></div>
+      <div class="inkey" id="inkey"></div>
+      <div class="chords" id="chords"></div>
+      <div class="chart" id="chart"></div>
+      <div class="toscale" id="toscale"></div>
+    </div>
+  </div>
+</div>
+
+<h2>Your pick</h2>
+<ol class="pick">
+  <li><b>Where it goes.</b> <span class="rec">Recommended:</span> inside Chords, as a “Key” side of the chord picker,
+    as drawn. The alternative is a fifth Practice card, “Keys”, which adds a card for something Chords already half does.</li>
+  <li><b>What it shows.</b> <span class="rec">Recommended:</span> the six chords only, with no Roman numerals (I, IV, V)
+    and no music theory words, the key's own chord ringed. The seventh chord of a key (the diminished one, B° in G) is left
+    out: beginners rarely play it and it would need a seventh button.</li>
+  <li><b>Minor keys.</b> <span class="rec">Recommended:</span> yes, from the inner ring. The same six chords, with the minor
+    one as home (E minor shares G major's chords).</li>
+  <li><b>On to Scales.</b> <span class="rec">Recommended:</span> the row at the foot opens Scales on the key with the drone
+    ready, so “play along in G” is one tap away.</li>
+  <li><b>Hearing the chords.</b> Not in this mock-up. Each chart could get a play button that strums it with Twangle's
+    reference-tone sound; worth it only if the strum sounds good, so that is a later step.</li>
+</ol>
+</main>
+
+<script>
+  // Circle positions clockwise from the top. Keys 0–6 (C to F♯) are spelled with sharps, 7–11 (D♭ to F) with flats.
+  const SHARP_MAJ = ["C","G","D","A","E","B","F♯","C♯","G♯","D♯","A♯","F"];
+  const FLAT_MAJ  = ["C","G","D","A","E","B","G♭","D♭","A♭","E♭","B♭","F"];
+  const SHARP_MIN = ["Am","Em","Bm","F♯m","C♯m","G♯m","D♯m","A♯m","Fm","Cm","Gm","Dm"];
+  const FLAT_MIN  = ["Am","Em","Bm","F♯m","C♯m","G♯m","E♭m","B♭m","Fm","Cm","Gm","Dm"];
+  const LABEL_MAJ = ["C","G","D","A","E","B","F♯","D♭","A♭","E♭","B♭","F"];
+  const LABEL_MIN = ["Am","Em","Bm","F♯m","C♯m","G♯m","E♭m","B♭m","Fm","Cm","Gm","Dm"];
+  const WORD = { "♯": " sharp", "♭": " flat" };
+  const fullName = (c) => c.replace(/^([A-G])([♯♭]?)(m?)$/, (_, l, a, m) => l + (a ? WORD[a] : "") + (m ? " minor" : " major"));
+
+  let key = { pos: 1, minor: false }, chosen = null;
+
+  function chordsOf(k) {
+    const sharp = k.pos <= 6, maj = sharp ? SHARP_MAJ : FLAT_MAJ, min = sharp ? SHARP_MIN : FLAT_MIN;
+    const at = (i) => (i + 12) % 12, p = k.pos;
+    const majors = [maj[at(p)], maj[at(p - 1)], maj[at(p + 1)]];  // I, IV, V
+    const minors = [min[at(p)], min[at(p - 1)], min[at(p + 1)]];  // vi, ii, iii
+    return k.minor ? [...minors, ...majors] : [...majors, ...minors];
+  }
+
+  function wedge(i, r0, r1) {
+    const a0 = (i * 30 - 105) * Math.PI / 180, a1 = (i * 30 - 75) * Math.PI / 180;
+    const pt = (r, a) => `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`;
+    return `M${pt(r0, a0)} L${pt(r1, a0)} A${r1} ${r1} 0 0 1 ${pt(r1, a1)} L${pt(r0, a1)} A${r0} ${r0} 0 0 0 ${pt(r0, a0)}Z`;
+  }
+  const at = (i, r) => { const a = (i * 30 - 90) * Math.PI / 180; return [r * Math.cos(a), r * Math.sin(a)]; };
+
+  function drawCircle() {
+    const near = (i) => [0, 1, 11].includes((i - key.pos + 12) % 12);
+    let s = "";
+    for (let i = 0; i < 12; i++) {
+      const homeMaj = !key.minor && i === key.pos, homeMin = key.minor && i === key.pos;
+      s += `<path data-i="${i}" data-m="0" class="${homeMaj ? "home" : near(i) ? "in" : ""}" d="${wedge(i, 82, 122)}"/>`;
+      s += `<path data-i="${i}" data-m="1" class="${homeMin ? "home" : near(i) ? "in" : ""}" d="${wedge(i, 46, 82)}"/>`;
+      const [x, y] = at(i, 102), [mx, my] = at(i, 64);
+      s += `<text x="${x}" y="${i === 6 ? y - 5 : y}" class="${homeMaj ? "home" : ""}">${LABEL_MAJ[i]}</text>`;
+      if (i === 6) s += `<text x="${x}" y="${y + 8}" class="alt${homeMaj ? " home" : ""}">G♭</text>`;
+      s += `<text x="${mx}" y="${my}" class="minor${homeMin ? " home" : ""}">${LABEL_MIN[i]}</text>`;
+    }
+    const home = chordsOf(key)[0];
+    s += `<text x="0" y="-7" style="font-size:12px;fill:var(--muted)">Key</text>`;
+    s += `<text x="0" y="11" style="font-size:18px;font-weight:700">${home}</text>`;
+    document.getElementById("circle").innerHTML = s;
+  }
+
+  function render() {
+    const cs = chordsOf(key), home = cs[0], keyName = fullName(home);
+    if (!cs.includes(chosen)) chosen = home;
+    drawCircle();
+    document.getElementById("name1").textContent = keyName + " ⌃";
+    document.getElementById("keyline").innerHTML = `<b>${cs.join("  ")}</b>`;
+    document.getElementById("name2").textContent = fullName(chosen) + " ⌄";
+    document.getElementById("inkey").textContent = `In the key of ${keyName}:`;
+    document.getElementById("chords").innerHTML = cs.map((c) =>
+      `<button class="${c === home ? "home " : ""}${c === chosen ? "on" : ""}" data-c="${c}">${c}</button>`).join("");
+    document.getElementById("chart").innerHTML = `<div><b>${chosen}</b>its chart and shapes,<br>as Chords draws them today</div>`;
+    document.getElementById("toscale").innerHTML = `<span>${keyName} scale, with the drone</span><span>›</span>`;
+  }
+
+  document.getElementById("circle").addEventListener("click", (e) => {
+    const p = e.target.closest("path"); if (!p) return;
+    key = { pos: +p.dataset.i, minor: p.dataset.m === "1" }; chosen = null; render();
+  });
+  document.getElementById("chords").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    chosen = b.dataset.c; render();
+  });
+  render();
+</script>
+</body>
+</html>
