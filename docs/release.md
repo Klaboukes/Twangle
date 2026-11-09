@@ -274,7 +274,9 @@ say yes.
       audience, data safety) and *Store settings* (category, tags), Phase 53.
 - [ ] The closed test's testers (their emails or a Google Group) and its 14 days in a row, then
       applying for production access.
-- [ ] Play's pre-launch report after an upload, with Claude reading along if you like.
+- [ ] Play's pre-launch report after an upload, with Claude reading along if you like. Google makes
+      one only when its test lab has room: up to 2.1.0 it made none (*Test and release → Testing →
+      Pre-launch report*, 2026-11-09), so an empty page is no fault and holds nothing up.
 - [ ] *Users and permissions*: the testers and the robot user's rights.
 - [ ] With the update that brings the watch app: the Wear OS form factor, its screenshots and the
       opt-in to Wear OS (*The watch app* above).

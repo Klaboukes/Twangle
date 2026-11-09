@@ -134,8 +134,9 @@ Steps 6–8 follow later, each on the owner's word.
   track on Google Play, as a draft?" On a yes: `scripts/release.sh upload` (see *For now* about drafts).
 - The owner starts the draft in the Play Console (docs/release.md, *What the owner does*, step 2).
   Offer to walk them through it in the browser; the clicks are theirs.
-- After the first upload, Play's pre-launch report follows within a few hours: offer to read it with
-  the owner, its accessibility findings included.
+- After an upload, Play may make a pre-launch report within a few hours, only when Google's test lab
+  has room (none came for any version up to 2.1.0). If one is there, offer to read it with the owner,
+  crashes first, then its accessibility findings; if not, nothing waits on it.
 
 ## 5. The owner checks it on the Xiaomi
 Nothing moves on until this check passes. Give the owner docs/release.md, *What the owner does*,
