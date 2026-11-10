@@ -198,6 +198,8 @@
     <string name="practice_chords_listen">Listen</string>
     <!-- TalkBack, the state of that Listen button while it listens to the chords strummed. -->
     <string name="practice_chords_listening">Listening</string>
+    <!-- Chords: a short balloon by the Listen button (and its TalkBack state) when the microphone can't be used, for a call or another app; Listen has turned itself off. -->
+    <string name="practice_chords_mic_busy">Microphone is busy</string>
     <!-- TalkBack, the ▶ / ■ half of the drone button. -->
     <string name="practice_drone_play">Play the drone</string>
     <!-- TalkBack, the ■ half of the drone button while the drone plays: stops it. -->

@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.practice
 
+import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
@@ -13,6 +14,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
 import kotlin.math.pow
@@ -63,6 +65,16 @@ class ChordListenerTest {
         val c = strum(midiHz(48, 52, 55, 60, 64))
         assertEquals(listOf(Chord.of(PitchClass.C, ChordQuality.MAJOR)), heard(c + c))
         assertEquals(emptyList<Chord>(), heard(strum(midiHz(45))))
+    }
+
+    @Test
+    fun `a microphone that fails ends the chords with the recorder's own failure`() = runTest {
+        // Phase 89: Listen catches this to turn off and say the microphone is busy, so it must arrive as it was thrown.
+        val failure = runCatching {
+            ChordListener(FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy()), StandardTestDispatcher(testScheduler))
+                .chords(440f).toList()
+        }.exceptionOrNull()
+        assertTrue("got $failure", failure is AudioRecorderException.MicrophoneBusy)
     }
 
     // Phase 81: TalkBack saying the chord through the speaker is never named as one.

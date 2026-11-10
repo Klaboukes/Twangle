@@ -16,11 +16,20 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -33,7 +42,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
@@ -43,6 +54,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
@@ -51,6 +63,7 @@ import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Listen in Chords (2.0, Phase 74; the owner's decision of 2026-11-03: the chord name belongs in Chords, not on the
@@ -60,7 +73,13 @@ import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
  * handed to [onChord], which shows that chord's name and chart. A tap again stops it; leaving Chords, another
  * tool or the app in the background stops it too (the microphone open only while Chords is on screen). TalkBack
  * hears "Listen" as a button with "Listening" as its state while on.
+ *
+ * A microphone that can't be used (a call, another app, or on Android 8–9 the tuner not quite done with it: the
+ * recorder's [AudioRecorderException]) turns Listen off with "Microphone is busy" in a balloon under it for
+ * [BUSY_MILLIS] (Phase 89; until then the failure closed the app), also its TalkBack state, said as it comes; a tap
+ * on Listen tries again.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ChordsListenButton(
     listener: ChordListener,
@@ -73,34 +92,96 @@ internal fun ChordsListenButton(
     modifier: Modifier = Modifier,
 ) {
     var listening by rememberSaveable { mutableStateOf(false) }
+    // Each time the microphone failed (counted, so a second failure shows the balloon again); busy while it shows.
+    var failures by remember { mutableIntStateOf(0) }
+    var busy by remember { mutableStateOf(false) }
     val permission = rememberChordsMicPermission(refusedBefore = micRefused, onGranted = { listening = true }, onRefused = onMicRefused)
     val currentOnChord by rememberUpdatedState(onChord)
     if (listening) {
         val lifecycle = LocalLifecycleOwner.current.lifecycle
         LaunchedEffect(listener, a4Hz, range, lifecycle) {
-            // Only while Chords is on screen and the app in front (hard rule 4).
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                listener.chords(a4Hz, range).collect { currentOnChord(it) }
+            try {
+                // Only while Chords is on screen and the app in front (hard rule 4).
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    listener.chords(a4Hz, range).collect { currentOnChord(it) }
+                }
+            } catch (e: AudioRecorderException) {
+                // A call, another app, or on Android 8–9 the tuner not quite done with it: Listen turns off and says
+                // so, as the metronome's Listen does, instead of the failure closing the app.
+                listening = false
+                failures++
+            }
+        }
+    }
+    val busyBalloon = rememberTooltipState(isPersistent = true)
+    LaunchedEffect(failures) {
+        if (failures == 0) return@LaunchedEffect
+        val shown = failures
+        busy = true
+        try {
+            // Shown a while (or until a tap elsewhere), then gone; a tap on Listen tries again.
+            withTimeoutOrNull(BUSY_MILLIS) { busyBalloon.show() }
+        } finally {
+            // Unless a newer failure already shows its own.
+            if (failures == shown) {
+                busyBalloon.dismiss()
+                busy = false
             }
         }
     }
     val scheme = MaterialTheme.colorScheme
     val press = remember { MutableInteractionSource() }
     val label = stringResource(R.string.practice_chords_listen)
-    val state = if (listening) stringResource(R.string.practice_chords_listening) else ""
+    val busyText = stringResource(R.string.practice_chords_mic_busy)
+    val state = when {
+        listening -> stringResource(R.string.practice_chords_listening)
+        busy -> busyText
+        else -> ""
+    }
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below),
+        tooltip = { PlainTooltip { Text(busyText) } },
+        state = busyBalloon,
+        modifier = modifier,
+        // Only the busy balloon: no long-press tooltip, and taps go on to the screen under it.
+        focusable = false,
+        enableUserInput = false,
+    ) {
+        ListenFace(listening, busy, label, state, height, press, scheme) {
+            press.pressFlash()
+            if (listening) {
+                listening = false
+            } else {
+                if (busy) busyBalloon.dismiss()
+                permission.listen()
+            }
+        }
+    }
+}
+
+@Composable
+private fun ListenFace(
+    listening: Boolean,
+    busy: Boolean,
+    label: String,
+    state: String,
+    height: Dp,
+    press: MutableInteractionSource,
+    scheme: ColorScheme,
+    onClick: () -> Unit,
+) {
     Box(
-        modifier
+        Modifier
             .size(height)
             .testTag(PracticeTestTags.CHORDS_LISTEN)
             .border(1.dp, controlOutline(scheme), CircleShape)
             .pressFeedback(press, CircleShape, fill = if (listening) scheme.primary else faceFill(picked = false), outline = null)
-            .clickable(interactionSource = press, indication = null, role = Role.Button) {
-                press.pressFlash()
-                if (listening) listening = false else permission.listen()
-            }
+            .clickable(interactionSource = press, indication = null, role = Role.Button, onClick = onClick)
             .semantics {
                 contentDescription = label
                 stateDescription = state
+                // The busy state is said as it comes, as the other listeners' busy lines are.
+                if (busy) liveRegion = LiveRegionMode.Polite
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -114,6 +195,9 @@ internal fun ChordsListenButton(
 }
 
 private val LISTEN_ICON_SIZE = 24.dp
+
+/** How long "Microphone is busy" shows by Listen, as long as the metronome's Listen shows its line. */
+private const val BUSY_MILLIS = 8_000L
 
 /** Listen's way to the microphone: [listen] when it is tapped. */
 internal class ChordsMicPermission(private val onListen: () -> Unit) {

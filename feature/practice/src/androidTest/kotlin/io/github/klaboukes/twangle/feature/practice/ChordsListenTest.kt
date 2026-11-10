@@ -14,12 +14,15 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -47,7 +50,8 @@ import kotlin.math.roundToInt
 /**
  * Listen in Chords (2.0, Phase 74): the round button at the end of the name's row on Chords (not on Scales, nor without
  * a listener), the name's height, wholly shown upright and on its side; a tap listens (TalkBack: "Listening"), and a
- * synthetic A minor strum through a fake microphone becomes the chord picked, and saved; a tap again stops it.
+ * synthetic A minor strum through a fake microphone becomes the chord picked, and saved; a tap again stops it. A busy
+ * microphone turns Listen off and says so (Phase 89), and a tap tries again.
  */
 class ChordsListenTest {
 
@@ -120,6 +124,30 @@ class ChordsListenTest {
         compose.waitUntil(STEP_WAIT_MS) { state() == context.getString(R.string.practice_chords_listening) }
         compose.waitUntil(STEP_WAIT_MS) { savedRoots.lastOrNull() == PitchClass.A && savedQualities.lastOrNull() == ChordQuality.MINOR }
         picture("chords-listen-a-minor")
+        listen.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { state().isNullOrEmpty() }
+    }
+
+    @Test
+    fun aBusyMicrophoneTurnsListenOffAndSaysSo() {
+        // A call has the microphone: the recorder fails as it opens (Phase 89; until then this closed the app).
+        val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+        shownListener.value = ChordListener(recorder)
+        show()
+        compose.mainClock.autoAdvance = true
+        val busy = context.getString(R.string.practice_chords_mic_busy)
+        listen.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { state() == busy }
+        compose.onNodeWithText(busy).assertIsDisplayed()
+        picture("chords-listen-busy")
+        // The call is over: a tap on Listen tries again, and listens.
+        recorder.failure = null
+        recorder.signal = aMinor()
+        recorder.loop = true
+        listen.performClick()
+        compose.waitUntil(STEP_WAIT_MS) { state() == context.getString(R.string.practice_chords_listening) }
+        compose.waitUntil(STEP_WAIT_MS) { compose.onAllNodesWithText(busy).fetchSemanticsNodes().isEmpty() }
+        compose.waitUntil(STEP_WAIT_MS) { savedRoots.lastOrNull() == PitchClass.A && savedQualities.lastOrNull() == ChordQuality.MINOR }
         listen.performClick()
         compose.waitUntil(STEP_WAIT_MS) { state().isNullOrEmpty() }
     }

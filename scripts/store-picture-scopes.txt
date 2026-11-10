@@ -13,3 +13,4 @@
 #749 none     --shots (which pictures a run makes), nothing a picture shows
 #751 none     the test makes several locales a run, into a folder each: the same pictures
 #770 2,5      the cut's edges: the tempo's digits whole (2), no pager-button slivers under the chord chart (5); the other cuts compared on the phone: unchanged or a pixel
+#781 none     Chords' Listen: the busy balloon shows only after a microphone failure, which no picture has

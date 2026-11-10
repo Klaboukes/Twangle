@@ -100,6 +100,7 @@
     <string name="practice_drone_play">Bourdon afspelen</string>
     <string name="practice_chords_listen">Luister</string>
     <string name="practice_chords_listening">Luistert</string>
+    <string name="practice_chords_mic_busy">Microfoon is bezet</string>
     <string name="practice_drone_stop">Bourdon stoppen</string>
     <string name="practice_drone_sound_spoken">Bourdongeluid: %1$s</string>
     <string name="practice_drone_sound">Geluid</string>
