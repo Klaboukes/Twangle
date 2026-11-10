@@ -76,7 +76,8 @@
 #
 # upload, promote, rollout, halt and listing change what people get or see on Google Play, so Claude
 # asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
-# must be released (tagged), and ask nothing themselves.
+# must be released (tagged), and ask nothing themselves. All but halt are refused while changes are in
+# Google's review, rather than restarting that review (play_send).
 #
 # The watch app follows in an update (decision 3): bundle builds its bundle with every release, but it
 # reaches Play only through the "watch" commands, which nothing runs until that update.
@@ -324,6 +325,27 @@ play_gradle() {
     ./gradlew --quiet "$@" "-Ptwangle.playServiceAccount=$key"
 }
 
+# Sends what a Gradle Play Publisher task ($2, its options after it) changes on Play. The plugin fills its
+# edit without committing it (--no-commit, leaving the edit's id in app/build/gpp/<app id>.txt) and
+# PlayReports.java commits it, refused while anything is in Google's review: the plugin's own commit
+# cancels that review and starts it again (as with 2.0 on 2026-11-06). $1 is "commit", or "commit-unsent"
+# to hold the changes back for the owner's Send changes for review. Fails having sent nothing of it.
+# (The plugin always opens a fresh edit; it can't be handed one.)
+play_send() {
+    local how="$1" task="$2" gpp="app/build/gpp" edit
+    shift 2
+    rm -rf "$gpp"
+    if play_gradle "$task" --no-commit "$@" && [[ -s "$gpp/$APP_ID.txt" ]]; then
+        edit="$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
+        rm -rf "$gpp"
+        play_read "edit-$how" "$edit" && return
+    else
+        [[ ! -s "$gpp/$APP_ID.txt" ]] || play_read edit-delete "$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
+        rm -rf "$gpp"
+    fi
+    return 1
+}
+
 # A whole percent as Play's user fraction: 20 -> 0.20.
 fraction() { printf '%d.%02d' $(($1 / 100)) $(($1 % 100)); }
 
@@ -361,11 +383,12 @@ upload() {
     "$JAVA_HOME/bin/jarsigner" -verify "$aab" | grep -q "jar verified" || fail "$aab is not signed"
 
     echo "Sending $APP_NAME $v (versionCode $code) to the internal track${WATCH_ARG:+ ($INTERNAL)} on Google Play, as $status..."
-    play_gradle :app:publishReleaseBundle \
+    play_send commit :app:publishReleaseBundle \
         --artifact-dir "$aab" \
         --track "$INTERNAL" \
         --release-status "$status" \
-        --release-name "$v ($code)"
+        --release-name "$v ($code)" ||
+        fail "$APP_NAME $v didn't reach the internal track (above); nothing was sent."
 
     echo
     echo "$APP_NAME $v is on the internal track${WATCH_ARG:+ ($INTERNAL)} of Google Play, with its notes in every language."
@@ -418,12 +441,13 @@ promote() {
     need_release "$v" "$(code_of "$v")"
 
     echo "Moving $APP_NAME $v (versionCode $code) from $from to $name on Google Play, as $status..."
-    play_gradle :app:promoteReleaseArtifact \
+    play_send commit :app:promoteReleaseArtifact \
         --from-track "$from" \
         --promote-track "$to" \
         --version-code "$code" \
         --release-name "$v ($code)" \
-        "${args[@]}"
+        "${args[@]}" ||
+        fail "$APP_NAME $v didn't reach $name (above); nothing was changed."
 
     echo
     echo "$APP_NAME $v is on $name on Google Play, as $status."
@@ -457,11 +481,12 @@ rollout() {
     need_release "$v" "$(code_of "$v")"
 
     echo "Setting the rollout of $APP_NAME $v (versionCode $code) on production${WATCH_ARG:+ ($PRODUCTION)} to $percent %..."
-    play_gradle :app:promoteReleaseArtifact \
+    play_send commit :app:promoteReleaseArtifact \
         --update "$PRODUCTION" \
         --version-code "$code" \
         --release-name "$v ($code)" \
-        "${args[@]}"
+        "${args[@]}" ||
+        fail "the rollout wasn't changed (above)."
 
     echo
     if (( percent == 100 )); then
@@ -482,6 +507,8 @@ halt() {
     need_release "$v" "$(code_of "$v")"
 
     echo "Halting the rollout of $APP_NAME $v (versionCode $code) on production${WATCH_ARG:+ ($PRODUCTION)}..."
+    # The plugin's own commit, not play_send: the brake must work while something is in review, even
+    # though Google then cancels that review and starts it again.
     play_gradle :app:promoteReleaseArtifact \
         --update "$PRODUCTION" \
         --version-code "$code" \
@@ -666,23 +693,12 @@ listing() {
         fail "the store listing doesn't meet Play's rules (StoreListingTest above). Nothing was sent to Google Play."
 
     echo "Sending the store listing in $(locales | wc -l) languages to Google Play..."
-    # Each part is committed "not sent for review", so the listing waits in the Play Console's
-    # Publishing overview until the owner sends it with the release it goes with. The plugin's own
-    # commit sends the changes to Google's review at once, managed publishing or not (2026-11-09), so it
-    # fills its edit without committing it (--no-commit), leaving the edit's id in app/build/gpp/<app id>.txt,
-    # and PlayReports.java commits it. (The plugin always opens a fresh edit; it can't be handed one.)
-    local gpp="app/build/gpp" edit
+    # Each part is committed "not sent for review" (play_send), so the listing waits in the Play Console's
+    # Publishing overview until the owner sends it with the release it goes with: the plugin's own
+    # commit sends the changes to Google's review at once, managed publishing or not (2026-11-09).
     into_play() {
-        rm -rf "$gpp"
-        if play_gradle :app:publishReleaseListing --rerun --no-commit "$@" && [[ -s "$gpp/$APP_ID.txt" ]]; then
-            edit="$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
-            rm -rf "$gpp"
-            play_read edit-commit-unsent "$edit" && return
-        else
-            [[ ! -s "$gpp/$APP_ID.txt" ]] || play_read edit-delete "$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
-            rm -rf "$gpp"
-        fi
-        fail "this part of the store listing didn't reach Google Play (above); a part sent before it waits, not sent for review."
+        play_send commit-unsent :app:publishReleaseListing --rerun "$@" ||
+            fail "this part of the store listing didn't reach Google Play (above); a part sent before it waits, not sent for review."
     }
     # --rerun sends everything, also what an earlier run sent: the Play Console may have been edited
     # since. Pictures Play already has (the same file) are skipped by the plugin.

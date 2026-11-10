@@ -39,7 +39,13 @@ further, and does the few things only the Play Console can do (the checklist bel
   review* either as a draft (`upload`, `promote closed`, `promote production draft`: nothing reviews a
   draft until the owner starts it in the Console) or, the store listing, committed *not sent for
   review* (`changesNotSentForReview`, scripts/PlayReports.java): it waits under *Changes not yet sent
-  for review*. That way a new version and its store listing go to Google's review as one. The internal
+  for review*. That way a new version and its store listing go to Google's review as one. And every
+  send (upload, promote, rollout, the listing) is refused while changes are in Google's review, instead
+  of cancelling that review and starting it again, Google's default (`changesInReviewBehavior`,
+  `play_send` in scripts/release.sh, 2026-11-10): a refused send changes nothing on Play and goes again
+  once the review is done. Only `halt` keeps the default, since the brake must work during a review.
+  Whether the application for production access counts as "in review" there is not documented, so
+  nothing is sent while it is open either (owner, 2026-11-10). The internal
   track isn't covered: an upload there is live within minutes, with no review
   ([Play Console Help, *Control when app changes are reviewed and published*](https://support.google.com/googleplay/android-developer/answer/9859654);
   [edits.commit](https://developers.google.com/android-publisher/api-ref/rest/v3/edits/commit)).

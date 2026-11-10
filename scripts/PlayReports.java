@@ -1,6 +1,6 @@
 // Read-only looks at Twangle on Google Play, for scripts/release.sh status | health | reviews
-// (docs/release.md; docs/architecture/performance.md, *Release build*), and the edit that
-// scripts/release.sh listing sends the store listing in.
+// (docs/release.md; docs/architecture/performance.md, *Release build*), and the commit of
+// each edit scripts/release.sh sends to Play.
 //
 // Plain JDK, run as a single source file by Android Studio's Java (java PlayReports.java ...), so it
 // needs nothing installed beyond what builds the app, and nothing of it goes into the app. It signs in
@@ -12,10 +12,11 @@
 //   health  - Play Developer Reporting API v1beta1: vitals.crashrate and vitals.anrrate, DAILY per
 //             versionCode over the last N days up to Play's newest data (freshnessInfo).
 //   reviews - Android Publisher API v3 reviews.list: the reviews with text of the last week.
-//   edit-commit-unsent <id>, edit-delete <id> - an edit Gradle Play Publisher filled but didn't commit
-//             (--no-commit): committed with changesNotSentForReview, so it waits in the Play Console's
-//             Publishing overview until the owner sends it for review (the plugin's own commit sends it
-//             at once), or deleted when a send stopped half way.
+//   edit-commit <id>, edit-commit-unsent <id>, edit-delete <id> - an edit Gradle Play Publisher filled
+//             but didn't commit (--no-commit): committed only while nothing is in Google's review (the
+//             plugin's own commit would cancel that review and start it again), the unsent one also with
+//             changesNotSentForReview, so it waits in the Play Console's Publishing overview until the
+//             owner sends it for review; or deleted when a send stopped half way.
 //   track-started <track> - "yes" when the track has a release that went out (live, a staged rollout
 //             or halted), "no" when it never had one: an app's first production release can't be a
 //             staged rollout (Play Console Help, Release app updates with staged rollouts). Read only,
@@ -76,7 +77,7 @@ public class PlayReports {
     static String app;
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|edit-delete <id>|track-started <track> <key.json> <application id>");
+        if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit <id>|edit-commit-unsent <id>|edit-delete <id>|track-started <track> <key.json> <application id>");
         String command = args[0];
         String extra = args.length > 3 ? args[1] : null;
         Path key = Path.of(args[args.length - 2]);
@@ -86,7 +87,8 @@ public class PlayReports {
             case "status" -> status();
             case "health" -> health(extra == null ? 7 : Integer.parseInt(extra));
             case "reviews" -> reviews(extra == null ? "en" : extra);
-            case "edit-commit-unsent" -> editCommitUnsent(needed(extra, "the edit's id"));
+            case "edit-commit" -> editCommit(needed(extra, "the edit's id"), false);
+            case "edit-commit-unsent" -> editCommit(needed(extra, "the edit's id"), true);
             case "edit-delete" -> editDelete(needed(extra, "the edit's id"));
             case "track-started" -> trackStarted(needed(extra, "the track's name"));
             default -> fail("unknown command " + command);
@@ -210,18 +212,26 @@ public class PlayReports {
         return reply;
     }
 
-    // ---- The store listing's edit --------------------------------------------------------------------
+    // ---- The edits Gradle Play Publisher filled -------------------------------------------------------
 
     /**
-     * Commits the edit without sending it for review (edits.commit, changesNotSentForReview): its changes
-     * join the Publishing overview's "Changes not yet sent for review", for the owner to send. Without it
-     * a commit sends them to Google's review at once, managed publishing or not (2026-11-09).
+     * Commits the edit (edits.commit) with ERROR_IF_IN_REVIEW: while changes of the app are in Google's
+     * review (a release, the store listing), Google refuses it
+     * instead of cancelling that review and sending everything again, its default
+     * (developers.google.com/android-publisher/api-ref/rest/v3/edits/commit). A refused edit is deleted, so
+     * nothing of it reaches Play. [unsent] also holds the changes back (changesNotSentForReview): they join
+     * the Publishing overview's "Changes not yet sent for review", for the owner to send; without it a
+     * commit sends them to Google's review at once, managed publishing or not (2026-11-09).
      */
-    static void editCommitUnsent(String edit) throws Exception {
-        Reply reply = call("POST", PUBLISHER + app + "/edits/" + enc(edit) + ":commit?changesNotSentForReview=true", null);
+    static void editCommit(String edit, boolean unsent) throws Exception {
+        String query = "changesInReviewBehavior=ERROR_IF_IN_REVIEW" + (unsent ? "&changesNotSentForReview=true" : "");
+        Reply reply = call("POST", PUBLISHER + app + "/edits/" + enc(edit) + ":commit?" + query, null);
         if (reply.code / 100 != 2) {
-            fail("Google Play did not take the store listing (HTTP " + reply.code + " " + reply.errorStatus() + "): "
-                + reply.errorMessage() + "\nThis part was not committed: it is not on Play.");
+            editDelete(edit);
+            fail("Google Play did not take it (HTTP " + reply.code + " " + reply.errorStatus() + "): "
+                + reply.errorMessage() + "\nNot committed: none of it is on Play. If something is in Google's review"
+                + " (Publishing overview, or the application for production access on the Dashboard), wait"
+                + " until it is done, then send this again.");
         }
     }
 
