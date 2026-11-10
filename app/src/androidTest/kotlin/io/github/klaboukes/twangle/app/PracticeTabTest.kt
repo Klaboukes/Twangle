@@ -101,9 +101,7 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
             container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
             container.settingsRepository.setPracticeCapoFret(0)
-            container.settingsRepository.setDroneSound(DroneSound.TANPURA)
-            container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
-            container.settingsRepository.setDroneLower(false)
+            container.settingsRepository.setDrone(DroneSound.TANPURA, DroneVoicing.FIFTH, lower = false)
             resetEarTraining()
         }
     }
@@ -129,9 +127,7 @@ class PracticeTabTest {
         container.testTonePlayer = null
         container.testEarTrainingRecorder = null
         runBlocking {
-            container.settingsRepository.setDroneSound(DroneSound.TANPURA)
-            container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
-            container.settingsRepository.setDroneLower(false)
+            container.settingsRepository.setDrone(DroneSound.TANPURA, DroneVoicing.FIFTH, lower = false)
             resetEarTraining()
             container.settingsRepository.setPracticeTool(null)
             container.settingsRepository.setPracticeRoot(PitchClass.C)

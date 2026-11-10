@@ -19,3 +19,4 @@
 #784 none     Ear training's ViewModel only: whether an answer after a ▶ mid-question is heard, which no picture shows
 #785 none     the tuner's and trail's ViewModels and the recorder: a retry after a microphone failure, which no picture has
 #786 none     the tuning editor's saver: an earlier failed save's line, which no picture has
+#787 none     the settings repository and MainActivity's writes: several settings saved in one write, which no picture shows

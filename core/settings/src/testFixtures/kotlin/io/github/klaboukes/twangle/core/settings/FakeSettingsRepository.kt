@@ -60,20 +60,23 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setMode(mode: TunerMode) = write { it.copy(mode = mode) }
 
-    override suspend fun setInstrument(instrument: Instrument) = write {
-        if (it.instrument == instrument) it else it.copy(instrument = instrument, tuning = instrument.defaultTuning)
+    override suspend fun setInstrument(instrument: Instrument, guitarMode: Boolean) = write {
+        val picked = if (it.instrument == instrument) it else it.copy(instrument = instrument, tuning = instrument.defaultTuning)
+        picked.inGuitarModeIf(guitarMode)
     }
 
-    override suspend fun setTuning(tuning: Tuning) = write { settings ->
+    override suspend fun setTuning(tuning: Tuning, guitarMode: Boolean) = write { settings ->
         val instrument = Instruments.ofTuning(tuning.id)
             ?: settings.customTunings.firstOrNull { it.id == tuning.id }?.instrument
-        settings.copy(instrument = instrument ?: settings.instrument, tuning = tuning)
+        settings.copy(instrument = instrument ?: settings.instrument, tuning = tuning).inGuitarModeIf(guitarMode)
     }
 
-    override suspend fun setLoweredBy(semitones: Int) = write { settings ->
+    override suspend fun setLoweredBy(semitones: Int, guitarMode: Boolean) = write { settings ->
         val asWritten = settings.tuningAsWritten
-        settings.copy(tuning = asWritten.lowered(semitones.coerceIn(0, asWritten.lowerableBy)))
+        settings.copy(tuning = asWritten.lowered(semitones.coerceIn(0, asWritten.lowerableBy))).inGuitarModeIf(guitarMode)
     }
+
+    private fun AppSettings.inGuitarModeIf(guitarMode: Boolean) = if (guitarMode) copy(mode = TunerMode.AUTO) else this
 
     private var lastCustomId = 0
 
@@ -173,17 +176,17 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setPracticeChordQuality(quality: ChordQuality) = write { it.copy(practiceChordQuality = quality) }
 
+    override suspend fun openInChords(root: PitchClass, quality: ChordQuality) =
+        write { it.copy(practiceRoot = root, practiceChordQuality = quality, practiceTool = PracticeTool.CHORDS) }
+
     override suspend fun setPracticeScaleType(type: ScaleType) = write { it.copy(practiceScaleType = type) }
 
     override suspend fun setPracticeCapoShapes(shapes: SongKey) = write { it.copy(practiceCapoShapes = shapes) }
 
     override suspend fun setPracticeCapoFret(fret: Int) = write { it.copy(practiceCapoFret = fret.coerceIn(0, Capo.HIGHEST_FRET)) }
 
-    override suspend fun setDroneSound(sound: DroneSound) = write { it.copy(droneSound = sound) }
-
-    override suspend fun setDroneVoicing(voicing: DroneVoicing) = write { it.copy(droneVoicing = voicing) }
-
-    override suspend fun setDroneLower(lower: Boolean) = write { it.copy(droneLower = lower) }
+    override suspend fun setDrone(sound: DroneSound, voicing: DroneVoicing, lower: Boolean) =
+        write { it.copy(droneSound = sound, droneVoicing = voicing, droneLower = lower) }
 
     override suspend fun setLeftHanded(enabled: Boolean) = write { it.copy(leftHanded = enabled) }
 

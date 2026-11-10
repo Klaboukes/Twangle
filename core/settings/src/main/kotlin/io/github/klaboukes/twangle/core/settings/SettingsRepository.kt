@@ -39,23 +39,27 @@ interface SettingsRepository {
 
     /**
      * Picks [instrument] and its standard tuning ([Instrument.defaultTuning]), not lowered, both at
-     * once. Picking the instrument already picked changes nothing, so its tuning stays.
+     * once. Picking the instrument already picked changes nothing, so its tuning stays. With [guitarMode]
+     * the tuner is also switched to guitar mode ([TunerMode.AUTO]) in the same write, so nothing that
+     * follows the settings (the tuner, the widget) sees one without the other.
      */
-    suspend fun setInstrument(instrument: Instrument)
+    suspend fun setInstrument(instrument: Instrument, guitarMode: Boolean = false)
 
     /**
      * Picks [tuning] and the instrument it belongs to, so the two always match. [tuning] is a preset
      * or a saved custom tuning's [CustomTuning.tuning], lowered as much as it is ([Tuning.loweredBy]):
-     * a tuning as written (another tuning picked in the panel) is no longer lowered.
+     * a tuning as written (another tuning picked in the panel) is no longer lowered. With [guitarMode]
+     * the tuner is also switched to guitar mode in the same write (see [setInstrument]).
      */
-    suspend fun setTuning(tuning: Tuning)
+    suspend fun setTuning(tuning: Tuning, guitarMode: Boolean = false)
 
     /**
      * Lowers the picked tuning [semitones] below the tuning as written (0 puts it back), kept within
      * what it can go ([Tuning.lowerableBy] of the tuning as written). Saved with it, so a restart keeps
      * it; picking another tuning or instrument, or editing or deleting the picked own tuning, ends it.
+     * With [guitarMode] the tuner is also switched to guitar mode in the same write (see [setInstrument]).
      */
-    suspend fun setLoweredBy(semitones: Int)
+    suspend fun setLoweredBy(semitones: Int, guitarMode: Boolean = false)
 
     /**
      * Saves a new custom tuning after the player's others and returns it with its new, lasting id.
@@ -168,6 +172,12 @@ interface SettingsRepository {
     /** The chord type picked last in the chord charts ([AppSettings.practiceChordQuality]). */
     suspend fun setPracticeChordQuality(quality: ChordQuality)
 
+    /**
+     * Chords opened on a chord from elsewhere (a row of the capo helper's table): [root] and [quality] picked
+     * there, and Chords the tool used last ([setPracticeTool]), all in one write.
+     */
+    suspend fun openInChords(root: PitchClass, quality: ChordQuality)
+
     /** The scale picked last in the Scales tool ([AppSettings.practiceScaleType]). */
     suspend fun setPracticeScaleType(type: ScaleType)
 
@@ -177,14 +187,11 @@ interface SettingsRepository {
     /** The capo's fret picked last in the Capo helper, kept within 0..[Capo.HIGHEST_FRET] ([AppSettings.practiceCapoFret]). */
     suspend fun setPracticeCapoFret(fret: Int)
 
-    /** The drone's sound under the Scales tool ([AppSettings.droneSound]). */
-    suspend fun setDroneSound(sound: DroneSound)
-
-    /** The drone's notes ([AppSettings.droneVoicing]). */
-    suspend fun setDroneVoicing(voicing: DroneVoicing)
-
-    /** The drone an octave lower or not ([AppSettings.droneLower]). */
-    suspend fun setDroneLower(lower: Boolean)
+    /**
+     * The drone under the Scales tool, picked in its menu as one: its sound ([AppSettings.droneSound]), its notes
+     * ([AppSettings.droneVoicing]) and an octave lower or not ([AppSettings.droneLower]), in one write.
+     */
+    suspend fun setDrone(sound: DroneSound, voicing: DroneVoicing, lower: Boolean)
 
     /** Ear training's exercise picked last ([AppSettings.earExercise]). */
     suspend fun setEarExercise(exercise: Exercise)

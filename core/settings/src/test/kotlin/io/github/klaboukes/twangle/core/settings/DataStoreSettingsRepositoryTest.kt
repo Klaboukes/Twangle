@@ -166,9 +166,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setPracticeScaleType(ScaleType.BLUES)
         repo.setPracticeCapoShapes(SongKey(PitchClass.A, minor = true))
         repo.setPracticeCapoFret(3)
-        repo.setDroneSound(DroneSound.WARM_PAD)
-        repo.setDroneVoicing(DroneVoicing.FIFTH_OCTAVE)
-        repo.setDroneLower(true)
+        repo.setDrone(DroneSound.WARM_PAD, DroneVoicing.FIFTH_OCTAVE, lower = true)
         repo.setLeftHanded(true)
         repo.setEarExercise(Exercise.INTERVALS)
         repo.setEarNoteChoice(NoteChoice.ALL_TO_12TH)
@@ -289,9 +287,7 @@ class DataStoreSettingsRepositoryTest {
             setPracticeTool(PracticeTool.CAPO)
             setPracticeCapoShapes(SongKey(PitchClass.G))
             setPracticeCapoFret(5)
-            setDroneSound(DroneSound.HARMONIUM)
-            setDroneVoicing(DroneVoicing.ROOT)
-            setDroneLower(true)
+            setDrone(DroneSound.HARMONIUM, DroneVoicing.ROOT, lower = true)
             setLeftHanded(true)
             setEarExercise(Exercise.CHORD_TYPE)
             setEarNoteChoice(NoteChoice.NATURALS_TO_5TH)
@@ -430,6 +426,82 @@ class DataStoreSettingsRepositoryTest {
             it[intPreferencesKey("metronome_trainer_goal")] = 90
         }
         assertEquals("a step not on the list and a goal under the start are put right", SpeedTrainer(95, 100, 5, 2), repo.settings.first().metronomeTrainer)
+    }
+
+    /** A DataStore on [file] that counts its writes (each one DataStore edit), to tell a change saved as one from one in parts. */
+    private fun countingDataStore(): FlakyDataStore {
+        val real = dataStore()
+        return FlakyDataStore(real) { emitAll(real.data) }
+    }
+
+    @Test
+    fun `a pick in Practice saves the tuning and guitar mode as one write, which survives a restart`() = runTest {
+        val store = countingDataStore()
+        val repo = repository(store)
+        repo.setMode(TunerMode.CHROMATIC)
+
+        // The tuning panel's three picks, each switching the tuner to guitar mode (MainActivity's PracticeTuningPanel).
+        val picks: List<Pair<String, suspend () -> Unit>> = listOf(
+            "instrument" to { repo.setInstrument(Instruments.BASS_5, guitarMode = true) },
+            "the instrument already picked" to { repo.setInstrument(Instruments.BASS_5, guitarMode = true) },
+            "tuning" to { repo.setTuning(Tunings.DROP_D, guitarMode = true) },
+            "lowered by" to { repo.setLoweredBy(2, guitarMode = true) },
+        )
+        for ((pick, write) in picks) {
+            repo.setMode(TunerMode.CHROMATIC)
+            val writesBefore = store.writes
+            write()
+            assertEquals("the $pick and the mode in one write", writesBefore + 1, store.writes)
+            assertEquals("the $pick switches to guitar mode", TunerMode.AUTO, repo.settings.first().mode)
+        }
+        close()
+
+        val restarted = repository().settings.first()
+        assertEquals(TunerMode.AUTO, restarted.mode)
+        assertEquals(Instruments.GUITAR, restarted.instrument)
+        assertEquals(Tunings.DROP_D.lowered(2), restarted.tuning)
+    }
+
+    @Test
+    fun `a pick made elsewhere keeps the mode`() = runTest {
+        val repo = repository()
+        repo.setMode(TunerMode.CHROMATIC)
+        repo.setInstrument(Instruments.UKULELE)
+        repo.setTuning(Tunings.DROP_D)
+        repo.setLoweredBy(1)
+
+        val settings = repo.settings.first()
+        assertEquals(TunerMode.CHROMATIC, settings.mode)
+        assertEquals(Tunings.DROP_D.lowered(1), settings.tuning)
+    }
+
+    @Test
+    fun `the drone's sound and voicing are one write, which survives a restart`() = runTest {
+        val store = countingDataStore()
+        repository(store).setDrone(DroneSound.HARMONIUM, DroneVoicing.FIFTH_OCTAVE, lower = true)
+        assertEquals(1, store.writes)
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(DroneSound.HARMONIUM, settings.droneSound)
+        assertEquals(DroneVoicing.FIFTH_OCTAVE, settings.droneVoicing)
+        assertEquals(true, settings.droneLower)
+    }
+
+    @Test
+    fun `a chord opened from the capo helper is one write, which survives a restart`() = runTest {
+        val store = countingDataStore()
+        val repo = repository(store)
+        repo.setPracticeTool(PracticeTool.CAPO)
+        val writesBefore = store.writes
+        repo.openInChords(PitchClass.F_SHARP, ChordQuality.MINOR_SEVENTH)
+        assertEquals("the root, the chord type and the tool in one write", writesBefore + 1, store.writes)
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(PitchClass.F_SHARP, settings.practiceRoot)
+        assertEquals(ChordQuality.MINOR_SEVENTH, settings.practiceChordQuality)
+        assertEquals(PracticeTool.CHORDS, settings.practiceTool)
     }
 
     @Test
@@ -1360,9 +1432,9 @@ class DataStoreSettingsRepositoryTest {
         val writes: Map<String, suspend () -> Unit> = mapOf(
             "setA4" to { repo.setA4(432f) },
             "setMode" to { repo.setMode(TunerMode.entries.last()) },
-            "setInstrument" to { repo.setInstrument(Instruments.BASS_4) },
-            "setTuning" to { repo.setTuning(Tunings.DROP_D) },
-            "setLoweredBy" to { repo.setLoweredBy(2) },
+            "setInstrument" to { repo.setInstrument(Instruments.BASS_4, guitarMode = true) },
+            "setTuning" to { repo.setTuning(Tunings.DROP_D, guitarMode = true) },
+            "setLoweredBy" to { repo.setLoweredBy(2, guitarMode = true) },
             "addCustomTuning" to { assertNull(repo.addCustomTuning("New", Instruments.GUITAR, openC, pick = true)) },
             "updateCustomTuning" to { assertNull(repo.updateCustomTuning(mine.id, "Changed", openC, pick = true)) },
             "deleteCustomTuning" to { repo.deleteCustomTuning(mine.id) },
@@ -1398,9 +1470,8 @@ class DataStoreSettingsRepositoryTest {
             "setPracticeScaleType" to { repo.setPracticeScaleType(ScaleType.entries.last()) },
             "setPracticeCapoShapes" to { repo.setPracticeCapoShapes(SongKey(PitchClass.entries.last(), minor = true)) },
             "setPracticeCapoFret" to { repo.setPracticeCapoFret(5) },
-            "setDroneSound" to { repo.setDroneSound(DroneSound.entries.last()) },
-            "setDroneVoicing" to { repo.setDroneVoicing(DroneVoicing.entries.last()) },
-            "setDroneLower" to { repo.setDroneLower(!before.droneLower) },
+            "openInChords" to { repo.openInChords(PitchClass.entries.last(), ChordQuality.entries.last()) },
+            "setDrone" to { repo.setDrone(DroneSound.entries.last(), DroneVoicing.entries.last(), !before.droneLower) },
             "setEarExercise" to { repo.setEarExercise(Exercise.entries.last()) },
             "setEarNoteChoice" to { repo.setEarNoteChoice(NoteChoice.entries.last()) },
             "setEarNotesInRow" to { repo.setEarNotesInRow(3) },

@@ -6,6 +6,7 @@ import android.os.StrictMode
 import android.util.Log
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.app.widget.WidgetState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,10 +54,10 @@ class TwangleApplication : Application() {
 }
 
 /**
- * A scope for work that outlives every screen (the widget's redraws), on [Dispatchers.Default]. An
+ * A scope for work that outlives every screen (the widget's redraws, the settings writes), on [dispatcher]. An
  * exception that escapes a coroutine in it is logged under [tag] instead of closing the app: a
  * widget that can't be redrawn once must not take the tuner down with it.
  */
-internal fun loggingScope(tag: String): CoroutineScope = CoroutineScope(
-    SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e -> Log.e(tag, "Background work failed", e) },
+internal fun loggingScope(tag: String, dispatcher: CoroutineDispatcher = Dispatchers.Default): CoroutineScope = CoroutineScope(
+    SupervisorJob() + dispatcher + CoroutineExceptionHandler { _, e -> Log.e(tag, "Background work failed", e) },
 )

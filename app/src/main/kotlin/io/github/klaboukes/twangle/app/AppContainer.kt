@@ -18,7 +18,11 @@ import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.eartraining.PitchListener
 import io.github.klaboukes.twangle.feature.practice.ChordListener
 import io.github.klaboukes.twangle.feature.tuner.RatingWindow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Manual dependency injection: the only place where concrete implementations are created and wired together.
@@ -164,6 +168,19 @@ class AppContainer(private val appContext: Context) {
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }
+
+    /**
+     * Where the activity's settings writes run: a scope that lives as long as the app, so a write already made isn't
+     * cut off when the activity is rebuilt (a turn of the phone). On the main thread, where the taps come from, so the
+     * writes reach the settings in the order they were made; a write that fails is logged ([loggingScope]).
+     */
+    private val saveScope: CoroutineScope = loggingScope("TwangleSaves", Dispatchers.Main.immediate)
+
+    /**
+     * Saves through [settingsRepository] in a scope that lives as long as the app (see [saveScope]). A change of several
+     * settings at once is one repository call, so it lands whole: one write that a rebuilt activity can't cut in half.
+     */
+    fun save(write: suspend SettingsRepository.() -> Unit): Job = saveScope.launch { settingsRepository.write() }
 
     /**
      * Which music tools show (Phase 28): every live one in every build (they went live in v1.0, Phase

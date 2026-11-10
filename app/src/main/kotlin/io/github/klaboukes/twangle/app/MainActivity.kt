@@ -69,7 +69,6 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
-import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.eartraining.EarTrainingScreen
 import io.github.klaboukes.twangle.feature.tuner.trail.PitchTrailScreen
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
@@ -115,13 +114,13 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
         // The first use is noted once: Google's rating window never comes on the first day.
-        lifecycleScope.launch { container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis()) }
+        container.save { noteFirstUseOnce(System.currentTimeMillis()) }
         // 1.1's focus mode switch, read once (2.0, Phase 73): on, the first start of 2.0 opens in focus mode.
         if (savedInstanceState == null) {
             lifecycleScope.launch { if (container.settingsRepository.takeOldFocusMode()) container.focusMode.value = true }
         }
         // What a 2.0 test build saved for a setting that went before release (the 12th-fret check's switch).
-        lifecycleScope.launch { container.settingsRepository.forgetDroppedSettings() }
+        container.save { forgetDroppedSettings() }
         takeLensLook(intent)
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
@@ -151,8 +150,7 @@ class MainActivity : AppCompatActivity() {
         if (!BuildConfig.DEBUG && !BuildConfig.SYNTHETIC_AUDIO) return
         val name = intent?.getStringExtra(EXTRA_LENS_LOOK) ?: return
         val look = runCatching { LensLook.valueOf(name) }.getOrNull() ?: return
-        val settings = (application as TwangleApplication).container.settingsRepository
-        lifecycleScope.launch { settings.setLensLook(look) }
+        (application as TwangleApplication).container.save { setLensLook(look) }
     }
 
     /**
@@ -300,18 +298,14 @@ class MainActivity : AppCompatActivity() {
                         chordsFromCapo = false
                         openedChord = null
                         picked = tool.screen
-                        lifecycleScope.launch { container.settingsRepository.setPracticeTool(tool) }
+                        container.save { setPracticeTool(tool) }
                     }
                     // A row of the capo helper's table opens its chord in Chords: Chords' saved state is dropped, so it
                     // opens afresh on that chord (saved too, as if picked there), and Back leads back to the capo helper.
                     val openChordFromCapo: (Chord) -> Unit = { chord ->
                         openedChord = chord
                         saveableState.removeState(CHORDS_STATE)
-                        lifecycleScope.launch {
-                            container.settingsRepository.setPracticeRoot(chord.root)
-                            container.settingsRepository.setPracticeChordQuality(chord.quality)
-                            container.settingsRepository.setPracticeTool(PracticeTool.CHORDS)
-                        }
+                        container.save { openInChords(chord.root, chord.quality) }
                         chordsFromCapo = true
                         picked = Screen.PRACTICE_CHORDS
                     }
@@ -484,31 +478,23 @@ class MainActivity : AppCompatActivity() {
                     notation = settings.notationFor(appLanguage()),
                     savedRoot = openedChord?.root ?: settings.practiceRoot,
                     savedQuality = openedChord?.quality ?: settings.practiceChordQuality,
-                    onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
-                    onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
+                    onRootChange = { container.save { setPracticeRoot(it) } },
+                    onQualityChange = { container.save { setPracticeChordQuality(it) } },
                     onBack = onBack,
                     scales = tool == PracticeTool.SCALES,
                     savedScaleType = settings.practiceScaleType,
-                    onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
+                    onScaleTypeChange = { container.save { setPracticeScaleType(it) } },
                     onPickInstrument = openPanel,
                     drone = container.dronePlayer,
                     a4Hz = settings.a4Hz,
                     savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
-                    onDroneChange = { picked ->
-                        lifecycleScope.launch {
-                            with(container.settingsRepository) {
-                                setDroneSound(picked.sound)
-                                setDroneVoicing(picked.voicing)
-                                setDroneLower(picked.lower)
-                            }
-                        }
-                    },
+                    onDroneChange = { picked -> container.save { setDrone(picked.sound, picked.voicing, picked.lower) } },
                     leftHanded = settings.leftHanded,
                     // Listen (2.0, Phase 74): the chord name, behind its switch, for the instruments it reads.
                     chordListener = container.chordListener.takeIf { container.toolSwitches.chordNaming && ChordInstruments.offers(settings.instrument) },
                     listenRange = PitchRange.forLowestNote(NoteMapper(settings.a4Hz).frequencyOf(settings.tuning.lowestNote)),
                     micRefused = settings.micRefused,
-                    onMicRefused = { if (!settings.micRefused) lifecycleScope.launch { container.settingsRepository.setMicRefused(true) } },
+                    onMicRefused = { if (!settings.micRefused) container.save { setMicRefused(true) } },
                 )
             }
             PracticeTool.CAPO -> CapoScreen(
@@ -517,8 +503,8 @@ class MainActivity : AppCompatActivity() {
                 notation = settings.notationFor(appLanguage()),
                 savedShapes = settings.practiceCapoShapes,
                 savedFret = settings.practiceCapoFret,
-                onShapesChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoShapes(it) } },
-                onFretChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoFret(it) } },
+                onShapesChange = { container.save { setPracticeCapoShapes(it) } },
+                onFretChange = { container.save { setPracticeCapoFret(it) } },
                 onOpenChord = onOpenChord,
                 onBack = onBack,
                 onPickInstrument = openPanel,
@@ -572,35 +558,19 @@ class MainActivity : AppCompatActivity() {
         onDismiss: () -> Unit,
         onOpenTuningEditor: (Instrument, String?) -> Unit,
     ) {
-        val repository = container.settingsRepository
-        val toGuitar = suspend { if (settings.mode != TunerMode.AUTO) repository.setMode(TunerMode.AUTO) }
+        // Each pick and the switch to guitar mode are one write, so the tuner and the widget never see half of it.
         InstrumentTuningPanel(
             instrument = settings.instrument,
             tuning = settings.tuning,
-            onInstrumentChange = {
-                lifecycleScope.launch {
-                    toGuitar()
-                    repository.setInstrument(it)
-                }
-            },
-            onTuningChange = {
-                lifecycleScope.launch {
-                    toGuitar()
-                    repository.setTuning(it)
-                }
-            },
+            onInstrumentChange = { container.save { setInstrument(it, guitarMode = true) } },
+            onTuningChange = { container.save { setTuning(it, guitarMode = true) } },
             onDismiss = onDismiss,
             notation = settings.notationFor(appLanguage()),
             customTunings = settings.customTunings,
             onNewTuning = { onOpenTuningEditor(it, null) },
             onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
-            onDeleteTuning = { lifecycleScope.launch { repository.deleteCustomTuning(it.id) } },
-            onLoweredByChange = {
-                lifecycleScope.launch {
-                    toGuitar()
-                    repository.setLoweredBy(it)
-                }
-            },
+            onDeleteTuning = { container.save { deleteCustomTuning(it.id) } },
+            onLoweredByChange = { container.save { setLoweredBy(it, guitarMode = true) } },
         )
     }
 

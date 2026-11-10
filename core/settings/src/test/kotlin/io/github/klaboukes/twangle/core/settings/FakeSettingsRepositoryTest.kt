@@ -1,7 +1,11 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -56,5 +60,29 @@ class FakeSettingsRepositoryTest {
         repo.setLoweredBy(1)
         repo.setInstrument(Instruments.GUITAR)
         assertEquals(Tunings.STANDARD, repo.current.tuning)
+    }
+
+    @Test
+    fun `the changes of several settings land whole, as the real repository's`() = runTest {
+        val repo = FakeSettingsRepository(AppSettings(mode = TunerMode.CHROMATIC))
+        repo.setTuning(Tunings.DROP_D, guitarMode = true)
+        assertEquals(TunerMode.AUTO, repo.current.mode)
+        assertEquals(Tunings.DROP_D, repo.current.tuning)
+
+        repo.current = repo.current.copy(mode = TunerMode.CHROMATIC)
+        repo.setInstrument(Instruments.GUITAR, guitarMode = true)
+        assertEquals("the instrument already picked still switches the mode", TunerMode.AUTO, repo.current.mode)
+        assertEquals(Tunings.DROP_D, repo.current.tuning)
+
+        repo.current = repo.current.copy(mode = TunerMode.CHROMATIC)
+        repo.setLoweredBy(1, guitarMode = true)
+        assertEquals(TunerMode.AUTO, repo.current.mode)
+        assertEquals(Tunings.DROP_D.lowered(1), repo.current.tuning)
+
+        repo.setDrone(DroneSound.HARMONIUM, DroneVoicing.FIFTH_OCTAVE, lower = true)
+        assertEquals(listOf(DroneSound.HARMONIUM, DroneVoicing.FIFTH_OCTAVE, true), with(repo.current) { listOf(droneSound, droneVoicing, droneLower) })
+
+        repo.openInChords(PitchClass.F_SHARP, ChordQuality.MINOR_SEVENTH)
+        assertEquals(listOf(PitchClass.F_SHARP, ChordQuality.MINOR_SEVENTH, PracticeTool.CHORDS), with(repo.current) { listOf(practiceRoot, practiceChordQuality, practiceTool) })
     }
 }

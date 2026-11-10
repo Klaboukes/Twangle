@@ -165,8 +165,9 @@ class DataStoreSettingsRepository internal constructor(
         save { it[MODE] = mode.name }
     }
 
-    override suspend fun setInstrument(instrument: Instrument) {
+    override suspend fun setInstrument(instrument: Instrument, guitarMode: Boolean) {
         save {
+            if (guitarMode) it[MODE] = TunerMode.AUTO.name
             if (instrumentAndTuning(it, customTunings(it)).first == instrument) return@save
             it[INSTRUMENT_ID] = instrument.id
             it[TUNING_ID] = instrument.defaultTuning.id
@@ -174,8 +175,9 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
-    override suspend fun setTuning(tuning: Tuning) {
+    override suspend fun setTuning(tuning: Tuning, guitarMode: Boolean) {
         save {
+            if (guitarMode) it[MODE] = TunerMode.AUTO.name
             it[TUNING_ID] = tuning.id
             saveLoweredBy(it, tuning.loweredBy)
             val instrument = Instruments.ofTuning(tuning.id)
@@ -184,8 +186,9 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
-    override suspend fun setLoweredBy(semitones: Int) {
+    override suspend fun setLoweredBy(semitones: Int, guitarMode: Boolean) {
         save {
+            if (guitarMode) it[MODE] = TunerMode.AUTO.name
             val picked = instrumentAndTuning(it, customTunings(it)).second
             saveLoweredBy(it, semitones.coerceIn(0, picked.loweredBy + picked.lowerableBy))
         }
@@ -344,11 +347,7 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setPracticeTool(tool: PracticeTool?) {
-        save {
-            if (tool == null) it.remove(PRACTICE_TOOL) else it[PRACTICE_TOOL] = tool.name
-            // The old Chords · Scales choice has had its say once a tool is picked (see [practiceTool]).
-            it.remove(OLD_PRACTICE_CHART)
-        }
+        save { savePracticeTool(it, tool) }
     }
 
     override suspend fun setPracticeRoot(root: PitchClass) {
@@ -357,6 +356,14 @@ class DataStoreSettingsRepository internal constructor(
 
     override suspend fun setPracticeChordQuality(quality: ChordQuality) {
         save { it[PRACTICE_CHORD_QUALITY] = quality.name }
+    }
+
+    override suspend fun openInChords(root: PitchClass, quality: ChordQuality) {
+        save {
+            it[PRACTICE_ROOT] = root.name
+            it[PRACTICE_CHORD_QUALITY] = quality.name
+            savePracticeTool(it, PracticeTool.CHORDS)
+        }
     }
 
     override suspend fun setPracticeScaleType(type: ScaleType) {
@@ -374,16 +381,12 @@ class DataStoreSettingsRepository internal constructor(
         save { it[PRACTICE_CAPO_FRET] = fret.coerceIn(0, Capo.HIGHEST_FRET) }
     }
 
-    override suspend fun setDroneSound(sound: DroneSound) {
-        save { it[DRONE_SOUND] = sound.name }
-    }
-
-    override suspend fun setDroneVoicing(voicing: DroneVoicing) {
-        save { it[DRONE_VOICING] = voicing.name }
-    }
-
-    override suspend fun setDroneLower(lower: Boolean) {
-        save { it[DRONE_LOWER] = lower }
+    override suspend fun setDrone(sound: DroneSound, voicing: DroneVoicing, lower: Boolean) {
+        save {
+            it[DRONE_SOUND] = sound.name
+            it[DRONE_VOICING] = voicing.name
+            it[DRONE_LOWER] = lower
+        }
     }
 
     override suspend fun setLeftHanded(enabled: Boolean) {
@@ -684,6 +687,12 @@ class DataStoreSettingsRepository internal constructor(
             prefs[TUNING_ID] = tuning.id
             prefs[INSTRUMENT_ID] = tuning.instrument.id
             prefs.remove(TUNING_LOWERED_BY)
+        }
+
+        private fun savePracticeTool(prefs: MutablePreferences, tool: PracticeTool?) {
+            if (tool == null) prefs.remove(PRACTICE_TOOL) else prefs[PRACTICE_TOOL] = tool.name
+            // The old Chords · Scales choice has had its say once a tool is picked (see [practiceTool]).
+            prefs.remove(OLD_PRACTICE_CHART)
         }
 
         private fun saveLoweredBy(prefs: MutablePreferences, semitones: Int) {
