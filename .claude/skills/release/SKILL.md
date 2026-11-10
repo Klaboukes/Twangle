@@ -16,7 +16,7 @@ change what people get or see (the watch app's too, with `watch`), so each one w
 exactly what goes where: "Send Twangle 1.0.1 (versionCode 10001) and its notes in every language to
 the internal track on Google Play, as a draft?" A yes to one step is not a yes to the next. When the
 owner's own message asks for that very step ("halt the rollout", "raise it to 50 %"), that is the
-yes. Everything else only builds or reads (`bump`, `notes`, `profile`, `bundle`, `status`, `health`,
+yes. Everything else only builds or reads (`bump`, `notes`, `profile`, `full-check`, `bundle`, `status`, `health`,
 `reviews`, `listing-changes`) and needs no ask.
 
 **Managed publishing is on** (owner, 2026-11-08): nothing Claude sends goes live by itself. Once
@@ -57,19 +57,26 @@ Steps 6–8 follow later, each on the owner's word.
 
 ## 1. Is main ready?
 - Work in the main folder, which belongs to releases and the full check (CLAUDE.md, *One worktree
-  per session that changes files*): the full check's summary and the store screenshots are there.
+  per session that changes files*): the full check's record and summary and the store screenshots are there.
 - `git switch main && git pull`, then `git describe --tags --abbrev=0 --match 'v*'` (the `listing/*` and `store-screenshots` tags are no versions). If nothing a player would
   notice changed since that tag, say so and stop.
 - **A clean full check first** (owner, 2026-10-28; the overnight run until 2026-11-06): nothing is released that the full check
   (every UI test, every language; a language check skipped because nothing it shows
-  changed since it passed counts as passed) hasn't passed. The first line
-  of `build/full-check/summary.txt` says which commit it ran on and whether everything passed. It counts
-  when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (its
-  summary says so), and `git diff --stat <that commit>..main` shows no code change since but
-  that fix, docs, `.claude/`, `scripts/` or a regenerated Baseline Profile (`app/src/release/generated/`,
-  which the debug builds the full check tests don't use). Otherwise **stop here, before any branch, version or note**:
+  changed since it passed counts as passed) hasn't passed. `scripts/release.sh full-check` says it
+  (only reads; Phase 90): from the run's record (`build/full-check/result.txt`) it checks that the
+  phones' part passed, or its failures were fixed and re-checked by the run's own fix PR (`scripts/full-check.sh
+  --fixed`, which notes the pass at `main`'s commit after the fix), and that the watch's tests passed,
+  each from a clean tree at a commit `main` follows, with nothing changed since that goes into the
+  bundles: only `*.md`, `docs/`, `.claude/`, `.github/`, `scripts/`, `website/`, `fastlane/` (the
+  release notes), a regenerated Baseline Profile (`app/src/release/generated/`, which the debug builds
+  the full check tests don't use) and the version line in `gradle.properties` may differ.
+  `scripts/release.sh bundle` checks the same and refuses otherwise. The summary's first line says what the run found ("everything passed",
+  "failures below", "not finished" when a device was busy, ", watch not tested"). A watch that
+  wasn't tested holds the release up too: run `scripts/full-check.sh --watch` with the watch
+  connected (a few minutes); only on the owner's word does the phone go without it
+  (`bundle --watch-untested`). Otherwise **stop here, before any branch, version or note**:
   tell the owner in one line that the release waits for a clean full check (`/full-check`, about 35
-  minutes), and that `/release` picks it up after. The summary is git-ignored, so on the other PC (or with none) the
+  minutes), and that `/release` picks it up after. The record and summary are git-ignored, so on the other PC (or with none) the
   answer is also: run the full check first.
 - **Every language complete and up to date** (owner, 2026-10-28): by day only English and Dutch are
   written, and the full check's first step translates the rest (`/translate`). Run
@@ -124,6 +131,8 @@ Steps 6–8 follow later, each on the owner's word.
 - Without the upload key (`~/.twangle-keys/`, only on the owner's machines) it stops: tell the owner to
   run the release from a machine that has it. Never make or move a key.
 - A version that already has a tag is refused: raise the version again rather than reusing it.
+- Code that the last full check on this PC didn't pass whole is refused, before anything is built
+  (as `scripts/release.sh full-check`, step 1); `--watch-untested` only on the owner's word.
 - An out-of-date Baseline Profile is refused (step 1 regenerates it); `--keep-old-profile` only on the
   owner's word.
 - It builds the watch app's bundle too (`release/Twangle-<version>-watch.aab`), which goes to Play only

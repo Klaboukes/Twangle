@@ -13,8 +13,18 @@
 #   scripts/release.sh profile
 #       Whether the Baseline Profile (app/src/release/generated/) is newer than the last change to the
 #       app's screens (app/src/main, feature/*/src/main, core/designsystem/src/main). Only reads git.
-#   scripts/release.sh bundle [--keep-old-profile]
-#       On main, once the version bump has landed: checks that every language is complete and up to
+#   scripts/release.sh full-check
+#       Whether the last full check on this PC passed whole on the code of this commit (Phase 90): its
+#       record (build/full-check/result.txt, scripts/full-check.sh) says the phones' part passed (or
+#       its failures were fixed and re-checked: full-check.sh --fixed) and the watch's did, each at a
+#       commit this one follows, from a clean tree, and since then nothing changed that goes into the
+#       bundles: only *.md, docs/, .claude/, .github/, scripts/, website/, fastlane/ (the release notes),
+#       a regenerated Baseline Profile (app/src/release/generated/) and the version line in
+#       gradle.properties (the bump). Only reads.
+#   scripts/release.sh bundle [--keep-old-profile] [--watch-untested]
+#       On main, once the version bump has landed: checks that the full check passed whole on this
+#       code (as `full-check`; --watch-untested, only on the owner's word, releases although the watch
+#       app's tests didn't run), that every language is complete and up to
 #       date (LocalizationTest in strict mode, docs/architecture/languages.md, *Day and night*) and that
 #       the Baseline Profile is current (as `profile`; --keep-old-profile releases with an older one),
 #       builds the phone app's and the watch app's bundles signed with the upload key, checks that their
@@ -73,7 +83,7 @@
 #
 # status, health and reviews only read (scripts/PlayReports.java; status opens a temporary edit and
 # deletes it, never commits it), so they need no yes from the owner. They need the robot user's key too.
-# listing-changes only reads git.
+# listing-changes and full-check only read (git, and the full check's record).
 #
 # upload, promote, rollout, halt and listing change what people get or see on Google Play, so Claude
 # asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
@@ -214,6 +224,64 @@ profile_current() {
     return 1
 }
 
+# The full check's record (scripts/full-check.sh, *The record*), in this checkout: releases and the full
+# check both run in the main folder (CLAUDE.md, *One worktree per session*).
+FULL_CHECK_RECORD="build/full-check/result.txt"
+# What may change after the full check without its pass going stale: nothing that goes into the
+# phone app's or the watch app's bundle (gradle.properties' version line is checked on its own).
+NOT_IN_THE_BUNDLES='(^|/)[^/]*\.md$|^docs/|^\.claude/|^\.github/|^scripts/|^website/|^fastlane/|^app/src/release/generated/'
+
+# Whether the full check's record of [part] (phones, watch) vouches for this commit; says which, and
+# returns 1 when it doesn't.
+part_checked() {
+    local part="$1" what="$2" line code commit clean date extra changed note pr run
+    line="$(grep "^$part " "$FULL_CHECK_RECORD" 2>/dev/null | tail -1 || true)"
+    [[ -n "$line" ]] || { echo "No full check of $what on record on this PC ($FULL_CHECK_RECORD)."; return 1; }
+    read -r _ code commit clean _ date extra <<<"$line"
+    date="${date//_/ }"
+    case "$code" in
+        0) ;;
+        1) echo "The full check of $what failed at ${commit:0:8} ($date)."; return 1 ;;
+        2) echo "The full check didn't test $what at ${commit:0:8} ($date): not connected, dropped off or busy."; return 1 ;;
+        *) echo "The full check of $what didn't finish at ${commit:0:8} ($date): a device was busy or none was left for a job."; return 1 ;;
+    esac
+    [[ "$clean" == 1 ]] || { echo "The full check of $what at ${commit:0:8} ran with uncommitted changes, so it vouches for no commit."; return 1; }
+    git merge-base --is-ancestor "$commit" HEAD 2>/dev/null ||
+        { echo "The full check of $what ran at ${commit:0:8}, which this commit doesn't follow."; return 1; }
+    changed="$(git diff --name-only "$commit" HEAD | grep -Ev "$NOT_IN_THE_BUNDLES" | grep -vx gradle.properties || true)"
+    # The version bump: twangle.version may change, nothing else in gradle.properties.
+    if [[ -n "$(git diff -U0 "$commit" HEAD -- gradle.properties | grep -E '^[-+]' | grep -Ev '^(\+\+\+|---)' |
+        grep -v '^[-+]twangle\.version=' || true)" ]]; then
+        changed="$changed${changed:+$'\n'}gradle.properties"
+    fi
+    if [[ -n "$changed" ]]; then
+        echo "The full check of $what passed at ${commit:0:8} ($date), but what goes into the bundles changed since:"
+        head -5 <<<"$changed" | sed 's/^/  /'
+        return 1
+    fi
+    note=""
+    if [[ "$extra" == "fixed "* ]]; then
+        read -r _ pr run <<<"$extra"
+        note=": the run at ${run:0:8}, its failures fixed by $pr and re-checked"
+    fi
+    echo "The full check of $what passed at ${commit:0:8} ($date$note), and nothing that goes into the bundles changed since."
+}
+
+# Whether the last full check passed whole on this code: the phones' part and the watch's. With
+# [--watch-untested] (the owner's word) a watch whose tests didn't pass is let through, said so.
+full_check_passed() {
+    local ok=0
+    part_checked phones "the phones" || ok=1
+    if ! part_checked watch "the watch"; then
+        if [[ "${1:-}" == --watch-untested ]]; then
+            echo "Going ahead without the watch's tests (--watch-untested)."
+        else
+            ok=1
+        fi
+    fi
+    return $ok
+}
+
 # Gradle runs on Android Studio's JDK (CLAUDE.md, Dev machine environment).
 use_java() {
     if [[ -z "${JAVA_HOME:-}" && -d "/c/Program Files/Android/Android Studio/jbr" ]]; then
@@ -223,13 +291,14 @@ use_java() {
 }
 
 bundle() {
-    local v code tag aab watch_aab keep_profile=false
-    [[ $# -le 1 ]] || fail "usage: scripts/release.sh bundle [--keep-old-profile]"
-    case "${1:-}" in
-        "") ;;
-        --keep-old-profile) keep_profile=true ;;
-        *) fail "usage: scripts/release.sh bundle [--keep-old-profile]" ;;
-    esac
+    local v code tag aab watch_aab keep_profile=false watch_untested="" arg
+    for arg in "$@"; do
+        case "$arg" in
+            --keep-old-profile) keep_profile=true ;;
+            --watch-untested) watch_untested=--watch-untested ;;
+            *) fail "usage: scripts/release.sh bundle [--keep-old-profile] [--watch-untested]" ;;
+        esac
+    done
     v="$(version)"
     code="$(code_of "$v")"
     tag="v$v"
@@ -242,6 +311,10 @@ bundle() {
         fail "$tag is already released; raise the version (scripts/release.sh bump patch)"
     fi
     notes_block "$code" >/dev/null
+    # Nothing is released that the full check hasn't passed whole (the release skill's rule, owner
+    # 2026-10-28; until Phase 90 only the skill checked it).
+    full_check_passed $watch_untested ||
+        fail "the last full check on this PC didn't pass whole on this code (above): run the full check first (/full-check; for a watch not tested, scripts/full-check.sh --watch), then bundle again. Nothing was built or tagged."
     # A profile older than the screens leaves the new code to the JIT at startup: slower on slow phones.
     if ! profile_current; then
         $keep_profile || fail "the Baseline Profile is older than the app's screens (above). Regenerate it first, or
@@ -842,6 +915,7 @@ case "$COMMAND" in
     bump) bump "${1:-}" ;;
     notes) notes_block "$(code_of "$(version)")" ;;
     profile) [[ $# -eq 0 ]] || fail "usage: scripts/release.sh profile"; profile_current ;;
+    full-check) [[ $# -eq 0 ]] || fail "usage: scripts/release.sh full-check"; full_check_passed ;;
     bundle) bundle "$@" ;;
     upload) upload "$@" ;;
     promote) promote "$@" ;;
@@ -852,7 +926,8 @@ case "$COMMAND" in
     status) status "$@" ;;
     health) health "$@" ;;
     reviews) reviews "$@" ;;
-    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | profile | bundle [--keep-old-profile]
+    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | profile | full-check
+       | bundle [--keep-old-profile] [--watch-untested]
        | upload [watch] [draft|completed] | promote [watch] closed [draft|completed]
        | promote [watch] production [draft] | rollout [watch] <percent> | halt [watch] | listing
        | listing-changes | status | health [days] | reviews [language]" ;;

@@ -47,7 +47,8 @@ export ANDROID_SERIAL=<a phone's serial>      # for these checks only (each devi
   nothing (on 2026-11-05 the watch came on over Wi-Fi a minute in and every phone install stopped on
   "more than one device"). With the watch connected, the watch app's tests run on it first
   (`scripts/ui-tests.sh :wear --thorough`, a few minutes, its screen kept on and its time-out put back).
-  No watch: the stage is skipped, which is no failure; a watch that drops off mid-stage isn't either.
+  No watch: the stage is skipped, which is no failure, but the run then says "watch not tested"
+  (exit 3) and the release refuses it until `scripts/full-check.sh --watch` passes; a watch that drops off mid-stage is the same.
   The summary names the devices (with more than one, how many jobs each did) and what the watch did.
   Each device's lines in the log start with its tag (`[phone] `, `[tablet] `), and with more than one
   its logs and pulled pictures carry the tag too (`connected_android_test_additional_output-tablet`).
@@ -108,19 +109,31 @@ an older app ([release skill](../release/SKILL.md), step 8). Make them only when
 when the summary should show a change to them: `scripts/full-check.sh --store` (or
 `scripts/store-screenshots.sh`).
 
-- **While it runs, don't edit code, tests or scripts**: a module's pass is noted only from a clean
-  working tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
-  safe to edit.
+- **While it runs, don't edit code, tests or scripts**: bash reads a running script as it goes, and
+  the devices install what the run built at its start. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
+  safe to edit: the run hands the commit and clean state it started from to every device's
+  `scripts/ui-tests.sh` (`UI_TESTS_COMMIT`, `UI_TESTS_CLEAN`), so a doc edited meanwhile no longer stops
+  the later modules' passes from being noted (Phase 90).
+- **Its result** (Phase 90): the first line of `build/full-check/summary.txt` says "everything passed",
+  "failures below" or "not finished: a device was busy with another run (below)", with ", watch not
+  tested" when the watch's tests were asked for and didn't run (no watch, it dropped off, or another
+  run had it). The exit code says the same: 0, 1, 5, and 3 for "everything else passed, watch not
+  tested". A device another run holds puts its job back for the others (or for itself after a
+  five-minute wait), and the summary names the run that had it. The run also writes
+  `build/full-check/result.txt`, the record `scripts/release.sh full-check` and `bundle` read: a
+  line for the phones and one for the watch, each written only by a run that did all of that part
+  (a run with a narrowed module list, or `--sweep` alone, writes no phones line).
 - Don't poll; you are told when it finishes. To start on failures early (the sweep prints each
   class as it finishes, e.g. `  PhoneScreenTest   3s  1 tests, 0 failed, 2s on the phone`), watch
   the log with the Monitor tool (30 min at most, re-arm on each expiry) and this filter, which
   stays quiet on passing lines: a case-insensitive "fail" matches every "0 failed", and a bare
   "warn" matches test names like `ScreenOffWarningTest`.
   ```bash
-  tail -n 0 -F build/full-check.txt | grep -E --line-buffered "(^|[^0-9])[1-9][0-9]* failed|FAILED|[Aa]wake|[Ww]arning:|WARN|exit=|[Ee]rror:|ERROR|locked|[Cc]annot|can't|[Cc]rash|^== "
+  tail -n 0 -F build/full-check.txt | grep -E --line-buffered "(^|[^0-9])[1-9][0-9]* failed|FAILED|[Aa]wake|[Ww]arning:|WARN|exit=|[Ee]rror:|ERROR|locked|[Cc]annot|can't|[Cc]rash|is using the device|busy with|^== "
   ```
   It reports a failed class, a keep-awake or lock warning, each new stage (`== …`) and the end
-  (`exit=` when the run was started with `; echo "exit=$?" >> build/full-check.txt`).
+  (`exit=` when the run was started with `; echo "exit=$?" >> build/full-check.txt`), and a device
+  another run holds (`is using the device`, `busy with`).
 - Never play test tones, never loop a tone, and never re-run the whole sweep for a fix.
 
 **When store screenshots were made:** look at every language's eight pictures in
@@ -178,6 +191,13 @@ For each failure decide first: **app bug or outdated test?**
   passed whole is already noted as passed; this runs the ones that failed (or changed with the
   fixes) once more and notes them too, so the next release (the [release skill](../release/SKILL.md))
   has little or nothing left to run.
+- **When the run's failures were fixed** (its phones' line in `build/full-check/result.txt` says 1)
+  and every fix re-checked as in step 3, then `--since-pass` above has nothing left: on `main`, run
+  `scripts/full-check.sh --fixed '#<fix PR>'`. It refuses while a module is left to re-check, notes the run
+  with its fixes as a pass at `main`'s commit for the release (`scripts/release.sh bundle` refuses
+  otherwise) and adds the PR to the summary's first line; don't edit that line by hand. A watch
+  whose tests failed is fixed and re-checked with `scripts/full-check.sh --watch` (a few minutes),
+  which writes only the watch's line; a run that was "not finished" (a device busy) runs again.
 - Put the phone back as it was: its system settings (font size, rotation, developer options), not
   Twangle's own settings (the owner resets those).
 

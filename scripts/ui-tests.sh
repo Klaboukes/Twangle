@@ -29,7 +29,8 @@
 #                                                the same tests again and again (store-screenshots.sh)
 #   scripts/ui-tests.sh --built ...              the same, for a caller that built every APK from this tree
 #                                                itself just before (full-check.sh, one build for its devices):
-#                                                a pass is noted
+#                                                a pass is noted, at UI_TESTS_COMMIT when the caller
+#                                                hands it down with UI_TESTS_CLEAN (its tree's state)
 #   scripts/ui-tests.sh --all :wear --build-only only build those modules' APKs (no device needed): the
 #                                                full check's one build, before its devices run --built
 #
@@ -67,7 +68,7 @@ DAY_LANGUAGES="${DAY_LANGUAGES:-$(sed -n 's/^twangle\.dayLanguages=//p' gradle.p
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
-usage() { sed -n '2,37p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Where this branch left main.
 branch_base() {
@@ -265,9 +266,15 @@ EOF
 }
 
 # The tests are built from the working tree as it is now: only a clean one is a commit a pass can
-# be noted at.
-tested="$(git rev-parse HEAD)"
-[ -z "$(git status --porcelain)" ] && clean=1 || clean=0
+# be noted at. With --built the caller built the APKs and may hand down the commit and clean state
+# of the tree it built them from (UI_TESTS_COMMIT, UI_TESTS_CLEAN: the full check, Phase 90): looked
+# at afresh here, one doc edited during its run stopped every later module from being noted.
+if [ $built = 1 ] && [[ "${UI_TESTS_COMMIT:-}" =~ ^[0-9a-f]{40}$ && "${UI_TESTS_CLEAN:-}" =~ ^[01]$ ]]; then
+    tested="$UI_TESTS_COMMIT" clean="$UI_TESTS_CLEAN"
+else
+    tested="$(git rev-parse HEAD)"
+    [ -z "$(git status --porcelain)" ] && clean=1 || clean=0
+fi
 
 # Notes that [module] passed whole at this commit (pass_file above): never after --no-build, whose
 # APKs may be older than the tree; --built vouches they are this tree's.

@@ -13,7 +13,16 @@ further, and does the few things only the Play Console can do (the checklist bel
   goes out as one release. Claude may suggest one when a bad bug is fixed or much has gathered.
 - **After a clean full check** (owner, 2026-10-28): a release starts only once the full check
   (`/full-check`) has passed on the code it releases; until then `/release` stops before it raises
-  the version or writes a note, and says it waits for a full check.
+  the version or writes a note, and says it waits for a full check. Since Phase 90 the scripts hold
+  to it too: the full check writes a record of what passed (`build/full-check/result.txt`, the phones'
+  part and the watch's), `scripts/release.sh full-check` reads it, and `bundle` refuses code the last
+  full check didn't pass whole. "Passed whole on this code" means: every part passed (a phones' failure
+  fixed and re-checked by the run's own fix PR counts, noted with `scripts/full-check.sh --fixed`),
+  from a clean tree, at a commit the release follows, and nothing that goes into the bundles changed
+  since: only `*.md`, `docs/`, `.claude/`, `.github/`, `scripts/`, `website/`, `fastlane/` (the
+  release notes), a regenerated Baseline Profile and the version line in `gradle.properties`. A watch
+  whose tests didn't run holds it up as well (`scripts/full-check.sh --watch` once it is connected),
+  unless the owner says to release the phone without (`bundle --watch-untested`).
 - **Every upload has a higher version.** Play refuses a version it has seen. One place holds it:
   `twangle.version` in `gradle.properties`. Fixes raise the last number (1.0.0 → 1.0.1), new features
   the middle one (1.0.1 → 1.1.0), something big the first (2.0.0). The build turns it into Play's
@@ -75,7 +84,8 @@ further, and does the few things only the Play Console can do (the checklist bel
    language in one block in the Play Console's format (`<en-US>` … `</en-US>`, `<nl-NL>` …, for sending
    it by hand). Then it tags the commit and pushes the tag (a push that fails takes the tag back). It
    refuses a version that already has a tag, uncommitted changes, a `main` that differs from GitHub's,
-   or an out-of-date Baseline Profile (below).
+   code the last full check didn't pass whole (*The idea* above; before anything is built), or an
+   out-of-date Baseline Profile (below).
    - **The Baseline Profile** (`app/src/release/generated/`, [performance.md](architecture/performance.md),
      *Baseline Profile*) tells phones which code to compile ahead of time, so the app starts and draws
      quickly; it is made on the Xiaomi and committed, and a screen changed since it was made runs
