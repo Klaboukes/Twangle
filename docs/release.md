@@ -92,7 +92,7 @@ further, and does the few things only the Play Console can do (the checklist bel
      slower on slow phones until it is made again. `bundle` refuses when the profile's last commit is
      older than the last change under `app/src/main`, `feature/*/src/main` or
      `core/designsystem/src/main` (`scripts/release.sh profile` says the same without building). Claude
-     then regenerates it (Xiaomi connected, about 15 minutes) and lands it through a `chore/` branch
+     then regenerates it (`scripts/baseline-profile.sh`, Xiaomi connected, about 15 minutes) and lands it through a `chore/` branch
      before the release, or, on the owner's word, releases with the old one:
      `scripts/release.sh bundle --keep-old-profile`.
 5. With the owner's yes: `scripts/release.sh upload`, the bundle to the internal track (below).

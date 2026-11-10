@@ -1,6 +1,6 @@
 // Generates the app's Baseline Profile and measures startup. Everything here needs a device and runs
 // only on demand, never in CI:
-//   ./gradlew :app:generateBaselineProfile                       (writes app/src/release/generated/baselineProfiles)
+//   scripts/baseline-profile.sh   (:app:generateBaselineProfile under the phone's lock; writes app/src/release/generated/baselineProfiles)
 //   ./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest  (startup with and without the profile)
 plugins {
     alias(libs.plugins.android.test)

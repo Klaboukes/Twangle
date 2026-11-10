@@ -219,8 +219,7 @@ profile_current() {
     echo "and $count commits changed app/src/main, feature/*/src/main or core/designsystem/src/main since, the newest:"
     echo "$changes" | head -5 | sed 's/^/  /'
     echo "Regenerate it with the Xiaomi connected (about 15 minutes; docs/architecture/performance.md, *Baseline Profile*):"
-    echo "  uninstall the debug build, then"
-    echo "  ./gradlew :app:generateBaselineProfile -Pandroid.testInstrumentationRunnerArguments.class=io.github.klaboukes.twangle.baselineprofile.BaselineProfileGenerator"
+    echo "  scripts/baseline-profile.sh   (under the phone's lock; the debug build is put back after)"
     echo "and land $PROFILE/ through a chore/ branch."
     return 1
 }

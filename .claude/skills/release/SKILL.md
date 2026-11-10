@@ -96,11 +96,13 @@ Steps 6–8 follow later, each on the owner's word.
   uninstall it as CLAUDE.md says and run again.
 - **The Baseline Profile** (the launch review, 2026-11-01): `scripts/release.sh profile` says whether
   it was regenerated after the last change to the app's screens; `bundle` refuses otherwise. When it
-  is older, regenerate it now, with the Xiaomi connected (about 15 minutes; uninstall the debug build
-  first and put it back after; [performance.md](../../../docs/architecture/performance.md), *Baseline
-  Profile*): `./gradlew :app:generateBaselineProfile -Pandroid.testInstrumentationRunnerArguments.class=io.github.klaboukes.twangle.baselineprofile.BaselineProfileGenerator`,
-  then land `app/src/release/generated/` through a `chore/baseline-profile` branch. Without the phone,
-  ask the owner whether to release with the old profile (`bundle --keep-old-profile`) or wait.
+  is older, regenerate it now, with the Xiaomi connected (about 15 minutes;
+  [performance.md](../../../docs/architecture/performance.md), *Baseline Profile*):
+  `scripts/baseline-profile.sh`, which picks the phone, takes its lock (exit 5: another run has it,
+  wait and run again), uninstalls the debug build and puts it back after, then land
+  `app/src/release/generated/` through a `chore/baseline-profile` branch. Not `./gradlew
+  :app:generateBaselineProfile` by hand: it swaps the app with no lock, under another session's UI
+  test run. Without the phone, ask the owner whether to release with the old profile (`bundle --keep-old-profile`) or wait.
 - Fix failures first, each through its own `fix/` branch.
 
 ## 2. The version and the notes

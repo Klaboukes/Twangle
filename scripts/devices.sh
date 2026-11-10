@@ -2,7 +2,7 @@
 # the lock that keeps two runs off one device, waking it, its temperature and Play Protect's dialog.
 # One copy here, so a fix lands once (Phase 90). Used by scripts/ui-tests.sh, full-check.sh,
 # store-screenshots.sh, release-smoke.sh, meter-frames.sh, strum-check.sh, install-debug.sh,
-# watch-metronome-timing.sh and dsp-phone-benchmark.sh; the other scripts reach a device through
+# baseline-profile.sh, watch-metronome-timing.sh and dsp-phone-benchmark.sh; the other scripts reach a device through
 # scripts/ui-tests.sh.
 #
 # On 2026-11-05 the Galaxy Watch 5 came on over Wi-Fi a minute into the overnight run, and every phone
@@ -315,7 +315,7 @@ restore_text_and_language() {
 }
 
 # Notes in the lock that this run swaps Twangle for another build (scripts/release-smoke.sh,
-# meter-frames.sh), so a run taking over from it, cut off, says the debug build must go back.
+# meter-frames.sh, baseline-profile.sh), so a run taking over from it, cut off, says the debug build must go back.
 mark_app_replaced() { adb shell "$LOCK_MINE && touch $LOCK/app_replaced" > /dev/null 2>&1; }
 
 # Builds the phone app's debug build (as `./gradlew :app:installDebug` would, without installing it)
