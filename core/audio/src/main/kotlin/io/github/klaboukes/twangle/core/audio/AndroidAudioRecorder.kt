@@ -40,7 +40,8 @@ import kotlinx.coroutines.flow.flowOn
  * creates no garbage per chunk. [ChunkReader] fills them and notices a microphone that stops
  * really listening mid-session; on Android 10+ an `AudioRecordingCallback` tells it when Android
  * silences this recording for another app (a call, an assistant). Failures end the flow with an
- * [AudioRecorderException].
+ * [AudioRecorderException]; before Android 10, a start that finds the microphone busy is first
+ * tried again for a few seconds ([retryingBusyStart]).
  *
  * [formats] are the sample formats to try, in order: both in the app; the on-device tests pass
  * 16-bit alone to record that way on a phone that would take float.
@@ -84,7 +85,13 @@ class AndroidAudioRecorder internal constructor(
         private set
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    override fun chunks(): Flow<FloatArray> = flow {
+    override fun chunks(): Flow<FloatArray> =
+        // Before Android 10 a recording that is still kept (the tuner's 5 s grace) makes ours fail to start: tried
+        // again for a few seconds. From Android 10 the microphone is shared, and a busy one is silenced instead.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) recording().retryingBusyStart() else recording()
+
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    private fun recording(): Flow<FloatArray> = flow {
         if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {

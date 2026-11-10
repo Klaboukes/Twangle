@@ -306,6 +306,52 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `a mic that went busy while the tuner was away listens again by itself when it comes back`() = runTest(dispatcher) {
+        // Home pressed: Android silences the recording in the background, which reads as busy, while the microphone is
+        // still kept for the 5 s grace.
+        val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setShown(false)
+        advanceTimeBy(100)
+        assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+
+        // The microphone is free again, but nothing tries it while the tuner is away.
+        recorder.failure = null
+        recorder.signal = TestSignals.sawtooth(110f, length = 48_000)
+        recorder.loop = true
+        advanceTimeBy(2_000)
+        assertEquals(1, recorder.startCount)
+        assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+
+        // Back within the grace: it listens again, with no Try again.
+        vm.setShown(true)
+        advanceTimeBy(500)
+        assertEquals(2, recorder.startCount)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+    }
+
+    @Test
+    fun `a mic that fails while the tuner is on screen waits for Try again`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setShown(true)
+        advanceTimeBy(100)
+        recorder.failure = null
+        recorder.signal = TestSignals.sawtooth(110f, length = 48_000)
+        recorder.loop = true
+        // Shown again without having gone (a second ON_START report): no new try, and no endless retries either.
+        vm.setShown(true)
+        advanceTimeBy(2_000)
+
+        assertEquals(1, recorder.startCount)
+        assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+    }
+
+    @Test
     fun `uses the saved tuning and A4`() = runTest(dispatcher) {
         settings.current = AppSettings(a4Hz = 442f, tuning = Tunings.DROP_D)
         val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110.5f, length = 48_000), loop = true))

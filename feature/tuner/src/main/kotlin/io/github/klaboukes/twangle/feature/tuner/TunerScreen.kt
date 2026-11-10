@@ -213,7 +213,8 @@ fun TunerScreen(
     val lensLook by viewModel.lensLook.collectAsStateWithLifecycle()
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
-    // The vibration guide plays only while the tuner is on screen (the microphone outlives it by 5 s).
+    // The vibration guide plays only while the tuner is on screen (the microphone outlives it by 5 s), and a failure
+    // from while it was away is tried again on its return.
     ReportShown(viewModel::setShown)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -376,26 +377,6 @@ private fun StopToneWhenHidden(stopTone: () -> Unit) {
     }
 }
 
-/** Tells [setShown] whether the screen is shown: true once started, false when stopped or gone from the composition. */
-@Composable
-private fun ReportShown(setShown: (Boolean) -> Unit) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val currentSetShown by rememberUpdatedState(setShown)
-    DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> currentSetShown(true)
-                Lifecycle.Event.ON_STOP -> currentSetShown(false)
-                else -> Unit
-            }
-        }
-        lifecycle.addObserver(observer)
-        onDispose {
-            lifecycle.removeObserver(observer)
-            currentSetShown(false)
-        }
-    }
-}
 
 /** How long Keep screen on's warning takes to fade in and out. */
 private const val WARNING_FADE_MILLIS = 400

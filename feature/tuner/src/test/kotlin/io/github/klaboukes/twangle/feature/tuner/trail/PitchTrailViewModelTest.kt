@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.trail
 
+import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
 import io.github.klaboukes.twangle.core.audio.ScreenReaderSpeech
@@ -7,6 +8,7 @@ import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.tuner.TunerError
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -63,6 +65,29 @@ class PitchTrailViewModelTest {
         for (i in history.firstReadable(end) + 1 until end) {
             assertEquals(1024f / 48_000f, history.timeAt(i) - history.timeAt(i - 1), 1e-4f)
         }
+    }
+
+    @Test
+    fun `a mic that went busy while the trail was away listens again by itself when it comes back`() = runTest(dispatcher) {
+        // Android silences the recording in the background (busy) while the microphone is kept for the 5 s grace.
+        val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setShown(false)
+        advanceTimeBy(100)
+        assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+
+        recorder.failure = null
+        recorder.signal = TestSignals.sawtooth(110f, length = 48_000)
+        recorder.loop = true
+        advanceTimeBy(2_000)
+        assertEquals("no try while away", 1, recorder.startCount)
+
+        vm.setShown(true)
+        advanceTimeBy(500)
+        assertEquals(2, recorder.startCount)
+        assertTrue(vm.state.value is TunerUiState.Detected)
     }
 
     @Test

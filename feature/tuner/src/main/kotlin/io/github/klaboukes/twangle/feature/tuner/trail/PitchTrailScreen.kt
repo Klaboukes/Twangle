@@ -45,6 +45,7 @@ import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.feature.tuner.LastHeardNote
 import io.github.klaboukes.twangle.feature.tuner.R
+import io.github.klaboukes.twangle.feature.tuner.ReportShown
 import io.github.klaboukes.twangle.feature.tuner.TunerErrorMessage
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
@@ -94,6 +95,8 @@ fun PitchTrailScreen(
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // Back on screen after a microphone failure, the trail listens again by itself.
+    ReportShown(viewModel::setShown)
     val precision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     // Clear of the status bar and a cutout, as every Practice tool (the bar under it is the app's).
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PitchTrailTestTags.SCREEN)) {
