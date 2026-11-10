@@ -17,6 +17,7 @@
 #   scripts/full-check.sh --dry-run   only say which devices and jobs it would run (nothing runs)
 #   scripts/full-check.sh --fixed <PR>  once that PR fixed a run's failures and they were re-checked on
 #                                     main: notes it for the release (no device; see The record below)
+#   scripts/full-check.sh --self-check  checks the record's logic on made-up runs (no device, no build)
 # (--watch, --release-build, --sweep, --contrast, --languages and --store may be combined.)
 #
 # Its exit code (Phase 90): 0 everything passed; 1 something failed (a test, the build, the release
@@ -29,9 +30,12 @@
 #
 # The record a release reads (scripts/release.sh full-check; bundle refuses without it):
 # build/full-check/result.txt, a line a part, "phones <code> <commit> <clean> <seconds since 1970>
-# <date> [fixed <PR> <the run's commit>]" and "watch <code> ...", the code 0 passed, 1 all of it ran
-# and something failed, 5 not all of it ran (a device busy, or none left for a job), and for the watch
-# 2 not tested. A part's line is written only by a run that did all of it (the
+# <date> [fixed <PR> <the run's commit> | failed <what>]" and "watch <code> ...", the code 0 passed,
+# 1 something failed (all of it ran, or nothing did: the one build failed, cut off by BUILD_TIMEOUT
+# or not, or no phone was there), 5 not all of it ran (a device busy, or none left for a job), and for the watch 2 not
+# tested. A phones line with 1 names what failed, "failed build" or "failed sweep,languages" (build,
+# no-device, release: its smoke test, sweep, contrast, languages; Phase 91: a failed build ran no job,
+# so the line said 0 until then). A part's line is written only by a run that did all of it (the
 # phones: the release build, the sweep, high contrast and the languages, no module list narrowed; the
 # watch: its tests); a run of one part leaves the other's line as it was. --fixed turns a failed phones
 # line into a pass at the commit checked out now, once every module passed after its last change
@@ -88,7 +92,7 @@ read -ra CONTRAST_MODULES <<<"${CONTRAST_MODULES:-:feature:tuner :feature:settin
 
 LANGUAGES_MAX_AGE_DAYS="${LANGUAGES_MAX_AGE_DAYS:-7}"
 
-watch=0 release_build=0 sweep=0 contrast=0 languages=0 store=0 full=0 dry_run=0 picked=0 fixed_by=""
+watch=0 release_build=0 sweep=0 contrast=0 languages=0 store=0 full=0 dry_run=0 self_check=0 picked=0 fixed_by=""
 while [ $# -gt 0 ]; do
     arg="$1"
     shift
@@ -105,7 +109,8 @@ while [ $# -gt 0 ]; do
         --store) store=1 picked=1 ;;
         --full) full=1 ;;
         --dry-run) dry_run=1 ;;
-        *) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+        --self-check) self_check=1 ;;
+        *) sed -n '2,73p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
     esac
 done
 [ $picked = 1 ] || { watch=1; release_build=1; sweep=1; contrast=1; languages=1; }
@@ -120,6 +125,111 @@ write_record() {
     shift
     { grep -v "^$part " "$RESULT" 2>/dev/null; echo "$part $*"; } > "$RESULT.tmp" && mv "$RESULT.tmp" "$RESULT"
 }
+# Writes this run's line for [part]: [code] [anything after the date]. A pass or a failure always; a
+# line saying a part didn't (all) run only over no earlier pass, which still holds for its own commit
+# (scripts/release.sh compares that commit with the one it releases).
+record_line() {
+    local part="$1" code="$2" old
+    shift 2
+    read -r _ old _ <<<"$(record_of "$part")"
+    if [ "$code" = 0 ] || [ "$code" = 1 ] || [ "${old:-}" != 0 ]; then
+        write_record "$part" "$code" "$tested_commit" "$clean" "$(date +%s)" "$(date '+%Y-%m-%d_%H:%M')" "$@"
+    fi
+}
+
+# What of the phones' part failed, each named once (The record's list, above).
+phones_failures=()
+note_failure() { [[ " ${phones_failures[*]} " == *" $1 "* ]] || phones_failures+=("$1"); }
+# The one build's exit code. Anything but 0 is a failed build, also when BUILD_TIMEOUT cut it off
+# (scripts/ui-tests.sh exits 1 then, timeout itself 124). No job runs after it, so nothing else counts
+# it: until Phase 91 the record said the phones passed, though the run exited 1.
+build_done() { [ "$1" = 0 ] || { build_failed=1; note_failure build; }; }
+# The phones' code for the record: 1 the build failed, 5 not all the jobs ran, 1 something else
+# failed, 0 everything passed.
+phones_code() {
+    if [ $build_failed = 1 ]; then echo 1
+    elif [ $unrun = 1 ]; then echo 5
+    elif [ ${#phones_failures[@]} -gt 0 ]; then echo 1
+    else echo 0
+    fi
+}
+# The phones' line, only from a run that did all of their part, with what failed on a failure.
+record_phones() {
+    local code
+    [ $release_build = 1 ] && [ $sweep = 1 ] && [ $contrast = 1 ] && [ $languages = 1 ] && [ $narrowed = 0 ] || return 0
+    code="$(phones_code)"
+    if [ "$code" = 1 ]; then
+        record_line phones 1 failed "$(IFS=,; echo "${phones_failures[*]}")"
+    else
+        record_line phones "$code"
+    fi
+}
+# The run's outcome, exit_code and its first line's words (the header says which), from failed (the
+# store screenshots), the phones' failures, unrun and busy, and the watch's code.
+run_outcome() {
+    [ ${#phones_failures[@]} -gt 0 ] && failed=1
+    [ $watch = 1 ] && [ "${watch_code:-}" = 1 ] && failed=1
+    [ $unrun = 1 ] && [ $busy = 0 ] && failed=1
+    watch_untested=0
+    [ $watch = 1 ] && [ "${watch_code:-}" = 2 ] && watch_untested=1
+    if [ $failed = 1 ]; then
+        exit_code=1 outcome="failures below"
+    elif [ $unrun = 1 ]; then
+        # (a job left unrun with no device busy counts as a failure above)
+        exit_code=5 outcome="not finished: a device was busy with another run (below)"
+    elif [ $watch_untested = 1 ]; then
+        exit_code=3 outcome="everything else passed"
+    else
+        exit_code=0 outcome="everything passed"
+    fi
+    [ $watch_untested = 1 ] && outcome="$outcome, watch not tested"
+    return 0
+}
+
+# --self-check: the record's logic above on made-up runs, in a record of its own; says each case and
+# exits 1 when one went wrong. Each case: its name, the phones line before it (its code; - none), the
+# line expected after it ("<code> <commit>[ <the rest>]"; - none), the run's exit code, then its steps.
+self_check() {
+    local bad=0 name before expected want_exit got
+    RESULT="$(mktemp)"
+    tested_commit=this clean=1 watch=0 store=0
+    check() {
+        name="$1" before="$2" expected="$3" want_exit="$4"
+        shift 4
+        phones_failures=() build_failed=0 unrun=0 busy=0 failed=0 watch_code="" narrowed=0
+        release_build=1 sweep=1 contrast=1 languages=1
+        : > "$RESULT"
+        [ "$before" = - ] || echo "phones $before earlier 1 1 2026-11-01_12:00" > "$RESULT"
+        local step
+        for step in "$@"; do eval "$step"; done
+        record_phones
+        run_outcome
+        got="$(record_of phones | awk '{ printf "%s %s", $2, $3; for (i = 7; i <= NF; i++) printf " %s", $i }')"
+        [ -n "$got" ] || got=-
+        if [ "$got" = "$expected" ] && [ "$exit_code" = "$want_exit" ]; then
+            echo "ok    $name: $got, exit $exit_code"
+        else
+            echo "WRONG $name: $got, exit $exit_code; expected $expected, exit $want_exit"
+            bad=1
+        fi
+    }
+    check "everything passed" - "0 this" 0 "build_done 0"
+    check "the build failed" - "1 this failed build" 1 "build_done 1"
+    check "the build cut off by BUILD_TIMEOUT (timeout's own code)" - "1 this failed build" 1 "build_done 124"
+    check "the build failed after a pass" 0 "1 this failed build" 1 "build_done 1"
+    check "the build failed, a narrowed run" 0 "0 earlier" 1 "narrowed=1" "build_done 1"
+    check "a module's sweep and a language check failed" - "1 this failed sweep,languages" 1 \
+        "build_done 0" "note_failure sweep" "note_failure languages" "note_failure sweep"
+    check "no phone connected" - "1 this failed no-device" 1 "build_done 0" "note_failure no-device"
+    check "a job left while a device was busy, after a pass" 0 "0 earlier" 5 "build_done 0" "unrun=1 busy=1"
+    check "a job left while a device was busy, after a failure" 1 "5 this" 5 "build_done 0" "unrun=1 busy=1"
+    check "a job no device was left for" - "5 this" 1 "build_done 0" "unrun=1"
+    check "the store screenshots failed" 0 "0 this" 1 "build_done 0" "failed=1"
+    rm -f "$RESULT"
+    [ $bad = 0 ] && echo "The record's logic: every case as expected." || echo "The record's logic: a case went wrong (WRONG above)."
+    return $bad
+}
+[ $self_check = 1 ] && { self_check; exit $?; }
 
 # --fixed: the last whole run's phones failed, its failures were fixed by [PR] and re-checked on main.
 if [ -n "$fixed_by" ]; then
@@ -389,10 +499,8 @@ build_args=()
 if [ ${#build_args[@]} -gt 0 ]; then
     echo "== One build for every device ($(date +%H:%M))" | tee "$OUT/build.txt"
     scripts/ui-tests.sh "${build_args[@]}" --build-only 2>&1 | tee -a "$OUT/build.txt"
-    if [ "${PIPESTATUS[0]}" != 0 ]; then
-        build_failed=1
-        logs+=("$OUT/build.txt")
-    fi
+    build_done "${PIPESTATUS[0]}"
+    [ $build_failed = 1 ] && logs+=("$OUT/build.txt")
 fi
 
 # The watch app's tests, on the watch, beside the phones'.
@@ -432,12 +540,11 @@ fi
 # if those had finished; a device that came back joins in. At most three rounds; a round after one in
 # which a device was busy with another run first waits BUSY_WAIT seconds (default 300) for that run.
 BUSY_WAIT="${BUSY_WAIT:-300}"
-phones_failed=0
 if [ $build_failed = 0 ] && { [ -s "$QUEUE/list" ] || [ $release_build = 1 ]; }; then
     if [ ${#LANES[@]} = 0 ]; then
         echo "No phone or tablet connected: the phones' stages didn't run" | tee "$OUT/no-device.txt"
         logs+=("$OUT/no-device.txt")
-        phones_failed=1
+        note_failure no-device
     else
         round=1 busy_seen=0
         while :; do
@@ -464,7 +571,7 @@ fi
 # The results. failed: something failed; unrun: a job or the release build didn't run; busy: a device
 # was busy with another run at some point (a job it put back that another device or round ran is no
 # harm). The watch's own result is watch_code: 0 passed, 1 failed, 2 not tested.
-failed=$build_failed unrun=0 busy=0
+failed=0 unrun=0 busy=0
 [ -n "$(ls "$QUEUE"/busy-* 2>/dev/null)" ] && busy=1
 if [ -n "$watch_pid" ]; then
     read -r watch_code watch_result < "$QUEUE/watch.result" || { watch_code=1; watch_result="no result (log: ${OUT#"$ROOT"/}/watch.txt)"; }
@@ -475,7 +582,7 @@ if [ -f "$QUEUE/release.code" ]; then
     case "$(cat "$QUEUE/release.code")" in
         0) ;;
         5) unrun=1 busy=1 ;;
-        *) phones_failed=1 ;;
+        *) note_failure release ;;
     esac
 fi
 # Each stage's log, its jobs in queue order, whichever device ran them; a job no device was left for
@@ -490,7 +597,7 @@ stage_log() {
         [ "$s" = "$stage" ] || continue
         if [ -f "$QUEUE/$n.txt" ]; then
             cat "$QUEUE/$n.txt" >> "$file"
-            [ "$(cat "$QUEUE/$n.code" 2>/dev/null)" = 0 ] || phones_failed=1
+            [ "$(cat "$QUEUE/$n.code" 2>/dev/null)" = 0 ] || note_failure "$stage"
         elif [ $n -gt "$taken" ]; then
             echo "-- $s $m: not run, no device was left for it$([ $busy = 1 ] && echo " (a device was busy with another run)")" >> "$file"
             unrun=1
@@ -530,48 +637,16 @@ device_report() {
     echo "${out:-no phone or tablet connected}"
 }
 
-# The run's outcome: its exit code and its first line's words (the header says which).
-[ $phones_failed = 1 ] && failed=1
-[ $watch = 1 ] && [ "${watch_code:-}" = 1 ] && failed=1
-[ $unrun = 1 ] && [ $busy = 0 ] && failed=1
-watch_untested=0
-[ $watch = 1 ] && [ "${watch_code:-}" = 2 ] && watch_untested=1
-if [ $failed = 1 ]; then
-    exit_code=1 outcome="failures below"
-elif [ $unrun = 1 ]; then
-    # (a job left unrun with no device busy counts as a failure above)
-    exit_code=5 outcome="not finished: a device was busy with another run (below)"
-elif [ $watch_untested = 1 ]; then
-    exit_code=3 outcome="everything else passed"
-else
-    exit_code=0 outcome="everything passed"
-fi
-[ $watch_untested = 1 ] && outcome="$outcome, watch not tested"
-
-# The record for the release (the header's The record): a part's line only from a run that did all of
-# it. A line saying a part didn't (all) run leaves an earlier pass in place: that pass still holds for
-# its own commit, and scripts/release.sh compares that commit with the one it releases.
-record_line() {
-    local part="$1" code="$2" old
-    read -r _ old _ <<<"$(record_of "$part")"
-    if [ "$code" = 0 ] || [ "$code" = 1 ] || [ "${old:-}" != 0 ]; then
-        write_record "$part" "$code" "$tested_commit" "$clean" "$(date +%s)" "$(date '+%Y-%m-%d_%H:%M')"
-    fi
-}
-if [ $release_build = 1 ] && [ $sweep = 1 ] && [ $contrast = 1 ] && [ $languages = 1 ] && [ $narrowed = 0 ]; then
-    if [ $unrun = 1 ]; then
-        record_line phones 5
-    else
-        record_line phones $phones_failed
-    fi
-fi
+# The run's outcome (run_outcome, above) and the record for the release (the header's The record).
+run_outcome
+record_phones
 [ $watch = 1 ] && record_line watch "${watch_code:-1}"
 
 tested="at ${tested_commit:0:8}"
 [ $clean = 1 ] || tested="$tested with uncommitted changes"
 {
     echo "Full check: $(( (SECONDS - start) / 60 )) min $tested, $outcome"
-    [ $languages = 1 ] && echo "Every language: $checked of $((checked + skipped)) module checks ran; $skipped passed earlier with nothing they show changed since"
+    [ $languages = 1 ] && [ $build_failed = 0 ] && echo "Every language: $checked of $((checked + skipped)) module checks ran; $skipped passed earlier with nothing they show changed since"
     if [ $release_build = 1 ] || [ $sweep = 1 ] || [ $contrast = 1 ] || [ $languages = 1 ]; then
         echo "$([ ${#LANES[@]} -gt 1 ] && echo Devices || echo Phone): $(device_report)"
     fi

@@ -296,8 +296,12 @@ start=$SECONDS
 # with --built (note_pass).
 if [ $no_build = 1 ]; then
     :
-elif ! timeout "$BUILD_TIMEOUT" ./gradlew "${tasks[@]}" --console=plain > "$ROOT/build/ui-tests-build.log" 2>&1; then
-    echo "Build failed (log: build/ui-tests-build.log)"
+elif timeout "$BUILD_TIMEOUT" ./gradlew "${tasks[@]}" --console=plain > "$ROOT/build/ui-tests-build.log" 2>&1; then
+    :
+else
+    # timeout's own 124: cut off, which a full check counts as a failed build too (Phase 91).
+    [ $? = 124 ] && echo "Build failed: cut off after ${BUILD_TIMEOUT}s (BUILD_TIMEOUT; log: build/ui-tests-build.log)" ||
+        echo "Build failed (log: build/ui-tests-build.log)"
     grep -E "What went wrong|^e: |error:" -A3 "$ROOT/build/ui-tests-build.log" | head -15
     exit 1
 fi

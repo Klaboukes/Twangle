@@ -123,7 +123,9 @@ when the summary should show a change to them: `scripts/full-check.sh --store` (
   five-minute wait), and the summary names the run that had it. The run also writes
   `build/full-check/result.txt`, the record `scripts/release.sh full-check` and `bundle` read: a
   line for the phones and one for the watch, each written only by a run that did all of that part
-  (a run with a narrowed module list, or `--sweep` alone, writes no phones line).
+  (a run with a narrowed module list, or `--sweep` alone, writes no phones line). A failed line
+  names what failed (`failed build`, `failed sweep,languages`); a failed or cut-off build is one,
+  though nothing ran after it. `scripts/full-check.sh --self-check` checks that logic (seconds).
 - Don't poll; you are told when it finishes. To start on failures early (the sweep prints each
   class as it finishes, e.g. `  PhoneScreenTest   3s  1 tests, 0 failed, 2s on the phone`), watch
   the log with the Monitor tool (30 min at most, re-arm on each expiry) and this filter, which
