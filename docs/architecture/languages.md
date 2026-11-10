@@ -51,7 +51,7 @@ both manifests set `android:supportsRtl="true"`, so Compose mirrors the layout: 
 - the first language isn't `unqualifiedResLocale`, or an app module doesn't take `localeFilters` from the list;
 - Kotlin passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar.
 
-`StoreListingTest` (JVM, `:app`) holds the Play Store texts in `fastlane/metadata/android/<Play locale>/` to the same list: one folder per language, each with a title, short and full description within Play's limits ([store listing](../store-listing.md), *The texts, ready to paste*).
+`StoreListingTest` (JVM, `:app`) holds the Play Store texts in `fastlane/metadata/android/<Play locale>/` to the same list: one folder per language, each with a title, short and full description within Play's limits, and the Wear OS line held back in `fastlane/held-back/android/` for every one of them ([store listing](../store-listing.md), *The texts, ready to paste* and *The watch line*).
 
 Every module's `res` and Kotlin sources, the build files, `gradle.properties`, the record in `translations/`, `scripts/ui-tests.sh`, the strict flag and the store texts are declared inputs of `:app`'s unit tests, so changing any of them reruns the test. Lint's `MissingTranslation` (a warning by day) and `StringFormat*` back it up.
 

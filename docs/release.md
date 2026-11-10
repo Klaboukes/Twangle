@@ -199,14 +199,20 @@ soon as possible after it, never holding the phone up. The one risk to the phone
 reviews at once, since a change sent while another is in review restarts that review (*Managed
 publishing is on*, above). So:
 - **While the phone waits**, the watch's steps Google doesn't review: its screenshots, its line in
-  the full description (kept out of `fastlane/metadata/` until the watch goes to production, since
-  every `listing` sends what is on `main`), the Wear OS form factor in the Play Console, and
+  the full description (written in every language and held back in `fastlane/held-back/` until the
+  watch goes to production, since every `listing` sends what is on `main`; nothing that sends reads
+  that folder), the Wear OS form factor in the Play Console, and
   `upload watch` to its internal track (like every send, not while something is in review or the
   application for production access is open, so it goes between reviews).
 - **Once the phone's production release is approved**, the reviewed ones, one at a time, each only
   when nothing of the phone's is in review (*Publishing overview*): the store listing with the Wear OS
   screenshots first (Google's Wear OS review looks for them), then `promote watch closed` with the
   opt-in to Wear OS and its review, then `promote watch production`.
+- **With the watch's production release**, its line goes into every full description: in one pull
+  request, each `fastlane/held-back/android/<locale>/watch_line.txt` is moved in (its `- ` / `+ `
+  pairs made, then the line first under the *Also* heading) and the held-back files and their
+  test go ([store-listing.md](store-listing.md), *The watch line*); `StoreListingTest` passes, and
+  the next `listing`, once nothing is in review, sends it.
 - **Its featuring nomination** goes with the phone's, once Twangle has ratings (ROADMAP.md Phase 89,
   [docs/growth/featuring-nomination.md](growth/featuring-nomination.md)), not ahead of the watch's
   production release.

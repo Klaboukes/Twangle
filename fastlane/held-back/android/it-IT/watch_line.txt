@@ -1,0 +1,3 @@
+• Un'app per orologi Wear OS: accorda con il microfono dell'orologio stesso, senza telefono, e scorri a sinistra per il metronomo
+- • In 36 lingue: italiano, amarico, arabo, bengalese, birmano, ceco, cinese semplificato, cinese tradizionale, coreano, danese, finlandese, francese, giapponese, greco, hindi, indonesiano, inglese, khmer, marathi, norvegese, olandese, polacco, portoghese, rumeno, russo, spagnolo, svedese, swahili, tailandese, tamil, tedesco, telugu, turco, ucraino, ungherese e vietnamita
++ • In 36 lingue, tra cui italiano e inglese

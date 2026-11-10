@@ -1,0 +1,3 @@
+• Aplikasi untuk jam tangan Wear OS: menyetem lewat mikrofon jam tangan itu sendiri, tanpa ponsel, dan geser ke kiri untuk metronom
+- • Dalam 36 bahasa: Indonesia, Amharik, Arab, Belanda, Bengali, Burma, Ceko, Denmark, Finlandia, Hindi, Hungaria, Inggris, Italia, Jepang, Jerman, Khmer, Korea, Mandarin (Sederhana), Mandarin (Tradisional), Marathi, Norwegia, Polandia, Portugis, Prancis, Rumania, Rusia, Spanyol, Swahili, Swedia, Tamil, Telugu, Thai, Turki, Ukraina, Vietnam, dan Yunani
++ • Dalam 36 bahasa, termasuk Indonesia dan Inggris

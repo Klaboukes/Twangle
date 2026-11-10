@@ -21,7 +21,10 @@ import java.util.Properties
  * (`changelogs/<versionCode>.txt`) are there in every language, within Play's 500 characters. The
  * icon (one for every language, `en-US/images/`) and each language's feature graphic (`images/` in its
  * folder, with its line from `feature_graphic.txt`, short and without those words), both made by
- * `scripts/store-graphics.sh`, have Play's exact sizes and formats.
+ * `scripts/store-graphics.sh`, have Play's exact sizes and formats. The watch line, held back in
+ * `fastlane/held-back/android/<Play locale>/` until the watch app is in production (nothing that sends
+ * the listing reads that folder), is there for every language and still fits each full description
+ * once it is moved in.
  */
 class StoreListingTest {
 
@@ -29,6 +32,9 @@ class StoreListingTest {
         .first { File(it, "settings.gradle.kts").isFile }
 
     private val listings = File(root, "fastlane/metadata/android")
+
+    /** Store material written ahead but kept away from Play until its day, in the same layout (docs/store-listing.md). */
+    private val heldBack = File(root, "fastlane/held-back/android")
 
     /** `twangle.languages` from gradle.properties, as Android resource qualifiers. */
     private val languages: List<String> = Properties()
@@ -213,6 +219,68 @@ class StoreListingTest {
         }
     }
 
+    @Test
+    fun `every language has the held-back watch line, and its full description fits with it`() {
+        folderOf.forEach { (language, folder) ->
+            val file = File(heldBack, "$folder/$WATCH_LINE")
+            val where = "${file.relativeTo(root).invariantSeparatorsPath} (language $language)"
+            val held = file.takeIf { it.isFile }?.readText()?.replace("\r\n", "\n")?.trimEnd()
+            assertTrue("$where is empty or missing", !held.isNullOrBlank())
+            val full = withWatchLine(text(folder, "full_description.txt").orEmpty(), held.orEmpty(), where)
+            val length = full.codePointCount(0, full.length)
+            val limit = FILES.getValue("full_description.txt")
+            assertTrue(
+                "$folder/full_description.txt would have $length characters with the watch line, Play takes at most " +
+                    "$limit: make room with a \"- \" / \"+ \" pair in $where",
+                length <= limit,
+            )
+            val emoji = held.orEmpty().codePoints().filter { it in 0x1F000..0x1FAFF || it == 0xFE0F }.toArray()
+            assertTrue("Emoji in $where", emoji.isEmpty())
+        }
+    }
+
+    @Test
+    fun `no held-back watch line for a language that is not listed`() {
+        val extra = heldBack.listFiles().orEmpty().filter { it.isDirectory }.map { it.name } - listedFolders.toSet()
+        assertTrue("Held-back store texts for folders that are not listed: $extra", extra.isEmpty())
+    }
+
+    /**
+     * [description] as it will be when the watch app is in production: the changes in [held] that make
+     * room made (each a `- ` line, a line of the description exactly, then a `+ ` line it becomes), and
+     * the watch line ([held]'s first line) first in the last section, the "Also" one, under its heading.
+     */
+    private fun withWatchLine(description: String, held: String, where: String): String {
+        val lines = held.lines()
+        val line = lines.first()
+        assertTrue("$where: the first line is the watch line, a bullet (\"• \"): $line", line.startsWith("• "))
+        assertTrue("$where: the watch line names Wear OS, the word people search for: $line", "Wear OS" in line)
+        assertTrue(
+            "$where: the watch line is in full_description.txt already; once it is moved in, the held-back " +
+                "watch line and its test go (docs/store-listing.md, *The watch line*)",
+            line !in description.lines(),
+        )
+        val changes = lines.drop(1)
+        assertTrue("$where: after the watch line come pairs of a \"- \" and a \"+ \" line", changes.size % 2 == 0)
+        var text = description.lines()
+        changes.chunked(2).forEach { (old, new) ->
+            assertTrue("$where: \"$old\" must start with \"- \"", old.startsWith("- "))
+            assertTrue("$where: \"$new\" must start with \"+ \"", new.startsWith("+ "))
+            val found = text.count { it == old.removePrefix("- ") }
+            assertEquals("$where: \"$old\" must be a line of full_description.txt exactly once", 1, found)
+            text = text.map { if (it == old.removePrefix("- ")) new.removePrefix("+ ") else it }
+        }
+        val sections = text.joinToString("\n").split("\n\n").toMutableList()
+        assertTrue("$where: full_description.txt needs its sections and the closing line", sections.size >= 3)
+        val also = sections[sections.size - 2].lines()
+        assertTrue(
+            "$where: the section before the closing line is the \"Also\" one, a heading and bullets: ${also.first()}",
+            !also.first().startsWith("•") && also.size > 1 && also.drop(1).all { it.startsWith("• ") },
+        )
+        sections[sections.size - 2] = (listOf(also.first(), line) + also.drop(1)).joinToString("\n")
+        return sections.joinToString("\n\n")
+    }
+
     /** The size and pixel format from a PNG file's header (its IHDR chunk). */
     private data class Png(val width: Int, val height: Int, val bitDepth: Int, val colorType: Int) {
         companion object {
@@ -263,6 +331,9 @@ class StoreListingTest {
 
         /** At most this many characters, so the line fits in two lines beside the meters. */
         const val FEATURE_LINE_LIMIT = 50
+
+        /** The full description's watch line in each language, held back until the watch app is in production (Phase 88). */
+        const val WATCH_LINE = "watch_line.txt"
 
         /** One icon for every language, in the default listing's folder; a feature graphic in each language's. */
         const val ICON_FOLDER = "en-US"

@@ -1,0 +1,3 @@
+• Eine App für Uhren mit Wear OS: Stimm mit dem Mikrofon der Uhr selbst, ganz ohne Handy, und wisch nach links zum Metronom
+- • In 36 Sprachen: Deutsch, Amharisch, Arabisch, Bengalisch, Birmanisch, Chinesisch (vereinfacht und traditionell), Dänisch, Englisch, Finnisch, Französisch, Griechisch, Hindi, Indonesisch, Italienisch, Japanisch, Khmer, Koreanisch, Marathi, Niederländisch, Norwegisch, Polnisch, Portugiesisch, Rumänisch, Russisch, Schwedisch, Spanisch, Swahili, Tamil, Telugu, Thai, Tschechisch, Türkisch, Ukrainisch, Ungarisch und Vietnamesisch
++ • In 36 Sprachen, darunter Deutsch und Englisch

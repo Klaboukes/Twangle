@@ -1,0 +1,3 @@
+• O aplicație pentru ceasuri Wear OS: acordați cu microfonul ceasului, fără telefon, și glisați spre stânga pentru metronom
+- • În 36 de limbi: română, engleză, amharică, arabă, bengaleză, birmană, cehă, chineză (simplificată), chineză (tradițională), coreeană, daneză, finlandeză, franceză, germană, greacă, hindi, indoneziană, italiană, japoneză, khmeră, maghiară, marathi, neerlandeză, norvegiană, poloneză, portugheză, rusă, spaniolă, suedeză, swahili, tamilă, telugu, thailandeză, turcă, ucraineană și vietnameză
++ • În 36 de limbi, printre care română și engleză
