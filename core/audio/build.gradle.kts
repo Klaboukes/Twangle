@@ -4,10 +4,8 @@ plugins {
 
 android {
     namespace = "io.github.klaboukes.twangle.core.audio"
-    compileSdk = 37
 
     defaultConfig {
-        minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -16,10 +14,6 @@ android {
     testFixtures {
         enable = true
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {

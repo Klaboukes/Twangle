@@ -22,12 +22,9 @@ val freeBuild = providers.gradleProperty("twangle.foss").map { it.toBoolean() }.
 
 android {
     namespace = "io.github.klaboukes.twangle.app"
-    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.klaboukes.twangle"
-        minSdk = 26
-        targetSdk = 37
         // twangle.version in gradle.properties; the watch app gets the same version.
         versionCode = rootProject.extra["twangleVersionCode"] as Int
         versionName = rootProject.extra["twangleVersionName"] as String
@@ -85,10 +82,6 @@ android {
             enableSplit = false
         }
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 // Google Play uploads through the Google Play Developer API (Gradle Play Publisher, Phase 41;
@@ -302,10 +295,17 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
-// The free build must hold nothing of Google Play's, Play services' or Firebase's: a library that
-// brings one along stops the build here rather than in F-Droid's scanner.
+// The free build must hold nothing of Google Play's, Play services', Firebase's, Google's transport
+// library (datatransport, Firebase's way of sending its reports) or ML Kit's, the groups F-Droid's
+// scanner flags: a library that brings one along stops the build here rather than in the scanner.
 if (freeBuild) {
-    val nonFreeGroups = listOf("com.google.android.play", "com.google.android.gms", "com.google.firebase")
+    val nonFreeGroups = listOf(
+        "com.google.android.play",
+        "com.google.android.gms",
+        "com.google.firebase",
+        "com.google.android.datatransport",
+        "com.google.mlkit",
+    )
     configurations.matching { it.name.endsWith("RuntimeClasspath") }.configureEach {
         val configurationName = name
         incoming.afterResolve {

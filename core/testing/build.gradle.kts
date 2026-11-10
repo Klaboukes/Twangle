@@ -6,10 +6,8 @@ plugins {
 // Helpers for the on-device UI tests only: modules use it as androidTestImplementation.
 android {
     namespace = "io.github.klaboukes.twangle.core.testing"
-    compileSdk = 37
 
     defaultConfig {
-        minSdk = 26
         testInstrumentationRunner = "io.github.klaboukes.twangle.core.testing.SharedActivityTestRunner"
         // The languages Twangle ships (gradle.properties), for the tests that check every one.
         buildConfigField("String", "LANGUAGES", "\"${providers.gradleProperty("twangle.languages").get()}\"")
@@ -19,10 +17,6 @@ android {
         compose = true
         buildConfig = true
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {

@@ -13,13 +13,11 @@ val keystoreProperties = rootProject.extra["twangleKeystoreProperties"] as Prope
 
 android {
     namespace = "io.github.klaboukes.twangle.wear"
-    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.klaboukes.twangle"
         // Wear OS 3 (API 30) is the oldest Wear OS that Play still accepts new apps for.
         minSdk = 30
-        targetSdk = 37
         // Play needs a different versionCode for the watch build: the phone's code plus 1,000,000
         // (the phone's own codes stay below that up to version 99.99.99). Both come from
         // twangle.version in gradle.properties.
@@ -62,10 +60,6 @@ android {
         // other languages are dropped.
         localeFilters += providers.gradleProperty("twangle.languages").get().split(",")
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 // WatchSpokenReadingTest compares the watch's spoken words with the phone's in :core:designsystem,

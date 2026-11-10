@@ -5,10 +5,8 @@ plugins {
 
 android {
     namespace = "io.github.klaboukes.twangle.feature.settings"
-    compileSdk = 37
 
     defaultConfig {
-        minSdk = 26
         // Leaves the UI tests' shared activity open between tests (see :core:testing).
         testInstrumentationRunner = "io.github.klaboukes.twangle.core.testing.SharedActivityTestRunner"
     }
@@ -16,10 +14,6 @@ android {
     buildFeatures {
         compose = true
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 // AppLanguagesTest names every language in twangle.languages, so a change there reruns it.

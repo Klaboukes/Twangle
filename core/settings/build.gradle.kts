@@ -4,21 +4,12 @@ plugins {
 
 android {
     namespace = "io.github.klaboukes.twangle.core.settings"
-    compileSdk = 37
-
-    defaultConfig {
-        minSdk = 26
-    }
 
     // FakeSettingsRepository lives in src/testFixtures so other modules' tests can use it via
     // testImplementation(testFixtures(project(":core:settings"))).
     testFixtures {
         enable = true
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {

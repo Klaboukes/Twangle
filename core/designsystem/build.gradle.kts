@@ -5,19 +5,10 @@ plugins {
 
 android {
     namespace = "io.github.klaboukes.twangle.core.designsystem"
-    compileSdk = 37
-
-    defaultConfig {
-        minSdk = 26
-    }
 
     buildFeatures {
         compose = true
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {

@@ -1,4 +1,6 @@
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.tools.build.bundletool.commands.DumpCommand
 import java.io.ByteArrayOutputStream
@@ -7,8 +9,20 @@ import java.io.StringReader
 import java.util.Properties
 import javax.xml.parsers.DocumentBuilderFactory
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
+
+// bundletool, whose DumpCommand checks the release bundle's permissions (CheckPermissions below), on
+// the build's own classpath from the catalog, not only as something AGP happens to bring along.
+buildscript {
+    repositories {
+        google()
+    }
+    dependencies {
+        classpath(libs.bundletool)
+    }
+}
 
 // Top-level build file. Plugins are declared here (not applied) so all modules share one version.
 plugins {
@@ -49,6 +63,37 @@ extra["twangleKeystoreProperties"] = providers.gradleProperty("twangle.keystoreP
     .flatMap { path -> providers.fileContents(layout.projectDirectory.file(path)).asText }
     .map { text -> Properties().apply { load(text.reader()) } }
     .orNull
+
+// One Android SDK and one JDK for every module, set here once rather than in each module's build file
+// (Phase 91): compileSdk and minSdk for every Android module, targetSdk for the two apps and
+// :baselineprofile, the JVM toolchain for all of them and :core:dsp. A module that needs another
+// minSdk sets its own in its android block, which runs after this one: the watch app 30 (the oldest
+// Wear OS Play takes), :baselineprofile 28 (a Baseline Profile needs Android 9 to generate).
+val twangleCompileSdk = 37
+val twangleTargetSdk = 37
+val twangleMinSdk = 26
+val twangleJvmToolchain = 17
+subprojects {
+    listOf("com.android.application", "com.android.library", "com.android.test").forEach { id ->
+        pluginManager.withPlugin(id) {
+            extensions.configure<com.android.build.api.dsl.CommonExtension> {
+                compileSdk = twangleCompileSdk
+                defaultConfig.minSdk = twangleMinSdk
+            }
+            // AGP 9's built-in Kotlin registers the kotlin extension with the Android plugin.
+            extensions.configure<KotlinProjectExtension> { jvmToolchain(twangleJvmToolchain) }
+        }
+    }
+    pluginManager.withPlugin("com.android.application") {
+        extensions.configure<ApplicationExtension> { defaultConfig.targetSdk = twangleTargetSdk }
+    }
+    pluginManager.withPlugin("com.android.test") {
+        extensions.configure<TestExtension> { defaultConfig.targetSdk = twangleTargetSdk }
+    }
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        extensions.configure<KotlinProjectExtension> { jvmToolchain(twangleJvmToolchain) }
+    }
+}
 
 // Translations: English and Dutch are written by day, the other languages at night (/translate), so
 // on an ordinary day lint reports a text still missing in a night language as a warning, not an

@@ -5,10 +5,6 @@ plugins {
     `java-test-fixtures`
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
 dependencies {
     testImplementation(libs.junit)
 }
@@ -19,10 +15,12 @@ dependencies {
 tasks.test {
     exclude("**/*Benchmark*", "**/*Report*")
     // StableTypesTest checks that the types the Compose stability file names are immutable; an input,
-    // so a change to the file runs it again.
+    // so a change to the file runs it again. Its path relative to this module (the tests run here):
+    // a system property is an input too, and a full path would differ in every worktree, so each
+    // would run the tests again instead of taking the build cache's result (Phase 91).
     val stabilityConfig = rootProject.layout.projectDirectory.file("compose-stability.conf")
     inputs.file(stabilityConfig).withPropertyName("stabilityConfig").withPathSensitivity(PathSensitivity.NONE)
-    systemProperty("twangle.stabilityConfig", stabilityConfig.asFile.absolutePath)
+    systemProperty("twangle.stabilityConfig", stabilityConfig.asFile.relativeTo(projectDir).invariantSeparatorsPath)
 }
 
 tasks.register<Test>("benchmark") {

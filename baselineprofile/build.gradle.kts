@@ -9,20 +9,14 @@ plugins {
 
 android {
     namespace = "io.github.klaboukes.twangle.baselineprofile"
-    compileSdk = 37
 
     defaultConfig {
         // Baseline Profiles need Android 9+ to generate (Android 7+ to use).
         minSdk = 28
-        targetSdk = 37
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     targetProjectPath = ":app"
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 // Run on the connected phone, not on a Gradle-managed emulator.

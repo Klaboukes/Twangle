@@ -1,0 +1,18 @@
+# Dependabot opens a pull request when a GitHub action that CI uses (.github/workflows/) has a new
+# release, its security fixes included (Phase 91). The actions are pinned to a commit with the
+# version in a comment; Dependabot updates both. Its pull requests are checked like any other: the
+# local run is the merge gate (CLAUDE.md, Git & GitHub), and CI runs only at night on main.
+# Monthly, and all of them in one pull request, so there are few to look at.
+# Only the actions: the app's own libraries are updated by hand (gradle/libs.versions.toml).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: chore

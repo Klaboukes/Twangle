@@ -18,7 +18,8 @@ permissions:
   actions: read   # to find the last successful run
 
 # Every action is pinned to a commit, its version in the comment (Phase 93): a tag can be moved, a
-# commit can't, so what runs here changes only with a change to this file. To update one, take the
+# commit can't, so what runs here changes only with a change to this file. Dependabot proposes the
+# updates once a month as a pull request (.github/dependabot.yml, Phase 91); by hand, take the
 # commit of its newest release tag (gh api repos/<owner>/<action>/commits/<tag> --jq .sha).
 jobs:
   build:
@@ -27,13 +28,18 @@ jobs:
     timeout-minutes: 40   # a full run takes about 26 minutes
 
     steps:
+      # No token left in .git/config for the steps after it: nothing here pushes, and gh below has
+      # its own (GH_TOKEN).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      # Build when anything but documentation, skills or scripts changed since the last successful
-      # run (or there is none, or it was started by hand). scripts/ui-tests.sh counts: LocalizationTest
-      # reads it (the unit tests' inputs in app/build.gradle.kts name every file they read).
+      # Build when anything but documentation, skills, scripts or the website changed since the last
+      # successful run (or there is none, or it was started by hand). scripts/ui-tests.sh counts:
+      # LocalizationTest reads it (the unit tests' inputs in app/build.gradle.kts name every file they
+      # read). No test reads website/. --no-renames lists a moved file at both its old and its new
+      # path, so code moved into docs/ still counts as a change to the code.
       - name: Anything to build?
         id: changes
         env:
@@ -44,8 +50,8 @@ jobs:
           if [ "${{ github.event_name }}" = workflow_dispatch ] || [ -z "$last" ] \
             || ! git cat-file -e "$last^{commit}" 2>/dev/null; then
             build=true
-          elif git diff --name-only "$last" HEAD \
-            | awk '$0 == "scripts/ui-tests.sh" || !/\.md$|^docs\/|^\.claude\/|^scripts\// { n++ }
+          elif git diff --no-renames --name-only "$last" HEAD \
+            | awk '$0 == "scripts/ui-tests.sh" || !/\.md$|^docs\/|^\.claude\/|^scripts\/|^website\// { n++ }
                    END { exit (n == 0) }'; then
             build=true
           else
@@ -54,7 +60,7 @@ jobs:
           fi
           echo "build=$build" >> "$GITHUB_OUTPUT"
 
-      # JDK 17 is the compile toolchain (jvmToolchain(17)); JDK 21 (listed last = default) runs Gradle.
+      # JDK 17 is the compile toolchain (jvmToolchain, root build.gradle.kts); JDK 21 (listed last = default) runs Gradle.
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         if: steps.changes.outputs.build == 'true'
         with:
@@ -78,9 +84,10 @@ jobs:
       # The free build for F-Droid and IzzyOnDroid (Phase 93): the phone app without Google Play's
       # rating library. Built in release mode, so its own R8 shrinking is checked too, with the guard
       # that stops it if a Google library comes in (app/build.gradle.kts). A call of its own, since
-      # -Ptwangle.foss=true holds for a whole call; only :app is built again.
+      # -Ptwangle.foss=true holds for a whole call; only :app is built again. It runs also when the
+      # step before it failed (a test, say), so that night still says whether the free build holds.
       - name: Assemble the free release build
-        if: steps.changes.outputs.build == 'true'
+        if: ${{ !cancelled() && steps.changes.outputs.build == 'true' }}
         run: ./gradlew :app:assembleRelease -Ptwangle.foss=true --console=plain
 
       # No debug APK upload: nobody downloads it, and the free plan's artifact storage is small.
