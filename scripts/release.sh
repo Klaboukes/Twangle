@@ -79,8 +79,9 @@
 # must be released (tagged), and ask nothing themselves. All but halt are refused while changes are in
 # Google's review, rather than restarting that review (play_send).
 #
-# The watch app follows in an update (decision 3): bundle builds its bundle with every release, but it
-# reaches Play only through the "watch" commands, which nothing runs until that update.
+# The watch app goes to Play right after the phone (decision 3, ROADMAP.md Phase 88): bundle builds its
+# bundle with every release, but it reaches Play only through the "watch" commands, the reviewed ones
+# only once the phone's production release is approved (docs/release.md, "The watch app").
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

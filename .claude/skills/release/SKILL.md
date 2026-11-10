@@ -127,7 +127,7 @@ Steps 6–8 follow later, each on the owner's word.
 - An out-of-date Baseline Profile is refused (step 1 regenerates it); `--keep-old-profile` only on the
   owner's word.
 - It builds the watch app's bundle too (`release/Twangle-<version>-watch.aab`), which goes to Play only
-  with the update that brings the watch app (*The watch app* below).
+  through the `watch` steps (*The watch app* below).
 
 ## 4. To the internal track (ask first)
 - Ask: "Send Twangle <version> (versionCode <code>) and its notes in every language to the internal
@@ -208,7 +208,7 @@ moves on.
   for review": it waits in *Publishing overview*, under *Changes not yet sent for review*, until the
   owner sends it with the release it goes with, for one review. Tell the owner so.
 
-## The watch app (with the update that brings it)
+## The watch app (right after the phone)
 Play takes a watch bundle only on the watch's own Wear OS tracks, never on the phone's
 (docs/release.md, *The watch app*: Play's rule, and the owner's one-time steps in the Play Console:
 the Wear OS form factor, later its opt-in). Each phone step has a `watch` twin, after its own yes:
@@ -217,6 +217,12 @@ the Wear OS form factor, later its opt-in). Each phone step has a `watch` twin, 
 (versionCode <code + 1,000,000>) to the watch's internal track on Google Play, as a draft?" The first
 `upload watch` is the first try of the track name on Play: if it is refused, `status` shows the names
 Play gives the watch's tracks (docs/release.md says what to change).
+**When:** the first production release is the phone app only, and the watch follows as soon as
+possible after (ROADMAP.md Phase 88). `upload watch` may go while the phone waits, since its internal
+track has no review (but, like every send, not while something is in review); the listing with the
+Wear OS screenshots, `promote watch closed` (with the owner's opt-in to Wear OS) and `promote watch
+production` only once the phone's production release is approved, one at a time, each when nothing
+of the phone's is in review, since a send during a review would restart it.
 
 ## 9. Without the Play key (another machine)
 `release.sh` stops at once, saying the key is missing, and sends nothing. Never make, copy or move a
@@ -240,5 +246,9 @@ True in October 2026; drop each line once it no longer is.
   click), make `completed` their default in `release.sh`, and remove this line.
 - **The closed test comes first:** Google's 14 days in a row of closed testing, then the owner applies
   for production access. Until Google grants it, step 6 is the closed test only.
-- **The watch app** is not part of a release yet (decision 3): `bundle` builds it, but only the
-  `watch` steps send it, and only once the owner says the update that brings it goes out.
+- **The watch app goes right after the phone** (decision 3, ROADMAP.md Phase 88): `bundle` builds
+  it and only the `watch` steps send it, each after the owner's yes. `upload watch` (its internal
+  track, no review) may go while the phone waits, between its reviews; the reviewed steps (the
+  listing with the Wear OS screenshots, `promote watch closed`, `promote watch production`) wait
+  until the phone's production release is approved, then go one at a time, never while something
+  of the phone's is in review (docs/release.md, *The watch app*).

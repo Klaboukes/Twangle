@@ -115,8 +115,8 @@ texts and notes from `fastlane/metadata/android/` too, so they still live in one
 - It refuses a version without its tag or its bundle (run `bundle` first), notes missing in a
   language, or notes changed since the tag. Only the very first release (1.0.0, already tagged and
   bundled) may go without notes. Play itself refuses a versionCode it has seen.
-- Only the phone app is uploaded; the watch app follows in an update (decision 3) and goes to its own
-  tracks (*The watch app* below).
+- Only the phone app is uploaded; the watch app goes to its own tracks with `upload watch`, on its
+  own timing (*The watch app* below).
 
 Then the same build moves on, without building or uploading anything again. Each
 command acts on the version in `gradle.properties`, which must be tagged, and sends its notes again.
@@ -193,9 +193,26 @@ listing isn't tied to a version.
   stay in the Play Console.
 
 ## The watch app
-The watch app isn't part of a release yet: it follows in an update (decision 3). `bundle` already
-builds its bundle with every release (`release/Twangle-<version>-watch.aab`, `:wear:bundleRelease`,
-versionCode + 1,000,000, the same tag), so the update that brings it needs no other build.
+**The phone first, the watch right after it** (decision 3 as it stands since 2026-11-08, ROADMAP.md
+Phase 88): the first production release is the phone app only, and the watch app goes to Play as
+soon as possible after it, never holding the phone up. The one risk to the phone is two of Google's
+reviews at once, since a change sent while another is in review restarts that review (*Managed
+publishing is on*, above). So:
+- **While the phone waits**, the watch's steps Google doesn't review: its screenshots, its line in
+  the full description (kept out of `fastlane/metadata/` until the watch goes to production, since
+  every `listing` sends what is on `main`), the Wear OS form factor in the Play Console, and
+  `upload watch` to its internal track (like every send, not while something is in review or the
+  application for production access is open, so it goes between reviews).
+- **Once the phone's production release is approved**, the reviewed ones, one at a time, each only
+  when nothing of the phone's is in review (*Publishing overview*): the store listing with the Wear OS
+  screenshots first (Google's Wear OS review looks for them), then `promote watch closed` with the
+  opt-in to Wear OS and its review, then `promote watch production`.
+- **Its featuring nomination** goes with the phone's, once Twangle has ratings (ROADMAP.md Phase 89,
+  [docs/growth/featuring-nomination.md](growth/featuring-nomination.md)), not ahead of the watch's
+  production release.
+
+`bundle` already builds the watch's bundle with every release (`release/Twangle-<version>-watch.aab`,
+`:wear:bundleRelease`, versionCode + 1,000,000, the same tag), so the watch needs no other build.
 
 **Play's rule (checked 2026-11-01):** a watch bundle no longer goes on the phone's tracks. Play
 gave Wear OS its own tracks in March 2023, and since September 2023 a Wear OS release on the phone's
@@ -218,10 +235,13 @@ owner's yes:
 - `scripts/release.sh promote watch production`, `rollout watch <percent>`, `halt watch`: as for the
   phone, on `wear:production`.
 
-**Once, in the Play Console, before the first `upload watch`** (the owner, with Claude reading along):
-- [ ] *Test and release → Advanced settings → Form factors → + Add form factor → Wear OS*, and under
-      *Releases* choose *Use a dedicated release track for Wear OS* if Play still offers the choice.
-- [ ] The Wear OS screenshots in the store listing (Phase 88, *The Wear OS screenshots*).
+**Once, in the Play Console** (the owner, with Claude reading along):
+- [ ] Before the first `upload watch`: *Test and release → Advanced settings → Form factors → + Add
+      form factor → Wear OS*, and under *Releases* choose *Use a dedicated release track for Wear OS*
+      if Play still offers the choice. If the Console says this goes to Google's review, it waits
+      until the phone's production release is approved.
+- [ ] Once the phone's production release is approved: the Wear OS screenshots in the store listing
+      (Phase 88, *The Wear OS screenshots*), sent with `listing`.
 - [ ] After the first watch release is on its closed test: the same page, *Wear OS → Manage*, *Opt in
       to Wear OS* and agree to its review, then *Start rollout* once Google has approved it.
 

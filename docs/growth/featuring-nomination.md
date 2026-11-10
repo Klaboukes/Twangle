@@ -10,7 +10,7 @@ The form's rules: send it **at least 8 weeks before the date you want to be feat
 
 - **After launch, once Twangle has a track record** (owner, 2026-10-29): not at launch and not for Christmas week. A brand-new app with no ratings, installs or reviews is a long shot for Google's editors, so the owner sends it when Twangle is public on Play and has its first few hundred ratings (Phase 89). By then it is no longer a new launch: answer **No – Title update**, send it at least 3 weeks before the date asked for, and check the answers below (written for a new launch) against the form and the app as they are then.
 - **Christmas week was let go:** it meant sending by 29 October 2026 with no public ratings yet; the owner chose not to.
-- **Again with the watch app:** the update that brings the Wear OS watch app (decision 3, Phase 88) is a *major update* with a new device, so it gets its own nomination at least 3 weeks before it goes out. Its answers are under *The watch-app update* below.
+- **The watch app goes in the same nomination** (owner, 2026-11-08; ROADMAP.md Phases 88 and 89): the Wear OS watch app goes to Play as soon as possible after the phone app (decision 3), so it is not held back for a nomination 3 weeks ahead of it. By the time Twangle has its ratings the watch app is on Play, and the one nomination names it: the watch answers under *The watch app* below go with the answers above. If the watch app is somehow not yet on Play then, leave them out rather than wait for it.
 
 ## The form, field by field (new launch)
 
@@ -23,10 +23,10 @@ The form's rules: send it **at least 8 weeks before the date you want to be feat
 
 The ten requirements, and how Twangle meets them:
 1. *Policy, launch checklist, design and core app quality guidelines:* yes. The App content declarations are all accepted (2026-10-22), and the app has no ads, no account and no data collection.
-2. *Simultaneously launch across key mobile platforms* and 6. *Platform parity in design and features:* Twangle exists only for Android (phone and tablet, the watch to follow). No other platform's version exists, so none launches first and none has more features. The owner decides if that counts as meeting these two items. If not, the honest answer to the question above is "No", and the form then says the app can't be considered.
+2. *Simultaneously launch across key mobile platforms* and 6. *Platform parity in design and features:* Twangle exists only for Android (phone, tablet and Wear OS watch). No other platform's version exists, so none launches first and none has more features. The owner decides if that counts as meeting these two items. If not, the honest answer to the question above is "No", and the form then says the app can't be considered.
 3. *Rating of 3.0 or higher:* there are no public ratings before launch. The closed test keeps going.
 4. *Launch within 4 months of the featuring date:* yes, with the dates above.
-5. *Device support:* phones, tablets (a layout of its own, checked on the Lenovo Tab M11); the watch follows in an update.
+5. *Device support:* phones, tablets (a layout of its own, checked on the Lenovo Tab M11) and Wear OS watches (the standalone watch app, once it is on Play).
 7. *Localised where it would be featured:* 36 languages, store listing included.
 8. *Material Design UI:* yes, Material 3 with Twangle's own styles.
 9. *(Recommended) alpha/beta first:* yes, the closed test since 2026-10-22.
@@ -54,7 +54,7 @@ The ten requirements, and how Twangle meets them:
 | Field | Answer |
 |---|---|
 | Desired feature date | **24 December 2026** if sent by 29 October; otherwise at least 8 weeks after the day it is sent |
-| Devices | **Phone**, **Tablet** (not Wear yet; not Chrome OS, which was never checked) |
+| Devices | **Phone**, **Tablet**, and **Wear** once the watch app is on Play (*The watch app* below; not Chrome OS, which was never checked) |
 | Target regions | **All regions** (Japan and Korea included: both languages are in the app and the listing; tick *Confirmed*) |
 | Supported languages | English, Arabic, Dutch, Finnish, French, German, Hindi, Indonesian Bahasa, Italian, Japanese, Korean, Norwegian, Portuguese / Brazilian Portuguese, Russian, Simplified Chinese, Spanish / LatAm Spanish, Swedish, Thai, Traditional Chinese, Turkish, Vietnamese; **Other:** Bengali, Danish, Polish, Ukrainian |
 | Is this a new launch, major update or minor update? | **New launch** |
@@ -107,18 +107,14 @@ For the pitch document, below that paragraph, a few short lines:
 
 The text names no other app.
 
-## The watch-app update
+## The watch app
 
-Send this when the update with the watch app is ready (decision 3, Phase 88), at least 3 weeks before it goes out, and check the facts against what that update brings.
+The watch app's answers go in the same nomination (Phase 89, *Ask Google to feature it*), once the watch app is on Play (decision 3, Phase 88), changing the answers above; check them against the watch app as it is then.
 
 | Field | Answer |
 |---|---|
-| Please confirm that this is a new launch | **No – Title update** (if the form then says the app can't be considered, the update can't be nominated this way) |
-| Channel for review | The track that has the update |
 | Devices | **Phone**, **Tablet**, **Wear** |
-| Is this a new launch, major update or minor update? | **Major update** |
+| Is this a new launch, major update or minor update? | **Major update** while the watch app is new on Play (a new device); otherwise as the answers above |
 
-**Why featuring is important now:**
-> This update adds a Wear OS app: a chromatic tuner that runs on the watch by itself, with the watch's own microphone and no phone needed. It is as private as the phone app: no internet permission, nothing recorded or sent. With the tuner on the wrist, a player can tune with both hands on the instrument.
-
-**Markets prioritized:** **No.** **Context:** "No paid campaigns; the same app in 36 languages everywhere."
+**Why featuring is important now**, a paragraph added to the answer above:
+> Twangle also runs on Wear OS watches: a chromatic tuner and a metronome on the watch by itself, with the watch's own microphone and no phone needed. It is as private as the phone app: no internet permission, nothing recorded or sent. With the tuner on the wrist, a player can tune with both hands on the instrument.
