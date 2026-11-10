@@ -6,13 +6,15 @@
 # shows (build/<kind>-screenshots.made-at, from scripts/store-screenshots.sh), which release.sh listing
 # reads to refuse pictures older than the app's screens.
 #
-#   scripts/share-store-screenshots.sh push phone|tablet   upload this PC's set, if every store folder has it
-#   scripts/share-store-screenshots.sh pull phone|tablet   download the set, if GitHub's is newer than this PC's (if older,
-#                                                          only the languages this PC lacks)
+#   scripts/share-store-screenshots.sh push phone|tablet|watch   upload this PC's set, if every store folder has it
+#   scripts/share-store-screenshots.sh pull phone|tablet|watch   download the set, if GitHub's is newer than this PC's (if
+#                                                                older, only the languages this PC lacks)
 #
-# scripts/store-screenshots.sh pushes after a run that made every picture, and pulls before a run of
-# only some languages (so the others are the latest too); scripts/release.sh listing pulls before it
-# sends. Neither stops when GitHub can't be reached: they say so and carry on with what this PC has.
+# scripts/store-screenshots.sh (and scripts/watch-screenshots.sh, the watch's) pushes after a run that made every
+# picture, and pulls before a run of only some languages (so the others are the latest too); scripts/release.sh
+# listing pulls before it sends. The watch's wait in fastlane/held-back/android/ until the watch's turn on Play
+# (scripts/watch-screenshots.sh --home says where they are). Neither stops when GitHub can't be reached:
+# they say so and carry on with what this PC has.
 # Exit codes: 0 done or nothing to do, 1 failed (said why), 2 usage.
 set -uo pipefail
 
@@ -24,7 +26,8 @@ TAG=store-screenshots
 case "${2:-}" in
     phone) FOLDER=phoneScreenshots ;;
     tablet) FOLDER=tenInchScreenshots ;;
-    *) echo "usage: scripts/share-store-screenshots.sh push|pull phone|tablet" >&2; exit 2 ;;
+    watch) FOLDER=wearScreenshots; LISTINGS="$(scripts/watch-screenshots.sh --home)" ;;
+    *) echo "usage: scripts/share-store-screenshots.sh push|pull phone|tablet|watch" >&2; exit 2 ;;
 esac
 ASSET="$2.tar"
 TAR="build/shared-store-screenshots/$ASSET"   # GitHub names the download after the file
@@ -145,5 +148,5 @@ pull() {
 case "${1:-}" in
     push) push "$@" ;;
     pull) pull "$@" ;;
-    *) echo "usage: scripts/share-store-screenshots.sh push|pull phone|tablet" >&2; exit 2 ;;
+    *) echo "usage: scripts/share-store-screenshots.sh push|pull phone|tablet|watch" >&2; exit 2 ;;
 esac

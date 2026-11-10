@@ -198,7 +198,8 @@ Phase 88): the first production release is the phone app only, and the watch app
 soon as possible after it, never holding the phone up. The one risk to the phone is two of Google's
 reviews at once, since a change sent while another is in review restarts that review (*Managed
 publishing is on*, above). So:
-- **While the phone waits**, the watch's steps Google doesn't review: its screenshots, its line in
+- **While the phone waits**, the watch's steps Google doesn't review: its screenshots (made on the
+  watch by `scripts/watch-screenshots.sh` and held back in `fastlane/held-back/` too), its line in
   the full description (written in every language and held back in `fastlane/held-back/` until the
   watch goes to production, since every `listing` sends what is on `main`; nothing that sends reads
   that folder), the Wear OS form factor in the Play Console, and
@@ -206,7 +207,9 @@ publishing is on*, above). So:
   application for production access is open, so it goes between reviews).
 - **Once the phone's production release is approved**, the reviewed ones, one at a time, each only
   when nothing of the phone's is in review (*Publishing overview*): the store listing with the Wear OS
-  screenshots first (Google's Wear OS review looks for them), then `promote watch closed` with the
+  screenshots first (Google's Wear OS review looks for them; in a pull request of their own they move
+  into `fastlane/metadata/`, [store-listing.md](store-listing.md), *Watch screenshots*, and `listing`
+  checks them against Play's rule and that they show the watch app as it is), then `promote watch closed` with the
   opt-in to Wear OS and its review, then `promote watch production`.
 - **With the watch's production release**, its line goes into every full description: in one pull
   request, each `fastlane/held-back/android/<locale>/watch_line.txt` is moved in (its `- ` / `+ `

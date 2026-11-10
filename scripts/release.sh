@@ -49,7 +49,8 @@
 #       (since September 2023; docs/release.md, *The watch app*).
 #   scripts/release.sh listing
 #       Sends the store listing to Google Play: every language's title, short and full description and
-#       phone and tablet screenshots, the icon (one for every language) and each language's feature graphic, and the
+#       phone and tablet screenshots (and, from the watch's turn on Play, its Wear OS screenshots: scripts/watch-screenshots.sh),
+#       the icon (one for every language) and each language's feature graphic, and the
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
 #       git-ignored; it first takes the latest set the other PC shared on GitHub, scripts/share-store-screenshots.sh), and checks the texts and pictures against Play's rules first.
@@ -90,6 +91,9 @@ LISTINGS="fastlane/metadata/android"
 # What the phone screenshots show: the app's screens, their captions, and the test that draws them.
 SCREENSHOT_SOURCES=(app/src/main ':(glob)feature/*/src/main/**' core/designsystem/src/main
     app/src/androidTest/kotlin/io/github/klaboukes/twangle/app/store "$LISTINGS/*/screenshot_captions.txt")
+# What the watch screenshots show: the watch app, the note names it writes, and the test that draws them.
+WATCH_SCREENSHOT_SOURCES=(wear/src/main core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/music
+    wear/src/androidTest/kotlin/io/github/klaboukes/twangle/wear/WatchStoreScreenshots.kt)
 OUT="release"
 APP_ID="io.github.klaboukes.twangle"
 PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
@@ -533,21 +537,27 @@ png_info() {
 # Fails, naming every language and picture that is wrong, unless every language has its phone
 # screenshots, 1.png ... one for each caption, within Play's rules. A language without them would show
 # English screenshots on Play, so none is sent until all are there. The 10-inch tablet screenshots
-# (tenInchScreenshots, Phase 52) are checked against Play's tablet rule, and once any language has them
-# every language needs as many: the plugin would fill a language without them with the English ones.
+# (tenInchScreenshots, Phase 52) and the watch's (wearScreenshots, Phase 88; here only from the watch's turn
+# on Play, until then they wait in fastlane/held-back/) are checked against Play's rule for them, and once any
+# language has them every language needs as many: the plugin would fill a language without them with the
+# English ones.
 need_screenshots() {
-    local locale want dir file n w h info tablets oldest="" problems=() missing=() tablet_counts=()
-    for locale in $(locales); do
-        dir="$LISTINGS/$locale/images/tenInchScreenshots"
-        # A PC that never made the tablet set has no such folder (find fails, and pipefail would end the script).
-        tablets=0
-        [[ -d "$dir" ]] && tablets="$(find "$dir" -maxdepth 1 -name '*.png' | wc -l)"
-        tablet_counts+=("$locale:$tablets")
+    local locale want dir file n w h info count kind made oldest="" problems=() missing=() counts=()
+    for kind in "tenInchScreenshots:the tablet connected: scripts/store-screenshots.sh" \
+        "wearScreenshots:the watch connected: scripts/watch-screenshots.sh"; do
+        made="${kind#*:}" kind="${kind%%:*}" counts=()
+        for locale in $(locales); do
+            dir="$LISTINGS/$locale/images/$kind"
+            # A PC that never made the set has no such folder (find fails, and pipefail would end the script).
+            count=0
+            [[ -d "$dir" ]] && count="$(find "$dir" -maxdepth 1 -name '*.png' | wc -l)"
+            counts+=("$locale:$count")
+        done
+        if printf '%s\n' "${counts[@]}" | grep -qv ':0$' &&
+            [[ "$(printf '%s\n' "${counts[@]}" | sed 's/.*://' | sort -u | wc -l)" -ne 1 ]]; then
+            problems+=("not every language has the same $kind ($(printf '%s ' "${counts[@]}")); make them with $made")
+        fi
     done
-    if printf '%s\n' "${tablet_counts[@]}" | grep -qv ':0$' &&
-        [[ "$(printf '%s\n' "${tablet_counts[@]}" | sed 's/.*://' | sort -u | wc -l)" -ne 1 ]]; then
-        problems+=("not every language has the same tablet screenshots ($(printf '%s ' "${tablet_counts[@]}")); make them with the tablet connected: scripts/store-screenshots.sh")
-    fi
     for locale in $(locales); do
         want="$(grep -c . "$LISTINGS/$locale/screenshot_captions.txt" 2>/dev/null || true)"
         dir="$LISTINGS/$locale/images/phoneScreenshots"
@@ -568,6 +578,11 @@ need_screenshots() {
                     if (( w < 1080 || h < 1080 || w > 7680 || h > 7680 || (w * 9 != h * 16 && w * 16 != h * 9) )); then
                         problems+=("$file is $w x $h px; Play's 10-inch tablet screenshots are 16:9 or 9:16, 1080 to 7680 px a side")
                     fi
+                elif [[ "$dir" == */wearScreenshots ]]; then
+                    # Play's Wear OS screenshots: square, at least 384 px a side (3840 at most, as every screenshot).
+                    if (( w != h || w < 384 || w > 3840 )); then
+                        problems+=("$file is $w x $h px; Play's Wear OS screenshots are square, 384 to 3840 px a side")
+                    fi
                 # Play: each side 320 to 3840 px, the long side at most twice the short one, at most 8 MB.
                 elif (( w < 320 || h < 320 || w > 3840 || h > 3840 || w > 2 * h || h > 2 * w )); then
                     problems+=("$file is $w x $h px; Play takes 320 to 3840 px a side, at most 2:1")
@@ -586,7 +601,7 @@ that made them all. Connect the phone and run
     fi
     [[ ${#problems[@]} -eq 0 ]] || fail "the screenshots don't meet Play's rules:
 $(printf '  %s\n' "${problems[@]}")
-Make them again with scripts/store-screenshots.sh. Nothing was sent to Google Play."
+Make them again with scripts/store-screenshots.sh (the watch's with scripts/watch-screenshots.sh). Nothing was sent to Google Play."
     echo "Screenshots for every language; the oldest made $(date -r "$oldest" '+%Y-%m-%d %H:%M')."
 }
 
@@ -630,6 +645,35 @@ changes_picture() {
 # (SCREENSHOT_SOURCES) that can change that picture (picture_scopes). Says which, with the command that makes
 # just those again, and returns 1 when not. They are made before a listing is sent, not every night (owner,
 # 2026-10-30), so this is what keeps a listing from going out with pictures of an older app.
+# Whether the watch screenshots, once they are in the listing (the watch's turn on Play), show the watch app as
+# it is now: the commit scripts/watch-screenshots.sh noted after a run of every language (build/watch-screenshots.made-at,
+# shared with the set) has no change since to what they show (WATCH_SCREENSHOT_SOURCES). A run of every language takes
+# a few minutes, so any such change counts, with no scopes. Nothing to check (0) while they are held back.
+watch_screenshots_current() {
+    local made_at="build/watch-screenshots.made-at" commit state when changes
+    [[ -n "$(find "$LISTINGS" -path '*/images/wearScreenshots/*.png' -print -quit)" ]] || return 0
+    { [[ -f "$made_at" ]] && read -r commit state when < "$made_at"; } || {
+        echo "Which version of the watch app its screenshots show isn't known (no $made_at): make them again with"
+        echo "the watch connected and awake, scripts/watch-screenshots.sh (every language, a few minutes)."
+        return 1
+    }
+    if ! git cat-file -e "$commit^{commit}" 2>/dev/null; then
+        changes="made at ${commit:0:8}, a commit this clone doesn't have"
+    elif [[ "$state" != clean ]]; then
+        changes="made from uncommitted changes"
+    else
+        changes="$(git log --format='%h %s' "$commit..HEAD" -- "${WATCH_SCREENSHOT_SOURCES[@]}" | head -5)"
+    fi
+    if [[ -z "$changes" ]]; then
+        echo "The watch screenshots show the watch app as it is now (made $when)."
+        return 0
+    fi
+    echo "The watch screenshots (made $when) are older than what they show:"
+    sed 's/^/  /' <<< "$changes"
+    echo "Make them again with the watch connected and awake: scripts/watch-screenshots.sh (every language, a few minutes)."
+    return 1
+}
+
 screenshots_current() {
     local made_at="build/phone-screenshots.made-at" note n line commit state when c stale=() reasons=() newest=""
     if [[ ! -f "$made_at" ]]; then
@@ -683,8 +727,10 @@ listing() {
     # The screenshots are git-ignored: take the latest set the owner's other PC shared on GitHub, if newer.
     scripts/share-store-screenshots.sh pull phone || true
     scripts/share-store-screenshots.sh pull tablet || true
+    scripts/share-store-screenshots.sh pull watch || true
     need_screenshots
     screenshots_current || fail "make the phone screenshots again first (above), look them over, then send. Nothing was sent to Google Play."
+    watch_screenshots_current || fail "make the watch screenshots again first (above), look them over, then send. Nothing was sent to Google Play."
     use_java
 
     # Titles, descriptions and captions within Play's limits, the icon and feature graphic at Play's
@@ -749,6 +795,7 @@ listing_changes() {
         echo "The app's screens are unchanged since."
     fi
     screenshots_current || echo "listing refuses them until then."
+    watch_screenshots_current || echo "listing refuses them until then."
 }
 
 # Runs one of the read-only looks at Play (scripts/PlayReports.java, plain JDK, no Gradle).

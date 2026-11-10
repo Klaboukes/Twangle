@@ -34,6 +34,8 @@ play-service-account*.json
 fastlane/metadata/android/*/images/*
 !fastlane/metadata/android/en-US/images/icon.png
 !fastlane/metadata/android/*/images/featureGraphic.png
+# The watch's screenshots, made on the watch by scripts/watch-screenshots.sh, wait here until the watch's turn on Play.
+fastlane/held-back/android/*/images/
 
 # Release bundles and their notes, made by scripts/release.sh bundle (docs/release.md)
 /release/
