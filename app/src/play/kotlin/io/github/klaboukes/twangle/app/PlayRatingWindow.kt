@@ -6,7 +6,7 @@ import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
 import io.github.klaboukes.twangle.feature.tuner.RatingWindow
 
-/** The Play build's rating window; the free build's twin in src/foss has none (Phase 90). */
+/** The Play build's rating window; the free build's twin in src/foss has none (Phase 92). */
 fun storeRatingWindow(appContext: Context): RatingWindow = PlayRatingWindow(appContext)
 
 /**

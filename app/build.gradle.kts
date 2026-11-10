@@ -13,7 +13,7 @@ plugins {
 // Version and upload key: shared with the watch app, see the root build.gradle.kts.
 val keystoreProperties = rootProject.extra["twangleKeystoreProperties"] as Properties?
 
-// -Ptwangle.foss=true makes the free build for F-Droid and IzzyOnDroid (Phase 90): the same app
+// -Ptwangle.foss=true makes the free build for F-Droid and IzzyOnDroid (Phase 92): the same app
 // without Google Play's rating library, which is not open source. Only src/play (Google's rating
 // window) gives way to src/foss (none). A property, not a product flavour, so every task keeps its
 // name (scripts/, the release, the Baseline Profile). docs/architecture/lifecycle.md, *Google's
