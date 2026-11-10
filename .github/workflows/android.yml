@@ -17,7 +17,7 @@ permissions:
   contents: read
   actions: read   # to find the last successful run
 
-# Every action is pinned to a commit, its version in the comment (Phase 92): a tag can be moved, a
+# Every action is pinned to a commit, its version in the comment (Phase 93): a tag can be moved, a
 # commit can't, so what runs here changes only with a change to this file. To update one, take the
 # commit of its newest release tag (gh api repos/<owner>/<action>/commits/<tag> --jq .sha).
 jobs:
@@ -75,7 +75,7 @@ jobs:
         if: steps.changes.outputs.build == 'true'
         run: ./gradlew test lint assembleDebug assembleRelease bundleRelease --continue --console=plain
 
-      # The free build for F-Droid and IzzyOnDroid (Phase 92): the phone app without Google Play's
+      # The free build for F-Droid and IzzyOnDroid (Phase 93): the phone app without Google Play's
       # rating library. Built in release mode, so its own R8 shrinking is checked too, with the guard
       # that stops it if a Google library comes in (app/build.gradle.kts). A call of its own, since
       # -Ptwangle.foss=true holds for a whole call; only :app is built again.

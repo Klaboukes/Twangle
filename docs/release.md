@@ -231,7 +231,7 @@ publishing is on*, above). So:
   pairs made, then the line first under the *Also* heading) and the held-back files and their
   test go ([store-listing.md](store-listing.md), *The watch line*); `StoreListingTest` passes, and
   the next `listing`, once nothing is in review, sends it.
-- **Its featuring nomination** goes with the phone's, once Twangle has ratings (ROADMAP.md Phase 91,
+- **Its featuring nomination** goes with the phone's, once Twangle has ratings (ROADMAP.md Phase 92,
   [docs/growth/featuring-nomination.md](growth/featuring-nomination.md)), not ahead of the watch's
   production release.
 
