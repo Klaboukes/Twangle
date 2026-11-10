@@ -54,11 +54,9 @@ does) and tell every sub-agent the owner is away: it decides itself, logs its ch
 and never ends on a question. Copy their choices into the log.
 
 **The phone and the room:** UI tests and phone checks are fine (`/ui-test`; keep the phone cool),
-the `:core:audio` tests too, though their short tones and clicks sound from the phone's speaker
-(owner, 2026-11-10: "sounds are fine during away runs"), and so the full check at bedtime. Beyond
-the UI tests, make no sound from the PC or the phone: no test tones played by hand, no strum checks
-through the speaker, no `scripts/strum-check.sh` (the owner may be asleep nearby). A check like
-those goes in the report.
+and so is sound from the PC or the phone: the `:core:audio` tests, test tones, strum checks through
+the speaker, `scripts/strum-check.sh` (owner, 2026-11-10: they start away runs where the sound
+disturbs nobody). Each sound stays short and stops by itself, never a loop, as by day.
 
 ## 3. Still waits for the owner, away or not
 
