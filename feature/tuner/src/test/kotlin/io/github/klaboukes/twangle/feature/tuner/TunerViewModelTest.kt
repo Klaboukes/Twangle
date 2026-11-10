@@ -11,8 +11,10 @@ import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -149,6 +151,59 @@ class TunerViewModelTest {
         assertEquals(TunerMode.CHROMATIC, vm.mode.value)
         runCurrent()
         assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+    }
+
+    @Test
+    fun `a mode saved elsewhere after a pick on the switch shows at once`() = runTest(dispatcher) {
+        // Phase 89: picking an instrument or tuning in Practice saves guitar mode from outside the tuner.
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setMode(TunerMode.CHROMATIC)
+        advanceTimeBy(500)
+        assertEquals(TunerMode.CHROMATIC, vm.detected().mode)
+
+        settings.setMode(TunerMode.AUTO)
+        runCurrent()
+        assertEquals(TunerMode.AUTO, vm.mode.value)
+        advanceTimeBy(500)
+        assertEquals(TunerMode.AUTO, vm.detected().mode)
+        assertEquals(1, vm.detected().targetString)
+
+        // The switch still works after it.
+        vm.setMode(TunerMode.CHROMATIC)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        assertEquals(TunerMode.CHROMATIC, settings.current.mode)
+    }
+
+    @Test
+    fun `a pick on the switch holds while its save is under way`() = runTest(dispatcher) {
+        val saving = CompletableDeferred<Unit>()
+        val saved = settings
+        val slow = object : SettingsRepository by saved {
+            override suspend fun setMode(mode: TunerMode) {
+                saving.await()
+                saved.setMode(mode)
+            }
+        }
+        val vm = TunerViewModel(a2Recorder(), slow, tones, StandardTestDispatcher(testScheduler))
+        runCurrent()
+
+        vm.setMode(TunerMode.CHROMATIC)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        // Another setting saved meanwhile (the old mode with it) doesn't undo the pick.
+        settings.setA4(442f)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+
+        saving.complete(Unit)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        settings.setMode(TunerMode.AUTO)
+        runCurrent()
+        assertEquals(TunerMode.AUTO, vm.mode.value)
     }
 
     @Test

@@ -116,15 +116,29 @@ class TunerViewModel(
     private val attempt = MutableStateFlow(0)
 
     /**
-     * The mode just picked on the switch, or null until one is. It wins over the saved mode, so
-     * the switch and the readings follow a tap at once instead of after the save.
+     * The mode just picked on the switch, or null when none is waiting for its save. It wins over the saved mode, so
+     * the switch and the readings follow a tap at once instead of after the save. It gives way to the saved mode at
+     * the first reading of the settings once none of the switch's saves is still under way: by then the saved mode
+     * has caught up with it, or was changed from elsewhere (an instrument or tuning picked in Practice switches the
+     * tuner to guitar mode), which then shows at once instead of after a restart.
      */
     private val pickedMode = MutableStateFlow<TunerMode?>(null)
+
+    /** How many of the switch's saves ([setMode]) are under way; only touched on the main thread. */
+    private var modeSavesUnderWay = 0
 
     /** Guitar or chromatic: the one last picked, which starts as the saved one. */
     val mode: StateFlow<TunerMode> =
         combine(settingsRepository.settings, pickedMode) { settings, picked -> picked ?: settings.mode }
             .stateIn(viewModelScope, SharingStarted.Eagerly, saved.mode)
+
+    init {
+        viewModelScope.launch {
+            settingsRepository.settings.collect {
+                if (modeSavesUnderWay == 0) pickedMode.value = null
+            }
+        }
+    }
 
     /** The instrument whose strings guitar mode tunes (a saved setting); the tuning is always one of its presets. */
     val instrument: StateFlow<Instrument> = settingsRepository.settings
@@ -366,7 +380,14 @@ class TunerViewModel(
             setStrumCheck(false)
         }
         pickedMode.value = mode
-        viewModelScope.launch { settingsRepository.setMode(mode) }
+        modeSavesUnderWay++
+        viewModelScope.launch {
+            try {
+                settingsRepository.setMode(mode)
+            } finally {
+                modeSavesUnderWay--
+            }
+        }
     }
 
     /**
