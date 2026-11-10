@@ -398,6 +398,24 @@ class TunerInterpreterTest {
     }
 
     @Test
+    fun `in guitar mode the high E plucked over a ringing low E is followed at once, in any-note mode or with a lock it is held`() {
+        // The pluck rises 8 dB over the low E still ringing (PitchSmoother.STRING_CHANGE_DB): enough
+        // for a jump onto another string of the tuning, short of the 10 dB any other jump needs.
+        fun change(options: TunerOptions): TunerUiState.Detected {
+            val fresh = TunerInterpreter(frameSeconds)
+            repeat(12) { fresh.interpret(PitchReading(hz(40f), 0.99f, levelDbfs = -41f, gateOpen = true), options) }
+            var state: TunerUiState? = null
+            repeat(3) { state = fresh.interpret(PitchReading(hz(64f), 0.99f, levelDbfs = -33f, gateOpen = true), options) }
+            return state!!.detected()
+        }
+        val guitar = change(TunerOptions(TunerMode.AUTO, standard))
+        assertEquals(5, guitar.targetString)
+        assertEquals(hz(64f), guitar.frequencyHz, 0.1f)
+        assertEquals(hz(40f), change(TunerOptions(TunerMode.CHROMATIC, standard)).frequencyHz, 0.1f)
+        assertEquals(hz(40f), change(TunerOptions(TunerMode.AUTO, standard, lockedString = 0)).frequencyHz, 0.1f)
+    }
+
+    @Test
     fun `a locked string is the target even when another string is closer`() {
         // E2 is played but A2 is locked: the reading shows the 5 semitones to A2, not the nearby E2.
         val locked = TunerOptions(TunerMode.AUTO, standard, lockedString = 1)

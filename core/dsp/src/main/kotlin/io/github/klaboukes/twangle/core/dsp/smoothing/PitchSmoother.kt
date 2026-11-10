@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.smoothing
 
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.min
@@ -27,6 +28,10 @@ import kotlin.math.roundToInt
  *    over the quietest of the [ATTACK_LOOKBACK_FRAMES] frames before it (`levelDbfs`; a muted
  *    string before the 12th-fret harmonic makes the rise bigger, not smaller); without an attack
  *    only once it has lasted [octaveHoldFrames], about a second, by when it is a sound of its own.
+ *    In guitar mode ([strings] set) a jump that lands on another string of the tuning needs only a
+ *    rise of [STRING_CHANGE_DB]: the next string plucked over the last one still ringing, which
+ *    rises less than a pluck in a quiet room (low E → high E two octaves up, low E → B and A → high
+ *    E a twelfth up, in standard tuning).
  *    Until then the reading stays, so the needle holds the note as it sinks and then goes blank.
  *    In frames too quiet to start a reading the jump is never followed: that is the fundamental
  *    dying away ahead of the 2nd partial. Once the needle has gone blank, the same readings can't
@@ -89,6 +94,13 @@ class PitchSmoother(
     private var onsetCount = 0
     private var lastOnsetMidi = 0f
 
+    /**
+     * The tuning whose strings a jump of a whole number of periods may land on as a string change
+     * (stage 1), in guitar mode; null in any-note mode or with a string locked, where every such jump
+     * needs a full attack. Setting it allocates nothing and keeps the reading.
+     */
+    var strings: Tuning? = null
+
     /** True when there is a reading to show. [midi], [note] and [cents] are only meaningful then. */
     val hasReading: Boolean get() = !ema.value.isNaN()
 
@@ -116,7 +128,8 @@ class PitchSmoother(
      */
     fun update(midi: Float, confidence: Float = 1f, loudEnough: Boolean = true, levelDbfs: Float = Float.NaN): Boolean {
         require(midi.isFinite()) { "midi must be finite, was $midi" }
-        val attack = isAttack(levelDbfs)
+        val rise = riseDb(levelDbfs)
+        val attack = rise >= ATTACK_DB
         if (attack) attackSinceLost = true
         rememberLevel(levelDbfs)
         missedFrames = 0
@@ -136,7 +149,7 @@ class PitchSmoother(
             // does about 2 s in (Phase 46's recordings), not a new note, which comes with an attack.
             if (!loudEnough) return false
             pendingOctaveFrames++
-            if (attack) pendingAttack = true
+            if (attack || (rise >= STRING_CHANGE_DB && isStringChange(midi, medianFilter.median))) pendingAttack = true
             // Without an attack it is the note sinking into the room, read at a multiple of its
             // period (the same recordings, a TV on: G2 for the G string, A2 for the high E), unless
             // it goes on for about a second.
@@ -169,7 +182,7 @@ class PitchSmoother(
      * quiet frames are what the next note's attack rises over.
      */
     fun noReading(sustained: Boolean = true, levelDbfs: Float = Float.NaN) {
-        if (isAttack(levelDbfs)) attackSinceLost = true
+        if (riseDb(levelDbfs) >= ATTACK_DB) attackSinceLost = true
         rememberLevel(levelDbfs)
         if (!hasReading) {
             if (lostFrames < octaveHoldFrames) lostFrames++
@@ -248,14 +261,23 @@ class PitchSmoother(
         return CENTS_PER_SEMITONE * abs(abs(semitones) - TWELFTH_SEMITONES) <= octaveToleranceCents
     }
 
-    // True when [levelDbfs] rose ATTACK_DB over the quietest of the last frames, as a new note's
-    // first readings do (a pluck rises 15–40 dB within a frame or two; a sinking string falls, a
-    // TV's talk wobbles a few dB). Without a level, or before any, an attack is assumed.
-    private fun isAttack(levelDbfs: Float): Boolean {
-        if (levelDbfs.isNaN() || recentLevelCount == 0) return true
+    // How far [levelDbfs] rose over the quietest of the last frames: ATTACK_DB or more is a new
+    // note's attack (a pluck rises 15–40 dB within a frame or two; a sinking string falls, a TV's
+    // talk wobbles a few dB). Without a level, or before any, an attack is assumed (infinite).
+    private fun riseDb(levelDbfs: Float): Float {
+        if (levelDbfs.isNaN() || recentLevelCount == 0) return Float.POSITIVE_INFINITY
         var lowest = Float.MAX_VALUE
         for (i in 0 until recentLevelCount) lowest = min(lowest, recentLevels[i])
-        return levelDbfs >= lowest + ATTACK_DB
+        return levelDbfs - lowest
+    }
+
+    // True in guitar mode when [midi] is on a string of the tuning (within STRING_SEMITONES) other
+    // than the one nearest [from], the reading shown: the player moved to that string. A course's
+    // octave string (a 12-string's) is its own string, so a slip to it is no change.
+    private fun isStringChange(midi: Float, from: Float): Boolean {
+        val tuning = strings ?: return false
+        val target = tuning.nearestStringIndex(midi)
+        return tuning.distanceToString(midi, target) <= STRING_SEMITONES && target != tuning.nearestStringIndex(from)
     }
 
     private fun rememberLevel(levelDbfs: Float) {
@@ -296,6 +318,17 @@ class PitchSmoother(
 
         /** A rise over the quietest recent frame that only an attack makes; a TV's talk rose 6 dB in the recordings. */
         const val ATTACK_DB = 10f
+
+        /**
+         * The rise that makes a jump onto another string of the tuning a string change (guitar mode):
+         * more than a TV's talk (6 dB) and than a string sinking into it read a multiple of its period
+         * (under 1 dB, the multiple on a string included); the high E plucked over a low E ringing a
+         * second, its first 85 ms 6 dB louder, rose 8–9 dB.
+         */
+        const val STRING_CHANGE_DB = 7f
+
+        /** How near a string a reading must be to land on it: half a semitone. */
+        private const val STRING_SEMITONES = 0.5f
 
         /** 4 frames ≈ 85 ms of dropout before the reading is cleared. */
         const val DEFAULT_MAX_MISSED_FRAMES = 4

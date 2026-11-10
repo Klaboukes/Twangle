@@ -64,6 +64,9 @@ class TunerInterpreter(
             inTunePrecision = options.inTunePrecision
             tuningCue = TuningCue(InTuneDetector.forPrecision(inTunePrecision))
         }
+        // In guitar mode a jump onto another string of the tuning is a string change sooner; with a
+        // string locked the player tunes that one, so a jump is more likely a slip.
+        smoother.strings = if (mode == TunerMode.AUTO && lockedString(options) == null) tuning else null
         if (reading.isPitched) {
             val loudEnough = reading.levelDbfs >= SignalGate.DEFAULT_THRESHOLD_DBFS
             smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence, loudEnough, reading.levelDbfs)

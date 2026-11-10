@@ -2,14 +2,16 @@ package io.github.klaboukes.twangle.core.dsp.pitch
 
 import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 
 /**
  * The tuner as the app runs it, for tests that feed whole recordings through it: the app's own frame
  * chain ([PitchChain]: frame assembly → gate → sustain check → YIN → noise floor; in the low range,
  * mains hum cancelled on the way into the frames and a pitch at mains hum's own frequency no note) and
- * then the smoother, as `TunerInterpreter` has it. [settings] (from [AnalysisSettings.forSampleRate])
- * give the rate and the range.
+ * then the smoother, as `TunerInterpreter` has it in the app's default mode (guitar mode, standard
+ * tuning: [PitchSmoother.strings]). [settings] (from [AnalysisSettings.forSampleRate]) give the rate
+ * and the range.
  */
 internal class TunerChain(
     val settings: AnalysisSettings = AnalysisSettings.forSampleRate(YinPitchDetector.DEFAULT_SAMPLE_RATE),
@@ -18,8 +20,11 @@ internal class TunerChain(
     private val humCanceller: () -> MainsHumCanceller? = { settings.newHumCanceller() },
     /** The refinement on the lowest partials, as the tuner has it; false to compare (the whole waveform). */
     private val refineOnLowestPartials: Boolean = true,
-    /** The smoother, as the tuner has it; another to compare (e.g. one that follows an octave without an attack). */
-    private val smoother: () -> PitchSmoother = { PitchSmoother() },
+    /**
+     * The smoother, as the tuner has it in guitar mode with the standard tuning; another to compare
+     * (any-note mode's, without strings, or one that follows an octave without an attack).
+     */
+    private val smoother: () -> PitchSmoother = { PitchSmoother().apply { strings = Tunings.STANDARD } },
 ) {
     /** What the chain produced for one frame. */
     class Frame(

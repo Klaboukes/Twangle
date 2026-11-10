@@ -1,7 +1,9 @@
 package io.github.klaboukes.twangle.core.dsp.smoothing
 
 import io.github.klaboukes.twangle.core.dsp.allocatedBytes
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -9,6 +11,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Random
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class PitchSmootherTest {
@@ -216,6 +219,52 @@ class PitchSmootherTest {
         // The attack comes: the three frames pending already are enough.
         assertTrue(smoother.update(E4 - 12f, levelDbfs = -20f))
         assertEquals(Note(52), smoother.note)
+    }
+
+    @Test
+    fun `in guitar mode another string two octaves or a twelfth away, plucked a little louder than the ringing one, is followed within three frames`() {
+        // The high E plucked over a low E still ringing a second after its pluck, its first 85 ms
+        // only 6 dB louder than the low E (StringChangeTest): the frame level rose 8 dB, short of a
+        // lone pluck's 10, and the needle held the low E for as long as the high E was heard.
+        for ((from, to) in listOf(E2 to E4, E2 to E2 + TWELFTH, A2 to E4)) {
+            val guitar = PitchSmoother().apply { strings = Tunings.STANDARD }
+            val chromatic = PitchSmoother()
+            for (s in listOf(guitar, chromatic)) {
+                repeat(10) { s.update(from, levelDbfs = -41f) }
+                repeat(2) { s.update(from, levelDbfs = -38f) }
+            }
+            assertFalse(guitar.update(to, levelDbfs = -34f))
+            assertFalse(guitar.update(to, levelDbfs = -33f))
+            assertTrue("$from → $to", guitar.update(to, levelDbfs = -32f))
+            assertEquals(Note(to.roundToInt()), guitar.note)
+            // In any-note mode, where no string tells a string change from a slip, it is held as before.
+            repeat(30) { assertFalse(chromatic.update(to, levelDbfs = -33f)) }
+            assertEquals(Note(from.roundToInt()), chromatic.note)
+        }
+    }
+
+    @Test
+    fun `in guitar mode a jump onto another string without such a rise is still held`() {
+        // The high E sinking into a TV read A2, three periods, a string of the tuning, with its level
+        // flat or falling (Phase 46's noisy take: a rise of 0.1 dB at most); the room's talk rose up
+        // to 6 dB. Neither is a string change.
+        val guitar = PitchSmoother().apply { strings = Tunings.STANDARD }
+        var level = -26f
+        repeat(10) { guitar.update(E4 + 0.02f, levelDbfs = level); level -= 0.3f }
+        level = -42f
+        repeat(16) { assertFalse(guitar.update(E4 - TWELFTH + 0.01f, levelDbfs = level)); level -= 0.1f }
+        repeat(5) { assertFalse(guitar.update(E4 - 24f, levelDbfs = level + 6f)) }
+        assertEquals(Note(64), guitar.note)
+        // An octave that is no string of the tuning (E3 in standard) needs the pluck's 10 dB, as ever.
+        guitar.reset()
+        repeat(10) { guitar.update(E4, levelDbfs = -41f) }
+        repeat(10) { assertFalse(guitar.update(E4 - 12f, levelDbfs = -33f)) }
+        assertEquals(Note(64), guitar.note)
+        // A 12-string's octave string is its course, the same string: a slip to it is held too.
+        val twelve = PitchSmoother().apply { strings = Instruments.GUITAR_12.tunings.first() }
+        repeat(10) { twelve.update(E2, levelDbfs = -41f) }
+        repeat(10) { assertFalse(twelve.update(E2 + 12f, levelDbfs = -33f)) }
+        assertEquals(Note(40), twelve.note)
     }
 
     @Test
