@@ -12,6 +12,7 @@ import android.util.Base64
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntRect
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
@@ -55,6 +56,7 @@ import org.junit.runners.Parameterized
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 /**
  * The Play Store's phone screenshots, made on the phone in one language (docs/store-listing.md,
@@ -278,23 +280,30 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
 
     /**
      * Opens the app, runs [steps] in it, takes the screen and saves it on the canvas cut to [Shot.parts]: their bounds
-     * together, measured on the screen as it stands, the full width and a margin above and below, on the screen's own
-     * background ([edgeColour]). [after] runs with the app still open; [bubble] gives TalkBack's words, read in [steps].
+     * together, measured on the screen as it stands, the full width and up to a margin above and below ([settled]), on
+     * the screen's own background ([edgeColour]). [after] runs with the app still open; [bubble] gives TalkBack's words,
+     * read in [steps].
      */
     private fun cut(after: () -> Unit = {}, bubble: (() -> SpeechBubble)? = null, steps: () -> Unit) {
         val parts = shot.parts ?: error("$shot has no parts to cut")
-        lateinit var area: IntRect
+        lateinit var bounds: IntRect
         val screen = capture(after = { after() }) {
             steps()
-            area = areaOf(parts)
+            bounds = areaOf(parts)
         }
-        compose(Moment.Cut(screen.asImageBitmap(), area, edgeColour(screen, area), shot.fade), bubble = bubble?.invoke())
+        val margin = (CUT_MARGIN_DP * app.resources.displayMetrics.density).toInt()
+        val background = edgeColour(
+            screen,
+            bounds.copy(top = (bounds.top - margin).coerceAtLeast(0), bottom = (bounds.bottom + margin).coerceAtMost(screen.height)),
+        )
+        val area = settled(screen, bounds, background, margin)
+        compose(Moment.Cut(screen.asImageBitmap(), area, background, shot.fade), bubble = bubble?.invoke())
     }
 
     /**
      * The part of the screen the test tags matching [parts] cover, in the saved screen's pixels ([crop] taken off): their
-     * bounds together, the whole width, [CUT_MARGIN_DP] more above and below. Read from the accessibility tree as it is
-     * now, not through UI Automator, which waits for an idle screen that a moving meter never gives.
+     * bounds together, the whole width. Read from the accessibility tree as it is now, not through UI Automator, which
+     * waits for an idle screen that a moving meter never gives.
      */
     private fun areaOf(parts: Regex): IntRect {
         val root = instrumentation.uiAutomation.rootInActiveWindow ?: error("no window to measure")
@@ -306,16 +315,46 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
             .toList()
         check(bounds.isNotEmpty()) { "none of ${parts.pattern} is on the screen" }
         val (top, left, bottom) = crop ?: error("the screen wasn't measured")
-        val margin = (CUT_MARGIN_DP * app.resources.displayMetrics.density).toInt()
         val full = instrumentation.uiAutomation.takeScreenshot() ?: error("no screenshot")
         val height = full.height - top - bottom
         return IntRect(
             left = 0,
-            top = (bounds.minOf { it.top } - top - margin).coerceAtLeast(0),
+            top = (bounds.minOf { it.top } - top).coerceAtLeast(0),
             right = full.width - left,
-            bottom = (bounds.maxOf { it.bottom } - top + margin).coerceAtMost(height),
+            bottom = (bounds.maxOf { it.bottom } - top).coerceAtMost(height),
         )
     }
+
+    /**
+     * [bounds] grown up and down to rows of plain [background]: first past anything drawn across an edge (the
+     * metronome's tempo, whose digits reach above their box), then through at most [margin] more plain rows, stopping
+     * short of the next thing on the screen (on the tablet, the Chords pager's buttons under the chart), so a cut
+     * neither clips its parts nor shows a sliver of a neighbour.
+     */
+    private fun settled(screen: Bitmap, bounds: IntRect, background: Color, margin: Int): IntRect {
+        val row = IntArray(screen.width)
+        val plainColour = background.toArgb()
+        fun plain(y: Int): Boolean {
+            screen.getPixels(row, 0, screen.width, 0, y, screen.width, 1)
+            return row.all { near(it, plainColour) }
+        }
+        fun edge(from: Int, step: Int): Int {
+            val rows = 0 until screen.height
+            var y = from
+            var drawn = 0
+            while (!plain(y) && y + step in rows && drawn < margin * OVERFLOW_MARGINS) { y += step; drawn++ }
+            var extra = 0
+            while (extra < margin && y + step in rows && plain(y + step)) { y += step; extra++ }
+            return y
+        }
+        return bounds.copy(top = edge(bounds.top, -1), bottom = edge(bounds.bottom - 1, 1) + 1)
+    }
+
+    /** Whether [pixel] is [plain] to the eye: every channel within [PLAIN_STEP]. */
+    private fun near(pixel: Int, plain: Int): Boolean =
+        abs(android.graphics.Color.red(pixel) - android.graphics.Color.red(plain)) <= PLAIN_STEP &&
+            abs(android.graphics.Color.green(pixel) - android.graphics.Color.green(plain)) <= PLAIN_STEP &&
+            abs(android.graphics.Color.blue(pixel) - android.graphics.Color.blue(plain)) <= PLAIN_STEP
 
     /**
      * The screen's background around [area]: the middle colour (by brightness) of pixels along its edges, which lie on
@@ -596,9 +635,15 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
         /** The bass's low E (E1), the whole app's note. */
         private const val BASS_LOW_E = 28
 
-        /** The cut reaches this far above and below its parts; the edges' colour is read every [EDGE_STEP] pixels. */
+        /** The cut reaches up to this far above and below its parts; the edges' colour is read every [EDGE_STEP] pixels. */
         private const val CUT_MARGIN_DP = 8
         private const val EDGE_STEP = 8
+
+        /** A part may draw this many margins past its box (the tempo's digits) and still be kept whole. */
+        private const val OVERFLOW_MARGINS = 4
+
+        /** How far a channel (0..255) may stray from the background and still count as plain. */
+        private const val PLAIN_STEP = 24
 
         /** The website's metronome picture: its tempo, and how long after the first beat it is taken, still lit. */
         private const val METRONOME_BPM = 120
