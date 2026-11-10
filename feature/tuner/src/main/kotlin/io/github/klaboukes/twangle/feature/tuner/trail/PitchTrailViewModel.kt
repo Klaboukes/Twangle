@@ -16,6 +16,7 @@ import io.github.klaboukes.twangle.feature.tuner.PitchTrailFeed
 import io.github.klaboukes.twangle.feature.tuner.TunerInterpreter
 import io.github.klaboukes.twangle.feature.tuner.TunerOptions
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
+import io.github.klaboukes.twangle.feature.tuner.ScreenFront
 import io.github.klaboukes.twangle.feature.tuner.listenAgainOnReturn
 import io.github.klaboukes.twangle.feature.tuner.looksLike
 import io.github.klaboukes.twangle.feature.tuner.showingMicFailures
@@ -47,7 +48,7 @@ import kotlinx.coroutines.launch
  *
  * The microphone is open only while [state] is collected and the permission is granted
  * ([SharingStarted.WhileSubscribed], hard rule 4); each opening starts the line afresh, and a failure is tried again
- * when the screen comes back ([setShown]). [language] is the app's
+ * when the screen is back in front ([setInFront]). [language] is the app's
  * language, whose usual notation names the note until the player picks one.
  *
  * While a screen reader's voice plays ([screenReaderSpeech]) and for [ScreenReaderSpeech.TAIL_SECONDS] after, the
@@ -70,8 +71,8 @@ class PitchTrailViewModel(
     private val permissionGranted = MutableStateFlow(false)
     private val attempt = MutableStateFlow(0)
 
-    /** Whether the trail's screen is shown ([setShown]): a failure from while it was away is tried again on its return. */
-    private val shown = MutableStateFlow(true)
+    /** Whether the trail's screen is in front ([setInFront]): a failure from while it wasn't is tried again on its return. */
+    private val front = ScreenFront()
     private val feed = PitchTrailFeed(PitchHistory())
 
     /** The last seconds of readings, written on the DSP thread and read while drawing (see [PitchHistory]). */
@@ -100,16 +101,17 @@ class PitchTrailViewModel(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val state: StateFlow<TunerUiState> = combine(permissionGranted, attempt) { granted, _ -> granted }
-        .flatMapLatest { granted -> if (granted) listenAgainOnReturn(shown, ::listen) else flowOf(TunerUiState.PermissionRequired) }
+        .flatMapLatest { granted -> if (granted) listenAgainOnReturn(front.returns, ::listen) else flowOf(TunerUiState.PermissionRequired) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TunerUiState.PermissionRequired)
 
     /**
-     * The trail's screen is [shown] or not (the app in the background, another screen open). The microphone stays open
-     * 5 s after it goes (hard rule 4); one that failed meanwhile (Android silences it in the background) is tried again
-     * when the screen comes back ([listenAgainOnReturn]).
+     * The trail's screen is in front or not ([ReportShown]: resumed with its window focused; not when the app is in the
+     * background or another screen is open). The microphone stays open 5 s after the screen goes (hard rule 4); one that
+     * failed while it wasn't in front (Android silences it in the background, under an assistant, beside the app of a
+     * split screen that records) is tried again when it is back in front ([listenAgainOnReturn]).
      */
-    fun setShown(shown: Boolean) {
-        this.shown.value = shown
+    fun setInFront(inFront: Boolean) {
+        front.set(inFront)
     }
 
     /** Tells the ViewModel whether `RECORD_AUDIO` is granted. The microphone stays closed until it is. */

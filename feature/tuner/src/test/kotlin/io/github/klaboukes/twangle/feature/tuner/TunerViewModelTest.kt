@@ -313,6 +313,8 @@ class TunerViewModelTest {
         val vm = viewModel(recorder)
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
+        // Paused, then stopped, as Android leaves a screen.
+        vm.setInFront(false)
         vm.setShown(false)
         advanceTimeBy(100)
         assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
@@ -325,10 +327,64 @@ class TunerViewModelTest {
         assertEquals(1, recorder.startCount)
         assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
 
-        // Back within the grace: it listens again, with no Try again.
+        // Back within the grace: started, then in front again, it listens again, with no Try again.
         vm.setShown(true)
         advanceTimeBy(500)
+        assertEquals("not before it is in front", 1, recorder.startCount)
+        vm.setInFront(true)
+        advanceTimeBy(500)
         assertEquals(2, recorder.startCount)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+    }
+
+    @Test
+    fun `a mic silenced while something was in front of the tuner listens again by itself when it is back in front`() =
+        runTest(dispatcher) {
+            // An assistant over the tuner, or the other app of a split screen picked: the screen is still shown (never
+            // stopped), but Android silences the recording, which reads as busy.
+            val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+            val vm = viewModel(recorder)
+            vm.onPermissionChanged(true)
+            backgroundScope.launch { vm.state.collect {} }
+            vm.setInFront(false)
+            advanceTimeBy(100)
+            assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+
+            // The assistant still holds the microphone: nothing tries it meanwhile.
+            recorder.failure = null
+            recorder.signal = TestSignals.sawtooth(110f, length = 48_000)
+            recorder.loop = true
+            advanceTimeBy(2_000)
+            assertEquals(1, recorder.startCount)
+
+            // The assistant closed: in front again, it listens again, with no Try again.
+            vm.setInFront(true)
+            advanceTimeBy(500)
+            assertEquals(2, recorder.startCount)
+            assertTrue(vm.state.value is TunerUiState.Detected)
+        }
+
+    @Test
+    fun `a mic still busy when the tuner is back in front waits for the next return or Try again`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setInFront(false)
+        advanceTimeBy(100)
+        // Back in front, but the other app still records: one more try, then no endless retries.
+        vm.setInFront(true)
+        advanceTimeBy(2_000)
+        assertEquals(2, recorder.startCount)
+        assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+
+        recorder.failure = null
+        recorder.signal = TestSignals.sawtooth(110f, length = 48_000)
+        recorder.loop = true
+        vm.setInFront(false)
+        vm.setInFront(true)
+        advanceTimeBy(500)
+        assertEquals(3, recorder.startCount)
         assertTrue(vm.state.value is TunerUiState.Detected)
     }
 
@@ -339,12 +395,14 @@ class TunerViewModelTest {
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
         vm.setShown(true)
+        vm.setInFront(true)
         advanceTimeBy(100)
         recorder.failure = null
         recorder.signal = TestSignals.sawtooth(110f, length = 48_000)
         recorder.loop = true
-        // Shown again without having gone (a second ON_START report): no new try, and no endless retries either.
+        // Reported in front again without having left it (a second report): no new try, and no endless retries either.
         vm.setShown(true)
+        vm.setInFront(true)
         advanceTimeBy(2_000)
 
         assertEquals(1, recorder.startCount)

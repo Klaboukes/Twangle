@@ -60,7 +60,7 @@ import kotlin.math.ceil
  * The microphone opens only when the permission is granted ([onPermissionChanged]) *and* the UI
  * collects [state]. It stays open 5 s after the UI stops collecting, so a rotation doesn't reopen
  * it (CLAUDE.md, hard rule 4); a failure (Android silences the microphone in the background) is tried again when the
- * screen comes back ([setShown], [listenAgainOnReturn]). Switching [mode] takes effect on the next frame without reopening
+ * screen is back in front ([setInFront], [listenAgainOnReturn]). Switching [mode] takes effect on the next frame without reopening
  * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation, in-tune precision) are
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [saved] are the settings the
@@ -166,10 +166,15 @@ class TunerViewModel(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune && saved.vibrationGuide != true)
 
     /**
-     * Whether the tuner's screen is shown ([setShown]): the vibration guide plays only then, and a failure from while it
-     * was away gets a fresh try when it comes back ([listenAgainOnReturn]).
+     * Whether the tuner's screen is shown ([setShown]): the vibration guide plays only then.
      */
     private val shown = MutableStateFlow(true)
+
+    /**
+     * Whether the tuner's screen is in front ([setInFront]): a failure from while it was behind something (an assistant,
+     * the other app of a split screen) or away gets a fresh try when it comes back ([listenAgainOnReturn]).
+     */
+    private val front = ScreenFront()
 
     /**
      * Whether the pegs tick off the strings tuned and "In tune. Play." shows once all are (the string tick-off, a saved
@@ -356,7 +361,7 @@ class TunerViewModel(
     }
 
     val state: StateFlow<TunerUiState> = combine(permissionGranted, attempt) { granted, _ -> granted }
-        .flatMapLatest { granted -> if (granted) listenAgainOnReturn(shown, ::listen) else flowOf(TunerUiState.PermissionRequired) }
+        .flatMapLatest { granted -> if (granted) listenAgainOnReturn(front.returns, ::listen) else flowOf(TunerUiState.PermissionRequired) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TunerUiState.PermissionRequired)
 
     /** The player refused the microphone in Android's dialog: saved, so [micRefused] knows it on later starts too. */
@@ -500,12 +505,20 @@ class TunerViewModel(
     /**
      * The tuner's screen is [shown] or not (the app in the background, another tab or Settings open). The microphone
      * stays open 5 s after the screen goes (hard rule 4), but the vibration guide stops at once: a player who left the
-     * tuner shouldn't feel it. A microphone that failed meanwhile (Android silences it in the background) is tried again
-     * when the screen comes back ([listenAgainOnReturn]).
+     * tuner shouldn't feel it.
      */
     fun setShown(shown: Boolean) {
         this.shown.value = shown
         if (!shown) guideVibrator.stop()
+    }
+
+    /**
+     * The tuner's screen is in front or not ([ReportShown]: resumed with its window focused). A microphone that failed
+     * while it wasn't (Android silences it in the background, under an assistant, beside the app of a split screen that
+     * records) is tried again when it is back in front ([listenAgainOnReturn]).
+     */
+    fun setInFront(inFront: Boolean) {
+        front.set(inFront)
     }
 
     override fun onCleared() {

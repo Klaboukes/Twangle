@@ -68,13 +68,13 @@ class PitchTrailViewModelTest {
     }
 
     @Test
-    fun `a mic that went busy while the trail was away listens again by itself when it comes back`() = runTest(dispatcher) {
-        // Android silences the recording in the background (busy) while the microphone is kept for the 5 s grace.
+    fun `a mic that went busy while the trail was away or behind an assistant listens again when it is back in front`() = runTest(dispatcher) {
+        // Android silences the recording in the background or under an assistant (busy) while the microphone is kept.
         val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
         val vm = viewModel(recorder)
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
-        vm.setShown(false)
+        vm.setInFront(false)
         advanceTimeBy(100)
         assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
 
@@ -84,7 +84,7 @@ class PitchTrailViewModelTest {
         advanceTimeBy(2_000)
         assertEquals("no try while away", 1, recorder.startCount)
 
-        vm.setShown(true)
+        vm.setInFront(true)
         advanceTimeBy(500)
         assertEquals(2, recorder.startCount)
         assertTrue(vm.state.value is TunerUiState.Detected)

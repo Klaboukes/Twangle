@@ -96,8 +96,8 @@ fun PitchTrailScreen(
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // Back on screen after a microphone failure, the trail listens again by itself.
-    ReportShown(viewModel::setShown)
+    // Back in front after a microphone failure, the trail listens again by itself.
+    ReportShown(setShown = {}, setInFront = viewModel::setInFront)
     val precision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     // Clear of the status bar and a cutout, as every Practice tool (the bar under it is the app's).
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PitchTrailTestTags.SCREEN)) {

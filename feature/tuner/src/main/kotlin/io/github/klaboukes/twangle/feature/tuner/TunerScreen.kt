@@ -216,8 +216,8 @@ fun TunerScreen(
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
     // The vibration guide plays only while the tuner is on screen (the microphone outlives it by 5 s), and a failure
-    // from while it was away is tried again on its return.
-    ReportShown(viewModel::setShown)
+    // from while it was away or behind something (an assistant, a split screen's other app) is tried again on its return.
+    ReportShown(viewModel::setShown, viewModel::setInFront)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     // Keep screen on lets go after a quiet spell, with a warning first (ScreenAwakeRule).
