@@ -18,3 +18,4 @@
 #783 none     TunerViewModel only: which mode shows after one is saved from Practice; every picture's mode is set before it is taken
 #784 none     Ear training's ViewModel only: whether an answer after a ▶ mid-question is heard, which no picture shows
 #785 none     the tuner's and trail's ViewModels and the recorder: a retry after a microphone failure, which no picture has
+#786 none     the tuning editor's saver: an earlier failed save's line, which no picture has

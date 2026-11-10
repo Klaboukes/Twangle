@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.feature.tuner.editor
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
@@ -154,6 +156,31 @@ class TuningEditorTest {
         compose.waitForIdle()
         assertEquals("Mine", repository.current.customTunings.single().name)
         assertEquals(1, closed)
+    }
+
+    @Test
+    fun theNextOpeningDoesNotShowAnEarlierFailedSave() {
+        repository = FakeSettingsRepository(AppSettings()).apply { failWrites = true }
+        var open by mutableStateOf(true)
+        compose.setContent {
+            TwangleTheme(darkTheme = false, animate = false) {
+                val current by repository.settings.collectAsStateWithLifecycle()
+                // The app shows the editor only while it is open; its saver lives on between openings.
+                if (open) TuningEditorScreen(repository, current, Instruments.GUITAR, null, onClose = { closed++ })
+            }
+        }
+        val notSaved = string(R.string.tuning_editor_not_saved)
+        name.performTextReplacement("Mine")
+        save.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText(notSaved, useUnmergedTree = true).assertIsDisplayed()
+        // Left without saving, then opened again: a fresh editor, with no old error.
+        open = false
+        compose.waitForIdle()
+        open = true
+        compose.waitForIdle()
+        compose.onNodeWithText(notSaved, useUnmergedTree = true).assertDoesNotExist()
+        name.assertExists()
     }
 
     @Test

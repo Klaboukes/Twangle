@@ -50,6 +50,15 @@ internal class TuningEditorSaver(private val repository: SettingsRepository) : V
         }
     }
 
+    /**
+     * The editor opened anew (not just rebuilt by a turn of the phone): this saver is shared by every
+     * opening, so a save that failed in an earlier one no longer says "couldn't be saved". A save
+     * under way or done is left as it is.
+     */
+    fun opened() {
+        if (_phase.value == SavePhase.FAILED) _phase.value = SavePhase.IDLE
+    }
+
     /** The editor closed after a save: the next one opens ready for a new save. */
     fun closed() {
         if (_phase.value == SavePhase.SAVED) _phase.value = SavePhase.IDLE

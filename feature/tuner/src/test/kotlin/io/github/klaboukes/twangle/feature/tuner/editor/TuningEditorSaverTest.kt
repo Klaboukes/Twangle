@@ -83,7 +83,28 @@ class TuningEditorSaverTest {
     }
 
     @Test
-    fun changesThePhoneCannotWriteEndFailedButATuningDeletedMeanwhileJustCloses() = runTest(dispatcher) {
+    fun theNextOpeningStartsWithoutAnEarlierFailedSave() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository().apply { failWrites = true }
+        val saver = TuningEditorSaver(repository)
+        saver.save(draft, Instruments.GUITAR, editingId = null)
+        advanceUntilIdle()
+        assertEquals(SavePhase.FAILED, saver.phase.value)
+        // Closed without saving, then opened again (for this tuning or another): no old error.
+        saver.opened()
+        assertEquals(SavePhase.IDLE, saver.phase.value)
+
+        // A save under way, or done but not yet closed, is left as it is.
+        repository.failWrites = false
+        saver.save(draft, Instruments.GUITAR, editingId = null)
+        saver.opened()
+        assertEquals(SavePhase.SAVING, saver.phase.value)
+        advanceUntilIdle()
+        saver.opened()
+        assertEquals(SavePhase.SAVED, saver.phase.value)
+    }
+
+    @Test
+    fun changesThePhoneCannotWriteEndFailedButATuningDeletedMeanwhileJustCloses()= runTest(dispatcher) {
         val repository = FakeSettingsRepository()
         val mine = repository.addCustomTuning("Mine", Instruments.GUITAR, draft.notes)!!
         repository.failWrites = true

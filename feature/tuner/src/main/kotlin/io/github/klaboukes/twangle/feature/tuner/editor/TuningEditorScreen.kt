@@ -115,6 +115,12 @@ fun TuningEditorScreen(
     var problem by rememberSaveable { mutableStateOf<NameProblem?>(null) }
     var askingDiscard by rememberSaveable { mutableStateOf(false) }
     val saver: TuningEditorSaver = viewModel { TuningEditorSaver(settingsRepository) }
+    // Once per opening, before the phase is first read: the saver outlives the editor, so an earlier
+    // opening's failed save mustn't show. Saveable, so a turn of the phone (same opening) keeps the line.
+    rememberSaveable {
+        saver.opened()
+        true
+    }
     val phase by saver.phase.collectAsStateWithLifecycle()
     // Also after turning the phone mid-save: the new screen closes once the save is done.
     LaunchedEffect(phase) {
