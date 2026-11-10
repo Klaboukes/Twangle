@@ -146,6 +146,21 @@ subprojects {
     }
 }
 
+// The unit tests that read a module's own texts, assets or manifest from disk (CreditsTest,
+// HertzStringsTest, FontCreditsTest, WatchShortcutsTest and others) rerun when those change. The
+// test task's own inputs hold only the compiled code and the R class, which holds a text's id, not
+// its words, so a changed text or licence file could pass on a cached result (Phase 90).
+subprojects {
+    listOf("com.android.application", "com.android.library").forEach { id ->
+        pluginManager.withPlugin(id) {
+            tasks.withType<Test>().configureEach {
+                inputs.files(fileTree("src/main") { include("res/**", "assets/**", "AndroidManifest.xml") })
+                    .withPropertyName("mainSources").withPathSensitivity(PathSensitivity.RELATIVE)
+            }
+        }
+    }
+}
+
 subprojects {
     pluginManager.withPlugin("com.android.application") {
         // The merged release manifest, checked by every `test` and `check` run.

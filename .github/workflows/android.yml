@@ -32,7 +32,8 @@ jobs:
           fetch-depth: 0
 
       # Build when anything but documentation, skills or scripts changed since the last successful
-      # run (or there is none, or it was started by hand).
+      # run (or there is none, or it was started by hand). scripts/ui-tests.sh counts: LocalizationTest
+      # reads it (the unit tests' inputs in app/build.gradle.kts name every file they read).
       - name: Anything to build?
         id: changes
         env:
@@ -44,7 +45,8 @@ jobs:
             || ! git cat-file -e "$last^{commit}" 2>/dev/null; then
             build=true
           elif git diff --name-only "$last" HEAD \
-            | grep -qvE '\.md$|^docs/|^\.claude/|^scripts/'; then
+            | awk '$0 == "scripts/ui-tests.sh" || !/\.md$|^docs\/|^\.claude\/|^scripts\// { n++ }
+                   END { exit (n == 0) }'; then
             build=true
           else
             build=false
@@ -64,30 +66,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         if: steps.changes.outputs.build == 'true'
 
-      - name: Unit tests
+      # One Gradle call, not one a check: each call starts Gradle and configures the build again,
+      # minutes the free plan counts (Phase 90). --continue runs the other checks after a failure,
+      # so one night reports every failing one. The release build is unsigned here (the upload key
+      # never leaves the owner's PCs), but R8, resource shrinking and the bundle are checked every
+      # night, for the phone and the watch.
+      - name: Test, lint, debug and release builds
         if: steps.changes.outputs.build == 'true'
-        run: ./gradlew test --console=plain
-
-      - name: Lint
-        if: steps.changes.outputs.build == 'true'
-        run: ./gradlew lint --console=plain
-
-      - name: Assemble debug APK
-        if: steps.changes.outputs.build == 'true'
-        run: ./gradlew assembleDebug --console=plain
-
-      # Unsigned here (the upload key never leaves the owner's PCs), but R8, resource shrinking and
-      # the bundle are checked every night, for the phone and the watch.
-      - name: Assemble release APK and bundle
-        if: steps.changes.outputs.build == 'true'
-        run: ./gradlew assembleRelease bundleRelease --console=plain
+        run: ./gradlew test lint assembleDebug assembleRelease bundleRelease --continue --console=plain
 
       # The free build for F-Droid and IzzyOnDroid (Phase 92): the phone app without Google Play's
-      # rating library. Its debug build is enough to keep it compiling and to run the guard that
-      # stops it if a Google library comes in (app/build.gradle.kts); only :app is built again.
-      - name: Assemble the free build
+      # rating library. Built in release mode, so its own R8 shrinking is checked too, with the guard
+      # that stops it if a Google library comes in (app/build.gradle.kts). A call of its own, since
+      # -Ptwangle.foss=true holds for a whole call; only :app is built again.
+      - name: Assemble the free release build
         if: steps.changes.outputs.build == 'true'
-        run: ./gradlew :app:assembleDebug -Ptwangle.foss=true --console=plain
+        run: ./gradlew :app:assembleRelease -Ptwangle.foss=true --console=plain
 
       # No debug APK upload: nobody downloads it, and the free plan's artifact storage is small.
       - name: Upload reports on failure

@@ -236,7 +236,8 @@ androidComponents {
 
 // LocalizationTest reads every module's texts and Kotlin code, the build files, the language lists
 // in gradle.properties, the translation record in translations/ and scripts/ui-tests.sh;
-// StoreListingTest reads the Play Store texts in fastlane/, the held-back ones too. Declaring them as
+// StoreListingTest reads the Play Store texts in fastlane/, the held-back ones too; SavedEnumRulesTest
+// reads the keep rules in app/proguard-rules.pro and the saved settings' code. Declaring them as
 // inputs makes a change there rerun the unit tests instead of reusing an earlier result. -Ptwangle.strictTranslations=true
 // holds every language to complete and up to date (the release gate, docs/architecture/languages.md).
 val strictTranslations = providers.gradleProperty("twangle.strictTranslations").map { it.toBoolean() }.orElse(false)
@@ -245,7 +246,7 @@ tasks.withType<Test>().configureEach {
     systemProperty("twangle.strictTranslations", strictTranslations.get())
     inputs.files(
         fileTree(rootDir) {
-            include("gradle.properties", "fastlane/metadata/**", "fastlane/held-back/**", "translations/**", "scripts/ui-tests.sh")
+            include("gradle.properties", "fastlane/metadata/**", "fastlane/held-back/**", "translations/**", "scripts/ui-tests.sh", "app/proguard-rules.pro")
             listOf("app", "wear", "feature/*", "core/*").forEach { module ->
                 include("$module/build.gradle.kts", "$module/src/main/res/**", "$module/src/main/kotlin/**")
             }

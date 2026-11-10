@@ -68,6 +68,13 @@ kotlin {
     jvmToolchain(17)
 }
 
+// WatchSpokenReadingTest compares the watch's spoken words with the phone's in :core:designsystem,
+// so a change there reruns it (the module's own texts are inputs through the root build.gradle.kts).
+tasks.withType<Test>().configureEach {
+    inputs.files(rootProject.fileTree("core/designsystem/src/main/res"))
+        .withPropertyName("phoneSpeech").withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 dependencies {
     implementation(project(":core:audio"))
     implementation(project(":core:dsp"))

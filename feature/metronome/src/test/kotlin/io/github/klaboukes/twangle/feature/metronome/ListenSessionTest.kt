@@ -96,7 +96,12 @@ class ListenSessionTest {
             vm.stopListening()
             runCurrent()
         } finally {
+            // The DSP thread's last chunk done before Dispatchers.Main is reset: a chunk still running then hands its
+            // result to a Main that is gone, an error the next test class reported as its own (now and then, until
+            // 2026-11-10).
             executor.shutdownNow()
+            executor.awaitTermination(5, TimeUnit.SECONDS)
+            runCurrent()
         }
     }
 
