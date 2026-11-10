@@ -130,6 +130,26 @@ class WatchPitchPipelineTest {
     }
 
     @Test
+    fun `the high E plucked over a ringing low E, a little louder, is followed as on the phone in guitar mode`() = runTest {
+        // A second of the low E, then the high E joins it 8.5 dB louder for half a second (the frames
+        // rise about 9 dB, short of a lone pluck's 10): with the standard tuning's strings the watch
+        // shows the high E; without them it holds the low E for a second as a likely slip, longer than
+        // the high E rings here.
+        val low = TestSignals.sine(82.41f, length = 72_000, amplitude = 0.05f)
+        val high = TestSignals.sine(329.63f, length = 24_000, amplitude = 0.05f * 2.66f)
+        val signal = FloatArray(low.size) { low[it] + if (it >= 48_000) high[it - 48_000] else 0f } + FloatArray(48_000 / 2)
+        val highE = Note.of(PitchClass.E, 4)
+        val lowE = Note.of(PitchClass.E, 2)
+
+        val guitar = statesFor(signal).filterIsInstance<WatchTunerState.Detected>()
+        assertTrue("the low E first: $guitar", guitar.first().note == lowE)
+        assertTrue("never showed the high E: $guitar", guitar.any { it.note == highE })
+        val anyNote = WatchPitchPipeline(FakeAudioRecorder(signal), dspDispatcher = StandardTestDispatcher(testScheduler), tuning = null)
+            .states().toList().filterIsInstance<WatchTunerState.Detected>()
+        assertTrue("without strings it showed the high E: $anyNote", anyNote.none { it.note == highE })
+    }
+
+    @Test
     fun `a new note has to earn in tune again`() = runTest {
         val a4 = TestSignals.sine(440f, length = 48_000)
         val e4 = TestSignals.sine(329.63f, length = 48_000)

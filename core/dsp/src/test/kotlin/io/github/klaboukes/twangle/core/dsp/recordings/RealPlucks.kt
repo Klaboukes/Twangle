@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.pitch.TunerChain
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import java.io.File
 import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /** How a recorded string was played, as `scripts/record-plucks.sh` names the files. */
@@ -31,6 +32,8 @@ internal class RealPluck(
     val touch: Touch,
     val take: Int,
     val wav: WavFile,
+    /** Where the pluck starts when it is known already (a take resampled to another string); found from the signal otherwise. */
+    private val knownOnset: Int? = null,
 ) {
     val sampleRate: Int get() = wav.sampleRate
     val samples: FloatArray get() = wav.samples
@@ -39,7 +42,7 @@ internal class RealPluck(
      * Where the pluck starts, found from the signal: the player plucks some time after the phone
      * says "Pluck now", 0.1–2 s into the file.
      */
-    val onsetSample: Int by lazy { RealPlucks.onsetOf(samples, sampleRate) }
+    val onsetSample: Int by lazy { knownOnset ?: RealPlucks.onsetOf(samples, sampleRate) }
 
     val onsetSeconds: Float get() = onsetSample / sampleRate.toFloat()
 
@@ -122,6 +125,25 @@ internal class RealPluck(
     private val fundamentalOnly: FloatArray by lazy {
         val cutoff = 1.3f * RealPlucks.nominalHz(string)
         TestSignals.bandLimit(TestSignals.bandLimit(samples, sampleRate, lowHz = 0f, highHz = cutoff), sampleRate, lowHz = 0f, highHz = cutoff)
+    }
+
+    /**
+     * This take played [semitones] higher (negative: lower) as [string], resampled with linear
+     * interpolation: its partials and decay are the recorded ones, a whole tone down ringing 12 %
+     * longer. For strings the recording session doesn't play: the low D of Drop D and Open G from
+     * the low E, Open G's G2 from the A, its high D from the high E.
+     */
+    fun retuned(semitones: Int, string: Note): RealPluck {
+        val step = 2.0.pow(semitones / 12.0)
+        val source = samples
+        val out = FloatArray(((source.size - 1) / step).toInt()) { i ->
+            val x = i * step
+            val j = x.toInt()
+            val f = (x - j).toFloat()
+            source[j] * (1f - f) + source[minOf(j + 1, source.size - 1)] * f
+        }
+        val retunedName = name.replace(this.string.toString(), string.toString())
+        return RealPluck(retunedName, string, touch, take, WavFile(sampleRate, out, wav.comment), (onsetSample / step).roundToInt())
     }
 
     override fun toString(): String = name

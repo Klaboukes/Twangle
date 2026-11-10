@@ -268,6 +268,78 @@ class PitchSmootherTest {
     }
 
     @Test
+    fun `a string change needs two frames on the new string that rise, and restarts on one of them`() {
+        // One frame rising 7 dB is a peak of the room's talk or a re-plucked string's slip, not the
+        // next string's attack, which lasts several frames.
+        val guitar = PitchSmoother().apply { strings = Tunings.STANDARD }
+        repeat(12) { guitar.update(E2, levelDbfs = -41f) }
+        assertFalse(guitar.update(E4, levelDbfs = -33f))
+        repeat(10) { assertFalse(guitar.update(E4, levelDbfs = -36f)) }
+        assertEquals(Note(40), guitar.note)
+        // Two rising frames on the high E, then a frame at E3 (no string of the tuning, an octave over
+        // the low E): the jump doesn't restart there, but on the next frame on the high E.
+        guitar.reset()
+        repeat(12) { guitar.update(E2, levelDbfs = -41f) }
+        assertFalse(guitar.update(E4, levelDbfs = -33f))
+        assertFalse(guitar.update(E4, levelDbfs = -33f))
+        assertFalse(guitar.update(E2 + 12f, levelDbfs = -33f))
+        assertEquals(Note(40), guitar.note)
+        assertTrue(guitar.update(E4, levelDbfs = -34f))
+        assertEquals(Note(64), guitar.note)
+        // With a pluck's full rise any frame of the jump may restart it, as in any-note mode.
+        guitar.reset()
+        repeat(12) { guitar.update(E2, levelDbfs = -41f) }
+        assertFalse(guitar.update(E4, levelDbfs = -30f))
+        assertFalse(guitar.update(E2 + 12f, levelDbfs = -30f))
+        assertTrue(guitar.update(E2 + 12f, levelDbfs = -30f))
+        assertEquals(Note(52), guitar.note)
+    }
+
+    @Test
+    fun `in Drop D and Open G a jump of one octave up onto the other string needs a pluck's full rise`() {
+        // The two D strings of Drop D and Open G, and Open G's two G strings, are an octave apart: a
+        // ringing low D re-plucked a little harder and read an octave up (YIN's commonest slip on a
+        // low string) lands on a string.
+        for (tuning in listOf(Tunings.DROP_D, Tunings.OPEN_G)) {
+            for ((from, to) in listOf(D2 to D2 + 12f, G2 to G2 + 12f).filter { (from, _) -> tuning.strings.any { it.midi == from.roundToInt() } }) {
+                val guitar = PitchSmoother().apply { strings = tuning }
+                repeat(12) { guitar.update(from, levelDbfs = -41f) }
+                repeat(10) { assertFalse("${tuning.id}: $from → $to", guitar.update(to, levelDbfs = -33f)) }
+                assertEquals(Note(from.roundToInt()), guitar.note)
+                // With a pluck's full rise it is followed within three frames, as in any-note mode.
+                guitar.reset()
+                repeat(12) { guitar.update(from, levelDbfs = -41f) }
+                repeat(2) { assertFalse(guitar.update(to, levelDbfs = -30f)) }
+                assertTrue(guitar.update(to, levelDbfs = -30f))
+                assertEquals(Note(to.roundToInt()), guitar.note)
+            }
+        }
+        // Two octaves stay a string change: Open G's low D to its high D.
+        val openG = PitchSmoother().apply { strings = Tunings.OPEN_G }
+        repeat(12) { openG.update(D2, levelDbfs = -41f) }
+        repeat(2) { assertFalse(openG.update(D2 + 24f, levelDbfs = -33f)) }
+        assertTrue(openG.update(D2 + 24f, levelDbfs = -33f))
+        assertEquals(Note(62), openG.note)
+    }
+
+    @Test
+    fun `in Drop D and Open G the lower string plucked an octave under the ringing one is a string change`() {
+        // The low D plucked over the D string still ringing, 6 dB louder (StringChangeTest): the
+        // detector reads the low D at once, the two strings repeating together at its period, and the
+        // frames rise less than a pluck's 10 dB. A slip an octave down is rare on a fresh pluck, so this jump keeps the
+        // string change's quick rule; held for a pluck's 10 dB, the needle stayed on the D string a second.
+        for (tuning in listOf(Tunings.DROP_D, Tunings.OPEN_G)) {
+            for ((from, to) in listOf(D2 + 12f to D2, G2 + 12f to G2).filter { (_, to) -> tuning.strings.any { it.midi == to.roundToInt() } }) {
+                val guitar = PitchSmoother().apply { strings = tuning }
+                repeat(12) { guitar.update(from, levelDbfs = -41f) }
+                repeat(2) { assertFalse(guitar.update(to, levelDbfs = -33f)) }
+                assertTrue("${tuning.id}: $from → $to", guitar.update(to, levelDbfs = -33f))
+                assertEquals(Note(to.roundToInt()), guitar.note)
+            }
+        }
+    }
+
+    @Test
     fun `what is left of a lost note cannot start a reading at a multiple of its period for a second, unless an attack comes`() {
         // A synthetic high E sinking into a murmur (EdgeCaseTest): once the reading was lost, the
         // detector read E2 and E3 from what was left of it for a few frames, and the needle came
@@ -412,7 +484,9 @@ class PitchSmootherTest {
     }
 
     private companion object {
+        const val D2 = 38f
         const val E2 = 40f
+        const val G2 = 43f
         const val A2 = 45f
         const val E4 = 64f
 

@@ -9,6 +9,8 @@ import io.github.klaboukes.twangle.core.dsp.guide.GuideTiming
 import io.github.klaboukes.twangle.core.dsp.guide.VibrationGuide
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchChain
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
@@ -28,6 +30,12 @@ import kotlin.math.roundToInt
  * `FrameAssembler` → [SignalGate] → `SustainCheck` → YIN → noise floor, standard range) →
  * [PitchSmoother] → note and cents (docs/architecture/signal-pipeline.md), and
  * the phone's [InTuneDetector] (within 5 cents for 300 ms, released past 7) for the in-tune ring.
+ *
+ * The watch names any note, but is worn by a player with a guitar, so its smoother knows the strings of [tuning]
+ * (standard tuning; the watch has no tuning to pick) as the phone's does in guitar mode: the next string plucked over
+ * the last one still ringing, two octaves or a twelfth away (low E → high E, low E → B, A → high E), is followed as soon
+ * as its frames rise 7 dB, rather than held for a second as a likely slip (`PitchSmoother.strings`,
+ * docs/architecture/signal-pipeline.md, *Smoothing*).
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so a watch
  * that records at 16 kHz gets the same ≈ 85 ms window and ≈ 21 ms hop as a phone at 48 kHz, also
@@ -68,12 +76,13 @@ class WatchPitchPipeline(
     private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
     private val guideVibrator: WatchGuideVibrator = WatchGuideVibrator.NONE,
     private val guideOn: () -> Boolean = { false },
+    private val tuning: Tuning? = Tunings.STANDARD,
 ) {
 
     /** [WatchTunerState.Listening] first, then each change of the reading. Failures end the flow. */
     fun states(): Flow<WatchTunerState> = flow {
         var analysis = Analysis(supportedRate())
-        val smoother = PitchSmoother()
+        val smoother = PitchSmoother().also { it.strings = tuning }
         val mapper = NoteMapper(a4Hz)
         val inTune = InTuneDetector()
         val guide = VibrationGuide(GuideTiming.WATCH)

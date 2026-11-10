@@ -29,9 +29,15 @@ import kotlin.math.roundToInt
  *    string before the 12th-fret harmonic makes the rise bigger, not smaller); without an attack
  *    only once it has lasted [octaveHoldFrames], about a second, by when it is a sound of its own.
  *    In guitar mode ([strings] set) a jump that lands on another string of the tuning needs only a
- *    rise of [STRING_CHANGE_DB]: the next string plucked over the last one still ringing, which
- *    rises less than a pluck in a quiet room (low E → high E two octaves up, low E → B and A → high
- *    E a twelfth up, in standard tuning).
+ *    rise of [STRING_CHANGE_DB] in [STRING_CHANGE_FRAMES] of its frames, and restarts on a frame on
+ *    that string: the next string plucked over the last one still ringing, which rises less than a
+ *    pluck in a quiet room (low E → high E two octaves up, low E → B and A → high E a twelfth up, in
+ *    standard tuning). One such frame was not enough: in a noisy room a G string re-plucked over
+ *    itself read G2, a string of Open G, in a frame that rose 7 dB, and the needle went to G2. A
+ *    jump of exactly one octave up needs the full attack, also onto a string (the high D of Drop D
+ *    and Open G over the low one): that is where the detector slips most, a low string read an
+ *    octave up. One octave down, the lower string plucked over the ringing higher one, it is read at
+ *    once and stays a string change.
  *    Until then the reading stays, so the needle holds the note as it sinks and then goes blank.
  *    In frames too quiet to start a reading the jump is never followed: that is the fundamental
  *    dying away ahead of the 2nd partial. Once the needle has gone blank, the same readings can't
@@ -79,6 +85,11 @@ class PitchSmoother(
     private var hasNote = false
     private var pendingOctaveFrames = 0
     private var pendingAttack = false
+
+    // The string of the tuning the pending jump lands on (an index into [strings], or NO_STRING), and
+    // how many of its frames rose STRING_CHANGE_DB: a string change needs STRING_CHANGE_FRAMES of them.
+    private var pendingString = NO_STRING
+    private var pendingStringRises = 0
     private var missedFrames = 0
 
     // The reading last lost to dropouts, how many frames ago, and whether an attack came since: what
@@ -149,18 +160,26 @@ class PitchSmoother(
             // does about 2 s in (Phase 46's recordings), not a new note, which comes with an attack.
             if (!loudEnough) return false
             pendingOctaveFrames++
-            if (attack || (rise >= STRING_CHANGE_DB && isStringChange(midi, medianFilter.median))) pendingAttack = true
+            if (attack) pendingAttack = true
+            val string = stringChangeTarget(midi, medianFilter.median)
+            if (string != NO_STRING && rise >= STRING_CHANGE_DB) {
+                if (string != pendingString) pendingStringRises = 0
+                pendingString = string
+                pendingStringRises++
+            }
+            // A string change (guitar mode) restarts only on a frame that is itself on the new string,
+            // so a stray reading at another multiple can't complete it.
+            val stringChange = pendingStringRises >= STRING_CHANGE_FRAMES && string == pendingString
             // Without an attack it is the note sinking into the room, read at a multiple of its
             // period (the same recordings, a TV on: G2 for the G string, A2 for the high E), unless
             // it goes on for about a second.
-            if (pendingOctaveFrames < (if (pendingAttack) octaveConfirmFrames else octaveHoldFrames)) return false
+            if (pendingOctaveFrames < (if (pendingAttack || stringChange) octaveConfirmFrames else octaveHoldFrames)) return false
             // The jump persisted, so the player really did move by an octave: start over there.
             medianFilter.reset()
             ema.reset()
             hasNote = false
         }
-        pendingOctaveFrames = 0
-        pendingAttack = false
+        clearPendingJump()
 
         val median = medianFilter.add(midi)
         val current = ema.value
@@ -219,10 +238,16 @@ class PitchSmoother(
         medianFilter.reset()
         ema.reset()
         hasNote = false
-        pendingOctaveFrames = 0
-        pendingAttack = false
+        clearPendingJump()
         missedFrames = 0
         onsetCount = 0
+    }
+
+    private fun clearPendingJump() {
+        pendingOctaveFrames = 0
+        pendingAttack = false
+        pendingString = NO_STRING
+        pendingStringRises = 0
     }
 
     // True for a reading a whole number of periods from the note lost less than octaveHoldFrames
@@ -242,7 +267,7 @@ class PitchSmoother(
         val median = medianFilter.add(midi)
         if (++onsetCount < onsetFrames) return
         onsetCount = 0
-        pendingOctaveFrames = 0
+        clearPendingJump()
         lostMidi = Float.NaN
         ema.snapTo(median)
         updateNote(median)
@@ -271,14 +296,23 @@ class PitchSmoother(
         return levelDbfs - lowest
     }
 
-    // True in guitar mode when [midi] is on a string of the tuning (within STRING_SEMITONES) other
-    // than the one nearest [from], the reading shown: the player moved to that string. A course's
-    // octave string (a 12-string's) is its own string, so a slip to it is no change.
-    private fun isStringChange(midi: Float, from: Float): Boolean {
-        val tuning = strings ?: return false
+    // In guitar mode, the string of the tuning [midi] is on (within STRING_SEMITONES) when that is
+    // another string than the one nearest [from], the reading shown: the player may have moved to
+    // that string. NO_STRING otherwise. A course's octave string (a 12-string's) is its own string,
+    // so a slip to it is no change; and a string exactly an octave up (the high D of Drop D and Open
+    // G over the low one) is where the detector's commonest slip lands, so that jump needs the full
+    // attack. An octave down stays a string change: a fresh pluck rarely slips down, and the lower
+    // string plucked over the ringing higher one is what the detector reads at once.
+    private fun stringChangeTarget(midi: Float, from: Float): Int {
+        val tuning = strings ?: return NO_STRING
+        if (isOctaveUp(midi - from)) return NO_STRING
         val target = tuning.nearestStringIndex(midi)
-        return tuning.distanceToString(midi, target) <= STRING_SEMITONES && target != tuning.nearestStringIndex(from)
+        val onString = tuning.distanceToString(midi, target) <= STRING_SEMITONES && target != tuning.nearestStringIndex(from)
+        return if (onString) target else NO_STRING
     }
+
+    private fun isOctaveUp(semitones: Float): Boolean =
+        CENTS_PER_SEMITONE * abs(semitones - SEMITONES_PER_OCTAVE) <= octaveToleranceCents
 
     private fun rememberLevel(levelDbfs: Float) {
         if (levelDbfs.isNaN()) return
@@ -320,12 +354,23 @@ class PitchSmoother(
         const val ATTACK_DB = 10f
 
         /**
-         * The rise that makes a jump onto another string of the tuning a string change (guitar mode):
-         * more than a TV's talk (6 dB) and than a string sinking into it read a multiple of its period
-         * (under 1 dB, the multiple on a string included); the high E plucked over a low E ringing a
-         * second, its first 85 ms 6 dB louder, rose 8–9 dB.
+         * The rise that makes a jump onto another string of the tuning a string change (guitar mode),
+         * in [STRING_CHANGE_FRAMES] of its frames: more than a TV's talk (6 dB) and than a string
+         * sinking into it read a multiple of its period (under 1 dB, the multiple on a string
+         * included); the high E plucked over a low E ringing a second, its first 85 ms 6 dB louder,
+         * rose 8–9 dB.
          */
         const val STRING_CHANGE_DB = 7f
+
+        /**
+         * Frames on the new string that must rise [STRING_CHANGE_DB]: two, so one frame of the room's
+         * talk or of a re-plucked string's slip peaking over 7 dB can't make a string change (the G
+         * string re-plucked in a noisy room, `StringChangeTest`); a string plucked over another rises
+         * for as long as its attack lasts, several frames.
+         */
+        const val STRING_CHANGE_FRAMES = 2
+
+        private const val NO_STRING = -1
 
         /** How near a string a reading must be to land on it: half a semitone. */
         private const val STRING_SEMITONES = 0.5f
