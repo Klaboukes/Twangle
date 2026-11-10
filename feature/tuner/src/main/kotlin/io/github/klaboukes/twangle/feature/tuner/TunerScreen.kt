@@ -66,6 +66,7 @@ import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
+import io.github.klaboukes.twangle.core.designsystem.rememberTouchExploration
 import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
@@ -171,6 +172,7 @@ fun TunerScreen(
             tools = tools,
             screenReaderSpeech = screenReaderSpeech,
             guideVibrator = AndroidGuideVibrator(appContext),
+            listenLog = ListenLog.ANDROID,
         )
     }
     LaunchedEffect(closeToolsRequest) { viewModel.closeToolsOnRequest(closeToolsRequest) }
@@ -300,6 +302,7 @@ fun TunerScreen(
                     onFocusModeChange = onFocusModeChange,
                     settingsButton = settingsButton,
                     title = title,
+                    touchExploration = rememberTouchExploration(),
                 )
                 val fade = if (animationsOff) 0 else WARNING_FADE_MILLIS
                 AnimatedVisibility(
@@ -445,7 +448,8 @@ private fun KeepScreenOn() {
  * window wider than tall the wide layout (2.0, Phase 73, [WideLayout]): the ruler across the full width, the lens
  * wide, the word under it and the pegs, or in [focusMode] nothing but the ruler, the lens and the word with the
  * string small beside it, until a tap brings the pegs and the tabs back for a few seconds. The 12th-fret check's panel
- * keeps 1.1's arrangements on its side (two panes, in focus mode the compact row). All state lives in the
+ * keeps 1.1's arrangements on its side (two panes, in focus mode the compact row). While [touchExploration] is on
+ * (TalkBack, whose gestures are no touches) the controls a tap brought up stay until the button takes them away. All state lives in the
  * ViewModel, so rotating keeps the mode, the tuning and a locked string.
  */
 @Composable
@@ -492,6 +496,7 @@ fun TunerContent(
     onFocusModeChange: ((Boolean) -> Unit)? = null,
     settingsButton: (@Composable () -> Unit)? = null,
     title: String? = null,
+    touchExploration: Boolean = false,
 ) {
     // While focus mode's controls are up, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
@@ -763,8 +768,10 @@ fun TunerContent(
                         hideControls = { controlsShown = false }
                         onDispose { hideControls = null }
                     }
-                    LaunchedEffect(controlsShown, touches, pickerOpen) {
-                        if (controlsShown && !pickerOpen) {
+                    // A screen reader's swipes and double taps are no touches (they never reach onEveryTouch), so while
+                    // one is on the controls stay until its user takes them away with the button.
+                    LaunchedEffect(controlsShown, touches, pickerOpen, touchExploration) {
+                        if (controlsShown && !pickerOpen && !touchExploration) {
                             delay(shownMillis)
                             controlsShown = false
                         }

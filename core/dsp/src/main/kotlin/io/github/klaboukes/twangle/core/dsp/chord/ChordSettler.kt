@@ -67,7 +67,7 @@ class ChordSettler {
     private var shownStrum = 0
     private var shownAt = 0.0
 
-    /** Back to the start: nothing heard. */
+    /** Back to the start: nothing heard, and no time remembered (the clock may start over with it). */
     fun reset() {
         shown = null
         faded = false
@@ -78,9 +78,11 @@ class ChordSettler {
         count = 0
         next = 0
         strum = 0
+        strumAt = 0.0
         strumReadings = 0
         strumNamed = false
         shownStrum = 0
+        shownAt = 0.0
         unclearStrum = 0
     }
 

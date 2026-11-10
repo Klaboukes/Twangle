@@ -16,6 +16,16 @@ class InTuneTickRuleTest {
         assertFalse(rule.update(true, "A2", 5_000))
     }
 
+    // Until Phase 89 the first in-tune moment measured its quiet time from Long.MIN_VALUE, which overflowed: with no
+    // target (null, as no earlier one) it never ticked.
+    @Test
+    fun `the first in-tune moment ticks whatever the target and the clock`() {
+        assertTrue(InTuneTickRule().update(true, null, 1_000))
+        assertTrue(InTuneTickRule().update(true, null, 0))
+        assertTrue(InTuneTickRule().update(true, "A2", Long.MAX_VALUE))
+        assertTrue(InTuneTickRule().update(true, "A2", -5_000))
+    }
+
     @Test
     fun `a short drop-out on the same note doesn't tick again`() {
         assertTrue(rule.update(true, "A2", 0))

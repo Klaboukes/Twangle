@@ -189,7 +189,16 @@ class MetronomeViewModel(
     private var listenJob: Job? = null
     private var lineJob: Job? = null
     private var resumeJob: Job? = null
-    private var detector: TempoDetector? = null
+
+    /**
+     * The listening whose beats [heard] may show (its number, counted by [listenings]), or [NO_SESSION]; set with
+     * [heard] under [heardLock]. A Stop's cancel reaches the DSP thread only after the chunk in hand, so a listening that
+     * was stopped can still finish one chunk while the next has begun: its beat grid is dropped, never shown over the
+     * new one.
+     */
+    private var heardSession = NO_SESSION
+    private var listenings = 0
+    private val heardLock = Any()
 
     init {
         viewModelScope.launch { player.beats.collect(::follow) }
@@ -400,8 +409,9 @@ class MetronomeViewModel(
         if (player.isPlaying.value || player.isPreviewing.value) player.stop()
         val started = nanoTime()
         _listen.value = ListenUi(phase = ListenPhase.LISTENING, wasPlaying = wasPlaying, startedAtNanos = started)
-        _heard.value = null
-        listenJob = viewModelScope.launch { listenFor(recorder) }
+        val session = ++listenings
+        showHeard(session, beats = null)
+        listenJob = viewModelScope.launch { listenFor(recorder, session) }
     }
 
     /** Stop while listening: the tempo stays, the clicks come back if they were playing. */
@@ -477,7 +487,19 @@ class MetronomeViewModel(
     private fun endListening() {
         listenJob?.cancel()
         listenJob = null
-        _heard.value = null
+        showHeard(session = NO_SESSION, beats = null)
+    }
+
+    /** [beats] on the beat lights for the listening [session] (null: none); dropped if another one has begun since. */
+    private fun showHeard(session: Int, beats: HeardBeats?) {
+        synchronized(heardLock) {
+            if (beats == null) {
+                heardSession = session
+                _heard.value = null
+            } else if (heardSession == session) {
+                _heard.value = beats
+            }
+        }
     }
 
     /** Shows [phase]'s line (no beat, microphone busy or off) for [LINE_MILLIS], then nothing. */
@@ -495,10 +517,10 @@ class MetronomeViewModel(
      * was heard. A microphone that fails says so instead: busy (a call, another app, or on Android
      * 8–9 the tuner not quite done with it), or off when the permission went missing.
      */
-    private suspend fun listenFor(recorder: AudioRecorder) {
+    private suspend fun listenFor(recorder: AudioRecorder, session: Int) {
         var failed: ListenPhase? = null
         val heard = try {
-            withContext(dspDispatcher) { hear(recorder) }
+            withContext(dspDispatcher) { hear(recorder, session) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: AudioRecorderException) {
@@ -506,7 +528,7 @@ class MetronomeViewModel(
             null
         }
         listenJob = null
-        _heard.value = null
+        showHeard(session = NO_SESSION, beats = null)
         val ended = _listen.value.copy(phase = ListenPhase.IDLE, endedAtNanos = nanoTime(), estimate = 0)
         if (heard == null) {
             _listen.value = ended
@@ -521,10 +543,12 @@ class MetronomeViewModel(
      * Feeds the microphone to the detector until it is steady or time is up; the tempo found (steady,
      * or still settling when time ran out), or null for no beat. Runs on [dspDispatcher]. A screen reader's voice is
      * watched for as long as it listens ([watching]); while it plays, and its tail after, the detector is fed silence.
+     * Each listening makes its own detector: a stopped one may still be finishing its last chunk on the DSP thread while
+     * the next begins, and the two never share one.
      */
-    private suspend fun hear(recorder: AudioRecorder): Found? {
-        var detector: TempoDetector? = this.detector?.also { it.reset() }
-        val session = _listen.value.startedAtNanos
+    private suspend fun hear(recorder: AudioRecorder, session: Int): Found? {
+        var detector: TempoDetector? = null
+        val started = _listen.value.startedAtNanos
         var firstSampleNanos = Long.MAX_VALUE
         var shownBpm = -1
         var shownBeat = Long.MIN_VALUE
@@ -536,11 +560,7 @@ class MetronomeViewModel(
             screenReaderSpeech.watching { speaking ->
                 recorder.chunks().first { chunk ->
                     val rate = recorder.config.sampleRate
-                    val d = detector?.takeIf { it.sampleRate == rate } ?: detectorFor(rate)
-                    if (d !== detector) {
-                        detector = d
-                        this@MetronomeViewModel.detector = d
-                    }
+                    val d = detector?.takeIf { it.sampleRate == rate } ?: detectorFor(rate).also { detector = it }
                     if (speaking.value) ignoredSamples = maxOf(ignoredSamples, speechTailSamples(rate) + chunk.size)
                     if (ignoredSamples > 0L) {
                         // The microphone would hear the voice: silence in its place keeps the detector's time going.
@@ -559,13 +579,16 @@ class MetronomeViewModel(
                     if (estimate != shownBpm) {
                         shownBpm = estimate
                         // Only while this listening lasts: Stop on the main thread may have ended it meanwhile.
-                        _listen.update { if (it.listening && it.startedAtNanos == session) it.copy(estimate = estimate) else it }
+                        _listen.update { if (it.listening && it.startedAtNanos == started) it.copy(estimate = estimate) else it }
                     }
                     if (settled && d.lastBeatSample >= 0L && d.beatIntervalSamples > 0f && d.lastBeatSample != shownBeat) {
                         shownBeat = d.lastBeatSample
-                        _heard.value = HeardBeats(
-                            lastBeatNanos = firstSampleNanos + samplesToNanos(d.lastBeatSample, rate),
-                            intervalNanos = (d.beatIntervalSamples.toDouble() * NANOS_PER_SECOND / rate).toLong(),
+                        showHeard(
+                            session,
+                            HeardBeats(
+                                lastBeatNanos = firstSampleNanos + samplesToNanos(d.lastBeatSample, rate),
+                                intervalNanos = (d.beatIntervalSamples.toDouble() * NANOS_PER_SECOND / rate).toLong(),
+                            ),
                         )
                     }
                     d.status == TempoStatus.STEADY
@@ -592,6 +615,9 @@ class MetronomeViewModel(
         const val USE_GLIDE_MILLIS = 700L
 
         private const val NANOS_PER_SECOND = 1_000_000_000.0
+
+        /** [heardSession] while nothing listens. */
+        private const val NO_SESSION = 0
 
         private fun samplesToNanos(samples: Long, rate: Int): Long = (samples * NANOS_PER_SECOND / rate).toLong()
 

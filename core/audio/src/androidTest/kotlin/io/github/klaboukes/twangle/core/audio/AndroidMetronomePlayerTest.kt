@@ -174,6 +174,21 @@ class AndroidMetronomePlayerTest {
         assertEquals("the meter stays 4/4", 1, later.beatInBar)
     }
 
+    // The watch makes a new player each time its app opens: until Phase 89 each one left a thread behind.
+    @Test
+    fun everyPlayerTellsItsBeatsOnTheSameThread() = runBlocking<Unit> {
+        repeat(3) {
+            val another = AndroidMetronomePlayer(context)
+            another.setSilent(true)
+            another.start(240, Meter.FOUR_FOUR)
+            withTimeout(SLACK_MILLIS) { another.beats.first() }
+            another.stop()
+            withTimeout(SLACK_MILLIS) { another.isPlaying.first { !it } }
+        }
+        val beatThreads = Thread.getAllStackTraces().keys.count { it.name == BEAT_THREAD_NAME && it.isAlive }
+        assertEquals("beat threads", 1, beatThreads)
+    }
+
     @Test
     fun stopEndsTheClicksQuicklyAndThePlayerCanBeReused() = runBlocking<Unit> {
         player.start(200, Meter.FOUR_FOUR)

@@ -56,6 +56,16 @@ class InTuneDetectorTest {
         assertTrue(hold(2f, 0.15f))
     }
 
+    // Until Phase 89 a NaN compared false with both edges: once in tune it stayed in tune.
+    @Test
+    fun `a missing reading is not in tune and starts the hold over`() {
+        hold(0f, 0.4f)
+        assertFalse(detector.update(Float.NaN, frame))
+        assertFalse(detector.inTune)
+        assertFalse("the hold starts over", hold(1f, 0.25f))
+        assertTrue(hold(1f, 0.1f))
+    }
+
     @Test
     fun `reset clears the state`() {
         hold(0f, 0.4f)

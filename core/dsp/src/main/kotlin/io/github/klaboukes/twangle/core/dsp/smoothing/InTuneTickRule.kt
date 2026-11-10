@@ -16,13 +16,20 @@ class InTuneTickRule(
         private set
 
     private var lastTarget: Any? = null
-    private var lastInTuneMillis = Long.MIN_VALUE
+
+    // When the note was last in tune; meaningless until it has been ([everInTune]), so nothing is subtracted from a
+    // made-up "long ago", which overflowed (Long.MIN_VALUE until Phase 89) and held back the first tick of a null target.
+    private var lastInTuneMillis = 0L
+    private var everInTune = initiallyInTune
 
     /** Feeds the current [inTune] for [target] at [nowMillis]; true means "tick now". */
     fun update(inTune: Boolean, target: Any?, nowMillis: Long): Boolean {
         val rose = inTune && !wasInTune
-        val tick = rose && (target != lastTarget || nowMillis - lastInTuneMillis >= quietMillis)
-        if (inTune) lastTarget = target
+        val tick = rose && (!everInTune || target != lastTarget || nowMillis - lastInTuneMillis >= quietMillis)
+        if (inTune) {
+            lastTarget = target
+            everInTune = true
+        }
         // Remembers when the note was last in tune, up to the moment it stopped being in tune.
         if (inTune || wasInTune) lastInTuneMillis = nowMillis
         wasInTune = inTune

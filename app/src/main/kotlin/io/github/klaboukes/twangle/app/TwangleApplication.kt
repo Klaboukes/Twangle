@@ -5,6 +5,8 @@ import android.content.res.Configuration
 import android.os.StrictMode
 import android.util.Log
 import io.github.klaboukes.twangle.app.widget.TuningWidget
+import io.github.klaboukes.twangle.app.widget.WidgetLook
+import io.github.klaboukes.twangle.app.widget.WidgetRedraws
 import io.github.klaboukes.twangle.app.widget.WidgetState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -27,14 +29,21 @@ class TwangleApplication : Application() {
         super.onCreate()
         if (BuildConfig.DEBUG) logStrictModeViolations()
         container = AppContainer(this)
+        widgetRedraws = WidgetRedraws(WidgetLook.of(resources.configuration))
         // The home-screen widget shows the tuning picked in the app, so it follows the settings.
         TuningWidget.follow(this, container.settingsRepository.settings, appScope)
     }
 
-    /** A new language, or dark mode on phones before Android 12: the widget's names and colours follow. */
+    /** Which configuration changes redraw the widget ([WidgetRedraws]). */
+    private lateinit var widgetRedraws: WidgetRedraws
+
+    /**
+     * A new language, or dark mode (the widget's own colours on phones before Android 12, or with the app's theme set):
+     * the widget's names and colours follow. Nothing else redraws it: not a turn of the phone.
+     */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        redrawWidgets()
+        if (widgetRedraws.needed(WidgetLook.of(newConfig))) redrawWidgets()
     }
 
     /** Redraws the home-screen widgets with the current settings, e.g. in a language just picked in Settings. */

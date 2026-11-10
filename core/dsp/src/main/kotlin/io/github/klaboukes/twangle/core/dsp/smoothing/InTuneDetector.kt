@@ -7,7 +7,8 @@ import kotlin.math.abs
  * [holdSeconds] (docs/architecture/signal-pipeline.md: |cents| ≤ 5 for ≥ 300 ms, or ≤ 2 in the phone's
  * Precise setting).
  * Once in tune it stays in tune until the reading drifts past [exitCents], so a note hovering right
- * at the edge doesn't flicker between the two states. The phone's tuner and the watch both use it.
+ * at the edge doesn't flicker between the two states; a missing reading (NaN) is never in tune and
+ * starts the hold over. The phone's tuner and the watch both use it.
  *
  * Time is counted in analysis frames ([update] takes the frame duration), so it is exact and
  * doesn't depend on the clock. Allocation-free and not thread-safe.
@@ -31,7 +32,10 @@ class InTuneDetector(
     /** Feeds one smoothed reading lasting [frameSeconds] and returns [inTune]. */
     fun update(cents: Float, frameSeconds: Float): Boolean {
         val deviation = abs(cents)
-        if (inTune) {
+        // NaN compares false with everything, so it would neither leave in tune nor reset the hold.
+        if (deviation.isNaN()) {
+            reset()
+        } else if (inTune) {
             if (deviation > exitCents) reset()
         } else if (deviation <= enterCents) {
             heldSeconds += frameSeconds

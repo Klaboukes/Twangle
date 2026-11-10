@@ -44,6 +44,7 @@ import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.feature.tuner.LastHeardNote
+import io.github.klaboukes.twangle.feature.tuner.ListenLog
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.ReportShown
 import io.github.klaboukes.twangle.feature.tuner.TunerErrorMessage
@@ -87,7 +88,7 @@ fun PitchTrailScreen(
 ) {
     val language = appLanguage()
     val viewModel: PitchTrailViewModel = viewModel {
-        PitchTrailViewModel(audioRecorder, settingsRepository, saved = saved, language = language, screenReaderSpeech = screenReaderSpeech)
+        PitchTrailViewModel(audioRecorder, settingsRepository, saved = saved, language = language, screenReaderSpeech = screenReaderSpeech, listenLog = ListenLog.ANDROID)
     }
     LaunchedEffect(language) { viewModel.setLanguage(language) }
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()

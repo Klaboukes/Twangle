@@ -226,6 +226,22 @@ class ChordSettlerTest {
         assertTrue(settler.recent.isEmpty())
     }
 
+    // Until Phase 89 reset() kept when the last chord was shown: on a clock started over, a strum that named nothing
+    // waited that long before it said so.
+    @Test
+    fun `reset forgets when the last chord was shown`() {
+        wait(10.0)
+        strum()
+        readings(am, am, am, am)
+        settler.reset()
+        t = 0.0
+        strums = 0
+        strum()
+        readings(null, null, null, null, null, null, null, null, null, null, null)
+        wait(0.2)
+        assertTrue(settler.unclear)
+    }
+
     @Test
     fun `update says whether anything shown changed`() {
         assertTrue(settler.update(0.0, 1, true))

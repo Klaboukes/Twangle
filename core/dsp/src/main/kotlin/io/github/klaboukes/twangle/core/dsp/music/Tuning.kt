@@ -118,9 +118,9 @@ data class Tuning(
     }
 
     /**
-     * Deviation of [midi] from string [stringIndex] in cents. Positive means sharp. Unlike
-     * [NoteMapper.centsOff] this is not wrapped to ±50, so a string tuned far off still shows
-     * how far it has to go.
+     * Deviation of [midi] from string [stringIndex] in cents. Positive means sharp. Unlike the
+     * cents from the nearest note (`PitchSmoother`'s, within ±50) this is not wrapped, so a string
+     * tuned far off still shows how far it has to go.
      */
     fun centsFromString(midi: Float, stringIndex: Int): Float =
         CENTS_PER_SEMITONE * (midi - stringMidis[stringIndex])

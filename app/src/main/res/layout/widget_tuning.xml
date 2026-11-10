@@ -48,16 +48,20 @@
                 android:scaleType="fitXY"
                 android:src="@drawable/widget_chip" />
 
+            <!-- At least 30 dp high, taller with large text (it grows with the font size). -->
             <TextView
                 android:id="@+id/widget_title"
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_height="wrap_content"
+                android:minHeight="30dp"
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:maxLines="1"
                 android:paddingStart="14dp"
+                android:paddingTop="4dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="4dp"
                 android:text="@string/widget_preview_title"
                 android:textColor="@color/widget_ink"
                 android:textSize="14sp" />

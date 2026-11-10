@@ -179,6 +179,7 @@ class TunerContentTest {
         focusMode: Boolean = false,
         underMeter: UnderMeter = UnderMeter.DEFAULT,
         highContrast: Boolean = false,
+        touchExploration: Boolean = false,
     ) {
         shownMode.value = mode
         shownState.value = state
@@ -225,6 +226,7 @@ class TunerContentTest {
                         focusMode = shownCompact.value,
                         onFullScreenChange = { fullScreenReports += it },
                         onFocusModeChange = { focusChanges += it },
+                        touchExploration = touchExploration,
                     )
                     }
                 }
@@ -2133,6 +2135,22 @@ class TunerContentTest {
         // Back leaves focus mode too, with the controls shown or not.
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         assertEquals(listOf(false, false), focusChanges)
+    }
+
+    // TalkBack's swipes and double taps are no touches: the controls it brought up stay until its user hides them.
+    @Test
+    fun focusKeepsTheControlsWhileTalkBackIsOn() {
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true, touchExploration = true)
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
+        compose.mainClock.advanceTimeBy(3 * COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
+        pickerChip.assertIsDisplayed()
+        assertEquals("not full screen", false, fullScreenReports.last())
+        // Its button still takes them away.
+        hideButton.performClick()
+        compose.mainClock.advanceTimeBy(FADE_MS)
+        pickerChip.assertDoesNotExist()
+        exitButton.assertIsDisplayed()
     }
 
     @Test

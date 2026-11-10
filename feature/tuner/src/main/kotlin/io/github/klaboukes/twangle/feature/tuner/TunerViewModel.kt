@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -107,6 +106,7 @@ class TunerViewModel(
     private val clock: () -> Long = System::currentTimeMillis,
     private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
     private val guideVibrator: GuideVibrator = GuideVibrator.NONE,
+    private val listenLog: ListenLog = ListenLog.NONE,
 ) : ViewModel() {
 
     /** The app's language, whose usual notation is used while the player hasn't picked one. */
@@ -658,7 +658,7 @@ class TunerViewModel(
         // silence, or a note whose readout and needle moved less than the screen shows. Dropping
         // them here, on the DSP thread, keeps them from waking the main thread ~47 times a second.
         .distinctUntilChanged { old, new -> old.looksLike(new) }
-        .catch { emit(TunerUiState.Error(it.toTunerError())) }
+        .showingMicFailures(listenLog)
         .flowOn(dspDispatcher)
 
     /**

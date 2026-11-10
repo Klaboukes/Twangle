@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.tuner.ListenLog
 import io.github.klaboukes.twangle.feature.tuner.PitchPipeline
 import io.github.klaboukes.twangle.feature.tuner.PitchTrailFeed
 import io.github.klaboukes.twangle.feature.tuner.TunerInterpreter
@@ -17,7 +18,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerOptions
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
 import io.github.klaboukes.twangle.feature.tuner.listenAgainOnReturn
 import io.github.klaboukes.twangle.feature.tuner.looksLike
-import io.github.klaboukes.twangle.feature.tuner.toTunerError
+import io.github.klaboukes.twangle.feature.tuner.showingMicFailures
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,7 +26,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
@@ -52,6 +52,7 @@ import kotlinx.coroutines.launch
  *
  * While a screen reader's voice plays ([screenReaderSpeech]) and for [ScreenReaderSpeech.TAIL_SECONDS] after, the
  * readings are set aside as the tuner sets them aside (Phase 81): the trail shows a gap, not TalkBack's speech.
+ * Why listening stopped goes to [listenLog], and a failure that isn't the microphone's is thrown on ([showingMicFailures]).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PitchTrailViewModel(
@@ -61,6 +62,7 @@ class PitchTrailViewModel(
     saved: AppSettings = AppSettings(),
     language: String = "",
     private val screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
+    private val listenLog: ListenLog = ListenLog.NONE,
 ) : ViewModel() {
 
     private val appLanguage = MutableStateFlow(language)
@@ -137,7 +139,7 @@ class PitchTrailViewModel(
         // Most frames look the same on screen as the last one sent; dropped here, on the DSP thread. The history has
         // every reading already.
         .distinctUntilChanged { old, new -> old.looksLike(new) }
-        .catch { emit(TunerUiState.Error(it.toTunerError())) }
+        .showingMicFailures(listenLog)
         .flowOn(dspDispatcher)
 
     /** What the trail shows of each frame; [speaking] says whether a screen reader's voice plays now. */

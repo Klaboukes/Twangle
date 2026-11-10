@@ -57,11 +57,14 @@ class TuningWidgetTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context: Context = instrumentation.targetContext
 
-    /** The widget for [settings], applied to a view as a launcher would. */
-    private fun drawn(settings: AppSettings): View {
+    /** The widget for [settings], applied to a view as a launcher would, on a phone whose text is [fontScale] times as big. */
+    private fun drawn(settings: AppSettings, fontScale: Float? = null): View {
         val views = TuningWidget.views(context, WidgetState.from(settings))
+        val launcher = fontScale?.let { scale ->
+            context.createConfigurationContext(Configuration(context.resources.configuration).apply { this.fontScale = scale })
+        } ?: context
         lateinit var view: View
-        instrumentation.runOnMainSync { view = views.apply(context, FrameLayout(context)) }
+        instrumentation.runOnMainSync { view = views.apply(launcher, FrameLayout(launcher)) }
         return view
     }
 
@@ -82,7 +85,7 @@ class TuningWidgetTest {
 
     @Test
     fun namesTheInstrumentAndTuningInAChipInInksColours() {
-        // Ink's own colours: the wallpaper's (on by default) differ from phone to phone.
+        // Ink's own colours, said outright: the wallpaper's (when picked) differ from phone to phone.
         val view = drawn(AppSettings(tuning = Tunings.DROP_D, theme = ThemeMode.DARK, dynamicColor = false))
         val title = view.findViewById<TextView>(R.id.widget_title)
         val guitar = context.getString(TunerR.string.instrument_guitar)
@@ -127,6 +130,31 @@ class TuningWidgetTest {
             assertEquals("$case chip's line", scheme.outlineVariant.toArgb(), preview.getColor(R.color.widget_line))
             assertEquals("$case ink", scheme.onSurface.toArgb(), preview.getColor(R.color.widget_ink))
             assertEquals("$case muted", scheme.onSurfaceVariant.toArgb(), preview.getColor(R.color.widget_muted))
+        }
+    }
+
+    // Until Phase 89 the chip was 30 dp high whatever the text's size, so at 2× its words were cut off.
+    @Test
+    fun theChipGrowsWithTheTextAtTheLargestFont() {
+        val density = context.resources.displayMetrics.density
+        for (scale in listOf(1f, 2f)) {
+            val widget = drawn(AppSettings(), fontScale = scale)
+            val title = widget.findViewById<TextView>(R.id.widget_title)
+            // Laid out as the launcher lays out a tile of three cells by one, the layout's own sizes applying.
+            instrumentation.runOnMainSync {
+                widget.measure(
+                    View.MeasureSpec.makeMeasureSpec((WIDGET_WIDTH_DP * density).toInt(), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec((WIDGET_HEIGHT_DP * density).toInt(), View.MeasureSpec.EXACTLY),
+                )
+                widget.layout(0, 0, widget.measuredWidth, widget.measuredHeight)
+            }
+            assertEquals("text at ${scale}×", 14f * scale * density, title.textSize, density)
+            val words = title.paint.fontMetricsInt.let { it.descent - it.ascent }
+            assertTrue(
+                "at ${scale}× the chip is ${title.height} px for words $words px high",
+                title.height >= words + title.paddingTop + title.paddingBottom,
+            )
+            assertTrue("at least 30 dp at ${scale}×", title.height >= (30 * density).toInt())
         }
     }
 
@@ -189,5 +217,9 @@ class TuningWidgetTest {
         /** The size each image is drawn at to read its colour: a small pill. */
         const val SAMPLE_WIDTH = 120
         const val SAMPLE_HEIGHT = 40
+
+        /** A tile of three cells by one on a phone, as the launcher gives the widget. */
+        const val WIDGET_WIDTH_DP = 250
+        const val WIDGET_HEIGHT_DP = 110
     }
 }

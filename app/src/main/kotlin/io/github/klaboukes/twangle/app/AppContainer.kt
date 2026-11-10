@@ -75,9 +75,14 @@ class AppContainer(private val appContext: Context) {
     @VisibleForTesting
     var testEarTrainingRecorder: AudioRecorder? = null
 
-    /** Ear training's ears: the tuner's pipeline on [earTrainingRecorder] (each screen's ViewModel takes one when it is made). */
+    /**
+     * Ear training's ears: the tuner's pipeline on [earTrainingRecorder], made once (as Chords' [chordListener]), not
+     * each time the screen is drawn; a test's [testEarTrainingRecorder] gets its own.
+     */
     val earTrainingListener: PitchListener
-        get() = TunerPitchListener(earTrainingRecorder)
+        get() = testEarTrainingRecorder?.let { TunerPitchListener(it) } ?: micEarTrainingListener
+
+    private val micEarTrainingListener: PitchListener by lazy { TunerPitchListener(earMicRecorder) }
 
     /**
      * The microphone for Listen in Chords (2.0, Phase 74), open only while it listens. Its own recorder, as the

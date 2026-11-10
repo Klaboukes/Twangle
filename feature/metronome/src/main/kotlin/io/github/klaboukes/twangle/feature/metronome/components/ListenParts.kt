@@ -196,13 +196,18 @@ private fun ListenWords(
     }
 }
 
-/** "Listening…", or "Listening… 96 BPM" once there is an [estimate]: the words the line shows. */
+/**
+ * "Listening…", or "Listening… 96 BPM" once there is an [estimate] (one text with the tempo and its unit as
+ * placeholders, so each language puts them in its own order): the words the line shows.
+ */
 @Composable
 private fun listeningText(estimate: Int): String {
-    val listening = stringResource(R.string.metronome_listening)
-    if (estimate <= 0) return listening
-    return "$listening ${localDigits(estimate, appLocale())} ${stringResource(R.string.metronome_bpm)}"
+    if (estimate <= 0) return stringResource(R.string.metronome_listening)
+    return stringResource(R.string.metronome_listening_bpm, localDigits(estimate, appLocale()), stringResource(R.string.metronome_bpm))
 }
+
+/** Stands in the tempo's place while the line's words are split around it, to set the number in its own font. */
+private const val TEMPO_MARK = '\uE000'
 
 @Composable
 private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit, onOpenSettings: () -> Unit) {
@@ -211,18 +216,20 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
         LineText.Nothing -> Unit
         is LineText.Listening -> {
             val listening = stringResource(R.string.metronome_listening)
-            val bpmLabel = stringResource(R.string.metronome_bpm)
+            // The language's own order of the words, the tempo and its unit, split where the tempo goes.
+            val around = stringResource(R.string.metronome_listening_bpm, TEMPO_MARK.toString(), stringResource(R.string.metronome_bpm))
+                .split(TEMPO_MARK, limit = 2)
             val digits = if (line.estimate > 0) localDigits(line.estimate, appLocale()) else ""
             val numbers = NumberFont
             val words = buildAnnotatedString {
-                append(listening)
-                if (line.estimate > 0) {
-                    append(" ")
+                if (line.estimate > 0 && around.size == 2) {
+                    append(around[0])
                     withStyle(SpanStyle(color = scheme.onBackground, fontFamily = numbers, fontWeight = FontWeight.Medium, fontFeatureSettings = "$LINING_FIGURES, tnum")) {
                         append(digits)
                     }
-                    append(" ")
-                    append(bpmLabel)
+                    append(around[1])
+                } else {
+                    append(listening)
                 }
             }
             // The tempo shown is left to the line's paced words; hidden, not cleared, so the language

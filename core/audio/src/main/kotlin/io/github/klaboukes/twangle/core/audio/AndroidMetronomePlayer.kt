@@ -90,9 +90,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private val scope = CoroutineScope(SupervisorJob())
     private val writeDispatcher = Dispatchers.IO.limitedParallelism(1)
 
-    // The timers that tell each beat as it is heard: a thread of their own at urgent-audio priority
-    // (urgentAudioDispatcher), made with the first session and kept, asleep between beats.
-    private val beatDispatcher by lazy { urgentAudioDispatcher("MetronomeBeats") }
+    // The timers that tell each beat as it is heard: one thread for every player in the app ([beatThread]).
+    private val beatDispatcher get() = beatThread
 
     private val lock = Any()
 
@@ -475,6 +474,13 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private companion object {
         const val TAG = "MetronomePlayer"
 
+        /**
+         * The thread the beat timers of every player run on, at urgent-audio priority ([urgentAudioDispatcher]): made
+         * with the first session and kept, asleep between beats. Shared, since the watch makes a new player each time
+         * its app is opened (Phase 89: one thread was left behind with each).
+         */
+        val beatThread by lazy { urgentAudioDispatcher(BEAT_THREAD_NAME) }
+
         /** The wanted tempo once a trainer ended: whatever the click track climbed to. */
         const val KEEP_TEMPO = -1
 
@@ -510,3 +516,6 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
  * `MODE_NORMAL` is free for the metronome.
  */
 internal fun isCallMode(mode: Int): Boolean = mode != AudioManager.MODE_NORMAL
+
+/** The name of the one thread that tells every player's beats as they are heard. */
+internal const val BEAT_THREAD_NAME = "MetronomeBeats"

@@ -121,8 +121,10 @@
     <string name="metronome_listen">Listen</string>
     <!-- TalkBack name of the round Listen button under the beat lights while it listens (it shows a stop square): a tap stops listening. -->
     <string name="metronome_listen_stop_spoken">Stop listening</string>
-    <!-- The status line while listening; the tempo it is settling on may follow ("Listening… 96 BPM"). -->
+    <!-- The status line while listening, before a tempo is heard. -->
     <string name="metronome_listening">Listening…</string>
+    <!-- The status line while listening, once a tempo is heard: %1$s is the tempo it is settling on, in the language's digits, %2$s the tempo's unit as the metronome shows it ("BPM"). Put them in the language's order: "Listening… 96 BPM". -->
+    <string name="metronome_listening_bpm">Listening… %1$s %2$s</string>
     <!-- The suggestion balloon's heading over the tempo heard; also its TalkBack title. -->
     <string name="metronome_heard">Heard</string>
     <!-- The balloon's button that sets the suggested tempo. -->
