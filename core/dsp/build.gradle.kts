@@ -18,6 +18,11 @@ dependencies {
 // `./gradlew :core:dsp:benchmark`.
 tasks.test {
     exclude("**/*Benchmark*", "**/*Report*")
+    // StableTypesTest checks that the types the Compose stability file names are immutable; an input,
+    // so a change to the file runs it again.
+    val stabilityConfig = rootProject.layout.projectDirectory.file("compose-stability.conf")
+    inputs.file(stabilityConfig).withPropertyName("stabilityConfig").withPathSensitivity(PathSensitivity.NONE)
+    systemProperty("twangle.stabilityConfig", stabilityConfig.asFile.absolutePath)
 }
 
 tasks.register<Test>("benchmark") {

@@ -41,9 +41,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorProducer
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
@@ -369,7 +366,7 @@ private fun StringChip(
             )
             .size(button.width + ringGap * 2, button.height + ringGap * 2)
             // Outside the clip, so the rings reach past the button without taking room.
-            .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
+            .then(if (sounding) Modifier.soundingRings(ringGap, colors.primary, animationsOff) else Modifier)
             // Over the button and outside its clip, so the row doesn't move.
             .stringMarkBadge(
                 badge,
@@ -386,7 +383,7 @@ private fun StringChip(
                 fill = colors.onSurface,
                 on = colors.surface,
                 background = colors.background,
-                scale = { lock.value },
+                grown = { lock.value },
             )
             // The heard peg's ring and its glow, over the face's edge and in the room round it.
             .heardRing(ringGap, ringColour, highContrast) { ringShown.value }
@@ -490,12 +487,13 @@ private fun StringChip(
 }
 
 /**
- * Rings in [color] that grow out of the button (the box less [inset] each side, in [shape]) and fade,
- * two at a time, like sound waves; with [steady] (Android's animations off) one still ring instead.
- * Drawn behind the button, in the draw phase only.
+ * Rings in [color] that grow out of the button (the box less [inset] each side; round, as the button is,
+ * [StringChipShape]) and fade, two at a time, like sound waves; with [steady] (Android's animations off) one
+ * still ring instead. Drawn behind the button, in the draw phase only, with one line made per size (Phase 89:
+ * until then each ring made its own on every frame).
  */
 @Composable
-private fun Modifier.soundingRings(shape: Shape, inset: Dp, color: Color, steady: Boolean): Modifier {
+private fun Modifier.soundingRings(inset: Dp, color: Color, steady: Boolean): Modifier {
     val progress = if (steady) {
         null
     } else {
@@ -508,20 +506,18 @@ private fun Modifier.soundingRings(shape: Shape, inset: Dp, color: Color, steady
     }
     return drawWithCache {
         val gap = inset.toPx()
-        val inner = Size((size.width - gap * 2f).coerceAtLeast(1f), (size.height - gap * 2f).coerceAtLeast(1f))
-        val outline = Path().apply {
-            addOutline(shape.createOutline(inner, layoutDirection, this@drawWithCache))
-            translate(Offset(gap, gap))
-        }
+        // The button's edge, which each ring starts from.
+        val face = (minOf(size.width, size.height) / 2f - gap).coerceAtLeast(0.5f)
         val reach = gap + SOUND_RING_REACH.toPx()
-        val stroke = SOUND_RING_STROKE.toPx()
+        val line = Stroke(SOUND_RING_STROKE.toPx())
+        val steadyRadius = face + gap + SOUND_RING_STEADY.toPx()
         onDrawBehind {
             if (progress == null) {
-                soundRing(outline, inner, gap + SOUND_RING_STEADY.toPx(), color.copy(alpha = color.alpha * SOUND_RING_STEADY_ALPHA), stroke)
+                drawCircle(color.copy(alpha = color.alpha * SOUND_RING_STEADY_ALPHA), steadyRadius, style = line)
             } else {
                 for (wave in 0 until SOUND_RING_WAVES) {
                     val p = (progress.value + wave.toFloat() / SOUND_RING_WAVES) % 1f
-                    soundRing(outline, inner, reach * p, color.copy(alpha = color.alpha * (1f - p) * SOUND_RING_ALPHA), stroke)
+                    drawCircle(color.copy(alpha = color.alpha * (1f - p) * SOUND_RING_ALPHA), face + reach * p, style = line)
                 }
             }
         }
@@ -532,45 +528,56 @@ private fun Modifier.soundingRings(shape: Shape, inset: Dp, color: Color, steady
  * The heard peg's ring (2.0, Phase 71, the mock-up's `.peg.on`): a [HEARD_RING_STROKE] ring in [colour] over the
  * round face's edge (the box less [inset] each side) and a soft glow round it, the same colour at
  * [HEARD_GLOW_ALPHA], in the room outside the face, at most [HEARD_GLOW] wide. [shown] (0..1, read while drawing)
- * fades both; the colour is read while drawing too, so a reading's tone recolours it without recomposing.
+ * fades both; the colour is read while drawing too, so a reading's tone recolours it without recomposing. Its two
+ * lines are made once per size, not on each of those frames (Phase 89).
  */
-private fun Modifier.heardRing(inset: Dp, colour: ColorProducer, highContrast: Boolean, shown: () -> Float): Modifier = drawWithContent {
-    drawContent()
-    val alpha = shown()
-    if (alpha <= 0f) return@drawWithContent
+private fun Modifier.heardRing(inset: Dp, colour: ColorProducer, highContrast: Boolean, shown: () -> Float): Modifier = drawWithCache {
     val gap = inset.toPx()
     val face = (minOf(size.width, size.height) / 2f - gap).coerceAtLeast(0f)
-    if (face <= 0f) return@drawWithContent
-    val tone = colour()
-    val stroke = HEARD_RING_STROKE.toPx() * (if (highContrast) HIGH_CONTRAST_LINES else 1f)
-    val glow = minOf(HEARD_GLOW.toPx(), gap)
-    if (glow > 0f && !highContrast) {
-        drawCircle(tone.copy(alpha = tone.alpha * HEARD_GLOW_ALPHA * alpha), radius = face + glow / 2f, style = Stroke(glow))
+    val ringWidth = HEARD_RING_STROKE.toPx() * (if (highContrast) HIGH_CONTRAST_LINES else 1f)
+    val glowWidth = minOf(HEARD_GLOW.toPx(), gap)
+    val ring = Stroke(ringWidth)
+    val glow = Stroke(glowWidth).takeIf { glowWidth > 0f && !highContrast }
+    onDrawWithContent {
+        drawContent()
+        val alpha = shown()
+        if (alpha <= 0f || face <= 0f) return@onDrawWithContent
+        val tone = colour()
+        if (glow != null) drawCircle(tone.copy(alpha = tone.alpha * HEARD_GLOW_ALPHA * alpha), radius = face + glowWidth / 2f, style = glow)
+        drawCircle(tone.copy(alpha = tone.alpha * alpha), radius = face - ringWidth / 2f, style = ring)
     }
-    drawCircle(tone.copy(alpha = tone.alpha * alpha), radius = face - stroke / 2f, style = Stroke(stroke))
 }
 
 /**
  * The locked peg's mark: a small padlock in [on] on a disc in [fill], [radius] round, at the box's bottom end corner
  * (the face less [inset]), ringed in the [background] so it reads apart from the peg, drawn over it and outside its
- * face so nothing moves; across from the tick or the 12th-fret result at the top end corner. [scale] (0..1, read
- * while drawing) grows it in and out. Left to right in every language, as the row is.
+ * face so nothing moves; across from the tick or the 12th-fret result at the top end corner. [grown] (0..1, read
+ * while drawing) grows it in and out about its centre. Left to right in every language, as the row is. Its shackle's
+ * line is made once per size (Phase 89).
  */
-private fun Modifier.lockBadge(inset: Dp, radius: Dp, fill: Color, on: Color, background: Color, scale: () -> Float): Modifier =
-    drawWithContent {
-        drawContent()
-        val grown = scale()
-        if (grown <= 0f) return@drawWithContent
-        val full = radius.toPx()
-        val r = full * grown
-        val centre = Offset(size.width - inset.toPx() - full * 0.35f, size.height - inset.toPx() - full * 0.35f)
-        drawCircle(background, r + LOCK_BADGE_HALO.toPx() * grown, centre)
-        drawCircle(fill, r, centre)
-        drawPadlock(centre, r, on)
+private fun Modifier.lockBadge(inset: Dp, radius: Dp, fill: Color, on: Color, background: Color, grown: () -> Float): Modifier =
+    drawWithCache {
+        val r = radius.toPx()
+        val centre = Offset(size.width - inset.toPx() - r * 0.35f, size.height - inset.toPx() - r * 0.35f)
+        val halo = r + LOCK_BADGE_HALO.toPx()
+        val shackleLine = Stroke(r * PADLOCK_LINE)
+        onDrawWithContent {
+            drawContent()
+            val grow = grown()
+            if (grow <= 0f) return@onDrawWithContent
+            scale(grow, pivot = centre) {
+                drawCircle(background, halo, centre)
+                drawCircle(fill, r, centre)
+                drawPadlock(centre, r, on, shackleLine)
+            }
+        }
     }
 
-/** A padlock [r] px round about [centre] in [colour]: a rounded body under an arched shackle, as the usual lock icon. */
-private fun DrawScope.drawPadlock(centre: Offset, r: Float, colour: Color) {
+/**
+ * A padlock [r] px round about [centre] in [colour]: a rounded body under an arched shackle, as the usual lock icon.
+ * [line] is the shackle's, [PADLOCK_LINE] of [r] wide.
+ */
+private fun DrawScope.drawPadlock(centre: Offset, r: Float, colour: Color, line: Stroke) {
     val bodyWidth = r * 1.0f
     val bodyHeight = r * 0.72f
     val bodyTop = centre.y - r * 0.12f
@@ -581,7 +588,7 @@ private fun DrawScope.drawPadlock(centre: Offset, r: Float, colour: Color) {
         cornerRadius = CornerRadius(r * 0.14f),
     )
     val shackle = r * 0.62f
-    val stroke = r * 0.2f
+    val stroke = line.width
     drawArc(
         colour,
         startAngle = 180f,
@@ -589,21 +596,15 @@ private fun DrawScope.drawPadlock(centre: Offset, r: Float, colour: Color) {
         useCenter = false,
         topLeft = Offset(centre.x - shackle / 2f, bodyTop - shackle * 0.62f),
         size = Size(shackle, shackle),
-        style = Stroke(stroke),
+        style = line,
     )
     // The shackle's legs down into the body.
     drawLine(colour, Offset(centre.x - shackle / 2f, bodyTop - shackle * 0.12f), Offset(centre.x - shackle / 2f, bodyTop + stroke), stroke)
     drawLine(colour, Offset(centre.x + shackle / 2f, bodyTop - shackle * 0.12f), Offset(centre.x + shackle / 2f, bodyTop + stroke), stroke)
 }
 
-/** [outline] (the button, [inner] in size) widened by [grow] px all round, drawn as a [stroke] px line. */
-private fun DrawScope.soundRing(outline: Path, inner: Size, grow: Float, color: Color, stroke: Float) {
-    val sx = (inner.width + grow * 2f) / inner.width
-    val sy = (inner.height + grow * 2f) / inner.height
-    scale(sx, sy) {
-        drawPath(outline, color, style = Stroke(stroke / ((sx + sy) / 2f)))
-    }
-}
+/** The padlock's line (its shackle and legs), as a share of its disc's radius. */
+private const val PADLOCK_LINE = 0.2f
 
 /** This size shrunk to fit a [side] square, keeping its proportions. */
 private fun DpSize.fitInside(side: Dp): DpSize {

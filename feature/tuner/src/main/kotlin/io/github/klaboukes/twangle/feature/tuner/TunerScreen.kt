@@ -500,18 +500,23 @@ fun TunerContent(
 ) {
     // While focus mode's controls are up, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val shownTuning = when (state) {
+    val tuningNow = when (state) {
         is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
         is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
         is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
+    // The same one while it is equal, so what shows the tuning isn't redrawn with each reading (Phase 89).
+    val shownTuning = remember(tuningNow) { tuningNow }
+    // Kept while the instrument and the player's tunings stay, so the chip isn't redrawn with each reading (a list
+    // inside counts as changeable, so a new wrapper would; Phase 89).
+    val tuningNames = remember(instrument, customTunings) { TuningNames(instrument, customTunings) }
     // chipInRow: the chip in the row's middle, in the name's place (a phone on its side, [ChipRow]).
     val header = @Composable { chipInRow: Boolean ->
         // The picker chip on its line under the top row (2.0, Phase 70; Phase 77); none over an error, where the sheet can't open.
         val chip = @Composable {
             if (shownTuning != null) {
-                TunerPickerChip(mode, shownTuning, TuningNames(instrument, customTunings), onClick = { onPickerOpenChange(true) })
+                TunerPickerChip(mode, shownTuning, tuningNames, onClick = { onPickerOpenChange(true) })
             }
         }
         // Focus mode's button at the end of the chip's row, in both modes in the same place (owner,
@@ -559,7 +564,10 @@ fun TunerContent(
     // wide: the pegs in the wide layout's one row (Phase 73).
     val guitarSlotWith = @Composable { wide: Boolean ->
         // No marks over the pegs: the panel's columns show the strum (the marks stay for the other layouts' tests).
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, null)
+        // Kept while they stay the same, so the pegs aren't redrawn with each reading (Phase 89).
+        val strings = remember(onStringClick, onStringLongClick, soundingString, ticks, tone) {
+            StringActions(onStringClick, onStringLongClick, soundingString, ticks, tone, null)
+        }
         // The strum check's button above the pegs at their end (beside them, after the last, on its side).
         // Not in Any note, where the pegs are measured but not shown (the row keeps its height without it).
         val strumButton = onStrumCheckChange?.takeIf { TunerTool.STRUM_CHECK in tunerTools && mode == TunerMode.AUTO }?.let { onStrum ->

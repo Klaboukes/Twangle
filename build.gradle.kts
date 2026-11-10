@@ -6,6 +6,7 @@ import java.io.PrintStream
 import java.io.StringReader
 import java.util.Properties
 import javax.xml.parsers.DocumentBuilderFactory
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
 
@@ -131,6 +132,17 @@ abstract class CheckPermissions : DefaultTask() {
                 .setOutputStream(stream).build().execute()
         }
         return out.toString(Charsets.UTF_8)
+    }
+}
+
+// Every Compose module counts :core:dsp's immutable music types (Tuning, Instrument, Note) as stable,
+// so a screen doesn't redraw what shows a tuning on every reading (compose-stability.conf says which
+// and why; docs/architecture/performance.md).
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.kotlin.plugin.compose") {
+        extensions.configure<ComposeCompilerGradlePluginExtension> {
+            stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("compose-stability.conf"))
+        }
     }
 }
 
