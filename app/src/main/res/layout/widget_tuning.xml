@@ -18,7 +18,9 @@
         android:scaleType="fitXY"
         android:src="@drawable/widget_backdrop" />
 
+    <!-- The two lines; TuningWidget measures them to know how tall a tile must be for "Open the tuner". -->
     <LinearLayout
+        android:id="@+id/widget_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
@@ -67,6 +69,7 @@
                 android:textSize="14sp" />
         </FrameLayout>
 
+        <!-- Left out on Android 12+ when the tile is too short for it with the phone's text size. -->
         <TextView
             android:id="@+id/widget_subtitle"
             android:layout_width="wrap_content"

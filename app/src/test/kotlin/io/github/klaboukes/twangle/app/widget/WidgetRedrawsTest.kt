@@ -11,7 +11,7 @@ class WidgetRedrawsTest {
 
     // Until Phase 89 every configuration change redrew it, a turn of the phone too.
     @Test
-    fun `a change that leaves the language and dark mode as they were redraws nothing`() {
+    fun `a change that leaves the language, dark mode and text size as they were redraws nothing`() {
         assertFalse(redraws.needed(english))
         assertFalse(redraws.needed(WidgetLook("en-GB", dark = false)))
     }
@@ -22,6 +22,14 @@ class WidgetRedrawsTest {
         assertFalse(redraws.needed(WidgetLook("nl-NL", dark = false)))
         assertTrue(redraws.needed(WidgetLook("nl-NL", dark = true)))
         assertFalse(redraws.needed(WidgetLook("nl-NL", dark = true)))
+        assertTrue("back as before", redraws.needed(english))
+    }
+
+    // Phase 91: the text size decides whether "Open the tuner" fits under the chip.
+    @Test
+    fun `a new text size redraws it, once`() {
+        assertTrue(redraws.needed(WidgetLook("en-GB", dark = false, fontScale = 2f)))
+        assertFalse(redraws.needed(WidgetLook("en-GB", dark = false, fontScale = 2f)))
         assertTrue("back as before", redraws.needed(english))
     }
 }

@@ -2,15 +2,17 @@ package io.github.klaboukes.twangle.app.widget
 
 import android.Manifest
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.appwidget.AppWidgetHostView
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.media.AudioManager
+import android.os.Build
 import android.os.SystemClock
+import android.util.TypedValue
 import android.view.View
 import android.view.accessibility.AccessibilityNodeInfo
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.compose.ui.graphics.toArgb
@@ -30,6 +32,7 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,15 +60,48 @@ class TuningWidgetTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context: Context = instrumentation.targetContext
 
-    /** The widget for [settings], applied to a view as a launcher would, on a phone whose text is [fontScale] times as big. */
-    private fun drawn(settings: AppSettings, fontScale: Float? = null): View {
-        val views = TuningWidget.views(context, WidgetState.from(settings))
-        val launcher = fontScale?.let { scale ->
-            context.createConfigurationContext(Configuration(context.resources.configuration).apply { this.fontScale = scale })
-        } ?: context
-        lateinit var view: View
-        instrumentation.runOnMainSync { view = views.apply(launcher, FrameLayout(launcher)) }
-        return view
+    /** [context] on a phone whose text is [fontScale] times as big. */
+    private fun phone(fontScale: Float): Context =
+        context.createConfigurationContext(Configuration(context.resources.configuration).apply { this.fontScale = fontScale })
+
+    /**
+     * The widget for [settings] as a launcher shows it, in a tile [heightDp] high (one row) and three cells wide, on a
+     * phone whose text is [fontScale] times as big: drawn by the app there and applied in an [AppWidgetHostView], which
+     * picks the drawing for the tile's size as a launcher does (Android 12+).
+     */
+    private fun drawn(settings: AppSettings, fontScale: Float = 1f, heightDp: Int = TILE_HEIGHT_DP): View {
+        val phone = phone(fontScale)
+        val views = TuningWidget.views(phone, WidgetState.from(settings))
+        val density = phone.resources.displayMetrics.density
+        val width = (TILE_WIDTH_DP * density).toInt()
+        val height = (heightDp * density).toInt()
+        lateinit var tile: AppWidgetHostView
+        instrumentation.runOnMainSync {
+            // No provider info given (a launcher's would make a context of its own, at the phone's real text size), so
+            // it applies the views in [phone]; Android 13 logs "Error trying to create the remote context" for that.
+            tile = AppWidgetHostView(phone).apply { setPadding(0, 0, 0, 0) }
+            // Twice, as a launcher: the first layout picks the drawing for the size, the second redraw reuses its views.
+            repeat(2) {
+                tile.updateAppWidget(views)
+                tile.measure(
+                    View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+                )
+                tile.layout(0, 0, width, height)
+            }
+        }
+        return tile
+    }
+
+    /** Where [view] starts below the top of [tile], in pixels. */
+    private fun topIn(tile: View, view: View): Int {
+        var top = 0
+        var at = view
+        while (at !== tile) {
+            top += at.top
+            at = at.parent as View
+        }
+        return top
     }
 
     /** The colour an image of the widget is drawn in (its shape tinted by its colour filter): its middle, drawn alone. */
@@ -133,29 +169,55 @@ class TuningWidgetTest {
         }
     }
 
-    // Until Phase 89 the chip was 30 dp high whatever the text's size, so at 2× its words were cut off.
+    // Until Phase 89 the chip was 30 dp high whatever the text's size, so at 2× its words were cut off. Until Phase 91
+    // this expected 14 sp × 2 exactly, but from Android 14 large text grows less (14 sp at 2× is about 26 dp, not 28).
     @Test
     fun theChipGrowsWithTheTextAtTheLargestFont() {
-        val density = context.resources.displayMetrics.density
-        for (scale in listOf(1f, 2f)) {
-            val widget = drawn(AppSettings(), fontScale = scale)
-            val title = widget.findViewById<TextView>(R.id.widget_title)
-            // Laid out as the launcher lays out a tile of three cells by one, the layout's own sizes applying.
-            instrumentation.runOnMainSync {
-                widget.measure(
-                    View.MeasureSpec.makeMeasureSpec((WIDGET_WIDTH_DP * density).toInt(), View.MeasureSpec.EXACTLY),
-                    View.MeasureSpec.makeMeasureSpec((WIDGET_HEIGHT_DP * density).toInt(), View.MeasureSpec.EXACTLY),
-                )
-                widget.layout(0, 0, widget.measuredWidth, widget.measuredHeight)
-            }
-            assertEquals("text at ${scale}×", 14f * scale * density, title.textSize, density)
+        val sizes = listOf(1f, 2f).map { scale ->
+            val title = drawn(AppSettings(), fontScale = scale).findViewById<TextView>(R.id.widget_title)
+            val metrics = phone(scale).resources.displayMetrics
+            val density = metrics.density
+            // The size Android itself gives 14 sp on this phone at this text size, its own scaling curve included.
+            val expected = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, metrics)
+            assertEquals("text at ${scale}×", expected, title.textSize, 1f)
             val words = title.paint.fontMetricsInt.let { it.descent - it.ascent }
             assertTrue(
                 "at ${scale}× the chip is ${title.height} px for words $words px high",
                 title.height >= words + title.paddingTop + title.paddingBottom,
             )
             assertTrue("at least 30 dp at ${scale}×", title.height >= (30 * density).toInt())
+            title.textSize
         }
+        assertTrue("larger at 2× than at 1×: $sizes", sizes[1] > sizes[0] * 1.5f)
+    }
+
+    // Phase 91: in a one-row tile at 2× text there is no room for both lines; the line is then left out, never cut off.
+    @Test
+    fun openTheTunerIsWhollyInsideAOneRowTileOrLeftOut() {
+        assumeTrue("one drawing per height from Android 12", Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        val shown = mutableListOf<String>()
+        for (scale in listOf(1f, 1.3f, 2f)) {
+            for (heightDp in ONE_ROW_HEIGHTS_DP) {
+                val case = "${scale}× text in a tile $heightDp dp high"
+                val tile = drawn(AppSettings(), fontScale = scale, heightDp = heightDp)
+                val line = tile.findViewById<TextView>(R.id.widget_subtitle)
+                if (line.visibility != View.VISIBLE) continue
+                shown += case
+                val top = topIn(tile, line)
+                val bottom = top + line.height
+                var whole = 0
+                instrumentation.runOnMainSync {
+                    val any = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                    line.measure(any, any)
+                    whole = line.measuredHeight
+                }
+                assertTrue("$case: the line starts at $top px, inside the tile", top >= 0)
+                assertTrue("$case: the line ends at $bottom px, inside the tile of ${tile.height}", bottom <= tile.height)
+                assertTrue("$case: the line is ${line.height} px of its $whole", line.height >= whole)
+            }
+        }
+        val room = TuningWidget.roomForBothLines(phone(1f), WidgetState.from(AppSettings()))
+        assertTrue("shown at 1× in a tile 70 dp high (room $room dp): $shown", "1.0× text in a tile 70 dp high" in shown)
     }
 
     @Test
@@ -218,8 +280,11 @@ class TuningWidgetTest {
         const val SAMPLE_WIDTH = 120
         const val SAMPLE_HEIGHT = 40
 
-        /** A tile of three cells by one on a phone, as the launcher gives the widget. */
-        const val WIDGET_WIDTH_DP = 250
-        const val WIDGET_HEIGHT_DP = 110
+        /** A tile of three cells across, as a launcher gives the widget on a phone. */
+        const val TILE_WIDTH_DP = 250
+
+        /** A tile one row high: from the 40 dp the widget asks for at least to a 70 dp cell. */
+        val ONE_ROW_HEIGHTS_DP = listOf(40, 55, 70)
+        const val TILE_HEIGHT_DP = 70
     }
 }

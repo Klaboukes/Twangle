@@ -39,7 +39,8 @@ class TwangleApplication : Application() {
 
     /**
      * A new language, or dark mode (the widget's own colours on phones before Android 12, or with the app's theme set):
-     * the widget's names and colours follow. Nothing else redraws it: not a turn of the phone.
+     * the widget's names and colours follow; a new text size (whether "Open the tuner" fits under the chip). Nothing
+     * else redraws it: not a turn of the phone.
      */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)

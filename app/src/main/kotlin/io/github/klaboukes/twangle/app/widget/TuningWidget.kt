@@ -9,7 +9,12 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import android.util.Log
+import android.util.SizeF
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.FrameLayout
 import android.widget.RemoteViews
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.toArgb
 import io.github.klaboukes.twangle.app.MainActivity
@@ -26,6 +31,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 
 /**
  * The home-screen widget (Phase 20; 2.0's look in Phase 75): the instrument and tuning the tuner is set to
@@ -82,19 +88,68 @@ object TuningWidget {
 
     private const val TAG = "TuningWidget"
 
-    /** The widget's views for [state], with their texts in the app's language. */
+    /**
+     * The widget's views for [state], with their texts in the app's language. On Android 12+ in two heights, the
+     * launcher picking the one for the tile's size (Phase 91): with "Open the tuner" under the chip when the tile is
+     * at least [roomForBothLines] high, otherwise the chip alone, so the line is never cut off. A one-row tile is
+     * about 50 to 100 dp high, and at 2× text the two lines need about 80. Before Android 12 (text at most 1.3×
+     * there, so the line fits all but the shortest tiles) always both.
+     */
     internal fun views(context: Context, state: WidgetState): RemoteViews {
+        val withHint = drawing(context, state, withHint = true)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return withHint
+        val room = try {
+            roomForBothLines(context, state)
+        } catch (e: RuntimeException) {
+            Log.w(TAG, "Widget's lines not measured", e)
+            return withHint
+        }
+        return RemoteViews(
+            mapOf(
+                SizeF(0f, 0f) to drawing(context, state, withHint = false),
+                SizeF(0f, room) to withHint,
+            ),
+        )
+    }
+
+    /** The widget's views for [state], with "Open the tuner" under the chip or, without [withHint], the chip alone. */
+    internal fun drawing(context: Context, state: WidgetState, withHint: Boolean): RemoteViews {
         val texts = inAppLanguage(context)
-        val string = { id: Int, args: Array<out Any> -> if (args.isEmpty()) texts.getString(id) else texts.getString(id, *args) }
         return RemoteViews(context.packageName, R.layout.widget_tuning).apply {
-            setTextViewText(R.id.widget_title, state.title(string))
-            setContentDescription(R.id.widget_title, state.spoken(string))
+            setTextViewText(R.id.widget_title, state.title(texts.string))
+            setContentDescription(R.id.widget_title, state.spoken(texts.string))
             // Set here, not only in the layout, which the launcher would read in the phone's language.
             setTextViewText(R.id.widget_subtitle, texts.getString(R.string.widget_open_tuner))
+            // Both ways, said outright: a launcher reuses the views of one drawing for the other (the same layout).
+            setViewVisibility(R.id.widget_subtitle, if (withHint) View.VISIBLE else View.GONE)
             setOnClickPendingIntent(android.R.id.background, openTuner(context))
             paint(context, state)
         }
     }
+
+    /**
+     * How high, in dp, a tile must be for both lines at the phone's text size: the layout itself measured with the
+     * real texts (a script with taller letters takes more), plus a little room so they don't touch the tile's edge.
+     * The launcher uses the same fonts and text size, so its drawing is as tall. A new text size redraws the widget
+     * ([WidgetLook]).
+     */
+    internal fun roomForBothLines(context: Context, state: WidgetState): Float {
+        val texts = inAppLanguage(context)
+        val layout = LayoutInflater.from(texts).inflate(R.layout.widget_tuning, FrameLayout(texts), false)
+        layout.findViewById<TextView>(R.id.widget_title).text = state.title(texts.string)
+        layout.findViewById<TextView>(R.id.widget_subtitle).text = texts.getString(R.string.widget_open_tuner)
+        val lines = layout.findViewById<View>(R.id.widget_content)
+        val any = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        lines.measure(any, any)
+        return ceil(lines.measuredHeight / texts.resources.displayMetrics.density) + EDGE_ROOM_DP
+    }
+
+    /** The room kept between the lines and the tile's top and bottom edges together, in dp. */
+    private const val EDGE_ROOM_DP = 4f
+
+    /** A string resource with its format arguments, if any. */
+    private val Context.string: (Int, Array<out Any>) -> String
+        get() = { id, args -> if (args.isEmpty()) getString(id) else getString(id, *args) }
 
     /**
      * [context] in the language picked in the app's Settings. Android 13+ gives the app that language
