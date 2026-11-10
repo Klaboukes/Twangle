@@ -65,7 +65,9 @@ These keep their yes, whatever the task says: anything that reaches Google Play
 (`scripts/publish-website.sh`), anything sent to someone (an email, a message, a GitHub comment to
 another person), anything that costs money, deleting what can't be brought back, and changes to the
 owner's accounts or the PC's settings. Get everything ready for them and put the one command in the
-report. (Updating and publishing the privacy policy needs no yes; just report it.)
+report; `scripts/publish-website.sh --dry-run` (what would change, nothing pushed) needs no yes and
+shows what that command would publish. (Updating and publishing the privacy policy needs no yes,
+`scripts/publish-privacy.sh` after it landed on `main`; just report it.)
 
 ## 4. When they're back: the report
 

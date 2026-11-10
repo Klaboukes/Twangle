@@ -11,13 +11,13 @@ One language (or a few closely related ones) per branch and PR. CLAUDE.md's hard
 The owner is an experienced software engineer, new to Android, who leaves the code to Claude. Tell them in plain language what changed and what to try.
 
 ## 0. Pre-flight
-Same as the roadmap-step skill's step 0: your own worktree, clean tree, `git switch main && git pull`, no leftover open PR, the last nightly CI run on `main` passed (or GitHub didn't run it, see that step). Branch `chore/language-<code>`, or `phase-<N>/...` when a roadmap item asks for the language.
+Same as the roadmap-step skill's step 0: your own worktree, clean tree, `git fetch -q origin` and `git switch --detach origin/main` (main stays in the main folder), no leftover open PR, the last nightly CI run on `main` passed (or GitHub didn't run it, see that step). Branch `chore/language-<code>`, or `phase-<N>/...` when a roadmap item asks for the language.
 
 ## 1. Pick the qualifier
 Android resource qualifier form, which is also what `twangle.languages` uses: `sv`, `pt-rBR`, `zh-rTW`, `b+sr+Latn`. Old codes still apply: Indonesian is `in` (a phone set to `id` finds it), Hebrew `iw`, Yiddish `ji`. Add a region only when it really differs (Brazilian vs European Portuguese).
 
 ## 2. Translate every text
-- The modules with texts are those with a `res/values/strings.xml`. Find them with a glob (today: `app`, `wear`, `feature/tuner`, `feature/settings`, `feature/metronome`, `feature/practice`, `core/designsystem`). Create `res/values-<code>/strings.xml` in each, with every translatable string and plural.
+- The modules with texts are those with a `res/values/strings.xml`. Find them with a glob (today: `app`, `wear`, `feature/tuner`, `feature/settings`, `feature/metronome`, `feature/practice`, `feature/eartraining`, `core/designsystem`). Create `res/values-<code>/strings.xml` in each, with every translatable string and plural.
 - Translate from the English source and use the existing languages as reference. Keep texts as short as the English. Use the words local guitarists and tuner apps use. Tips are short imperatives, "Pick a string" style (never "Tap a string").
 - Pick one register (informal or formal you) as modern apps in that language do, keep it consistent, and add it to the register line in docs/architecture/languages.md.
 - Leave placeholders exactly as in English. Give plurals every quantity Android defines for the language (e.g. `one/few/many/other` for Slavic languages, only `other` for Chinese, Japanese, Korean, Vietnamese). Skip `translatable="false"` items.
@@ -47,7 +47,7 @@ Then write the language's translation record and glossary line (docs/architectur
 
 ## 7. Document and land
 - docs/architecture/languages.md: add the language to the list and its register to the register line, plus any quirk (an old qualifier, a font gap, a note-name habit).
-- Push, then `gh pr create --base main --title "Add <Language>"`. The body has **What** (plain language first), **Verification** (commands, results, phone check yes/no) and the attribution footer. Then `gh pr merge --squash --delete-branch` and `git switch main && git pull`.
+- Push, then `gh pr create --base main --title "Add <Language>"`. The body has **What** (plain language first), **Verification** (commands, results, phone check yes/no) and the attribution footer. Then merge as the roadmap-step skill's step 7 does in a worktree: `gh pr merge --squash` alone, `git push origin --delete <branch>`, `git fetch -q origin`, `git switch --detach origin/main`, `git branch -D <branch>`, and when the session's work is done the clean-up CLAUDE.md describes (*One worktree per session*).
 
 ## 8. Report
 > **Done: Twangle in <Language>** ([PR link])

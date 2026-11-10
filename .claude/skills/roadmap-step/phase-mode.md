@@ -6,11 +6,12 @@ Finish every remaining ☐ item of phase N in this session. This session is the 
 2. **Announce the whole phase once.** List the remaining items in plain language, grouped into the planned increments, plus anything the owner must do along the way (e.g. "keep the phone connected for the last two").
 3. **For each increment, one after another:**
    - Post the SKILL.md step-2 announcement.
-   - Launch one `general-purpose` sub-agent in the foreground (`run_in_background: false`) with the prompt below. Never run two at once: they share this session's worktree, the phone and the Gradle daemon.
+   - Launch one `general-purpose` sub-agent in the foreground (`run_in_background: false`) with the prompt below. Never run two at once: they share this session's worktree (pre-flight makes it; never the main folder), the phone and the Gradle daemon.
    - If it reports **BLOCKED**, ask the owner here, since sub-agents can't. Then send the answer back to the same agent with `SendMessage`.
    - Pass its carry-over facts into the next prompt, and post a one-line progress note (e.g. "3 of 6 done: tunings and string lookup are in, <PR link>").
 4. **Stop early only when blocked** by something only the owner can provide, or by a failure you can't fix. Land what's finished, then say plainly what's left and what you need.
-5. **Final report**, once no ☐ items remain:
+5. **Clean up** once the last PR is merged, without asking (CLAUDE.md, *One worktree per session*): remove the worktree (`ExitWorktree` with *remove*; `discard_changes: true`, as its squash-merged commits are in `main` under other names), then `git pull` in the main folder when it is on `main` and no run has it.
+6. **Final report**, once no ☐ items remain:
    - One plain-language line per PR landed.
    - What the app can do now.
    - How it was checked.
@@ -19,12 +20,16 @@ Finish every remaining ☐ item of phase N in this session. This session is the 
 
 **Sub-agent prompt** (fill in the angle brackets):
 ```
-You are doing ONE increment of the Twangle roadmap, end to end, in <this machine's repo root: the working directory, D:\source\Twangle on the desktop>.
+You are doing ONE increment of the Twangle roadmap, end to end, in <this session's worktree, the working directory written out in full, e.g. D:\source\Twangle\.claude\worktrees\<name>> (a git worktree; local.properties is already in it).
 Increment: phase <N>, "<roadmap item text>" (<plain-language goal, as announced to the owner>).
-Follow steps 3–7 of .claude/skills/roadmap-step/SKILL.md for this increment only: branch from freshly
-pulled main, build, verify (including UI tests and the phone check when the owner can see or hear it),
-tick ROADMAP.md, then push, open the PR, squash-merge and pull main. I talk to the owner, so skip
-the announcement and the report.
+Follow steps 3–7 of .claude/skills/roadmap-step/SKILL.md for this increment only, with CLAUDE.md's
+worktree rules (One worktree per session): branch from fresh origin/main (`git fetch -q origin`,
+`git switch --detach origin/main`, `git switch -c <branch>`), build, verify (including UI tests and
+the phone check when the owner can see or hear it), tick ROADMAP.md, then push, open the PR, merge it
+with `gh pr merge --squash` alone (no --delete-branch), `git push origin --delete <branch>`,
+`git fetch -q origin`, `git switch --detach origin/main` and `git branch -D <branch>`. Leave the
+worktree itself: I remove it when the phase is done. I talk to the owner, so skip the announcement
+and the report.
 Carry-over from earlier increments: <facts not in the repo, or "none">.
 If you need a decision or physical action from the owner, stop without merging and report BLOCKED.
 Final message (under 150 words): DONE or BLOCKED; PR URL; one plain-language line on what changed

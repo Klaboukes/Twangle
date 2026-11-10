@@ -83,9 +83,11 @@ files, `translations/` and perhaps `docs/architecture/glossary.md` changed.
 ## 5. Land it
 One commit, `Translations: <n> texts in <m> languages`. Push, `gh pr create --base main --title
 "Translations: <date>"` with a plain body (which texts, in which languages, the choices a native speaker
-should check, the strict run's result) and the attribution footer, then `gh pr merge --squash` and the
-clean-up CLAUDE.md describes (in a worktree: remove it; in the main folder: `git switch main && git pull`
-and delete the branch).
+should check, the strict run's result) and the attribution footer, then `gh pr merge --squash` and
+`git push origin --delete <branch>` (the GitHub branch), then the clean-up CLAUDE.md describes: in a
+worktree, `git fetch -q origin`, `git switch --detach origin/main`, `git branch -D <branch>` and remove
+the worktree; in the main folder (from the full check), `git switch main`, `git pull` and
+`git branch -D <branch>`.
 
 ## 6. Report
 In plain language, short: how many texts in how many languages, and the choices worth a native

@@ -75,8 +75,8 @@ Steps 6–8 follow later, each on the owner's word.
   wasn't tested holds the release up too: run `scripts/full-check.sh --watch` with the watch
   connected (a few minutes); only on the owner's word does the phone go without it
   (`bundle --watch-untested`). Otherwise **stop here, before any branch, version or note**:
-  tell the owner in one line that the release waits for a clean full check (`/full-check`, about 35
-  minutes), and that `/release` picks it up after. The record and summary are git-ignored, so on the other PC (or with none) the
+  tell the owner in one line that the release waits for a clean full check (`/full-check`, about 45
+  minutes on one phone, 36 with the tablet too on 2026-11-09), and that `/release` picks it up after. The record and summary are git-ignored, so on the other PC (or with none) the
   answer is also: run the full check first.
 - **Every language complete and up to date** (owner, 2026-10-28): by day only English and Dutch are
   written, and the full check's first step translates the rest (`/translate`). Run
@@ -123,7 +123,8 @@ Steps 6–8 follow later, each on the owner's word.
   *teléfono*), `zh-HK` is `zh-TW` with Hong Kong's (結他 for guitar) ([store listing](../../../docs/store-listing.md), *Folders*).
 - `./gradlew :app:testDebugUnitTest --tests '*.StoreListingTest'` checks every language and the limit.
 - Commit (`Release <version>`), push, `gh pr create` (body: what goes out, the notes in English),
-  `gh pr merge --squash --delete-branch`, then `git switch main && git pull`.
+  `gh pr merge --squash --delete-branch`, then `git switch main && git pull` (the main folder, step 1,
+  where `--delete-branch` is fine; a worktree would merge as CLAUDE.md says for one).
 
 ## 3. The bundle and the tag
 - `scripts/release.sh bundle` on main: the signed bundle and its notes in `release/`, the tag
@@ -197,7 +198,7 @@ moves on.
   or pictures, a new language, and the app's screen changes since (do the screenshots still show the
   app as it looks?). Nothing changed: there is nothing to send.
 - Every language needs its eight screenshots of the app as it is now: `scripts/store-screenshots.sh`
-  (phone connected, about 80 seconds a language, 37 minutes for all; [docs/store-listing.md](../../../docs/store-listing.md)).
+  (phone connected, about 80 seconds a language, about 50 minutes for all 38 store folders on 2026-11-09; [docs/store-listing.md](../../../docs/store-listing.md)).
   They are no longer made every night (owner, 2026-10-30), so make them when `listing-changes` says
   the app's screens changed since they were made: `listing` refuses them then (it reads the commit
   each picture was last made at, `build/phone-screenshots.made-at`), and names the command, often

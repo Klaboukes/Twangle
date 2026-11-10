@@ -27,10 +27,10 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"   # adb is not on PATH (C
 git status --short && git switch main && git pull
 gh run list --branch main --limit 3          # a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
 "$ADB" devices                                # the phone (f813c98c or R3GL502L08P) "device"; the watch too, when left on
-export ANDROID_SERIAL=<a phone's serial>      # for these checks only (each device in turn): the run picks its devices itself
-"$ADB" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
-"$ADB" shell settings get system font_scale   # 1.0; the tablet's 1.3 (the owner's) is set to 1.0 for the run and put back after (devices.md)
-"$ADB" shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
+S=<a phone's or the tablet's serial>          # each device in turn; never exported: the run picks its devices itself
+"$ADB" -s "$S" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
+"$ADB" -s "$S" shell settings get system font_scale   # 1.0; the tablet's 1.3 (the owner's) is set to 1.0 for the run and put back after (devices.md)
+"$ADB" -s "$S" shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
 ```
 - The script keeps Windows awake while it runs (a sleeping PC drops the phone: on 2026-10-19 it
   cost the night, and on 2026-10-27 again, as the keep-awake never loaded until it was fixed that
@@ -58,8 +58,9 @@ export ANDROID_SERIAL=<a phone's serial>      # for these checks only (each devi
   the tests give the same answer on any phone (docs/architecture/testing.md, *Any phone*). A
   failure on one phone only is a test that still assumes a phone, or a real bug on that kind of
   phone: find out which, never skip it.
-- Check no other session or sub-agent holds the phone (ListAgents; `scripts/ui-tests.sh` also
-  takes a lock on the phone and exits 5 if another run has it).
+- Check no other session or sub-agent holds the phone (ListAgents). Every script that uses a device
+  also takes its lock (`take_phone_lock`, `scripts/devices.sh`); a device another run holds puts its
+  job back here, and the summary names that run (*Its result*, below).
 - Read ROADMAP.md: phases may have items left for the full check (older ones say "Runs overnight"), and
   *Waiting on the owner* may have one open. The run below covers all of them; note which items it closes.
 - **Translations first** (owner, 2026-10-28): run the [translate skill](../translate/SKILL.md) on
@@ -73,8 +74,8 @@ export ANDROID_SERIAL=<a phone's serial>      # for these checks only (each devi
 ## 2. The run
 
 ```bash
-scripts/full-check.sh --dry-run                     # which language checks this run does (no phone)
-scripts/full-check.sh > build/full-check.txt 2>&1   # in the background, ~45 min (less when little changed)
+scripts/full-check.sh --dry-run                     # which devices and jobs, which language checks (no tests run)
+scripts/full-check.sh > build/full-check.txt 2>&1   # in the background, ~45 min on one phone (36 with the tablet too, 2026-11-09; less when little changed)
 ```
 It builds every test app once, then starts the watch's tests on the watch beside the phones' and a smoke
 test of the release build on the first phone (`scripts/release-smoke.sh`, about 4
@@ -92,8 +93,8 @@ checks one module at a time with cooling pauses (each device cools on its own), 
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
 
-**Only the language checks that need it run** (owner, 2026-10-30: with 25 languages all 36 module
-and style checks of 1.1 took 6 of the night's 8 hours; 2.0 has one look, so six module checks). A module's checks that passed whole are
+**Only the language checks that need it run** (owner, 2026-10-30: 1.1's 36 module
+and style checks, in the languages it had then, took 6 of the night's 8 hours; 2.0 has one look, so six module checks, now in 36 languages). A module's checks that passed whole are
 noted (`build/ui-tests-passed/languages/`), and a later run skips them while nothing the module
 shows changed since (the rule `--since-pass` uses) and the pass is under a week old; the log says
 "passed …, nothing it shows changed since", and the summary's second line how many ran. A run after
@@ -186,7 +187,8 @@ For each failure decide first: **app bug or outdated test?**
   the items the run closed, with what was found in brackets, and update the architecture docs where a
   design changed.
 - Push, `gh pr create --base main`, `gh pr merge --squash --delete-branch`, `git switch main &&
-  git pull` (the owner's policy: merge right away).
+  git pull` (the owner's policy: merge right away; `--delete-branch` is fine here, as the run works
+  in the main folder, where `main` is checked out, not in a worktree).
 - On `main`, when there is time left: `scripts/ui-tests.sh --since-pass`. Every module the sweep
   passed whole is already noted as passed; this runs the ones that failed (or changed with the
   fixes) once more and notes them too, so the next release (the [release skill](../release/SKILL.md))
@@ -203,7 +205,8 @@ For each failure decide first: **app bug or outdated test?**
 
 ## 5. The summary at the end
 
-Its first line says which branch the run checked and why (`--which`'s reason, or "you asked for
-it"), then which phone or devices, and what the watch did (the summary's *Phone* or *Devices* and *Watch* lines). Then plain language, short: what ran and how long, what it found (app bugs first), what was fixed and
+Its first line says the result as `build/full-check/summary.txt`'s first line has it ("everything
+passed", "failures below", "not finished", ", watch not tested"), the commit of `main` the run
+checked and why it ran ("you asked for it", or a release waits for it), then which phone or devices, and what the watch did (the summary's *Phone* or *Devices* and *Watch* lines). Then plain language, short: what ran and how long, what it found (app bugs first), what was fixed and
 how it was checked, what is left, and every choice made on the owner's behalf as a question to
 double-check ("I picked X because Y — fine?"). Picture-worthy changes get a phone screenshot.

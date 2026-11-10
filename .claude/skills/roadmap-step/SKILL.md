@@ -20,11 +20,12 @@ The owner is an experienced software engineer, new to Android, who leaves the co
 
 ```bash
 git status --short                    # must be clean; if not, stop and say what's uncommitted
-git switch main && git pull
+git fetch -q origin
+git switch --detach origin/main       # main stays in the main folder: a worktree starts from origin's
 gh pr list --state open               # a leftover from an earlier session?
 gh run list --branch main --limit 1   # did last night's CI run pass?
 ```
-- **Your own worktree** (CLAUDE.md, *One worktree per session that changes files*): this skill edits, so it never works in the main folder. In a worktree the `git switch main && git pull` above is `git fetch -q origin && git switch --detach origin/main`.
+- **Your own worktree** (CLAUDE.md, *One worktree per session that changes files*): this skill edits, so it never works in the main folder. If this session has none yet, start one first (the desktop app's worktree option, or `EnterWorktree`), copy `local.properties` into it from the main folder, then run the block above there.
 - **An open PR from an unfinished step:** finish and land it instead of starting something new. Check out its branch and continue from step 4.
 - **The last CI run on `main` failed:** first read `gh run view <id>`. If its annotation says GitHub didn't run it ("not started because… spending limit", "payments have failed", "storage quota has been hit"), the code isn't at fault: tell the owner in one line that the free GitHub minutes or storage are used up (unless they already know, until the month's minutes come back) and carry on. Otherwise fixing it is this iteration: read `gh run view <id> --log-failed`, branch `fix/<topic>`, then go to step 4.
 - CI runs once a night (03:00 UTC), not after each merge, so it covers everything merged the day before. Don't start it by hand (`gh workflow run`) unless the owner asks: the free plan's minutes are scarce.
@@ -50,7 +51,7 @@ Then carry on without waiting for approval, unless step 1 found something that n
 
 ## 3–4. Branch and build
 
-`git switch -c phase-<N>/<short-kebab-topic>`, then build it in small commits. Update the architecture docs (ARCHITECTURE.md or its topic file) in the same branch if the design changes.
+`git switch -c phase-<N>/<short-kebab-topic>` (from step 0's `origin/main`), then build it in small commits. Update the architecture docs (ARCHITECTURE.md or its topic file) in the same branch if the design changes.
 
 **Texts:** a new or reworded text goes in English (`res/values/strings.xml`) and Dutch (`values-nl`) only; the other languages are translated at night by the [translate skill](../translate/SKILL.md) (docs/architecture/languages.md, *Day and night*). Every new English text gets a translator note right above it, a short XML comment saying what it means and where it shows: `<!-- Under the meter when the string is in tune. -->`. A text removed from English is removed from every language.
 
@@ -73,7 +74,15 @@ Tick ☐ → ☑, with a short note if useful (a measured accuracy or timing). I
 
 ## 7. Land it
 
-Push, `gh pr create --base main --title "Phase N: <title>"`, `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. The PR body has these sections:
+Push (`git push -u origin <branch>`) and `gh pr create --base main --title "Phase N: <title>"`, then merge as CLAUDE.md says for a worktree:
+```bash
+gh pr merge --squash                  # alone: --delete-branch would try to switch the worktree to main
+git push origin --delete <branch>     # the GitHub branch
+git fetch -q origin
+git switch --detach origin/main       # off the branch, so it can go
+git branch -D <branch>                # the local branch (its work is in main, squashed)
+```
+When the session's work is all merged, finish as CLAUDE.md's *One worktree per session* says (remove the worktree, pull the main folder when it is on `main` and no run has it), without asking the owner. The PR body has these sections:
 - **What:** plain language first, then technical bullets.
 - **Verification:** the commands run and their results, and whether the phone check ran.
 - The attribution footer.
