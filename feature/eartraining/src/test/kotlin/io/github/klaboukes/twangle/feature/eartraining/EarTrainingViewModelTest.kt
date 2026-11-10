@@ -1111,6 +1111,69 @@ class EarTrainingViewModelTest {
         assertNotNull("a new visit asks at once", vm.state.value.chord)
     }
 
+    @Test
+    fun `a tuning changed after leaving Chord type sounds nothing, and the next visit starts afresh on it`() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository(AppSettings(earExercise = Exercise.CHORD_TYPE))
+        val vm = chordType(repository.settings.value, repository)
+        vm.pickChordType(vm.state.value.chord!!.quality)
+        vm.endVisit()
+        runCurrent()
+        val strummed = tone.together.size
+        val stops = tone.stopCount
+
+        // Elsewhere in the app (the tuner, Chords' chip) a reference tone plays and the tuning changes.
+        tone.play(NoteMapper().frequencyOf(Note(45)), Instruments.GUITAR.voice, octavePair = false)
+        repository.setTuning(Tunings.DROP_D)
+        runCurrent()
+        advanceTimeBy(10_000)
+        runCurrent()
+        assertEquals("no chord strummed after leaving", strummed, tone.together.size)
+        assertEquals("the reference tone isn't cut off", stops, tone.stopCount)
+        assertTrue(tone.isPlaying.value)
+        assertNull("no question asked", vm.state.value.chord)
+        assertEquals(Tally(), vm.state.value.tally)
+
+        tone.finish()
+        vm.show()
+        runCurrent()
+        val question = vm.state.value.chord!!
+        assertEquals("a new visit, nothing answered", Tally(), vm.state.value.tally)
+        assertNull(vm.state.value.pickedType)
+        assertEquals("asked on the tuning picked meanwhile", ChordShapeFinder.shapesOf(question.chord, Tunings.DROP_D).first(), question.shape)
+        assertEquals("strummed once, as the visit starts", strummed + 1, tone.together.size)
+        assertEquals(strumOf(question, Tunings.DROP_D), tone.together.last())
+    }
+
+    @Test
+    fun `a tuning changed after leaving Play it back or Intervals sounds nothing either`() = runTest(dispatcher) {
+        for (exercise in listOf(Exercise.PLAY_IT_BACK, Exercise.INTERVALS)) {
+            val repository = FakeSettingsRepository(AppSettings(earExercise = exercise))
+            val vm = viewModel(repository.settings.value, repository)
+            vm.show()
+            runCurrent()
+            tone.finish()
+            vm.endVisit()
+            runCurrent()
+            val played = tone.played.size
+            val together = tone.together.size
+
+            repository.setTuning(Tunings.DROP_D)
+            runCurrent()
+            advanceTimeBy(10_000)
+            runCurrent()
+            assertEquals("$exercise: nothing played after leaving", played, tone.played.size)
+            assertEquals(together, tone.together.size)
+            assertNull(vm.state.value.notes)
+            assertNull(vm.state.value.interval)
+
+            vm.show()
+            runCurrent()
+            assertTrue("$exercise: the next visit asks at once", vm.state.value.notes != null || vm.state.value.interval != null)
+            tone.finish()
+            vm.endVisit()
+        }
+    }
+
     /** The microphone for the tests: a frame per chunk of [recorder] (open only while collected), hearing the speaker's tone while it sounds. */
     private class FakeEars(private val recorder: FakeAudioRecorder, private val tone: FakeTonePlayer) : PitchListener {
 

@@ -112,7 +112,9 @@ enum class ChordsUnavailable {
  * the question's sound and the note the microphone hears.
  *
  * **A visit.** Questions start at once ([show]) and keep coming until the player leaves the tool
- * ([endVisit]), which drops every question and tally: a tool, not a game. Each exercise keeps its own
+ * ([endVisit]), which drops every question and tally: a tool, not a game. A tuning changed between
+ * visits (the ViewModel lives as long as the app) asks and sounds nothing; the next visit starts on
+ * it afresh. Each exercise keeps its own
  * [EarTrainingVisit] for the visit (seeded with [random], so tests repeat a visit), so a missed
  * question comes back a few questions later, unmarked (the owner's pick A). After an answer
  * ([answer]) the next question comes by itself after [NEXT_DELAY_MILLIS] (pick A), or
@@ -212,6 +214,10 @@ class EarTrainingViewModel(
     private var soundJob: Job? = null
     private var nextJob: Job? = null
 
+    // True from the tool being shown ([show]) until it is left ([endVisit]). This ViewModel lives as long
+    // as the app, so a tuning changed elsewhere after leaving (the tuner, Chords' chip) must ask nothing.
+    private var visiting = false
+
     // True while a question's notes are being started, one after another (read on the DSP thread too).
     private val questionStarting = MutableStateFlow(false)
 
@@ -243,8 +249,10 @@ class EarTrainingViewModel(
 
     init {
         // Another tuning (or instrument) asks its own notes; a question the new one can't ask gives way to a new one.
+        // Only during a visit: after it, the next visit starts afresh on the tuning picked by then.
         viewModelScope.launch {
             settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
+                if (!visiting) return@collect
                 changeNotes()
                 changeIntervals()
                 changeChordTypes()
@@ -254,6 +262,7 @@ class EarTrainingViewModel(
 
     /** The tool is shown: the exercise picked starts asking at once, unless its visit is already going (a turned phone). */
     fun show() {
+        visiting = true
         if (visitOf(shown.value.exercise) == null) start(shown.value.exercise)
     }
 
@@ -441,8 +450,9 @@ class EarTrainingViewModel(
         if (tonePlayer.isPlaying.value) tonePlayer.stop()
     }
 
-    /** The player left the tool: this visit's questions and tallies are dropped, never saved. */
+    /** The player left the tool: this visit's questions and tallies are dropped, never saved, and a tuning changed from now on asks nothing. */
     fun endVisit() {
+        visiting = false
         nextJob?.cancel()
         stopSound()
         playBack = null
