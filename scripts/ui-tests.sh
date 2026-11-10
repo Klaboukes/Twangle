@@ -340,8 +340,12 @@ fi
 restore_screen_off() {
     [[ "$SCREEN_OFF" =~ ^[0-9]+$ ]] && adb shell settings put system screen_off_timeout "$SCREEN_OFF" > /dev/null 2>&1
 }
-# Run at the end by the lock's EXIT trap, before the lock goes.
-put_back() { restore_rotation; restore_screen_off; stop_test_processes; }
+# PUT_BACK_TEXT_AND_LANGUAGE=1 (scripts/store-screenshots.sh, whose test changes both): the device's text
+# size and Twangle's own language, read here under the lock and put back at the end (save_text_and_language).
+[ "${PUT_BACK_TEXT_AND_LANGUAGE:-}" = 1 ] && save_text_and_language
+# Run at the end by the lock's EXIT trap, before the lock goes. The text size and language after the tests
+# are stopped, so none still running changes them again.
+put_back() { restore_rotation; restore_screen_off; stop_test_processes; restore_text_and_language; }
 
 # MIUI (the Xiaomi test phone) refuses to let a test open the app's screen ("MIUILOG- Permission
 # Denied Activity", "Abort background activity starts") unless the package has Xiaomi's own

@@ -202,10 +202,11 @@ stop_test_processes() {
 
 # What a run killed outright leaves on the device: the owner's rotation settings it saved in the lock
 # before turning auto-rotate off (left off, it changes the phone for good; hold_upright), the watch's
-# screen time-out (scripts/ui-tests.sh), its MIUI loop and its tests; and, from a script that swaps the
-# app for its release-type build (mark_app_replaced), a line saying the debug build isn't back.
+# screen time-out (scripts/ui-tests.sh), the text size and Twangle's language (save_text_and_language),
+# its MIUI loop and its tests; and, from a script that swaps the app for its release-type build
+# (mark_app_replaced), a line saying the debug build isn't back.
 clear_leftovers() {
-    local auto user off
+    local auto user off text scale locales
     read -r auto user <<< "$(adb shell "cat $LOCK/rotation 2>/dev/null; [ -e $LOCK/guard.pid ] && kill \$(cat $LOCK/guard.pid)" 2>/dev/null | tr -d '\r' | head -1)"
     [[ "$user" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$user" > /dev/null 2>&1
     [[ "$auto" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$auto" > /dev/null 2>&1
@@ -213,9 +214,15 @@ clear_leftovers() {
     [[ "$off" =~ ^[0-9]+$ ]] && adb shell settings put system screen_off_timeout "$off" > /dev/null 2>&1
     adb shell "[ -e $LOCK/app_replaced ]" > /dev/null 2>&1 &&
         echo "That run had swapped Twangle for its release-type build: put the debug build back after this with scripts/install-debug.sh." >&2
+    text="$(adb shell "cat $LOCK/text_language 2>/dev/null" | tr -d '\r' | head -1)"
     # Gone, so a later takeover never puts back or kills what the dead run left a second time.
-    adb shell "rm -f $LOCK/rotation $LOCK/screen_off $LOCK/guard.pid $LOCK/app_replaced" > /dev/null 2>&1
+    adb shell "rm -f $LOCK/rotation $LOCK/screen_off $LOCK/guard.pid $LOCK/app_replaced $LOCK/text_language" > /dev/null 2>&1
     stop_test_processes
+    # Once its tests are stopped, so none of them changes these again.
+    if [ -n "$text" ]; then
+        read -r scale locales <<< "$text"
+        restore_text_and_language "$scale" "$locales"
+    fi
 }
 
 # Takes the device's lock (ANDROID_SERIAL's, so after use_device), or stops with exit 5 when another
@@ -270,6 +277,40 @@ hold_upright() {
 restore_rotation() {
     [[ "${ROTATION_USER:-}" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$ROTATION_USER" > /dev/null 2>&1
     [[ "${ROTATION_AUTO:-}" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$ROTATION_AUTO" > /dev/null 2>&1
+    return 0
+}
+
+# The store screenshots' test changes the device's text size and Twangle's own language and puts them back,
+# but one that crashes midway can't, and the next run would take what it left for the device's own (the
+# tablet, 2026-10-27: Arabic and 1.0× left behind). So its run saves both first, here for
+# restore_text_and_language and in the lock for a run that takes over from it (clear_leftovers). Only under
+# the lock: read before it, they could be a live run's (its test's 100 % taken for the tablet's 130 %), and
+# put back after it, they would change a device another run has (Phase 91).
+TWANGLE_PACKAGE=io.github.klaboukes.twangle
+# The app's languages as `cmd locale` prints them ("Locales for <package> for user 0 are [nl-NL,en]"):
+# "nl-NL,en", empty for the device's own; anything else, nothing.
+app_locales() {
+    local said
+    said="$(adb shell cmd locale get-app-locales $TWANGLE_PACKAGE 2>/dev/null | tr -d '\r')"
+    [[ "$said" =~ \ are\ \[([A-Za-z0-9,\ -]*)\]$ ]] && tr -d ' ' <<< "${BASH_REMATCH[1]}"
+}
+# Sets the app's languages ("" for the device's own) when [locales] reads as a list of them.
+set_app_locales() {
+    [[ "$1" =~ ^[A-Za-z0-9,-]*$ ]] && adb shell cmd locale set-app-locales $TWANGLE_PACKAGE --locales "'$1'" > /dev/null 2>&1
+}
+# Each saved as read, "-" when it couldn't be (Twangle not installed yet, or adb slipped): then left alone.
+save_text_and_language() {
+    SAVED_FONT_SCALE="$(adb shell settings get system font_scale 2>/dev/null | tr -d '\r')"
+    [[ "$SAVED_FONT_SCALE" =~ ^[0-9.]+$ ]] || SAVED_FONT_SCALE=-
+    SAVED_APP_LOCALES="$(app_locales)" || SAVED_APP_LOCALES=-
+    adb shell "$LOCK_MINE && echo '$SAVED_FONT_SCALE $SAVED_APP_LOCALES' > $LOCK/text_language" > /dev/null 2>&1
+}
+# [font scale] [app locales] put back, each unless "-" (nothing given: what save_text_and_language read;
+# nothing put back when it didn't run).
+restore_text_and_language() {
+    local scale="${1-${SAVED_FONT_SCALE:--}}" locales="${2-${SAVED_APP_LOCALES--}}"
+    [[ "$scale" =~ ^[0-9.]+$ ]] && adb shell settings put system font_scale "$scale" > /dev/null 2>&1
+    [ "$locales" != - ] && set_app_locales "$locales"
     return 0
 }
 

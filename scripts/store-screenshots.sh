@@ -28,7 +28,7 @@
 # status bar) to build/store-screenshots/<locale>/ (the tablet's to build/store-screenshots-tablet/<locale>/). Captions: fastlane/metadata/android/<locale>/
 # screenshot_captions.txt, one a line. Needs the phone connected, like scripts/ui-tests.sh, whose
 # exit codes it passes on (3 no phone, 4 locked, 5 busy). Leaves Twangle in the last screenshot's
-# theme; puts the app's language and the phone's text size back.
+# theme; puts the app's language and the phone's text size back (each test run, under the device's lock).
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -116,15 +116,11 @@ PULLED="app/build/outputs/connected_android_test_additional_output-$kind"
 
 # The test changes the device's text size and Twangle's own language and puts them back; a test that
 # crashes midway can't, and the next one would take what it left for the device's own (seen on the
-# tablet, 2026-10-27: Arabic and 1.0× left behind). So what is found here is put back at the end too.
-PACKAGE=io.github.klaboukes.twangle
-FONT_SCALE="$(adb shell settings get system font_scale 2>/dev/null | tr -d '\r')"
-APP_LOCALES="$(adb shell cmd locale get-app-locales $PACKAGE 2>/dev/null | tr -d '\r' | sed -n 's/.* are \[\(.*\)\]$/\1/p' | tr -d ' ')"
-put_back() {
-    [[ "$FONT_SCALE" =~ ^[0-9.]+$ ]] && adb shell settings put system font_scale "$FONT_SCALE" > /dev/null 2>&1
-    adb shell cmd locale set-app-locales $PACKAGE --locales "'$APP_LOCALES'" > /dev/null 2>&1
-}
-trap put_back EXIT
+# tablet, 2026-10-27: Arabic and 1.0× left behind). So each test run's scripts/ui-tests.sh reads both
+# once it holds the device's lock and puts them back before it lets go (PUT_BACK_TEXT_AND_LANGUAGE,
+# save_text_and_language in scripts/devices.sh). Not here: read before the lock they could be a live
+# run's, and put back after it they would change a device another run has, as after an exit 5 (Phase 91).
+export PUT_BACK_TEXT_AND_LANGUAGE=1
 
 # A run of only some languages keeps this PC's pictures of the others: first take the latest set shared
 # on GitHub when it is newer (or the languages this PC lacks), so what it shares afterwards is no older than
