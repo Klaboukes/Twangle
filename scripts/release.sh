@@ -242,7 +242,13 @@ part_checked() {
     date="${date//_/ }"
     case "$code" in
         0) ;;
-        1) echo "The full check of $what failed at ${commit:0:8} ($date)${extra:+: $(sed 's/^failed //; s/,/, /g' <<<"$extra") failed}."; return 1 ;;
+        1)
+            # "failed sweep,languages modules :feature:tuner,:app" says "sweep, languages failed (the
+            # sweep of :feature:tuner, :app)"
+            local failures="${extra#failed }" modules=""
+            [[ "$failures" == *" modules "* ]] && modules="${failures#* modules }" failures="${failures%% modules *}"
+            echo "The full check of $what failed at ${commit:0:8} ($date)${extra:+: ${failures//,/, } failed${modules:+ (the sweep of ${modules//,/, })}}."
+            return 1 ;;
         2) echo "The full check didn't test $what at ${commit:0:8} ($date): not connected, dropped off or busy."; return 1 ;;
         *) echo "The full check of $what didn't finish at ${commit:0:8} ($date): a device was busy or none was left for a job."; return 1 ;;
     esac

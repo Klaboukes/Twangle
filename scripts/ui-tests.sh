@@ -44,7 +44,8 @@
 #
 # A module that passes whole (no -f, -c or -a) from a clean working tree is noted as passed at that
 # commit in build/ui-tests-passed/ (this PC only; the full check notes every
-# module it passes).
+# module it passes), with whether the run was --thorough. A module whose tests fail from a clean
+# tree (in any run but a --no-build one) loses its note: an older pass no longer vouches for it.
 # --since-pass reads those notes, so a release runs only what changed since the last good run.
 #
 # One Gradle call builds every test APK (and the app, for :app). Each module's tests are then
@@ -89,9 +90,12 @@ affected_modules() {
     }; } | tr -d '\r'
 }
 
-# A module's last whole pass on this PC: build/ui-tests-passed/feature-tuner holds "<commit> <date>".
-# Kept in the main folder, so a pass in a session's own worktree counts for every checkout of this PC.
-PASSED="$(cd "$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed"
+# A module's last whole pass on this PC: build/ui-tests-passed/feature-tuner holds "<commit> <date>
+# <time> <seconds since 1970> <thorough|quick>" (the last two since Phase 91: scripts/full-check.sh
+# --fixed asks for a thorough pass newer than the failed run). Kept in the main folder, so a pass in a
+# session's own worktree counts for every checkout of this PC. UI_TESTS_PASSED names another folder
+# (a try of the notes' logic that mustn't touch the real ones).
+PASSED="${UI_TESTS_PASSED:-$(cd "$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed}"
 pass_file() { local m="${1#:}"; echo "$PASSED/${m//:/-}"; }
 
 # The UI test modules no pass vouches for: never passed whole on this PC, passed at a commit this
@@ -142,7 +146,7 @@ if [ $since_pass = 1 ]; then
     mapfile -t modules < <(unproven_modules)
     for module in "${UI_MODULES[@]}"; do
         [[ " ${modules[*]} " == *" $module "* ]] ||
-            echo "Passed, nothing changed since: $module ($(cut -d' ' -f2- "$(pass_file "$module")"), at $(cut -c1-8 "$(pass_file "$module")"))"
+            echo "Passed, nothing changed since: $module ($(cut -d' ' -f2-3 "$(pass_file "$module")"), at $(cut -c1-8 "$(pass_file "$module")"))"
     done
     if [ ${#modules[@]} -eq 0 ]; then
         echo "Every module passed after its last change: nothing to run."
@@ -276,12 +280,21 @@ else
     [ -z "$(git status --porcelain)" ] && clean=1 || clean=0
 fi
 
-# Notes that [module] passed whole at this commit (pass_file above): never after --no-build, whose
-# APKs may be older than the tree; --built vouches they are this tree's.
+# Whether this run's tests are this commit's: a clean tree, and built by this run (never --no-build,
+# whose APKs may be older than the tree; --built vouches they are this tree's).
+tests_this_commit() { [ $clean = 1 ] && { [ $no_build = 0 ] || [ $built = 1 ]; }; }
+# Notes that [module] passed whole at this commit (pass_file above), and whether --thorough.
 note_pass() {
-    [ $clean = 1 ] && { [ $no_build = 0 ] || [ $built = 1 ]; } && [ -z "$filter$class" ] && [ ${#extra[@]} -eq 0 ] || return 0
+    tests_this_commit && [ -z "$filter$class" ] && [ ${#extra[@]} -eq 0 ] || return 0
     mkdir -p "$PASSED"
-    echo "$tested $(date '+%Y-%m-%d %H:%M')" > "$(pass_file "$1")"
+    echo "$tested $(date '+%Y-%m-%d %H:%M') $(date +%s) $([ $thorough = 1 ] && echo thorough || echo quick)" > "$(pass_file "$1")"
+}
+# [module]'s tests failed at this commit: its older pass goes (Phase 91). Kept, it let --since-pass
+# say "nothing to run" right after a failed full check, and the full check's --fixed vouch for a module
+# nothing had re-checked. Any failure counts, a -f, -c or -a run's too: the module doesn't pass whole.
+forget_pass() {
+    tests_this_commit || return 0
+    rm -f "$(pass_file "$1")"
 }
 
 # Build everything first, in one Gradle call.
@@ -469,9 +482,11 @@ for module in "${modules[@]}"; do
     off="$(ms_since_screen_off)"
     if [ -n "$off" ] && [ "$off" -lt $(((SECONDS - start) * 1000)) ]; then
         echo "  The phone's screen went off during this run, so its failures say nothing: leave the screen on and run again."
-        failed=1
+        failed=2
     fi
+    # 1: its tests failed, so its older pass goes; 2: the screen went off, which says nothing either way.
     if [ $failed = 0 ]; then note_pass "$module"; else status=1; fi
+    [ $failed = 1 ] && forget_pass "$module"
     if [ -n "$(adb shell ls "$outdir" 2>/dev/null | tr -d '\r')" ]; then
         pulled="$dir/build/outputs/connected_android_test_additional_output$TAG"
         rm -rf "$pulled" && mkdir -p "$pulled"

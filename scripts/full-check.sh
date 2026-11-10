@@ -30,16 +30,21 @@
 #
 # The record a release reads (scripts/release.sh full-check; bundle refuses without it):
 # build/full-check/result.txt, a line a part, "phones <code> <commit> <clean> <seconds since 1970>
-# <date> [fixed <PR> <the run's commit> | failed <what>]" and "watch <code> ...", the code 0 passed,
+# <date> [fixed <PR> <the run's commit> | failed <what> [modules <list>]]" and "watch <code> ...", the code 0 passed,
 # 1 something failed (all of it ran, or nothing did: the one build failed, cut off by BUILD_TIMEOUT
 # or not, or no phone was there), 5 not all of it ran (a device busy, or none left for a job), and for the watch 2 not
 # tested. A phones line with 1 names what failed, "failed build" or "failed sweep,languages" (build,
 # no-device, release: its smoke test, sweep, contrast, languages; Phase 91: a failed build ran no job,
-# so the line said 0 until then). A part's line is written only by a run that did all of it (the
+# so the line said 0 until then), and "modules :feature:tuner,:app" the modules whose sweep failed. A
+# part's line is written only by a run that did all of it (the
 # phones: the release build, the sweep, high contrast and the languages, no module list narrowed; the
 # watch: its tests); a run of one part leaves the other's line as it was. --fixed turns a failed phones
-# line into a pass at the commit checked out now, once every module passed after its last change
-# (scripts/ui-tests.sh --since-pass has nothing left to run), and adds the PR to the summary's first line.
+# line into a pass at the commit checked out now, and adds the PR to the summary's first line, only for
+# a real re-check (Phase 91): what failed was modules' sweeps alone (a failed build, release build,
+# high contrast or language check, or no phone at all, needs the full check again); each of those
+# modules passed again whole and --thorough after the run (its pass note newer than the run; a module
+# that fails loses its older note, scripts/ui-tests.sh), as did any module re-checked since; and every
+# module passed after its last change (scripts/ui-tests.sh --since-pass has nothing left to run).
 #
 # The commit and clean state the run started from go to every device's scripts/ui-tests.sh --built
 # (UI_TESTS_COMMIT, UI_TESTS_CLEAN), so a doc edited while it runs (which the full-check skill allows)
@@ -110,7 +115,7 @@ while [ $# -gt 0 ]; do
         --full) full=1 ;;
         --dry-run) dry_run=1 ;;
         --self-check) self_check=1 ;;
-        *) sed -n '2,73p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+        *) sed -n '2,78p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
     esac
 done
 [ $picked = 1 ] || { watch=1; release_build=1; sweep=1; contrast=1; languages=1; }
@@ -137,9 +142,14 @@ record_line() {
     fi
 }
 
-# What of the phones' part failed, each named once (The record's list, above).
-phones_failures=()
+# What of the phones' part failed, each named once (The record's list, above), and the modules whose
+# sweep failed, which --fixed asks to have passed again.
+phones_failures=() sweep_failures=()
 note_failure() { [[ " ${phones_failures[*]} " == *" $1 "* ]] || phones_failures+=("$1"); }
+note_sweep_failure() {
+    note_failure sweep
+    [[ " ${sweep_failures[*]} " == *" $1 "* ]] || sweep_failures+=("$1")
+}
 # The one build's exit code. Anything but 0 is a failed build, also when BUILD_TIMEOUT cut it off
 # (scripts/ui-tests.sh exits 1 then, timeout itself 124). No job runs after it, so nothing else counts
 # it: until Phase 91 the record said the phones passed, though the run exited 1.
@@ -158,7 +168,9 @@ record_phones() {
     local code
     [ $release_build = 1 ] && [ $sweep = 1 ] && [ $contrast = 1 ] && [ $languages = 1 ] && [ $narrowed = 0 ] || return 0
     code="$(phones_code)"
-    if [ "$code" = 1 ]; then
+    if [ "$code" = 1 ] && [ ${#sweep_failures[@]} -gt 0 ]; then
+        record_line phones 1 failed "$(IFS=,; echo "${phones_failures[*]}")" modules "$(IFS=,; echo "${sweep_failures[*]}")"
+    elif [ "$code" = 1 ]; then
         record_line phones 1 failed "$(IFS=,; echo "${phones_failures[*]}")"
     else
         record_line phones "$code"
@@ -186,6 +198,61 @@ run_outcome() {
     return 0
 }
 
+# The modules' pass notes (scripts/ui-tests.sh's pass_file: "<commit> <date> <time> <seconds since
+# 1970> <thorough|quick>"), in the main folder; UI_TESTS_PASSED names another, as there.
+PASSED="${UI_TESTS_PASSED:-$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed}"
+pass_note() { local m="${1#:}"; echo "$PASSED/${m//:/-}"; }
+
+# --fixed's checks of the phones' record [line] (Phase 91), each saying in plain words why a fix can't
+# vouch for the run, and nothing when it can.
+# What failed: only a module's sweep can be fixed and re-checked by hand. A failed build ran no test, a
+# failed release build or no phone at all leaves a whole stage untested, and a high-contrast or language
+# check has no pass note that could show it was run again: each needs the full check again.
+unfixable_failures() {
+    local word what part parts=()
+    read -r _ _ _ _ _ _ word what _ <<<"$1"
+    [ "$word" = failed ] && [ -n "$what" ] ||
+        { echo "The record doesn't say what failed (a run from before Phase 91): run the full check again."; return; }
+    for part in ${what//,/ }; do
+        case "$part" in
+            sweep) ;;
+            build) parts+=("the build") ;;
+            no-device) parts+=("the phones' stages (no phone or tablet connected)") ;;
+            release) parts+=("the release build's smoke test") ;;
+            contrast) parts+=("the high-contrast pass") ;;
+            languages) parts+=("the every-language checks") ;;
+            *) parts+=("$part") ;;
+        esac
+    done
+    [ ${#parts[@]} = 0 ] ||
+        echo "In the last full check $(printf '%s, ' "${parts[@]}" | sed 's/, $//') failed, which a fix can't re-check by hand: run the full check again."
+}
+# Whether the run's failed modules were re-checked: each one's pass note newer than the run and from a
+# thorough run, and every module re-checked since the run thorough too (a quick run leaves out the
+# @Thorough tests the full check runs). Says which modules aren't.
+unrechecked_modules() {
+    local run_epoch word modules_word modules module file epoch kind left=()
+    read -r _ _ _ _ run_epoch _ word _ modules_word modules _ <<<"$1"
+    [ "$modules_word" = modules ] && [ -n "$modules" ] ||
+        { echo "The record doesn't name the modules whose sweep failed: run the full check again."; return; }
+    for module in ${modules//,/ }; do
+        epoch="" kind="" file="$(pass_note "$module")"
+        [ -f "$file" ] && read -r _ _ _ epoch kind _ < "$file"
+        [[ "$epoch" =~ ^[0-9]+$ ]] && [ "$epoch" -gt "$run_epoch" ] && [ "$kind" = thorough ] || left+=("$module")
+    done
+    # (the watch's note is the watch's part, not the phones')
+    for file in "$PASSED"/*; do
+        [ -f "$file" ] && [ "$(basename "$file")" != wear ] || continue
+        module=":$(basename "$file" | sed 's/-/:/g')"
+        epoch="" kind=""
+        read -r _ _ _ epoch kind _ < "$file"
+        [[ "$epoch" =~ ^[0-9]+$ ]] && [ "$epoch" -gt "$run_epoch" ] && [ "$kind" != thorough ] &&
+            [[ " ${left[*]} " != *" $module "* ]] && left+=("$module")
+    done
+    [ ${#left[@]} = 0 ] ||
+        echo "Not passed again --thorough since the run: ${left[*]}. Run scripts/ui-tests.sh ${left[*]} --thorough on main first."
+}
+
 # --self-check: the record's logic above on made-up runs, in a record of its own; says each case and
 # exits 1 when one went wrong. Each case: its name, the phones line before it (its code; - none), the
 # line expected after it ("<code> <commit>[ <the rest>]"; - none), the run's exit code, then its steps.
@@ -196,7 +263,7 @@ self_check() {
     check() {
         name="$1" before="$2" expected="$3" want_exit="$4"
         shift 4
-        phones_failures=() build_failed=0 unrun=0 busy=0 failed=0 watch_code="" narrowed=0
+        phones_failures=() sweep_failures=() build_failed=0 unrun=0 busy=0 failed=0 watch_code="" narrowed=0
         release_build=1 sweep=1 contrast=1 languages=1
         : > "$RESULT"
         [ "$before" = - ] || echo "phones $before earlier 1 1 2026-11-01_12:00" > "$RESULT"
@@ -218,14 +285,69 @@ self_check() {
     check "the build cut off by BUILD_TIMEOUT (timeout's own code)" - "1 this failed build" 1 "build_done 124"
     check "the build failed after a pass" 0 "1 this failed build" 1 "build_done 1"
     check "the build failed, a narrowed run" 0 "0 earlier" 1 "narrowed=1" "build_done 1"
-    check "a module's sweep and a language check failed" - "1 this failed sweep,languages" 1 \
-        "build_done 0" "note_failure sweep" "note_failure languages" "note_failure sweep"
+    check "two modules' sweeps and a language check failed" - "1 this failed sweep,languages modules :feature:tuner,:app" 1 \
+        "build_done 0" "note_sweep_failure :feature:tuner" "note_failure languages" "note_sweep_failure :app" "note_sweep_failure :feature:tuner"
     check "no phone connected" - "1 this failed no-device" 1 "build_done 0" "note_failure no-device"
     check "a job left while a device was busy, after a pass" 0 "0 earlier" 5 "build_done 0" "unrun=1 busy=1"
     check "a job left while a device was busy, after a failure" 1 "5 this" 5 "build_done 0" "unrun=1 busy=1"
     check "a job no device was left for" - "5 this" 1 "build_done 0" "unrun=1"
     check "the store screenshots failed" 0 "0 this" 1 "build_done 0" "failed=1"
     rm -f "$RESULT"
+
+    # --fixed's checks (Phase 91) on a made-up failed run that ended at 1000000 s, with made-up pass
+    # notes in a folder of their own. Each case: its name, the record's line after its date, the notes
+    # ("<file>:<seconds after the run>:<thorough|quick>", "<file>:old" one from before Phase 91), and
+    # "ok" or "refused: <words its reason says>".
+    PASSED="$(mktemp -d)"
+    check_fixed() {
+        local rest="$2" notes="$3" want="$4" note file age kind line said
+        name="$1"
+        rm -f "$PASSED"/*
+        for note in $notes; do
+            IFS=: read -r file age kind <<<"$note"
+            if [ "$age" = old ]; then echo "earlier 2026-11-01 12:00" > "$PASSED/$file"
+            else echo "earlier 2026-11-01 12:00 $((1000000 + age)) $kind" > "$PASSED/$file"; fi
+        done
+        line="phones 1 earlier 1 1000000 2026-11-01_12:00 $rest"
+        said="$(unfixable_failures "$line")"
+        [ -n "$said" ] || said="$(unrechecked_modules "$line")"
+        if { [ "$want" = ok ] && [ -z "$said" ]; } || { [ "$want" != ok ] && [ -n "$said" ] && [[ "$said" == *"${want#refused: }"* ]]; }; then
+            echo "ok    --fixed, $name: ${said:-fixed}"
+        else
+            echo "WRONG --fixed, $name: ${said:-fixed}; expected $want"
+            bad=1
+        fi
+    }
+    local all="core-testing:-100:thorough feature-settings:-90:thorough app:-80:thorough"
+    check_fixed "a sweep failed, the module passed again --thorough after the run" "failed sweep modules :feature:tuner" \
+        "$all feature-tuner:+60:thorough" ok
+    check_fixed "two sweeps failed, both passed again --thorough" "failed sweep modules :feature:tuner,:app" \
+        "core-testing:-100:thorough app:+30:thorough feature-tuner:+60:thorough" ok
+    check_fixed "the watch passed again quick (not the phones' part)" "failed sweep modules :feature:tuner" \
+        "$all feature-tuner:+60:thorough wear:+70:quick" ok
+    check_fixed "the failed module passed again, but quick" "failed sweep modules :feature:tuner" \
+        "$all feature-tuner:+60:quick" "refused: :feature:tuner --thorough"
+    check_fixed "the failed module kept a pass from before the run" "failed sweep modules :feature:tuner" \
+        "$all feature-tuner:-3600:thorough" "refused: :feature:tuner"
+    check_fixed "the failed module's pass from before Phase 91" "failed sweep modules :feature:tuner" \
+        "$all feature-tuner:old" "refused: :feature:tuner"
+    check_fixed "the failed module has no pass (it went when the module failed)" "failed sweep modules :feature:tuner" \
+        "$all" "refused: :feature:tuner"
+    check_fixed "one of two failed modules not passed again" "failed sweep modules :feature:tuner,:app" \
+        "core-testing:-100:thorough app:-80:thorough feature-tuner:+60:thorough" "refused: :app"
+    check_fixed "a module the fix reached passed again quick" "failed sweep modules :feature:tuner" \
+        "core-testing:-100:thorough feature-settings:+90:quick feature-tuner:+60:thorough" "refused: :feature:settings"
+    check_fixed "the build failed" "failed build" "$all" "refused: the build failed"
+    check_fixed "the high contrast failed" "failed contrast" "$all" "refused: the high-contrast pass failed"
+    check_fixed "a language check failed" "failed languages" "$all" "refused: the every-language checks failed"
+    check_fixed "no phone connected" "failed no-device" "$all" "refused: no phone or tablet connected"
+    check_fixed "the release build failed" "failed release" "$all" "refused: the release build's smoke test failed"
+    check_fixed "a sweep and the high contrast failed" "failed sweep,contrast modules :feature:tuner" \
+        "$all feature-tuner:+60:thorough" "refused: the high-contrast pass failed"
+    check_fixed "a record from before Phase 91 (what failed not named)" "" "$all" "refused: doesn't say what failed"
+    check_fixed "a failed sweep with no modules named (the first Phase 91 records)" "failed sweep" \
+        "$all feature-tuner:+60:thorough" "refused: doesn't name the modules"
+    rm -rf "$PASSED"
     [ $bad = 0 ] && echo "The record's logic: every case as expected." || echo "The record's logic: a case went wrong (WRONG above)."
     return $bad
 }
@@ -241,12 +363,16 @@ if [ -n "$fixed_by" ]; then
     [ -z "$(git status --porcelain)" ] || { echo "Uncommitted changes here: --fixed notes a commit, so commit or drop them first." >&2; exit 1; }
     git merge-base --is-ancestor "$commit" HEAD 2>/dev/null ||
         { echo "This checkout ($(git rev-parse HEAD | cut -c1-8)) doesn't follow the run's commit ${commit:0:8}: run --fixed on main after the fix landed." >&2; exit 1; }
+    refusal="$(unfixable_failures "$(record_of phones)")"
+    [ -z "$refusal" ] || { echo "$refusal" >&2; exit 1; }
     left="$(scripts/ui-tests.sh --since-pass --dry-run 2>&1 | tr -d '\r')"
     if ! grep -q "nothing to run" <<<"$left"; then
-        echo "Not every module passed after its last change, so the fix isn't re-checked yet: run scripts/ui-tests.sh --since-pass first." >&2
+        echo "Not every module passed after its last change, so the fix isn't re-checked yet: run scripts/ui-tests.sh --since-pass --thorough first." >&2
         grep -E "^(To run|Would run):" <<<"$left" >&2
         exit 1
     fi
+    refusal="$(unrechecked_modules "$(record_of phones)")"
+    [ -z "$refusal" ] || { echo "$refusal" >&2; exit 1; }
     now="$(git rev-parse HEAD)"
     fixed_by="${fixed_by//[ |&\\\/]/_}"
     write_record phones 0 "$now" 1 "$(date +%s)" "$(date '+%Y-%m-%d_%H:%M')" fixed "$fixed_by" "$commit"
@@ -597,7 +723,9 @@ stage_log() {
         [ "$s" = "$stage" ] || continue
         if [ -f "$QUEUE/$n.txt" ]; then
             cat "$QUEUE/$n.txt" >> "$file"
-            [ "$(cat "$QUEUE/$n.code" 2>/dev/null)" = 0 ] || note_failure "$stage"
+            if [ "$(cat "$QUEUE/$n.code" 2>/dev/null)" != 0 ]; then
+                if [ "$stage" = sweep ]; then note_sweep_failure "$m"; else note_failure "$stage"; fi
+            fi
         elif [ $n -gt "$taken" ]; then
             echo "-- $s $m: not run, no device was left for it$([ $busy = 1 ] && echo " (a device was busy with another run)")" >> "$file"
             unrun=1

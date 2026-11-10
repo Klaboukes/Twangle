@@ -191,13 +191,18 @@ For each failure decide first: **app bug or outdated test?**
 - Push, `gh pr create --base main`, `gh pr merge --squash --delete-branch`, `git switch main &&
   git pull` (the owner's policy: merge right away; `--delete-branch` is fine here, as the run works
   in the main folder, where `main` is checked out, not in a worktree).
-- On `main`, when there is time left: `scripts/ui-tests.sh --since-pass`. Every module the sweep
-  passed whole is already noted as passed; this runs the ones that failed (or changed with the
-  fixes) once more and notes them too, so the next release (the [release skill](../release/SKILL.md))
-  has little or nothing left to run.
+- On `main`, when there is time left: `scripts/ui-tests.sh --since-pass --thorough`. Every module
+  the sweep passed whole is already noted as passed; a module that failed lost its older pass note, so
+  this runs the ones that failed (or changed with the fixes) once more and notes them too, so the next
+  release (the [release skill](../release/SKILL.md)) has little or nothing left to run.
 - **When the run's failures were fixed** (its phones' line in `build/full-check/result.txt` says 1)
-  and every fix re-checked as in step 3, then `--since-pass` above has nothing left: on `main`, run
-  `scripts/full-check.sh --fixed '#<fix PR>'`. It refuses while a module is left to re-check, notes the run
+  and every fix re-checked as in step 3, then `--since-pass --thorough` above has nothing left: on
+  `main`, run `scripts/full-check.sh --fixed '#<fix PR>'`. It vouches only for a real re-check (Phase
+  91): it refuses while a module is left to re-check, while a module whose sweep failed hasn't passed
+  again whole and `--thorough` after the run (a quick run leaves out the `@Thorough` tests), and
+  always when what failed was the build, the release build's smoke test, the high contrast, a
+  language check or no phone at all: those have nothing a fix can be re-checked against by hand, so
+  the full check runs again. Otherwise it notes the run
   with its fixes as a pass at `main`'s commit for the release (`scripts/release.sh bundle` refuses
   otherwise) and adds the PR to the summary's first line; don't edit that line by hand. A watch
   whose tests failed is fixed and re-checked with `scripts/full-check.sh --watch` (a few minutes),
