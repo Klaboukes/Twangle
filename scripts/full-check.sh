@@ -47,8 +47,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
-COOL_BELOW="${COOL_BELOW:-37}"
+# adb, the devices and cooling (wait_cool, COOL_BELOW): shared with the other scripts that use a device.
+. "$ROOT/scripts/devices.sh"
 OUT="$ROOT/build/full-check"
 # The modules with @EveryLanguage tests (each checks light and dark itself; 1.1 ran them once per
 # style). The list can be narrowed for a short try (LANGUAGE_MODULES=":app").
@@ -105,9 +105,6 @@ languages_still_good() {
     grep -qx -- "$1" <<<"$reached" && return 1
     echo "$when, at ${commit:0:8}"
 }
-
-adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
-. "$ROOT/scripts/devices.sh"
 
 # Every module with UI tests (scripts/ui-tests.sh's own list), the longest first, so the jobs share out
 # evenly between the devices (2026-11-08 on the Xiaomi, the sweep: the tuner 5 min, Practice 3½, the
@@ -217,21 +214,6 @@ keep_awake() {
 }
 keep_awake
 
-# The battery's temperature in whole degrees on this lane's device (ANDROID_SERIAL); waits (screen on,
-# so the device stays unlocked) while it is at COOL_BELOW or warmer, at most 30 minutes.
-wait_cool() {
-    local tenths t waited=0
-    while :; do
-        tenths="$(adb shell dumpsys battery 2>/dev/null | tr -d '\r' | sed -n 's/^ *temperature: \([0-9]*\)/\1/p' | head -1)"
-        t=$(( ${tenths:-0} / 10 ))
-        if [ "$t" -lt "$COOL_BELOW" ] || [ $waited -ge 1800 ]; then break; fi
-        sleep 30
-        waited=$((waited + 30))
-    done
-    [ $waited -gt 0 ] && echo "  (cooled ${waited}s to ${t} °C)"
-    return 0
-}
-
 # Each line of a device's output, starting with its tag ([tablet] ...) when there are several.
 prefix() { if [ -n "$1" ]; then sed -u "s/^/[$1] /"; else cat; fi; }
 
@@ -251,7 +233,8 @@ claim_job() {
 requeue() { queue_lock; echo "$1" >> "$QUEUE/list"; queue_unlock; }
 unclaimed() { echo $(( $(wc -l < "$QUEUE/list") - $(cat "$QUEUE/next") )); }
 
-# One job on this lane's device: [stage] [module] [job number].
+# One job on this lane's device: [stage] [module] [job number]. Before a high-contrast or language job it
+# lets the device cool (wait_cool, scripts/devices.sh, on ANDROID_SERIAL); a sweep cools class by class.
 run_job() {
     local code
     case "$1" in

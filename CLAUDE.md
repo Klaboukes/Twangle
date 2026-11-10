@@ -37,7 +37,7 @@ minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JV
 Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash.
 ```bash
 ./gradlew assembleDebug                 # build debug APK
-./gradlew :app:installDebug             # install the phone app on the connected phone (plain installDebug also puts the watch app on it)
+scripts/install-debug.sh [--start]      # build and install the phone app on a test phone under the phone's lock (--start: and start it); not ./gradlew :app:installDebug, whose install stops another session's UI test run
 ./gradlew test                          # all JVM unit tests
 ./gradlew :core:dsp:test                # DSP tests only (fast, no Android)
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
@@ -144,6 +144,6 @@ Owner, 2026-10-28: two sessions in one folder switch branches under each other (
   2. In the main folder, if it is on `main` and no run is going: `git pull`. If it is on another branch, a run or another session has it: leave it, since GitHub has the work and the next session there pulls it.
   3. Delete the merged local branch (`git branch -D <branch>`).
   Mention git to the owner only when something went wrong.
-- **The phone stays shared:** `scripts/ui-tests.sh` locks it, and its exit code 5 means another run has it: wait, never force it. Its notes of passed modules (`build/ui-tests-passed/`) are kept in the main folder for every worktree.
+- **The phone stays shared:** every script that uses it locks it (`scripts/devices.sh`: the UI tests, the release smoke test, the meter and strum checks, `scripts/install-debug.sh`), and exit code 5 means another run has it: wait, never force it. Its notes of passed modules (`build/ui-tests-passed/`) are kept in the main folder for every worktree.
 
 `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`. Terminals opened before the install may not have it on PATH.

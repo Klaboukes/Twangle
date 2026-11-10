@@ -21,15 +21,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 SDK="${LOCALAPPDATA:-$HOME/AppData/Local}/Android/Sdk"
-ADB="$SDK/platform-tools/adb.exe"
+# The device: ANDROID_SERIAL, else the first phone (else tablet) connected (scripts/devices.sh); it
+# installs nothing and plays nothing, so it takes no lock (a UI test run beside it slows the figures).
+. "$ROOT/scripts/devices.sh"
+use_device phone tablet
+ADB="$ADB_EXE"
 D8="$(ls -d "$SDK"/build-tools/*/ | sort -V | tail -1)d8.bat"
 CLASS=io.github.klaboukes.twangle.core.dsp.pitch.DspPhoneBenchmark
 REMOTE=/data/local/tmp/twangle-dsp-benchmark.jar
-
-if ! "$ADB" devices 2>/dev/null | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect the Xiaomi 12X and accept the USB-debugging prompt." >&2
-    exit 3
-fi
 
 ./gradlew -q :core:dsp:testClasses --console=plain
 

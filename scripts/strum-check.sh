@@ -14,14 +14,18 @@
 # every peg (↑ tighten, ↓ loosen, ✓ in tune, – not heard; UI Automator's dump has no TalkBack states,
 # so the marks are read from the picture). Windows only (plays through PowerShell); needs Python 3
 # (scripts/strum-wav.py makes the strums).
+#
+# The device: ANDROID_SERIAL, else the first phone (else tablet) connected (scripts/devices.sh). It holds
+# the phone's lock while it taps and listens (scripts/devices.sh). Exit codes: 0 done, 2 an unknown set,
+# 3 no phone, 4 the phone is locked, 5 another run is using the phone (wait for it and run again),
+# 6 a strum couldn't be made, 7 no strum check button, 8 Twangle isn't showing that tuning.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-ADB="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
+. "$ROOT/scripts/devices.sh"
 OUT="build/strum-check"
 mkdir -p "$OUT"
-export MSYS_NO_PATHCONV=1
 
 set_name="${1:-standard}"
 case "$set_name" in
@@ -49,27 +53,21 @@ case "$set_name" in
     *) echo "Unknown set '$set_name': use standard or bass." >&2; exit 2 ;;
 esac
 
-if ! "$ADB" devices 2>/dev/null | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect the Xiaomi 12X and accept the USB-debugging prompt." >&2
-    exit 3
-fi
-"$ADB" shell input keyevent KEYCODE_WAKEUP
-if "$ADB" shell dumpsys window | grep -q "isKeyguardShowing=true"; then
-    echo "The phone is locked. Unlock it with Twangle on the tuner, then run this again." >&2
-    exit 4
-fi
+use_device phone tablet
+wake_phone "unlock it with Twangle on the tuner, then run this again"
+take_phone_lock
 
 # The screen as uiautomator sees it: one line per node with a test tag, text or TalkBack label.
 dump() {
-    "$ADB" shell uiautomator dump /sdcard/strum-check.xml >/dev/null 2>&1
-    "$ADB" exec-out cat /sdcard/strum-check.xml | grep -o '<node [^>]*>' \
+    adb shell uiautomator dump /sdcard/strum-check.xml >/dev/null 2>&1
+    adb exec-out cat /sdcard/strum-check.xml | grep -o '<node [^>]*>' \
         | sed -E 's/.* text="([^"]*)" resource-id="([^"]*)".* content-desc="([^"]*)".* bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\2|\3|\1|\4 \5 \6 \7/'
 }
 
 screen="$(dump)"
 if ! grep -q "|$picker|" <<<"$screen"; then
     echo "Twangle isn't showing ${picker/, / · } on the tuner. Open it and pick that tuning, then run this again." >&2
-    exit 5
+    exit 8
 fi
 
 # Taps the strum check's button (tagged tuner_strum_button) at its centre: the next strum is read.
@@ -81,7 +79,7 @@ tap_strum_button() {
         exit 7
     fi
     read -r x1 y1 x2 y2 <<<"$bounds"
-    "$ADB" shell input tap $(((x1 + x2) / 2)) $(((y1 + y2) / 2))
+    adb shell input tap $(((x1 + x2) / 2)) $(((y1 + y2) / 2))
     sleep 0.5
 }
 
@@ -96,7 +94,7 @@ for c in "${cases[@]}"; do
     # time to see that it isn't a strum, and the count time to take the word's place.
     sleep 1.5
     screen="$(dump)"
-    "$ADB" exec-out screencap -p > "$OUT/$name.png"
+    adb exec-out screencap -p > "$OUT/$name.png"
     echo "== $name: played $(paste -d' ' <(tr ' ' '\n' <<<"$notes") <(tr ' ' '\n' <<<"$cents") | paste -sd',' | sed 's/,/, /g')"
     # The word's spoken text is on the node right under the one tagged tuner_word.
     count="$(awk -F'|' 'found { print $2; exit } $1 == "tuner_word" { found = 1 }' <<<"$screen")"

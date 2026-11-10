@@ -13,56 +13,48 @@
 #
 #   scripts/release-smoke.sh
 #
-# The device: ANDROID_SERIAL, else the first phone (else tablet) connected (scripts/devices.sh).
-# Exit codes: 0 passed, 1 Twangle crashed or the build failed, 3 no phone, 4 the phone is locked.
+# The device: ANDROID_SERIAL, else the first phone (else tablet) connected (scripts/devices.sh). Both
+# builds are made first; from the uninstall to the debug build's return it holds the phone's lock
+# (scripts/devices.sh), so it never swaps the app under another session's UI test run.
+# Exit codes: 0 passed, 1 Twangle crashed or the build failed, 3 no phone, 4 the phone is locked,
+# 5 another run is using the phone (wait for it and run again).
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
-ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
-adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 . "$ROOT/scripts/devices.sh"
 PKG=io.github.klaboukes.twangle
 ACTIVITY="$PKG/.app.MainActivity"
 LOG=build/release-smoke.log
 mkdir -p build
 
-serial="${ANDROID_SERIAL:-$(first_device phone tablet)}"
-if [ -z "$serial" ]; then
-    echo "No phone connected (adb devices shows none)." >&2
-    exit 3
-fi
-export ANDROID_SERIAL="$serial"
-echo "On the $(device_name "$serial"), Android $(adb shell getprop ro.build.version.release | tr -d '\r')"
+use_device phone tablet
+echo "On the $(device_name "$ANDROID_SERIAL"), Android $(adb shell getprop ro.build.version.release | tr -d '\r')"
+wake_phone "unlock it, then run this again"
 
-adb shell input keyevent KEYCODE_WAKEUP
-if adb shell dumpsys window | grep -q "isKeyguardShowing=true"; then
-    echo "The phone is locked. Unlock it, then run this again." >&2
-    exit 4
-fi
-
+# The release-type build to test and the debug build to put back after, built before the phone is taken.
 echo "Building the release-type build (benchmarkRelease, R8)..."
-if ! ./gradlew :app:assembleBenchmarkRelease --console=plain > "$LOG" 2>&1; then
+if ! ./gradlew :app:assembleBenchmarkRelease :app:assembleDebug --console=plain > "$LOG" 2>&1; then
     echo "FAILED: Build failed (log: $LOG)"
     grep -E "^e: |error:|What went wrong" -A2 "$LOG" | head -12
     exit 1
 fi
 apk="$(find app/build/outputs/apk/benchmarkRelease -name '*.apk' | head -1)"
 
-ROTATE_AUTO="$(adb shell settings get system accelerometer_rotation | tr -d '\r')"
-ROTATION="$(adb shell settings get system user_rotation | tr -d '\r')"
+take_phone_lock
+# Run at the end by the lock's EXIT trap, before the lock goes.
 put_back() {
-    [[ "$ROTATE_AUTO" =~ ^[01]$ ]] && adb shell settings put system accelerometer_rotation "$ROTATE_AUTO"
-    [[ "$ROTATION" =~ ^[0-3]$ ]] && adb shell settings put system user_rotation "$ROTATION"
+    restore_rotation
     adb uninstall $PKG > /dev/null 2>&1
-    if ./gradlew :app:installDebug --console=plain -q >> "$LOG" 2>&1; then
+    if install_debug_app >> "$LOG" 2>&1; then
         echo "The debug build is back on the phone."
     else
         echo "Putting the debug build back failed (log: $LOG)."
     fi
 }
-trap put_back EXIT
+hold_upright
+mark_app_replaced
 
 # The debug build may be signed on the owner's other PC, so start clean; -g grants the microphone.
 adb uninstall $PKG > /dev/null 2>&1
@@ -80,8 +72,6 @@ leave_app() { adb shell input keyevent KEYCODE_HOME; sleep 7; }
 turn() { adb shell settings put system user_rotation "$1"; sleep 3; }
 
 echo "Start, Home, start again, on its side and back, Home..."
-adb shell settings put system accelerometer_rotation 0
-turn 0
 start_app
 leave_app
 start_app

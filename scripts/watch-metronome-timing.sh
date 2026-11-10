@@ -11,10 +11,13 @@
 #   scripts/watch-metronome-timing.sh 2 audible  two minutes with the click at media volume 1 (put back after)
 #   scripts/watch-metronome-timing.sh 1 silent media   one minute, the taps sent as media vibration
 #
-# Needs the watch on Wi-Fi debugging (docs/devices.md, "Watch"); it picks the SM-R9xx from
-# `adb devices` unless ANDROID_SERIAL is set. The run goes on on the watch if the connection drops;
-# the script waits for it and reads the result back. It never uses the microphone. Every beat lands
-# in build/watch-metronome-timing/watch-metronome-timing-<silent|audible>.tsv.
+# Needs the watch on Wi-Fi debugging (docs/devices.md, "Watch"); it picks the watch connected
+# (scripts/devices.sh, by Wear OS's own "watch") unless ANDROID_SERIAL is set, and holds its lock for
+# the run. The run goes on on the watch if the connection drops; the script waits for it and reads the
+# result back (a drop of over a minute lets another run take the watch's lock over, which stops the
+# measurement). It never uses the microphone. Every beat lands in
+# build/watch-metronome-timing/watch-metronome-timing-<silent|audible>.tsv.
+# Exit codes: 0 measured, 1 it failed, 2 wrong arguments, 3 no watch, 5 another run is using the watch.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -28,29 +31,23 @@ case "$MODE" in
     *) echo "usage: $0 [minutes] [silent|audible]" >&2; exit 2 ;;
 esac
 
-SDK="${ANDROID_HOME:-${LOCALAPPDATA:-$HOME/AppData/Local}/Android/Sdk}"
-# Git Bash would turn the watch's paths (/data/...) into Windows ones.
-export MSYS_NO_PATHCONV=1
-ADB="$SDK/platform-tools/adb"
-[ -x "$ADB.exe" ] && ADB="$ADB.exe"
-if [ -z "${ANDROID_SERIAL:-}" ]; then
-    ANDROID_SERIAL="$("$ADB" devices -l | awk '/ device / && /model:SM_R9/ { print $1; exit }')"
-    if [ -z "$ANDROID_SERIAL" ]; then
-        echo "No Galaxy Watch in adb devices: wake it and check Wireless debugging (docs/devices.md)." >&2
-        exit 3
-    fi
-fi
-export ANDROID_SERIAL
+export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
+# adb (the watch's paths, /data/..., passed unchanged), the watch and its lock: scripts/devices.sh.
+. "$ROOT/scripts/devices.sh"
+use_device watch
+# The watch's lock, as a UI test run on it takes (scripts/ui-tests.sh :wear): its installs would stop
+# that run's tests. Exit 5 when another run has the watch: wait for it and run again.
+take_phone_lock
 APP=io.github.klaboukes.twangle
 OUT="build/watch-metronome-timing"
 LOG=/data/local/tmp/twangle-watch-metronome-timing.log
 mkdir -p "$OUT"
 
-"$ADB" shell input keyevent KEYCODE_WAKEUP
+adb shell input keyevent KEYCODE_WAKEUP
 ./gradlew -q :wear:installDebug :wear:installDebugAndroidTest || exit 1
 
-"$ADB" shell rm -f "$LOG"
-"$ADB" shell "nohup am instrument -w -r \
+adb shell rm -f "$LOG"
+adb shell "nohup am instrument -w -r \
     -e class $APP.wear.WatchMetronomeTimingMeasurement \
     -e watchMetronomeTiming true -e watchMetronomeMinutes $MINUTES -e watchMetronomeSilent $SILENT \
     -e watchMetronomeUsage $USAGE \
@@ -59,7 +56,7 @@ echo "Measuring $MINUTES min ($MODE) on the watch; leave it lying still."
 
 # Wait for the run on the watch, through a dropped connection if need be.
 deadline=$((SECONDS + MINUTES * 60 + 300))
-until "$ADB" shell cat "$LOG" 2>/dev/null | grep -q "INSTRUMENTATION_CODE"; do
+until adb shell cat "$LOG" 2>/dev/null | grep -q "INSTRUMENTATION_CODE"; do
     if [ $SECONDS -gt $deadline ]; then
         echo "No result from the watch in time (log: $LOG on the watch)." >&2
         exit 1
@@ -67,15 +64,15 @@ until "$ADB" shell cat "$LOG" 2>/dev/null | grep -q "INSTRUMENTATION_CODE"; do
     sleep 20
 done
 
-"$ADB" shell cat "$LOG" > "$OUT/instrument.log"
+adb shell cat "$LOG" > "$OUT/instrument.log"
 for ext in txt tsv; do
-    "$ADB" exec-out run-as "$APP" cat "files/watch-metronome-timing-$MODE.$ext" > "$OUT/watch-metronome-timing-$MODE.$ext"
+    adb exec-out run-as "$APP" cat "files/watch-metronome-timing-$MODE.$ext" > "$OUT/watch-metronome-timing-$MODE.$ext"
 done
 echo
 cat "$OUT/watch-metronome-timing-$MODE.txt"
 # The vibrator service's record of Twangle's last taps (Recent vibrations, before the aggregated
 # history): request time, motor start, how long it ran, what it played.
-"$ADB" shell dumpsys vibrator_manager > "$OUT/vibrator.txt"
+adb shell dumpsys vibrator_manager > "$OUT/vibrator.txt"
 awk -v app="$APP" '
     function ms(t,   a) { split(t, a, ":"); return (a[1] * 3600 + a[2] * 60 + a[3]) * 1000 }
     /Recent vibrations:/ { on = 1 } /Aggregated vibration history:/ { on = 0 }

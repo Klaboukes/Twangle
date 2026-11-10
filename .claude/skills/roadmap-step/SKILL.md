@@ -61,12 +61,11 @@ Then carry on without waiting for approval, unless step 1 found something that n
 3. **Phone check** for anything the owner can see or hear (UI, audio, permissions, startup):
    ```bash
    ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
-   ./gradlew :app:installDebug    # not plain installDebug: that also puts the watch app on the phone
-   "$ADB" shell am start -W -n io.github.klaboukes.twangle/io.github.klaboukes.twangle.app.MainActivity
+   scripts/install-debug.sh --start   # builds, installs and starts the phone app under the phone's lock
    "$ADB" exec-out screencap -p > <scratchpad>/shot.png   # then look at it
    "$ADB" logcat -d -b crash                               # must be empty for our app
    ```
-   If the phone isn't connected, ask the owner to connect it. Skip the check only if the owner says so, and note it in the PR. Pure `:core:dsp` work needs no phone check.
+   Not `./gradlew :app:installDebug`: it installs outside the phone's lock, which stops another session's UI test run on the phone (and plain `installDebug` also puts the watch app on it). Exit 5 means another run has the phone: wait a minute or two and run it again. With more than one device connected, `export ANDROID_SERIAL=<serial>` first (docs/devices.md), so the `adb` calls after it go to the same one. If the phone isn't connected, ask the owner to connect it. Skip the check only if the owner says so, and note it in the PR. Pure `:core:dsp` work needs no phone check.
 
 ## 6. Update the roadmap
 

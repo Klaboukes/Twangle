@@ -55,7 +55,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
-ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
+# adb, the devices, the lock, waking and cooling: shared with the other scripts that use a device.
+. "$ROOT/scripts/devices.sh"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
 # UI_TESTS_TAG=<name>: this run's logs and pulled files get "-<name>" in their names, so runs on two devices at once
 # (scripts/store-screenshots.sh, a phone and a tablet) keep apart.
@@ -63,15 +64,10 @@ TAG="${UI_TESTS_TAG:+-$UI_TESTS_TAG}"
 # The languages a daytime --languages run checks: twangle.dayLanguages in gradle.properties (en,nl),
 # the ones written by day, as language tags (pt-rBR -> pt-BR, b+zh+Hant -> zh-Hant). The full check checks all.
 DAY_LANGUAGES="${DAY_LANGUAGES:-$(sed -n 's/^twangle\.dayLanguages=//p' gradle.properties | sed 's/-r/-/g; s/b+//g; s/+/-/g')}"
-COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
 usage() { sed -n '2,37p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
-
-# Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
-# phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
-adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
 # Where this branch left main.
 branch_base() {
@@ -171,26 +167,13 @@ fi
 
 # The device: ANDROID_SERIAL's, else a phone (or the tablet) for the phone's modules and the watch for
 # :wear, which runs on its own. Say plainly that it is missing instead of failing after the build.
-. "$ROOT/scripts/devices.sh"
 on_watch=0
 if [[ " ${modules[*]} " == *" :wear "* ]]; then
     [ ${#modules[@]} = 1 ] || [ $build_only = 1 ] || { echo ":wear runs on the watch: name it on its own (scripts/ui-tests.sh :wear)." >&2; exit 2; }
     on_watch=1
 fi
-if [ $build_only = 0 ] && [ -z "${ANDROID_SERIAL:-}" ]; then
-    if [ $on_watch = 1 ]; then
-        ANDROID_SERIAL="$(first_device watch)" || {
-            echo "No watch connected (adb devices shows no watch). Wake the Galaxy Watch 5 and connect it over Wi-Fi (docs/devices.md, *Watch*)." >&2
-            exit 3
-        }
-    else
-        ANDROID_SERIAL="$(first_device phone tablet)" || {
-            echo "No phone connected (adb devices shows no phone or tablet). Connect a test device (the Xiaomi 12X, the Galaxy S26 or the Lenovo Tab M11) and accept the USB-debugging prompt." >&2
-            exit 3
-        }
-    fi
-    export ANDROID_SERIAL
-    [ "$(ready_devices | wc -l)" -gt 1 ] && echo "On the $(device_name "$ANDROID_SERIAL"); the others connected are left alone"
+if [ $build_only = 0 ]; then
+    if [ $on_watch = 1 ]; then use_device watch; else use_device phone tablet; fi
 fi
 
 # :feature:tuner -> feature/tuner
@@ -314,104 +297,15 @@ fi
 [ $no_build = 1 ] || printf '%-18s %3ds\n' "build" $((SECONDS - start))
 [ $build_only = 1 ] && exit 0
 
-# One run at a time on the phone. Two runs (say, from two Claude sessions) break each other: an
-# install stops the other run's tests ("Process crashed"), and their windows push each other into the
-# background. The lock is a folder on the phone, made in one step. While this script lives, a loop on
-# this PC touches LOCK/beat every BEAT seconds. A run killed outright (twice on 2026-10-25: a stalled
-# sub-agent's run in the background) skips its EXIT trap, so its lock stayed and the next run waited
-# up to an hour, but its beat stops. So a lock whose beat is older than STALE_AFTER seconds (or, with
-# no beat, older than LOCK_MAX_AGE) is left over: the next run takes it over and first clears what the
-# dead run left (clear_leftovers).
-# Only a lock surely left over is taken: when its age can't be read (one `adb shell` that failed,
-# most likely with the watch over Wi-Fi, 2026-11-10) the phone counts as busy, since taking it over
-# stops the live run's tests and resets its rotation. Each run writes its own token in LOCK/owner,
-# and a takeover is one command on the phone that makes LOCK/taken-<old token>: mkdir succeeds only
-# once, so of two runs taking over the same dead run's lock only one wins and the other is busy. The
-# lock folder itself stays, so no third run can slip in between a removal and a new mkdir. A run's
-# beat, its MIUI loop and its clean-up touch the lock only while LOCK/owner is still its token.
-LOCK=/data/local/tmp/twangle-ui-tests.lock
-LOCK_MAX_AGE=3600
-BEAT=10
-STALE_AFTER=60
-LOCK_TOKEN="r$$x$RANDOM$(date +%s)"
-# Phone shell code: true while this run holds the lock.
-LOCK_MINE="[ \"\$(cat $LOCK/owner 2>/dev/null)\" = $LOCK_TOKEN ]"
-
-# Stops every Twangle test package's process. `am instrument` can leave one running after its run
-# (seen after a run that passed), and a killed run leaves its tests running on the phone.
-stop_test_processes() {
-    local p
-    for p in $(adb shell pm list packages io.github.klaboukes.twangle | tr -d '\r' | sed -n 's/^package:\(.*\.test\)$/\1/p'); do
-        adb shell am force-stop "$p" > /dev/null 2>&1
-    done
-}
-
-# What a run killed outright leaves on the phone: the owner's rotation settings it saved in the lock
-# before turning auto-rotate off (left off, it changes the phone for good), its MIUI loop and its tests.
-clear_leftovers() {
-    local auto user off
-    read -r auto user <<< "$(adb shell "cat $LOCK/rotation 2>/dev/null; [ -e $LOCK/guard.pid ] && kill \$(cat $LOCK/guard.pid)" 2>/dev/null | tr -d '\r' | head -1)"
-    [[ "$user" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$user" > /dev/null 2>&1
-    [[ "$auto" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$auto" > /dev/null 2>&1
-    off="$(adb shell "cat $LOCK/screen_off 2>/dev/null" | tr -d '\r')"
-    [[ "$off" =~ ^[0-9]+$ ]] && adb shell settings put system screen_off_timeout "$off" > /dev/null 2>&1
-    # Gone, so a later takeover never puts back or kills what the dead run left a second time.
-    adb shell "rm -f $LOCK/rotation $LOCK/screen_off $LOCK/guard.pid" > /dev/null 2>&1
-    stop_test_processes
-}
-
-# Phone shell code that prints "<age> <limit> <owner>": how long ago the run holding the lock last
-# beat, the limit for that (a lock from a script before the beat has only its own age), and its token
-# ("-" for a lock from before the tokens). Anything else, nothing included, means the age wasn't read.
-LOCK_AGE='o=$(cat LOCK/owner 2>/dev/null); if [ -e LOCK/beat ]; then a=$(($(date +%s) - $(stat -c %Y LOCK/beat))) && echo $a STALE ${o:--}; else a=$(($(date +%s) - $(stat -c %Y LOCK))) && echo $a MAX ${o:--}; fi'
-LOCK_AGE="${LOCK_AGE//LOCK/$LOCK}"
-LOCK_AGE="${LOCK_AGE//STALE/$STALE_AFTER}"
-LOCK_AGE="${LOCK_AGE//MAX/$LOCK_MAX_AGE}"
-
-# Phone shell code that takes over the lock of the run with token OLD (empty for none) and prints
-# "won", in one step: only while OLD still holds it and it is still left over, and only the one run
-# whose mkdir of LOCK/taken-OLD succeeds.
-LOCK_TAKEOVER='o=$(cat LOCK/owner 2>/dev/null); [ "$o" = "OLD" ] || exit 1; if [ -e LOCK/beat ]; then a=$(($(date +%s) - $(stat -c %Y LOCK/beat))); m=STALE; else a=$(($(date +%s) - $(stat -c %Y LOCK))); m=MAX; fi; [ "$a" -ge $m ] && mkdir LOCK/taken-NAME && echo NEW > LOCK/owner && touch LOCK/beat && echo won'
-LOCK_TAKEOVER="${LOCK_TAKEOVER//LOCK/$LOCK}"
-LOCK_TAKEOVER="${LOCK_TAKEOVER//STALE/$STALE_AFTER}"
-LOCK_TAKEOVER="${LOCK_TAKEOVER//MAX/$LOCK_MAX_AGE}"
-LOCK_TAKEOVER="${LOCK_TAKEOVER//NEW/$LOCK_TOKEN}"
-
-phone_busy() {
-    echo "Another UI test run (or a recording, scripts/record-plucks.sh) is using the phone ($1), maybe from another session. Wait for it to finish and run again." >&2
-    exit 5
-}
-
-take_lock() {
-    local age limit owner takeover
-    adb shell "mkdir $LOCK && echo $LOCK_TOKEN > $LOCK/owner && touch $LOCK/beat" > /dev/null 2>&1 && return 0
-    read -r age limit owner <<< "$(adb shell "$LOCK_AGE" 2>/dev/null | tr -d '\r')"
-    [[ "$age" =~ ^[0-9]+$ && "$limit" =~ ^[0-9]+$ && "$owner" =~ ^[A-Za-z0-9-]+$ ]] \
-        || phone_busy "its last sign of life couldn't be read, so it counts as live"
-    [ "$age" -lt "$limit" ] && phone_busy "its last sign of life ${age}s ago"
-    [ "$owner" = - ] && owner=""
-    takeover="${LOCK_TAKEOVER//OLD/$owner}"
-    [ "$(adb shell "${takeover//NAME/${owner:-none}}" 2>/dev/null | tr -d '\r')" = won ] \
-        || phone_busy "another run took it over from a run that was cut off, just now"
-    echo "Took over the phone from a UI test run that was cut off (no sign of life for ${age}s); putting back what it left."
-    clear_leftovers
-}
-take_lock
-# The beat: stops within BEAT seconds of this script, however it ends.
-( while kill -0 $$ 2>/dev/null; do adb shell "$LOCK_MINE && touch $LOCK/beat" > /dev/null 2>&1; sleep $BEAT; done ) &
+# One run at a time on the phone (take_phone_lock, scripts/devices.sh: the lock, its beat, the takeover
+# of a run that was cut off, and at the end this script's put_back and the lock's removal).
+take_phone_lock
 
 # The tests expect an upright phone. With auto-rotate on and the phone lying on its side, the screen
 # turns to landscape mid-run: the tuner hides its navigation bar there and the settings list is
-# shorter, so checks that pass upright fail. Hold the screen upright for the run, then put the
-# owner's rotation settings back.
-ROTATION_AUTO="$(adb shell settings get system accelerometer_rotation 2>/dev/null | tr -d '\r')"
-ROTATION_USER="$(adb shell settings get system user_rotation 2>/dev/null | tr -d '\r')"
-adb shell "echo $ROTATION_AUTO $ROTATION_USER > $LOCK/rotation" > /dev/null 2>&1
-adb shell "settings put system accelerometer_rotation 0 && settings put system user_rotation 0" > /dev/null 2>&1
-restore_rotation() {
-    [[ "$ROTATION_USER" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$ROTATION_USER" > /dev/null 2>&1
-    [[ "$ROTATION_AUTO" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$ROTATION_AUTO" > /dev/null 2>&1
-}
+# shorter, so checks that pass upright fail. Held upright for the run, the owner's rotation settings
+# put back after (hold_upright).
+hold_upright
 # A watch's screen sleeps after 15 s (the owner's setting), and then its tests find "No compose
 # hierarchies" (docs/devices.md, *Watch*): kept on for the run, the owner's time-out put back after.
 SCREEN_OFF=""
@@ -422,9 +316,8 @@ fi
 restore_screen_off() {
     [[ "$SCREEN_OFF" =~ ^[0-9]+$ ]] && adb shell settings put system screen_off_timeout "$SCREEN_OFF" > /dev/null 2>&1
 }
-trap 'restore_rotation; restore_screen_off; stop_test_processes; adb shell "$LOCK_MINE && rm -rf $LOCK" > /dev/null 2>&1' EXIT
-# Ctrl+C or `timeout` stop the script through its EXIT trap too, so the lock and the loop below go.
-trap 'exit 130' INT TERM
+# Run at the end by the lock's EXIT trap, before the lock goes.
+put_back() { restore_rotation; restore_screen_off; stop_test_processes; }
 
 # MIUI (the Xiaomi test phone) refuses to let a test open the app's screen ("MIUILOG- Permission
 # Denied Activity", "Abort background activity starts") unless the package has Xiaomi's own
@@ -439,21 +332,6 @@ if [ -n "$(adb shell getprop ro.miui.ui.version.name 2>/dev/null | tr -d '\r')" 
     guard="${guard//TOKEN/$LOCK_TOKEN}"
     adb shell "${guard//MAX/$LOCK_MAX_AGE}" > /dev/null 2>&1 &
 fi
-
-# Tests can only draw while the phone's screen is on and unlocked. With the screen off (its power
-# button) or the lock screen up, the test window is stopped: the first test of the run, the only one
-# that opens it, waits for it until its time is up ("test timed out" in waitForComposeRoots) and the
-# rest find "No compose hierarchies". In 1.1's --thorough runs that first test was always one in the
-# first style, so it looked as if Ancient were slow. So wake the screen before each module, stop
-# if the phone is locked, and say so if the screen went off during a run.
-wake_phone() {
-    adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
-    sleep 0.5
-    if adb shell dumpsys window 2>/dev/null | tr -d '\r' | grep -q 'isKeyguardShowing=true'; then
-        echo "The phone is locked: unlock it, leave its screen on, and run again." >&2
-        exit 4
-    fi
-}
 
 # Milliseconds since the phone's screen last went off, by its power button or a time-out.
 ms_since_screen_off() {
@@ -523,27 +401,6 @@ run_tests() {
 # The module's test classes (files with a @Test), by short name.
 test_classes() {
     grep -rl --include='*.kt' '@Test' "$(dir_of "$1")/src/androidTest" 2>/dev/null | sed 's|.*/||; s|\.kt$||' | sort
-}
-
-# The battery's temperature in whole degrees (the phone reports tenths).
-phone_temp() {
-    local tenths
-    tenths="$(adb shell dumpsys battery 2>/dev/null | tr -d '\r' | sed -n 's/^ *temperature: \([0-9]*\)/\1/p' | head -1)"
-    echo $(( ${tenths:-0} / 10 ))
-}
-
-# Waits, at most 30 minutes, while the phone is warmer than COOL_BELOW. The screen stays on: turned
-# off it could lock, and a locked phone stops the run.
-wait_cool() {
-    local t waited=0
-    t="$(phone_temp)"
-    [ "$t" -lt "$COOL_BELOW" ] && return 0
-    printf '  (phone at %s °C, cooling' "$t"
-    while [ "$t" -ge "$COOL_BELOW" ] && [ $waited -lt 1800 ]; do
-        sleep 30; waited=$((waited + 30)); t="$(phone_temp)"
-    done
-    printf ' %ds to %s °C)\n' $waited "$t"
-    wake_phone
 }
 
 status=0

@@ -33,9 +33,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
-adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
-COOL_BELOW="${COOL_BELOW:-37}"
+# adb, the devices and cooling (wait_cool, COOL_BELOW): shared with the other scripts that use a device.
+. "$ROOT/scripts/devices.sh"
 BATCH="${STORE_BATCH:-6}"
 LISTINGS=fastlane/metadata/android
 RAW=build/store-screenshots
@@ -61,7 +60,6 @@ fi
 # A phone and a tablet: both sets at once, each made by this script on its own device. Built here once,
 # so the two don't build over each other; each keeps its own pulled pictures and logs (UI_TESTS_TAG).
 if [ -z "${ANDROID_SERIAL:-}" ]; then
-    . "$ROOT/scripts/devices.sh"
     phone="$(first_device phone)"
     tab="$(first_device tablet)"
     if [ -n "$phone" ] && [ -n "$tab" ]; then
@@ -88,25 +86,9 @@ if [ -z "${ANDROID_SERIAL:-}" ]; then
     fi
 fi
 
-# The battery's temperature in whole degrees (the phone reports tenths).
-phone_temp() {
-    local tenths
-    tenths="$(adb shell dumpsys battery 2>/dev/null | tr -d '\r' | sed -n 's/^ *temperature: \([0-9]*\)/\1/p' | head -1)"
-    echo $(( ${tenths:-0} / 10 ))
-}
-
-# Waits, at most 30 minutes, while the phone is COOL_BELOW degrees or warmer.
-wait_cool() {
-    local t waited=0
-    t="$(phone_temp)"
-    [ "$t" -lt "$COOL_BELOW" ] && return 0
-    printf '(phone at %s °C, cooling' "$t"
-    while [ "$t" -ge "$COOL_BELOW" ] && [ $waited -lt 1800 ]; do
-        sleep 30; waited=$((waited + 30)); t="$(phone_temp)"
-    done
-    printf ' %ds)\n' $waited
-    adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
-}
+# One device (or none): the phone, else the tablet, or ANDROID_SERIAL's (scripts/devices.sh), so this
+# script's own adb calls below and its test runs use the same one, even with the watch connected too.
+use_device phone tablet
 
 # A tablet (at least 600 dp the short way, from the screen's pixels and density) gets the tablet set.
 read -r size_w size_h < <(adb shell wm size 2>/dev/null | tr -d '\r' | sed -n 's/.*: *\([0-9]*\)x\([0-9]*\)$/\1 \2/p' | tail -1)
@@ -224,7 +206,8 @@ for locale in "${locales[@]}"; do
 done
 for ((i = 0; i < ${#todo[@]}; i += BATCH)); do
     batch=("${todo[@]:i:BATCH}")
-    wait_cool
+    # The phone cooled between runs, on a line of its own (exit 4 when it locked meanwhile).
+    wait_cool ""
     log="$log_base-${batch[0]}.log"
     start=$SECONDS
     run_tests_for "${batch[@]}"
