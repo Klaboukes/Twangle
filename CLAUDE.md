@@ -58,9 +58,9 @@ scripts/release.sh bump|notes|bundle|upload|promote|rollout|halt|listing  # a Pl
 scripts/release.sh status|health [days]|reviews [language]|listing-changes|profile|full-check  # read only, no yes needed: what is on each Play track, crash/ANR rates per version vs Play's lines, the last week's reviews translated, what changed for the store listing since it was last sent, whether the Baseline Profile is older than the screens, whether the last full check passed whole on this code (bundle refuses otherwise)
 python -I scripts/translations.py status  # which texts each night language lacks or has stale (/translate)
 python -I website/build.py              # build and check the website into website/build/ (nothing from another site, no broken link)
-scripts/publish-website.sh              # publish website/ to https://klaboukes.github.io/ after it landed on main (pushes only a change)
+scripts/publish-website.sh [--dry-run]  # publish website/ as origin/main has it (never the folder's own) to https://klaboukes.github.io/ after it landed on main (pushes only a change; --dry-run: what would change, no push)
 scripts/website-pictures.sh             # the website's small screenshots and icon, from the last store-screenshot run (commit them)
-scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md to the public policy page after a policy change landed on main
+scripts/publish-privacy.sh [--dry-run]  # publish PRIVACY.md and PRIVACY.nl.md as origin/main has them to the public policy page after a policy change landed on main
 scripts/store-graphics.sh [locale…]     # the Play Store's icon and every language's feature graphic, drawn on the phone (committed; docs/store-listing.md)
 scripts/style-screens.sh                # pictures of the tuner in Ink, light and dark, for the owner (~1 min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
@@ -68,7 +68,7 @@ scripts/record-plucks.sh                # records plucked strings on the phone i
 python -I scripts/launcher-icon.py      # draws the launcher icon, themed icon and watch mark (phone and watch) from the harmonics; edit it, not the drawables (ARCHITECTURE.md, *Name, app ID and icon*)
 python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa Bold, spaced) into the vector beside the icon and the website's top-bar SVG; needs fontTools (python -I -m pip install fonttools)
 ```
-`scripts/ui-test-scope.py`, `scripts/devices.sh`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
+`scripts/ui-test-scope.py`, `scripts/devices.sh`, `scripts/main-export.sh`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
 - Java is Android Studio's bundled JDK (JBR, JDK 25), with no separate install (owner, 2026-10-28). Each PC has it as a Windows user variable,
   `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`, so commands don't set it themselves.
