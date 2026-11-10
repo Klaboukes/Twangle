@@ -2,7 +2,7 @@
 # the lock that keeps two runs off one device, waking it, its temperature and Play Protect's dialog.
 # One copy here, so a fix lands once (Phase 90). Used by scripts/ui-tests.sh, full-check.sh,
 # store-screenshots.sh, release-smoke.sh, meter-frames.sh, strum-check.sh, install-debug.sh,
-# baseline-profile.sh, watch-metronome-timing.sh and dsp-phone-benchmark.sh; the other scripts reach a device through
+# baseline-profile.sh, watch-metronome-timing.sh, dsp-phone-benchmark.sh and record-plucks.sh; the other scripts reach a device through
 # scripts/ui-tests.sh.
 #
 # On 2026-11-05 the Galaxy Watch 5 came on over Wi-Fi a minute into the overnight run, and every phone
@@ -16,7 +16,15 @@
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # device's paths must pass unchanged. Local files are therefore always given relative to the repo.
 ADB_EXE="${ADB_EXE:-${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe}"
-adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
+# With ADB_LIMIT set (seconds), each call is cut off after that long (timeout's exit 124): a watch whose
+# Wi-Fi went can leave an `adb shell` waiting for minutes, so the lock's clean-up and beat use it.
+adb() {
+    if [ -n "${ADB_LIMIT:-}" ]; then
+        MSYS_NO_PATHCONV=1 timeout "$ADB_LIMIT" "$ADB_EXE" "$@"
+    else
+        MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"
+    fi
+}
 
 # The serials adb can use now, one a line: USB first (the phone and tablet), then Wi-Fi (a name with
 # a dot or a colon: the watch, or a phone over Wi-Fi), each in adb's order.
@@ -249,16 +257,32 @@ take_phone_lock() {
     adb shell "$LOCK_MINE && echo scripts/${0##*/} > $LOCK/by" > /dev/null 2>&1
     trap put_back_and_unlock EXIT
     trap 'exit 130' INT TERM
-    # The beat: stops within BEAT seconds of this script, however it ends.
-    ( while kill -0 $$ 2>/dev/null; do adb shell "$LOCK_MINE && touch $LOCK/beat" > /dev/null 2>&1; sleep $BEAT; done ) &
+    # The beat: stops within BEAT seconds of this script, however it ends (each call cut off after
+    # CLEANUP_ADB_LIMIT, so a lost device can't keep it going).
+    ( while kill -0 $$ 2>/dev/null; do ADB_LIMIT=$CLEANUP_ADB_LIMIT adb shell "$LOCK_MINE && touch $LOCK/beat" > /dev/null 2>&1; sleep $BEAT; done ) &
 }
+
+# How long each adb call of the lock's clean-up may take, in seconds (Phase 91): with the watch's Wi-Fi
+# gone, one call could hang the script's exit for good.
+CLEANUP_ADB_LIMIT=20
 
 # The EXIT trap of a script holding the lock: its put_back, then the lock goes. Once another run has
 # taken the lock over (this one's beat stopped for a minute: the cable, the watch's Wi-Fi), the device
-# is that run's, which already put back what this one saved: nothing here touches it then.
+# is that run's, which already put back what this one saved: nothing here touches it then. Every adb
+# call here and in put_back is cut off after CLEANUP_ADB_LIMIT seconds (an install gets longer,
+# install_debug_app), and a device that doesn't answer the first is left as it is: the next run takes
+# over its lock a minute later and puts back what this one saved there (clear_leftovers). A closed pipe
+# (the full check stopping its lanes, scripts/full-check.sh) doesn't stop the clean-up halfway.
 put_back_and_unlock() {
-    if adb shell "[ -d $LOCK ] && ! $LOCK_MINE" > /dev/null 2>&1; then
+    local ADB_LIMIT=$CLEANUP_ADB_LIMIT code
+    trap '' PIPE
+    adb shell "[ -d $LOCK ] && ! $LOCK_MINE" > /dev/null 2>&1
+    code=$?
+    if [ $code = 0 ]; then
         echo "Another run took the device over meanwhile: left as it is." >&2
+        return
+    elif [ $code = 124 ]; then
+        echo "The device (${ANDROID_SERIAL:-}) didn't answer within ${ADB_LIMIT}s: left as it is. The next run on it takes over this lock and puts back what this run changed." >&2
         return
     fi
     declare -F put_back > /dev/null && put_back
@@ -331,7 +355,8 @@ build_debug_app() {
 # permissions granted), under the lock its caller holds. Twangle signed by the owner's other PC
 # (INSTALL_FAILED_UPDATE_INCOMPATIBLE) is uninstalled and installed again, the owner's rule.
 install_debug_app() {
-    local apk out
+    # (in a clean-up, which cuts adb calls off after 20 s, an install gets 5 minutes: put_back_and_unlock)
+    local apk out ADB_LIMIT="${ADB_LIMIT:+300}"
     apk="$(find app/build/outputs/apk/debug -name '*.apk' -print -quit 2>/dev/null)"
     [ -n "$apk" ] || { echo "No debug APK in app/build/outputs/apk/debug" >&2; return 1; }
     if ! out="$(adb install -r -t "$apk" 2>&1)"; then

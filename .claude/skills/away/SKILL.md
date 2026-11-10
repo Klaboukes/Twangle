@@ -10,7 +10,8 @@ The owner hands over a task and leaves: nobody answers a question until they're 
 to ask. Build what can be built, decide what has to be decided, and save the questions for the report
 at the end, where the owner checks each choice. CLAUDE.md's hard rules, Git workflow and worktree
 rules apply as always. The [full check](../full-check/SKILL.md) already works this way; when the task
-is the full check, just run that.
+is the full check, just run that, in the main folder as its skill says (its records and the store
+screenshots live there), not in a worktree of the away task's own.
 
 ## 1. Before the owner goes (the first message)
 
@@ -18,7 +19,9 @@ is the full check, just run that.
   while they might still read it. Then start; don't wait for a reply.
 - Keep the PC awake: `request_keep_awake` with `until: "session_idle"`. It stops idle sleep only, so
   a closed laptop lid still sleeps it; say so in the same message when this is the laptop.
-- Work in a worktree of your own (CLAUDE.md, *One worktree per session that changes files*).
+- Work in a worktree of your own (CLAUDE.md, *One worktree per session that changes files*), except
+  for the full check and a release: they run in the main folder, which belongs to them (a full check
+  run from a worktree writes its record there, where `scripts/release.sh` never reads it).
 - Start a decisions log at `<scratchpad>/away-decisions.md`, so the choices survive a long session
   and its summaries: one line per choice, added the moment it is made.
 

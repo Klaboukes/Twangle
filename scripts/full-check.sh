@@ -23,7 +23,8 @@
 # Its exit code (Phase 90): 0 everything passed; 1 something failed (a test, the build, the release
 # build, a job no device was left for); 5 nothing failed, but a device was busy with another run, so
 # part of it didn't run; 3 the phones passed but the watch's tests didn't run (no watch, it dropped off
-# or was busy). The summary's first line says the same: "everything passed", "failures below" or "not
+# or was busy); 130 stopped with Ctrl+C (Phase 91: every device's run stops too and puts back what it
+# changed; nothing recorded; stop_run). The summary's first line says the same: "everything passed", "failures below" or "not
 # finished: a device was busy with another run", with ", watch not tested" whenever the watch's tests
 # were asked for and didn't run; the busy message itself ("Another run (...) is using the device") is
 # in the summary.
@@ -115,7 +116,7 @@ while [ $# -gt 0 ]; do
         --full) full=1 ;;
         --dry-run) dry_run=1 ;;
         --self-check) self_check=1 ;;
-        *) sed -n '2,78p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+        *) sed -n '2,79p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
     esac
 done
 [ $picked = 1 ] || { watch=1; release_build=1; sweep=1; contrast=1; languages=1; }
@@ -608,6 +609,51 @@ export UI_TESTS_COMMIT="$tested_commit" UI_TESTS_CLEAN="$clean"
 logs=()
 rm -rf "$QUEUE"
 mkdir -p "$QUEUE"
+
+# Every process under [pid], children after their parent, from Git Bash's `ps -l` (its PID and PPID
+# columns). Processes Windows started on their own (adb's server, Gradle's daemon) aren't in its tree.
+descendants() {
+    ps -l | awk -v root="$1" '
+        function walk(p,    n, i, a) { n = split(kids[p], a, " "); for (i = 1; i <= n; i++) { print a[i]; walk(a[i]) } }
+        NR > 1 { kids[$2] = kids[$2] " " $1 }
+        END { walk(root) }'
+}
+# Ctrl+C (or TERM, or the terminal closing) stops the whole run (Phase 91). Until then it stopped only
+# this script: the lanes and the watch's job, started in the background, ignore Ctrl+C, so they ran on
+# headless for the rest of the hour, with no summary and no record. Now every process under this one
+# gets a TERM, each device's scripts/ui-tests.sh (or the release build's smoke test) puts back what it
+# changed and gives back its lock (its EXIT trap, each adb call there limited to 20 s), the run waits
+# for them, at most STOP_WAIT seconds (10 min: putting the debug build back can take 5), and the
+# summary says it stopped. The record isn't touched: a run stopped midway vouches for nothing, and the
+# last whole run's lines stay. Exit 130. A build running when it comes stops first (it is in the
+# foreground, so Ctrl+C reaches it too; a TERM waits for it).
+STOP_WAIT="${STOP_WAIT:-600}"
+stop_run() {
+    local p procs=() left waited=0
+    trap '' INT TERM HUP PIPE
+    echo
+    echo "== Stopped ($(date +%H:%M)): ending every device's run; each puts back what it changed and frees its device"
+    procs=($(descendants $$))
+    [ ${#procs[@]} -gt 0 ] && kill -TERM "${procs[@]}" 2>/dev/null
+    while :; do
+        left=()
+        for p in "${procs[@]}"; do kill -0 "$p" 2>/dev/null && left+=("$p"); done
+        [ ${#left[@]} = 0 ] || [ $waited -ge "$STOP_WAIT" ] && break
+        sleep 1
+        waited=$((waited + 1))
+    done
+    {
+        echo "Full check: stopped after $(( (SECONDS - start) / 60 )) min at ${tested_commit:0:8}, not finished (Ctrl+C): nothing recorded for the release (${RESULT#"$ROOT"/} keeps the last whole run's lines)"
+        if [ ${#left[@]} = 0 ]; then
+            echo "Every device's run ended and put back what it changed."
+        else
+            echo "${#left[@]} of its processes were still running after ${STOP_WAIT}s, left to end on their own: $(ps -l | awk -v ids=" ${left[*]} " 'NR > 1 && index(ids, " " $1 " ") { print $NF }' | sed 's|.*/||' | sort | uniq -c | awk '{ print $2 " " $1 }' | paste -sd, -)"
+        fi
+    } > "$OUT/summary.txt"
+    cat "$OUT/summary.txt"
+    exit 130
+}
+trap stop_run INT TERM HUP
 rm -f "$OUT"/reached-*.txt   # worked out against this run's tree
 make_jobs "$QUEUE/skipped" > "$QUEUE/list"
 echo 0 > "$QUEUE/next"
@@ -685,7 +731,9 @@ if [ $build_failed = 0 ] && { [ -s "$QUEUE/list" ] || [ $release_build = 1 ]; };
             busy_now="$(cat "$QUEUE"/busy-* 2>/dev/null | wc -l)"
             if [ "$busy_now" -gt "$busy_seen" ]; then
                 echo "== Another run has a device: waiting ${BUSY_WAIT}s before the jobs left ($(date +%H:%M))"
-                sleep "$BUSY_WAIT"
+                # (in the background, so a Ctrl+C or TERM stops the run at once: stop_run)
+                sleep "$BUSY_WAIT" &
+                wait $!
             fi
             busy_seen=$busy_now
             round=$((round + 1))

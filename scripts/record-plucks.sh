@@ -22,13 +22,15 @@
 # Stopped halfway (Ctrl+C)? Run it again: strings already in the fixtures folder are skipped. A pluck
 # that went wrong: delete its files (all takes of that string and way) and run again. It runs through
 # scripts/ui-tests.sh, which holds the phone's lock (a UI test run and a recording never clash), keeps
-# Xiaomi's app-op set and installs the recorder with the microphone permission.
+# Xiaomi's app-op set and installs the recorder with the microphone permission. The phone is
+# ANDROID_SERIAL's, else the first phone (else tablet) connected (scripts/devices.sh), picked here and
+# handed on, so Ctrl+C stops the recorder on that phone also with the watch connected (Phase 91).
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
-adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
+# adb and picking the phone: shared with the other scripts that use a device.
+. "$ROOT/scripts/devices.sh"
 
 FIXTURES=core/dsp/src/test/resources/fixtures
 PULLED=core/testing/build/outputs/connected_android_test_additional_output
@@ -43,7 +45,7 @@ while [ $# -gt 0 ]; do
         --takes) takes="$2"; shift ;;
         --seconds) seconds="$2"; shift ;;
         --redo) redo=1 ;;
-        -h | --help) sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h | --help) sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Unknown argument: $1 (see --help)" >&2; exit 2 ;;
     esac
     shift
@@ -85,6 +87,7 @@ if [ $test = 1 ]; then
     seconds=2
     plan="test-recording|A test recording: no need to play|1|"
     groups=1 files=1
+    use_device phone tablet
 else
     add_groups pick "hard, with a pick" "$takes" \
         "A quiet room. Put the phone about 30 cm from the guitar, its bottom edge (the microphone) toward the sound hole."
@@ -95,6 +98,7 @@ else
         echo "Every pluck is in $FIXTURES already. To record them again: --redo."
         exit 0
     fi
+    use_device phone tablet
     cat <<EOF
 Recording plucked strings for Twangle's tests: $files plucks of $seconds s each, in $groups steps.
 
@@ -123,12 +127,14 @@ timeout=7200
 MODULE_TIMEOUT=$timeout scripts/ui-tests.sh "${args[@]}" > "$RUNLOG" 2>&1 &
 run=$!
 
-# Ctrl+C: stop the recorder on the phone. The run then ends by itself and still brings the plucks
-# recorded so far to the PC.
+# Ctrl+C: stop the recorder on the phone (ANDROID_SERIAL's, which the run uses too: with the watch
+# connected a plain `adb shell` stops on "more than one device", and the recorder waited for taps until
+# the run's 2 h were up). The run then ends by itself and still brings the plucks recorded so far to the PC.
 stop() {
     echo
     echo "Stopping. The plucks recorded so far are kept."
-    adb shell am force-stop "$TEST_PACKAGE" > /dev/null 2>&1
+    ADB_LIMIT=$CLEANUP_ADB_LIMIT adb shell am force-stop "$TEST_PACKAGE" > /dev/null 2>&1 ||
+        echo "The phone didn't answer, so the recorder wasn't stopped: it stops by itself within $((timeout / 60)) minutes, or unplug the phone." >&2
 }
 trap stop INT
 
