@@ -16,3 +16,4 @@
 #781 none     Chords' Listen: the busy balloon shows only after a microphone failure, which no picture has
 #782 none     Ear training's ViewModel only: what sounds after the tool is left, which no picture shows
 #783 none     TunerViewModel only: which mode shows after one is saved from Practice; every picture's mode is set before it is taken
+#784 none     Ear training's ViewModel only: whether an answer after a ▶ mid-question is heard, which no picture shows

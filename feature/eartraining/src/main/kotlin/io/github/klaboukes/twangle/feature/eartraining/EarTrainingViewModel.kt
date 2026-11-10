@@ -221,9 +221,15 @@ class EarTrainingViewModel(
     // True while a question's notes are being started, one after another (read on the DSP thread too).
     private val questionStarting = MutableStateFlow(false)
 
-    // True from a question starting to sound until the microphone has been seen setting it aside, so
-    // nothing heard before it (still on its way from the DSP thread) is judged against it.
+    // True from a question starting to sound until the microphone has been seen setting that sounding
+    // aside, so nothing heard before it (still on its way from the DSP thread) is judged against it.
     private var awaitingAside = false
+
+    // Each sounding of a question (the first, and each ▶) has its own number, set before it starts and
+    // carried by the microphone's setting aside ([Hearing.sounding]), so a ▶ tapped while the question
+    // still sounds is seen too, though the microphone was setting it aside already (read on the DSP thread).
+    @Volatile
+    private var sounding = 0
 
     private val micAllowed = MutableStateFlow(false)
 
@@ -606,7 +612,8 @@ class EarTrainingViewModel(
     /** Judges a change in what Play it back hears against its question, on the main thread. */
     private fun judge(hearing: Hearing) {
         // Only the question's own setting aside says the question has reached the microphone, not a screen reader's.
-        if (hearing.aside && !hearing.spoken) awaitingAside = false
+        // And only for the sounding asked last: a ▶ tapped while the question still sounds gets its own.
+        if (hearing.aside && !hearing.spoken && hearing.sounding == sounding) awaitingAside = false
         if (awaitingAside || shown.value.exercise != Exercise.PLAY_IT_BACK) return
         val visit = playBack ?: return
         val answer = playAnswer ?: return
@@ -681,6 +688,7 @@ class EarTrainingViewModel(
         val current = settings.value
         val mapper = NoteMapper(current.a4Hz)
         val voice = current.instrument.voice
+        sounding++
         questionStarting.value = true
         awaitingAside = true
         soundJob = viewModelScope.launch {
@@ -697,8 +705,9 @@ class EarTrainingViewModel(
 
     /**
      * What the microphone hears, frame by frame, as changes only: the note heard (a MIDI number, or
-     * [HeldNote.NO_NOTE]) and how long it has been held, or [Hearing.ASIDE] while the question sounds
-     * (and first of all, so nothing from before this session is judged), or [Hearing.SPOKEN] while a screen reader's
+     * [HeldNote.NO_NOTE]) and how long it has been held, or set aside while the question sounds, once for
+     * each sounding ([Hearing.asideFor], so a ▶ during it is seen as well), and first of all, so nothing
+     * from before this session is judged, or [Hearing.SPOKEN] while a screen reader's
      * voice plays. A new [Hearing] is made only when it changes, a few times a second at most; nothing is allocated
      * per frame. The voice is watched for as long as this listens ([watching]).
      */
@@ -711,11 +720,13 @@ class EarTrainingViewModel(
         var ignoredFrames = 0
         var spokenFrames = 0
         var mapper = NoteMapper(settings.value.a4Hz)
-        var last = Hearing.ASIDE
+        var last = Hearing.asideFor(sounding)
         emit(last)
         screenReaderSpeech.watching { speaking ->
             listener.frames(range = { range.value }).collect { frame ->
                 if (questionSounding()) ignoredFrames = tailFrames + 1
+                // Read after questionSounding(): a sounding seen there has its number set by now.
+                val soundingNow = sounding
                 if (speaking.value) spokenFrames = speechTailFrames + 1
                 val next = if (ignoredFrames > 0 || spokenFrames > 0) {
                     // The microphone would hear the question itself or the screen reader's voice: set aside, and the
@@ -725,7 +736,12 @@ class EarTrainingViewModel(
                     if (spokenFrames > 0) spokenFrames--
                     smoother.reset()
                     held.reset()
-                    if (question) Hearing.ASIDE else Hearing.SPOKEN
+                    when {
+                        !question -> Hearing.SPOKEN
+                        last.aside && !last.spoken && last.sounding == soundingNow -> last
+                        // A new sounding, ▶ tapped while the last still sounded too: a fresh aside, so it is seen.
+                        else -> Hearing.asideFor(soundingNow)
+                    }
                 } else {
                     val a4 = settings.value.a4Hz
                     if (a4 != mapper.a4Hz) {
@@ -761,13 +777,25 @@ class EarTrainingViewModel(
 
     /**
      * One change in what the microphone hears: the note ([HeldNote.NO_NOTE] for none) and its [hold], or set [aside]:
-     * for the question's own sound, or for a screen reader's voice ([spoken]).
+     * for the question's own sound (its [sounding]'s number), or for a screen reader's voice ([spoken]).
      */
-    private data class Hearing(val midi: Int, val hold: Hold, val aside: Boolean = false, val spoken: Boolean = false) {
+    private data class Hearing(
+        val midi: Int,
+        val hold: Hold,
+        val aside: Boolean = false,
+        val spoken: Boolean = false,
+        val sounding: Int = NO_SOUNDING,
+    ) {
         companion object {
+            /** Set aside for no sounding in particular: nothing listens, or the microphone stopped. */
             val ASIDE = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING, aside = true)
             val SPOKEN = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING, aside = true, spoken = true)
             val NOTHING = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING)
+
+            /** Set aside for the question's sounding number [sounding] (made once per sounding, not per frame). */
+            fun asideFor(sounding: Int) = Hearing(HeldNote.NO_NOTE, Hold.SOUNDING, aside = true, sounding = sounding)
+
+            private const val NO_SOUNDING = -1
         }
     }
 

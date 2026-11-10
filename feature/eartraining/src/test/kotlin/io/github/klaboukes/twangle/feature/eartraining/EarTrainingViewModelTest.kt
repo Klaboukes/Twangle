@@ -714,6 +714,52 @@ class EarTrainingViewModelTest {
     }
 
     @Test
+    fun `▶ tapped while the question still sounds, the answer played after it is heard`() = runTest(dispatcher) {
+        val vm = viewModel()
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        vm.show()
+        runCurrent()
+        val asked = vm.state.value.notes!!.notes.single()
+        // The question still rings, and the microphone is setting it aside, when ▶ sounds it again.
+        advanceTimeBy(500)
+        runCurrent()
+        vm.replay()
+        runCurrent()
+        assertEquals(2, tone.played.size)
+        advanceTimeBy(1_000)
+        runCurrent()
+        fade()
+
+        play(asked, HOLD_STEADY_MILLIS)
+        assertTrue("the right note played after it is found", vm.state.value.allFound)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+    }
+
+    @Test
+    fun `▶ tapped twice while the question sounds, then a wrong note, says Not that one`() = runTest(dispatcher) {
+        val vm = viewModel(AppSettings(earNoteChoice = NoteChoice.ALL_TO_12TH))
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        vm.show()
+        runCurrent()
+        val asked = vm.state.value.notes!!.notes.single()
+        repeat(2) {
+            advanceTimeBy(300)
+            runCurrent()
+            vm.replay()
+            runCurrent()
+        }
+        assertEquals(3, tone.played.size)
+        advanceTimeBy(1_000)
+        runCurrent()
+        fade()
+
+        play(wrongFor(asked), HOLD_SETTLED_MILLIS)
+        assertTrue("a wrong note is heard too", vm.state.value.wrongHeld)
+    }
+
+    @Test
     fun `two to four notes in a row are found one after another, in order`() = runTest(dispatcher) {
         val repository = FakeSettingsRepository()
         val vm = listening(repository = repository)
