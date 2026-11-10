@@ -334,16 +334,21 @@ play_gradle() {
 # edit without committing it (--no-commit, leaving the edit's id in app/build/gpp/<app id>.txt) and
 # PlayReports.java commits it, refused while anything is in Google's review: the plugin's own commit
 # cancels that review and starts it again (as with 2.0 on 2026-11-06). $1 is "commit", or "commit-unsent"
-# to hold the changes back for the owner's Send changes for review. Fails having sent nothing of it.
+# to hold the changes back for the owner's Send changes for review (a "commit" Google won't send for review by
+# itself is committed that way too, as the plugin's own commit does). Fails having sent nothing of it, except
+# when the commit's answer was lost (PlayReports.java exits 3): then it ends the script, since it may be on Play.
 # (The plugin always opens a fresh edit; it can't be handed one.)
 play_send() {
-    local how="$1" task="$2" gpp="app/build/gpp" edit
+    local how="$1" task="$2" gpp="app/build/gpp" edit code
     shift 2
     rm -rf "$gpp"
     if play_gradle "$task" --no-commit "$@" && [[ -s "$gpp/$APP_ID.txt" ]]; then
         edit="$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
         rm -rf "$gpp"
         play_read "edit-$how" "$edit" && return
+        code=$?
+        (( code != 3 )) || fail "the answer to the commit was lost (above): it may be on Google Play or not. Look first
+(scripts/release.sh status, the Play Console's Publishing overview), then send it again only if it isn't there."
     else
         [[ ! -s "$gpp/$APP_ID.txt" ]] || play_read edit-delete "$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
         rm -rf "$gpp"

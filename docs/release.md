@@ -44,6 +44,11 @@ further, and does the few things only the Play Console can do (the checklist bel
   of cancelling that review and starting it again, Google's default (`changesInReviewBehavior`,
   `play_send` in scripts/release.sh, 2026-11-10): a refused send changes nothing on Play and goes again
   once the review is done. Only `halt` keeps the default, since the brake must work during a review.
+  When Google won't send a release for review by itself (changes already waiting unsent, a rejection),
+  it is committed not sent for review, as the plugin's own commit did, and the send says so: send it
+  from the Publishing overview. When the answer to a commit is lost (no connection, or none within a
+  minute), the send stops and says it may be on Play or not: look with `status` and in the Console
+  before sending it again.
   Whether the application for production access counts as "in review" there is not documented, so
   nothing is sent while it is open either (owner, 2026-11-10). The internal
   track isn't covered: an upload there is live within minutes, with no review

@@ -22,9 +22,10 @@
 //             staged rollout (Play Console Help, Release app updates with staged rollouts). Read only,
 //             as status.
 //
-// Usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit-unsent <id>|
+// Usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit <id>|edit-commit-unsent <id>|
 //        edit-delete <id>|track-started <track> <key.json> <application id>
-// Errors go to stderr as "release: ...", like scripts/release.sh, with exit code 1.
+// Errors go to stderr as "release: ...", like scripts/release.sh, with exit code 1; exit code 3 (LOST) when a
+// commit's answer was lost, so it may be on Play or not.
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -75,6 +76,9 @@ public class PlayReports {
         .build();
     static String token;
     static String app;
+
+    /** The exit code when a commit's answer was lost: Google may have committed it or not. */
+    static final int LOST = 3;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) fail("usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit <id>|edit-commit-unsent <id>|edit-delete <id>|track-started <track> <key.json> <application id>");
@@ -170,10 +174,19 @@ public class PlayReports {
     }
 
     static Reply send(HttpRequest request) throws Exception {
+        return send(request, null);
+    }
+
+    /** [send], but a lost answer exits with [LOST] and [ifLost] (the request may have done its work). */
+    static Reply send(HttpRequest request, String ifLost) throws Exception {
         HttpResponse<String> response;
         try {
             response = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         } catch (java.io.IOException e) {
+            if (ifLost != null) {
+                System.err.println("release: no answer from Google (" + request.uri().getHost() + "): " + e + ". " + ifLost);
+                System.exit(LOST);
+            }
             fail("no connection to Google (" + request.uri().getHost() + "): " + e + ". Is this PC online?");
             return null;
         }
@@ -187,6 +200,10 @@ public class PlayReports {
     }
 
     static Reply call(String method, String url, String jsonBody) throws Exception {
+        return send(request(method, url, jsonBody));
+    }
+
+    static HttpRequest request(String method, String url, String jsonBody) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
             .timeout(Duration.ofSeconds(60))
             .header("Authorization", "Bearer " + token);
@@ -196,7 +213,7 @@ public class PlayReports {
         } else {
             builder.method(method, HttpRequest.BodyPublishers.noBody());
         }
-        return send(builder.build());
+        return builder.build();
     }
 
     /** The reply, or a plain stop naming what Google said; [what] says what was being read. */
@@ -224,8 +241,16 @@ public class PlayReports {
      * commit sends them to Google's review at once, managed publishing or not (2026-11-09).
      */
     static void editCommit(String edit, boolean unsent) throws Exception {
-        String query = "changesInReviewBehavior=ERROR_IF_IN_REVIEW" + (unsent ? "&changesNotSentForReview=true" : "");
-        Reply reply = call("POST", PUBLISHER + app + "/edits/" + enc(edit) + ":commit?" + query, null);
+        Reply reply = commit(edit, unsent);
+        // Google won't always send changes for review by itself (changes not yet sent waiting in the Publishing
+        // overview, a rejection): it asks for changesNotSentForReview instead. The plugin's own commit then
+        // commits them unsent (Gradle Play Publisher 4.1.1, PlayApiService.commit), and so does this.
+        if (!unsent && reply.code == 400 && reply.errorMessage().contains("changesNotSentForReview")) {
+            out.println("Google Play won't send this for review by itself just now (" + reply.errorMessage() + ").");
+            out.println("Committed not sent for review instead: send it with Send changes for review in the Play"
+                + " Console's Publishing overview.");
+            reply = commit(edit, true);
+        }
         if (reply.code / 100 != 2) {
             editDelete(edit);
             fail("Google Play did not take it (HTTP " + reply.code + " " + reply.errorStatus() + "): "
@@ -233,6 +258,17 @@ public class PlayReports {
                 + " (Publishing overview, or the application for production access on the Dashboard), wait"
                 + " until it is done, then send this again.");
         }
+    }
+
+    /**
+     * edits.commit of [edit]. When its answer is lost (no connection, or none within the minute), Google may have
+     * committed it all the same, so this exits with [LOST] rather than saying nothing was sent.
+     */
+    static Reply commit(String edit, boolean unsent) throws Exception {
+        String query = "changesInReviewBehavior=ERROR_IF_IN_REVIEW" + (unsent ? "&changesNotSentForReview=true" : "");
+        return send(request("POST", PUBLISHER + app + "/edits/" + enc(edit) + ":commit?" + query, null),
+            "Whether Google Play took it isn't known: run scripts/release.sh status (and look at the Play Console's"
+                + " Publishing overview) before sending it again.");
     }
 
     /** Deletes an edit that was never committed (a send that stopped half way): nothing of it reaches Play. */
