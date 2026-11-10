@@ -2,6 +2,9 @@
 
     python -I website/build.py [output folder]      (default: website/build)
 
+The output folder is emptied first, so it must be website/build, a new or empty folder, or one an earlier
+run built; any other folder is refused, untouched.
+
 Each page in website/pages/<language>/ is the inside of one page's <main>, with a short
 header comment (title, description, nav; a tool page's group, the home page's layout: full).
 This script wraps each in the shared frame
@@ -182,8 +185,22 @@ def coffee_line(body):
     return COFFEE_LINE.sub(lambda m: m.group(0).replace(" data-coffee", "", 1), body).replace("{coffee}", COFFEE_URL)
 
 
+def own_build_folder(out):
+    """Whether build() may empty [out]: website/build itself, an empty folder, or a folder an earlier run built
+    (it has the .nojekyll every build writes, and no .git). Anything else could be the repo or a folder of the
+    owner's, which a mistyped output folder would have wiped."""
+    if out == HERE / "build" or not any(out.iterdir()):
+        return True
+    if out in (HERE, *HERE.parents) or HERE in out.parents:
+        return False
+    return (out / ".nojekyll").is_file() and not (out / ".git").exists()
+
+
 def build(out):
     if out.exists():
+        if not out.is_dir() or not own_build_folder(out):
+            raise Problem(f"{out}: not a folder this script built (no .nojekyll, or it holds website/ or a git "
+                          "repository); it would be emptied, so nothing was built. Name a new or empty folder.")
         shutil.rmtree(out)
     shutil.copytree(STATIC, out)
     (out / ".nojekyll").write_text("", encoding="utf-8")

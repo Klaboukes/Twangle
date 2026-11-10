@@ -1,6 +1,6 @@
 """Writes a synthetic strum as a WAV file, for checking strum check on the phone (scripts/strum-check.sh).
 
-    python scripts/strum-wav.py out.wav "E2 A2 D3 G3 B3 E4" "0 -20 0 15 0 0" [peak dBFS]
+    python -I scripts/strum-wav.py out.wav "E2 A2 D3 G3 B3 E4" "0 -20 0 15 0 0" [peak dBFS]
 
 The second argument lists the open strings (A4 = 440 Hz), the third how far each one is off, in
 cents; "x" leaves that string out. The optional fourth sets the peak level (default -1 dBFS). The strings start 15 ms apart from 0.5 s in, lowest first, and

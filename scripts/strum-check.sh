@@ -87,7 +87,7 @@ for c in "${cases[@]}"; do
     name="${c%%|*}"
     cents="${c#*|}"
     wav="$OUT/$name.wav"
-    python scripts/strum-wav.py "$wav" "$notes" "$cents" || exit 6
+    python -I scripts/strum-wav.py "$wav" "$notes" "$cents" || exit 6
     tap_strum_button
     powershell.exe -NoProfile -Command "(New-Object System.Media.SoundPlayer '$(cygpath -w "$ROOT/$wav")').PlaySync()"
     # The sound stops at once at the end, which the phone may take for a sound of its own; give it

@@ -134,10 +134,29 @@ pull() {
     gh release download "$TAG" --pattern "$ASSET" --output "$TAR" --clobber ||
         { echo "Downloading the $2 screenshots from GitHub failed; using this PC's."; return 1; }
     (( here >= there )) && { fill_in "$@"; return; }
-    # GitHub's set replaces this PC's whole set of this kind, so no older picture is left in between.
-    find "$LISTINGS" -type d -path "*/images/$FOLDER" -exec rm -rf {} +
-    tar -xf "$TAR" -C "$LISTINGS" || { rm -f "$TAR"; echo "Unpacking the $2 screenshots failed."; return 1; }
+    # Unpacked into a folder of its own first: a broken download or a full disk leaves this PC's set as it
+    # was (unpacking straight over it, after removing it, left nothing, and a set takes ~50 min to make).
+    local unpacked="build/shared-store-screenshots/unpacked" dir locale
+    rm -rf "$unpacked" && mkdir -p "$unpacked"
+    tar -xf "$TAR" -C "$unpacked" ||
+        { rm -rf "$unpacked" "$TAR"; echo "Unpacking the $2 screenshots from GitHub failed; using this PC's."; return 1; }
     rm -f "$TAR"
+    if [[ -z "$(find "$unpacked" -path "*/images/$FOLDER/*.png" -print -quit)" ]]; then
+        rm -rf "$unpacked"
+        echo "GitHub's $2 screenshots hold no pictures; using this PC's."
+        return 1
+    fi
+    # GitHub's set replaces this PC's whole set of this kind, so no older picture is left in between. Each
+    # language's folder is moved in, not copied (both are in this repo's folder), so this can't run out of room.
+    find "$LISTINGS" -type d -path "*/images/$FOLDER" -exec rm -rf {} +
+    for dir in "$unpacked"/*/images/"$FOLDER"; do
+        [[ -d "$dir" ]] || continue
+        locale="${dir#"$unpacked"/}"
+        locale="${locale%%/*}"
+        mkdir -p "$LISTINGS/$locale/images"
+        mv "$dir" "$LISTINGS/$locale/images/" || { echo "Moving the $2 screenshots of $locale into place failed (they are in $unpacked)."; return 1; }
+    done
+    rm -rf "$unpacked"
     # And the note of the commit they show; a set shared without one shows no known commit.
     gh release download "$TAG" --pattern "$(basename "$MADE_AT")" --output "$MADE_AT" --clobber > /dev/null 2>&1 || rm -f "$MADE_AT"
     # Dated now, so they count as newer than GitHub's copy until a newer set is shared.

@@ -18,7 +18,7 @@ rm -rf "$SHEET"
 mkdir -p "$SHEET"
 find "$PULLED" -name 'ink-*.png' -exec cp {} "$SHEET/" \;
 
-python - "$SHEET" <<'EOF'
+python -I - "$SHEET" <<'EOF'
 import html, os, sys
 sheet = sys.argv[1]
 found = set(os.listdir(sheet))

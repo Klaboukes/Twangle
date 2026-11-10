@@ -161,7 +161,8 @@ bump() {
     if is_released "$current"; then
         base="$current"
     else
-        base="$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 | sed 's/^v//')"
+        # grep finds nothing without a tag; under set -e and pipefail that would stop the script silently.
+        base="$(git tag -l 'v*' --sort=-v:refname | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; } | head -1 | sed 's/^v//')"
         [[ -n "$base" ]] || fail "no release tag (v*) to count from; set twangle.version by hand"
     fi
     IFS=. read -r major minor patch <<<"$base"

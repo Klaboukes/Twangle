@@ -3,7 +3,7 @@
 Made core/designsystem/src/main/res/font/music_signs.ttf from Noto Sans Symbols (SIL OFL 1.1), as
 found in Android's /system/fonts/NotoSansSymbols-Regular-Subsetted.ttf:
 
-    python scripts/subset-font.py NotoSansSymbols-Regular-Subsetted.ttf music_signs.ttf 2669,266A,266D,266E,266F 1300 500 "Twangle Music Signs"
+    python -I scripts/subset-font.py NotoSansSymbols-Regular-Subsetted.ttf music_signs.ttf 2669,266A,266D,266E,266F 1300 500 "Twangle Music Signs"
 
 The optional numbers set the line ascent and descent (font units; hhea and OS/2 typo/win
 metrics). Noto's own (2189/600) are taller than most letter faces, so a sign would make a line

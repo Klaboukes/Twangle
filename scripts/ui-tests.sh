@@ -211,7 +211,7 @@ quote() { printf "'%s'" "${1//\'/\'\\\'\'}"; }
 
 # Prints tests, failures, phone seconds and the failing tests from `am instrument -r` output.
 summarize() {
-    python - "$1" <<'EOF'
+    python -I - "$1" <<'EOF'
 import re, sys
 # Test names can hold note names (F♯); Windows would print them in its own code page and fail.
 sys.stdout.reconfigure(encoding='utf-8')
