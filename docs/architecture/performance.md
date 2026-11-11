@@ -106,6 +106,7 @@ Since Phase 72 (2.0) `scripts/meter-frames.sh` measures the lens's three looks, 
 | Strobe | 119 | 32 | 9/14/16/17 | 51.0 | 4.28 | 33.9 | 98.9 |
 
 All three hold the screen's 120 Hz with the same few late frames; none costs more than another worth a change.
+The Light arc's 25 rays (2026-11-11, `scripts/meter-frames.sh LIGHT_ARC:CLASSIC`, the same phone and settings): 122 fps, 8 late of ~2,570, 7/13/15/17 ms, main 50.7 % (4.16 ms a frame), RenderThread 38.2 %; Classic in the same run 122 fps, 1 late, 8/13/15/17 ms, main 46.9 % (3.84 ms), RenderThread 46.8 %. The 40 more lights cost about 0.3 ms of main thread a frame and no frame rate.
 Measured on the S26 (Android 16, portrait) with `scripts/meter-frames.sh`, which runs `MeterFramesBenchmark` against the minified `benchmarkRelease` build (~4 min, phone unlocked and upright).
 - **Input:** that build hears `SyntheticAudioRecorder` (`:app`, behind `BuildConfig.SYNTHETIC_AUDIO`, a constant `false` elsewhere, so R8 removes it from release): A4 sweeping 30·sin³ over 8 s plus a 2-cent wobble (`SweepTone`), noise 20 dB below. The marker never stands still and reaches in tune twice per sweep.
 - **Method:** per look, chromatic mode, the cents under the note, 3 windows of 7 s; frames from `dumpsys gfxinfo`, CPU from `/proc`. The old needle row is commit 4826b6e with the same input and frame-rate request.

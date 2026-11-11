@@ -1,0 +1,386 @@
+<!doctype html>
+<!--
+  Mock-up, 2026-11-11: the Light arc meter, slightly more stylised. Ink, dark and light. The fan's geometry is
+  LightArc.kt's (17 rays of 5 lights on the stretched scale, ±1.2 rad, FanGeometry fitted to a 353 x 212 dp lens),
+  its lighting LightArcHeat's (the wedge from the centre to the reading, a 0.12 s fade). Only the lights' shape and
+  the marks past the outer lights change.
+  Round 1 (this page): Today, A Segments, B Blades, C Jewels, and a mixer of lights and marks.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Light arc meter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --page: #E9ECF0; --text: #1B1F24; --muted: #5A6370; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 4px; }
+  p.lead { margin: 0 0 14px; color: var(--muted); max-width: 78ch; }
+  .row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  figure { margin: 0; width: 353px; }
+  canvas { display: block; border-radius: 20px; box-shadow: 0 4px 18px rgba(0,0,0,.16); }
+  figcaption { margin-top: 8px; font-size: 14px; color: #333A44; }
+  figcaption b { display: block; font-size: 15px; color: var(--text); }
+  .controls { margin: 8px 0 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .controls span { color: var(--muted); margin: 0 4px 0 10px; }
+  .controls span:first-child { margin-left: 0; }
+  button { font: inherit; font-size: 14px; padding: 5px 13px; border-radius: 16px; border: 1px solid #B8BEC7; background: #fff; cursor: pointer; }
+  button.on { background: #1A6FC4; color: #fff; border-color: #1A6FC4; }
+  input[type=range] { width: 200px; }
+  .mixer { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .mixer .opts { max-width: 420px; }
+  .mixer .opts p { margin: 4px 0 14px; color: #333A44; font-size: 14px; min-height: 3em; }
+  ul.notes { max-width: 78ch; color: #333A44; padding-left: 20px; }
+  ul.notes li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>Light arc meter, round 1</h1>
+<p class="lead">The same fan of lights, a little more stylised: the lights' shape and the marks past them change,
+nothing else. Each dial is the phone's lens size (353 × 212). Pick a reading and a theme; every dial lights and
+fades as the app does.</p>
+
+<div class="controls">
+  <span>Reading</span>
+  <button data-mode="sweep" class="on">Slow sweep</button>
+  <button data-mode="pluck">New strings</button>
+  <button data-mode="hold">Hold 8 cents flat</button>
+  <button data-mode="tune">In tune</button>
+  <button data-mode="quiet">Quiet</button>
+  <button data-mode="hand">By hand</button>
+  <input id="hand" type="range" min="-50" max="50" step="0.5" value="-8" disabled>
+  <span>Theme</span>
+  <button data-theme="dark" class="on">Dark</button>
+  <button data-theme="light">Light</button>
+</div>
+
+<div class="row">
+  <figure><canvas data-lights="dots" data-marks="dots"></canvas>
+    <figcaption><b>Today</b>Round lights growing outwards, each with a soft halo; tiny ink dots past the outer
+    lights at 5 and 10 cents.</figcaption></figure>
+  <figure><canvas data-lights="segments" data-marks="ring"></canvas>
+    <figcaption><b>A · Segments</b>Each light a short rounded bar along its ray, like an LED ladder on a pedal.
+    A thin ring past the lights holds the marks: a tick per ray, longer at 5, 10 and 20 cents, the in-tune window
+    as a band on the ring.</figcaption></figure>
+  <figure><canvas data-lights="blades" data-marks="ring"></canvas>
+    <figcaption><b>B · Blades</b>Each ray one tapered blade cut into five, so the lit wedge reads as one solid
+    shape, a fan filling up. The same ring of marks.</figcaption></figure>
+  <figure><canvas data-lights="jewels" data-marks="numbers"></canvas>
+    <figcaption><b>C · Jewels</b>Round lights with a rim and a glint, like LED lenses; a lit one glows from a
+    bright core, and the ray at the reading stands out from the wedge behind it. The ring with 5, 10 and 20 on
+    it.</figcaption></figure>
+</div>
+
+<h2>Mix and match</h2>
+<p class="lead">Any lights go with any marks; today's are here to compare.</p>
+<div class="mixer">
+  <canvas id="big" data-lights="segments" data-marks="ring" data-scale="1.6"></canvas>
+  <div class="opts">
+    <div class="controls" id="lightsPick"><span>Lights</span>
+      <button data-l="dots">Today</button><button data-l="segments" class="on">Segments</button>
+      <button data-l="blades">Blades</button><button data-l="jewels">Jewels</button></div>
+    <p id="lightsNote"></p>
+    <div class="controls" id="marksPick"><span>Marks</span>
+      <button data-m="dots">Today</button><button data-m="ring" class="on">Ring</button>
+      <button data-m="numbers">Ring with numbers</button></div>
+    <p id="marksNote"></p>
+  </div>
+</div>
+
+<h2>What stays the same</h2>
+<ul class="notes">
+  <li>♭ left, ♯ right, by position; the rays stand on the stretched scale, a few cents apart near the middle.</li>
+  <li>The wedge from the middle out to the reading, in the reading's tone (amber far off, green in tune), each
+  light fading as the reading leaves it; the middle ray muted off the note and green in tune, its neighbours half
+  lit; the in-tune glow behind it.</li>
+  <li>The ring of marks takes a little room past the lights, so with it the fan is about 6 % smaller.</li>
+  <li>High contrast would get the same shapes, an unlit light an empty outline in ink, as today.</li>
+  <li>It's one drawing file (LightArc.kt); nothing else on the screen moves.</li>
+</ul>
+
+<script>
+const PAL = {
+  dark:  { bg: "#0E1116", ink: "#EEF1F5", muted: "#A8B0BC", track: "#262C35", inTune: "#3DDC84", farOff: "#FFB648" },
+  light: { bg: "#F6F7F9", ink: "#14181D", muted: "#4D5560", track: "#E1E5EA", inTune: "#107E46", farOff: "#D98400" },
+};
+const LIGHTS_NOTES = {
+  dots: "Round lights, 3.4 units at the middle to 5.6 at the outside, each lit one with a soft halo.",
+  segments: "Short rounded bars along the rays, growing outwards, with a soft glow: an LED ladder.",
+  blades: "Each ray a tapered blade in five pieces; lit, the wedge reads as one shape.",
+  jewels: "Round lights with a rim and a glint; lit from a bright core, the reading's ray brightest.",
+};
+const MARKS_NOTES = {
+  dots: "Tiny ink dots past the outer lights at 5 and 10 cents, nothing else.",
+  ring: "A thin ring past the lights: a tick per ray, longer at 5, 10 and 20 cents, the in-tune window a band on it.",
+  numbers: "The ring, with 5, 10 and 20 over the longer ticks.",
+};
+
+// The fan (LightArc.kt, FanGeometry): rays evenly spaced on the stretched scale, angles clockwise from up.
+const SWEEP = 1.2, FIRST = 78, STEP = 17.5, R0 = 3.4, GROW = .55, DOTS = 5, RAYS = 17, CENTRE = 8;
+const OUT = FIRST + STEP * (DOTS - 1), STEPC = 6.25, WINDOW = 5, LIGHTS_N = RAYS * DOTS;
+const OUTER_LIGHT = (R0 + GROW * 4) * 1.08, INNER_LIGHT = R0 * 1.08, RING = OUT + 11;
+const stretch = c => { const a = Math.abs(c / 50); return Math.sign(c) * 50 * 2.5 * a / (1 + 1.5 * a); };
+const place = ray => -50 + ray * STEPC;
+const rayAngle = ray => place(ray) / 50 * SWEEP;
+const angleOf = c => stretch(c) / 50 * SWEEP;
+// How far each shape reaches past a light's middle, and how far each set of marks reaches past the pivot.
+const REACH = { dots: OUTER_LIGHT, segments: 7, blades: 7.6, jewels: OUTER_LIGHT * 1.12 };
+const MARK_TOP = { dots: OUT + 13.8, ring: RING + 10, numbers: RING + 24 };
+const MARK_SIDE = { dots: 0, ring: (RING + 5) * Math.sin(SWEEP), numbers: (RING + 5) * Math.sin(SWEEP) };
+
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const css = (c, a = 1) => `rgba(${c.map(Math.round).join(",")},${a})`;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const WHITE = [255, 255, 255];
+
+function geom(w, h, lights, marks) {
+  const side = Math.max(OUT * Math.sin(SWEEP) + REACH[lights], MARK_SIDE[marks]);
+  const top = MARK_TOP[marks];
+  const across = (w / 2 - 16) / (side / OUT);
+  const tall = (top - FIRST * Math.cos(SWEEP) + INNER_LIGHT) / OUT;
+  const R = Math.max(0, Math.min(across, (h - 28) / tall)), u = R / OUT;
+  const pivotY = (h - R * tall) / 2 + top * u, cx = w / 2;
+  const L = [];
+  for (let i = 0; i < LIGHTS_N; i++) {
+    const ray = Math.floor(i / DOTS), dot = i % DOTS, a = rayAngle(ray), d = (FIRST + STEP * dot) * u;
+    L.push({ i, ray, dot, a, d, r: (R0 + GROW * dot) * u, x: cx + d * Math.sin(a), y: pivotY - d * Math.cos(a) });
+  }
+  return { u, cx, pivotY, L };
+}
+
+// LightArcHeat's lightArcGoal: the wedge from the middle out to the reading, brighter towards it.
+function goal(i, cents, dimmest) {
+  const ray = Math.floor(i / DOTS);
+  if (ray === CENTRE) return 0;
+  const reading = stretch(clamp(cents, -50, 50)), at = place(ray);
+  if (Math.sign(at) !== Math.sign(reading)) return 0;
+  const far = Math.abs(reading), near = Math.abs(at);
+  const reached = clamp((far - near) / STEPC + 1, 0, 1);
+  if (!reached) return 0;
+  const share = Math.min(1, near / Math.max(far, STEPC));
+  const lit = reached * (1.6 + (DOTS - 1.6) * share);
+  return clamp(lit - i % DOTS, 0, 1) * (dimmest + (1 - dimmest) * share) * reached;
+}
+function stepHeat(heat, cents, dt, dimmest) {
+  const rise = Math.min(1, dt * 18), fade = dt / .12;
+  for (let i = 0; i < LIGHTS_N; i++) {
+    const g = goal(i, cents, dimmest);
+    if (g > heat[i]) { heat[i] += (g - heat[i]) * rise; if (g - heat[i] < .01) heat[i] = g; }
+    else heat[i] = Math.max(g, heat[i] - fade);
+  }
+}
+function tone(P, cents, tuned) {
+  const near = clamp(1 - (Math.abs(cents) - WINDOW) / 10, 0, 1);
+  return mix(mix(P.farOff, P.inTune, .4 * near * near), P.inTune, tuned);
+}
+
+// Shapes: each draws one light, unlit or lit at `glow` in `colour`.
+function capsule(g, F, L, grow = 0) {
+  const u = F.u, len = (11 + .6 * L.dot) * u * (1 + grow), w = 1.6 * L.r * (1 + grow);
+  g.save(); g.translate(L.x, L.y); g.rotate(L.a);
+  g.beginPath(); g.roundRect(-w / 2, -len / 2, w, len, w / 2);
+  g.restore();
+}
+function sector(g, F, L) {
+  const u = F.u, h = .047, a0 = L.a - h - Math.PI / 2, a1 = L.a + h - Math.PI / 2;
+  g.beginPath();
+  g.arc(F.cx, F.pivotY, L.d + 7.4 * u, a0, a1);
+  g.arc(F.cx, F.pivotY, L.d - 7.4 * u, a1, a0, true);
+  g.closePath();
+}
+function glowed(g, c, P, colour, glow, dark, blur) {
+  g.shadowColor = css(colour, (dark ? .75 : .45) * glow); g.shadowBlur = blur * c.d;
+}
+const SHAPES = {
+  dots: {
+    unlit(g, c, F, P, L, dark) {
+      g.fillStyle = css(P.track, dark ? .75 : .7); g.beginPath(); g.arc(L.x, L.y, L.r, 0, 7); g.fill();
+    },
+    lit(g, c, F, P, L, colour, glow, dark, halo) {
+      if (halo) for (let k = 4; k >= 1; k--) {
+        g.fillStyle = css(colour, (dark ? .45 : .28) / 4 * glow);
+        g.beginPath(); g.arc(L.x, L.y, L.r * (1 + 2.4 * k / 4), 0, 7); g.fill();
+      }
+      g.fillStyle = css(dark ? mix(colour, WHITE, .15 * glow) : colour, glow);
+      g.beginPath(); g.arc(L.x, L.y, L.r * (1 + .08 * glow), 0, 7); g.fill();
+    },
+  },
+  segments: {
+    unlit(g, c, F, P, L, dark) {
+      g.fillStyle = css(P.track, dark ? .8 : .75); capsule(g, F, L); g.fill();
+    },
+    lit(g, c, F, P, L, colour, glow, dark, halo) {
+      g.save(); if (halo) glowed(g, c, P, colour, glow, dark, 9 * F.u);
+      g.fillStyle = css(dark ? mix(colour, WHITE, .15 * glow) : colour, glow); capsule(g, F, L, .06 * glow); g.fill();
+      g.restore();
+    },
+  },
+  blades: {
+    unlit(g, c, F, P, L, dark) {
+      g.fillStyle = css(P.track, dark ? .8 : .75); sector(g, F, L); g.fill();
+    },
+    lit(g, c, F, P, L, colour, glow, dark, halo) {
+      g.save(); if (halo) glowed(g, c, P, colour, glow, dark, 8 * F.u);
+      g.fillStyle = css(dark ? mix(colour, WHITE, .12 * glow) : colour, glow); sector(g, F, L); g.fill();
+      g.restore();
+    },
+  },
+  jewels: {
+    unlit(g, c, F, P, L, dark) {
+      g.fillStyle = css(dark ? mix(P.track, P.bg, .25) : P.track); g.beginPath(); g.arc(L.x, L.y, L.r, 0, 7); g.fill();
+      g.strokeStyle = css(mix(P.track, P.muted, dark ? .3 : .25)); g.lineWidth = .7 * F.u; g.stroke();
+      g.fillStyle = css(WHITE, dark ? .1 : .75);
+      g.beginPath(); g.arc(L.x - .32 * L.r, L.y - .32 * L.r, .3 * L.r, 0, 7); g.fill();
+    },
+    lit(g, c, F, P, L, colour, glow, dark, halo) {
+      const r = L.r * (1 + .12 * glow);
+      if (halo) {
+        const h = g.createRadialGradient(L.x, L.y, r * .7, L.x, L.y, r * 3.4);
+        h.addColorStop(0, css(colour, (dark ? .5 : .3) * glow)); h.addColorStop(1, css(colour, 0));
+        g.fillStyle = h; g.beginPath(); g.arc(L.x, L.y, r * 3.4, 0, 7); g.fill();
+      }
+      const core = g.createRadialGradient(L.x - .25 * r, L.y - .25 * r, 0, L.x, L.y, r);
+      core.addColorStop(0, css(mix(colour, WHITE, dark ? .65 : .45), glow)); core.addColorStop(1, css(colour, glow));
+      g.fillStyle = core; g.beginPath(); g.arc(L.x, L.y, r, 0, 7); g.fill();
+    },
+  },
+};
+// C's wedge falls off more steeply behind the reading, so the reading's ray stands out.
+const DIMMEST = { dots: .4, segments: .4, blades: .4, jewels: .2 };
+
+function tickAt(g, F, a, from, to, width, colour) {
+  g.strokeStyle = colour; g.lineWidth = width; g.lineCap = "round"; g.beginPath();
+  g.moveTo(F.cx + from * Math.sin(a), F.pivotY - from * Math.cos(a));
+  g.lineTo(F.cx + to * Math.sin(a), F.pivotY - to * Math.cos(a)); g.stroke();
+}
+function ringArc(g, F, radius, a0, a1, width, colour, cap = "butt") {
+  g.strokeStyle = colour; g.lineWidth = width; g.lineCap = cap; g.beginPath();
+  g.arc(F.cx, F.pivotY, radius, a0 - Math.PI / 2, a1 - Math.PI / 2); g.stroke();
+}
+// Rays out from the middle that carry the longer ticks and the numbers: 5.9, 9.7 and 20 cents.
+const MAJOR = { 2: "5", 3: "10", 5: "20" };
+function ring(g, F, P, s, numbers) {
+  const u = F.u, Rr = RING * u, zc = mix(P.muted, P.inTune, s.tuned);
+  ringArc(g, F, Rr, -SWEEP, SWEEP, 1.4 * u, css(mix(P.track, P.muted, .35)));
+  ringArc(g, F, Rr, -angleOf(WINDOW), angleOf(WINDOW), 3.6 * u, css(zc, .55 + .45 * s.tuned), "round");
+  for (let ray = 0; ray < RAYS; ray++) {
+    const k = Math.abs(ray - CENTRE);
+    if (!k) continue;
+    const major = k in MAJOR;
+    tickAt(g, F, rayAngle(ray), Rr + 2.5 * u, Rr + (major ? 8 : 5) * u, (major ? 1.7 : 1) * u, css(P.ink, major ? .8 : .32));
+    if (numbers && major) {
+      const d = Rr + 15 * u, a = rayAngle(ray);
+      g.fillStyle = css(P.ink, .72); g.font = `800 ${10.5 * u}px Nunito, system-ui`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(MAJOR[k], F.cx + d * Math.sin(a), F.pivotY - d * Math.cos(a) + .5 * u);
+    }
+  }
+  tickAt(g, F, 0, Rr - 5 * u, Rr + 9 * u, 2.6 * u, css(zc));
+}
+const MARKS = {
+  dots(g, F, P) {
+    const d = (OUT + 12) * F.u;
+    for (const [k, rad, ink] of [[2, 1.8, .55], [3, 1.3, .32]]) for (const side of [-1, 1]) {
+      const a = rayAngle(CENTRE + side * k);
+      g.fillStyle = css(P.ink, ink); g.beginPath();
+      g.arc(F.cx + d * Math.sin(a), F.pivotY - d * Math.cos(a), rad * F.u, 0, 7); g.fill();
+    }
+  },
+  ring(g, F, P, s) { ring(g, F, P, s, false); },
+  numbers(g, F, P, s) { ring(g, F, P, s, true); },
+};
+
+function setup(canvas) {
+  const k = +(canvas.dataset.scale || 1), w = Math.round(353 * k), h = Math.round(212 * k), d = window.devicePixelRatio || 1;
+  canvas.width = w * d; canvas.height = h * d; canvas.style.width = w + "px"; canvas.style.height = h + "px";
+  return { canvas, g: canvas.getContext("2d"), d, w, h, k, heat: new Float32Array(LIGHTS_N) };
+}
+
+function draw(c, theme, s) {
+  const P = Object.fromEntries(Object.entries(PAL[theme]).map(([k, v]) => [k, rgb(v)])), dark = theme === "dark";
+  const { g, d, w, h, k } = c, lights = c.canvas.dataset.lights, marks = c.canvas.dataset.marks;
+  const F = geom(w, h, lights, marks), shape = SHAPES[lights], u = F.u;
+  g.setTransform(d, 0, 0, d, 0, 0);
+  g.fillStyle = css(P.bg); g.fillRect(0, 0, w, h);
+  for (const L of F.L) shape.unlit(g, c, F, P, L, dark);
+  if (s.tuned > .01) {
+    const gx = F.cx, gy = F.pivotY - 120 * u, gr = 90 * u;
+    const grad = g.createRadialGradient(gx, gy, 0, gx, gy, gr);
+    grad.addColorStop(0, css(P.inTune, (dark ? .26 : .16) * s.tuned)); grad.addColorStop(1, css(P.inTune, 0));
+    g.fillStyle = grad; g.fillRect(gx - gr, gy - gr, 2 * gr, 2 * gr);
+  }
+  // The middle ray: two dim lights in the muted colour off the note, all five green as it is reached.
+  const centre = mix(P.muted, P.inTune, s.tuned), lit = tone(P, s.pos, s.tuned);
+  for (let dot = 0; dot < DOTS; dot++) {
+    const glow = Math.max((dot < 2 ? .45 : .14) * (1 - s.tuned), s.tuned);
+    shape.lit(g, c, F, P, F.L[CENTRE * DOTS + dot], centre, glow, dark, false);
+  }
+  for (const L of F.L) {
+    if (L.ray === CENTRE) continue;
+    const beside = Math.abs(L.ray - CENTRE) === 1, closing = beside ? s.tuned * (L.dot < 3 ? .5 : .2) : 0;
+    const glow = Math.max(c.heat[L.i], closing);
+    if (glow < .02) continue;
+    const by = closing > c.heat[L.i];
+    shape.lit(g, c, F, P, L, by ? centre : lit, glow, dark, !by);
+  }
+  MARKS[marks](g, F, P, s);
+  g.fillStyle = css(P.muted); g.font = `${24 * k}px Nunito, system-ui`; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText("♭", 16 * k, h - 16 * k); g.fillText("♯", w - 16 * k, h - 16 * k);
+}
+
+// The reading: the marker on a quick spring, as the app's lens.
+let mode = "sweep", theme = "dark", pos = -40, vel = 0, tuned = 0, last = performance.now(), t0 = last;
+const hand = document.getElementById("hand");
+function readingAt(t) {
+  const n = Math.sin(t * 2.3) * .35 + Math.sin(t * 5.1 + 1) * .2;
+  if (mode === "sweep") { const p = (t / 10) % 2, k = p < 1 ? p : 2 - p; return -42 + 84 * k + n; }
+  if (mode === "hold") return -8 + n;
+  if (mode === "tune") return .4 + n * 1.4;
+  if (mode === "quiet") return 0;
+  if (mode === "pluck") return [-34, 22, -11, 2.5][Math.floor(t / 3) % 4] + n;
+  return +hand.value;
+}
+const canvases = [...document.querySelectorAll("canvas")].map(setup);
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const target = readingAt((now - t0) / 1000);
+  const acc = 160 * (target - pos) - 22 * vel; vel += acc * dt; pos += vel * dt;
+  const inTune = mode !== "quiet" && Math.abs(pos) <= WINDOW;
+  tuned += ((inTune ? 1 : 0) - tuned) * Math.min(1, dt * 6);
+  for (const c of canvases) {
+    stepHeat(c.heat, mode === "quiet" ? 0 : pos, dt, DIMMEST[c.canvas.dataset.lights]);
+    draw(c, theme, { pos, tuned });
+  }
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+  mode = b.dataset.mode; t0 = performance.now(); hand.disabled = mode !== "hand";
+  document.querySelectorAll("[data-mode]").forEach(x => x.classList.toggle("on", x === b));
+});
+document.querySelectorAll("[data-theme]").forEach(b => b.onclick = () => {
+  theme = b.dataset.theme;
+  document.querySelectorAll("[data-theme]").forEach(x => x.classList.toggle("on", x === b));
+});
+const big = document.getElementById("big");
+function mixer(group, attr, key, notes, el) {
+  document.querySelectorAll(`#${group} button`).forEach(b => b.onclick = () => {
+    big.dataset[attr] = b.dataset[key]; el.textContent = notes[big.dataset[attr]];
+    document.querySelectorAll(`#${group} button`).forEach(x => x.classList.toggle("on", x === b));
+  });
+  el.textContent = notes[big.dataset[attr]];
+}
+mixer("lightsPick", "lights", "l", LIGHTS_NOTES, document.getElementById("lightsNote"));
+mixer("marksPick", "marks", "m", MARKS_NOTES, document.getElementById("marksNote"));
+
+document.fonts.load("800 14px Nunito").finally(() => requestAnimationFrame(frame));
+</script>
+</body>
+</html>

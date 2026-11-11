@@ -28,11 +28,12 @@ import kotlin.math.sin
 /*
  * The Light arc, as on the round-2 mock-up page (docs/design/1.x/meter-looks-round2-preview.html, drawFan),
  * sharpened in Phase 60 (docs/design/1.x/meter-precision-preview.html, drawFan with `sharp`) and fitted into
- * 2.0's lens in Phase 72 (docs/design/v2-tuner-screens-preview.html, lensArc): a fan of little lights, like
- * an LED pedal's, with no numbers. The rays from the centre out to the reading light up as a wedge, brightest
+ * 2.0's lens in Phase 72 (docs/design/v2-tuner-screens-preview.html, lensArc), made finer and calmer on
+ * 2026-11-11 (docs/design/light-arc-preview.html, round 2's B: 25 rays, smaller lights, half the halo, a
+ * mark at 20 cents): a fan of little lights, like an LED pedal's, with no numbers. The rays from the centre out to the reading light up as a wedge, brightest
  * at the reading, in the reading's tone; the middle ray is the centre mark. The rays stand on the stretched
- * scale, so the ones near the middle are a few cents apart, and tiny dots just past the outer lights mark 5
- * and 10 cents and the in-tune window.
+ * scale, so the ones near the middle are about 2 cents apart, and tiny dots just past the outer lights mark 5,
+ * 10 and 20 cents and the in-tune window.
  */
 
 /**
@@ -108,8 +109,8 @@ internal class FanGeometry(size: Size, wide: Boolean, dp: Float) {
 
         const val FIRST_DOT_UNITS = 78f
         const val DOT_STEP_UNITS = 17.5f
-        const val FIRST_DOT_RADIUS = 3.4f
-        const val DOT_GROWTH = 0.55f
+        const val FIRST_DOT_RADIUS = 2.7f
+        const val DOT_GROWTH = 0.45f
         const val GLOW_UP_UNITS = 120f
         const val MARK_GAP_UNITS = 12f
 
@@ -117,7 +118,7 @@ internal class FanGeometry(size: Size, wide: Boolean, dp: Float) {
         const val OUTER_UNITS = FIRST_DOT_UNITS + DOT_STEP_UNITS * (LIGHT_ARC_DOTS - 1)
 
         /** The fan's top above the pivot: the strong marks just past the outer lights, with their radius. */
-        const val TOP_UNITS = OUTER_UNITS + MARK_GAP_UNITS + 1.8f
+        const val TOP_UNITS = OUTER_UNITS + MARK_GAP_UNITS + 2f
 
         /** An outer and an inner light's radius when fully lit (8 % larger than unlit). */
         const val OUTER_LIGHT_UNITS = (FIRST_DOT_RADIUS + DOT_GROWTH * (LIGHT_ARC_DOTS - 1)) * 1.08f
@@ -227,7 +228,7 @@ internal const val MAX_STEP_SECONDS = 0.1f
 
 /**
  * The fan's lit lights. A lit light is the reading's tone (a little whiter in dark) at its heat, a touch larger
- * than unlit, with a soft halo of 3.4 times its radius (45 % dark, 28 % light at its middle), drawn as a few
+ * than unlit, with a soft halo of twice its radius (22 % dark, 14 % light at its middle), drawn as a few
  * rings in the tone so one halo serves any tone without a brush per colour. The middle ray is the centre mark:
  * its two inner lights at 45 % and the rest at 14 % off the note, muted, all five green as the note is reached
  * ([MeterReading.tuned]); the rays either side then light half way (three lights at 50 %, two at 20 %), so the
@@ -235,7 +236,7 @@ internal const val MAX_STEP_SECONDS = 0.1f
  */
 private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
     private val lights = fan.lights
-    private val ringAlpha = (if (roles.dark) 0.45f else 0.28f) / HALO_RINGS
+    private val ringAlpha = (if (roles.dark) 0.22f else 0.14f) / HALO_RINGS
 
     fun drawLit(scope: DrawScope, heat: FloatArray, tuned: Float, tone: Color) = with(scope) {
         val centre = roles.centre(tuned)
@@ -280,7 +281,7 @@ private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
         const val LIT_GROWTH = 0.08f
 
         /** A lit light's halo reaches this many times its radius, in this many rings. */
-        const val HALO_SIZE = 3.4f
+        const val HALO_SIZE = 2f
         const val HALO_RINGS = 4
 
         /** The middle ray's lights off the note: the two inner ones, then the rest. */

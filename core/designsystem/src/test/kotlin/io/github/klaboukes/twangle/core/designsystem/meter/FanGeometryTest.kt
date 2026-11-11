@@ -92,7 +92,7 @@ class FanGeometryTest {
             for (ray in 0 until LIGHT_ARC_RAYS) {
                 if (ray == LIGHT_ARC_CENTRE_RAY) continue
                 val mark = fan.markAt(ray)
-                assertTrue("$case mark on ray $ray at $mark", mark.x in 0f..width && mark.y - 1.8f * fan.u >= 0f && mark.y <= height)
+                assertTrue("$case mark on ray $ray at $mark", mark.x in 0f..width && mark.y - ArcMark.STRONG.radiusUnits * fan.u >= 0f && mark.y <= height)
             }
         }
     }
@@ -101,7 +101,7 @@ class FanGeometryTest {
     fun `the marks sit just past the outer lights in both shapes`() {
         for ((w, h, wide) in cases) {
             val fan = fan(w, h, wide)
-            for (out in 1..3) for (side in listOf(-1, 1)) {
+            for (out in 1..8) for (side in listOf(-1, 1)) {
                 val ray = LIGHT_ARC_CENTRE_RAY + side * out
                 val outer = ray * LIGHT_ARC_DOTS + LIGHT_ARC_DOTS - 1
                 val mark = fan.markAt(ray)

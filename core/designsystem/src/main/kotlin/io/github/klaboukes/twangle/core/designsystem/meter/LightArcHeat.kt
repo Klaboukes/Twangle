@@ -8,16 +8,17 @@ import kotlin.math.sign
 
 /*
  * The light arc's fan (Phase 25, the round-2 mock-up's drawFan; sharpened in Phase 60,
- * docs/design/1.x/meter-precision-preview.html): rays of little lights fanning out from under the box,
- * evenly spaced on the stretched scale ([meterStretch]), one every LIGHT_ARC_STEP_CENTS of it from
- * −50 to +50, each a row of LIGHT_ARC_DOTS lights from the inside out. So the rays near the middle
- * stand a few cents apart and the outer ones far apart: the first out is reached at about 3 cents,
- * then 6, 10, 14, 20, 27, 37 and 50. Light i is dot i % LIGHT_ARC_DOTS of ray i / LIGHT_ARC_DOTS.
+ * docs/design/1.x/meter-precision-preview.html; 25 rays since 2026-11-11, docs/design/light-arc-preview.html):
+ * rays of little lights fanning out from under the box, evenly spaced on the stretched scale ([meterStretch]),
+ * one every LIGHT_ARC_STEP_CENTS of it from −50 to +50, each a row of LIGHT_ARC_DOTS lights from the inside
+ * out. So the rays near the middle stand about 2 cents apart and the outer ones far apart: the first out is
+ * reached at about 1.8 cents, then 3.7, 5.9, 8.3, 11.1, 14.3, 17.9, 22.2 and on to 50. Light i is dot
+ * i % LIGHT_ARC_DOTS of ray i / LIGHT_ARC_DOTS.
  */
 
 /** Rays of the fan, one every [LIGHT_ARC_STEP_CENTS] of the stretched scale from −50 to +50, the middle one at 0. */
-internal const val LIGHT_ARC_RAYS = 17
-internal const val LIGHT_ARC_STEP_CENTS = 6.25f
+internal const val LIGHT_ARC_RAYS = 25
+internal const val LIGHT_ARC_STEP_CENTS = 2f * METER_RANGE_CENTS / (LIGHT_ARC_RAYS - 1)
 
 /** Lights on each ray, from the inside out. */
 internal const val LIGHT_ARC_DOTS = 5
@@ -37,7 +38,7 @@ internal fun lightArcRayPlace(ray: Int): Float = -METER_RANGE_CENTS + ray * LIGH
 /**
  * How brightly light [index] is lit with the marker at [cents], placed on the stretched scale like
  * the rays ([meterStretch]): the rays from the centre out to the reading light up as a wedge, the ray at the reading with all its lights and the rays nearer the
- * centre with fewer (at least 1.6), brighter towards the reading (40 % to 100 %). The ray just past
+ * centre with fewer (at least 1.6), brighter towards the reading (25 % to 100 %, so the reading's ray stands out). The ray just past
  * the reading lights part of the way as the reading nears it, so the wedge grows smoothly. The middle
  * ray and the other side stay dark (0).
  */
@@ -62,15 +63,18 @@ internal fun lightArcGoal(index: Int, cents: Float): Float {
 private const val MIN_LIT_DOTS = 1.6f
 
 /** … at this share of full brightness. */
-private const val DIMMEST = 0.4f
+private const val DIMMEST = 0.25f
 
 /** A mark just past the fan's outer lights ([lightArcMarks]): an ink dot [radiusUnits] round, at [ink]. */
 internal enum class ArcMark(val radiusUnits: Float, val ink: Float) {
     /** 5 cents and the in-tune window's edge. */
-    STRONG(1.8f, 0.55f),
+    STRONG(2f, 0.62f),
 
     /** 10 cents. */
-    LIGHT(1.3f, 0.32f),
+    LIGHT(1.5f, 0.42f),
+
+    /** 20 cents. */
+    FAINT(1.3f, 0.3f),
 }
 
 /** How many rays out from the middle (1 the first) the ray nearest [cents] off the note is, either side. */
@@ -80,12 +84,12 @@ internal fun lightArcMarkRay(cents: Float): Int =
 /**
  * The fan's marks with the in-tune window [window] cents each way ([MeterReading.inTuneWindow]), by
  * rays out from the middle, the same on both sides: a strong one on the rays nearest 5 cents and the
- * window's edge (so with Precise on the first ray too), a light one on the ray nearest 10. They sit
- * on the rays, as on the mock-up, so each says which ray it belongs to: Relaxed marks the second ray
- * (reached at 5.9 cents) and the third (9.7).
+ * window's edge (so with Precise on the first ray too), a light one on the ray nearest 10 and a faint
+ * one on the ray nearest 20. They sit on the rays, as on the mock-up, so each says which ray it belongs
+ * to: Relaxed marks the third ray (reached at 5.9 cents), the fifth (11.1) and the eighth (22.2).
  */
 internal fun lightArcMarks(window: Float): Map<Int, ArcMark> =
-    sortedMapOf(lightArcMarkRay(10f) to ArcMark.LIGHT).apply {
+    sortedMapOf(lightArcMarkRay(20f) to ArcMark.FAINT, lightArcMarkRay(10f) to ArcMark.LIGHT).apply {
         put(lightArcMarkRay(5f), ArcMark.STRONG)
         put(lightArcMarkRay(window), ArcMark.STRONG)
     }
