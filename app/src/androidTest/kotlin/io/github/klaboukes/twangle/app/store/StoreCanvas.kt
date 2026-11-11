@@ -15,12 +15,15 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
@@ -202,7 +205,7 @@ fun StoreCanvas(
                         when (moment) {
                             is Moment.Cut -> Cut(moment, maxWidth, maxHeight)
                             is Moment.Phone -> Device(Window(moment.screen), maxWidth, maxHeight, PHONE_FRAME, PHONE_CORNER)
-                            is Moment.Facts -> Facts(moment.facts, colour)
+                            is Moment.Facts -> Facts(moment.facts, colour, maxHeight)
                         }
                     }
                 }
@@ -351,17 +354,23 @@ private fun Cut(cut: Moment.Cut, maxWidth: Dp, maxHeight: Dp) {
     }
 }
 
-/** The microphone in a glowing disc of [colour], and under it the [facts], each after its mark (no account, no internet, the microphone). */
+/**
+ * The microphone in a glowing disc of [colour], and under it the [facts], each after its mark (no account, no internet,
+ * the microphone), within [maxHeight]: the facts keep their size and the disc gives way when they need the room (Tamil
+ * in the tablet's taller font ran its last line off the picture, 2026-11-11); where they fit, the disc is full size.
+ */
 @Composable
-private fun Facts(facts: List<String>, colour: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun Facts(facts: List<String>, colour: Color, maxHeight: Dp) {
+    Column(Modifier.heightIn(max = maxHeight), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             Modifier
-                .size(MIC_DISC * 2)
+                .weight(1f, fill = false)
+                .sizeIn(maxWidth = MIC_DISC * 2, maxHeight = MIC_DISC * 2)
+                .aspectRatio(1f)
                 .drawBehind { drawCircle(Brush.radialGradient(listOf(colour.copy(alpha = GLOW_ALPHA), Color.Transparent))) },
             contentAlignment = Alignment.Center,
         ) {
-            Box(Modifier.size(MIC_DISC).background(colour.copy(alpha = DISC_ALPHA), CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxSize(0.5f).background(colour.copy(alpha = DISC_ALPHA), CircleShape), contentAlignment = Alignment.Center) {
                 Mark(MIC_MARK, colour, MIC_MARK_SIZE)
             }
         }
