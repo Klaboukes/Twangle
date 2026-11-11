@@ -42,7 +42,7 @@ that is already tagged, check that `twangle.version` in `gradle.properties` is t
 | "raise the rollout", "how is the rollout doing?" | step 7 |
 | "halt it", "something is wrong" | step 7, *Halt* |
 | "send the store listing" | step 8 |
-| "what is on Play?", "any crashes?", "any reviews?" | `status`, `health`, `reviews`: answer in plain words |
+| "what is on Play?", "any crashes?", "any reviews?", "how many installs?" | `status`, `health`, `reviews`, `installs`: answer in plain words |
 | `release.sh` says the Play key is missing | step 9 |
 
 A new release, as steps on the task list:

@@ -83,8 +83,14 @@
 #   scripts/release.sh reviews [language]
 #       The reviews with text of the last week (all the API gives), every language, with stars, date,
 #       version and phone, the original text and a translation into <language> (en by default).
+#   scripts/release.sh installs
+#       Installs from Play's monthly statistics reports (a day or two behind): the newest day's new
+#       installs and uninstalls, the last 7 days, and in all how many people installed it and how many
+#       devices have it now. The reports' bucket: $TWANGLE_PLAY_REPORTS_BUCKET (Play Console: Manage
+#       account, Play apps reports, Statistics, Copy Cloud Storage URI), else the two usual names from
+#       the account id. Needs the robot user's "View app information and download bulk reports".
 #
-# status, health and reviews only read (scripts/PlayReports.java; status opens a temporary edit and
+# status, health, reviews and installs only read (scripts/PlayReports.java; status opens a temporary edit and
 # deletes it, never commits it), so they need no yes from the owner. They need the robot user's key too.
 # listing-changes and full-check only read (git, and the full check's record).
 #
@@ -110,6 +116,8 @@ WATCH_SCREENSHOT_SOURCES=(wear/src/main core/dsp/src/main/kotlin/io/github/klabo
 OUT="release"
 APP_ID="io.github.klaboukes.twangle"
 PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
+# The Play developer account's id (Play Console: Manage account), which names its reports' bucket.
+PLAY_ACCOUNT_ID=8690383903316518379
 # Play's API name of the closed test the Play Console makes first ("Closed testing - Alpha").
 CLOSED_TRACK="${TWANGLE_PLAY_CLOSED_TRACK:-alpha}"
 # The watch app's tracks on Play: its own Wear OS tracks, "wear:" and the track's name (Play's API docs,
@@ -919,6 +927,13 @@ health() {
     play_read health "$((10#$days))"
 }
 
+installs() {
+    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh installs"
+    local where="${TWANGLE_PLAY_REPORTS_BUCKET:-$PLAY_ACCOUNT_ID}"
+    where="${where#gs://}"
+    play_read installs "${where%%/*}"
+}
+
 reviews() {
     local language="${1:-en}"
     [[ $# -le 1 && "$language" =~ ^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$ ]] ||
@@ -947,6 +962,7 @@ case "$COMMAND" in
     status) status "$@" ;;
     health) health "$@" ;;
     reviews) reviews "$@" ;;
+    installs) installs "$@" ;;
     *) fail "usage: scripts/release.sh bump patch|minor|major | notes | profile | full-check
        | bundle [--keep-old-profile] [--watch-untested]
        | upload [watch] [draft|completed] | promote [watch] closed [draft|completed]

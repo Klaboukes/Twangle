@@ -12,6 +12,8 @@
 //   health  - Play Developer Reporting API v1beta1: vitals.crashrate and vitals.anrrate, DAILY per
 //             versionCode over the last N days up to Play's newest data (freshnessInfo).
 //   reviews - Android Publisher API v3 reviews.list: the reviews with text of the last week.
+//   installs <bucket or account id> - Cloud Storage JSON API: Play's monthly statistics reports of
+//             installs (stats/installs/), the newest day, the last 7 days and the totals.
 //   edit-commit <id>, edit-commit-unsent <id>, edit-delete <id> - an edit Gradle Play Publisher filled
 //             but didn't commit (--no-commit): committed only while nothing is in Google's review (the
 //             plugin's own commit would cancel that review and start it again), the unsent one also with
@@ -22,7 +24,7 @@
 //             staged rollout (Play Console Help, Release app updates with staged rollouts). Read only,
 //             as status.
 //
-// Usage: java PlayReports.java status|health [days]|reviews [language]|edit-commit <id>|edit-commit-unsent <id>|
+// Usage: java PlayReports.java status|health [days]|reviews [language]|installs <bucket or account id>|edit-commit <id>|edit-commit-unsent <id>|
 //        edit-delete <id>|track-started <track> <key.json> <application id>
 // Errors go to stderr as "release: ...", like scripts/release.sh, with exit code 1; exit code 3 (LOST) when a
 // commit's answer was lost, so it may be on Play or not.
@@ -60,8 +62,9 @@ import java.util.TreeSet;
 public class PlayReports {
     static final String PUBLISHER = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/";
     static final String REPORTING = "https://playdeveloperreporting.googleapis.com/v1beta1/apps/";
+    static final String STORAGE = "https://storage.googleapis.com/storage/v1/b/";
     static final String SCOPES = "https://www.googleapis.com/auth/androidpublisher "
-        + "https://www.googleapis.com/auth/playdeveloperreporting";
+        + "https://www.googleapis.com/auth/playdeveloperreporting https://www.googleapis.com/auth/devstorage.read_only";
     // Play's bad-behaviour thresholds (Android vitals, "Core vitals"): user-perceived crash rate and
     // user-perceived ANR rate, over all devices. Above them Play may show the app less and warn people.
     static final double CRASH_LINE = 1.09;
@@ -91,6 +94,7 @@ public class PlayReports {
             case "status" -> status();
             case "health" -> health(extra == null ? 7 : Integer.parseInt(extra));
             case "reviews" -> reviews(extra == null ? "en" : extra);
+            case "installs" -> installs(needed(extra, "the reports' bucket or the account id"));
             case "edit-commit" -> editCommit(needed(extra, "the edit's id"), false, false);
             case "edit-commit-unsent" -> editCommit(needed(extra, "the edit's id"), true, false);
             case "edit-commit-joined" -> editCommit(needed(extra, "the edit's id"), false, true);
@@ -575,6 +579,139 @@ public class PlayReports {
     static String day(LocalDate date) {
         return "{\"year\":" + date.getYear() + ",\"month\":" + date.getMonthValue() + ",\"day\":" + date.getDayOfMonth()
             + ",\"timeZone\":{\"id\":\"" + PACIFIC + "\"}}";
+    }
+
+    // ---- installs ------------------------------------------------------------------------------------
+
+    /**
+     * Installs from Play's monthly statistics reports (Play Console: Manage account, Play apps reports,
+     * Statistics): files in the developer account's Cloud Storage bucket,
+     * stats/installs/installs_<app>_<yyyyMM>_overview.csv, UTF-16 CSV, a row a day, a day or two late
+     * (support.google.com/googleplay/android-developer/answer/6135870). [where] is the bucket
+     * ("pubsite_prod_..."), or the account id, whose two usual bucket names are tried. Reading them needs the
+     * robot user's permission "View app information and download bulk reports".
+     */
+    static void installs(String where) throws Exception {
+        List<String> buckets = where.startsWith("pubsite_") ? List.of(where)
+            : List.of("pubsite_prod_" + where, "pubsite_prod_rev_" + where);
+        String prefix = "stats/installs/installs_" + app + "_";
+        String bucket = null;
+        boolean refused = false;
+        TreeSet<String> files = new TreeSet<>();
+        for (String b : buckets) {
+            Reply reply = call("GET", STORAGE + b + "/o?prefix=" + enc(prefix), null);
+            if (reply.code == 200) {
+                bucket = b;
+                for (Object o : list(reply.json, "items")) {
+                    String name = str(asMap(o), "name");
+                    if (name != null && name.endsWith("_overview.csv")) files.add(name);
+                }
+                break;
+            }
+            refused |= reply.code == 401 || reply.code == 403;
+        }
+        out.println("Installs of Twangle on Google Play (" + app + "), from Play's monthly statistics reports.");
+        if (bucket == null) {
+            fail((refused
+                ? "Google's report storage (" + String.join(" or ", buckets) + ") doesn't let the robot user in (yet)."
+                : "Google's report storage isn't at " + String.join(" or ", buckets) + ".")
+                + "\nThe robot user needs \"View app information and download bulk reports\" (Play Console: Users and"
+                + " permissions; it can take up to a day to work), and once there are reports, the address is under"
+                + " Manage account, Play apps reports, Statistics: Copy Cloud Storage URI (TWANGLE_PLAY_REPORTS_BUCKET)."
+                + " Nothing was changed on Play.");
+        }
+        if (files.isEmpty()) {
+            out.println("No install reports yet: Google writes them a day or two after the first installs from Play.");
+            out.println("Read only: nothing was changed on Google Play.");
+            return;
+        }
+        // The newest two months, so the last 7 days are whole at the start of a month too.
+        List<String[]> rows = new ArrayList<>();
+        String[] header = null;
+        for (String name : files.descendingSet().stream().limit(2).sorted().toList()) {
+            List<String[]> csv = csv(download(bucket, name));
+            if (csv.isEmpty()) continue;
+            header = csv.get(0);
+            rows.addAll(csv.subList(1, csv.size()));
+        }
+        if (header == null || rows.isEmpty()) {
+            out.println("The install reports have no days in them yet.");
+            out.println("Read only: nothing was changed on Google Play.");
+            return;
+        }
+        rows.sort(java.util.Comparator.comparing(r -> r[0]));
+        String[] newest = rows.get(rows.size() - 1);
+        int dailyUser = column(header, "Daily User Installs"), uninstalls = column(header, "Daily User Uninstalls");
+        int total = column(header, "Total User Installs"), active = column(header, "Active Device Installs");
+        long week = 0;
+        for (String[] r : rows.subList(Math.max(0, rows.size() - 7), rows.size())) week += number(r, dailyUser);
+        out.println("Newest day in the reports: " + newest[0] + " (Google's reports run a day or two behind).");
+        out.println("  that day: " + figure(newest, dailyUser) + " new installs, " + figure(newest, uninstalls) + " uninstalls");
+        out.println("  the last " + Math.min(7, rows.size()) + " days: " + week + " new installs");
+        out.println("  in all: " + figure(newest, total) + " people have installed it; " + figure(newest, active)
+            + " devices have it now");
+        out.println("(Installs by people: one person on two phones counts once; the devices count each phone.)");
+        out.println("Read only: nothing was changed on Google Play.");
+    }
+
+    /** The object's bytes (alt=media): Play's CSV reports are UTF-16, which a String reply would garble. */
+    static byte[] download(String bucket, String name) throws Exception {
+        HttpResponse<byte[]> response = http.send(
+            request("GET", STORAGE + bucket + "/o/" + enc(name) + "?alt=media", null), HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() / 100 != 2) {
+            fail("Google's report storage could not give " + name + " (HTTP " + response.statusCode() + ")."
+                + " Nothing was changed on Play.");
+        }
+        return response.body();
+    }
+
+    /** A report's CSV rows: UTF-16 with its byte-order mark (Play's), else UTF-8; quotes around fields dropped. */
+    static List<String[]> csv(byte[] bytes) {
+        boolean utf16 = bytes.length >= 2 && ((bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE)
+            || (bytes[0] == (byte) 0xFE && bytes[1] == (byte) 0xFF));
+        String text = new String(bytes, utf16 ? StandardCharsets.UTF_16 : StandardCharsets.UTF_8).replace("﻿", "");
+        List<String[]> rows = new ArrayList<>();
+        for (String line : text.split("\r?\n")) {
+            if (line.isBlank()) continue;
+            List<String> fields = new ArrayList<>();
+            StringBuilder field = new StringBuilder();
+            boolean quoted = false;
+            for (int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if (c == '"' && quoted && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    field.append(c);
+                    i++;
+                } else if (c == '"') {
+                    quoted = !quoted;
+                } else if (c == ',' && !quoted) {
+                    fields.add(field.toString().trim());
+                    field.setLength(0);
+                } else {
+                    field.append(c);
+                }
+            }
+            fields.add(field.toString().trim());
+            rows.add(fields.toArray(new String[0]));
+        }
+        return rows;
+    }
+
+    /** The index of the column called [name] (Play's English headers), or -1. */
+    static int column(String[] header, String name) {
+        for (int i = 0; i < header.length; i++) if (header[i].equalsIgnoreCase(name)) return i;
+        return -1;
+    }
+
+    static long number(String[] row, int column) {
+        try {
+            return column >= 0 && column < row.length ? Long.parseLong(row[column]) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    static String figure(String[] row, int column) {
+        return column >= 0 && column < row.length && !row[column].isEmpty() ? row[column] : "?";
     }
 
     // ---- reviews -------------------------------------------------------------------------------------
