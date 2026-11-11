@@ -1,0 +1,7 @@
+- Akkorde: Zuhören schließt die App nicht mehr, wenn das Mikrofon belegt ist.
+- Das Stimmgerät hört nach einer Pause oder einem Anruf von selbst wieder zu.
+- Das Stimmgerät folgt einer neuen Saite schneller, auch eine Oktave höher oder tiefer.
+- Gehörbildung bleibt still, sobald du sie verlässt.
+- Das Widget folgt hohem Kontrast und dem dunklen Modus.
+- Schnell nacheinander geänderte Einstellungen bleiben alle erhalten.
+- Kleine Korrekturen.

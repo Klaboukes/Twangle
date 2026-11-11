@@ -1,0 +1,7 @@
+- Akordy: przycisk Słuchaj nie zamyka już aplikacji, gdy mikrofon jest zajęty.
+- Stroik sam wraca do mikrofonu po przerwie lub rozmowie.
+- Stroik szybciej łapie nową strunę, także oddaloną o oktawę.
+- Trening słuchu cichnie, gdy tylko go opuścisz.
+- Widżet dopasowuje się do wysokiego kontrastu i trybu ciemnego.
+- Wszystkie ustawienia zmienione szybko jedno po drugim zostają zapisane.
+- Drobne poprawki.

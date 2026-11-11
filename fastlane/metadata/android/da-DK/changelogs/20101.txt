@@ -1,0 +1,7 @@
+- Akkorder: Lyt lukker ikke længere appen, når mikrofonen er optaget.
+- Tuneren tager selv mikrofonen tilbage efter en pause eller et opkald.
+- Tuneren følger en ny streng hurtigere, også en oktav højere eller lavere.
+- Gehørtræning er stille, så snart du forlader den.
+- Widgetten følger høj kontrast og mørk tilstand.
+- Indstillinger, du ændrer hurtigt efter hinanden, gemmes alle.
+- Små rettelser.

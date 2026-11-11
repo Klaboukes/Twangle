@@ -1,0 +1,7 @@
+- Accordi: il tasto Ascolta non chiude più l'app quando il microfono è occupato.
+- L'accordatore riprende da solo il microfono dopo una pausa o una chiamata.
+- L'accordatore segue prima una nuova corda, anche se è un'ottava sopra o sotto.
+- Orecchio musicale resta in silenzio appena lo lasci.
+- Il widget segue il contrasto elevato e il tema scuro.
+- Le impostazioni cambiate in rapida successione vengono tutte salvate.
+- Piccole correzioni.

@@ -1,0 +1,7 @@
+- Akordy: Poslech už nezavře aplikaci, když je mikrofon obsazený.
+- Ladička si po pauze nebo hovoru sama znovu vezme mikrofon.
+- Ladička rychleji zachytí novou strunu, i o oktávu výš nebo níž.
+- Trénink sluchu po odchodu ztichne.
+- Widget sleduje vysoký kontrast a tmavý režim.
+- Nastavení změněná rychle po sobě se uloží všechna.
+- Drobné opravy.

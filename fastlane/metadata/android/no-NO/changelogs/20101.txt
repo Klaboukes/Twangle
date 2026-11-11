@@ -1,0 +1,7 @@
+- Akkorder: Lytt-knappen lukker ikke lenger appen når mikrofonen er opptatt.
+- Stemmeren tar mikrofonen tilbake av seg selv etter en pause eller en samtale.
+- Stemmeren følger en ny streng raskere, også en som er en oktav unna.
+- Gehørtrening blir stille med en gang du går ut.
+- Widgeten følger høy kontrast og mørk modus.
+- Innstillinger du endrer raskt etter hverandre, blir alle lagret.
+- Små rettelser.

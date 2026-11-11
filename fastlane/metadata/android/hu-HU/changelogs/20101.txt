@@ -1,0 +1,7 @@
+- Akkordok: a Figyelés gomb már nem zárja be az alkalmazást, ha a mikrofont más használja.
+- A hangoló szünet vagy hívás után magától újra figyelni kezd.
+- A hangoló hamarabb követi az új húrt, az egy oktávval arrébb lévőt is.
+- A Hallásfejlesztés elhallgat, amint kilépsz belőle.
+- A widget követi a nagy kontrasztot és a sötét módot.
+- A gyorsan egymás után módosított beállítások mind megmaradnak.
+- Kisebb javítások.

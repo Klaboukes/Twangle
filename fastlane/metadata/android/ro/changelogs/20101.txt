@@ -1,0 +1,7 @@
+- Acorduri: butonul Ascultați nu mai închide aplicația când microfonul este ocupat.
+- Acordorul preia singur microfonul din nou după o pauză sau un apel.
+- Acordorul urmează mai repede o coardă nouă, și una aflată la o octavă distanță.
+- Auz muzical tace imediat ce îl părăsiți.
+- Widgetul urmează contrastul ridicat și modul întunecat.
+- Setările schimbate rapid una după alta sunt păstrate toate.
+- Mici remedieri.

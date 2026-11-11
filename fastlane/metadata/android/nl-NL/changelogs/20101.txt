@@ -1,0 +1,7 @@
+- Akkoorden: Luister sluit de app niet meer af als de microfoon bezet is.
+- De stemmer pakt de microfoon zelf weer op na een pauze of een gesprek.
+- De stemmer volgt een nieuwe snaar sneller, ook een octaaf verder.
+- Gehoortraining blijft stil zodra je hem verlaat.
+- De widget volgt hoog contrast en de donkere modus.
+- Instellingen die je snel na elkaar wijzigt, blijven allemaal bewaard.
+- Kleine verbeteringen.

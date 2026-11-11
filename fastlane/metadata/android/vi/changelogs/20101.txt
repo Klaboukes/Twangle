@@ -1,0 +1,7 @@
+- Hợp âm: nút Nghe không còn làm đóng ứng dụng khi micrô đang bận.
+- Máy lên dây tự dùng lại micrô sau khi tạm dừng hoặc sau cuộc gọi.
+- Máy lên dây bắt dây mới nhanh hơn, kể cả dây cao hoặc thấp hơn một quãng tám.
+- Luyện tai im lặng ngay khi bạn rời khỏi đó.
+- Tiện ích theo chế độ tương phản cao và chế độ tối.
+- Các cài đặt thay đổi nhanh liên tiếp nay đều được lưu.
+- Sửa lỗi nhỏ.

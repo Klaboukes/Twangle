@@ -1,0 +1,7 @@
+- Akor: tombol Dengarkan tidak lagi menutup aplikasi saat mikrofon dipakai aplikasi lain.
+- Tuner kembali memakai mikrofon dengan sendirinya setelah jeda atau panggilan.
+- Tuner lebih cepat mengikuti senar baru, juga senar yang berjarak satu oktaf.
+- Latihan pendengaran langsung diam setelah Anda keluar.
+- Widget mengikuti kontras tinggi dan mode gelap.
+- Setelan yang diubah cepat berturut-turut kini tersimpan semua.
+- Perbaikan kecil.

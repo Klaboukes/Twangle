@@ -1,0 +1,7 @@
+- Acordes: o botão Ouvir não fecha mais o app quando o microfone está ocupado.
+- O afinador volta a usar o microfone sozinho depois de uma pausa ou ligação.
+- O afinador segue uma nova corda mais rápido, também uma oitava acima ou abaixo.
+- O Treino de ouvido fica em silêncio assim que você sai dele.
+- O widget segue o alto contraste e o modo escuro.
+- Configurações alteradas rapidamente em sequência são todas salvas.
+- Pequenas correções.

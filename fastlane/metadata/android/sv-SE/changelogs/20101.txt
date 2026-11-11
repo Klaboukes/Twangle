@@ -1,0 +1,7 @@
+- Ackord: Lyssna stänger inte längre appen när mikrofonen är upptagen.
+- Stämmaren tar tillbaka mikrofonen av sig själv efter en paus eller ett samtal.
+- Stämmaren följer en ny sträng snabbare, även en som är en oktav högre eller lägre.
+- Gehörsträning blir tyst så fort du lämnar den.
+- Widgeten följer hög kontrast och mörkt läge.
+- Inställningar som ändras snabbt efter varandra sparas nu alla.
+- Små korrigeringar.

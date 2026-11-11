@@ -1,0 +1,7 @@
+- Chords: Listen no longer closes the app when the microphone is busy.
+- The tuner takes the microphone back by itself after a pause or a call.
+- The tuner follows a new string sooner, also one an octave away.
+- Ear training stays quiet once you leave it.
+- The widget follows high contrast and dark mode.
+- Settings changed quickly in a row are all kept.
+- Small fixes.

@@ -1,0 +1,7 @@
+- Akorlar: Dinle, mikrofon meşgulken artık uygulamayı kapatmıyor.
+- Akort cihazı bir duraklama ya da aramadan sonra mikrofonu kendiliğinden geri alıyor.
+- Akort cihazı yeni bir teli daha çabuk takip ediyor, bir oktav yukarıdakini ya da aşağıdakini de.
+- Kulak eğitimi, ondan çıktığın anda sessiz kalıyor.
+- Widget yüksek kontrastı ve koyu modu takip ediyor.
+- Art arda hızlıca değiştirilen ayarların hepsi artık kaydediliyor.
+- Küçük düzeltmeler.

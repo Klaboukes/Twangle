@@ -1,0 +1,7 @@
+- Accords : Écouter ne ferme plus l'appli quand le micro est occupé.
+- L'accordeur reprend le micro de lui-même après une pause ou un appel.
+- L'accordeur suit plus vite une nouvelle corde, même à une octave d'écart.
+- Oreille musicale se tait dès que vous la quittez.
+- Le widget suit le contraste élevé et le mode sombre.
+- Les paramètres modifiés rapidement à la suite sont tous conservés.
+- Petites corrections.

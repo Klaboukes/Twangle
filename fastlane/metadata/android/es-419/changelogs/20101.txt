@@ -1,0 +1,7 @@
+- Acordes: Escuchar ya no cierra la app cuando el micrófono está ocupado.
+- El afinador retoma el micrófono por sí solo después de una pausa o una llamada.
+- El afinador sigue antes una cuerda nueva, también a una octava de distancia.
+- Oído musical se queda en silencio en cuanto sales.
+- El widget sigue el alto contraste y el modo oscuro.
+- Los ajustes que cambias rápido uno tras otro se guardan todos.
+- Pequeñas correcciones.

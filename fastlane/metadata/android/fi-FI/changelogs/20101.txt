@@ -1,0 +1,7 @@
+- Soinnut: Kuuntele ei enää sulje sovellusta, kun mikrofoni on varattu.
+- Viritin ottaa mikrofonin itse takaisin tauon tai puhelun jälkeen.
+- Viritin seuraa uutta kieltä nopeammin, myös oktaavin päässä olevaa.
+- Korvaharjoitus pysyy hiljaa, kun poistut siitä.
+- Widget noudattaa suurta kontrastia ja tummaa tilaa.
+- Nopeasti peräkkäin muutetut asetukset tallentuvat kaikki.
+- Pieniä korjauksia.

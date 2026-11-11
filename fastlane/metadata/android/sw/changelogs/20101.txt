@@ -1,0 +1,7 @@
+- Kodi: Sikiliza haifungi tena programu wakati maikrofoni inatumiwa na programu nyingine.
+- Tuner inachukua tena maikrofoni yenyewe baada ya kusitisha au simu.
+- Tuner inafuata uzi mpya haraka zaidi, hata ulio oktava moja juu au chini.
+- Mazoezi ya sikio yanakaa kimya mara tu unapoyaacha.
+- Widget inafuata utofautishaji wa juu na hali ya giza.
+- Mipangilio unayobadilisha haraka mfululizo sasa yote inahifadhiwa.
+- Marekebisho madogo.
