@@ -79,8 +79,9 @@ further, and does the few things only the Play Console can do (the checklist bel
 3. On a branch `release/v<version>`: `scripts/release.sh bump patch|minor` (it keeps a version that
    was never released, above), then the release notes,
    one file a language: `fastlane/metadata/android/<Play locale>/changelogs/<versionCode>.txt`
-   (the fastlane layout; F-Droid reads it too once the code is open). At most 500 characters (Play's
-   limit), plain text, no emoji, in the app's own words; `StoreListingTest` checks every language has
+   (the fastlane layout; F-Droid reads it too once the code is open). Each opens with that language's
+   short description and an empty line, then the changes as "- " lines ([store listing](store-listing.md),
+   *"What's new"*). At most 500 characters in all (Play's limit), plain text, no emoji, in the app's own words; `StoreListingTest` checks every language has
    them and keeps within the limit. Then a pull request, merged like any other.
 4. On `main`: `scripts/release.sh bundle` builds the phone app's and the watch app's bundles signed
    with the upload key (`~/.twangle-keys/`), checks the signatures, and puts three files in `release/`

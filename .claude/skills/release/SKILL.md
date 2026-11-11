@@ -114,11 +114,16 @@ Steps 6–8 follow later, each on the owner's word.
   bundle) is kept when it is already high enough (it says so), or raised with its notes moved to the
   new versionCode. Either way those notes are an old draft: **rewrite them** in every language for
   everything since the last tag, rather than adding to them.
-- Write `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`: what changed for the player,
-  in the app's own words, short lines starting with "- ", at most 500 characters, no emoji, no
-  promotion words, nothing about code or tests. Calm and plain, like the store texts
-  ([docs/store-listing.md](../../../docs/store-listing.md)).
-- Translate it into every other folder in `fastlane/metadata/android/`, using the app's own words for
+- Write `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`: first that language's short
+  description (`short_description.txt`, word for word) and an empty line, since on Play's website
+  "What's new" is the first text a visitor reads and should say what Twangle is; then what changed for
+  the player, in the app's own words, short lines starting with "- ", at most 500 characters in all, no
+  emoji, no promotion words, nothing about code or tests. Calm and plain, like the store texts
+  ([docs/store-listing.md](../../../docs/store-listing.md), *"What's new"*). The opening line takes
+  about 80 of the 500 and the longest languages run a quarter longer than English, so keep the English
+  list to about 300 characters.
+- Translate it into every other folder in `fastlane/metadata/android/` (the opening line is that
+  folder's own `short_description.txt`, not a new translation), using the app's own words for
   that language (`res/values-<language>/strings.xml`: "Strings", "Focus mode" and so on as the app
   calls them). Play counts code points: CJK and Hindi texts come out short, German and Russian long.
   Two folders share a language: `es-419` is `es-ES` with Latin American words (*celular*, not
