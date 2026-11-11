@@ -67,11 +67,17 @@ class TuningWidgetTest {
     /**
      * The widget for [settings] as a launcher shows it, in a tile [heightDp] high (one row) and three cells wide, on a
      * phone whose text is [fontScale] times as big: drawn by the app there and applied in an [AppWidgetHostView], which
-     * picks the drawing for the tile's size as a launcher does (Android 12+).
+     * picks the drawing for the tile's size as a launcher does (Android 12+). The phone asks for high contrast when
+     * [phoneHighContrast] says so, whatever the test phone's own setting.
      */
-    private fun drawn(settings: AppSettings, fontScale: Float = 1f, heightDp: Int = TILE_HEIGHT_DP): View {
+    private fun drawn(
+        settings: AppSettings,
+        fontScale: Float = 1f,
+        heightDp: Int = TILE_HEIGHT_DP,
+        phoneHighContrast: Boolean = false,
+    ): View {
         val phone = phone(fontScale)
-        val views = TuningWidget.views(phone, WidgetState.from(settings))
+        val views = TuningWidget.views(phone, WidgetState.from(settings, phoneHighContrast))
         val density = phone.resources.displayMetrics.density
         val width = (TILE_WIDTH_DP * density).toInt()
         val height = (heightDp * density).toInt()
@@ -150,6 +156,37 @@ class TuningWidgetTest {
         assertEquals(scheme.background.toArgb(), view.tint(R.id.widget_backdrop))
     }
 
+    /**
+     * The high-contrast look (Phase 86), dark and light: when the phone asks for it and the player hasn't set the switch
+     * (drawn from the phone's contrast as the app reads it, Phase 91), and when the player has switched it on. Switched
+     * off, the phone's high contrast leaves it in Ink.
+     */
+    @Test
+    fun inHighContrastItIsBlackAndWhite() {
+        for (dark in listOf(true, false)) {
+            val theme = if (dark) ThemeMode.DARK else ThemeMode.LIGHT
+            val high = tokensFor(dark, highContrast = true).scheme
+            val ink = tokensFor(dark).scheme
+            val cases = listOf(
+                Triple("the phone's", AppSettings(theme = theme, dynamicColor = false), high),
+                Triple("the player's", AppSettings(theme = theme, dynamicColor = false, highContrast = true), high),
+                Triple("switched off", AppSettings(theme = theme, dynamicColor = false, highContrast = false), ink),
+            )
+            for ((name, settings, scheme) in cases) {
+                val case = "$name, ${if (dark) "dark" else "light"}"
+                val view = drawn(settings, phoneHighContrast = true)
+                assertEquals("$case: name", scheme.onSurface.toArgb(), view.findViewById<TextView>(R.id.widget_title).currentTextColor)
+                assertEquals("$case: line under it", scheme.onSurfaceVariant.toArgb(), view.findViewById<TextView>(R.id.widget_subtitle).currentTextColor)
+                assertEquals("$case: chip", scheme.surface.toArgb(), view.tint(R.id.widget_chip))
+                assertEquals("$case: chip's line", scheme.outlineVariant.toArgb(), view.tint(R.id.widget_chip_line))
+                assertEquals("$case: tile", scheme.background.toArgb(), view.tint(R.id.widget_backdrop))
+            }
+        }
+    }
+
+    /** The widget's state on a phone that doesn't ask for high contrast. */
+    private fun widgetState(settings: AppSettings) = WidgetState.from(settings, phoneHighContrast = false)
+
     /** The widget picker shows the layout's own colours before the app draws it: Ink's too, light and dark. */
     @Test
     fun thePickersPreviewIsInInk() {
@@ -216,7 +253,7 @@ class TuningWidgetTest {
                 assertTrue("$case: the line is ${line.height} px of its $whole", line.height >= whole)
             }
         }
-        val room = TuningWidget.roomForBothLines(phone(1f), WidgetState.from(AppSettings()))
+        val room = TuningWidget.roomForBothLines(phone(1f), widgetState(AppSettings()))
         assertTrue("shown at 1× in a tile 70 dp high (room $room dp): $shown", "1.0× text in a tile 70 dp high" in shown)
     }
 
@@ -231,7 +268,7 @@ class TuningWidgetTest {
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         assertTrue("released before the check", waitFor(8_000) { audio.activeRecordingConfigurations.isEmpty() })
         repeat(3) { drawn(AppSettings()) }
-        TuningWidget.update(context, WidgetState.from(AppSettings()))
+        TuningWidget.update(context, widgetState(AppSettings()))
         SystemClock.sleep(500)
         assertTrue("no recording after drawing the widget", audio.activeRecordingConfigurations.isEmpty())
     }

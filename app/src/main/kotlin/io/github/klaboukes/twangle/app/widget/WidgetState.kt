@@ -13,9 +13,10 @@ import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 /**
  * The part of the saved settings the home-screen widget shows: the tuner's mode, instrument and
  * tuning (a custom tuning by its own name, a lowered one by what it turns into, as the tuner names
- * it), and the theme, wallpaper colours and high-contrast choice it is drawn in (Ink, 2.0's one look, or the
- * high-contrast look, Phase 86: [highContrast] is the player's choice, null to follow the phone). Settings
- * changes that leave this the same (A4, the meter's look, the metronome…) don't redraw the widget.
+ * it), and the theme and wallpaper colours it is drawn in, in Ink (2.0's one look) or the high-contrast look
+ * ([highContrast], Phase 86: the player's choice, else the phone's contrast, as in the app). Settings changes that
+ * leave this the same (A4, the meter's look, the metronome…) don't redraw the widget; a change of the phone's
+ * contrast does, while the player hasn't set the switch (Phase 91).
  */
 internal data class WidgetState(
     val chromatic: Boolean,
@@ -24,7 +25,7 @@ internal data class WidgetState(
     val customTuningName: String?,
     val theme: ThemeMode,
     val dynamicColor: Boolean,
-    val highContrast: Boolean? = null,
+    val highContrast: Boolean = false,
 ) {
     /**
      * The widget's line, e.g. "Guitar · Standard", "Bass (4) · Drop D loose" (a custom tuning) or, in
@@ -51,14 +52,15 @@ internal data class WidgetState(
         if (name.none { it == '♯' || it == '♭' }) name else noteNameSpeech { string(it, emptyArray()) }.text(name)
 
     companion object {
-        fun from(settings: AppSettings) = WidgetState(
+        /** What the widget shows for [settings] on a phone that does or doesn't ask for high contrast, [phoneHighContrast]. */
+        fun from(settings: AppSettings, phoneHighContrast: Boolean) = WidgetState(
             chromatic = settings.mode == TunerMode.CHROMATIC,
             instrumentId = settings.instrument.id,
             tuning = settings.tuning,
             customTuningName = settings.pickedCustomTuning?.name,
             theme = settings.theme,
             dynamicColor = settings.dynamicColor,
-            highContrast = settings.highContrast,
+            highContrast = settings.highContrastOn(phoneHighContrast),
         )
     }
 }

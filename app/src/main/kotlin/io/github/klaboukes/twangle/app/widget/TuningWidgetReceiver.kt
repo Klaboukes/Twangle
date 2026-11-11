@@ -6,13 +6,18 @@ import android.content.Context
 import android.content.Intent
 import io.github.klaboukes.twangle.app.TwangleApplication
 import io.github.klaboukes.twangle.app.loggingScope
+import io.github.klaboukes.twangle.core.designsystem.phoneWantsHighContrast
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Android's side of [TuningWidget]: draws a widget when it is placed or the launcher asks, and
- * redraws them all when the phone's language changes (the names are in the app's language).
+ * Android's side of [TuningWidget]: draws a widget when it is placed or the launcher asks (also after the phone
+ * restarts), and redraws them all when the phone's language changes (the names are in the app's language).
  * The settings are read off the main thread ([goAsync]); a drawing that fails is logged, never a crash.
+ *
+ * Nothing else reaches it: Android sends an app that isn't running no word of a change of the phone's contrast, or of
+ * dark mode (`ACTION_CONFIGURATION_CHANGED` goes only to receivers registered in a running app), so those wait for
+ * the next time Twangle's process starts, which redraws the widget at once (Phase 91, lifecycle.md).
  */
 class TuningWidgetReceiver : AppWidgetProvider() {
 
@@ -31,7 +36,8 @@ class TuningWidgetReceiver : AppWidgetProvider() {
         val pending = goAsync()
         scope.launch {
             try {
-                TuningWidget.update(app, WidgetState.from(app.container.settingsRepository.settings.first()), ids)
+                val state = WidgetState.from(app.container.settingsRepository.settings.first(), phoneWantsHighContrast(app))
+                TuningWidget.update(app, state, ids)
             } finally {
                 pending.finish()
             }

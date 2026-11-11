@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.toArgb
 import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.core.designsystem.colorSchemeFor
-import io.github.klaboukes.twangle.core.designsystem.phoneWantsHighContrast
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -28,8 +27,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
 
@@ -41,7 +40,9 @@ import kotlin.math.ceil
  * the tuner it opens does that, as when opened from the launcher.
  *
  * The app redraws it whenever what it shows changes ([follow], from [io.github.klaboukes.twangle.app.TwangleApplication]);
- * Android asks for a drawing when one is placed ([TuningWidgetReceiver]).
+ * Android asks for a drawing when one is placed ([TuningWidgetReceiver]). While Twangle's process isn't running, Android
+ * tells it of no change of the phone's contrast (nor of dark mode before Android 12): the widget catches up the next
+ * time the process starts (docs/architecture/lifecycle.md, *The widget while Twangle isn't running*).
  */
 object TuningWidget {
     /** The intent action of a tap on the widget: [MainActivity] then shows the tuner, whatever screen was open. */
@@ -59,22 +60,26 @@ object TuningWidget {
     }
 
     /**
-     * Keeps the widgets in step with [settings] for as long as [scope] lives: a redraw at once and
-     * then on every change of what they show (not on A4, the meter's look and so on). A redraw that
-     * fails ([draw] throws: the launcher gone, a drawing too big to send) is logged through [logError]
-     * and the widget follows on from the next change; it never closes the app.
+     * Keeps the widgets in step with [settings] and the phone's contrast ([phoneHighContrast], Phase 91) for as long as
+     * [scope] lives: a redraw at once and then on every change of what they show (not on A4, the meter's look and so
+     * on; not on the phone's contrast while the player has set the high-contrast switch). A redraw that fails ([draw]
+     * throws: the launcher gone, a drawing too big to send) is logged through [logError] and the widget follows on
+     * from the next change; it never closes the app.
      */
-    fun follow(context: Context, settings: Flow<AppSettings>, scope: CoroutineScope): Job =
-        follow(settings, scope, draw = { update(context, it) }, logError = { Log.w(TAG, "Widget not redrawn", it) })
+    fun follow(context: Context, settings: Flow<AppSettings>, phoneHighContrast: Flow<Boolean>, scope: CoroutineScope): Job =
+        follow(settings, phoneHighContrast, scope, draw = { update(context, it) }, logError = { Log.w(TAG, "Widget not redrawn", it) })
 
     /** [follow] with the drawing and the log passed in, for tests. */
     internal fun follow(
         settings: Flow<AppSettings>,
+        phoneHighContrast: Flow<Boolean>,
         scope: CoroutineScope,
         draw: (WidgetState) -> Unit,
         logError: (RuntimeException) -> Unit,
     ): Job = scope.launch {
-        settings.map(WidgetState::from)
+        // The phone's contrast unreadable: drawn as if it asks for none, as the app then shows itself.
+        val phone = phoneHighContrast.catch { emit(false) }
+        combine(settings, phone) { it, phoneHigh -> WidgetState.from(it, phoneHigh) }
             .distinctUntilChanged()
             .catch { /* Settings that can't be read leave the widget as it is. */ }
             .collect {
@@ -170,12 +175,11 @@ object TuningWidget {
      * The app's colours (Ink, or the wallpaper's), as the tuner's top: its background on the tile, the chip as the
      * picker chip (the surface, a fine line in the outline colour, the tuning in ink) and the muted colour under it.
      * With the theme set to follow the phone (Android 12+), the launcher picks the light or dark set itself, so a
-     * switch of the phone's dark mode needs no redraw. In the high-contrast look (Phase 86: the player's choice, else
-     * the phone's contrast as it is when the widget is drawn) black and white, as the app.
+     * switch of the phone's dark mode needs no redraw. In the high-contrast look (Phase 86, [WidgetState.highContrast])
+     * black and white, as the app.
      */
     private fun RemoteViews.paint(context: Context, state: WidgetState) {
-        val highContrast = state.highContrast ?: phoneWantsHighContrast(context)
-        fun colors(dark: Boolean) = colorSchemeFor(context, dark, state.dynamicColor, highContrast).let {
+        fun colors(dark: Boolean) = colorSchemeFor(context, dark, state.dynamicColor, state.highContrast).let {
             intArrayOf(
                 it.background.toArgb(),
                 it.outlineVariant.toArgb(),

@@ -38,50 +38,67 @@ class WidgetStateTest {
 
     @Test
     fun showsTheInstrumentAndTuning() {
-        val state = WidgetState.from(AppSettings())
+        val state = widgetState(AppSettings())
         assertEquals("Guitar · Standard", state.title(string))
         assertEquals("Guitar, Standard", state.spoken(string))
-        val dropD = WidgetState.from(AppSettings(tuning = Tunings.DROP_D))
+        val dropD = widgetState(AppSettings(tuning = Tunings.DROP_D))
         assertEquals("Guitar · Drop D", dropD.title(string))
     }
 
     @Test
     fun anotherInstrumentsStandardTuningIsCalledStandard() {
         val bass = Instruments.BASS_4
-        val state = WidgetState.from(AppSettings(instrument = bass, tuning = bass.defaultTuning))
+        val state = widgetState(AppSettings(instrument = bass, tuning = bass.defaultTuning))
         assertEquals("Bass (4) · Standard", state.title(string))
     }
 
     @Test
     fun aCustomTuningShowsItsOwnName() {
         val custom = CustomTuning("custom_1", "Drop D loose", Instruments.GUITAR, Tunings.DROP_D.strings.map { Note(it.midi - 1) })
-        val state = WidgetState.from(AppSettings(tuning = custom.tuning, customTunings = listOf(custom)))
+        val state = widgetState(AppSettings(tuning = custom.tuning, customTunings = listOf(custom)))
         assertEquals("Guitar · Drop D loose", state.title(string))
         assertEquals("Guitar, Drop D loose", state.spoken(string))
     }
 
     @Test
     fun aLoweredTuningShowsWhatItTurnsInto() {
-        assertEquals("Guitar · Drop C♯", WidgetState.from(AppSettings(tuning = Tunings.DROP_D.lowered(1))).title(string))
-        assertEquals("Guitar, Drop C sharp", WidgetState.from(AppSettings(tuning = Tunings.DROP_D.lowered(1))).spoken(string))
-        assertEquals("Guitar · Half step down", WidgetState.from(AppSettings(tuning = Tunings.STANDARD.lowered(1))).title(string))
-        assertEquals("Guitar · Open G, ½ step down", WidgetState.from(AppSettings(tuning = Tunings.OPEN_G.lowered(1))).title(string))
+        assertEquals("Guitar · Drop C♯", widgetState(AppSettings(tuning = Tunings.DROP_D.lowered(1))).title(string))
+        assertEquals("Guitar, Drop C sharp", widgetState(AppSettings(tuning = Tunings.DROP_D.lowered(1))).spoken(string))
+        assertEquals("Guitar · Half step down", widgetState(AppSettings(tuning = Tunings.STANDARD.lowered(1))).title(string))
+        assertEquals("Guitar · Open G, ½ step down", widgetState(AppSettings(tuning = Tunings.OPEN_G.lowered(1))).title(string))
     }
 
     @Test
     fun chromaticModeSaysAnyNote() {
-        val state = WidgetState.from(AppSettings(mode = TunerMode.CHROMATIC))
+        val state = widgetState(AppSettings(mode = TunerMode.CHROMATIC))
         assertEquals("Any note", state.title(string))
         assertEquals("Any note", state.spoken(string))
     }
 
     @Test
     fun onlyWhatTheWidgetShowsRedrawsIt() {
-        val base = WidgetState.from(AppSettings())
+        val base = widgetState(AppSettings())
         // A4, the meter's look and the metronome don't change the widget.
-        assertEquals(base, WidgetState.from(AppSettings(a4Hz = 442f, metronomeBpm = 90)))
-        assertNotEquals(base, WidgetState.from(AppSettings(dynamicColor = true)))
-        assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.DROP_D)))
-        assertNotEquals(base, WidgetState.from(AppSettings(tuning = Tunings.STANDARD.lowered(2))))
+        assertEquals(base, widgetState(AppSettings(a4Hz = 442f, metronomeBpm = 90)))
+        assertNotEquals(base, widgetState(AppSettings(dynamicColor = true)))
+        assertNotEquals(base, widgetState(AppSettings(tuning = Tunings.DROP_D)))
+        assertNotEquals(base, widgetState(AppSettings(tuning = Tunings.STANDARD.lowered(2))))
     }
+
+    // Phase 91: the widget is drawn in the high-contrast look as the app shows itself, the player's switch first.
+    @Test
+    fun theHighContrastLookIsThePlayersChoiceElseThePhones() {
+        assertEquals(false, WidgetState.from(AppSettings(), phoneHighContrast = false).highContrast)
+        assertEquals(true, WidgetState.from(AppSettings(), phoneHighContrast = true).highContrast)
+        assertEquals(false, WidgetState.from(AppSettings(highContrast = false), phoneHighContrast = true).highContrast)
+        assertEquals(true, WidgetState.from(AppSettings(highContrast = true), phoneHighContrast = false).highContrast)
+        assertEquals(
+            "the phone's contrast changes nothing once the player has set the switch",
+            WidgetState.from(AppSettings(highContrast = true), phoneHighContrast = false),
+            WidgetState.from(AppSettings(highContrast = true), phoneHighContrast = true),
+        )
+    }
+
+    /** The widget's state on a phone that doesn't ask for high contrast. */
+    private fun widgetState(settings: AppSettings) = WidgetState.from(settings, phoneHighContrast = false)
 }

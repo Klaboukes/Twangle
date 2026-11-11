@@ -8,6 +8,8 @@ import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.app.widget.WidgetLook
 import io.github.klaboukes.twangle.app.widget.WidgetRedraws
 import io.github.klaboukes.twangle.app.widget.WidgetState
+import io.github.klaboukes.twangle.core.designsystem.phoneHighContrastFlow
+import io.github.klaboukes.twangle.core.designsystem.phoneWantsHighContrast
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -30,8 +32,9 @@ class TwangleApplication : Application() {
         if (BuildConfig.DEBUG) logStrictModeViolations()
         container = AppContainer(this)
         widgetRedraws = WidgetRedraws(WidgetLook.of(resources.configuration))
-        // The home-screen widget shows the tuning picked in the app, so it follows the settings.
-        TuningWidget.follow(this, container.settingsRepository.settings, appScope)
+        // The home-screen widget shows the tuning picked in the app, so it follows the settings, and the phone's contrast
+        // (Phase 91), which the high-contrast look follows while the player hasn't set its switch.
+        TuningWidget.follow(this, container.settingsRepository.settings, phoneHighContrastFlow(this), appScope)
     }
 
     /** Which configuration changes redraw the widget ([WidgetRedraws]). */
@@ -49,7 +52,10 @@ class TwangleApplication : Application() {
 
     /** Redraws the home-screen widgets with the current settings, e.g. in a language just picked in Settings. */
     fun redrawWidgets() {
-        appScope.launch { TuningWidget.update(this@TwangleApplication, WidgetState.from(container.settingsRepository.settings.first())) }
+        appScope.launch {
+            val state = WidgetState.from(container.settingsRepository.settings.first(), phoneWantsHighContrast(this@TwangleApplication))
+            TuningWidget.update(this@TwangleApplication, state)
+        }
     }
 
     /**
