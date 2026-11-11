@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -43,6 +44,10 @@ data class WatchMetronomeState(
  * The tempo and the click choice are kept in [store]: read once when this is made (a turn or tap before
  * they arrive keeps what the player chose), the click saved at once, the tempo [SAVE_DELAY_MILLIS] after
  * the bezel stops (one write per turn, not per step) and at once when the page is left ([leave]).
+ *
+ * It stops by itself [PLAYING_LIMIT_MILLIS] (30 minutes) after the last touch (▶, a turn of the bezel, the
+ * speaker button), so a metronome left playing doesn't keep the screen on until the battery is flat; the page
+ * shows ▶ again and the watch's own screen timeout has the screen.
  */
 class WatchMetronomeViewModel(
     private val player: MetronomePlayer,
@@ -60,6 +65,9 @@ class WatchMetronomeViewModel(
     private var clickTouched = false
     private var savedTempo: Int? = null
     private var tempoSave: Job? = null
+
+    // Goes up with every touch, so the playing limit's wait starts afresh.
+    private val touches = MutableStateFlow(0)
 
     val state: StateFlow<WatchMetronomeState> =
         combine(tempo, click, player.isPlaying, lit) { bpm, click, playing, lit ->
@@ -79,6 +87,15 @@ class WatchMetronomeViewModel(
             if (!clickTouched) setClickNow(kept.click)
         }
         viewModelScope.launch { player.beats.collect { lit.value = it.beatInBar } }
+        viewModelScope.launch {
+            // On the main clock (uptime): the screen is held on while it plays, so the watch never sleeps meanwhile.
+            combine(player.isPlaying, touches) { playing, _ -> playing }.collectLatest { playing ->
+                if (playing) {
+                    delay(PLAYING_LIMIT_MILLIS)
+                    player.stop()
+                }
+            }
+        }
         if (taps != null) {
             // Collected from the start, so not even the first beat, told at once, can be missed.
             viewModelScope.launch(tapDispatcher, start = CoroutineStart.UNDISPATCHED) {
@@ -96,6 +113,7 @@ class WatchMetronomeViewModel(
     fun setTempo(bpm: Int) {
         val clamped = ClickTrack.clampBpm(bpm)
         tempoTouched = true
+        touches.value++
         if (clamped == tempo.value) return
         tempo.value = clamped
         if (player.isPlaying.value) player.setTempo(clamped)
@@ -112,6 +130,7 @@ class WatchMetronomeViewModel(
             player.stop()
         } else {
             lit.value = WatchMetronomeState.NO_BEAT
+            touches.value++
             player.start(tempo.value, Meter.FOUR_FOUR)
         }
     }
@@ -119,6 +138,7 @@ class WatchMetronomeViewModel(
     /** The speaker button: the click on or off, from about one buffer later, playing or not. */
     fun toggleClick() {
         clickTouched = true
+        touches.value++
         setClickNow(!click.value)
         viewModelScope.launch { store.setClick(click.value) }
     }
@@ -151,5 +171,11 @@ class WatchMetronomeViewModel(
     companion object {
         /** How long after the last step of a turn the tempo is written: one write per turn. */
         const val SAVE_DELAY_MILLIS = 600L
+
+        /**
+         * How long it plays after the last touch before it stops by itself (Phase 91; the owner may pick
+         * another limit): long enough for a practice session, short enough that one forgotten doesn't drain the battery.
+         */
+        const val PLAYING_LIMIT_MILLIS = 30 * 60_000L
     }
 }

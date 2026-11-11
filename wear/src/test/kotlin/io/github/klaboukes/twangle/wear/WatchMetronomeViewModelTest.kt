@@ -5,7 +5,6 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
@@ -17,8 +16,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -110,7 +107,7 @@ class WatchMetronomeViewModelTest {
         advanceUntilIdle()
 
         vm.togglePlaying()
-        advanceUntilIdle()
+        runCurrent() // not until idle: that would run to the 30 minutes' stop
         assertTrue(vm.state.value.playing)
         assertEquals(96, player.bpm)
         assertEquals(Meter.FOUR_FOUR, player.meter)
@@ -136,7 +133,7 @@ class WatchMetronomeViewModelTest {
         val vm = viewModel()
         advanceUntilIdle()
         vm.togglePlaying()
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(WatchMetronomeState.NO_BEAT, vm.state.value.litBeat)
 
         val lit = mutableListOf<Int>()
@@ -167,6 +164,74 @@ class WatchMetronomeViewModelTest {
         player.stop() // a call, a failure
         runCurrent()
         assertEquals(WatchMetronomeState(bpm = 120, playing = false, click = false), vm.state.value)
+    }
+
+    @Test
+    fun `stops by itself 30 minutes after it was started`() = runTest(dispatcher) {
+        val limit = WatchMetronomeViewModel.PLAYING_LIMIT_MILLIS
+        assertEquals(30 * 60_000L, limit)
+        val vm = viewModel()
+        advanceUntilIdle()
+        vm.togglePlaying()
+        runCurrent()
+
+        advanceTimeBy(limit - 1)
+        assertTrue("still playing a moment before", vm.state.value.playing)
+        advanceTimeBy(2)
+        assertFalse(vm.state.value.playing)
+        assertEquals(1, player.stopCount)
+        assertEquals(WatchMetronomeChoices.DEFAULT.bpm, vm.state.value.bpm)
+    }
+
+    @Test
+    fun `a turn of the bezel or the speaker button starts the 30 minutes afresh`() = runTest(dispatcher) {
+        val limit = WatchMetronomeViewModel.PLAYING_LIMIT_MILLIS
+        val vm = viewModel()
+        advanceUntilIdle()
+        vm.togglePlaying()
+        runCurrent()
+
+        advanceTimeBy(limit - 60_000)
+        vm.turn(1)
+        advanceTimeBy(limit - 60_000)
+        vm.toggleClick()
+        advanceTimeBy(limit - 1)
+        assertTrue(vm.state.value.playing)
+        advanceTimeBy(2)
+        assertFalse(vm.state.value.playing)
+    }
+
+    @Test
+    fun `stopped and started again, the 30 minutes count from the new start`() = runTest(dispatcher) {
+        val limit = WatchMetronomeViewModel.PLAYING_LIMIT_MILLIS
+        val vm = viewModel()
+        advanceUntilIdle()
+        vm.togglePlaying()
+        advanceTimeBy(limit - 60_000)
+        vm.togglePlaying()
+        runCurrent()
+        advanceTimeBy(30_000)
+        vm.togglePlaying()
+        runCurrent()
+
+        advanceTimeBy(limit - 1)
+        assertTrue(vm.state.value.playing)
+        advanceTimeBy(2)
+        assertFalse(vm.state.value.playing)
+        assertEquals(2, player.stopCount)
+    }
+
+    @Test
+    fun `stopped, nothing waits to stop it`() = runTest(dispatcher) {
+        val vm = viewModel()
+        advanceUntilIdle()
+        vm.togglePlaying()
+        runCurrent()
+        vm.togglePlaying()
+        advanceUntilIdle()
+
+        assertFalse(vm.state.value.playing)
+        assertEquals("only the player's own stop", 1, player.stopCount)
     }
 
     @Test
@@ -248,9 +313,9 @@ class WatchMetronomeViewModelTest {
         advanceUntilIdle()
         vm.togglePlaying()
         for (i in 0L until 5L) player.beat(i, heardAtNanos = System.nanoTime())
-        withContext(Dispatchers.Default) {
-            withTimeout(2_000) { while (taps.size < 5) delay(10) }
-        }
+        // Waited for on this thread, not suspended: a suspended test lets the test clock run on to the 30 minutes' stop.
+        val giveUpAt = System.nanoTime() + 2_000_000_000L
+        while (taps.size < 5 && System.nanoTime() < giveUpAt) Thread.sleep(10)
 
         assertEquals(listOf(0L to 250L, 1L to 150L, 2L to 150L, 3L to 150L, 4L to 250L), taps.toList())
     }
