@@ -46,6 +46,7 @@ class WatchActivity : ComponentActivity() {
                     screenReaderSpeech = AndroidScreenReaderSpeech(applicationContext),
                     store = WatchTunerStore.of(applicationContext),
                     guideVibrator = AndroidWatchGuideVibrator(applicationContext),
+                    listenLog = WatchListenLog.ANDROID,
                 )
             }
             initializer {

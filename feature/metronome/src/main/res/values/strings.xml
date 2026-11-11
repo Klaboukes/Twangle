@@ -65,6 +65,10 @@
     <string name="metronome_trainer_step">Step</string>
     <!-- Speed trainer: a step in beats per minute with its plus sign, as on its buttons and the status line ("+5"). %1$s is the number. -->
     <string name="metronome_trainer_plus">+%1$s</string>
+    <!-- TalkBack name of a step button in the speed trainer's settings (it shows "+5"): how many beats per minute each step adds. %1$s is the number. -->
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <!-- TalkBack: one of the speed trainer's tempos in its settings, read out with its label ("Start tempo, 80 BPM"). %1$s is the label (the start tempo or the goal), %2$s the number. -->
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <!-- Speed trainer settings: the small heading over the four choices of how many bars each tempo lasts before the next step (1, 2, 4, 8), and TalkBack's name for that group. "Bar" as in a bar (measure) of music. -->
     <string name="metronome_trainer_bars">Bars</string>
     <!-- TalkBack name of a bar-count button in the speed trainer's settings (it shows only the number). %1$s is the number of bars. -->

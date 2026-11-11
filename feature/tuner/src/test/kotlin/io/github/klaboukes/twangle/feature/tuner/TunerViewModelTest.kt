@@ -17,6 +17,9 @@ import io.github.klaboukes.twangle.core.settings.UnderMeter
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -207,6 +210,52 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `a pick whose save failed stays when another setting changes`() = runTest(dispatcher) {
+        // A full phone: the mode isn't saved, but the switch and the readings follow the tap.
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        settings.failWrites = true
+        vm.setMode(TunerMode.CHROMATIC)
+        runCurrent()
+        assertEquals(TunerMode.AUTO, settings.current.mode)
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        // Another setting changed elsewhere (Settings has room again): the pick doesn't flip back (Phase 91).
+        settings.failWrites = false
+        settings.setA4(442f)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        // A mode saved elsewhere still shows at once.
+        settings.setMode(TunerMode.CHROMATIC)
+        runCurrent()
+        settings.setMode(TunerMode.AUTO)
+        runCurrent()
+        assertEquals(TunerMode.AUTO, vm.mode.value)
+    }
+
+    @Test
+    fun `the settings are read once for everything the tuner shows`() = runTest(dispatcher) {
+        // Phase 91: until then each option collected the repository on its own, 17 times.
+        var readings = 0
+        val counted = object : SettingsRepository by settings {
+            override val settings: Flow<AppSettings> = flow {
+                readings++
+                emitAll(this@TunerViewModelTest.settings.settings)
+            }
+        }
+        val vm = TunerViewModel(a2Recorder(), counted, tones, StandardTestDispatcher(testScheduler))
+        vm.onPermissionChanged(true)
+        for (shown in listOf(vm.state, vm.keepScreenOn, vm.vibrateInTune, vm.stringTickOff, vm.underMeter, vm.lensLook, vm.inTunePrecision)) {
+            backgroundScope.launch { shown.collect {} }
+        }
+        advanceTimeBy(500)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+        settings.setA4(442f)
+        advanceTimeBy(500)
+        assertEquals(442f, vm.detected().a4Hz)
+        assertEquals(1, readings)
+    }
+
+    @Test
     fun `starts in the saved mode`() = runTest(dispatcher) {
         settings.current = AppSettings(mode = TunerMode.CHROMATIC)
         val vm = viewModel(a2Recorder())
@@ -250,6 +299,34 @@ class TunerViewModelTest {
         runCurrent()
         assertFalse("released after 5 s in the background", recorder.isRecording.value)
         assertEquals(1, recorder.startCount)
+    }
+
+    @Test
+    fun `back after the microphone was let go of, the last note is not shown again`() = runTest(dispatcher) {
+        // Phase 91: the state kept the last note heard, and the screen showed it for a frame before listening again.
+        val recorder = a2Recorder()
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        val ui = launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+
+        ui.cancel()
+        advanceTimeBy(5_100)
+        runCurrent()
+        assertFalse(recorder.isRecording.value)
+        assertEquals(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), vm.state.value)
+
+        // Within the 5 s, the note stays as it was (the screen turned, nothing let go of).
+        val back = launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+        back.cancel()
+        advanceTimeBy(4_000)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+        assertEquals(2, recorder.startCount)
+        advanceTimeBy(1_100)
+        runCurrent()
     }
 
     @Test

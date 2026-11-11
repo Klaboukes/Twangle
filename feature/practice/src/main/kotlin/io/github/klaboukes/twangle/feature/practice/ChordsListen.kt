@@ -77,7 +77,9 @@ import kotlinx.coroutines.withTimeoutOrNull
  * A microphone that can't be used (a call, another app, or on Android 8–9 the tuner not quite done with it: the
  * recorder's [AudioRecorderException]) turns Listen off with "Microphone is busy" in a balloon under it for
  * [BUSY_MILLIS] (Phase 89; until then the failure closed the app), also its TalkBack state, said as it comes; a tap
- * on Listen tries again.
+ * on Listen tries again. The microphone no longer allowed (taken back in the phone's settings while Listen was on, which
+ * restarts the app with Listen still on) says "Microphone is off" instead (Phase 91), and the tap asks for it again, as
+ * the tuner's prompt comes back when its permission is lost.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,9 +94,11 @@ internal fun ChordsListenButton(
     modifier: Modifier = Modifier,
 ) {
     var listening by rememberSaveable { mutableStateOf(false) }
-    // Each time the microphone failed (counted, so a second failure shows the balloon again); busy while it shows.
+    // Each time the microphone failed (counted, so a second failure shows the balloon again); busy while it shows, and
+    // whether the last failure was the permission missing ("Microphone is off") rather than a busy microphone.
     var failures by remember { mutableIntStateOf(0) }
     var busy by remember { mutableStateOf(false) }
+    var off by remember { mutableStateOf(false) }
     val permission = rememberChordsMicPermission(refusedBefore = micRefused, onGranted = { listening = true }, onRefused = onMicRefused)
     val currentOnChord by rememberUpdatedState(onChord)
     if (listening) {
@@ -107,8 +111,10 @@ internal fun ChordsListenButton(
                 }
             } catch (e: AudioRecorderException) {
                 // A call, another app, or on Android 8–9 the tuner not quite done with it: Listen turns off and says
-                // so, as the metronome's Listen does, instead of the failure closing the app.
+                // so, as the metronome's Listen does, instead of the failure closing the app. Without the permission it
+                // says the microphone is off, and the next tap asks for it.
                 listening = false
+                off = e is AudioRecorderException.PermissionMissing
                 failures++
             }
         }
@@ -132,7 +138,7 @@ internal fun ChordsListenButton(
     val scheme = MaterialTheme.colorScheme
     val press = remember { MutableInteractionSource() }
     val label = stringResource(R.string.practice_chords_listen)
-    val busyText = stringResource(R.string.practice_chords_mic_busy)
+    val busyText = stringResource(if (off) R.string.practice_chords_mic_off else R.string.practice_chords_mic_busy)
     val state = when {
         listening -> stringResource(R.string.practice_chords_listening)
         busy -> busyText
@@ -196,7 +202,7 @@ private fun ListenFace(
 
 private val LISTEN_ICON_SIZE = 24.dp
 
-/** How long "Microphone is busy" shows by Listen, as long as the metronome's Listen shows its line. */
+/** How long "Microphone is busy" (or "is off") shows by Listen, as long as the metronome's Listen shows its line. */
 private const val BUSY_MILLIS = 8_000L
 
 /** Listen's way to the microphone: [listen] when it is tapped. */

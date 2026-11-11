@@ -10,6 +10,8 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -20,7 +22,9 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import java.util.Locale
@@ -249,7 +253,36 @@ class WatchTunerViewModelTest {
         assertEquals(WatchTunerError.PERMISSION_MISSING, WatchTunerError.of(AudioRecorderException.PermissionMissing()))
         assertEquals(WatchTunerError.MICROPHONE_BUSY, WatchTunerError.of(AudioRecorderException.MicrophoneBusy()))
         assertEquals(WatchTunerError.MICROPHONE_UNAVAILABLE, WatchTunerError.of(AudioRecorderException.ReadFailed(-3)))
-        assertEquals(WatchTunerError.MICROPHONE_UNAVAILABLE, WatchTunerError.of(IllegalStateException()))
+        assertEquals(WatchTunerError.MICROPHONE_UNAVAILABLE, WatchTunerError.of(AudioRecorderException.InitializationFailed("x")))
+    }
+
+    @Test
+    fun `a microphone failure is logged and shown`() = runTest {
+        val logged = mutableListOf<Throwable>()
+        val busy = AudioRecorderException.MicrophoneBusy()
+        val shown = flow<WatchTunerState> {
+            emit(WatchTunerState.Listening)
+            throw busy
+        }.showingMicFailures { logged += it }.toList()
+        assertEquals(listOf(WatchTunerState.Listening, WatchTunerState.Failed(WatchTunerError.MICROPHONE_BUSY)), shown)
+        assertEquals(listOf<Throwable>(busy), logged)
+    }
+
+    // Until Phase 91 a bug in the watch app's own code showed as an unavailable microphone, logged nowhere and never in
+    // Play's crash reports; the phone has thrown it on since Phase 89.
+    @Test
+    fun `any other failure is logged and thrown on, not shown as an unavailable microphone`() = runTest {
+        val logged = mutableListOf<Throwable>()
+        val bug = IllegalStateException("a bug")
+        val shown = mutableListOf<WatchTunerState>()
+        try {
+            flow<WatchTunerState> { throw bug }.showingMicFailures { logged += it }.collect { shown += it }
+            fail("the bug was swallowed")
+        } catch (e: IllegalStateException) {
+            assertSame(bug, e)
+        }
+        assertEquals(emptyList<WatchTunerState>(), shown)
+        assertEquals(listOf<Throwable>(bug), logged)
     }
 
     @Test

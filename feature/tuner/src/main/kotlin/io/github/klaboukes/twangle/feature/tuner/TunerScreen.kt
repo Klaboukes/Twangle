@@ -552,14 +552,20 @@ fun TunerContent(
     val strumShown = (heard as? HeardStrum.OpenStrings)?.check?.takeIf { it.strings.isNotEmpty() && it.tuning == shownTuning?.tuning && mode == TunerMode.AUTO }
     // The strum check's panel in the lens's place (1.1's columns, the owner's pick of 2026-11-03): from the button's tap,
     // empty until the strum, then its strings, the ones played on their own after it following the tuner.
-    val strumPanel = shownTuning?.takeIf { mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening) }?.let { shown ->
-        strumShown ?: TunerUiState.StrumCheck(
-            tuning = shown.tuning,
-            notation = shown.notation,
-            phase = StrumPhase.WAITING,
-            strings = emptyList(),
-            toleranceCents = StrumCheckInterpreter.toleranceFor(inTunePrecision),
-        ).takeIf { strumCheck }
+    // The empty panel, made again only when its tuning, names or tolerance change, not with every reading (Phase 91).
+    val waitingPanel = remember(shownTuning, inTunePrecision) {
+        shownTuning?.let { shown ->
+            TunerUiState.StrumCheck(
+                tuning = shown.tuning,
+                notation = shown.notation,
+                phase = StrumPhase.WAITING,
+                strings = emptyList(),
+                toleranceCents = StrumCheckInterpreter.toleranceFor(inTunePrecision),
+            )
+        }
+    }
+    val strumPanel = shownTuning?.takeIf { mode == TunerMode.AUTO && (state is TunerUiState.Detected || state is TunerUiState.Listening) }?.let {
+        strumShown ?: waitingPanel?.takeIf { strumCheck }
     }
     // wide: the pegs in the wide layout's one row (Phase 73).
     val guitarSlotWith = @Composable { wide: Boolean ->

@@ -10,10 +10,14 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingCommand
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
@@ -22,6 +26,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * The readings of [listen], which ends only in a [TunerUiState.Error] (its own `catch` shows it); after an error it
@@ -43,6 +48,43 @@ internal fun listenAgainOnReturn(returns: StateFlow<Int>, listen: () -> Flow<Tun
         val failedAt = returns.value
         returns.first { it > failedAt }
     }
+}
+
+/**
+ * As `stateIn(scope, SharingStarted.WhileSubscribed(stopTimeoutMillis), initial)`, except that when the sharing stops
+ * (nothing shown it for [stopTimeoutMillis], the microphone let go of) the value becomes [atRest] of the last one. A
+ * screen that comes back after that starts from it instead of from the last note heard, which it showed for a frame
+ * until the new listening's first state arrived (Phase 91).
+ */
+internal fun Flow<TunerUiState>.shownWhileWatched(
+    scope: CoroutineScope,
+    initial: TunerUiState,
+    stopTimeoutMillis: Long,
+    atRest: (TunerUiState) -> TunerUiState = TunerUiState::atRest,
+): StateFlow<TunerUiState> {
+    val shown = MutableStateFlow(initial)
+    scope.launch {
+        SharingStarted.WhileSubscribed(stopTimeoutMillis).command(shown.subscriptionCount)
+            .distinctUntilChanged()
+            .collectLatest { command ->
+                when (command) {
+                    SharingCommand.START -> this@shownWhileWatched.collect { shown.value = it }
+                    SharingCommand.STOP -> shown.value = atRest(shown.value)
+                    SharingCommand.STOP_AND_RESET_REPLAY_CACHE -> shown.value = initial
+                }
+            }
+    }
+    return shown.asStateFlow()
+}
+
+/**
+ * What the tuner shows once it stopped listening: a note heard becomes listening for it (the same mode, tuning, lock and
+ * names, the needle gone), a tip about the sound goes; an error or the tools' states stay.
+ */
+internal fun TunerUiState.atRest(): TunerUiState = when (this) {
+    is TunerUiState.Detected -> TunerUiState.Listening(mode, tuning, a4Hz, lockedString, notation)
+    is TunerUiState.Listening -> if (tip == null) this else copy(tip = null)
+    else -> this
 }
 
 /**

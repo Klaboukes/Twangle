@@ -21,7 +21,8 @@ import kotlin.math.ceil
  * Listen, so nothing is decided), each frame named by `ChordDetector` and settled by 1.1's [ChordSettler] (a name shows
  * once it wins 4 of a strum's last 6 readings). [chords] hands on each chord as it is settled, a new one only when it
  * differs from the last; a strum that names nothing (one string, a knock) hands on nothing. The microphone is open
- * only while [chords] is collected. DSP runs on [dspDispatcher]; nothing allocates per chunk but the chord handed on.
+ * only while [chords] is collected, and the analysis is made at the rate it opened at. DSP runs on [dspDispatcher];
+ * nothing allocates per chunk but the chord handed on.
  *
  * While a screen reader's voice plays ([screenReaderSpeech], Phase 81: TalkBack saying the chord through the speaker)
  * and for [ScreenReaderSpeech.TAIL_SECONDS] after, the chunks are set aside, as the tuner's strum check sets them aside;
@@ -36,14 +37,20 @@ class ChordListener(
     fun chords(a4Hz: Float, range: PitchRange = PitchRange.STANDARD): Flow<Chord> = flow {
         // A screen reader's voice is watched for as long as this listens.
         screenReaderSpeech.watching { speaking ->
-            val watcher = StrumWatcher(recorder.config.sampleRate)
-            watcher.start(openStringsHz = null, a4Hz = a4Hz, every = StrumKind.CHORD, range = range)
+            // Made at the first chunk: the recorder knows its rate only once the microphone opened (it may open at
+            // another rate than the one it had before, AndroidAudioRecorder.config).
+            var made: StrumWatcher? = null
             val settler = ChordSettler()
-            val tailSamples = ceil(ScreenReaderSpeech.TAIL_SECONDS.toDouble() * watcher.sampleRate).toLong()
+            var tailSamples = 0L
             // Samples still to set aside: the voice plays, or its echo may still be in the room.
             var ignoredSamples = 0L
             var last: Chord? = null
             recorder.chunks().collect { chunk ->
+                val watcher = made ?: StrumWatcher(recorder.config.sampleRate).also {
+                    it.start(openStringsHz = null, a4Hz = a4Hz, every = StrumKind.CHORD, range = range)
+                    tailSamples = ceil(ScreenReaderSpeech.TAIL_SECONDS.toDouble() * it.sampleRate).toLong()
+                    made = it
+                }
                 if (speaking.value) ignoredSamples = maxOf(ignoredSamples, tailSamples + chunk.size)
                 if (ignoredSamples > 0L) {
                     ignoredSamples -= chunk.size

@@ -275,8 +275,10 @@ class PitchSmoother(
 
     // 1 at CONFIDENT and above, falling linearly to MIN_WEIGHT at UNSURE and below. A clean tone
     // has confidence ≈ 1; white noise 10 dB below the tone ≈ 0.97, at the same level ≈ 0.86.
+    // A confidence that isn't a number (a detector that couldn't say) is the least sure: coerceIn
+    // would pass NaN on, and the needle would blank for a frame.
     private fun weightOf(confidence: Float): Float =
-        ((confidence - UNSURE) / (CONFIDENT - UNSURE)).coerceIn(MIN_WEIGHT, 1f)
+        if (confidence.isNaN()) MIN_WEIGHT else ((confidence - UNSURE) / (CONFIDENT - UNSURE)).coerceIn(MIN_WEIGHT, 1f)
 
     // A whole number of octaves or a twelfth (three periods), either way: the periods the detector's
     // whole-period checks can land on (2τ or 3τ, τ/k) when a sound nearly repeats there.

@@ -37,7 +37,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.Screen
@@ -89,7 +88,6 @@ import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPane
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
-import kotlinx.coroutines.launch
 
 /**
  * The app's one activity. An [AppCompatActivity] (rather than a plain ComponentActivity) so the
@@ -115,9 +113,11 @@ class MainActivity : AppCompatActivity() {
         val container = (application as TwangleApplication).container
         // The first use is noted once: Google's rating window never comes on the first day.
         container.save { noteFirstUseOnce(System.currentTimeMillis()) }
-        // 1.1's focus mode switch, read once (2.0, Phase 73): on, the first start of 2.0 opens in focus mode.
+        // 1.1's focus mode switch, read once (2.0, Phase 73): on, the first start of 2.0 opens in focus mode. Through
+        // the app's own save scope like every other write (Phase 91), so a turn of the phone can't cut it off between
+        // the switch's removal and focus mode.
         if (savedInstanceState == null) {
-            lifecycleScope.launch { if (container.settingsRepository.takeOldFocusMode()) container.focusMode.value = true }
+            container.save { if (takeOldFocusMode()) container.focusMode.value = true }
         }
         // What a 2.0 test build saved for a setting that went before release (the 12th-fret check's switch).
         container.save { forgetDroppedSettings() }

@@ -425,6 +425,23 @@ class PitchSmootherTest {
     }
 
     @Test
+    fun `a reading whose confidence is not a number counts as the least sure, never blanking the needle`() {
+        val leastSure = PitchSmoother()
+        repeat(10) {
+            smoother.update(E2)
+            leastSure.update(E2)
+        }
+        repeat(3) {
+            smoother.update(E2 + 0.2f, confidence = Float.NaN)
+            leastSure.update(E2 + 0.2f, confidence = 0f)
+            assertTrue("still shown", smoother.hasReading)
+            assertFalse("a number: ${smoother.cents}", smoother.cents.isNaN())
+        }
+        assertTrue(smoother.cents > 0f)
+        assertEquals(leastSure.cents, smoother.cents, 1e-4f)
+    }
+
+    @Test
     fun `an unsure reading of a new string still snaps to it`() {
         repeat(10) { smoother.update(E2) }
         repeat(5) { smoother.update(A2, confidence = 0.8f) }

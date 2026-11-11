@@ -10,7 +10,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -22,7 +21,9 @@ import kotlinx.coroutines.launch
  * (the screen, through `collectAsStateWithLifecycle`), plus a 5 s grace so a quick trip away
  * doesn't restart it (CLAUDE.md, hard rule 4). When the watch's screen turns off or goes ambient
  * ([setScreenOn] false) the microphone is let go of at once, without that grace, and opened again
- * when the screen comes back on. A failure shows as [WatchTunerState.Failed] until [retry].
+ * when the screen comes back on. A microphone failure shows as [WatchTunerState.Failed] until [retry]; anything else is
+ * a bug, written to [listenLog] and thrown on as the phone's tuner does (Phase 91; until then it showed as an
+ * unavailable microphone).
  * While [screenReaderSpeech] says TalkBack's voice plays, the reading holds still (Phase 81, [WatchPitchPipeline]).
  *
  * The vibration guide (Phase 85) is [guideOn]: the player's choice kept in [store], else on while a screen reader is.
@@ -35,6 +36,7 @@ class WatchTunerViewModel(
     screenReaderSpeech: ScreenReaderSpeech = ScreenReaderSpeech.NONE,
     private val store: WatchTunerStore = WatchTunerStore.inMemory(),
     private val guideVibrator: WatchGuideVibrator = WatchGuideVibrator.NONE,
+    private val listenLog: WatchListenLog = WatchListenLog.NONE,
 ) : ViewModel() {
 
     /** Whether the vibration guide is on: the player's choice on the tuner's switch, else on while a screen reader is. */
@@ -59,7 +61,7 @@ class WatchTunerViewModel(
     val state: StateFlow<WatchTunerState> = combine(attempt, screenOn) { _, on -> on }
         .flatMapLatest { on ->
             if (on) {
-                pipeline.states().catch { emit(WatchTunerState.Failed(WatchTunerError.of(it))) }
+                pipeline.states().showingMicFailures(listenLog)
             } else {
                 // Nothing listens while the screen is off; it starts afresh when it comes back.
                 flowOf(WatchTunerState.Listening)

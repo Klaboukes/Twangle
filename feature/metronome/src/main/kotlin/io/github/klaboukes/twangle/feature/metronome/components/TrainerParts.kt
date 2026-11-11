@@ -262,12 +262,11 @@ internal fun TrainerSettings(
         )
         val locale = appLocale()
         FaceRow(stringResource(R.string.metronome_trainer_step), Modifier.padding(top = 2.dp)) {
-            val bpm = stringResource(R.string.metronome_bpm)
             for (option in SpeedTrainer.STEPS) {
-                val text = stringResource(R.string.metronome_trainer_plus, localDigits(option, locale))
+                val digits = localDigits(option, locale)
                 TextSegment(
-                    text = text,
-                    name = "$text $bpm",
+                    text = stringResource(R.string.metronome_trainer_plus, digits),
+                    name = stringResource(R.string.metronome_trainer_spoken_step, digits),
                     tag = MetronomeTestTags.trainerStep(option),
                     picked = option == plan.stepBpm,
                     onPick = { onPlan(plan.copy(stepBpm = option)) },
@@ -325,8 +324,7 @@ private fun TempoStepper(
     onFaster: () -> Unit,
 ) {
     val digits = localDigits(bpm, appLocale())
-    val bpmLabel = stringResource(R.string.metronome_bpm)
-    val spoken = "$label, $digits $bpmLabel"
+    val spoken = stringResource(R.string.metronome_trainer_spoken_tempo, label, digits)
     Row(Modifier.fillMaxWidth().heightIn(min = ROW_HEIGHT), verticalAlignment = Alignment.CenterVertically) {
         Row(
             Modifier

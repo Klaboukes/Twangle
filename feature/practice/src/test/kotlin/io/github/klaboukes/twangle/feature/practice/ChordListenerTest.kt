@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.practice
 
+import io.github.klaboukes.twangle.core.audio.AudioConfig
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeScreenReaderSpeech
@@ -27,8 +28,8 @@ class ChordListenerTest {
 
     private fun midiHz(vararg midi: Int) = FloatArray(midi.size) { (440.0 * 2.0.pow((midi[it] - 69) / 12.0)).toFloat() }
 
-    /** 0.3 s of quiet, then a downstroke over [hz] (15 ms a string), [seconds] long. */
-    private fun strum(hz: FloatArray, seconds: Double = 3.0): FloatArray {
+    /** 0.3 s of quiet, then a downstroke over [hz] (15 ms a string), [seconds] long, recorded at [rate] Hz. */
+    private fun strum(hz: FloatArray, seconds: Double = 3.0, rate: Int = this.rate): FloatArray {
         val start = (0.3 * rate).roundToInt()
         val length = (seconds * rate).roundToInt()
         val out = FloatArray(start + length)
@@ -75,6 +76,18 @@ class ChordListenerTest {
                 .chords(440f).toList()
         }.exceptionOrNull()
         assertTrue("got $failure", failure is AudioRecorderException.MicrophoneBusy)
+    }
+
+    @Test
+    fun `a microphone that opens at another rate is heard at that rate`() = runTest {
+        // The recorder said 48 kHz before it opened, then opened at 44.1 kHz (its usual rate refused that time): the
+        // strum's notes are at 44.1 kHz, and read at 48 kHz they were 1.5 semitones sharp.
+        val am = strum(midiHz(45, 52, 57, 60, 64), rate = 44_100)
+        val recorder = FakeAudioRecorder(am, AudioConfig.forSampleRate(48_000), openedConfig = AudioConfig.forSampleRate(44_100))
+        assertEquals(
+            listOf(Chord.of(PitchClass.A, ChordQuality.MINOR)),
+            ChordListener(recorder, StandardTestDispatcher(testScheduler)).chords(440f).toList(),
+        )
     }
 
     // Phase 81: TalkBack saying the chord through the speaker is never named as one.

@@ -200,6 +200,8 @@
     <string name="practice_chords_listening">Listening</string>
     <!-- Chords: a short balloon by the Listen button (and its TalkBack state) when the microphone can't be used, for a call or another app; Listen has turned itself off. -->
     <string name="practice_chords_mic_busy">Microphone is busy</string>
+    <!-- Chords: a short balloon by the Listen button (and its TalkBack state) when the app is no longer allowed to use the microphone (taken back in the phone's settings); Listen has turned itself off, and a tap on it asks for the microphone again. -->
+    <string name="practice_chords_mic_off">Microphone is off</string>
     <!-- TalkBack, the ▶ / ■ half of the drone button. -->
     <string name="practice_drone_play">Play the drone</string>
     <!-- TalkBack, the ■ half of the drone button while the drone plays: stops it. -->

@@ -117,42 +117,57 @@ class TunerViewModel(
     private val attempt = MutableStateFlow(0)
 
     /**
+     * The saved settings, read once and shared by everything below (null until the first reading arrives): until Phase 91
+     * each option collected the repository on its own, 17 collections of the same settings.
+     */
+    private val settings: StateFlow<AppSettings?> = settingsRepository.settings.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** [settings] once they are read. */
+    private val loaded: Flow<AppSettings> = settings.filterNotNull()
+
+    /**
      * The mode just picked on the switch, or null when none is waiting for its save. It wins over the saved mode, so
-     * the switch and the readings follow a tap at once instead of after the save. It gives way to the saved mode at
-     * the first reading of the settings once none of the switch's saves is still under way: by then the saved mode
-     * has caught up with it, or was changed from elsewhere (an instrument or tuning picked in Practice switches the
-     * tuner to guitar mode), which then shows at once instead of after a restart.
+     * the switch and the readings follow a tap at once instead of after the save. Once none of the switch's saves is
+     * still under way, it gives way to the saved mode when the saved mode has caught up with it, or when the saved mode
+     * changed (from elsewhere: an instrument or tuning picked in Practice switches the tuner to guitar mode), which then
+     * shows at once instead of after a restart. A save that failed (a full phone) leaves the saved mode as it was, so
+     * the pick stays rather than flipping back at the next change of another setting (Phase 91).
      */
     private val pickedMode = MutableStateFlow<TunerMode?>(null)
 
     /** How many of the switch's saves ([setMode]) are under way; only touched on the main thread. */
     private var modeSavesUnderWay = 0
 
+    /** The saved mode at the last reading of the settings, null before the first; only touched on the main thread. */
+    private var lastSavedMode: TunerMode? = null
+
     /** Guitar or chromatic: the one last picked, which starts as the saved one. */
     val mode: StateFlow<TunerMode> =
-        combine(settingsRepository.settings, pickedMode) { settings, picked -> picked ?: settings.mode }
+        combine(loaded, pickedMode) { settings, picked -> picked ?: settings.mode }
             .stateIn(viewModelScope, SharingStarted.Eagerly, saved.mode)
 
     init {
         viewModelScope.launch {
-            settingsRepository.settings.collect {
-                if (modeSavesUnderWay == 0) pickedMode.value = null
+            loaded.collect {
+                val savedChanged = lastSavedMode != null && it.mode != lastSavedMode
+                lastSavedMode = it.mode
+                if (modeSavesUnderWay == 0 && (it.mode == pickedMode.value || savedChanged)) pickedMode.value = null
             }
         }
     }
 
     /** The instrument whose strings guitar mode tunes (a saved setting); the tuning is always one of its presets. */
-    val instrument: StateFlow<Instrument> = settingsRepository.settings
+    val instrument: StateFlow<Instrument> = loaded
         .map { it.instrument }
         .stateIn(viewModelScope, SharingStarted.Eagerly, saved.instrument)
 
     /** The player's own tunings, every instrument's (a saved setting); the button names a picked one by its name. */
-    val customTunings: StateFlow<List<CustomTuning>> = settingsRepository.settings
+    val customTunings: StateFlow<List<CustomTuning>> = loaded
         .map { it.customTunings }
         .stateIn(viewModelScope, SharingStarted.Eagerly, saved.customTunings)
 
     /** Whether the screen should stay on while the tuner is shown (a saved setting). */
-    val keepScreenOn: StateFlow<Boolean> = settingsRepository.settings
+    val keepScreenOn: StateFlow<Boolean> = loaded
         .map { it.keepScreenOn }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.keepScreenOn)
 
@@ -161,7 +176,7 @@ class TunerViewModel(
      * guide is on ([AppSettings.vibrationGuideOn]), whose long buzz says "in tune" instead, so the two never play together.
      */
     val vibrateInTune: StateFlow<Boolean> =
-        combine(settingsRepository.settings, screenReaderSpeech.screenReaderOn) { settings, screenReader ->
+        combine(loaded, screenReaderSpeech.screenReaderOn) { settings, screenReader ->
             settings.vibrateInTune && !settings.vibrationGuideOn(screenReader)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.vibrateInTune && saved.vibrationGuide != true)
 
@@ -180,22 +195,22 @@ class TunerViewModel(
      * Whether the pegs tick off the strings tuned and "In tune. Play." shows once all are (the string tick-off, a saved
      * setting, off by default; 2.0, Phase 71).
      */
-    val stringTickOff: StateFlow<Boolean> = settingsRepository.settings
+    val stringTickOff: StateFlow<Boolean> = loaded
         .map { it.stringTickOff }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.stringTickOff)
 
     /** What goes under the meter: the word with the cents small, or the cents big in its place (a saved setting; 2.0, Phase 78). */
-    val underMeter: StateFlow<UnderMeter> = settingsRepository.settings
+    val underMeter: StateFlow<UnderMeter> = loaded
         .map { it.underMeter }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.underMeter)
 
     /** What the tuner's meter draws: the saved look (Classic, the Light arc or the strobe; Phase 78). */
-    val lensLook: StateFlow<LensLook> = settingsRepository.settings
+    val lensLook: StateFlow<LensLook> = loaded
         .map { it.lensLook }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.lensLook)
 
     /** How close to the note counts as in tune: Relaxed or Precise (a saved setting), for the meter's in-tune window. */
-    val inTunePrecision: StateFlow<InTunePrecision> = settingsRepository.settings
+    val inTunePrecision: StateFlow<InTunePrecision> = loaded
         .map { it.inTunePrecision }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), saved.inTunePrecision)
 
@@ -222,7 +237,7 @@ class TunerViewModel(
      * sheet shows in guitar mode, and the strum check, whose button stands above the pegs. Picking an instrument without
      * one turns it off too.
      */
-    val tunerTools: StateFlow<List<TunerTool>> = settingsRepository.settings
+    val tunerTools: StateFlow<List<TunerTool>> = loaded
         .map { tunerToolsFor(tools, it.instrument) }
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.Eagerly, tunerToolsFor(tools, saved.instrument))
@@ -250,7 +265,7 @@ class TunerViewModel(
      * when an input changes, and read by the DSP loop on every frame.
      */
     private val options: StateFlow<TunerOptions?> =
-        combine(settingsRepository.settings, pickedMode, lockedString, toolChoice, appLanguage) { settings, picked, locked, tool, language ->
+        combine(loaded, pickedMode, lockedString, toolChoice, appLanguage) { settings, picked, locked, tool, language ->
             TunerOptions(
                 mode = picked ?: settings.mode,
                 tuning = settings.tuning,
@@ -278,12 +293,12 @@ class TunerViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     /** Whether the microphone was ever refused in Android's dialog on this install (a saved setting, see [MicPermissionRules]). */
-    val micRefused: StateFlow<Boolean> = settingsRepository.settings
+    val micRefused: StateFlow<Boolean> = loaded
         .map { it.micRefused }
         .stateIn(viewModelScope, SharingStarted.Eagerly, saved.micRefused)
 
     /** When the app was first used and whether the rating window was asked for (saved settings); null until loaded. */
-    private val ratingRecord: StateFlow<RatingRecord?> = settingsRepository.settings
+    private val ratingRecord: StateFlow<RatingRecord?> = loaded
         .map { RatingRecord(it.firstUseMillis, it.ratingAsked) }
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -309,7 +324,7 @@ class TunerViewModel(
      * screen shows it only for the [TunedStrings.tuning] it shows.
      */
     val tunedStrings: StateFlow<TunedStrings?> =
-        combine(tunedNow, settingsRepository.settings.map { it.stringTickOff }.distinctUntilChanged()) { tuned, shown ->
+        combine(tunedNow, loaded.map { it.stringTickOff }.distinctUntilChanged()) { tuned, shown ->
             tuned.takeIf { shown }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -344,7 +359,7 @@ class TunerViewModel(
         // A lock belongs to one tuning: a string index means something else in another tuning.
         // A tone still sounding belonged to the old tuning too.
         viewModelScope.launch {
-            settingsRepository.settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
+            loaded.map { it.tuning }.distinctUntilChanged().drop(1).collect {
                 lockedString.value = null
                 // The 12th-fret check starts again at "choose a string" (its results go with the tuning).
                 intonationChoice.value = IntonationChoice(string = null, attempt = intonationChoice.value.attempt + 1)
@@ -360,9 +375,13 @@ class TunerViewModel(
         }
     }
 
+    /**
+     * What the tuner shows. Once the microphone was let go of (5 s after the screen stopped watching), a note heard last
+     * becomes listening ([shownWhileWatched]), so the screen coming back doesn't show the old note for a frame.
+     */
     val state: StateFlow<TunerUiState> = combine(permissionGranted, attempt) { granted, _ -> granted }
         .flatMapLatest { granted -> if (granted) listenAgainOnReturn(front.returns, ::listen) else flowOf(TunerUiState.PermissionRequired) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TunerUiState.PermissionRequired)
+        .shownWhileWatched(viewModelScope, TunerUiState.PermissionRequired, stopTimeoutMillis = 5_000)
 
     /** The player refused the microphone in Android's dialog: saved, so [micRefused] knows it on later starts too. */
     fun onMicRefused() {
@@ -651,7 +670,7 @@ class TunerViewModel(
     private fun listen(): Flow<TunerUiState> = flow {
         screenReaderSpeech.watching { speaking ->
             // Whether the vibration guide is on, followed while listening: the player's choice, else the screen reader.
-            val guideOn = combine(settingsRepository.settings, screenReaderSpeech.screenReaderOn) { settings, screenReader ->
+            val guideOn = combine(loaded, screenReaderSpeech.screenReaderOn) { settings, screenReader ->
                 settings.vibrationGuideOn(screenReader)
             }.stateIn(this)
             emitAll(readings(speaking, guideOn))

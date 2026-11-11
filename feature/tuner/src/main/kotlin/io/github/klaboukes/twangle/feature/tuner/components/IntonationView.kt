@@ -244,21 +244,27 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
                 val smallStyle = labelStyle.copy(color = colours.muted, fontSize = (DRAWING_LABEL_UNITS * u).toSpNoScale(this))
                 val neckLayout = measurer.fitted(AnnotatedString(neck), smallStyle, 80f * u)
                 val saddleLayout = measurer.fitted(AnnotatedString(saddle), smallStyle, 90f * u)
+                // Made with the cache, not in every frame the ring's progress draws (Phase 91).
+                val ring = Stroke(RING_STROKE * u)
+                val progressArc = Stroke(RING_STROKE * u, cap = StrokeCap.Round)
+                val stepRing = Stroke(STEP_RING * u)
+                val centre = Offset(x, RING_Y * u)
+                val arcTopLeft = Offset(centre.x - RING_RADIUS * u, centre.y - RING_RADIUS * u)
+                val arcSize = Size(RING_RADIUS * 2 * u, RING_RADIUS * 2 * u)
                 onDrawBehind {
                     // Choosing: the two steps to come and the empty ring, where the string's note will show; the
                     // line under the panel asks for a string (Phase 63's review; until then "Which string?" here).
-                    drawSteps(u, open, fret, state.step, stepDone, colours)
+                    drawSteps(u, open, fret, state.step, stepDone, colours, stepRing)
                     when (state.step) {
-                        IntonationStep.CHOOSE -> drawCircle(colours.track, RING_RADIUS * u, Offset(x, RING_Y * u), style = Stroke(RING_STROKE * u))
+                        IntonationStep.CHOOSE -> drawCircle(colours.track, RING_RADIUS * u, centre, style = ring)
                         IntonationStep.OPEN, IntonationStep.FRET -> {
-                            val centre = Offset(x, RING_Y * u)
-                            drawCircle(colours.track, RING_RADIUS * u, centre, style = Stroke(RING_STROKE * u))
+                            drawCircle(colours.track, RING_RADIUS * u, centre, style = ring)
                             if (progress > 0f) {
                                 drawArc(
                                     colours.accent, -90f, 360f * progress, useCenter = false,
-                                    topLeft = Offset(centre.x - RING_RADIUS * u, centre.y - RING_RADIUS * u),
-                                    size = Size(RING_RADIUS * 2 * u, RING_RADIUS * 2 * u),
-                                    style = Stroke(RING_STROKE * u, cap = StrokeCap.Round),
+                                    topLeft = arcTopLeft,
+                                    size = arcSize,
+                                    style = progressArc,
                                 )
                             }
                             noteLayout?.let { drawText(it, topLeft = Offset(x - it.size.width / 2f, centre.y - it.size.height / 2f)) }
@@ -273,7 +279,10 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
     )
 }
 
-/** "Open — 12th fret" across the top, each with a dot: the current step's filled in the accent, a done one too. */
+/**
+ * "Open — 12th fret" across the top, each with a dot: the current step's filled in the accent, a done one too; one not
+ * reached yet an empty ring drawn with [stepRing].
+ */
 private fun DrawScope.drawSteps(
     u: Float,
     open: androidx.compose.ui.text.TextLayoutResult,
@@ -281,6 +290,7 @@ private fun DrawScope.drawSteps(
     step: IntonationStep,
     openDone: Boolean,
     colours: IntonationColours,
+    stepRing: Stroke,
 ) {
     val y = STEPS_Y * u
     val dot = STEP_DOT * u
@@ -288,7 +298,7 @@ private fun DrawScope.drawSteps(
         val width = dot * 2 + STEP_GAP * u + text.size.width
         val left = centreX - width / 2f
         val dotCentre = Offset(left + dot, y)
-        if (filled) drawCircle(colours.accent, dot, dotCentre) else drawCircle(colours.muted, dot, dotCentre, style = Stroke(1.4f * u))
+        if (filled) drawCircle(colours.accent, dot, dotCentre) else drawCircle(colours.muted, dot, dotCentre, style = stepRing)
         drawText(text, topLeft = Offset(left + dot * 2 + STEP_GAP * u, y - text.size.height / 2f))
     }
     stepAt(STEP_OPEN_X * u, open, filled = step == IntonationStep.OPEN || openDone)
@@ -743,6 +753,9 @@ private const val STEPS_Y = 16f
 private const val STEP_UNITS = 13f
 private const val STEP_TEXT_UNITS = 100f
 private const val STEP_DOT = 4f
+
+/** The line of a step's dot not reached yet (an empty ring). */
+private const val STEP_RING = 1.4f
 private const val STEP_GAP = 6f
 private const val STEP_OPEN_X = 110f
 private const val STEP_FRET_X = 236f
