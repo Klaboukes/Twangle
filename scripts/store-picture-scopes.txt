@@ -28,3 +28,4 @@
 #816 none     translations of five texts: Chords' microphone busy/off (the chord picture has Listen working), the metronome's Listening (its picture isn't listening), two spoken-only trainer texts
 #828 none     the Light arc's rays, glow and marks only: no store picture shows the Light arc (they show Classic)
 #829 none     the opening screen's animated icon only; no store picture shows the opening screen
+#830 none     the opening's and the About icon's motion only; both end in the same pose, and no store picture shows the opening screen

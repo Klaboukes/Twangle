@@ -63,7 +63,7 @@ TOLERANCE = 0.01                             # how far a simplified edge may str
 MARK_SCALE = 0.75
 # The mark on its own beside the name (the owner, 2026-11-05: the mark and the name apart, not the name on the
 # string): the harmonics cropped to themselves with a unit round them, as (x, y, width, height) on the 108-unit
-# canvas. The whole swings only above the string (SWINGS 0.5) and no harmonic ever past its resting height, so
+# canvas. The whole swings only above the string (PHASES) and no harmonic ever past its resting height, so
 # the pluck stays inside it.
 MARK_CROP = (16.0, 28.0, 76.0, 44.0)
 
@@ -220,7 +220,13 @@ def path_xml(colour, data, alpha=None):
 
 
 OPENING_MS = 1000                            # the opening animation, all of it: the string swings throughout
-SWINGS = 0.5                                 # how often the whole string swings in it (the halves twice that, the thirds three times)
+# Where each harmonic's sine starts and ends in the swing (radians), the whole, the halves, the thirds. Each ends a
+# quarter turn past a whole turn, on its peak, so all three arrive in their pose together at the very end (owner,
+# 2026-11-11: with their sines at 0.5, 1 and 1.5 turns the whole and the thirds settled early, their last peak landing
+# mid-swing, and the halves late; and the thirds' one swing under the string only grazed it, hovering there halfway).
+# The whole a quarter turn, so it only rises in and never dips under the string; the halves 1¼ turns; the thirds 1¾,
+# from half a turn, so they first swing under the string, about 8 units deep.
+PHASES = [(0.0, 0.5 * math.pi), (0.0, 2.5 * math.pi), (math.pi, 4.5 * math.pi)]
 SWING_FRAMES = 40
 # The watch's opening screen slides in from the side (about half a second on the Galaxy Watch 5): the watch
 # holds the string at rest that long first, so the whole swing is seen (owner, 2026-11-05: "much faster").
@@ -237,19 +243,28 @@ OPENING_SCALE = 0.94
 
 def swing(n, q):
     """How far harmonic n stands from the string, as a share of its resting height, q (0..1) into the swing:
-    plucked from rest, swinging n times as fast as the whole string (sin; SWINGS times in all for the whole),
-    easing into the resting pose (smoothstep, so it arrives with no jolt) and never past it."""
+    plucked from rest, its sine running through PHASES (the higher harmonics faster), easing into the resting pose
+    (smoothstep, so it arrives with no jolt) and never past it. Exactly 0 at the start, so the string rests flat."""
+    if q <= 0:
+        return 0.0
     s = q * q * (3 - 2 * q)
-    return s + (1 - s) * math.sin(2 * math.pi * SWINGS * n * q)
+    start, end = PHASES[n - 1]
+    return s + (1 - s) * math.sin(start + (end - start) * q)
+
+
+def swing_start_speed(n):
+    """How fast harmonic n leaves the string at the start (d swing / dq at 0: the sine's speed times its slope)."""
+    start, end = PHASES[n - 1]
+    return (end - start) * math.cos(start)
 
 
 def relative_swing(k, outer, q):
     """Harmonic k's swing inside a group already scaled by harmonic `outer`'s, so the two multiply to k's own.
-    At the start both are 0; their ratio then is the limit, n_k / n_outer (sin x ~ x). The outer ones (the
-    whole, the halves) stay above 0 after the start with SWINGS at 0.5, so the ratio stays finite."""
+    At the start both are 0; their ratio then is the limit, the ratio of how fast they leave the string. The outer
+    ones (the whole, the halves) stay above 0 after the start, so the ratio stays finite."""
     a = swing(HARMONICS[outer][0], q)
     if a < 1e-6:
-        return HARMONICS[k][0] / HARMONICS[outer][0]
+        return swing_start_speed(HARMONICS[k][0]) / swing_start_speed(HARMONICS[outer][0])
     return swing(HARMONICS[k][0], q) / a
 
 
