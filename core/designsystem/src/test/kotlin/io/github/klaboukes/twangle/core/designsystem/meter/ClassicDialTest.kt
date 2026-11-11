@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.ui.geometry.Size
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -49,9 +50,29 @@ class ClassicDialTest {
     fun `the arc, its ends and the needle stay inside the box`() {
         for (box in boxes) {
             val dial = ClassicDial(box)
-            assertTrue("$box: the arc's top and its centre mark", dial.cy - dial.r - 2f * dial.u >= -0.01f)
+            assertTrue("$box: the arc's top and the note's mark", dial.cy - dial.r - MARK_OUT_UNITS * dial.u >= -0.01f)
             assertTrue("$box: the arc's ends", dial.cx - dial.r >= 0f && dial.cx + dial.r <= box.width)
             assertTrue("$box: the needle shorter than the arc", dial.needleLength < dial.r)
+            assertTrue("$box: the needle's tail inside the dial", NEEDLE_TAIL_UNITS < ClassicDial.DIAL_PIVOT_UNITS - 3f)
         }
+    }
+
+    @Test
+    fun `the scale has a tick for every cent near the note and every 5 beyond, none at the note`() {
+        assertNull("none at the note", classicTickAt(0))
+        assertNull("none past the end", classicTickAt(55))
+        for (cents in listOf(1, 2, 3, 4, 6, 7, 8, 9)) {
+            assertEquals("$cents", ClassicTick.ONE, classicTickAt(cents))
+            assertEquals("-$cents", ClassicTick.ONE, classicTickAt(-cents))
+        }
+        assertEquals(ClassicTick.FIVE, classicTickAt(5))
+        assertEquals(ClassicTick.FIVE, classicTickAt(-35))
+        for (cents in 10..50 step 10) {
+            assertEquals("$cents", ClassicTick.TEN, classicTickAt(cents))
+            assertEquals("-$cents", ClassicTick.TEN, classicTickAt(-cents))
+        }
+        assertNull("no single cents past 10", classicTickAt(12))
+        assertNull(classicTickAt(-47))
+        assertEquals("36 ticks in all", 36, (-50..50).count { classicTickAt(it) != null })
     }
 }

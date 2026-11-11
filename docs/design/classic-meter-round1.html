@@ -1,0 +1,344 @@
+<!doctype html>
+<!--
+  Polished mock-up, 2026-11-11: the Classic meter, a more stylised needle and an easier-to-read scale. Ink, dark and
+  light. Today plus three presets (A Instrument, B Lancet, C Two-tone) and a mixer to pair any needle with any scale.
+  The dial's geometry is ClassicLook's (340 x 170 units, radius 146, pivot 17 up, 1.8 degrees a cent); only the
+  needle, the hub and the scale's marks change.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Classic meter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --page: #E9ECF0; --text: #1B1F24; --muted: #5A6370; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 4px; }
+  p.lead { margin: 0 0 14px; color: var(--muted); max-width: 78ch; }
+  .row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  figure { margin: 0; width: 360px; }
+  canvas { display: block; border-radius: 20px; box-shadow: 0 4px 18px rgba(0,0,0,.16); }
+  figcaption { margin-top: 8px; font-size: 14px; color: #333A44; }
+  figcaption b { display: block; font-size: 15px; color: var(--text); }
+  .controls { margin: 8px 0 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .controls span { color: var(--muted); margin: 0 4px 0 10px; }
+  .controls span:first-child { margin-left: 0; }
+  button { font: inherit; font-size: 14px; padding: 5px 13px; border-radius: 16px; border: 1px solid #B8BEC7; background: #fff; cursor: pointer; }
+  button.on { background: #1A6FC4; color: #fff; border-color: #1A6FC4; }
+  input[type=range] { width: 200px; }
+  .mixer { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .mixer .opts { max-width: 420px; }
+  .mixer .opts p { margin: 4px 0 14px; color: #333A44; font-size: 14px; min-height: 3em; }
+  ul.notes { max-width: 78ch; color: #333A44; padding-left: 20px; }
+  ul.notes li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>Classic meter: a sharper needle, an easier scale</h1>
+<p class="lead">Same dial, same size, same 1.8° a cent, so it stays exactly as precise. Only the needle, the hub and
+the scale's marks change. Pick a reading and a theme; every dial follows the same needle physics as the app (a
+little swing past a new string before it settles).</p>
+
+<div class="controls">
+  <span>Reading</span>
+  <button data-mode="sweep" class="on">Slow sweep</button>
+  <button data-mode="pluck">New strings</button>
+  <button data-mode="hold">Hold 8 cents flat</button>
+  <button data-mode="tune">In tune</button>
+  <button data-mode="hand">By hand</button>
+  <input id="hand" type="range" min="-50" max="50" step="0.5" value="-8" disabled>
+  <span>Theme</span>
+  <button data-theme="dark" class="on">Dark</button>
+  <button data-theme="light">Light</button>
+</div>
+
+<div class="row">
+  <figure><canvas data-needle="today" data-gauge="today"></canvas>
+    <figcaption><b>Today</b>A plain rounded bar and a dot; a tick every 5 cents, the numbers inside the arc, where
+    the needle sweeps over them.</figcaption></figure>
+  <figure><canvas data-needle="tapered" data-gauge="fine"></canvas>
+    <figcaption><b>A · Instrument</b>A tapered needle with a short tail behind a ring hub, like a studio meter.
+    The last 10 cents get a tick for every cent (that's where you actually tune), the numbers are bolder, and a
+    small ▼ marks the note.</figcaption></figure>
+  <figure><canvas data-needle="lancet" data-gauge="outside"></canvas>
+    <figcaption><b>B · Lancet</b>A slim leaf by the hub running into a hairline tip, finer than today's, so it
+    points at one cent. The numbers move outside the arc: the needle never crosses them. The in-tune window is a
+    soft wedge that fills as you reach it.</figcaption></figure>
+  <figure><canvas data-needle="twotone" data-gauge="band"></canvas>
+    <figcaption><b>C · Two-tone</b>The tapered needle with its tip in the lens's tone: amber far off, warming as
+    you close in, green in tune. The arc becomes a soft band with the in-tune window set into it.</figcaption></figure>
+</div>
+
+<h2>Mix and match</h2>
+<p class="lead">Any needle goes with any scale.</p>
+<div class="mixer">
+  <canvas id="big" data-needle="tapered" data-gauge="fine" data-u="1.9"></canvas>
+  <div class="opts">
+    <div class="controls" id="needles"><span>Needle</span>
+      <button data-n="today">Today</button><button data-n="tapered" class="on">Tapered</button>
+      <button data-n="lancet">Lancet</button><button data-n="twotone">Two-tone</button></div>
+    <p id="needleNote"></p>
+    <div class="controls" id="gauges"><span>Scale</span>
+      <button data-g="today">Today</button><button data-g="fine" class="on">Fine centre</button>
+      <button data-g="outside">Numbers outside</button><button data-g="band">Band</button></div>
+    <p id="gaugeNote"></p>
+  </div>
+</div>
+
+<h2>What stays the same</h2>
+<ul class="notes">
+  <li>♭ left, ♯ right, by position; the scale stays even (no stretch), ±50 cents with the needle allowed a little past the end.</li>
+  <li>The in-tune glow, the needle easing to green, the soft shadow falling down and right.</li>
+  <li>High contrast would get the same shapes, thicker, with no shadow, as today.</li>
+  <li>It's one drawing file (ClassicLook); nothing else on the screen moves.</li>
+</ul>
+
+<script>
+const PAL = {
+  dark:  { bg: "#0E1116", ink: "#EEF1F5", muted: "#A8B0BC", track: "#262C35", inTune: "#3DDC84", farOff: "#FFB648", shadow: .45 },
+  light: { bg: "#F6F7F9", ink: "#14181D", muted: "#4D5560", track: "#E1E5EA", inTune: "#107E46", farOff: "#D98400", shadow: .22 },
+};
+const NEEDLE_NOTES = {
+  today: "A rounded bar, 2.6 units wide, and a plain ink dot over the pivot.",
+  tapered: "Wide at the hub, fine at the tip, with a short tail behind the pivot; the hub is a ring. Reads as a real instrument.",
+  lancet: "A slim leaf near the hub that runs into a hairline: the finest tip, the lightest look.",
+  twotone: "Tapered, with the tip in the lens's tone: amber far off, green in tune. The colour says how close you are before you read the scale.",
+};
+const GAUGE_NOTES = {
+  today: "A tick every 5 cents, the numbers inside, none at 0; the in-tune zone is a short line on the arc.",
+  fine: "A tick for every cent within 10 of the note, bolder numbers, a ▼ over the note. The arc is a touch stronger.",
+  outside: "The numbers sit outside the arc, so the needle never covers them; the in-tune window is a wedge that fills in tune.",
+  band: "The arc becomes a soft band with the ticks across it and the in-tune window set into it.",
+};
+const WINDOW = 5, LIMIT = 53;
+
+// Colours as [r, g, b].
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const css = (c, a = 1) => `rgba(${c.map(Math.round).join(",")},${a})`;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const ang = c => c / 50 * Math.PI / 2;                       // clockwise from up
+const pt = (D, d, c) => [D.cx + d * Math.sin(ang(c)), D.cy - d * Math.cos(ang(c))];
+
+function setup(canvas) {
+  const u = +(canvas.dataset.u || 1), w = Math.round(360 * u), h = Math.round(196 * u), d = window.devicePixelRatio || 1;
+  canvas.width = w * d; canvas.height = h * d; canvas.style.width = w + "px"; canvas.style.height = h + "px";
+  const g = canvas.getContext("2d");
+  const cy = 12 * u + 153 * u, r = 146 * u;
+  return { canvas, g, d, w, h, D: { u, cx: w / 2, cy, r, L: r - 8 * u } };
+}
+
+function tick(g, D, c, from, to, width, colour, cap = "round") {
+  const [x1, y1] = pt(D, from, c), [x2, y2] = pt(D, to, c);
+  g.strokeStyle = colour; g.lineWidth = width; g.lineCap = cap;
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+}
+function numbers(g, D, P, dist, size, weight, alpha) {
+  g.fillStyle = css(P.ink, alpha); g.font = `${weight} ${size * D.u}px Nunito, system-ui`;
+  g.textAlign = "center"; g.textBaseline = "middle";
+  for (let c = -50; c <= 50; c += 10) {
+    if (!c) continue;
+    const [x, y] = pt(D, dist, c); g.fillText(String(Math.abs(c)), x, y + 0.5 * D.u);
+  }
+}
+function arc(g, D, radius, c0, c1, width, colour, cap = "butt") {
+  g.strokeStyle = colour; g.lineWidth = width; g.lineCap = cap;
+  g.beginPath(); g.arc(D.cx, D.cy, radius, -Math.PI / 2 + ang(c0), -Math.PI / 2 + ang(c1)); g.stroke();
+}
+function centreTriangle(g, D, colour) {
+  const { cx, cy, r, u } = D;
+  g.fillStyle = colour; g.beginPath();
+  g.moveTo(cx, cy - r - 1.5 * u); g.lineTo(cx - 5 * u, cy - r - 10 * u); g.lineTo(cx + 5 * u, cy - r - 10 * u);
+  g.closePath(); g.fill();
+}
+
+const GAUGES = {
+  today(g, D, P, s) {
+    const { cx, cy, r, u } = D, zc = mix(P.muted, P.inTune, s.tuned);
+    arc(g, D, r, -50, 50, 1.8 * u, css(P.track));
+    arc(g, D, r, -WINDOW, WINDOW, 4 * u, css(zc, .55 + .45 * s.tuned), "round");
+    tick(g, D, 0, r + 2 * u, r - 16 * u, 3.5 * u, css(zc));
+    for (let c = -50; c <= 50; c += 5) {
+      if (!c) continue;
+      const major = c % 10 === 0, base = r - 4 * u;
+      tick(g, D, c, base, base - (major ? 13 : 7) * u, (major ? 2.1 : 1.3) * u, css(P.ink, major ? 1 : .5));
+    }
+    numbers(g, D, P, r - 31 * u, 12.5, 400, .8);
+  },
+  fine(g, D, P, s) {
+    const { r, u } = D, zc = mix(P.muted, P.inTune, s.tuned);
+    arc(g, D, r, -50, 50, 2 * u, css(mix(P.track, P.muted, .3)));
+    arc(g, D, r, -WINDOW, WINDOW, 5 * u, css(zc, .55 + .45 * s.tuned), "round");
+    centreTriangle(g, D, css(zc));
+    tick(g, D, 0, r - 4 * u, r - 20 * u, 2.6 * u, css(zc));
+    for (let c = -50; c <= 50; c++) {
+      if (!c || (Math.abs(c) > 10 && c % 5)) continue;
+      const base = r - 4 * u;
+      if (c % 10 === 0) tick(g, D, c, base, base - 14 * u, 2.2 * u, css(P.ink));
+      else if (c % 5 === 0) tick(g, D, c, base, base - 9 * u, 1.6 * u, css(P.ink, .72));
+      else tick(g, D, c, base, base - 5 * u, 1 * u, css(P.ink, .5));
+    }
+    numbers(g, D, P, r - 33 * u, 14, 800, .92);
+  },
+  outside(g, D, P, s) {
+    const { cx, cy, r, u } = D, zc = mix(P.muted, P.inTune, s.tuned);
+    // The in-tune wedge, from the arc in towards the hub.
+    const a0 = -Math.PI / 2 - ang(WINDOW), a1 = -Math.PI / 2 + ang(WINDOW);
+    g.fillStyle = css(zc, .08 + .22 * s.tuned); g.beginPath();
+    g.arc(cx, cy, r - 2 * u, a0, a1); g.arc(cx, cy, r - 52 * u, a1, a0, true); g.closePath(); g.fill();
+    arc(g, D, r, -50, 50, 2 * u, css(mix(P.track, P.muted, .3)));
+    arc(g, D, r, -WINDOW, WINDOW, 4 * u, css(zc, .6 + .4 * s.tuned), "round");
+    tick(g, D, 0, r + 7 * u, r - 18 * u, 3 * u, css(zc));
+    for (let c = -50; c <= 50; c += 5) {
+      if (!c) continue;
+      const major = c % 10 === 0;
+      tick(g, D, c, r - 1 * u, r - (major ? 13 : 7) * u, (major ? 2.2 : 1.4) * u, css(P.ink, major ? 1 : .55));
+    }
+    numbers(g, D, P, r + 13 * u, 13, 700, .88);
+  },
+  band(g, D, P, s) {
+    const { r, u } = D, zc = mix(P.muted, P.inTune, s.tuned);
+    arc(g, D, r - 6 * u, -50, 50, 12 * u, css(mix(P.track, P.muted, .1)));
+    arc(g, D, r - 6 * u, -WINDOW, WINDOW, 12 * u, css(zc, .3 + .7 * s.tuned));
+    centreTriangle(g, D, css(zc));
+    for (let c = -50; c <= 50; c += 5) {
+      if (!c) continue;
+      const major = c % 10 === 0;
+      if (major) tick(g, D, c, r + 2 * u, r - 16 * u, 2.2 * u, css(P.ink), "butt");
+      else tick(g, D, c, r, r - 12 * u, 1.4 * u, css(P.ink, .55), "butt");
+    }
+    numbers(g, D, P, r - 31 * u, 13.5, 700, .9);
+  },
+};
+
+// Needles, drawn pointing up from the pivot (0, 0); y is negative upwards.
+function taperedParts(u, L, split) {
+  const tipHalf = .6 * u, baseHalf = 3 * u;
+  if (!split) {
+    const p = new Path2D();
+    p.moveTo(-tipHalf, -L); p.lineTo(tipHalf, -L); p.lineTo(baseHalf, 0); p.lineTo(2.2 * u, 20 * u);
+    p.arc(0, 20 * u, 2.2 * u, 0, Math.PI); p.lineTo(-baseHalf, 0); p.closePath();
+    return [p];
+  }
+  const y = -0.62 * L, half = baseHalf + (tipHalf - baseHalf) * 0.62;
+  const body = new Path2D();
+  body.moveTo(-half, y - .3 * u); body.lineTo(half, y - .3 * u); body.lineTo(baseHalf, 0); body.lineTo(2.2 * u, 20 * u);
+  body.arc(0, 20 * u, 2.2 * u, 0, Math.PI); body.lineTo(-baseHalf, 0); body.closePath();
+  const tip = new Path2D();
+  tip.moveTo(-tipHalf, -L); tip.lineTo(tipHalf, -L); tip.lineTo(half, y); tip.lineTo(-half, y); tip.closePath();
+  return [body, tip];
+}
+function lancetPath(u, L) {
+  const p = new Path2D(), w = .7 * u, y = -0.58 * L;
+  p.moveTo(0, 12 * u);
+  p.quadraticCurveTo(6.5 * u, -0.12 * L, w, y);
+  p.lineTo(w, -L); p.arc(0, -L, w, 0, Math.PI, true);
+  p.lineTo(-w, y);
+  p.quadraticCurveTo(-6.5 * u, -0.12 * L, 0, 12 * u);
+  p.closePath();
+  return p;
+}
+function tone(P, cents, tuned) {
+  const near = clamp(1 - (Math.abs(cents) - WINDOW) / 10, 0, 1);
+  return mix(mix(P.farOff, P.inTune, .4 * near * near), P.inTune, tuned);
+}
+
+function drawNeedle(c, kind, P, s) {
+  const { g, D, d } = c, u = D.u, green = mix(P.ink, P.inTune, s.tuned * .9);
+  g.save();
+  g.translate(D.cx, D.cy); g.rotate(ang(clamp(s.pos, -LIMIT, LIMIT)));
+  g.shadowColor = `rgba(0,0,0,${P.shadow})`; g.shadowBlur = 4 * u * d;
+  g.shadowOffsetX = 1.5 * u * d; g.shadowOffsetY = 2.5 * u * d;   // not turned: it always falls the same way
+  if (kind === "today") {
+    const h = 1.3 * u; g.fillStyle = css(green); g.beginPath(); g.roundRect(-h, -D.L - h, 2 * h, D.L + 2 * h, h); g.fill();
+  } else if (kind === "tapered") {
+    g.fillStyle = css(green); g.fill(taperedParts(u, D.L)[0]);
+  } else if (kind === "lancet") {
+    g.fillStyle = css(green); g.fill(lancetPath(u, D.L));
+  } else {
+    const [body, tip] = taperedParts(u, D.L, true);
+    g.fillStyle = css(green); g.fill(body);
+    g.fillStyle = css(tone(P, s.pos, s.tuned)); g.fill(tip);
+  }
+  g.restore();
+  // The hub doesn't turn.
+  g.save();
+  g.shadowColor = `rgba(0,0,0,${P.shadow})`; g.shadowBlur = 4 * u * d;
+  g.shadowOffsetX = 1.5 * u * d; g.shadowOffsetY = 2.5 * u * d;
+  g.fillStyle = css(P.ink); g.beginPath();
+  g.arc(D.cx, D.cy, (kind === "today" ? 5 : kind === "lancet" ? 5.5 : 7) * u, 0, 2 * Math.PI); g.fill();
+  g.restore();
+  if (kind !== "today") {
+    g.fillStyle = css(P.bg); g.beginPath();
+    g.arc(D.cx, D.cy, (kind === "lancet" ? 1.7 : 2.6) * u, 0, 2 * Math.PI); g.fill();
+  }
+}
+
+function draw(c, theme, s) {
+  const P = Object.fromEntries(Object.entries(PAL[theme]).map(([k, v]) => [k, typeof v === "string" ? rgb(v) : v]));
+  const { g, D, d, w, h } = c, u = D.u;
+  g.setTransform(d, 0, 0, d, 0, 0);
+  g.fillStyle = css(P.bg); g.fillRect(0, 0, w, h);
+  // The in-tune glow.
+  if (s.tuned > .01) {
+    const gx = D.cx, gy = D.cy - D.r + 14 * u, gr = 80 * u;
+    const grad = g.createRadialGradient(gx, gy, 0, gx, gy, gr);
+    grad.addColorStop(0, css(P.inTune, (theme === "dark" ? .26 : .16) * s.tuned)); grad.addColorStop(1, css(P.inTune, 0));
+    g.fillStyle = grad; g.fillRect(gx - gr, gy - gr, 2 * gr, 2 * gr);
+  }
+  GAUGES[c.canvas.dataset.gauge](g, D, P, s);
+  g.fillStyle = css(P.muted); g.font = `${17 * u}px Nunito, system-ui`; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText("♭", D.cx - D.r + 8 * u, D.cy + 14 * u); g.fillText("♯", D.cx + D.r - 8 * u, D.cy + 14 * u);
+  drawNeedle(c, c.canvas.dataset.needle, P, s);
+}
+
+// The reading and the needle's swing (a lightly damped spring, a little past a new string, then settled).
+let mode = "sweep", theme = "dark", pos = -40, vel = 0, tuned = 0, last = performance.now(), t0 = last;
+const hand = document.getElementById("hand");
+function readingAt(t) {
+  const n = Math.sin(t * 2.3) * .35 + Math.sin(t * 5.1 + 1) * .2;
+  if (mode === "sweep") { const p = (t / 10) % 2, k = p < 1 ? p : 2 - p; return -42 + 84 * k + n; }
+  if (mode === "hold") return -8 + n;
+  if (mode === "tune") return .4 + n * 1.4;
+  if (mode === "pluck") return [-34, 22, -11, 2.5][Math.floor(t / 3) % 4] + n;
+  return +hand.value;
+}
+const canvases = [...document.querySelectorAll("canvas")].map(setup);
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const target = readingAt((now - t0) / 1000);
+  const acc = 70 * (target - pos) - 11 * vel; vel += acc * dt; pos += vel * dt;
+  tuned += ((Math.abs(pos) <= WINDOW ? 1 : 0) - tuned) * Math.min(1, dt * 6);
+  for (const c of canvases) draw(c, theme, { pos, tuned });
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+  mode = b.dataset.mode; t0 = performance.now(); hand.disabled = mode !== "hand";
+  document.querySelectorAll("[data-mode]").forEach(x => x.classList.toggle("on", x === b));
+});
+document.querySelectorAll("[data-theme]").forEach(b => b.onclick = () => {
+  theme = b.dataset.theme;
+  document.querySelectorAll("[data-theme]").forEach(x => x.classList.toggle("on", x === b));
+});
+const big = document.getElementById("big");
+function mixer(group, attr, notes, el) {
+  document.querySelectorAll(`#${group} button`).forEach(b => b.onclick = () => {
+    big.dataset[attr] = b.dataset[attr[0]]; el.textContent = notes[big.dataset[attr]];
+    document.querySelectorAll(`#${group} button`).forEach(x => x.classList.toggle("on", x === b));
+  });
+  el.textContent = notes[big.dataset[attr]];
+}
+mixer("needles", "needle", NEEDLE_NOTES, document.getElementById("needleNote"));
+mixer("gauges", "gauge", GAUGE_NOTES, document.getElementById("gaugeNote"));
+
+document.fonts.load("700 14px Nunito").finally(() => requestAnimationFrame(frame));
+</script>
+</body>
+</html>

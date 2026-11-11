@@ -7,13 +7,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asAndroidPath
@@ -46,7 +46,9 @@ import kotlin.math.sin
  * was 1.1 Contemporary's): a needle on a half-circle dial, the most familiar tuner face and the most precise, the
  * meter's default since the trail left it. The scale is plain (no stretch: a numbered scale must stay even), so a
  * cent turns the needle 1.8° everywhere, about 4.7 dp at its tip on a phone. It sits straight on the page like the
- * rest of the meter: no plate, no glass, no frame.
+ * rest of the meter: no plate, no glass, no frame. Since 2026-11-11 (the owner's A from
+ * docs/design/classic-meter-preview.html) the needle tapers to a fine tip with a short tail behind a ring hub, and the
+ * scale has a tick for every cent near the note, where the tuning happens.
  */
 
 /**
@@ -82,11 +84,30 @@ internal class ClassicDial(size: Size) {
     }
 }
 
+/** A mark on Classic's scale: the tens (numbered), the fives, and the single cents near the note. */
+internal enum class ClassicTick { TEN, FIVE, ONE }
+
+/**
+ * The scale's mark at a whole [cents], or null: none at 0 (the centre mark is there) or past ±50; a tick for every
+ * cent within [FINE_TICKS_CENTS] of the note, where the tuning happens, and every 5 cents beyond. Pure, so it is
+ * tested on the JVM (`ClassicDialTest`).
+ */
+internal fun classicTickAt(cents: Int): ClassicTick? = when {
+    cents == 0 || abs(cents) > METER_RANGE_CENTS -> null
+    cents % 10 == 0 -> ClassicTick.TEN
+    cents % 5 == 0 -> ClassicTick.FIVE
+    abs(cents) < FINE_TICKS_CENTS -> ClassicTick.ONE
+    else -> null
+}
+
+/** The single-cent ticks run this far each way from the note. */
+internal const val FINE_TICKS_CENTS = 10
+
 /**
  * Classic in the meter, from one [reading]: the dial under the needle (the arc, the scale's ticks and numbers,
  * static), the in-tune zone on the arc and the centre mark (in a layer of their own, fading to "in tune"), the
  * in-tune glow, the needle and its soft shadow (each drawn once pointing up in a layer that only turns, so a reading
- * redraws nothing), and the hub over the pivot. The needle swings a little past a new string before it settles
+ * redraws nothing), and the ring hub over the pivot. The needle swings a little past a new string before it settles
  * ([MeterFeels.CLASSIC]) and may go [NEEDLE_LIMIT_CENTS] past the end, as a real one would. The meter draws ♭ and ♯.
  */
 @Composable
@@ -98,10 +119,12 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
     StaticArt {
         val dial = ClassicDial(size)
         val track = Stroke(TRACK_WIDTH_UNITS * roles.lineScale * dial.u)
+        // A touch stronger than the line colour, so the arc reads at a glance (the same ink in high contrast).
+        val trackColour = mix(roles.track, roles.muted, TRACK_TOWARDS_MUTED)
         val scale = ClassicScale(dial, roles, measurer, this, numbers, locale)
         val draw: DrawScope.() -> Unit = {
             drawArc(
-                roles.track,
+                trackColour,
                 startAngle = 180f,
                 sweepAngle = 180f,
                 useCenter = false,
@@ -124,9 +147,10 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
             val dial = ClassicDial(size)
             // In high contrast the zone is wider and drawn in full: the ink off the note, green in tune.
             val zone = Stroke(ZONE_WIDTH_UNITS * roles.lineScale * dial.u, cap = StrokeCap.Round)
-            val markTop = Offset(dial.cx, dial.cy - dial.r - 2f * roles.lineScale * dial.u)
-            val markBottom = Offset(dial.cx, dial.cy - dial.r + 16f * dial.u)
-            val markWidth = 3.5f * roles.lineScale * dial.u
+            // The note's mark: a tick through the arc, longer than the tens.
+            val markTop = Offset(dial.cx, dial.cy - dial.r - MARK_OUT_UNITS * dial.u)
+            val markBottom = Offset(dial.cx, dial.cy - dial.r + MARK_IN_UNITS * dial.u)
+            val markWidth = MARK_WIDTH_UNITS * roles.lineScale * dial.u
             val zoneAlpha = roles.fade(ZONE_ALPHA)
             onDrawBehind {
                 val tuned = reading.tuned
@@ -171,17 +195,22 @@ internal fun BoxScope.ClassicLook(reading: LensReading) {
             onDrawBehind { needle.draw(this, mix(roles.ink, roles.inTune, reading.tuned * green)) }
         },
     )
-    // The hub, which doesn't turn: a plain ink dot with the needle's shadow.
+    // The hub, which doesn't turn: an ink ring with the needle's shadow, its hole cut through the needle too, so the
+    // page shows through it (the page may be tinted, so the hole is never painted).
     Spacer(
         Modifier.matchParentSize().drawWithCache {
             val dial = ClassicDial(size)
-            val shadow = markerShadow(dial.u, roles.dark)
-            val radius = HUB_UNITS * (if (roles.highContrast) HIGH_CONTRAST_HUB else 1f) * dial.u
+            val hub = ClassicHub(dial, roles)
+            val shadow = markerShadow(dial.u, roles.dark).apply {
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = hub.width
+            }
+            val ring = Stroke(hub.width)
             onDrawBehind {
                 if (!roles.highContrast) {
-                    drawIntoCanvas { it.nativeCanvas.drawCircle(dial.cx + SHADOW_X_UNITS * dial.u, dial.cy + SHADOW_Y_UNITS * dial.u, radius, shadow) }
+                    drawIntoCanvas { it.nativeCanvas.drawCircle(dial.cx + SHADOW_X_UNITS * dial.u, dial.cy + SHADOW_Y_UNITS * dial.u, hub.middle, shadow) }
                 }
-                drawCircle(roles.ink, radius, Offset(dial.cx, dial.cy))
+                drawCircle(roles.ink, hub.middle, Offset(dial.cx, dial.cy), style = ring)
             }
         },
     )
@@ -195,10 +224,23 @@ private fun GraphicsLayerScope.turnAboutPivot(cents: Float) {
 }
 
 /**
- * The scale (1.1's `ScaleMarks` on the dial): a tick every 5 cents, none at 0, from [TICK_IN_UNITS] inside the arc
- * inwards; major ticks (every 10) [MAJOR_TICK_UNITS] long and [MAJOR_TICK_WIDTH_UNITS] wide in ink, minor ones
- * [MINOR_TICK_UNITS] and [MINOR_TICK_WIDTH_UNITS], ink at [MINOR_TICK_INK]; the numbers 10 to 50 without a sign in
- * the app language's digits, [NUMBER_SIZE_UNITS] high, ink at [NUMBER_INK], centred [NUMBER_IN_UNITS] inside their
+ * The hub's ring: [HUB_UNITS] round the pivot outside, a [HUB_HOLE_UNITS] hole inside ([HIGH_CONTRAST_HUB] times
+ * both in high contrast), drawn as a stroke of [width] along its [middle].
+ */
+private class ClassicHub(dial: ClassicDial, roles: MeterRoles) {
+    private val scale = (if (roles.highContrast) HIGH_CONTRAST_HUB else 1f) * dial.u
+    val outer = HUB_UNITS * scale
+    val hole = HUB_HOLE_UNITS * scale
+    val width = outer - hole
+    val middle = (outer + hole) / 2f
+}
+
+/**
+ * The scale (1.1's `ScaleMarks` on the dial, finer near the note since 2026-11-11): the marks [classicTickAt] puts
+ * on it, from [TICK_IN_UNITS] inside the arc inwards; the tens [TEN_TICK_UNITS] long and [TEN_TICK_WIDTH_UNITS] wide
+ * in ink, the fives [FIVE_TICK_UNITS] and [FIVE_TICK_WIDTH_UNITS], ink at [FIVE_TICK_INK], the single cents
+ * [ONE_TICK_UNITS] and [ONE_TICK_WIDTH_UNITS], ink at [ONE_TICK_INK]; the numbers 10 to 50 without a sign in the app
+ * language's digits, extra bold, [NUMBER_SIZE_UNITS] high, ink at [NUMBER_INK], centred [NUMBER_IN_UNITS] inside their
  * tick's base. Made once per size and colours.
  */
 private class ClassicScale(
@@ -211,9 +253,10 @@ private class ClassicScale(
 ) {
     /** Each tick's ends and width: x1, y1, x2, y2, width. */
     private val ticks = FloatArray(TICK_COUNT * 5)
-    private val major = BooleanArray(TICK_COUNT)
+    private val colours = arrayOfNulls<Color>(TICK_COUNT)
     private val ink = roles.ink
-    private val minorInk = roles.ink.copy(alpha = roles.fade(MINOR_TICK_INK))
+    private val fiveInk = roles.ink.copy(alpha = roles.fade(FIVE_TICK_INK))
+    private val oneInk = roles.ink.copy(alpha = roles.fade(ONE_TICK_INK))
     private val numberInk = roles.ink.copy(alpha = roles.fade(NUMBER_INK))
 
     /** High contrast's ticks are squared off, as the mock-up's, so their thicker ends don't run together. */
@@ -226,41 +269,43 @@ private class ClassicScale(
         val style = TextStyle(
             fontFamily = numbers,
             fontSize = with(density) { (NUMBER_SIZE_UNITS * u).toSp() },
-            fontWeight = if (roles.highContrast) FontWeight.ExtraBold else null,
+            fontWeight = FontWeight.ExtraBold,
             fontFeatureSettings = LINING_FIGURES,
         )
         val measured = (1..5).map { measurer.measure(localDigits(it * 10, locale), style) }
+        val longer = if (roles.highContrast) HIGH_CONTRAST_TICK_LENGTH else 1f
+        val base = dial.r - TICK_IN_UNITS * u
         var t = 0
         var n = 0
-        var cents = -METER_RANGE_CENTS
-        while (cents <= METER_RANGE_CENTS) {
-            if (cents != 0f) {
-                val isMajor = cents.toInt() % 10 == 0
-                val base = dial.r - TICK_IN_UNITS * u
-                val length = (if (isMajor) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * (if (roles.highContrast) HIGH_CONTRAST_TICK_LENGTH else 1f) * u
-                ticks[t * 5] = dial.x(base, cents)
-                ticks[t * 5 + 1] = dial.y(base, cents)
-                ticks[t * 5 + 2] = dial.x(base - length, cents)
-                ticks[t * 5 + 3] = dial.y(base - length, cents)
-                ticks[t * 5 + 4] = (if (isMajor) MAJOR_TICK_WIDTH_UNITS else MINOR_TICK_WIDTH_UNITS) * roles.lineScale * u
-                major[t] = isMajor
-                t++
-                if (isMajor) {
-                    val text = measured[(abs(cents) / 10f).toInt() - 1]
-                    texts[n] = text
-                    textAt[n * 2] = dial.x(base - NUMBER_IN_UNITS * u, cents) - text.size.width / 2f
-                    textAt[n * 2 + 1] = dial.y(base - NUMBER_IN_UNITS * u, cents) - text.size.height / 2f
-                    n++
-                }
+        for (whole in -METER_RANGE_CENTS.toInt()..METER_RANGE_CENTS.toInt()) {
+            val tick = classicTickAt(whole) ?: continue
+            val cents = whole.toFloat()
+            val (length, width, colour) = when (tick) {
+                ClassicTick.TEN -> Triple(TEN_TICK_UNITS, TEN_TICK_WIDTH_UNITS, ink)
+                ClassicTick.FIVE -> Triple(FIVE_TICK_UNITS, FIVE_TICK_WIDTH_UNITS, fiveInk)
+                ClassicTick.ONE -> Triple(ONE_TICK_UNITS, ONE_TICK_WIDTH_UNITS, oneInk)
             }
-            cents += 5f
+            ticks[t * 5] = dial.x(base, cents)
+            ticks[t * 5 + 1] = dial.y(base, cents)
+            ticks[t * 5 + 2] = dial.x(base - length * longer * u, cents)
+            ticks[t * 5 + 3] = dial.y(base - length * longer * u, cents)
+            ticks[t * 5 + 4] = width * roles.lineScale * u
+            colours[t] = colour
+            t++
+            if (tick == ClassicTick.TEN) {
+                val text = measured[abs(whole) / 10 - 1]
+                texts[n] = text
+                textAt[n * 2] = dial.x(base - NUMBER_IN_UNITS * u, cents) - text.size.width / 2f
+                textAt[n * 2 + 1] = dial.y(base - NUMBER_IN_UNITS * u, cents) - text.size.height / 2f
+                n++
+            }
         }
     }
 
     fun draw(scope: DrawScope) = with(scope) {
         for (t in 0 until TICK_COUNT) {
             drawLine(
-                if (major[t]) ink else minorInk,
+                colours[t] ?: continue,
                 Offset(ticks[t * 5], ticks[t * 5 + 1]),
                 Offset(ticks[t * 5 + 2], ticks[t * 5 + 3]),
                 ticks[t * 5 + 4],
@@ -274,8 +319,8 @@ private class ClassicScale(
     }
 
     private companion object {
-        /** Twenty ticks: every 5 cents from −50 to 50, none at 0. */
-        const val TICK_COUNT = 20
+        /** Thirty-six ticks: every cent from 1 to 9 each way, then every 5 to 50, none at 0. */
+        const val TICK_COUNT = 36
 
         /** Ten numbers: 50, 40, … 10 and 10, 20, … 50. */
         const val NUMBER_COUNT = 10
@@ -283,16 +328,27 @@ private class ClassicScale(
 }
 
 /**
- * The needle: Ink's plain rounded bar (1.1 Contemporary's), [NEEDLE_WIDTH_UNITS] wide, from the pivot up to the
- * dial's [ClassicDial.needleLength], drawn pointing up; its layer turns it. [drawShadow] draws its silhouette blurred
- * for the shadow layer under it.
+ * The needle (since 2026-11-11): a spike tapering from [NEEDLE_BASE_UNITS] wide at the pivot to [NEEDLE_TIP_UNITS]
+ * at the dial's [ClassicDial.needleLength], with a short tail [NEEDLE_TAIL_UNITS] behind the pivot ending in a round
+ * end [NEEDLE_TAIL_END_UNITS] wide; the hub's hole cut through it. Drawn pointing up; its layer turns it.
+ * [drawShadow] draws its silhouette blurred for the shadow layer under it.
  */
 private class ClassicNeedle(dial: ClassicDial, roles: MeterRoles) {
-    private val half = NEEDLE_WIDTH_UNITS * (if (roles.highContrast) HIGH_CONTRAST_NEEDLE else 1f) * dial.u / 2f
     private val body = Path().apply {
-        addRoundRect(
-            RoundRect(dial.cx - half, dial.cy - dial.needleLength - half, dial.cx + half, dial.cy + half, CornerRadius(half)),
-        )
+        val scale = (if (roles.highContrast) HIGH_CONTRAST_NEEDLE else 1f) * dial.u / 2f
+        val tip = NEEDLE_TIP_UNITS * scale
+        val base = NEEDLE_BASE_UNITS * scale
+        val end = NEEDLE_TAIL_END_UNITS * scale
+        val tail = dial.cy + NEEDLE_TAIL_UNITS * dial.u
+        moveTo(dial.cx - tip, dial.cy - dial.needleLength)
+        lineTo(dial.cx + tip, dial.cy - dial.needleLength)
+        lineTo(dial.cx + base, dial.cy)
+        lineTo(dial.cx + end, tail)
+        arcTo(Rect(Offset(dial.cx, tail), end), 0f, 180f, false)
+        lineTo(dial.cx - base, dial.cy)
+        close()
+        val hole = Path().apply { addOval(Rect(Offset(dial.cx, dial.cy), ClassicHub(dial, roles).hole)) }
+        op(this, hole, PathOperation.Difference)
     }
     private val nativeBody = body.asAndroidPath()
     private val shadow = markerShadow(dial.u, roles.dark)
@@ -316,37 +372,53 @@ private fun markerShadow(u: Float, dark: Boolean): android.graphics.Paint =
         maskFilter = BlurMaskFilter(((3f * u / 2f - 0.5f) / 0.57735f).coerceAtLeast(0.5f), BlurMaskFilter.Blur.NORMAL)
     }
 
-/** The arc's line. */
-private const val TRACK_WIDTH_UNITS = 1.8f
+/** The arc's line, this much of the way from the line colour to the muted text's. */
+private const val TRACK_WIDTH_UNITS = 2f
+private const val TRACK_TOWARDS_MUTED = 0.3f
 
 /** The in-tune zone on the arc: muted at this opacity off the note, the "in tune" colour in full as it is reached. */
-private const val ZONE_WIDTH_UNITS = 4f
+private const val ZONE_WIDTH_UNITS = 5f
 private const val ZONE_ALPHA = 0.55f
+
+/** The note's mark reaches this far outside the arc (kept inside the dial's box) and this far inside it. */
+internal const val MARK_OUT_UNITS = 5f
+private const val MARK_IN_UNITS = 22f
+private const val MARK_WIDTH_UNITS = 3f
 
 /** The ticks start this far inside the arc. */
 private const val TICK_IN_UNITS = 4f
-private const val MAJOR_TICK_UNITS = 13f
-private const val MAJOR_TICK_WIDTH_UNITS = 2.1f
-private const val MINOR_TICK_UNITS = 7f
-private const val MINOR_TICK_WIDTH_UNITS = 1.3f
+private const val TEN_TICK_UNITS = 14f
+private const val TEN_TICK_WIDTH_UNITS = 2.2f
+private const val FIVE_TICK_UNITS = 9f
+private const val FIVE_TICK_WIDTH_UNITS = 1.6f
+private const val ONE_TICK_UNITS = 5f
+private const val ONE_TICK_WIDTH_UNITS = 1f
 
-/** How strong the minor ticks and the numbers are, as ink: 1.1's, readable at 4.5 : 1 and 3 : 1. */
-private const val MINOR_TICK_INK = 0.5f
-private const val NUMBER_INK = 0.8f
-private const val NUMBER_SIZE_UNITS = 12.5f
+/** How strong the fives, the single cents and the numbers are, as ink (1.1's minor ticks were 0.5 and its numbers 0.8). */
+private const val FIVE_TICK_INK = 0.72f
+private const val ONE_TICK_INK = 0.5f
+private const val NUMBER_INK = 0.92f
+private const val NUMBER_SIZE_UNITS = 14f
 
 /** The numbers' middles sit this far inside their tick's base. */
-private const val NUMBER_IN_UNITS = 27f
+private const val NUMBER_IN_UNITS = 29f
 
 /** The in-tune glow: this many units round a point this far under the arc's top. */
 private const val GLOW_UNITS = 80f
 private const val GLOW_DOWN_UNITS = 14f
 
-private const val NEEDLE_WIDTH_UNITS = 2.6f
+/**
+ * The needle's widths at its tip, at the pivot and at its tail's round end, and the tail's length behind the pivot:
+ * with its round end and the shadow it stays inside the 17 units under the pivot.
+ */
+private const val NEEDLE_TIP_UNITS = 1.2f
+private const val NEEDLE_BASE_UNITS = 6f
+private const val NEEDLE_TAIL_END_UNITS = 4.4f
+internal const val NEEDLE_TAIL_UNITS = 11.5f
 
 /**
- * The high-contrast look (Phase 86, the mock-up's): the needle 6 units wide instead of 2.6, the hub this much larger,
- * the ticks this much longer (and [MeterRoles.lineScale] thicker), so they read at arm's length and through a blur.
+ * The high-contrast look (Phase 86, the mock-up's): the needle this much wider, the hub this much larger, the ticks
+ * this much longer (and [MeterRoles.lineScale] thicker), so they read at arm's length and through a blur.
  */
 private const val HIGH_CONTRAST_NEEDLE = 2.3f
 private const val HIGH_CONTRAST_HUB = 1.6f
@@ -354,7 +426,10 @@ private const val HIGH_CONTRAST_TICK_LENGTH = 1.3f
 
 /** In tune, the needle goes this far towards the "in tune" colour. */
 private const val NEEDLE_GREEN = 0.9f
-private const val HUB_UNITS = 5f
+
+/** The hub's ring round the pivot, and the hole in it. */
+private const val HUB_UNITS = 7f
+private const val HUB_HOLE_UNITS = 2.6f
 private const val SHADOW_X_UNITS = 1.5f
 private const val SHADOW_Y_UNITS = 2.5f
 
