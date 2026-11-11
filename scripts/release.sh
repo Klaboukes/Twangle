@@ -57,7 +57,7 @@
 #       tracks: "wear:qa" (internal testing), "wear:<closed test>" ($TWANGLE_PLAY_WATCH_CLOSED_TRACK,
 #       "alpha" by default) and "wear:production". Play takes no watch bundle on the phone's tracks
 #       (since September 2023; docs/release.md, *The watch app*).
-#   scripts/release.sh listing
+#   scripts/release.sh listing [joined]
 #       Sends the store listing to Google Play: every language's title, short and full description and
 #       phone and tablet screenshots (and, from the watch's turn on Play, its Wear OS screenshots: scripts/watch-screenshots.sh),
 #       the icon (one for every language) and each language's feature graphic, and the
@@ -66,6 +66,9 @@
 #       git-ignored; it first takes the latest set the other PC shared on GitHub, scripts/share-store-screenshots.sh), and checks the texts and pictures against Play's rules first.
 #       Not sent for review: it waits in the Play Console's Publishing overview until the owner sends it,
 #       with the release it goes with. Each send is noted as a tag listing/<date-time> on the commit sent.
+#       "joined": for an app whose changes Google sends for review by itself (it then refuses "not sent for
+#       review"; Twangle since 2026-11-11): the listing joins what is in review, which Google starts again
+#       with the listing in it. Send the release first (promote production), then this: one review.
 #   scripts/release.sh listing-changes
 #       Whether the store listing needs sending: what changed in its texts and pictures since the last
 #       listing/* tag, and the app's screen changes since then (do the screenshots still match?).
@@ -414,7 +417,8 @@ play_gradle() {
 # PlayReports.java commits it, refused while anything is in Google's review: the plugin's own commit
 # cancels that review and starts it again (as with 2.0 on 2026-11-06). $1 is "commit", or "commit-unsent"
 # to hold the changes back for the owner's Send changes for review (a "commit" Google won't send for review by
-# itself is committed that way too, as the plugin's own commit does). Fails having sent nothing of it, except
+# itself is committed that way too, as the plugin's own commit does), or "commit-joined" to join what is in
+# review, which Google then starts again with these changes in it (listing joined). Fails having sent nothing of it, except
 # when the commit's answer was lost (PlayReports.java exits 3): then it ends the script, since it may be on Play.
 # (The plugin always opens a fresh edit; it can't be handed one.)
 play_send() {
@@ -802,7 +806,12 @@ screenshots_current() {
 
 # The store listing as it is on main, for every language, with the app details.
 listing() {
-    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh listing"
+    local how=commit-unsent
+    case "${1:-}" in
+        "") ;;
+        joined) how=commit-joined ;;
+        *) fail "usage: scripts/release.sh listing [joined]" ;;
+    esac
     need_play_key
     [[ "$(git rev-parse --abbrev-ref HEAD)" == "main" ]] || fail "not on main; send only the listing that has landed"
     [[ -z "$(git status --porcelain -- "$LISTINGS")" ]] || fail "uncommitted changes in $LISTINGS; land them first"
@@ -828,8 +837,9 @@ listing() {
     # Publishing overview until the owner sends it with the release it goes with: the plugin's own
     # commit sends the changes to Google's review at once, managed publishing or not (2026-11-09).
     into_play() {
-        play_send commit-unsent :app:publishReleaseListing --rerun "$@" ||
-            fail "this part of the store listing didn't reach Google Play (above); a part sent before it waits, not sent for review."
+        play_send "$how" :app:publishReleaseListing --rerun "$@" ||
+            fail "this part of the store listing didn't reach Google Play (above); a part sent before it is on Play. When Google
+says it sends changes for review automatically: send the release first, then scripts/release.sh listing joined."
     }
     # --rerun sends everything, also what an earlier run sent: the Play Console may have been edited
     # since. Pictures Play already has (the same file) are skipped by the plugin.
@@ -848,8 +858,13 @@ listing() {
     echo
     echo "The store listing is on Google Play in every language: title, short and full description,"
     echo "screenshots, icon and feature graphic, and the contact email, website and default language."
-    echo "It is not sent for review: in the Play Console, Publishing overview, it waits under Changes not"
-    echo "yet sent for review; send it with the release it goes with, so both are one review (docs/release.md)."
+    if [[ "$how" == commit-joined ]]; then
+        echo "It is in Google's review together with what was already in review (one review); once approved it"
+        echo "waits in the Play Console's Publishing overview for Publish (managed publishing; docs/release.md)."
+    else
+        echo "It is not sent for review: in the Play Console, Publishing overview, it waits under Changes not"
+        echo "yet sent for review; send it with the release it goes with, so both are one review (docs/release.md)."
+    fi
 }
 
 # What changed for the store listing since it was last sent (the newest listing/* tag): its texts and

@@ -169,9 +169,10 @@ moves on.
   finds that out itself, and step 7 starts with the next version.) →
   `scripts/release.sh promote production`
   (`promote production draft` leaves it for the owner to start in the Play Console). When the store
-  listing changed too, send it first (step 8) and promote with `draft`: then the owner sends both from
-  *Publishing overview* as one review (a plain promotion would go to review on its own, and the listing
-  sent later would restart that review). Then offer the rollout watch (step 7).
+  listing changed too: since production access (2026-11-11) Google sends Twangle's changes for review by
+  itself and refuses the listing's *not sent for review*, so promote first (plain, into review), then
+  `scripts/release.sh listing joined` (step 8), which joins that review by starting it again with the
+  listing in it: one review, asked as one question. Then offer the rollout watch (step 7).
 
 ## 7. The staged rollout (ask first)
 - **Before every raise:** `scripts/release.sh health` (crash and ANR rates per version against Play's

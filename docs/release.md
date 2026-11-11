@@ -58,6 +58,11 @@ further, and does the few things only the Play Console can do (the checklist bel
   from the Publishing overview. When the answer to a commit is lost (no connection, or none within a
   minute), the send stops and says it may be on Play or not: look with `status` and in the Console
   before sending it again.
+  **Since production access (2026-11-11) Google sends this app's changes for review by itself,** managed
+  publishing still on: it refuses *not sent for review* ("Changes are sent for review automatically").
+  So a release and its store listing go as one review this way: the release first (`promote production`,
+  into review at once), then `listing joined`, which Google adds to that review by starting it again with
+  the listing in it (`CANCEL_IN_REVIEW_AND_SUBMIT`, seconds after it began). Approved, both wait for *Publish*.
   Whether the application for production access counts as "in review" there is not documented, so
   nothing is sent while it is open either (owner, 2026-11-10). The internal
   track isn't covered: an upload there is live within minutes, with no review

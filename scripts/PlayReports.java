@@ -91,8 +91,9 @@ public class PlayReports {
             case "status" -> status();
             case "health" -> health(extra == null ? 7 : Integer.parseInt(extra));
             case "reviews" -> reviews(extra == null ? "en" : extra);
-            case "edit-commit" -> editCommit(needed(extra, "the edit's id"), false);
-            case "edit-commit-unsent" -> editCommit(needed(extra, "the edit's id"), true);
+            case "edit-commit" -> editCommit(needed(extra, "the edit's id"), false, false);
+            case "edit-commit-unsent" -> editCommit(needed(extra, "the edit's id"), true, false);
+            case "edit-commit-joined" -> editCommit(needed(extra, "the edit's id"), false, true);
             case "edit-delete" -> editDelete(needed(extra, "the edit's id"));
             case "track-started" -> trackStarted(needed(extra, "the track's name"));
             default -> fail("unknown command " + command);
@@ -238,10 +239,14 @@ public class PlayReports {
      * (developers.google.com/android-publisher/api-ref/rest/v3/edits/commit). A refused edit is deleted, so
      * nothing of it reaches Play. [unsent] also holds the changes back (changesNotSentForReview): they join
      * the Publishing overview's "Changes not yet sent for review", for the owner to send; without it a
-     * commit sends them to Google's review at once, managed publishing or not (2026-11-09).
+     * commit sends them to Google's review at once, managed publishing or not (2026-11-09). Google refuses
+     * [unsent] for an app whose changes it sends for review by itself ("Changes are sent for review
+     * automatically", Twangle since production access, 2026-11-11, with managed publishing still on); then
+     * [joined] sends them to join what is already in review: Google cancels that review and starts it again
+     * with these changes in it (CANCEL_IN_REVIEW_AND_SUBMIT), so a release and its store listing are one review.
      */
-    static void editCommit(String edit, boolean unsent) throws Exception {
-        Reply reply = commit(edit, unsent);
+    static void editCommit(String edit, boolean unsent, boolean joined) throws Exception {
+        Reply reply = commit(edit, unsent, joined);
         // Google won't always send changes for review by itself (changes not yet sent waiting in the Publishing
         // overview, a rejection): it asks for changesNotSentForReview instead. The plugin's own commit then
         // commits them unsent (Gradle Play Publisher 4.1.1, PlayApiService.commit), and so does this.
@@ -249,7 +254,7 @@ public class PlayReports {
             out.println("Google Play won't send this for review by itself just now (" + reply.errorMessage() + ").");
             out.println("Committed not sent for review instead: send it with Send changes for review in the Play"
                 + " Console's Publishing overview.");
-            reply = commit(edit, true);
+            reply = commit(edit, true, false);
         }
         if (reply.code / 100 != 2) {
             editDelete(edit);
@@ -264,8 +269,9 @@ public class PlayReports {
      * edits.commit of [edit]. When its answer is lost (no connection, or none within the minute), Google may have
      * committed it all the same, so this exits with [LOST] rather than saying nothing was sent.
      */
-    static Reply commit(String edit, boolean unsent) throws Exception {
-        String query = "changesInReviewBehavior=ERROR_IF_IN_REVIEW" + (unsent ? "&changesNotSentForReview=true" : "");
+    static Reply commit(String edit, boolean unsent, boolean joined) throws Exception {
+        String query = "changesInReviewBehavior=" + (joined ? "CANCEL_IN_REVIEW_AND_SUBMIT" : "ERROR_IF_IN_REVIEW")
+            + (unsent ? "&changesNotSentForReview=true" : "");
         return send(request("POST", PUBLISHER + app + "/edits/" + enc(edit) + ":commit?" + query, null),
             "Whether Google Play took it isn't known: run scripts/release.sh status (and look at the Play Console's"
                 + " Publishing overview) before sending it again.");
