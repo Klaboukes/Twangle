@@ -45,7 +45,8 @@ import kotlinx.coroutines.flow.flowOn
  * really listening mid-session; on Android 10+ an `AudioRecordingCallback` tells it when Android
  * silences this recording for another app (a call, an assistant). Failures end the flow with an
  * [AudioRecorderException]; before Android 10, a start that finds the microphone busy is first
- * tried again for a few seconds ([retryingBusyStart]).
+ * tried again, for up to about 6 s while another of the app's recordings holds it, else about 1 s
+ * ([retryingBusyStart]).
  *
  * [formats] are the sample formats to try, in order: both in the app; the on-device tests pass
  * 16-bit alone to record that way on a phone that would take float.
@@ -87,8 +88,13 @@ class AndroidAudioRecorder internal constructor(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     override fun chunks(): Flow<FloatArray> =
         // Before Android 10 a recording that is still kept (the tuner's 5 s grace) makes ours fail to start: tried
-        // again for a few seconds. From Android 10 the microphone is shared, and a busy one is silenced instead.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) recording().retryingBusyStart() else recording()
+        // again until it lets go, another app's for about 1 s. From Android 10 the microphone is shared, and a busy
+        // one is silenced instead.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            recording().retryingBusyStart(appRecording = { openRecordings.any })
+        } else {
+            recording()
+        }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun recording(): Flow<FloatArray> = flow {
@@ -113,6 +119,7 @@ class AndroidAudioRecorder internal constructor(
             },
             release = { it.end() },
         )
+        openRecordings.opened()
         try {
             config = opened
             val pool = Array(POOL_SIZE) { FloatArray(opened.chunkSize) }
@@ -125,7 +132,11 @@ class AndroidAudioRecorder internal constructor(
             }
         } finally {
             activeInput = null
-            reader.close()
+            try {
+                reader.close()
+            } finally {
+                openRecordings.closed()
+            }
         }
     }
         // The collector holds 1 chunk, the channel up to CHANNEL_CAPACITY and the reader fills 1
@@ -327,6 +338,12 @@ class AndroidAudioRecorder internal constructor(
          * (the tuner's, the metronome's Listen, ear training's) until the app's process ends.
          */
         internal val skippedInputs = SkippedInputs()
+
+        /**
+         * The recordings every recorder in the app holds open now: before Android 10 a busy start waits for them, not
+         * for another app ([retryingBusyStart]).
+         */
+        internal val openRecordings = OpenRecordings()
 
         /** The inputs whose speech effects were logged, once each for the app's life. */
         internal val loggedEffects = LoggedOnce()

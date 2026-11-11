@@ -6,48 +6,103 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
-/** Before Android 10, a microphone still kept by the tuner (its 5 s grace) is tried again for a few seconds. */
+/**
+ * Before Android 10, a microphone still kept by the app's own tuner (its 5 s grace) is tried again until it lets go;
+ * one another app holds, for about 1 s.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class BusyStartRetryTest {
 
     private val busy = AudioRecorderException.MicrophoneBusy()
 
-    @Test
-    fun `a mic busy at the start, free 4 s later, records`() = runTest {
-        val recorder = FakeAudioRecorder(failure = busy)
+    // Whether another of the app's own recordings (the tuner's, in its grace) holds the microphone.
+    private var tunerHolds = false
+
+    private fun FakeAudioRecorder.retrying() = chunks().retryingBusyStart(appRecording = { tunerHolds })
+
+    /** The tuner lets go of the microphone after [millis]: free for us then, unless [otherApp] holds it too. */
+    private fun TestScope.tunerLetsGoAfter(millis: Long, recorder: FakeAudioRecorder, otherApp: Boolean = false) {
+        tunerHolds = true
         launch {
-            // The tuner lets go of the microphone when its grace ends.
-            delay(4_000)
-            recorder.failure = null
-            recorder.signal = FloatArray(1024) { 0.1f }
-            recorder.loop = true
+            delay(millis)
+            tunerHolds = false
+            if (!otherApp) {
+                recorder.failure = null
+                recorder.signal = FloatArray(1024) { 0.1f }
+                recorder.loop = true
+            }
         }
+    }
 
-        val chunk = recorder.chunks().retryingBusyStart().first()
-
-        assertEquals(0.1f, chunk[0])
-        assertTrue("tried every 250 ms: ${recorder.startCount}", recorder.startCount in 16..18)
-        assertTrue("about 4 s: ${currentTime}", currentTime in 4_000..4_300)
+    /** The busy that [recorder] passes on, with the virtual time it came at. */
+    private suspend fun TestScope.givesUp(recorder: FakeAudioRecorder): Long {
+        try {
+            recorder.retrying().first()
+            fail("a busy microphone is passed on")
+        } catch (e: AudioRecorderException.MicrophoneBusy) {
+            // Passed on.
+        }
+        return currentTime
     }
 
     @Test
-    fun `a mic that stays busy gives up after a few seconds`() = runTest {
+    fun `a mic the tuner keeps 4 s more records as soon as it lets go`() = runTest {
+        val recorder = FakeAudioRecorder(failure = busy)
+        tunerLetsGoAfter(4_000, recorder)
+
+        val chunk = recorder.retrying().first()
+
+        assertEquals(0.1f, chunk[0])
+        assertTrue("tried every 250 ms: ${recorder.startCount}", recorder.startCount in 16..18)
+        assertTrue("about 4 s: $currentTime", currentTime in 4_000..4_300)
+    }
+
+    @Test
+    fun `a mic another app holds is busy after about 1 s`() = runTest {
         val recorder = FakeAudioRecorder(failure = busy)
 
-        try {
-            recorder.chunks().retryingBusyStart().first()
-            fail("a busy microphone is passed on")
-        } catch (e: AudioRecorderException.MicrophoneBusy) {
-            assertEquals(BUSY_START_TRIES + 1, recorder.startCount)
-            assertEquals("longer than the tuner's 5 s grace", 6_000L, currentTime)
-        }
+        assertEquals(1_000L, givesUp(recorder))
+        assertEquals(BUSY_START_FREE_TRIES + 1, recorder.startCount)
+    }
+
+    @Test
+    fun `Try again on a mic another app holds answers after about 1 s again`() = runTest {
+        val recorder = FakeAudioRecorder(failure = busy)
+        val first = givesUp(recorder)
+
+        // The player taps Try again: a new start, the other app still recording.
+        val again = givesUp(recorder) - first
+
+        assertEquals(1_000L, again)
+        assertEquals(2 * (BUSY_START_FREE_TRIES + 1), recorder.startCount)
+    }
+
+    @Test
+    fun `a mic another app takes as the tuner lets go is busy about 1 s later`() = runTest {
+        val recorder = FakeAudioRecorder(failure = busy)
+        tunerLetsGoAfter(3_000, recorder, otherApp = true)
+
+        val time = givesUp(recorder)
+
+        assertTrue("1 s after 3 s: $time", time in 3_750..4_000)
+    }
+
+    @Test
+    fun `a mic the tuner never lets go is busy after 6 s`() = runTest {
+        val recorder = FakeAudioRecorder(failure = busy)
+        tunerHolds = true
+
+        assertEquals("longer than the tuner's 5 s grace", 6_000L, givesUp(recorder))
+        assertEquals(BUSY_START_TRIES + 1, recorder.startCount)
     }
 
     @Test
@@ -57,7 +112,7 @@ class BusyStartRetryTest {
         val chunks = mutableListOf<FloatArray>()
 
         try {
-            recorder.chunks().retryingBusyStart().collect { chunks += it.copyOf() }
+            recorder.retrying().collect { chunks += it.copyOf() }
             fail("the busy is passed on")
         } catch (e: AudioRecorderException.MicrophoneBusy) {
             assertEquals(2, chunks.size)
@@ -68,9 +123,10 @@ class BusyStartRetryTest {
     @Test
     fun `other failures are passed on at once`() = runTest {
         val recorder = FakeAudioRecorder(failure = AudioRecorderException.InitializationFailed("no input"))
+        tunerHolds = true
 
         try {
-            recorder.chunks().retryingBusyStart().first()
+            recorder.retrying().first()
             fail("the failure is passed on")
         } catch (e: AudioRecorderException.InitializationFailed) {
             assertEquals(1, recorder.startCount)
@@ -82,7 +138,21 @@ class BusyStartRetryTest {
     fun `a free mic records from the first try`() = runTest {
         val recorder = FakeAudioRecorder(FloatArray(4096) { 0.1f })
 
-        assertEquals(4, recorder.chunks().retryingBusyStart().take(4).toList().size)
+        assertEquals(4, recorder.retrying().take(4).toList().size)
         assertEquals(1, recorder.startCount)
+    }
+
+    @Test
+    fun `the app's recordings are counted until each lets go`() {
+        val open = OpenRecordings()
+        assertFalse(open.any)
+
+        open.opened()
+        open.opened()
+        open.closed()
+        assertTrue("one still records", open.any)
+
+        open.closed()
+        assertFalse(open.any)
     }
 }
