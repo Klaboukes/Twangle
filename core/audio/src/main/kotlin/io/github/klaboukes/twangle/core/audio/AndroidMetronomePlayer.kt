@@ -20,7 +20,6 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.SupervisorJob
@@ -42,15 +41,17 @@ import kotlinx.coroutines.launch
  * sets its loudness. The samples come from a [ClickTrack], which puts every click on its exact
  * sample; the track only has to play the stream without gaps, so the beat can't wobble.
  *
- * The track exists only while the metronome plays. [start] launches a session on a dedicated single
- * thread (`AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer and keeps
+ * The track exists only while the metronome plays. [start] launches a session on the player's own
+ * thread at audio priority ([audioThreadDispatcher]; `AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer and keeps
  * [BUFFERED_CHUNKS] chunks queued, enough that a busy moment on the phone doesn't starve the
  * speaker. Tempo, meter, sound, subdivision and stop requests reach it through fields it reads before every
  * chunk, so a change is heard about one buffer later (≈ 0.1 s) and the clicks stay on their samples.
  * The speed trainer (Phase 62) reaches the [ClickTrack] the same way, once per [setTrainer] or [start];
  * the track then climbs by itself on each downbeat, and while it climbs the wanted tempo isn't copied
  * to it (the climb rules until the trainer ends).
- * A sound not played yet is rendered there, on the writer thread, the first time (a few ms).
+ * A sound not played yet is rendered there, on the writer thread, the first time (a few ms); the
+ * [ClickTrack] itself, which renders the first sound's clicks, is made there with the first session,
+ * not with the player (on the main thread; on the watch at every start).
  *
  * A preview ([previewBar]) is a session too: it renders one bar from beat 0, then silence until the
  * playback head has passed the bar's end, and ends by itself; it emits no [beats]. A new preview or
@@ -88,7 +89,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private val chunkFrames = sampleRate / CHUNKS_PER_SECOND
 
     private val scope = CoroutineScope(SupervisorJob())
-    private val writeDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val writeDispatcher = audioThreadDispatcher(WRITER_THREAD_NAME)
 
     // The timers that tell each beat as it is heard: one thread for every player in the app ([beatThread]).
     private val beatDispatcher get() = beatThread
@@ -132,8 +133,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     )
     override val upcomingBeats: SharedFlow<MetronomeBeat> = upcomingFlow.asSharedFlow()
 
-    // Everything below is used only on the writer thread.
-    private val clickTrack = ClickTrack(sampleRate)
+    // Everything below is used only on the writer thread. The click track is made with the first session.
+    private lateinit var clickTrack: ClickTrack
     private val timestamp = AudioTimestamp()
 
     // Beats rendered but not yet heard, oldest first: a ring of PENDING_BEATS.
@@ -337,6 +338,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         // Timers that emit beats at the moment they are heard; cancelled with the session.
         val beatScope = CoroutineScope(beatDispatcher + Job())
         try {
+            if (!::clickTrack.isInitialized) clickTrack = ClickTrack(sampleRate)
             if (isCallMode(audioManager.mode)) {
                 Log.i(TAG, "A call: the metronome stays silent")
                 return
@@ -473,6 +475,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
     private companion object {
         const val TAG = "MetronomePlayer"
+        const val WRITER_THREAD_NAME = "MetronomePlayer"
 
         /**
          * The thread the beat timers of every player run on, at urgent-audio priority ([urgentAudioDispatcher]): made

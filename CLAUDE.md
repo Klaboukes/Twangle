@@ -87,7 +87,7 @@ python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa B
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.
 2. **No allocations in the audio/DSP hot loop.** Preallocate buffers (ring buffer, YIN scratch arrays) and reuse them. The loop runs ~47×/s. The one exception is the small immutable result each frame hands to the UI (`PitchReading`, then `TunerUiState`); nothing sample-sized or per-sample is ever allocated.
-3. **Never block the main thread.** `AudioRecord.read()` runs on its own one-at-a-time dispatcher (`Dispatchers.IO.limitedParallelism(1)`), and each sound's blocking `AudioTrack.write()` has its own thread. DSP runs on `Dispatchers.Default`.
+3. **Never block the main thread.** `AudioRecord.read()` and each sound's blocking `AudioTrack.write()` run on a thread of their own at `THREAD_PRIORITY_AUDIO` (`audioThreadExecutor` in `:core:audio`; never a shared `Dispatchers.IO` thread, which would keep the priority), and set-up that calls the audio server runs there too. DSP runs on `Dispatchers.Default`.
 4. **Hold the mic only while a screen that listens is visible** (the tuner, the metronome's Listen). The tuner uses `SharingStarted.WhileSubscribed(5_000)` plus `collectAsStateWithLifecycle()`; Listen stops when its screen is left. No foreground service.
 5. **Never use `AudioSource.MIC` or `VOICE_COMMUNICATION`.** Use `UNPROCESSED`, falling back to `VOICE_RECOGNITION`. AGC and noise suppression corrupt pitch.
 6. **Any DSP change needs tests.** Add or adjust synthetic-signal tests in `core/dsp/src/test`. Accuracy target: ±1 cent on synthetic signals.

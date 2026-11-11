@@ -121,6 +121,18 @@ class AndroidDronePlayerTest {
     }
 
     @Test
+    fun writesOnAThreadOfItsOwnAtAudioPriority() = runBlocking {
+        player.play(D3)
+        delay(300)
+        val priorities = audioThreadPriorities("DronePlayer")
+        assertTrue("no DronePlayer thread", priorities.isNotEmpty())
+        for (priority in priorities) assertEquals(android.os.Process.THREAD_PRIORITY_AUDIO, priority)
+        player.stop()
+        withTimeout(SLACK_MILLIS) { player.holdsSpeaker.first { !it } }
+        Unit
+    }
+
+    @Test
     fun stopWithNothingPlayingDoesNothing() {
         player.stop()
         assertFalse(player.isPlaying.value)

@@ -14,7 +14,6 @@ import io.github.klaboukes.twangle.core.dsp.synth.StringSynth
 import io.github.klaboukes.twangle.core.dsp.synth.StringVoice
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -32,8 +31,8 @@ import kotlinx.coroutines.launch
  * asked for and kept; a synth for each further note is made the first time that many notes sound
  * together, and kept.
  *
- * The track exists only while a tone sounds. [play] starts a session on a dedicated single thread
- * (`AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer allocated per
+ * The track exists only while a tone sounds. [play] starts a session on the player's own thread at
+ * audio priority ([audioThreadDispatcher]; `AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer allocated per
  * session, so playing creates no garbage. Requests reach it through a field it checks every chunk:
  * a new note (or notes, [playTogether]) releases the old ones over [StringSynth.STOP_FADE_SECONDS]
  * and then starts (in its own voice's mix), [stop] only releases. When the tone has ended the session pads the track with one
@@ -61,7 +60,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
     private val chunkFrames = sampleRate / CHUNKS_PER_SECOND
 
     private val scope = CoroutineScope(SupervisorJob())
-    private val writeDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val writeDispatcher = audioThreadDispatcher(WRITER_THREAD_NAME)
 
     private val lock = Any()
 
@@ -236,6 +235,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
 
     private companion object {
         const val TAG = "TonePlayer"
+        const val WRITER_THREAD_NAME = "TonePlayer"
 
         const val CHUNKS_PER_SECOND = 100
         const val BUFFERED_CHUNKS = 4

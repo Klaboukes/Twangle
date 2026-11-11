@@ -2,7 +2,7 @@ package io.github.klaboukes.twangle.app
 
 import io.github.klaboukes.twangle.core.audio.AudioConfig
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
-import kotlinx.coroutines.Dispatchers
+import io.github.klaboukes.twangle.core.audio.audioThreadDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
@@ -20,13 +20,14 @@ import kotlin.math.sin
  * and R8 removes it from them.
  *
  * Chunks come from a pool allocated once per collection, as in `AndroidAudioRecorder`, so it
- * creates no garbage per chunk.
+ * creates no garbage per chunk, on a thread of its own at audio priority like that one's reads, so
+ * the frame times measured include what that thread takes from the screen.
  */
 class SyntheticAudioRecorder(
     override val config: AudioConfig = AudioConfig(),
 ) : AudioRecorder {
 
-    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val dispatcher = audioThreadDispatcher("AudioRecorder")
 
     override fun chunks(): Flow<FloatArray> = flow {
         val tone = SweepTone(config.sampleRate)

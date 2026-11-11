@@ -11,7 +11,6 @@ import android.media.AudioTrack
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.os.Process
 import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -21,9 +20,6 @@ import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 
 /**
  * [DronePlayer] backed by a streaming `android.media.AudioTrack`: mono `ENCODING_PCM_FLOAT` at the
@@ -61,18 +57,7 @@ class AndroidDronePlayer(context: Context) : DronePlayer {
     private val chunkFrames = sampleRate / CHUNKS_PER_SECOND
 
     // One thread at audio priority, made for a session and ended when idle for a while.
-    private val writer = ThreadPoolExecutor(
-        1,
-        1,
-        WRITER_KEEP_ALIVE_SECONDS,
-        TimeUnit.SECONDS,
-        LinkedBlockingQueue(),
-    ) { task ->
-        Thread({
-            runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) }
-            task.run()
-        }, "DronePlayer")
-    }.apply { allowCoreThreadTimeOut(true) }
+    private val writer = audioThreadExecutor(WRITER_THREAD_NAME)
 
     // Used only on the writer thread, made on the first drone.
     private var synth: DroneSynth? = null
@@ -259,7 +244,6 @@ class AndroidDronePlayer(context: Context) : DronePlayer {
         const val DRAIN_POLL_MILLIS = 5L
         const val DRAIN_MARGIN_MILLIS = 300L
 
-        /** The writer thread ends when no session has run for this long. */
-        const val WRITER_KEEP_ALIVE_SECONDS = 5L
+        const val WRITER_THREAD_NAME = "DronePlayer"
     }
 }

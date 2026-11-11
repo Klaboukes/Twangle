@@ -44,6 +44,18 @@ class AndroidTonePlayerTest {
     }
 
     @Test
+    fun writesOnAThreadOfItsOwnAtAudioPriority() = runBlocking {
+        player.play(440f, StringVoices.STEEL_GUITAR)
+        delay(200)
+        val priorities = audioThreadPriorities("TonePlayer")
+        assertTrue("no TonePlayer thread", priorities.isNotEmpty())
+        for (priority in priorities) assertEquals(android.os.Process.THREAD_PRIORITY_AUDIO, priority)
+        player.stop()
+        withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
+        Unit
+    }
+
+    @Test
     fun stopEndsTheToneQuickly() = runBlocking {
         player.play(329.63f, StringVoices.STEEL_GUITAR)
         delay(300)

@@ -51,6 +51,16 @@ class AndroidMetronomePlayerTest {
     }
 
     @Test
+    fun writesOnAThreadOfItsOwnAtAudioPriority() = runBlocking<Unit> {
+        val first = async(start = CoroutineStart.UNDISPATCHED) { player.beats.first() }
+        player.start(120, Meter.FOUR_FOUR)
+        withTimeout(500L + SLACK_MILLIS) { first.await() }
+        val priorities = audioThreadPriorities("MetronomePlayer")
+        assertTrue("no MetronomePlayer thread", priorities.isNotEmpty())
+        for (priority in priorities) assertEquals(android.os.Process.THREAD_PRIORITY_AUDIO, priority)
+    }
+
+    @Test
     fun clicksOnTheBeatWithTheFirstOfEachBarAccented() = runBlocking<Unit> {
         val heard = async(start = CoroutineStart.UNDISPATCHED) {
             player.beats.map { Heard(it, System.nanoTime()) }.take(10).toList()

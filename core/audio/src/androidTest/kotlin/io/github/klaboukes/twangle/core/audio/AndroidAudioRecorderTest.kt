@@ -39,7 +39,9 @@ class AndroidAudioRecorderTest {
     private val recorder = AndroidAudioRecorder(context)
 
     @Test
-    fun picksASupportedNativeRate() {
+    fun picksASupportedNativeRate() = runBlocking {
+        // Worked out on the read thread as the microphone opens: read once a chunk has come.
+        recorder.chunks().take(1).toList()
         val rate = recorder.config.sampleRate
         assertTrue("rate $rate", rate in SampleRateSelector.SUPPORTED_RATES)
         assertTrue(
@@ -76,6 +78,15 @@ class AndroidAudioRecorderTest {
             }
         }
         assertNull("mic must be released after collection", pcm16.activeInput)
+    }
+
+    @Test
+    fun readsOnAThreadOfItsOwnAtAudioPriority() = runBlocking {
+        var priorities = emptyList<Int>()
+        recorder.chunks().onEach { priorities = audioThreadPriorities(AndroidAudioRecorder.READ_THREAD_NAME) }.take(3).toList()
+
+        assertTrue("no read thread", priorities.isNotEmpty())
+        for (priority in priorities) assertEquals(android.os.Process.THREAD_PRIORITY_AUDIO, priority)
     }
 
     @Test

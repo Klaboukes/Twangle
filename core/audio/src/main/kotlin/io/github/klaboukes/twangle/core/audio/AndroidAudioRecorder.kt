@@ -12,7 +12,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flow
@@ -35,7 +34,12 @@ import kotlinx.coroutines.flow.flowOn
  * format that opened is tried first next time.
  * Chunks last about 21 ms at any rate unless [chunkSize] is given.
  *
- * The blocking `read()` runs on a dedicated single thread so it never starves other coroutines.
+ * The blocking `read()` runs on a thread of the recorder's own at audio priority
+ * ([audioThreadDispatcher]), so it never starves other coroutines and a busy phone can't hold it
+ * back long enough to overrun the record buffer. What asks the audio server runs there too, as the
+ * microphone first opens, not in the constructor (on the main thread; on the watch at every start):
+ * the rates the phone accepts ([RecordRates]) and whether it offers unprocessed audio. Until the
+ * microphone opened, [config] says [AudioConfig.DEFAULT_SAMPLE_RATE].
  * Chunks come from a pool of [POOL_SIZE] arrays allocated once per collection, so recording
  * creates no garbage per chunk. [ChunkReader] fills them and notices a microphone that stops
  * really listening mid-session; on Android 10+ an `AudioRecordingCallback` tells it when Android
@@ -57,27 +61,23 @@ class AndroidAudioRecorder internal constructor(
     private val appContext: Context = context.applicationContext
     private val audioManager: AudioManager = appContext.getSystemService(AudioManager::class.java)
 
-    // Every rate the device says it can record at in each format, best first.
-    private val rates: Map<SampleFormat, List<Int>> =
-        SampleRateSelector.candidates(SampleRateSelector.nativeRateProperty(audioManager)).let { candidates ->
-            formats.associateWith { format ->
-                candidates.filter { AudioRecord.getMinBufferSize(it, CHANNEL_MASK, format.encoding) > 0 }
-            }
-        }
-
-    // The format the microphone opened with last (at first the first one with a rate), tried first.
-    @Volatile
-    private var format: SampleFormat = formats.firstOrNull { rates.getValue(it).isNotEmpty() } ?: formats.first()
+    // Every rate the device says it can record at in each format, best first, asked on the read
+    // thread the first time the microphone opens; what opened last is tried first.
+    private val rates = RecordRates(formats) { format ->
+        SampleRateSelector.candidates(SampleRateSelector.nativeRateProperty(audioManager))
+            .filter { AudioRecord.getMinBufferSize(it, CHANNEL_MASK, format.encoding) > 0 }
+    }
 
     @Volatile
-    override var config: AudioConfig =
-        configFor(rates.getValue(format).firstOrNull() ?: AudioConfig.DEFAULT_SAMPLE_RATE)
+    override var config: AudioConfig = configFor(AudioConfig.DEFAULT_SAMPLE_RATE)
         private set
 
-    private val allInputs: List<AudioInput> =
+    // Asked on the read thread too, the first time the microphone opens.
+    private val allInputs: List<AudioInput> by lazy {
         AudioSourceSelector.candidates(AudioSourceSelector.supportsUnprocessed(audioManager))
+    }
 
-    private val readDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val readDispatcher = audioThreadDispatcher(READ_THREAD_NAME)
 
     /** The input currently recording, or null when the microphone is closed. */
     @Volatile
@@ -143,10 +143,11 @@ class AndroidAudioRecorder internal constructor(
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun open(inputs: List<AudioInput>): OpenedMic<AudioRecord> {
-        val current = config.sampleRate
-        val currentFormat = format
-        val formatsTried = (listOf(currentFormat) + formats).distinct()
-        val ratesTried = { f: SampleFormat -> (listOf(current) + rates.getValue(f)).distinct() }
+        val order = rates.order()
+        val current = order.firstRate
+        val currentFormat = order.first
+        val formatsTried = order.formats
+        val ratesTried = { f: SampleFormat -> order.rates.getValue(f) }
         var lastFailure: Exception? = null
         val opened = openFirst(formatsTried, ratesTried, inputs) { f, rate, input ->
             tryBuild(f, rate, input) { lastFailure = it }
@@ -156,7 +157,7 @@ class AndroidAudioRecorder internal constructor(
         )
         if (opened.format != currentFormat) Log.i(TAG, "No input opened in $currentFormat: recording in ${opened.format}")
         if (opened.sampleRate != current) Log.i(TAG, "No input opened at $current Hz: recording at ${opened.sampleRate} Hz")
-        format = opened.format
+        rates.opened(opened.format, opened.sampleRate)
         return opened
     }
 
@@ -331,6 +332,10 @@ class AndroidAudioRecorder internal constructor(
         internal val loggedEffects = LoggedOnce()
 
         private const val TAG = "AudioRecorder"
+
+        /** The name of each recorder's read thread. */
+        internal const val READ_THREAD_NAME = "AudioRecorder"
+
         private const val CHANNEL_MASK = AudioFormat.CHANNEL_IN_MONO
         private const val CHANNEL_CAPACITY = 2
         private const val POOL_SIZE = CHANNEL_CAPACITY + 2
