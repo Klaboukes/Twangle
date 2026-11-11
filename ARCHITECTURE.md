@@ -163,7 +163,7 @@ core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     BlockingTransfer (transferFully: read/write loops that fail instead of spinning), MicPermissionRules,
     TonePlayer (interface), AndroidTonePlayer, MetronomePlayer (interface, + MetronomeBeat),
     AndroidMetronomePlayer, DronePlayer (interface), AndroidDronePlayer,
-    AudioOutput (shared AudioTrack helpers)
+    AudioOutput (shared AudioTrack helpers), PlayerSessions (the tone's and the drone's requests, session, padding and focus)
 core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer, FakeDronePlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
@@ -189,6 +189,8 @@ core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
 
 feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     TunerViewModel, TunerUiState, TunerOptions, TunerInterpreter, TunerLayout, TunerScreen,
+    TunerContent (the stateless body) with its slots TunerHeader, TunerGauge (+ TunerRuler), TunerWord (+ TunerStatus)
+    and TunerContentState (+ ReadingLook), TunerLayouts, TunerPegs, TunerPicker,
     PitchPipeline (+ PitchReading), TunerError, MicPermission, InTunePrecisionDetector (forPrecision),
     InTuneGlowRule, TunerHint (+ TuningCue), SteadyHint, ReceptionTip (+ TipCue),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter),

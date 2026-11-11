@@ -24,3 +24,4 @@
 #790 none     the smoother and the tuner's interpreter only: when the needle follows a string change, which no picture shows
 #808 none     the home-screen widget only (its line left out of short tiles) and its test: no store picture shows the widget
 #809 none     small app fixes: Chords' Listen without the permission, the tuner's state at rest, fewer allocations; the same pixels in every picture
+#815 none     TunerScreen.kt split into slot files and the tone's and drone's shared PlayerSessions: a pure refactor, the same pixels in every picture

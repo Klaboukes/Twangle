@@ -6,8 +6,9 @@ import android.media.AudioManager
 import android.media.AudioTrack
 
 /**
- * What the app's sound players (reference tone, metronome) share: a mono float `AudioTrack` at the
- * phone's native output rate, blocking writes, and the volume panel at media volume 0.
+ * What the app's sound players (reference tone, drone, metronome) share: a mono float `AudioTrack`
+ * at the phone's native output rate, blocking writes, and the volume panel at media volume 0. The
+ * tone's and the drone's sessions around it are [PlayerSessions].
  */
 internal object AudioOutput {
 
