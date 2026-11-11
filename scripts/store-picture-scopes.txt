@@ -25,3 +25,4 @@
 #808 none     the home-screen widget only (its line left out of short tiles) and its test: no store picture shows the widget
 #809 none     small app fixes: Chords' Listen without the permission, the tuner's state at rest, fewer allocations; the same pixels in every picture
 #815 none     TunerScreen.kt split into slot files and the tone's and drone's shared PlayerSessions: a pure refactor, the same pixels in every picture
+#816 none     translations of five texts: Chords' microphone busy/off (the chord picture has Listen working), the metronome's Listening (its picture isn't listening), two spoken-only trainer texts
