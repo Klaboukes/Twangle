@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">Target lebih tinggi</string>
     <string name="metronome_trainer_step">Kenaikan</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">Birama</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="other">%1$s birama</item>
@@ -57,6 +59,7 @@
     <string name="metronome_listen">Dengarkan</string>
     <string name="metronome_listen_stop_spoken">Berhenti mendengarkan</string>
     <string name="metronome_listening">Mendengarkan…</string>
+    <string name="metronome_listening_bpm">Mendengarkan… %1$s %2$s</string>
     <string name="metronome_heard">Terdengar</string>
     <string name="metronome_use">Gunakan</string>
     <string name="metronome_not_now">Nanti saja</string>

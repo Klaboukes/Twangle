@@ -102,6 +102,8 @@
     <string name="practice_drone">Sauti endelevu</string>
     <string name="practice_chords_listen">Sikiliza</string>
     <string name="practice_chords_listening">Inasikiliza</string>
+    <string name="practice_chords_mic_busy">Maikrofoni inatumika</string>
+    <string name="practice_chords_mic_off">Maikrofoni imezimwa</string>
     <string name="practice_drone_play">Cheza sauti endelevu</string>
     <string name="practice_drone_stop">Simamisha sauti endelevu</string>
     <string name="practice_drone_sound_spoken">Sauti endelevu: %1$s</string>

@@ -34,6 +34,8 @@
     <string name="metronome_trainer_goal_faster">లక్ష్యం పెంచు</string>
     <string name="metronome_trainer_step">స్టెప్</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">బార్‌లు</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s బార్</item>
@@ -63,6 +65,7 @@
     <string name="metronome_listen">వినండి</string>
     <string name="metronome_listen_stop_spoken">వినడం ఆపు</string>
     <string name="metronome_listening">వింటోంది…</string>
+    <string name="metronome_listening_bpm">వింటోంది… %1$s %2$s</string>
     <string name="metronome_heard">వినిపించింది</string>
     <string name="metronome_use">ఉపయోగించు</string>
     <string name="metronome_not_now">ఇప్పుడు కాదు</string>

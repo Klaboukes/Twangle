@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordun</string>
     <string name="practice_chords_listen">Figyelés</string>
     <string name="practice_chords_listening">Figyel</string>
+    <string name="practice_chords_mic_busy">A mikrofon foglalt</string>
+    <string name="practice_chords_mic_off">Mikrofon kikapcsolva</string>
     <string name="practice_drone_play">Bordun indítása</string>
     <string name="practice_drone_stop">Bordun leállítása</string>
     <string name="practice_drone_sound_spoken">Bordun hangja: %1$s</string>

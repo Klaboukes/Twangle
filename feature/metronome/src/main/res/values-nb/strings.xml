@@ -33,6 +33,8 @@
     <string name="metronome_trainer_goal_faster">Høyere mål</string>
     <string name="metronome_trainer_step">Steg</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">Takter</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s takt</item>
@@ -62,6 +64,7 @@
     <string name="metronome_listen">Lytt</string>
     <string name="metronome_listen_stop_spoken">Slutt å lytte</string>
     <string name="metronome_listening">Lytter…</string>
+    <string name="metronome_listening_bpm">Lytter… %1$s %2$s</string>
     <string name="metronome_heard">Hørt</string>
     <string name="metronome_use">Bruk</string>
     <string name="metronome_not_now">Ikke nå</string>

@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">เพิ่มเป้าหมาย</string>
     <string name="metronome_trainer_step">เพิ่มทีละ</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s %2$s BPM</string>
     <string name="metronome_trainer_bars">จำนวนห้อง</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="other">%1$s ห้อง</item>
@@ -58,6 +60,7 @@
     <string name="metronome_listen">ฟัง</string>
     <string name="metronome_listen_stop_spoken">หยุดฟัง</string>
     <string name="metronome_listening">กำลังฟัง…</string>
+    <string name="metronome_listening_bpm">กำลังฟัง… %1$s %2$s</string>
     <string name="metronome_heard">ได้ยิน</string>
     <string name="metronome_use">ใช้</string>
     <string name="metronome_not_now">ไว้ทีหลัง</string>

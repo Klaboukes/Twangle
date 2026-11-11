@@ -34,6 +34,8 @@
     <string name="metronome_trainer_goal_faster">Υψηλότερος στόχος</string>
     <string name="metronome_trainer_step">Βήμα</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">Μέτρα</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s μέτρο</item>
@@ -63,6 +65,7 @@
     <string name="metronome_listen">Ακρόαση</string>
     <string name="metronome_listen_stop_spoken">Διακοπή ακρόασης</string>
     <string name="metronome_listening">Ακρόαση…</string>
+    <string name="metronome_listening_bpm">Ακρόαση… %1$s %2$s</string>
     <string name="metronome_heard">Ακούστηκε</string>
     <string name="metronome_use">Χρήση</string>
     <string name="metronome_not_now">Όχι τώρα</string>

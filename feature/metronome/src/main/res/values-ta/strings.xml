@@ -34,6 +34,8 @@
     <string name="metronome_trainer_goal_faster">இலக்கை உயர்த்து</string>
     <string name="metronome_trainer_step">படி</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">பார்கள்</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s பார்</item>
@@ -63,6 +65,7 @@
     <string name="metronome_listen">கேள்</string>
     <string name="metronome_listen_stop_spoken">கேட்பதை நிறுத்து</string>
     <string name="metronome_listening">கேட்கிறது…</string>
+    <string name="metronome_listening_bpm">கேட்கிறது… %1$s %2$s</string>
     <string name="metronome_heard">கேட்டது</string>
     <string name="metronome_use">பயன்படுத்து</string>
     <string name="metronome_not_now">இப்போது வேண்டாம்</string>

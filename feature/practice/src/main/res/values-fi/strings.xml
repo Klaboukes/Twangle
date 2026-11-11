@@ -100,6 +100,8 @@
     <string name="practice_drone">Burdoni</string>
     <string name="practice_chords_listen">Kuuntele</string>
     <string name="practice_chords_listening">Kuuntelee</string>
+    <string name="practice_chords_mic_busy">Mikrofoni on varattu</string>
+    <string name="practice_chords_mic_off">Mikrofoni on pois päältä</string>
     <string name="practice_drone_play">Soita burdoni</string>
     <string name="practice_drone_stop">Pysäytä burdoni</string>
     <string name="practice_drone_sound_spoken">Burdonin ääni: %1$s</string>

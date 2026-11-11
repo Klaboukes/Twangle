@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">লক্ষ্য বাড়ান</string>
     <string name="metronome_trainer_step">ধাপ</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">বার</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$sটি বার</item>
@@ -59,6 +61,7 @@
     <string name="metronome_listen">শুনুন</string>
     <string name="metronome_listen_stop_spoken">শোনা বন্ধ করুন</string>
     <string name="metronome_listening">শুনছে…</string>
+    <string name="metronome_listening_bpm">শুনছে… %1$s %2$s</string>
     <string name="metronome_heard">শোনা গেছে</string>
     <string name="metronome_use">ব্যবহার করুন</string>
     <string name="metronome_not_now">এখন না</string>

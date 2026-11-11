@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordone</string>
     <string name="practice_chords_listen">Ascolta</string>
     <string name="practice_chords_listening">In ascolto</string>
+    <string name="practice_chords_mic_busy">Microfono occupato</string>
+    <string name="practice_chords_mic_off">Microfono disattivato</string>
     <string name="practice_drone_play">Suona il bordone</string>
     <string name="practice_drone_stop">Ferma il bordone</string>
     <string name="practice_drone_sound_spoken">Suono del bordone: %1$s</string>

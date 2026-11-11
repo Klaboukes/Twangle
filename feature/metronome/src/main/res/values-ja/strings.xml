@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">目標を上げる</string>
     <string name="metronome_trainer_step">上げ幅</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s、%2$s BPM</string>
     <string name="metronome_trainer_bars">小節</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="other">%1$s 小節</item>
@@ -57,6 +59,7 @@
     <string name="metronome_listen">聞き取る</string>
     <string name="metronome_listen_stop_spoken">聞き取りを停止</string>
     <string name="metronome_listening">聞き取り中…</string>
+    <string name="metronome_listening_bpm">聞き取り中… %1$s %2$s</string>
     <string name="metronome_heard">聞き取ったテンポ</string>
     <string name="metronome_use">使う</string>
     <string name="metronome_not_now">今はしない</string>

@@ -99,6 +99,8 @@
     <string name="practice_drone">Âm nền</string>
     <string name="practice_chords_listen">Nghe</string>
     <string name="practice_chords_listening">Đang nghe</string>
+    <string name="practice_chords_mic_busy">Micrô đang bận</string>
+    <string name="practice_chords_mic_off">Micrô đang tắt</string>
     <string name="practice_drone_play">Phát âm nền</string>
     <string name="practice_drone_stop">Dừng âm nền</string>
     <string name="practice_drone_sound_spoken">Tiếng âm nền: %1$s</string>

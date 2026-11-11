@@ -37,6 +37,8 @@
     <string name="metronome_trainer_goal_faster">Vyšší cíl</string>
     <string name="metronome_trainer_step">Krok</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">Takty</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s takt</item>
@@ -72,6 +74,7 @@
     <string name="metronome_listen">Poslech</string>
     <string name="metronome_listen_stop_spoken">Zastavit poslech</string>
     <string name="metronome_listening">Poslouchám…</string>
+    <string name="metronome_listening_bpm">Poslouchám… %1$s %2$s</string>
     <string name="metronome_heard">Slyšeno</string>
     <string name="metronome_use">Použít</string>
     <string name="metronome_not_now">Teď ne</string>

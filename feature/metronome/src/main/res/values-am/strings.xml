@@ -34,6 +34,8 @@
     <string name="metronome_trainer_goal_faster">ግቡን ጨምር</string>
     <string name="metronome_trainer_step">ደረጃ</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s፣ %2$s BPM</string>
     <string name="metronome_trainer_bars">ባሮች</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s ባር</item>
@@ -63,6 +65,7 @@
     <string name="metronome_listen">አዳምጥ</string>
     <string name="metronome_listen_stop_spoken">ማዳመጥ አቁም</string>
     <string name="metronome_listening">በማዳመጥ ላይ…</string>
+    <string name="metronome_listening_bpm">በማዳመጥ ላይ… %1$s %2$s</string>
     <string name="metronome_heard">የተሰማው</string>
     <string name="metronome_use">ተጠቀም</string>
     <string name="metronome_not_now">አሁን አይደለም</string>

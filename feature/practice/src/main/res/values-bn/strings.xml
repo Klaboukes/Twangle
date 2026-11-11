@@ -98,6 +98,8 @@
     <string name="practice_drone">ড্রোন</string>
     <string name="practice_chords_listen">শুনুন</string>
     <string name="practice_chords_listening">শুনছে</string>
+    <string name="practice_chords_mic_busy">মাইক্রোফোন ব্যস্ত</string>
+    <string name="practice_chords_mic_off">মাইক্রোফোন বন্ধ</string>
     <string name="practice_drone_play">ড্রোন বাজান</string>
     <string name="practice_drone_stop">ড্রোন থামান</string>
     <string name="practice_drone_sound_spoken">ড্রোনের সাউন্ড: %1$s</string>

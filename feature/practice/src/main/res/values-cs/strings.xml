@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordun</string>
     <string name="practice_chords_listen">Poslech</string>
     <string name="practice_chords_listening">Poslouchá</string>
+    <string name="practice_chords_mic_busy">Mikrofon je obsazený</string>
+    <string name="practice_chords_mic_off">Mikrofon je vypnutý</string>
     <string name="practice_drone_play">Spustit bordun</string>
     <string name="practice_drone_stop">Zastavit bordun</string>
     <string name="practice_drone_sound_spoken">Zvuk bordunu: %1$s</string>

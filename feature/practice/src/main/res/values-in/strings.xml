@@ -99,6 +99,8 @@
     <string name="practice_drone">Drone</string>
     <string name="practice_chords_listen">Dengarkan</string>
     <string name="practice_chords_listening">Mendengarkan</string>
+    <string name="practice_chords_mic_busy">Mikrofon sedang dipakai</string>
+    <string name="practice_chords_mic_off">Mikrofon mati</string>
     <string name="practice_drone_play">Putar drone</string>
     <string name="practice_drone_stop">Hentikan drone</string>
     <string name="practice_drone_sound_spoken">Suara drone: %1$s</string>

@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">提高目標</string>
     <string name="metronome_trainer_step">遞增</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s，%2$s BPM</string>
     <string name="metronome_trainer_bars">小節</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="other">%1$s 小節</item>
@@ -58,6 +60,7 @@
     <string name="metronome_listen">聆聽</string>
     <string name="metronome_listen_stop_spoken">停止聆聽</string>
     <string name="metronome_listening">正在聆聽…</string>
+    <string name="metronome_listening_bpm">正在聆聽… %1$s %2$s</string>
     <string name="metronome_heard">聽到</string>
     <string name="metronome_use">使用</string>
     <string name="metronome_not_now">以後再說</string>

@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordun</string>
     <string name="practice_chords_listen">Lytt</string>
     <string name="practice_chords_listening">Lytter</string>
+    <string name="practice_chords_mic_busy">Mikrofonen er opptatt</string>
+    <string name="practice_chords_mic_off">Mikrofonen er av</string>
     <string name="practice_drone_play">Spill borduntonen</string>
     <string name="practice_drone_stop">Stopp borduntonen</string>
     <string name="practice_drone_sound_spoken">Bordunlyd: %1$s</string>

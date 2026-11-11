@@ -99,6 +99,8 @@
     <string name="practice_drone">డ్రోన్</string>
     <string name="practice_chords_listen">వినండి</string>
     <string name="practice_chords_listening">వింటోంది</string>
+    <string name="practice_chords_mic_busy">మైక్రోఫోన్ బిజీగా ఉంది</string>
+    <string name="practice_chords_mic_off">మైక్రోఫోన్ ఆఫ్</string>
     <string name="practice_drone_play">డ్రోన్ వాయించు</string>
     <string name="practice_drone_stop">డ్రోన్ ఆపు</string>
     <string name="practice_drone_sound_spoken">డ్రోన్ ధ్వని: %1$s</string>

@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordun</string>
     <string name="practice_chords_listen">Lyssna</string>
     <string name="practice_chords_listening">Lyssnar</string>
+    <string name="practice_chords_mic_busy">Mikrofonen är upptagen</string>
+    <string name="practice_chords_mic_off">Mikrofonen är av</string>
     <string name="practice_drone_play">Spela bordun</string>
     <string name="practice_drone_stop">Stoppa bordun</string>
     <string name="practice_drone_sound_spoken">Bordunljud: %1$s</string>

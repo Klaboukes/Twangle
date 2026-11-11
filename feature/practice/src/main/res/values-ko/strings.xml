@@ -99,6 +99,8 @@
     <string name="practice_drone">드론</string>
     <string name="practice_chords_listen">듣기</string>
     <string name="practice_chords_listening">듣는 중</string>
+    <string name="practice_chords_mic_busy">마이크가 사용 중이에요</string>
+    <string name="practice_chords_mic_off">마이크가 꺼져 있어요</string>
     <string name="practice_drone_play">드론 재생</string>
     <string name="practice_drone_stop">드론 정지</string>
     <string name="practice_drone_sound_spoken">드론 소리: %1$s</string>

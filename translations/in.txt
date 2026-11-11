@@ -100,6 +100,7 @@ feature/metronome metronome_listen 225d29f6
 feature/metronome metronome_listen_speed c372fee9
 feature/metronome metronome_listen_stop_spoken 94fa9b23
 feature/metronome metronome_listening bbb4106e
+feature/metronome metronome_listening_bpm 7263dcc8
 feature/metronome metronome_meter_2_4_spoken cb0a781b
 feature/metronome metronome_meter_3_4_spoken 31bd02a6
 feature/metronome metronome_meter_4_4_spoken b95458d9
@@ -146,6 +147,8 @@ feature/metronome metronome_trainer_plus 9262e348
 feature/metronome metronome_trainer_spoken_climbing 00dae458
 feature/metronome metronome_trainer_spoken_goal 06761390
 feature/metronome metronome_trainer_spoken_set 662b45ac
+feature/metronome metronome_trainer_spoken_step 8e564506
+feature/metronome metronome_trainer_spoken_tempo ea5132df
 feature/metronome metronome_trainer_start 1a2ea249
 feature/metronome metronome_trainer_start_faster 2ca96ca4
 feature/metronome metronome_trainer_start_slower 3900f45b
@@ -198,6 +201,8 @@ feature/practice practice_chord_sus4 8e34623e
 feature/practice practice_chord_type 8a2b23f5
 feature/practice practice_chords_listen 225d29f6
 feature/practice practice_chords_listening 49c46058
+feature/practice practice_chords_mic_busy 892431d9
+feature/practice practice_chords_mic_off 69aebf69
 feature/practice practice_drone ca5929f5
 feature/practice practice_drone_fifth 8000a3fe
 feature/practice practice_drone_fifth_octave 8d2d1e36

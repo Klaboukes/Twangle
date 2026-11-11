@@ -99,6 +99,8 @@
     <string name="practice_drone">ဒရုန်း</string>
     <string name="practice_chords_listen">နားထောင်ရန်</string>
     <string name="practice_chords_listening">နားထောင်နေသည်</string>
+    <string name="practice_chords_mic_busy">မိုက် မအား</string>
+    <string name="practice_chords_mic_off">မိုက် ပိတ်ထား</string>
     <string name="practice_drone_play">ဒရုန်း ဖွင့်ရန်</string>
     <string name="practice_drone_stop">ဒရုန်း ရပ်ရန်</string>
     <string name="practice_drone_sound_spoken">ဒရုန်း အသံ: %1$s</string>

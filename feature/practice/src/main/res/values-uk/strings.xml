@@ -98,6 +98,8 @@
     <string name="practice_drone">Бурдон</string>
     <string name="practice_chords_listen">Слухати</string>
     <string name="practice_chords_listening">Слухаю</string>
+    <string name="practice_chords_mic_busy">Мікрофон зайнятий</string>
+    <string name="practice_chords_mic_off">Мікрофон вимкнено</string>
     <string name="practice_drone_play">Увімкнути бурдон</string>
     <string name="practice_drone_stop">Зупинити бурдон</string>
     <string name="practice_drone_sound_spoken">Звук бурдону: %1$s</string>

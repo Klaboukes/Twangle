@@ -99,6 +99,8 @@
     <string name="practice_drone">Ισοκράτημα</string>
     <string name="practice_chords_listen">Ακρόαση</string>
     <string name="practice_chords_listening">Ακρόαση σε εξέλιξη</string>
+    <string name="practice_chords_mic_busy">Μικρόφωνο σε χρήση</string>
+    <string name="practice_chords_mic_off">Μικρόφωνο κλειστό</string>
     <string name="practice_drone_play">Αναπαραγωγή ισοκρατήματος</string>
     <string name="practice_drone_stop">Διακοπή ισοκρατήματος</string>
     <string name="practice_drone_sound_spoken">Ήχος ισοκρατήματος: %1$s</string>

@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">목표 높이기</string>
     <string name="metronome_trainer_step">증가폭</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">마디</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="other">%1$s마디</item>
@@ -57,6 +59,7 @@
     <string name="metronome_listen">듣기</string>
     <string name="metronome_listen_stop_spoken">듣기 중지</string>
     <string name="metronome_listening">듣는 중…</string>
+    <string name="metronome_listening_bpm">듣는 중… %1$s %2$s</string>
     <string name="metronome_heard">들은 템포</string>
     <string name="metronome_use">사용</string>
     <string name="metronome_not_now">나중에</string>

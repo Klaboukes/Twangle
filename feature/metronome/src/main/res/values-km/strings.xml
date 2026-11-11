@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">បង្កើន\u200Bគោល\u200Bដៅ</string>
     <string name="metronome_trainer_step">ជំហាន</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">រង្វាស់</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="other">%1$s រង្វាស់</item>
@@ -56,6 +58,7 @@
     <string name="metronome_listen">ស្ដាប់</string>
     <string name="metronome_listen_stop_spoken">ឈប់\u200Bស្ដាប់</string>
     <string name="metronome_listening">កំពុង\u200Bស្ដាប់…</string>
+    <string name="metronome_listening_bpm">កំពុង\u200Bស្ដាប់… %1$s %2$s</string>
     <string name="metronome_heard">បាន\u200Bឮ</string>
     <string name="metronome_use">ប្រើ</string>
     <string name="metronome_not_now">ពេល\u200Bក្រោយ</string>

@@ -38,6 +38,8 @@
     <string name="metronome_trainer_goal_faster">هدف أعلى</string>
     <string name="metronome_trainer_step">الخطوة</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s، %2$s BPM</string>
     <string name="metronome_trainer_bars">المازورات</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="zero">%1$s مازورة</item>
@@ -78,6 +80,7 @@
     <string name="metronome_listen">استمع</string>
     <string name="metronome_listen_stop_spoken">أوقف الاستماع</string>
     <string name="metronome_listening">جارٍ الاستماع…</string>
+    <string name="metronome_listening_bpm">جارٍ الاستماع… %1$s %2$s</string>
     <string name="metronome_heard">ما سُمع</string>
     <string name="metronome_use">استخدم</string>
     <string name="metronome_not_now">ليس الآن</string>

@@ -34,6 +34,8 @@
     <string name="metronome_trainer_goal_faster">Objectif plus haut</string>
     <string name="metronome_trainer_step">Palier</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">Mesures</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s mesure</item>
@@ -65,6 +67,7 @@
     <string name="metronome_listen">Écouter</string>
     <string name="metronome_listen_stop_spoken">Arrêter l\'écoute</string>
     <string name="metronome_listening">À l\'écoute…</string>
+    <string name="metronome_listening_bpm">À l\'écoute… %1$s %2$s</string>
     <string name="metronome_heard">Entendu</string>
     <string name="metronome_use">Utiliser</string>
     <string name="metronome_not_now">Plus tard</string>

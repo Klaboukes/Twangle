@@ -99,6 +99,8 @@
     <string name="practice_drone">ड्रोन</string>
     <string name="practice_chords_listen">सुनें</string>
     <string name="practice_chords_listening">सुन रहा है</string>
+    <string name="practice_chords_mic_busy">माइक्रोफ़ोन व्यस्त है</string>
+    <string name="practice_chords_mic_off">माइक्रोफ़ोन बंद है</string>
     <string name="practice_drone_play">ड्रोन बजाएँ</string>
     <string name="practice_drone_stop">ड्रोन रोकें</string>
     <string name="practice_drone_sound_spoken">ड्रोन का साउंड: %1$s</string>

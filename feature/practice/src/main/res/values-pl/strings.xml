@@ -99,6 +99,8 @@
     <string name="practice_drone">Burdon</string>
     <string name="practice_chords_listen">Słuchaj</string>
     <string name="practice_chords_listening">Słucham</string>
+    <string name="practice_chords_mic_busy">Mikrofon zajęty</string>
+    <string name="practice_chords_mic_off">Mikrofon wyłączony</string>
     <string name="practice_drone_play">Włącz burdon</string>
     <string name="practice_drone_stop">Zatrzymaj burdon</string>
     <string name="practice_drone_sound_spoken">Dźwięk burdonu: %1$s</string>

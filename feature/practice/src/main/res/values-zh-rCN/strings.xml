@@ -99,6 +99,8 @@
     <string name="practice_drone">持续音</string>
     <string name="practice_chords_listen">聆听</string>
     <string name="practice_chords_listening">正在聆听</string>
+    <string name="practice_chords_mic_busy">麦克风被占用</string>
+    <string name="practice_chords_mic_off">麦克风已关闭</string>
     <string name="practice_drone_play">播放持续音</string>
     <string name="practice_drone_stop">停止持续音</string>
     <string name="practice_drone_sound_spoken">持续音音色：%1$s</string>

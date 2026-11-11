@@ -99,6 +99,8 @@
     <string name="practice_drone">النغمة المستمرة</string>
     <string name="practice_chords_listen">استمع</string>
     <string name="practice_chords_listening">جارٍ الاستماع</string>
+    <string name="practice_chords_mic_busy">الميكروفون مشغول</string>
+    <string name="practice_chords_mic_off">الميكروفون متوقف</string>
     <string name="practice_drone_play">تشغيل النغمة المستمرة</string>
     <string name="practice_drone_stop">إيقاف النغمة المستمرة</string>
     <string name="practice_drone_sound_spoken">صوت النغمة المستمرة: %1$s</string>

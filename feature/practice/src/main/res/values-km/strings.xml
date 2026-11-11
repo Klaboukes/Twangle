@@ -99,6 +99,8 @@
     <string name="practice_drone">សំឡេង\u200Bទ្រ</string>
     <string name="practice_chords_listen">ស្ដាប់</string>
     <string name="practice_chords_listening">កំពុង\u200Bស្ដាប់</string>
+    <string name="practice_chords_mic_busy">មី\u2060ក្រូ\u2060ហ្វូ\u2060ន\u200Bជាប់\u200Bរវល់</string>
+    <string name="practice_chords_mic_off">មី\u2060ក្រូ\u2060ហ្វូ\u2060ន\u200Bបិទ</string>
     <string name="practice_drone_play">លេង\u200Bសំឡេង\u200Bទ្រ</string>
     <string name="practice_drone_stop">បញ្ឈប់\u200Bសំឡេង\u200Bទ្រ</string>
     <string name="practice_drone_sound_spoken">សំឡេង\u200Bទ្រ៖ %1$s</string>

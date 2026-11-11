@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordun</string>
     <string name="practice_chords_listen">Zuhören</string>
     <string name="practice_chords_listening">Hört zu</string>
+    <string name="practice_chords_mic_busy">Mikrofon ist belegt</string>
+    <string name="practice_chords_mic_off">Mikrofon ist aus</string>
     <string name="practice_drone_play">Bordun abspielen</string>
     <string name="practice_drone_stop">Bordun stoppen</string>
     <string name="practice_drone_sound_spoken">Bordunklang: %1$s</string>

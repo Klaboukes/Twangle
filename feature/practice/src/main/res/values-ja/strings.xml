@@ -99,6 +99,8 @@
     <string name="practice_drone">ドローン</string>
     <string name="practice_chords_listen">聞き取る</string>
     <string name="practice_chords_listening">聞き取り中</string>
+    <string name="practice_chords_mic_busy">マイクが使用中です</string>
+    <string name="practice_chords_mic_off">マイクがオフです</string>
     <string name="practice_drone_play">ドローンを再生</string>
     <string name="practice_drone_stop">ドローンを停止</string>
     <string name="practice_drone_sound_spoken">ドローンの音色：%1$s</string>

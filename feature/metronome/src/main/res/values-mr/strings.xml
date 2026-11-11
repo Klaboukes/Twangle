@@ -32,6 +32,8 @@
     <string name="metronome_trainer_goal_faster">लक्ष्य वाढवा</string>
     <string name="metronome_trainer_step">पायरी</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">बार</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s बार</item>
@@ -59,6 +61,7 @@
     <string name="metronome_listen">ऐका</string>
     <string name="metronome_listen_stop_spoken">ऐकणे थांबवा</string>
     <string name="metronome_listening">ऐकत आहे…</string>
+    <string name="metronome_listening_bpm">ऐकत आहे… %1$s %2$s</string>
     <string name="metronome_heard">ऐकलेला टेम्पो</string>
     <string name="metronome_use">वापरा</string>
     <string name="metronome_not_now">आता नको</string>

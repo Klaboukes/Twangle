@@ -99,6 +99,8 @@
     <string name="practice_drone">ቋሚ ድምፅ</string>
     <string name="practice_chords_listen">አዳምጥ</string>
     <string name="practice_chords_listening">በማዳመጥ ላይ</string>
+    <string name="practice_chords_mic_busy">ማይክሮፎኑ ተይዟል</string>
+    <string name="practice_chords_mic_off">ማይክሮፎን ጠፍቷል</string>
     <string name="practice_drone_play">ቋሚ ድምፁን አጫውት</string>
     <string name="practice_drone_stop">ቋሚ ድምፁን አቁም</string>
     <string name="practice_drone_sound_spoken">የቋሚ ድምፁ ዓይነት፦ %1$s</string>

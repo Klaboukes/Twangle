@@ -99,6 +99,8 @@
     <string name="practice_drone">ட்ரோன்</string>
     <string name="practice_chords_listen">கேள்</string>
     <string name="practice_chords_listening">கேட்கிறது</string>
+    <string name="practice_chords_mic_busy">மைக்ரோஃபோன் பயன்பாட்டில்</string>
+    <string name="practice_chords_mic_off">மைக்ரோஃபோன் முடக்கம்</string>
     <string name="practice_drone_play">ட்ரோனை இயக்கு</string>
     <string name="practice_drone_stop">ட்ரோனை நிறுத்து</string>
     <string name="practice_drone_sound_spoken">ட்ரோன் ஒலி: %1$s</string>

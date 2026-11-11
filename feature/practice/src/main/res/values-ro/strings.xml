@@ -99,6 +99,8 @@
     <string name="practice_drone">Bordun</string>
     <string name="practice_chords_listen">Ascultați</string>
     <string name="practice_chords_listening">Se ascultă</string>
+    <string name="practice_chords_mic_busy">Microfon ocupat</string>
+    <string name="practice_chords_mic_off">Microfon oprit</string>
     <string name="practice_drone_play">Porniți bordunul</string>
     <string name="practice_drone_stop">Opriți bordunul</string>
     <string name="practice_drone_sound_spoken">Sunetul bordunului: %1$s</string>

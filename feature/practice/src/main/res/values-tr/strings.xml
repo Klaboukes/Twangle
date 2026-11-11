@@ -99,6 +99,8 @@
     <string name="practice_drone">Dem</string>
     <string name="practice_chords_listen">Dinle</string>
     <string name="practice_chords_listening">Dinliyor</string>
+    <string name="practice_chords_mic_busy">Mikrofon meşgul</string>
+    <string name="practice_chords_mic_off">Mikrofon kapalı</string>
     <string name="practice_drone_play">Demi çal</string>
     <string name="practice_drone_stop">Demi durdur</string>
     <string name="practice_drone_sound_spoken">Dem sesi: %1$s</string>

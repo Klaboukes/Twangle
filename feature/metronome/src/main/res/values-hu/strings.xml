@@ -34,6 +34,8 @@
     <string name="metronome_trainer_goal_faster">Cél növelése</string>
     <string name="metronome_trainer_step">Lépés</string>
     <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_spoken_step">+%1$s BPM</string>
+    <string name="metronome_trainer_spoken_tempo">%1$s, %2$s BPM</string>
     <string name="metronome_trainer_bars">Ütemek</string>
     <plurals name="metronome_trainer_bars_value">
         <item quantity="one">%1$s ütem</item>
@@ -63,6 +65,7 @@
     <string name="metronome_listen">Figyelés</string>
     <string name="metronome_listen_stop_spoken">Figyelés leállítása</string>
     <string name="metronome_listening">Figyelek…</string>
+    <string name="metronome_listening_bpm">Figyelek… %1$s %2$s</string>
     <string name="metronome_heard">Hallott tempó</string>
     <string name="metronome_use">Használd</string>
     <string name="metronome_not_now">Most nem</string>
