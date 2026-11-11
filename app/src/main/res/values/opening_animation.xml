@@ -2,5 +2,5 @@
 <!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->
 <resources>
     <!-- How long the opening screen's icon animation lasts (Theme.Twangle.Starting). -->
-    <integer name="opening_animation_ms">1000</integer>
+    <integer name="opening_animation_ms">1300</integer>
 </resources>

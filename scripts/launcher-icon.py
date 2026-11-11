@@ -225,6 +225,14 @@ SWING_FRAMES = 40
 # The watch's opening screen slides in from the side (about half a second on the Galaxy Watch 5): the watch
 # holds the string at rest that long first, so the whole swing is seen (owner, 2026-11-05: "much faster").
 WATCH_HOLD_MS = 500
+# The phone's opening screen zooms and fades in with the app's window (about 0.2 s on the Xiaomi 12X, 2026-11-11):
+# the phone holds the string at rest a little longer than that, so the pluck isn't half over when it shows.
+PHONE_HOLD_MS = 300
+# The opening screen shows only a circle of the icon's canvas, 72 of its 108 units across, and the string's ends
+# (X0, X1) reach a unit past it, which cut both ends off square (owner, 2026-11-11: "cut off at the left"; the left
+# looked worse, its shapes leaving the string both up and down). Drawn this much smaller about the canvas's centre,
+# the ends sit about a unit inside the circle.
+OPENING_SCALE = 0.94
 
 
 def swing(n, q):
@@ -267,9 +275,10 @@ def opening(hold_ms=0):
     colour (colour_of): its region is where they all cover. Each group's height is animated so the nested
     scales multiply to each harmonic's own swing (relative_swing). Painted singles, then pairs, then all three,
     as the icon's regions are, so each point ends in the colour of everything that covers it. With hold_ms the
-    string first rests that long (the harmonics flat on it), then swings for OPENING_MS."""
+    string first rests that long (the harmonics flat on it), then swings for OPENING_MS. The mark is drawn at
+    OPENING_SCALE, so its ends stay inside the circle the opening screen shows."""
     body, animated = plucked_groups()
-    drawable = vector(108, 108, body, "").split("-->\n", 1)[1]           # the <vector> without the file header
+    drawable = vector(108, 108, body, "", scale=OPENING_SCALE).split("-->\n", 1)[1]   # the <vector> without the file header
     return animated_vector(drawable, animated, hold_ms,
                            "The opening screen's icon: the string plucked, each harmonic swinging at its own speed into\n"
                            "     the icon's pose, its overlaps in the icon's colours throughout (ic_launcher_foreground.xml).\n"
@@ -487,7 +496,7 @@ def main():
         icon_beside_name(), encoding="utf-8", newline="\n")
     (ROOT / "website/twangle-icon.svg").write_text(website_icon(), encoding="utf-8", newline="\n")
     (ROOT / "website/twangle-hero.svg").write_text(website_hero(), encoding="utf-8", newline="\n")
-    for module, theme, hold in (("app", "Theme.Twangle.Starting", 0), ("wear", "Theme.Twangle.Watch.Starting", WATCH_HOLD_MS)):
+    for module, theme, hold in (("app", "Theme.Twangle.Starting", PHONE_HOLD_MS),("wear", "Theme.Twangle.Watch.Starting", WATCH_HOLD_MS)):
         (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(hold), encoding="utf-8", newline="\n")
         (ROOT / module / "src/main/res/values/opening_animation.xml").write_text(
             '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
