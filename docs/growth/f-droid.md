@@ -1,5 +1,10 @@
 # F-Droid, IzzyOnDroid and Exodus
 
+**Parked (owner, 2026-11-12):** F-Droid is not being sent for now. Its forum and Hacker News are wary
+of AI-written apps, and it would bring few players. It waits in [IDEAS.md](../../IDEAS.md), *F-Droid
+and Show HN*, with its condition. Everything below stays valid for when it is picked up. The Exodus
+report doesn't depend on it.
+
 Phase 92, *After the code is open*. F-Droid is the app store for open-source Android apps. Its
 users want apps with no ads and no tracking, so Twangle fits there. F-Droid builds the app itself
 from the source code, signs it with its own key and checks it for non-free code. A new app gets in

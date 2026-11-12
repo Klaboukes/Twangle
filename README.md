@@ -7,10 +7,7 @@ The website, **https://klaboukes.github.io/** ([Nederlands](https://klaboukes.gi
 ## Get Twangle
 
 - **Google Play:** [Twangle on Google Play](https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle), for phones and tablets (Android 8.0 or newer).
-- **F-Droid:** on its way. The free build (see *Licence* below) is ready for F-Droid, and this line will link to it once F-Droid publishes it.
 - **The watch app** (Wear OS 3 or newer) will come through Google Play, after the phone app.
-
-F-Droid builds and signs Twangle with its own key, so a copy from Google Play and one from F-Droid can't update each other. To switch, uninstall one first (your settings go with it).
 
 The [Exodus Privacy report](https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/) checks the Google Play version for trackers.
 
