@@ -12,7 +12,7 @@
 #
 # scripts/store-screenshots.sh (and scripts/watch-screenshots.sh, the watch's) pushes after a run that made every
 # picture, and pulls before a run of only some languages (so the others are the latest too); scripts/release.sh
-# listing pulls before it sends. The watch's wait in fastlane/held-back/android/ until the watch's turn on Play
+# listing pulls before it sends. The watch's are in the listing too since the watch's turn on Play
 # (scripts/watch-screenshots.sh --home says where they are). Neither stops when GitHub can't be reached:
 # they say so and carry on with what this PC has.
 # Exit codes: 0 done or nothing to do, 1 failed (said why), 2 usage.
