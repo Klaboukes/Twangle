@@ -7,7 +7,7 @@
 # picture numbers, or a set and numbers ("tablet 6"); numbers alone mean both sets. Say why after the scope, and when
 # unsure leave the pull request out: then every picture is made again.
 #
-# The lines up to #832 are pull requests of the old repository, now Klaboukes/Twangle-archive (CLAUDE.md, *Git &
+# The lines up to #833 are pull requests of the old repository, now Klaboukes/Twangle-archive (CLAUDE.md, *Git &
 # GitHub*): the new one's numbers start again at #1, so delete those lines before it reaches #747 (they matter only
 # until the store pictures are made again after 2026-11-12). A new pull request not listed counts for every picture.
 #

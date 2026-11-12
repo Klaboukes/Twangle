@@ -124,7 +124,7 @@ python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa B
 
 ## Git & GitHub
 Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.
-The repository moved on 2026-11-12 (Phase 93): its history was rewritten into a new `Klaboukes/Twangle` (the owner's Gmail address replaced by the no-reply one, so every commit has a new SHA), and the old one is the private `Klaboukes/Twangle-archive`, which keeps pull requests #1–#832: a "(#NNN)" in an older commit's subject is an archive number, and new pull requests start again at #1. A clone made before the move is re-pointed once with `scripts/repo-move.sh` (its head says how); never push from one that wasn't.
+The repository moved on 2026-11-12 (Phase 93): its history was rewritten into a new `Klaboukes/Twangle` (the owner's Gmail address and name replaced by `Klaboukes` and the no-reply address, so every commit has a new SHA), and the old one is the private `Klaboukes/Twangle-archive`, which keeps pull requests #1–#833: a "(#NNN)" in an older commit's subject is an archive number, and new pull requests start again at #1. A clone made before the move is re-pointed once with `scripts/repo-move.sh` (its head says how); never push from one that wasn't.
 
 **Every change goes through its own branch and pull request. Never commit directly to `main`.**
 1. `git switch main && git pull` (in a worktree: see *One worktree per session* below)
