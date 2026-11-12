@@ -1,0 +1,5 @@
+Tuner til guitar, bas, ukulele og violin. Ingen reklamer, ingen konto, offline.
+
+- Klassisk: en finere nål og en streg for hver cent nær tonen.
+- LED-bue: et roligere skær med en streg ved 20 cent.
+- Logoet slår sine strenge an, når appen åbner.

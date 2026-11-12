@@ -1,0 +1,5 @@
+Stemmer voor gitaar, bas, ukelele en viool. Geen reclame, geen account, offline.
+
+- Klassiek: een fijnere naald en een streepje voor elke cent rond de noot.
+- Lichtboog: een rustigere gloed, met een streepje bij 20 cent.
+- Het logo tokkelt zijn snaren als de app opent.
