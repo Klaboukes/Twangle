@@ -54,17 +54,40 @@ window*) from the commit of `v2.1.1`.
    in GitLab's web page is enough), on a new branch named `twangle`. The commit message is
    `New app: Twangle`.
 3. **Open a merge request** into fdroiddata's `master` and pick the *App inclusion* template. Tick
-   its boxes, and put the text below under them. The merge request's pipeline builds Twangle the way
-   F-Droid will. If it fails, paste me its log.
-4. **Answer the reviewers.** They usually reply within days to a few weeks, sometimes with small
-   changes to the recipe. Bring me their questions. Once merged, Twangle shows up in the F-Droid app
-   within a few days.
+   its boxes, and under them write the request in your own words, from the facts below. The merge
+   request's pipeline builds Twangle the way F-Droid will. If it fails, paste me its log.
+4. **Answer the reviewers yourself**, in your own words. They may ask for small changes to the
+   recipe. Bring me their questions and I'll explain what's behind them, but the replies come from
+   you. Once merged, Twangle shows up in the F-Droid app within a few days.
+5. **Then wait, and don't chase it elsewhere.** F-Droid is short of testers, and a merge request stays
+   open until someone has tried the app, so expect weeks or months. Don't post about Twangle on the
+   F-Droid forum while it waits, or after: the forum is not for advertising apps, and its moderators
+   say so plainly. Everything about the request is said in the merge request.
 
 If the merge request is too much work, the simpler route is an issue on
 [F-Droid's request list](https://gitlab.com/fdroid/rfp/-/issues) linking the recipe. It's slower:
 a volunteer has to pick it up.
 
-### The merge request's text
+### What the merge request says
+F-Droid's forum notice (seen 2026-11-12) asks people to use "your own knowledge and skill, rather than
+relying on AI for every single thing", and reviewers notice AI-written text. So the owner writes the
+request themselves, short and plain, and these are only the facts it should hold:
+- what Twangle is, and that it has no ads, no account, no tracking and no internet permission
+- that the owner is the developer
+- the free build, `twangle.foss=true`, which leaves out the Play build's one non-free library
+  (Google Play's In-App Review), and the build's check that stops it if a Google Play, Play services
+  or Firebase library comes in another way
+- that the `prebuild` removes the foojay toolchain plugin, and that fdroidserver's scanner finds
+  nothing else in the source or the built APK
+- how it's tested, to help a tester: the owner tests every change on real phones (a Xiaomi and a
+  Samsung) and a tablet, with a guitar; what to try is tuning a string, the metronome and a chord chart
+- how it's made: the code is written with Claude (Anthropic's AI), to the owner's design and
+  decisions, reviewed and tested by them; the rules that work follows are in CLAUDE.md
+
+Saying how it's made stays even though the forum is cool towards AI: a reviewer who found CLAUDE.md
+after a request that didn't mention it would trust the app less than one who was told.
+
+For reference, the earlier draft in full:
 > Twangle is a guitar tuner (chromatic and by string, many instruments and tunings) with a
 > metronome, chord charts, scales, a capo helper and ear training. No ads, no account, no tracking,
 > and no INTERNET permission. GPL-3.0-only.
@@ -101,5 +124,5 @@ works once the analysis is done.
 
 ## Show HN
 
-The draft is [show-hn.md](show-hn.md). **The owner** posts it once F-Droid has Twangle (or right
-away, with Google Play only).
+The draft is [show-hn.md](show-hn.md). **The owner** posts it whenever they like, with Google Play
+alone: F-Droid's review can take months, so it doesn't wait for F-Droid.

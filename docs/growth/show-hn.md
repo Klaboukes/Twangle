@@ -5,6 +5,14 @@ from their own account: the title, the GitHub address as the URL, then the text 
 comment. It works best on a weekday morning in the US (around 15:00 to 17:00 Dutch time). Stay
 around for the first two hours to answer questions. Claude can draft answers to the hard ones.
 
+**When:** whenever the owner likes, with Google Play alone. It doesn't wait for F-Droid, whose review
+can take months (f-droid.md); F-Droid's link goes in a later comment or a later post if it comes.
+
+**In your own words:** the comment below is a list of what to say, not text to paste. Hacker News is
+for people talking to people, and its readers spot and dislike AI-written comments, just as F-Droid's
+forum does. Rewrite it in your own voice, and answer the replies yourself. Claude can explain a
+technical question first.
+
 Hacker News readers will ask how the code was written, so the post says it up front.
 
 ## Title
@@ -44,4 +52,5 @@ https://github.com/Klaboukes/Twangle
 ## Before posting
 - Check the facts against the app as it is then (version, languages, tools).
 - If F-Droid has Twangle by then, add its link
-  (`https://f-droid.org/packages/io.github.klaboukes.twangle/`) beside Google Play's.
+  (`https://f-droid.org/packages/io.github.klaboukes.twangle/`) beside Google Play's; if not, leave
+  F-Droid out rather than promise it.
