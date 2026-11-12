@@ -1,0 +1,5 @@
+Stämmare för gitarr, bas, ukulele och fiol. Ingen reklam, inget konto, offline.
+
+- Klassisk: en finare visare och ett streck för varje cent nära tonen.
+- LED-båge: ett lugnare sken, med ett streck vid 20 cent.
+- Logotypen knäpper sina strängar när appen öppnas.

@@ -1,0 +1,5 @@
+Stroik do gitary, basu, ukulele i skrzypiec. Bez reklam, bez konta, offline.
+
+- Klasyczny: cieńsza wskazówka i kreska dla każdego centa w pobliżu dźwięku.
+- Łuk świetlny: spokojniejsza poświata, z kreską przy 20 centach.
+- Logo szarpie struny, gdy aplikacja się otwiera.

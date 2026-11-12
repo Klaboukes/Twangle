@@ -1,0 +1,5 @@
+Tuner for guitar, bass, ukulele and violin. No ads, no account, fully offline.
+
+- Classic: a finer needle and a mark for every cent near the note.
+- Light arc: a calmer glow, with a mark at 20 cents.
+- The logo plucks its strings when the app opens.

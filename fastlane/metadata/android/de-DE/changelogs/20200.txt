@@ -1,0 +1,5 @@
+Stimmgerät für Gitarre, Bass, Ukulele, Geige. Ohne Werbung, ohne Konto, offline.
+
+- Klassisch: eine feinere Nadel und ein Strich für jeden Cent nahe am Ton.
+- LED-Bogen: ein ruhigeres Leuchten, mit einem Strich bei 20 Cent.
+- Das Logo zupft seine Saiten, wenn die App startet.

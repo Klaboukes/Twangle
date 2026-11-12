@@ -1,0 +1,5 @@
+Stemmer for gitar, bass, ukulele og fiolin. Ingen reklame, ingen konto, offline.
+
+- Klassisk: en finere nål og en strek for hver cent nær tonen.
+- LED-bue: et roligere skjær, med en strek ved 20 cent.
+- Logoen napper i strengene når appen åpnes.
