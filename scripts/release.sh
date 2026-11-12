@@ -43,11 +43,12 @@
 #       Once the owner has checked the internal build: moves that same build (this version) from the
 #       internal track to the closed test (Play's track "alpha", or $TWANGLE_PLAY_CLOSED_TRACK) with its
 #       notes. A draft by default, as upload; "completed" makes it live for the testers at once.
-#   scripts/release.sh promote [watch] production [draft]
+#   scripts/release.sh promote [watch] production [staged|draft]
 #       Moves this version from the internal track to production (whether or not it went to the closed
-#       test too) as a staged rollout to 20 % of people (Google reviews it first); the app's first
-#       release there goes to everyone, since Play allows no staged rollout for it. "draft" leaves it a
-#       draft release to start in the Play Console.
+#       test too), for everyone (Google reviews it first; owner, 2026-11-12: while users are few).
+#       "staged" starts a staged rollout to 20 % of people instead, once Twangle has enough users for
+#       `health` to show rates (the app's first release there still goes to everyone, since Play allows
+#       no staged rollout for it). "draft" leaves it a draft release to start in the Play Console.
 #   scripts/release.sh rollout [watch] <percent>
 #       Raises this version's staged rollout on production to <percent> (1..100); 100 is everyone and
 #       ends the staged rollout.
@@ -132,7 +133,8 @@ WATCH_CODE_OFFSET=1000000
 # What the Baseline Profile covers: the app's screens and what they draw (docs/architecture/performance.md).
 PROFILE="app/src/release/generated"
 PROFILE_SOURCES=(app/src/main ':(glob)feature/*/src/main/**' core/designsystem/src/main)
-# The first step of a staged rollout to production, in percent (docs/release.md, The idea).
+# The first step of a staged rollout to production (promote production staged), in percent
+# (docs/release.md, The idea).
 FIRST_ROLLOUT=20
 
 fail() { echo "release: $*" >&2; exit 1; }
@@ -519,11 +521,16 @@ promote() {
             args=(--release-status "$status")
             ;;
         production)
-            [[ -z "$status" || "$status" == draft ]] || fail "usage: scripts/release.sh promote [watch] production [draft]
-(production starts as a staged rollout to $FIRST_ROLLOUT %; raise it with scripts/release.sh rollout ${WATCH_ARG}<percent>)"
+            [[ -z "$status" || "$status" == staged || "$status" == draft ]] || fail "usage: scripts/release.sh promote [watch] production [staged|draft]
+(production goes to everyone; staged starts a staged rollout to $FIRST_ROLLOUT %, raised with scripts/release.sh rollout ${WATCH_ARG}<percent>)"
             from="$INTERNAL" to="$PRODUCTION" name="production${WATCH_ARG:+ ($PRODUCTION)}"
             if [[ "$status" == draft ]]; then
                 args=(--release-status draft)
+            elif [[ -z "$status" ]]; then
+                # Everyone at once while Twangle has few users (owner, 2026-11-12: 12 users): a staged
+                # step then reaches a person or two and Play's vitals show no rates to judge a raise by.
+                status="a release for everyone"
+                args=(--release-status completed)
             elif ! started="$(play_read track-started "$PRODUCTION")" || [[ "$started" != yes && "$started" != no ]]; then
                 fail "couldn't read whether production had a release before (above); nothing was sent."
             elif [[ "$started" == no ]]; then
@@ -537,7 +544,7 @@ promote() {
                 args=(--release-status inProgress --user-fraction "$(fraction "$FIRST_ROLLOUT")")
             fi
             ;;
-        *) fail "usage: scripts/release.sh promote [watch] closed [draft|completed] | promote [watch] production [draft]" ;;
+        *) fail "usage: scripts/release.sh promote [watch] closed [draft|completed] | promote [watch] production [staged|draft]" ;;
     esac
 
     need_play_key
@@ -556,9 +563,8 @@ promote() {
     echo "$APP_NAME $v is on $name on Google Play, as $status."
     if [[ "$status" == draft ]]; then
         echo "It is a draft: in the Play Console, Edit track, Next, Save, Go to overview, then Submit for review (docs/release.md)."
-    elif [[ -n "$first" ]]; then
-        echo "Google reviews it first (a few hours to a few days), then it waits for Publish changes. Later"
-        echo "versions start as a staged rollout to $FIRST_ROLLOUT %."
+    elif [[ -n "$first" || "$status" == "a release for everyone" ]]; then
+        echo "Google reviews it first (a few hours to a few days), then it waits for Publish changes."
     elif [[ "$to" == "$PRODUCTION" ]]; then
         echo "Google reviews it first (a few hours to a few days). After two or three quiet days, raise it"
         echo "with scripts/release.sh rollout ${WATCH_ARG}50, later rollout ${WATCH_ARG}100; something wrong: scripts/release.sh halt${WATCH_ARG:+ watch}."

@@ -168,18 +168,21 @@ moves on.
   checked, from the internal track to the closed test, as a draft?" → `scripts/release.sh promote closed`.
   The owner starts the draft in *Closed testing*, as in step 4, then sends it for review and
   publishes it once approved.
-- **Production:** ask "Move Twangle <version> to production for 20 % of people? It goes to Google's
-  review at once; that takes a few hours to a few days, then you publish it." (The first production
-  release: "for everyone", since Play allows no staged rollout for an app's first release; the script
-  finds that out itself, and step 7 starts with the next version.) →
-  `scripts/release.sh promote production`
-  (`promote production draft` leaves it for the owner to start in the Play Console). When the store
+- **Production:** ask "Move Twangle <version> to production for everyone? It goes to Google's
+  review at once; that takes a few hours to a few days, then you publish it." →
+  `scripts/release.sh promote production` (everyone at once while Twangle has few users: owner,
+  2026-11-12, at 12 users; docs/release.md, *The idea*). Once `scripts/release.sh health` shows rates
+  instead of "no data yet", or at a few hundred users (`installs`), say so to the owner and ask
+  "…for 20 % of people?" instead → `promote production staged`, and step 7 applies.
+  (`promote production draft` leaves it for the owner to start in the Play Console.) When the store
   listing changed too: since production access (2026-11-11) Google sends Twangle's changes for review by
   itself and refuses the listing's *not sent for review*, so promote first (plain, into review), then
   `scripts/release.sh listing joined` (step 8), which joins that review by starting it again with the
-  listing in it: one review, asked as one question. Then offer the rollout watch (step 7).
+  listing in it: one review, asked as one question. After a staged promotion, offer the rollout watch (step 7).
 
 ## 7. The staged rollout (ask first)
+Only for a release promoted with `staged` (step 6). One for everyone has no raise, and no halt:
+something wrong is fixed through a `fix/` branch and the next release.
 - **Before every raise:** `scripts/release.sh health` (crash and ANR rates per version against Play's
   lines of 1.09 % and 0.47 %, with a verdict) and `scripts/release.sh reviews`. Show the owner both in
   plain words with the question. A verdict above Play's line: don't offer the raise, offer a halt.

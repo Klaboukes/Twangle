@@ -37,8 +37,15 @@ further, and does the few things only the Play Console can do (the checklist bel
 - **Internal first, then promote the same build.** Each release goes to the internal track, the owner
   installs it from Play and checks it, and then that same build is promoted to the closed track or to
   production, so what people get is exactly what was checked.
-- **Production in steps** (a staged rollout: 20 %, then 50 %, then everyone), so a problem can be
-  halted before it reaches everyone. Not the first production release: Play allows no staged rollout
+- **Production for everyone at once while users are few** (owner, 2026-11-12, at 12 users): a 20 %
+  step would reach a person or two, and Play's vitals show no crash or ANR rates for so few, so
+  nothing would tell whether a raise is safe; the checks before Play (the full check, the release
+  build's smoke test, the owner's Xiaomi check) are the guard. **Back to production in steps** (a
+  staged rollout: 20 %, then 50 %, then everyone, `promote production staged`) once
+  `scripts/release.sh health` shows rates instead of "no data yet", or at a few hundred users,
+  whichever comes first: then a problem can be halted before it reaches everyone. A release that
+  went for everyone can't be halted; its fix is the next version. The first production release was
+  never staged anyway: Play allows no staged rollout
   for an app's first release ([Play Console Help](https://support.google.com/googleplay/android-developer/answer/6346149)),
   and with nobody on production yet there is no one to hold it back from, so it goes to everyone
   (owner, 2026-11-09; the closed test's two weeks were its check).
@@ -149,9 +156,10 @@ command acts on the version in `gradle.properties`, which must be tagged, and se
   with `TWANGLE_PLAY_CLOSED_TRACK`. A draft by default, as `upload`; `promote closed completed` makes
   it live for the testers at once.
 - `scripts/release.sh promote production`: from the internal track to **production** (whether or not
-  it went to the closed test too) as a staged rollout to **20 %** (Google reviews it first, and it
-  waits for the owner's *Publish changes*). The first release there goes to everyone instead: the
-  script asks Play whether production ever had one (`PlayReports.java track-started`) and stops if
+  it went to the closed test too) **for everyone** (Google reviews it first, and it waits for the
+  owner's *Publish changes*; *The idea* says why and when that changes). `promote production staged`
+  starts a staged rollout to **20 %** instead; the first release there would still go to everyone:
+  the script asks Play whether production ever had one (`PlayReports.java track-started`) and stops if
   it can't tell. `promote production draft` leaves it a draft to
   start in the Play Console instead.
 - `scripts/release.sh rollout <percent>`: raises the production rollout, a whole number 1–100
@@ -317,12 +325,14 @@ say yes.
       2026-11-06, before managed publishing). Something not meant for this review: *Save for later*.
 - [ ] **Publish it:** once everything is under *Changes ready to publish* (nothing left in *Changes
       in review*), *Publish changes*. It is live within minutes; for production Play then updates
-      phones by itself, starting with 20 % of people (the first production release: everyone).
-- [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;
+      phones by itself, for everyone (with a staged rollout, once Twangle has more users: starting with
+      20 % of people).
+- [ ] With a staged rollout: after two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;
       Claude shows you `health` and `reviews` too, or the daily rollout watch if you said yes to it),
       tell Claude to raise it to 50 %, then *Publish changes* again (a raise waits there too, with no
       review); a few days later to 100 %, which Google lets through at once.
-- [ ] Something wrong: tell Claude to halt it. Nobody new gets the version; the fix goes on `main`
+- [ ] Something wrong: tell Claude to halt it (only a staged rollout can be halted; a release for
+      everyone is fixed by the next version). Nobody new gets the version; the fix goes on `main`
       and out in the next release (a halted version can't be uploaded again, the fix gets a higher
       version). A halt isn't on Google's list of changes that go through at once, so look in
       *Publishing overview* right after and *Publish changes* if it waits there.
@@ -346,8 +356,8 @@ the key. Otherwise, in the Play Console:
       the whole of `release/Twangle-<version>-release-notes.txt` into *Release notes*, *Next*, *Save
       and publish*.
 - [ ] Promote: in *Internal testing*, the release → *Promote release* → *Closed testing* or
-      *Production*; for production set the rollout to **20 %** (the first time Play asks for no
-      percentage), then *Send for review*.
+      *Production*; for production set the rollout to **100 %** while users are few (*The idea*; the
+      first time Play asks for no percentage), then *Send for review*.
 - [ ] Rollout: *Production → Manage rollout* to raise it, or *Halt rollout*.
 - [ ] Store listing: *Grow users → Store presence → Main store listing*, each language's texts and
       pictures from `fastlane/metadata/android/` ([store-listing.md](store-listing.md)).
