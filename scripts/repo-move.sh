@@ -145,7 +145,7 @@ for f in "${records[@]}"; do
     if [[ "$n" -gt 0 ]]; then
         changes+=("$f")
         mkdir -p "$TMP/records/$(dirname "$f")" && cp "$TMP/record" "$TMP/records/$f"
-        say "record $f: $n commit(s) $([[ $dry == 1 ]] && echo would be || echo) rewritten"
+        say "record $f: $n commit(s) $([[ $dry == 1 ]] && echo "would be rewritten" || echo rewritten)"
     fi
 done
 renames=()
