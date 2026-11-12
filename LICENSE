@@ -1,3 +1,35 @@
+Twangle
+Copyright (C) 2026 Klaboukes
+
+Twangle is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation, version 3, whose full text follows below, with the
+additional permission in the next section.
+
+    Additional permission under GNU GPL version 3 section 7
+
+If you modify this Program, or any covered work, by linking or combining
+it with Google Play's In-App Review library (com.google.android.play:review)
+and the Google Play and Google Play services libraries it brings in
+(at present com.google.android.play:core-common,
+com.google.android.gms:play-services-basement and
+com.google.android.gms:play-services-tasks), containing parts covered by
+the terms of the Play Core Software Development Kit Terms of Service or
+the Android Software Development Kit License Agreement, the licensors of
+this Program grant you additional permission to convey the resulting work.
+
+This permission covers those libraries only, and no other library that
+is not under a GPL-compatible licence. (The Program uses them to ask
+Google Play for its rating window.) The permission extends to modified
+versions of the Program: if you modify the Program, you may keep this
+permission for your version or remove it (GPL version 3, section 7, lets
+anyone who conveys a copy remove additional permissions from it).
+
+The free build (Gradle property twangle.foss=true) leaves these libraries
+out and needs no such permission.
+
+------------------------------------------------------------------------
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
