@@ -56,7 +56,7 @@
 #       Halts this version's rollout on production: nobody new gets it, who has it keeps it.
 #   "watch" in upload, promote, rollout and halt: the same for the watch app's bundle
 #       (release/Twangle-<version>-watch.aab, versionCode + 1,000,000) on Play's dedicated Wear OS
-#       tracks: "wear:qa" (internal testing), "wear:<closed test>" ($TWANGLE_PLAY_WATCH_CLOSED_TRACK,
+#       tracks: "wear:internal" (internal testing), "wear:<closed test>" ($TWANGLE_PLAY_WATCH_CLOSED_TRACK,
 #       "alpha" by default) and "wear:production". Play takes no watch bundle on the phone's tracks
 #       (since September 2023; docs/release.md, *The watch app*).
 #   scripts/release.sh listing [joined]
@@ -122,11 +122,12 @@ PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-accou
 PLAY_ACCOUNT_ID=8690383903316518379
 # Play's API name of the closed test the Play Console makes first ("Closed testing - Alpha").
 CLOSED_TRACK="${TWANGLE_PLAY_CLOSED_TRACK:-alpha}"
-# The watch app's tracks on Play: its own Wear OS tracks, "wear:" and the track's name (Play's API docs,
-# developers.google.com/android-publisher/tracks: internal testing is "qa" there, so "wear:qa"). A closed
-# test is named by hand in the Play Console; scripts/release.sh status shows the names Play has.
+# The watch app's tracks on Play: its own Wear OS tracks, "wear:" and the track's name. Internal testing
+# is "wear:internal" (Play refused the API docs' "wear:qa" with "Track not found", 2026-11-12, and listed
+# wear:internal, wear:beta and wear:production once the Wear OS form factor was added). A closed test is
+# named by hand in the Play Console; scripts/release.sh status shows the names Play has.
 WATCH_PREFIX="wear:"
-WATCH_INTERNAL_TRACK="${WATCH_PREFIX}qa"
+WATCH_INTERNAL_TRACK="${WATCH_PREFIX}internal"
 WATCH_CLOSED_TRACK="$WATCH_PREFIX${TWANGLE_PLAY_WATCH_CLOSED_TRACK:-alpha}"
 # The watch build's versionCode is the phone's plus this (root build.gradle.kts, twangleWatchVersionCode).
 WATCH_CODE_OFFSET=1000000
