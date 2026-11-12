@@ -41,6 +41,7 @@ SANA GÖRE
 • Odak modu: yana çevrilmiş telefonda tam ekran akort aleti, uzaktan kolayca okunur
 
 AYRICA
+• Wear OS saatleri için bir uygulama: saatin kendi mikrofonuyla akort et, telefona gerek yok; metronom için sola kaydır
 • Akort ekranını tek dokunuşla açan bir ana ekran widget'ı
 • Akort ederken ekranı açık tutar
 

@@ -246,7 +246,10 @@ publishing is on*, above). So:
   request, each `fastlane/held-back/android/<locale>/watch_line.txt` is moved in (its `- ` / `+ `
   pairs made, then the line first under the *Also* heading) and the held-back files and their
   test go ([store-listing.md](store-listing.md), *The watch line*); `StoreListingTest` passes, and
-  the next `listing`, once nothing is in review, sends it.
+  the next `listing`, once nothing is in review, sends it. Done 2026-11-12, `fastlane/held-back/` is
+  gone; the listing went joined to the watch's production review. No closed test of the watch's own
+  was asked for: Google's Wear OS row wanted the screenshots, a bundle on any testing track (the
+  internal one did) and the opt-in.
 - **Its featuring nomination** goes with the phone's, once Twangle has ratings (ROADMAP.md Phase 92,
   [docs/growth/featuring-nomination.md](growth/featuring-nomination.md)), not ahead of the watch's
   production release.

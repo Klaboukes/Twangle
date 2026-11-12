@@ -1,3 +1,0 @@
-• Una app para relojes Wear OS: afina con el micrófono del propio reloj, sin celular, y desliza a la izquierda para abrir el metrónomo
-- • En 36 idiomas: español, alemán, amárico, árabe, bengalí, birmano, checo, chino simplificado, chino tradicional, coreano, danés, finlandés, francés, griego, hindi, húngaro, indonesio, inglés, italiano, japonés, jemer, maratí, neerlandés, noruego, polaco, portugués, rumano, ruso, sueco, swahili, tailandés, tamil, telugu, turco, ucraniano y vietnamita
-+ • En 36 idiomas, entre ellos español e inglés

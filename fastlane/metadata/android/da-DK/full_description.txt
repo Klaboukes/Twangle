@@ -41,6 +41,7 @@ GØR DEN TIL DIN
 • Fokustilstand: tuneren i fuld skærm på en telefon, der ligger på siden, let at aflæse på afstand
 
 DESUDEN
+• En app til Wear OS-ure: stem med urets egen mikrofon, uden telefon, og stryg til venstre for at se metronomen
 • En widget til startskærmen, der åbner tuneren med ét tryk
 • Holder skærmen tændt, mens du stemmer
 

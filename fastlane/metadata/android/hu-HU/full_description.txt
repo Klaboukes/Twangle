@@ -41,6 +41,7 @@ A TE STÍLUSOD
 • Fókuszmód: a hangoló teljes képernyőn, oldalra fordított telefonon, messziről is jól olvasható
 
 TOVÁBBÁ
+• Alkalmazás Wear OS-órákra: hangolj az óra saját mikrofonjával, telefon nélkül, és húzz balra a metronómhoz
 • Kezdőképernyő-widget, amely egy koppintással megnyitja a hangolót
 • Hangolás közben ébren tartja a képernyőt
 

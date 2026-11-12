@@ -32,7 +32,7 @@ UNTUK SEMUA ORANG
 • Setiap layar berfungsi dengan teks besar, hingga dua kali ukuran normal
 • Kontras tinggi: hitam putih murni dengan garis lebih tebal
 • Getaran singkat saat senar sudah pas, jadi Anda juga bisa merasakannya
-• Dalam 36 bahasa: Indonesia, Amharik, Arab, Belanda, Bengali, Burma, Ceko, Denmark, Finlandia, Hindi, Hungaria, Inggris, Italia, Jepang, Jerman, Khmer, Korea, Mandarin (Sederhana), Mandarin (Tradisional), Marathi, Norwegia, Polandia, Portugis, Prancis, Rumania, Rusia, Spanyol, Swahili, Swedia, Tamil, Telugu, Thai, Turki, Ukraina, Vietnam, dan Yunani
+• Dalam 36 bahasa, termasuk Indonesia dan Inggris
 • Nama nada seperti yang Anda pelajari: C D E, gaya Jerman dengan H, atau Do Re Mi
 
 SESUAI SELERA ANDA
@@ -41,6 +41,7 @@ SESUAI SELERA ANDA
 • Mode fokus: tuner layar penuh saat ponsel diputar ke samping, mudah dibaca dari jauh
 
 LAINNYA
+• Aplikasi untuk jam tangan Wear OS: menyetem lewat mikrofon jam tangan itu sendiri, tanpa ponsel, dan geser ke kiri untuk metronom
 • Widget layar utama yang membuka tuner dengan sekali ketuk
 • Layar tetap menyala selama Anda menyetem
 

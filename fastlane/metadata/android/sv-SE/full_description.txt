@@ -41,6 +41,7 @@ GÖR DEN TILL DIN
 • Fokusläge: stämmaren i helskärm på en telefon som ligger på sidan, lätt att läsa på avstånd
 
 DESSUTOM
+• En app för Wear OS-klockor: stäm med klockans egen mikrofon, utan telefon, och svep åt vänster till metronomen
 • En widget på hemskärmen som öppnar stämmaren med ett tryck
 • Håller skärmen tänd medan du stämmer
 

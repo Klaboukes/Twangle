@@ -41,6 +41,7 @@ IFANYE IWE YAKO
 • Hali ya umakini: tuner kwenye skrini nzima simu ikiwa imelazwa, rahisi kusoma ukiwa mbali
 
 PIA
+• Programu ya saa za Wear OS: rekebisha kwa maikrofoni ya saa yenyewe, bila simu, na telezesha kushoto upate metronomu
 • Wijeti ya skrini ya kwanza inayofungua tuner kwa mguso mmoja
 • Huweka skrini ikiwaka unaporekebisha
 

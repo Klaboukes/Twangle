@@ -41,6 +41,7 @@ DOPASUJ DO SIEBIE
 • Tryb skupienia: stroik na całym ekranie telefonu obróconego poziomo, łatwy do odczytania z daleka
 
 PONADTO
+• Aplikacja na zegarki z Wear OS: strój mikrofonem samego zegarka, bez telefonu, i przesuń w lewo do metronomu
 • Widżet na ekran główny, który otwiera stroik jednym dotknięciem
 • Nie wygasza ekranu, gdy stroisz
 

@@ -41,6 +41,7 @@ PO SVÉM
 • Režim soustředění: ladička přes celou obrazovku telefonu otočeného na šířku, snadno čitelná i z dálky
 
 A TAKÉ
+• Aplikace pro hodinky s Wear OS: laď přímo mikrofonem hodinek, bez telefonu, a přejetím doleva otevřeš metronom
 • Widget na plochu, který jedním klepnutím otevře ladičku
 • Obrazovka zůstane zapnutá, dokud ladíš
 

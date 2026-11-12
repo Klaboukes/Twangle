@@ -41,6 +41,7 @@ HELEMAAL VAN JOU
 • Focusmodus: de stemmer schermvullend op een telefoon op zijn kant, goed te lezen van een afstand
 
 VERDER
+• Een app voor Wear OS-horloges: stem met de microfoon van het horloge zelf, zonder telefoon, en veeg naar links voor de metronoom
 • Een widget op je startscherm die de stemmer met één tik opent
 • Houdt het scherm aan terwijl je stemt
 

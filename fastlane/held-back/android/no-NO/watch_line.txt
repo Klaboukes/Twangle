@@ -1,1 +1,0 @@
-• En app for Wear OS-klokker: stem med klokkens egen mikrofon, uten telefon, og sveip til venstre for metronomen
