@@ -13,10 +13,9 @@
 # as that language's players write it (La and Mi in French or Spanish), and Play shows a language without its own
 # pictures the default language's.
 #
-# They go to $HOME_DIR/<locale>/images/wearScreenshots/1.png ... 3.png. Until the watch's turn on Play that is
-# fastlane/held-back/android/, which nothing that sends to Play reads (docs/store-listing.md, *The watch line*);
-# at the watch's turn HOME_DIR below becomes fastlane/metadata/android, the pictures are moved there, and
-# scripts/release.sh listing checks and sends them. Git-ignored like the phone's; after a run of every language
+# They go to $HOME_DIR/<locale>/images/wearScreenshots/1.png ... 3.png, in the store listing since the watch's
+# turn on Play (2026-11-12; until then they waited in fastlane/held-back/android/), where scripts/release.sh
+# listing checks and sends them. Git-ignored like the phone's; after a run of every language
 # on main the set is shared with the owner's other PC on GitHub (scripts/share-store-screenshots.sh ... watch),
 # and build/watch-screenshots.made-at notes the commit they show, which release.sh listing reads.
 #
@@ -27,8 +26,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-# Where the pictures wait: held back until the watch's turn on Play (then fastlane/metadata/android).
-HOME_DIR=fastlane/held-back/android
+# Where the pictures go: the store listing (held back in fastlane/held-back/android until the watch's turn on Play).
+HOME_DIR=fastlane/metadata/android
 LISTINGS=fastlane/metadata/android
 FOLDER=wearScreenshots
 SHOTS="1 2 3"

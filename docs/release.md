@@ -230,7 +230,7 @@ soon as possible after it, never holding the phone up. The one risk to the phone
 reviews at once, since a change sent while another is in review restarts that review (*Managed
 publishing is on*, above). So:
 - **While the phone waits**, the watch's steps Google doesn't review: its screenshots (made on the
-  watch by `scripts/watch-screenshots.sh` and held back in `fastlane/held-back/` too), its line in
+  watch by `scripts/watch-screenshots.sh` and held back in `fastlane/held-back/` too, moved into the listing on 2026-11-12), its line in
   the full description (written in every language and held back in `fastlane/held-back/` until the
   watch goes to production, since every `listing` sends what is on `main`; nothing that sends reads
   that folder), the Wear OS form factor in the Play Console, and

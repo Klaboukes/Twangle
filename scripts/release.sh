@@ -61,7 +61,7 @@
 #       (since September 2023; docs/release.md, *The watch app*).
 #   scripts/release.sh listing [joined]
 #       Sends the store listing to Google Play: every language's title, short and full description and
-#       phone and tablet screenshots (and, from the watch's turn on Play, its Wear OS screenshots: scripts/watch-screenshots.sh),
+#       phone, tablet and Wear OS screenshots (the watch's: scripts/watch-screenshots.sh),
 #       the icon (one for every language) and each language's feature graphic, and the
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
@@ -642,8 +642,8 @@ png_info() {
 # Fails, naming every language and picture that is wrong, unless every language has its phone
 # screenshots, 1.png ... one for each caption, within Play's rules. A language without them would show
 # English screenshots on Play, so none is sent until all are there. The 10-inch tablet screenshots
-# (tenInchScreenshots, Phase 52) and the watch's (wearScreenshots, Phase 88; here only from the watch's turn
-# on Play, until then they wait in fastlane/held-back/) are checked against Play's rule for them, and once any
+# (tenInchScreenshots, Phase 52) and the watch's (wearScreenshots, Phase 88; here since the watch's turn
+# on Play, 2026-11-12) are checked against Play's rule for them, and once any
 # language has them every language needs as many: the plugin would fill a language without them with the
 # English ones.
 need_screenshots() {
