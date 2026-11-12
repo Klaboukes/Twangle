@@ -1,5 +1,8 @@
 # Show HN draft
 
+**Parked (owner, 2026-11-12):** not posted for now, for the same reasons as F-Droid
+([IDEAS.md](../../IDEAS.md), *F-Droid and Show HN*).
+
 Phase 92, *After the code is open*. **The owner** posts it on https://news.ycombinator.com/submit
 from their own account: the title, the GitHub address as the URL, then the text below as the first
 comment. It works best on a weekday morning in the US (around 15:00 to 17:00 Dutch time). Stay
