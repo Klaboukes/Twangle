@@ -4,6 +4,16 @@ Twangle is a free guitar tuner for Android. Play a string, and Twangle shows whi
 
 The website, **https://klaboukes.github.io/** ([Nederlands](https://klaboukes.github.io/nl/)), shows how each tool works and answers common questions ([help](https://klaboukes.github.io/help.html)).
 
+## Get Twangle
+
+- **Google Play:** [Twangle on Google Play](https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle), for phones and tablets (Android 8.0 or newer).
+- **F-Droid:** on its way. The free build (see *Licence* below) is ready for F-Droid, and this line will link to it once F-Droid publishes it.
+- **The watch app** (Wear OS 3 or newer) will come through Google Play, after the phone app.
+
+F-Droid builds and signs Twangle with its own key, so a copy from Google Play and one from F-Droid can't update each other. To switch, uninstall one first (your settings go with it).
+
+The [Exodus Privacy report](https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/) checks the Google Play version for trackers.
+
 ## Free forever
 
 Twangle is and will always be **free**:
@@ -63,7 +73,7 @@ From the tools button above the strings, one at a time:
 
 ## Status
 
-Version 1.0.0, getting ready for the Google Play Store. The tuner and its tools, the Practice tab, the widget and the watch app are done; the last checks before launch are listed in the [roadmap](ROADMAP.md), and finished work in the [roadmap archive](ROADMAP-ARCHIVE.md). The phone app needs Android 8.0 or newer, the watch app Wear OS 3 or newer.
+Twangle has been live on Google Play since November 2026. Plans and progress are in the [roadmap](ROADMAP.md), and finished work in the [roadmap archive](ROADMAP-ARCHIVE.md).
 
 ## How it works
 
@@ -83,6 +93,10 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:core:dsp` | Pitch detection, strum check, note math, tunings, plucked-string tones, metronome timing (pure Kotlin, no Android) |
 
 The full design is in [ARCHITECTURE.md](ARCHITECTURE.md) and the topic files it lists.
+
+## How it's made
+
+Twangle's code is written with Claude, Anthropic's AI, to the developer's design and decisions. The developer reviews every change and tests it on real phones with a real guitar. The rules that work follows are in [CLAUDE.md](CLAUDE.md).
 
 ## Building
 

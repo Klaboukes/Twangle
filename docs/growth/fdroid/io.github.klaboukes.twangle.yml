@@ -1,0 +1,34 @@
+Categories:
+  - Multimedia
+  - Music Practice Tool
+License: GPL-3.0-only
+AuthorName: Klaboukes
+WebSite: https://klaboukes.github.io/
+SourceCode: https://github.com/Klaboukes/Twangle
+IssueTracker: https://github.com/Klaboukes/Twangle/issues
+
+AutoName: Twangle
+
+RepoType: git
+Repo: https://github.com/Klaboukes/Twangle.git
+
+Builds:
+  - versionName: 2.1.1
+    versionCode: 20101
+    commit: ea2dd1cbf40805434a7770e800fa2c693bd591fd
+    subdir: app
+    sudo:
+      - apt-get update
+      - apt-get install -y openjdk-17-jdk-headless
+      - update-alternatives --auto java
+    gradle:
+      - yes
+    prebuild: sed -i -e '/foojay-resolver/d' ../settings.gradle.kts
+    gradleprops:
+      - twangle.foss=true
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+UpdateCheckData: gradle.properties|twangle\.versionCode=(\d+)|gradle.properties|twangle\.version=(\d+\.\d+\.\d+)
+CurrentVersion: 2.1.1
+CurrentVersionCode: 20101

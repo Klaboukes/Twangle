@@ -2,7 +2,8 @@
 # Twangle's release routine for Google Play (docs/release.md, the release skill).
 #
 #   scripts/release.sh bump patch|minor|major
-#       Sets twangle.version in gradle.properties to the last released version (the highest v* tag)
+#       Sets twangle.version (and twangle.versionCode, its number for F-Droid) in gradle.properties to
+#       the last released version (the highest v* tag)
 #       raised by one step (1.0.0 -> 1.0.1 | 1.1.0 | 2.0.0) and says which release-notes files to write:
 #       fastlane/metadata/android/<Play locale>/changelogs/<versionCode>.txt. A version that was bumped
 #       but never released (no v<version> tag) is kept when it is already that high, and its notes are
@@ -174,7 +175,7 @@ bump() {
     else
         # grep finds nothing without a tag; under set -e and pipefail that would stop the script silently.
         base="$(git tag -l 'v*' --sort=-v:refname | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; } | head -1 | sed 's/^v//')"
-        [[ -n "$base" ]] || fail "no release tag (v*) to count from; set twangle.version by hand"
+        [[ -n "$base" ]] || fail "no release tag (v*) to count from; set twangle.version and twangle.versionCode by hand"
     fi
     IFS=. read -r major minor patch <<<"$base"
     case "$level" in
@@ -195,7 +196,8 @@ bump() {
         return
     fi
 
-    sed -i "s/^twangle.version=.*/twangle.version=$next/" gradle.properties
+    sed -i -e "s/^twangle.version=.*/twangle.version=$next/" \
+        -e "s/^twangle.versionCode=.*/twangle.versionCode=$next_code/" gradle.properties
     echo "Version $current -> $next (versionCode $next_code)."
     # An unreleased version's notes would stay behind under a versionCode nothing uses: move them along
     # as the draft to rewrite.
@@ -266,9 +268,9 @@ part_checked() {
     git merge-base --is-ancestor "$commit" HEAD 2>/dev/null ||
         { echo "The full check of $what ran at ${commit:0:8}, which this commit doesn't follow."; return 1; }
     changed="$(git diff --name-only "$commit" HEAD | grep -Ev "$NOT_IN_THE_BUNDLES" | grep -vx gradle.properties || true)"
-    # The version bump: twangle.version may change, nothing else in gradle.properties.
+    # The version bump: twangle.version and twangle.versionCode may change, nothing else in gradle.properties.
     if [[ -n "$(git diff -U0 "$commit" HEAD -- gradle.properties | grep -E '^[-+]' | grep -Ev '^(\+\+\+|---)' |
-        grep -v '^[-+]twangle\.version=' || true)" ]]; then
+        grep -Ev '^[-+]twangle\.version(Code)?=' || true)" ]]; then
         changed="$changed${changed:+$'\n'}gradle.properties"
     fi
     if [[ -n "$changed" ]]; then
