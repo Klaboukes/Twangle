@@ -20,13 +20,15 @@ further, and does the few things only the Play Console can do (the checklist bel
   fixed and re-checked by the run's own fix PR counts, noted with `scripts/full-check.sh --fixed`),
   from a clean tree, at a commit the release follows, and nothing that goes into the bundles changed
   since: only `*.md`, `docs/`, `.claude/`, `.github/`, `scripts/`, `website/`, `fastlane/` (the
-  release notes), a regenerated Baseline Profile and the version line in `gradle.properties`. A watch
+  release notes), a regenerated Baseline Profile and the version lines in `gradle.properties`. A watch
   whose tests didn't run holds it up as well (`scripts/full-check.sh --watch` once it is connected),
   unless the owner says to release the phone without (`bundle --watch-untested`).
 - **Every upload has a higher version.** Play refuses a version it has seen. One place holds it:
   `twangle.version` in `gradle.properties`. Fixes raise the last number (1.0.0 → 1.0.1), new features
   the middle one (1.0.1 → 1.1.0), something big the first (2.0.0). The build turns it into Play's
   versionCode, major × 10000 + minor × 100 + patch (1.0.1 is 10001; [performance.md](architecture/performance.md), *Release build*).
+  That number is also written out beside it, `twangle.versionCode`, for F-Droid's update check, which
+  can only read a number ([growth/f-droid.md](growth/f-droid.md)); `bump` sets both, and the build stops when they disagree.
   A version counts as released once it has its `v<version>` tag. One that was raised but never
   released (a release that stopped before its bundle, such as 1.1.0 in October 2026) is not raised
   again: `scripts/release.sh bump` counts from the last tag, keeps that version when it is already

@@ -50,6 +50,13 @@ val twangleVersionCode: Int = twangleVersionName.split(".").map(String::toInt).l
     val (major, minor, patch) = parts
     major * 10_000 + minor * 100 + patch
 }
+// The same number written out in gradle.properties for F-Droid's update check (docs/growth/f-droid.md).
+providers.gradleProperty("twangle.versionCode").get().let { written ->
+    require(written == twangleVersionCode.toString()) {
+        "twangle.versionCode in gradle.properties is $written, but twangle.version $twangleVersionName " +
+            "makes $twangleVersionCode: scripts/release.sh bump sets both"
+    }
+}
 extra["twangleVersionName"] = twangleVersionName
 extra["twangleVersionCode"] = twangleVersionCode
 extra["twangleWatchVersionCode"] = 1_000_000 + twangleVersionCode
