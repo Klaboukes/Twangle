@@ -69,7 +69,7 @@ scripts/record-plucks.sh                # records plucked strings on the phone i
 python -I scripts/launcher-icon.py      # draws the launcher icon, themed icon and watch mark (phone and watch) from the harmonics; edit it, not the drawables (ARCHITECTURE.md, *Name, app ID and icon*)
 python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa Bold, spaced) into the vector beside the icon and the website's top-bar SVG; needs fontTools (python -I -m pip install fonttools)
 ```
-`scripts/ui-test-scope.py`, `scripts/devices.sh`, `scripts/main-export.sh`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
+`scripts/repo-move.sh` (once in a clone made before the 2026-11-12 move, *Git & GitHub*), `scripts/ui-test-scope.py`, `scripts/devices.sh`, `scripts/main-export.sh`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
 - Java is Android Studio's bundled JDK (JBR, JDK 25), with no separate install (owner, 2026-10-28). Each PC has it as a Windows user variable,
   `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`, so commands don't set it themselves.
@@ -124,6 +124,7 @@ python -I scripts/wordmark.py           # traces the name "Twangle" (Comfortaa B
 
 ## Git & GitHub
 Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.
+The repository moved on 2026-11-12 (Phase 93): its history was rewritten into a new `Klaboukes/Twangle` (the owner's Gmail address replaced by the no-reply one, so every commit has a new SHA), and the old one is the private `Klaboukes/Twangle-archive`, which keeps pull requests #1–#832: a "(#NNN)" in an older commit's subject is an archive number, and new pull requests start again at #1. A clone made before the move is re-pointed once with `scripts/repo-move.sh` (its head says how); never push from one that wasn't.
 
 **Every change goes through its own branch and pull request. Never commit directly to `main`.**
 1. `git switch main && git pull` (in a worktree: see *One worktree per session* below)

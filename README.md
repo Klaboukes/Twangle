@@ -106,7 +106,7 @@ Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
 Twangle is free software under the [GNU General Public License, version 3](LICENSE): you may copy, change and share it, as long as what you build from it stays open under the same licence.
 
-One additional permission, at the top of [LICENSE](LICENSE), lets anyone build and share the Google Play version, which includes Google Play's rating window library (not open source); the free build (`-Ptwangle.foss=true`) leaves that library out.
+One additional permission, in [ADDITIONAL-PERMISSION.txt](ADDITIONAL-PERMISSION.txt) (with the copyright notice; `LICENSE` is the GPL's text unchanged), lets anyone build and share the Google Play version, which includes Google Play's rating window library (not open source); the free build (`-Ptwangle.foss=true`) leaves that library out.
 
 The name "Twangle" and its logo (the app icon) are not covered by the licence. A copy you share must use its own name and icon.
 

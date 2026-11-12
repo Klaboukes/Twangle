@@ -455,8 +455,15 @@ val Settings.half get() = tempo / 2
     }
     failures = [f'line {i + 1}: {sample.owner(i)} != {want}' for i, want in expect.items() if sample.owner(i) != want]
     # The Play it back increment (Phase 55): core/dsp and core/settings changed, but only Ear training uses it.
-    if subprocess.run(['git', 'cat-file', '-e', '416171f0^{commit}'], cwd=ROOT).returncode == 0:
-        got = sorted(affected('7d016e0f', '416171f0'))
+    # Found by its subject, since the history's rewrite (Phase 93) changed every commit's SHA.
+    subject = 'Phase 55: Play it back (#443)'
+    found = [line.split('\t')[0].split(' ') for line in git('log', '--format=%H %P%x09%s', 'HEAD').split('\n')
+             if line.endswith('\t' + subject)]
+    if len(found) != 1 or len(found[0]) != 2:
+        failures.append(f'Play it back: not one commit "{subject}" with one parent in this history (a shallow clone?)')
+    else:
+        head, base = found[0]
+        got = sorted(affected(base, head))
         if got != [':app', ':feature:eartraining']:
             failures.append(f'Play it back: {got}')
     print('\n'.join(failures) if failures else 'ok')
