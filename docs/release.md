@@ -259,16 +259,17 @@ gave Wear OS its own tracks in March 2023, and since September 2023 a Wear OS re
 tracks can't be updated: "you must use dedicated Wear OS tracks and create new releases on these
 tracks", and once they exist, the API can no longer put a watch bundle on the phone's tracks
 ([Play Console Help, *Manage different form factor releases on dedicated tracks*](https://support.google.com/googleplay/android-developer/answer/13295490)).
-In Play's API a Wear OS track is `wear:` and the track's name: `wear:qa` for internal testing (the
-API's name for it, though phone releases may say `internal`), `wear:beta`, `wear:production`, and a
-closed test `wear:<its name>` ([Google Play Developer API, *APKs and Tracks*](https://developers.google.com/android-publisher/tracks)).
+In Play's API a Wear OS track is `wear:` and the track's name: `wear:internal` for internal testing,
+`wear:beta`, `wear:production`, and a closed test `wear:<its name>`, which the Play Console makes
+(2026-11-12: with the Wear OS form factor added, `status` listed those three; the API docs' `wear:qa`
+was refused, *Track not found*; [Google Play Developer API, *APKs and Tracks*](https://developers.google.com/android-publisher/tracks)).
 To reach people, the watch app also needs a closed test release and the opt-in to Wear OS, which
 starts Google's review against the Wear OS quality rules
 ([Android developers, *Package and distribute Wear OS apps*](https://developer.android.com/training/wearables/packaging)).
 
 So the watch app's release runs beside the phone's, with `watch` in each step, each again after the
 owner's yes:
-- `scripts/release.sh upload watch`: the watch bundle and the same notes to `wear:qa`.
+- `scripts/release.sh upload watch`: the watch bundle and the same notes to `wear:internal`.
 - `scripts/release.sh promote watch closed`: to the watch's closed test, `wear:alpha` unless
   `TWANGLE_PLAY_WATCH_CLOSED_TRACK` names another (the Play Console names it when it is made;
   `scripts/release.sh status` lists the watch's tracks as *Watch, …* with their API names).
@@ -277,17 +278,16 @@ owner's yes:
 
 **Once, in the Play Console** (the owner, with Claude reading along):
 - [ ] Before the first `upload watch`: *Test and release → Advanced settings → Form factors → + Add
-      form factor → Wear OS*, and under *Releases* choose *Use a dedicated release track for Wear OS*
-      if Play still offers the choice. If the Console says this goes to Google's review, it waits
+      form factor → Wear OS* (done 2026-11-12; Play no longer offers a choice of dedicated tracks: they
+      are the only kind). If the Console says this goes to Google's review, it waits
       until the phone's production release is approved.
 - [ ] Once the phone's production release is approved: the Wear OS screenshots in the store listing
       (Phase 88, *The Wear OS screenshots*), sent with `listing`.
 - [ ] After the first watch release is on its closed test: the same page, *Wear OS → Manage*, *Opt in
       to Wear OS* and agree to its review, then *Start rollout* once Google has approved it.
 
-Not tried on Play yet: the first `upload watch` is a draft, and if Gradle Play Publisher or Play
-refuses the track name (`wear:qa`), `scripts/release.sh status` shows the names Play gives the
-watch's tracks; the name in `release.sh` (`WATCH_INTERNAL_TRACK`) follows it. By hand, the watch
+If Play ever refuses a watch track's name, `scripts/release.sh status` shows the names Play gives the
+watch's tracks; the names in `release.sh` (`WATCH_INTERNAL_TRACK`, `WATCH_CLOSED_TRACK`) follow them. By hand, the watch
 bundle goes in the Play Console under the Wear OS form factor's own *Internal testing*.
 
 ## What the owner does

@@ -233,7 +233,7 @@ something wrong is fixed through a `fix/` branch and the next release.
 Play takes a watch bundle only on the watch's own Wear OS tracks, never on the phone's
 (docs/release.md, *The watch app*: Play's rule, and the owner's one-time steps in the Play Console:
 the Wear OS form factor, later its opt-in). Each phone step has a `watch` twin, after its own yes:
-`upload watch` (to `wear:qa`), `promote watch closed|production`, `rollout watch <percent>`,
+`upload watch` (to `wear:internal`), `promote watch closed|production`, `rollout watch <percent>`,
 `halt watch`. Ask as for the phone, naming the watch app: "Send Twangle <version>'s watch app
 (versionCode <code + 1,000,000>) to the watch's internal track on Google Play, as a draft?" The first
 `upload watch` is the first try of the track name on Play: if it is refused, `status` shows the names
