@@ -41,6 +41,7 @@ THEO CÁCH CỦA BẠN
 • Chế độ tập trung: máy lên dây toàn màn hình trên điện thoại xoay ngang, dễ đọc từ xa
 
 NGOÀI RA
+• Ứng dụng cho đồng hồ Wear OS: lên dây bằng micrô của chính đồng hồ, không cần điện thoại, và vuốt sang trái để mở máy đếm nhịp
 • Tiện ích màn hình chính mở máy lên dây chỉ với một lần chạm
 • Giữ màn hình luôn bật khi bạn lên dây
 

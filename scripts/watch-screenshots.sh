@@ -26,7 +26,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-# Where the pictures go: the store listing (held back in fastlane/held-back/android until the watch's turn on Play).
+# Where the pictures go: the store listing (until the watch's turn on Play, 2026-11-12, fastlane/held-back/android).
 HOME_DIR=fastlane/metadata/android
 LISTINGS=fastlane/metadata/android
 FOLDER=wearScreenshots

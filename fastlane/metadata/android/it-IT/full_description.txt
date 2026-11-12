@@ -32,7 +32,7 @@ PER TUTTI
 • Ogni schermata funziona con il testo grande, fino al doppio della dimensione normale
 • Contrasto elevato: bianco e nero puri con linee più spesse
 • Una breve vibrazione quando una corda è intonata, per sentirlo anche al tatto
-• In 36 lingue: italiano, amarico, arabo, bengalese, birmano, ceco, cinese semplificato, cinese tradizionale, coreano, danese, finlandese, francese, giapponese, greco, hindi, indonesiano, inglese, khmer, marathi, norvegese, olandese, polacco, portoghese, rumeno, russo, spagnolo, svedese, swahili, tailandese, tamil, tedesco, telugu, turco, ucraino, ungherese e vietnamita
+• In 36 lingue, tra cui italiano e inglese
 • I nomi delle note come li hai imparati: Do Re Mi, oppure le lettere C D E, anche con la H alla tedesca
 
 A MODO TUO
@@ -41,6 +41,7 @@ A MODO TUO
 • Modalità concentrazione: l'accordatore a schermo intero con il telefono in orizzontale, facile da leggere a distanza
 
 INOLTRE
+• Un'app per orologi Wear OS: accorda con il microfono dell'orologio stesso, senza telefono, e scorri a sinistra per il metronomo
 • Un widget per la schermata Home che apre l'accordatore con un tocco
 • Tiene lo schermo acceso mentre accordi
 

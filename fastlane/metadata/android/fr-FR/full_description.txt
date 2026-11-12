@@ -32,7 +32,7 @@ POUR TOUT LE MONDE
 • Chaque écran fonctionne avec un texte agrandi, jusqu'à deux fois la taille normale
 • Contraste élevé : noir et blanc purs, traits plus épais
 • Une courte vibration quand une corde est juste, pour la sentir aussi
-• En 36 langues : français, allemand, amharique, anglais, arabe, bengali, birman, chinois (simplifié et traditionnel), coréen, danois, espagnol, finnois, grec, hindi, hongrois, indonésien, italien, japonais, khmer, marathi, néerlandais, norvégien, polonais, portugais, roumain, russe, suédois, swahili, tamoul, tchèque, télougou, thaï, turc, ukrainien et vietnamien
+• En 36 langues, dont le français et l'anglais
 • Les noms de notes comme vous les avez appris : Do Ré Mi, ou C D E à l'anglaise ou à l'allemande
 
 À VOTRE GOÛT
@@ -41,6 +41,7 @@ POUR TOUT LE MONDE
 • Mode concentration : l'accordeur en plein écran sur le téléphone à l'horizontale
 
 AUSSI
+• Une appli pour montres Wear OS : accordez avec le micro de la montre, sans téléphone, et balayez vers la gauche pour le métronome
 • Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une touche
 • Garde l'écran allumé pendant que vous accordez
 

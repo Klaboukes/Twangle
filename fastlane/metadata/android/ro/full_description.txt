@@ -32,7 +32,7 @@ FĂCUT PENTRU TOȚI
 • Fiecare ecran funcționează cu text mare, de până la două ori dimensiunea normală
 • Contrast ridicat: alb-negru pur, cu linii mai groase
 • O vibrație scurtă când o coardă este acordată, ca s-o simțiți și la atingere
-• În 36 de limbi: română, engleză, amharică, arabă, bengaleză, birmană, cehă, chineză (simplificată), chineză (tradițională), coreeană, daneză, finlandeză, franceză, germană, greacă, hindi, indoneziană, italiană, japoneză, khmeră, maghiară, marathi, neerlandeză, norvegiană, poloneză, portugheză, rusă, spaniolă, suedeză, swahili, tamilă, telugu, thailandeză, turcă, ucraineană și vietnameză
+• În 36 de limbi, printre care română și engleză
 • Numele notelor așa cum le-ați învățat: Do Re Mi sau literele C D E, inclusiv cu H în loc de B
 
 CUM VĂ PLACE
@@ -41,6 +41,7 @@ CUM VĂ PLACE
 • Mod concentrare: acordorul pe tot ecranul, cu telefonul întors pe orizontală
 
 ȘI ÎN PLUS
+• O aplicație pentru ceasuri Wear OS: acordați cu microfonul ceasului, fără telefon, și glisați spre stânga pentru metronom
 • Un widget pe ecranul de pornire care deschide acordorul cu o atingere
 • Ține ecranul aprins cât acordați
 

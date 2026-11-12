@@ -41,6 +41,7 @@ GJØR DEN TIL DIN
 • Fokusmodus: stemmeren i fullskjerm på en telefon som ligger på siden, lett å lese på avstand
 
 OGSÅ
+• En app for Wear OS-klokker: stem med klokkens egen mikrofon, uten telefon, og sveip til venstre for metronomen
 • En widget på startskjermen som åpner stemmeren med ett trykk
 • Holder skjermen på mens du stemmer
 

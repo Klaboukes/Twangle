@@ -1,3 +1,0 @@
-• Une appli pour montres Wear OS : accordez avec le micro de la montre, sans téléphone, et balayez vers la gauche pour le métronome
-- • En 36 langues : français, allemand, amharique, anglais, arabe, bengali, birman, chinois (simplifié et traditionnel), coréen, danois, espagnol, finnois, grec, hindi, hongrois, indonésien, italien, japonais, khmer, marathi, néerlandais, norvégien, polonais, portugais, roumain, russe, suédois, swahili, tamoul, tchèque, télougou, thaï, turc, ukrainien et vietnamien
-+ • En 36 langues, dont le français et l'anglais

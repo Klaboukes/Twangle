@@ -41,6 +41,7 @@ MAKE IT YOURS
 • Focus mode: the tuner full screen on a phone on its side, easy to read from a distance
 
 ALSO
+• A Wear OS watch app: tune with the watch's own microphone, no phone needed, and swipe left for the metronome
 • A home-screen widget that opens the tuner with one tap
 • Keeps the screen on while you tune
 

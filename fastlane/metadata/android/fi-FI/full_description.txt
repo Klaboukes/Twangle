@@ -41,6 +41,7 @@ TEE SIITÄ OMASI
 • Keskittymistila: viritin koko näytöllä kyljellään olevassa puhelimessa, helppo lukea kaukaa
 
 LISÄKSI
+• Sovellus Wear OS -kelloille: viritä kellon omalla mikrofonilla ilman puhelinta ja pyyhkäise vasemmalle metronomiin
 • Aloitusnäytön widget, joka avaa virittimen yhdellä napautuksella
 • Pitää näytön päällä, kun virität
 

@@ -32,7 +32,7 @@ FÜR ALLE GEMACHT
 • Jeder Bildschirm funktioniert mit großer Schrift, bis zur doppelten Größe
 • Hoher Kontrast: Schwarz-Weiß mit dickeren Linien
 • Eine kurze Vibration, wenn eine Saite gestimmt ist, damit du es auch spürst
-• In 36 Sprachen: Deutsch, Amharisch, Arabisch, Bengalisch, Birmanisch, Chinesisch (vereinfacht und traditionell), Dänisch, Englisch, Finnisch, Französisch, Griechisch, Hindi, Indonesisch, Italienisch, Japanisch, Khmer, Koreanisch, Marathi, Niederländisch, Norwegisch, Polnisch, Portugiesisch, Rumänisch, Russisch, Schwedisch, Spanisch, Swahili, Tamil, Telugu, Thai, Tschechisch, Türkisch, Ukrainisch, Ungarisch und Vietnamesisch
+• In 36 Sprachen, darunter Deutsch und Englisch
 • Notennamen, wie du sie gelernt hast: C D E … H, international mit B oder Do Re Mi
 
 GANZ NACH DEINEM GESCHMACK
@@ -41,6 +41,7 @@ GANZ NACH DEINEM GESCHMACK
 • Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy
 
 AUSSERDEM
+• Eine App für Uhren mit Wear OS: Stimm mit dem Mikrofon der Uhr selbst, ganz ohne Handy, und wisch nach links zum Metronom
 • Ein Widget für den Startbildschirm, das das Stimmgerät mit einem Tippen öffnet
 • Lässt den Bildschirm an, während du stimmst
 
