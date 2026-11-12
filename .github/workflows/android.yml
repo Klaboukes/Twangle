@@ -4,10 +4,17 @@ name: Android CI
 # Git & GitHub), so a run per merge only repeated that check and used up the free plan's 2,000
 # minutes a month in one week (2026-10-16). The nightly run covers everything merged since the last
 # successful run, and skips itself when that was only documentation. "Run workflow" builds at once.
+# Also on every pull request from someone else's fork (since 2026-11-12, when the code went public):
+# nobody runs the local check for them, and a public repository's minutes are free. The owner's
+# own pull requests (branches in this repository, Dependabot's too) don't run it: the local run is
+# their gate. `pull_request`, never `pull_request_target`: a fork's run gets a read-only token and
+# no secrets, and GitHub holds a first-time contributor's run until the owner approves it.
 on:
   schedule:
     - cron: '0 3 * * *'   # 03:00 UTC
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,6 +31,8 @@ permissions:
 jobs:
   build:
     name: Build, test & lint
+    # A pull request from a branch in this repository is skipped (see the head of the file).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 40   # a full run takes about 26 minutes
 
@@ -36,7 +45,7 @@ jobs:
           persist-credentials: false
 
       # Build when anything but documentation, skills, scripts or the website changed since the last
-      # successful run (or there is none, or it was started by hand). scripts/ui-tests.sh counts:
+      # successful run (or there is none, or it was started by hand or by a pull request). scripts/ui-tests.sh counts:
       # LocalizationTest reads it (the unit tests' inputs in app/build.gradle.kts name every file they
       # read). No test reads website/. --no-renames lists a moved file at both its old and its new
       # path, so code moved into docs/ still counts as a change to the code.
@@ -45,10 +54,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          last=$(gh run list --workflow android.yml --branch main --status success --limit 1 \
-            --json headSha --jq '.[0].headSha // ""')
-          if [ "${{ github.event_name }}" = workflow_dispatch ] || [ -z "$last" ] \
-            || ! git cat-file -e "$last^{commit}" 2>/dev/null; then
+          last=""
+          if [ "${{ github.event_name }}" = schedule ]; then
+            last=$(gh run list --workflow android.yml --branch main --status success --limit 1 \
+              --json headSha --jq '.[0].headSha // ""')
+          fi
+          if [ -z "$last" ] || ! git cat-file -e "$last^{commit}" 2>/dev/null; then
             build=true
           elif git diff --no-renames --name-only "$last" HEAD \
             | awk '$0 == "scripts/ui-tests.sh" || !/\.md$|^docs\/|^\.claude\/|^scripts\/|^website\// { n++ }
