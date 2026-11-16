@@ -26,6 +26,10 @@ SHOTS="1:1 4:2 7:4 6:5 5:6 metronome:metronome"
 LOCALES="en-US:en nl-NL:nl"
 
 "$JAVA" "$SHRINK" "$ROOT/fastlane/metadata/android/en-US/images/icon.png" "$STATIC/img/icon.png" 192
+# The press page's downloads (Phase 92): the store's own icon and feature graphics, as they are.
+cp "$ROOT/fastlane/metadata/android/en-US/images/icon.png" "$STATIC/press/twangle-icon.png"
+cp "$ROOT/fastlane/metadata/android/en-US/images/featureGraphic.png" "$STATIC/press/twangle-feature-graphic-en.png"
+cp "$ROOT/fastlane/metadata/android/nl-NL/images/featureGraphic.png" "$STATIC/press/twangle-feature-graphic-nl.png"
 
 for pair in $LOCALES; do
     locale="${pair%%:*}"
