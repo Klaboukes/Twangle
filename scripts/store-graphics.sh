@@ -2,7 +2,7 @@
 # Makes the Play Store's icon and feature graphics on the phone (docs/store-listing.md, *Icon and
 # feature graphic*): the StoreGraphics test draws the launcher icon at 512 x 512 and a 1024 x 500
 # feature graphic for every store language (the icon and name, that language's line from
-# feature_graphic.txt, and three meters fanned out) from the app itself, and this script puts
+# feature_graphic.txt, and the tuner's meter in tune) from the app itself, and this script puts
 # them where fastlane and F-Droid look for them:
 #
 #   fastlane/metadata/android/en-US/images/icon.png
