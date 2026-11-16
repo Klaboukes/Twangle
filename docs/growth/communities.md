@@ -46,7 +46,7 @@ Pick the 3–5 that fit the community (each section below says which).
 - A metronome (30–250, tap tempo, clicks between the beats, a speed trainer), chord charts and
   scales for your tuning, a capo helper and ear training.
 - A standalone Wear OS watch tuner with the watch's own microphone, and a metronome that taps your
-  wrist (on Play's Wear OS production track since 2026-11; installed from Play on the watch itself).
+  wrist (in Google's review for Play since 2026-11-16, Phase 88; say it only once it is on Play).
 - Works with TalkBack, large text, a high-contrast look and a vibration guide; in 36 languages.
 - The code is public under GPL 3 (GitHub `Klaboukes/Twangle`).
 - Links: Play https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle ,
@@ -59,7 +59,7 @@ Best first means: most clearly allowed, then the biggest fit for the effort.
 |---|---|---|
 | 1 | Accessible Android, the app directory ([accessibility notes](accessibility-communities.md)) | Developers may submit their own app; a tuner that speaks is rare |
 | 2 | r/droidappshowcase (where r/androidapps sends developers) | Made for developers' posts |
-| 3 | r/WearOS | Free apps may be posted, with a template; a tuner that runs on the watch alone fits well |
+| 3 | r/WearOS, once Google has approved the watch app | Free apps may be posted, with a template; a tuner that runs on the watch alone fits well |
 | 4 | Blind Android Users: mailing list, and the podcast's contact form ([accessibility notes](accessibility-communities.md)) | Invites developers of accessible apps |
 | 5 | Guitarristas.info, *Informática, hardware, software y grabación* (Spanish) | Members post their own apps there |
 | 6 | Musiker-Board, *Softwareprojekte der User* (German) | The board's own place for members' software |
@@ -108,10 +108,11 @@ For a community whose rules don't clearly allow it (Reddit: *Message the mods* i
   description of its features, its cost) and added flairs (*Free*, *Free with ads*, *Testers wanted*
   and the paid ones). Both seen through mirrors; check the sidebar. Use the *Free* flair and the
   template.
-- **On Play:** the watch app is on Play's Wear OS production track (2.2.0, checked 2026-11-16 with
-  `scripts/release.sh status`), so people can install it from the Play Store on their watch. Before
-  posting, check once on the watch's own Play Store that Twangle shows up (a staged rollout reaches
-  only some watches at first).
+- **Wait for:** Google's review of the watch app. 2.2.0 was sent to Play's Wear OS production track
+  as a full rollout on 2026-11-16 and was still in review that day (the Play Console's *Publishing
+  overview*; `scripts/release.sh status` shows the track before the review is done, so it can't
+  tell). Once it is approved, check once on the watch's own Play Store that Twangle shows up, then
+  post. Until then, skip this one and go on with the next.
 - **The audience:** owners of Wear OS watches looking for apps that run on the watch itself; they
   ask whether it needs the phone, about battery, tiles and complications.
 - **Say:** it runs on the watch alone with the watch's own microphone, no phone needed; one tap on
@@ -281,7 +282,7 @@ the forums. Answering one is fine when it fits; it's how most people find apps t
 - *Ukulele / beginners:* "I'm the developer of Twangle (Android, free, no ads). It knows high G, low
   G and baritone, and you can hold a string to hear its note and tune by ear. The code is written
   with Claude, an AI, to my design."
-- *On a watch:* "Disclosure, I'm the developer: Twangle has a Wear OS tuner that
+- *On a watch:* (once it's on Play) "Disclosure, I'm the developer: Twangle has a Wear OS tuner that
   uses the watch's own mic, no phone needed, free and without ads. The code is written with Claude
   to my design; I tested it on a Galaxy Watch 5."
 
