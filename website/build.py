@@ -66,6 +66,7 @@ WORDS = {
         "nav": "Main",
         "tools": "Tools",
         "help": "Help",
+        "press": "Press",
         "privacy": "Privacy",
         "privacy_page": "twangle-privacy/",
         "made_by": "Made by one person. Free forever.",
@@ -79,6 +80,7 @@ WORDS = {
         "nav": "Hoofdmenu",
         "tools": "Functies",
         "help": "Hulp",
+        "press": "Pers",
         "privacy": "Privacy",
         "privacy_page": "twangle-privacy/nl.html",
         "made_by": "Gemaakt door één persoon. Voor altijd gratis.",
@@ -233,6 +235,9 @@ def build(out):
             footer = []
             if (PAGES / lang / "help.html").exists():
                 footer.append(f'<a href="{href(root, folder, "help.html", folder)}">{w["help"]}</a>')
+            # The press page (Phase 92): in the footer only, for whoever writes about Twangle.
+            if (PAGES / lang / "press.html").exists():
+                footer.append(f'<a href="{href(root, folder, "press.html", folder)}">{w["press"]}</a>')
             footer.append(f'<a href="{root}{w["privacy_page"]}">{w["privacy"]}</a>')
             page = FRAME.format(
                 lang=lang,
