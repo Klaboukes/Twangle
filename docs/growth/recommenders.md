@@ -95,8 +95,8 @@ Lead with one, mention another in a line at most.
 - **The watch app:** a Wear OS tuner that runs on the watch alone, listening with the watch's own
   microphone, no phone needed; one tap on the wrist when the string is in tune, a vibration guide
   (one tap tighten, two loosen); swipe left for a metronome that taps the beat on the wrist; a tile
-  and a watch-face shortcut. Wear OS 3 or newer, tested on a Galaxy Watch 5. On Play's Wear OS
-  production track since 2026-11 (check once on the watch's own Play Store before writing).
+  and a watch-face shortcut. Wear OS 3 or newer, tested on a Galaxy Watch 5. In Google's review for
+  Play since 2026-11-16; write about it only once it shows on the watch's own Play Store.
 - **Accessibility:** TalkBack says the reading in words ("E 2, 12 cents flat, tighten") without
   talking over the string; the vibration guide lets you tune by feel alone; a high-contrast look; every
   screen works with text twice the normal size; 36 languages.

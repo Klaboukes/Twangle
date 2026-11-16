@@ -7,7 +7,7 @@ The website, **https://klaboukes.github.io/** ([Nederlands](https://klaboukes.gi
 ## Get Twangle
 
 - **Google Play:** [Twangle on Google Play](https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle), for phones and tablets (Android 8.0 or newer).
-- **The watch app** (Wear OS 3 or newer): on Google Play too; open the Play Store on the watch and search for Twangle, or install it to the watch from the phone's Play page.
+- **The watch app** (Wear OS 3 or newer): in Google's review, on Google Play shortly; then open the Play Store on the watch and search for Twangle, or install it to the watch from the phone's Play page.
 
 The [Exodus Privacy report](https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/) checks the Google Play version for trackers.
 
