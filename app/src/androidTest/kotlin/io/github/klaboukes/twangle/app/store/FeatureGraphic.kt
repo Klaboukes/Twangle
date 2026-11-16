@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.intl.LocaleList as TextLocaleList
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
@@ -50,6 +51,8 @@ import java.util.Locale
  * upright, Classic on a dark card, a string brought into tune and held there, in tune's green with its glow (2.0's
  * listing, 2026-11-05: until then three meters fanned out, each card too small for its ♭ and ♯). No note names, so
  * the line is the one text to translate. Everything important keeps clear of the edges, which Play may crop.
+ * Since 2026-11-16 (the owner: too much empty black) the name, the line and the meter fill most of the height: the
+ * line is too wide for its room at that size, so a long sentence breaks into two balanced lines of its own.
  */
 @Composable
 fun FeatureGraphic(line: String, locale: Locale) {
@@ -78,7 +81,7 @@ fun FeatureGraphic(line: String, locale: Locale) {
     }
 }
 
-/** The icon and name, the line under it starting where the icon does, a sentence a line. */
+/** The icon and name, the line under it starting where the icon does, each sentence starting a line of its own. */
 @Composable
 private fun NameAndLine(line: String, locale: Locale) {
     Column {
@@ -88,13 +91,15 @@ private fun NameAndLine(line: String, locale: Locale) {
             remember(line) { sentencesOnTheirOwnLines(line) ?: line },
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = LINE_SIZE.sp,
-                lineHeight = 1.3.em,
+                lineHeight = 1.25.em,
                 textAlign = TextAlign.Start,
+                // A sentence too long for one line breaks into two of about the same length, never one word left over.
+                lineBreak = LineBreak.Heading,
                 // So Han characters take the language's own shapes (Traditional or Simplified).
                 localeList = TextLocaleList(locale.toLanguageTag()),
             ),
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = LINE_ALPHA),
-            maxLines = 2,
+            maxLines = LINE_MAX_LINES,
             // A long language's line a little smaller, never cut off.
             autoSize = TextAutoSize.StepBased(minFontSize = LINE_MIN_SIZE.sp, maxFontSize = LINE_SIZE.sp, stepSize = 0.5.sp),
             modifier = Modifier.widthIn(max = TEXT_WIDTH),
@@ -131,20 +136,23 @@ private fun Meter() {
 const val FEATURE_WIDTH = 1024
 const val FEATURE_HEIGHT = 500
 
-/** About 100 px of the 1024 from the start edge, as Play may crop or cover it (379 dp in all): where the word and the line start. */
-private val TEXT_EDGE = 36.dp
-/** The name's capitals: the icon about 33 dp and the word 75 dp across, clear of the fan. */
-private val NAME_CAP_HEIGHT = 13.dp
-private val TEXT_WIDTH = 182.dp
-private val LINE_GAP = 10.dp
-private const val LINE_SIZE = 14f
-private const val LINE_MIN_SIZE = 10f
+/** About 80 px of the 1024 from the start edge, as Play may crop or cover it (379 dp in all): where the word and the line start. */
+private val TEXT_EDGE = 30.dp
+/** The name's capitals: the icon and the word about 152 dp across together, just inside [TEXT_WIDTH]. */
+private val NAME_CAP_HEIGHT = 18.dp
+/** Up to the meter's ♭, less a small gap. */
+private val TEXT_WIDTH = 156.dp
+private val LINE_GAP = 12.dp
+private const val LINE_SIZE = 18f
+private const val LINE_MIN_SIZE = 11f
+/** Three: one sentence on one line, the longer one broken in two; a language that needs more steps down in size. */
+private const val LINE_MAX_LINES = 3
 private const val LINE_ALPHA = 0.88f
 
-/** The meter keeps about 50 px of the 1024 from the end edge; as large as the line's room allows. */
-private val METER_EDGE = 22.dp
-private val METER_WIDTH = 136.dp
-private val METER_HEIGHT = 100.dp
+/** The meter keeps about 40 px of the 1024 from the end edge; as large as the line's room allows. */
+private val METER_EDGE = 16.dp
+private val METER_WIDTH = 172.dp
+private val METER_HEIGHT = 126.dp
 
 /** The meter's size on a phone held upright, which the graphic shows smaller. */
 private val LENS_WIDTH = 330.dp

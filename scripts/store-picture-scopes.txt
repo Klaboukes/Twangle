@@ -33,3 +33,4 @@
 #828 none     the Light arc's rays, glow and marks only: no store picture shows the Light arc (they show Classic)
 #829 none     the opening screen's animated icon only; no store picture shows the opening screen
 #830 none     the opening's and the About icon's motion only; both end in the same pose, and no store picture shows the opening screen
+#20 none     the feature graphic only (bigger name, line and meter); no screenshot shows it
