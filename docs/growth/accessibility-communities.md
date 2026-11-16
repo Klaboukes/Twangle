@@ -81,6 +81,12 @@ goes into [IDEAS.md](../../IDEAS.md).
   > with TalkBack on real phones.
 - **Their groups:** fine to join and answer when someone asks about tuners; don't post an advert
   there unless the group's rules allow it.
+- **Submitted 2026-11-16** by the owner through *Suggest an app*: category *Music and Audio apps*,
+  Twangle 2.2.0, the description and accessibility comments from the facts above (with the known
+  chord-root spot and the two questions), tested with TalkBack on the owner's phones. The watch app
+  was left out (still in Google's review). Their editors review by hand; what they or their readers
+  answer goes to Claude. Once the watch app is on Play, a line on its vibration guide is worth
+  sending them.
 
 ## Blind Android Users: week 4
 - **What it is:** a long-running podcast for blind and low-vision Android users, with a mailing list

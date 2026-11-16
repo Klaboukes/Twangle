@@ -57,7 +57,7 @@ Best first means: most clearly allowed, then the biggest fit for the effort.
 
 | Week | Where | Why here |
 |---|---|---|
-| 1 | Accessible Android, the app directory ([accessibility notes](accessibility-communities.md)) | Developers may submit their own app; a tuner that speaks is rare |
+| 1 | Accessible Android, the app directory ([accessibility notes](accessibility-communities.md)); submitted 2026-11-16 | Developers may submit their own app; a tuner that speaks is rare |
 | 2 | r/droidappshowcase (where r/androidapps sends developers) | Made for developers' posts |
 | 3 | r/WearOS, once Google has approved the watch app | Free apps may be posted, with a template; a tuner that runs on the watch alone fits well |
 | 4 | Blind Android Users: mailing list, and the podcast's contact form ([accessibility notes](accessibility-communities.md)) | Invites developers of accessible apps |
