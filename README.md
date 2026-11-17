@@ -62,7 +62,7 @@ From the tools button above the strings, one at a time:
 - **Note names:** C, C♯, D (or with flats), German style with H for B, or Do Re Mi. By default they follow what is usual in your language.
 - **36 languages:** English, Dutch, German, French, Spanish, Italian, Portuguese (Brazil), Chinese (Simplified), Chinese (Traditional), Japanese, Korean, Hindi, Bengali, Indonesian, Vietnamese, Thai, Russian, Ukrainian, Turkish, Polish, Swedish, Norwegian, Danish, Finnish, Tamil, Telugu, Marathi, Swahili, Amharic, Romanian, Czech, Greek, Hungarian, Burmese, Khmer and Arabic (right to left). Pick one in the app or follow the phone.
 - **Focus mode** (off by default, the button above the tools button, or in Settings): turns the whole app on its side with one big meter, easy to read from a distance, also with auto-rotate off. The tuner goes full screen, with only the note small in a corner; a tap brings back the controls and the tabs.
-- Works with TalkBack and large text.
+- Works with TalkBack and large text; listed in the [Accessible Android](https://accessibleandroid.com/app/twangle-guitar-tuner/) directory of apps for blind and low-vision users.
 
 ### Widget and watch
 - **Home-screen widget:** shows your instrument and tuning, and opens the tuner with one tap.
