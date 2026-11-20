@@ -41,7 +41,7 @@ SESUAI SELERA ANDA
 • Mode fokus: tuner layar penuh saat ponsel diputar ke samping, mudah dibaca dari jauh
 
 LAINNYA
-• Aplikasi untuk jam tangan Wear OS: menyetem lewat mikrofon jam tangan itu sendiri, tanpa ponsel, dan geser ke kiri untuk metronom
+• Aplikasi untuk jam tangan Wear OS dengan kartu (tile) dan komplikasi tampilan jam: menyetem lewat mikrofon jam tangan itu sendiri, tanpa ponsel, dan geser ke kiri untuk metronom
 • Widget layar utama yang membuka tuner dengan sekali ketuk
 • Layar tetap menyala selama Anda menyetem
 

@@ -41,7 +41,7 @@ A MODO TUO
 • Modalità concentrazione: l'accordatore a schermo intero con il telefono in orizzontale, facile da leggere a distanza
 
 INOLTRE
-• Un'app per orologi Wear OS: accorda con il microfono dell'orologio stesso, senza telefono, e scorri a sinistra per il metronomo
+• Un'app per orologi Wear OS con riquadro e complicazione per il quadrante: accorda con il microfono dell'orologio stesso, senza telefono, e scorri a sinistra per il metronomo
 • Un widget per la schermata Home che apre l'accordatore con un tocco
 • Tiene lo schermo acceso mentre accordi
 

@@ -28,8 +28,8 @@ class WatchActivity : ComponentActivity() {
     private var request by mutableStateOf<WatchPage?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The opening screen (Theme.Twangle.Watch.Starting): the harmonics swinging into place, as on the phone.
-        installSplashScreen().setOnExitAnimationListener { opening -> opening.fadeOutOnceStill() }
+        // The opening screen (Theme.Twangle.Watch.Starting): the launcher icon, still, on black (Google's WO-V15).
+        installSplashScreen().setOnExitAnimationListener { opening -> opening.fadeOut() }
         super.onCreate(savedInstanceState)
         // Asks the watch to fetch the tile again: one it fetched before an update stays as it was (the Galaxy
         // Watch 5 kept the old mark after an install whose fetch timed out, 2026-11-05). Cheap.

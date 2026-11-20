@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The opening screen's icon (splash_icon.xml): 48 dp, as Google's Wear OS quality rule WO-V15 and its splash
+         screen guide ask for a round icon. -->
+    <dimen name="splash_screen_icon_size">48dp</dimen>
+</resources>

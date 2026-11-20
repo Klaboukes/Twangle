@@ -20,10 +20,11 @@ wear/src/main/res/drawable/ic_twangle_mark_colour.xml, the mark in its colours i
 core/designsystem/src/main/res/drawable/twangle_icon_plucked.xml and website/twangle-icon.svg, the icon beside the
 name (TwangleName.kt, the website's top bar), plucked as the opening screen's, website/twangle-hero.svg, the home
 page's large mark, plucked the same way but slower, and
-res/drawable/ic_opening_animated.xml in both, the opening screen's icon (Android 12 and up play it): the
-string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
+app/src/main/res/drawable/ic_opening_animated.xml, the phone's opening screen icon (Android 12 and up play it):
+the string is plucked, each harmonic swinging at its own speed (the thirds three times as fast as the whole) and
 settling into the icon's pose, every overlap in the icon's own colour all the while. Android 8 to 11 show it
-still: its resting state is the icon.
+still: its resting state is the icon. The watch's opening screen shows the launcher icon itself, still and
+48 dp (Google's Wear OS quality rule WO-V15; wear/src/main/res/drawable/splash_icon.xml), so it has none.
 
     python -I scripts/launcher-icon.py [--preview out.svg]
 """
@@ -228,9 +229,6 @@ OPENING_MS = 1000                            # the opening animation, all of it:
 # from half a turn, so they first swing under the string, about 8 units deep.
 PHASES = [(0.0, 0.5 * math.pi), (0.0, 2.5 * math.pi), (math.pi, 4.5 * math.pi)]
 SWING_FRAMES = 40
-# The watch's opening screen slides in from the side (about half a second on the Galaxy Watch 5): the watch
-# holds the string at rest that long first, so the whole swing is seen (owner, 2026-11-05: "much faster").
-WATCH_HOLD_MS = 500
 # The phone's opening screen zooms and fades in with the app's window (about 0.2 s on the Xiaomi 12X, 2026-11-11):
 # the phone holds the string at rest a little longer than that, so the pluck isn't half over when it shows.
 PHONE_HOLD_MS = 300
@@ -511,12 +509,12 @@ def main():
         icon_beside_name(), encoding="utf-8", newline="\n")
     (ROOT / "website/twangle-icon.svg").write_text(website_icon(), encoding="utf-8", newline="\n")
     (ROOT / "website/twangle-hero.svg").write_text(website_hero(), encoding="utf-8", newline="\n")
-    for module, theme, hold in (("app", "Theme.Twangle.Starting", PHONE_HOLD_MS),("wear", "Theme.Twangle.Watch.Starting", WATCH_HOLD_MS)):
-        (ROOT / module / "src/main/res/drawable/ic_opening_animated.xml").write_text(opening(hold), encoding="utf-8", newline="\n")
-        (ROOT / module / "src/main/res/values/opening_animation.xml").write_text(
-            '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
-            f'<resources>\n    <!-- How long the opening screen\'s icon animation lasts ({theme}). -->\n'
-            f'    <integer name="opening_animation_ms">{hold + OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
+    # The phone's only: the watch's opening screen shows the launcher icon still (Google's WO-V15).
+    (ROOT / "app/src/main/res/drawable/ic_opening_animated.xml").write_text(opening(PHONE_HOLD_MS), encoding="utf-8", newline="\n")
+    (ROOT / "app/src/main/res/values/opening_animation.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n<!-- Written by scripts/launcher-icon.py with ic_opening_animated.xml. -->\n'
+        '<resources>\n    <!-- How long the opening screen\'s icon animation lasts (Theme.Twangle.Starting). -->\n'
+        f'    <integer name="opening_animation_ms">{PHONE_HOLD_MS + OPENING_MS}</integer>\n</resources>\n', encoding="utf-8", newline="\n")
     print(f"{len(painted)} shapes, {sum(d.count('L') + 1 for _, d in painted)} points")
 
     if "--preview" in sys.argv:

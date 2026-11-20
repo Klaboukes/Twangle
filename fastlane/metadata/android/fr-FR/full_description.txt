@@ -41,7 +41,7 @@ POUR TOUT LE MONDE
 • Mode concentration : l'accordeur en plein écran sur le téléphone à l'horizontale
 
 AUSSI
-• Une appli pour montres Wear OS : accordez avec le micro de la montre, sans téléphone, et balayez vers la gauche pour le métronome
+• Une appli pour montres Wear OS, avec carte et complication pour le cadran : accordez avec le micro de la montre, sans téléphone, et balayez vers la gauche pour le métronome
 • Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une touche
 • Garde l'écran allumé pendant que vous accordez
 

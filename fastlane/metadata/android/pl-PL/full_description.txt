@@ -7,7 +7,7 @@ NASTRÓJ KAŻDY INSTRUMENT
 • Stroje gitarowe: standardowy, Drop D, pół tonu niżej, cały ton niżej, DADGAD, Open G, Open D, Open E i Open C
 • Własne stroje dla każdego instrumentu
 • Stroik chromatyczny do każdego innego instrumentu lub głosu
-• Przytrzymaj strunę na ekranie, by usłyszeć jej dźwięk i stroić ze słuchu
+• Przytrzymaj strunę, by usłyszeć jej dźwięk i stroić ze słuchu
 • Dźwięk wzorcowy A4 od 415 do 466 Hz, na przykład 442 Hz do gry z orkiestrą
 
 NARZĘDZIA, KTÓRE SŁUCHAJĄ
@@ -38,10 +38,10 @@ DLA KAŻDEGO
 DOPASUJ DO SIEBIE
 • Jasny, ciemny lub jak w telefonie, z kolorami tapety na Androidzie 12 i nowszym
 • Trzy wskaźniki do wyboru: klasyczna wskazówka, łuk świetlny albo stroboskop
-• Tryb skupienia: stroik na całym ekranie telefonu obróconego poziomo, łatwy do odczytania z daleka
+• Tryb skupienia: stroik na całym ekranie telefonu obróconego poziomo, czytelny z daleka
 
 PONADTO
-• Aplikacja na zegarki z Wear OS: strój mikrofonem samego zegarka, bez telefonu, i przesuń w lewo do metronomu
+• Aplikacja na zegarki z Wear OS z kafelkiem i komplikacją tarczy: strój mikrofonem zegarka, bez telefonu, i przesuń w lewo do metronomu
 • Widżet na ekran główny, który otwiera stroik jednym dotknięciem
 • Nie wygasza ekranu, gdy stroisz
 

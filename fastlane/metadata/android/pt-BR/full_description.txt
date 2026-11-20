@@ -41,7 +41,7 @@ DO SEU JEITO
 • Modo foco: o afinador em tela cheia com o celular na horizontal, fácil de ler de longe
 
 E MAIS
-• Um app para relógios Wear OS: afine com o microfone do próprio relógio, sem celular, e o metrônomo está a um deslize para a esquerda
+• Um app para relógios Wear OS com bloco e complicação para o mostrador: afine com o microfone do próprio relógio, sem celular, e o metrônomo está a um deslize para a esquerda
 • Um widget para a tela inicial que abre o afinador com um toque
 • Mantém a tela ligada enquanto você afina
 

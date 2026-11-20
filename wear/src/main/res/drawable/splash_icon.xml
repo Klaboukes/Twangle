@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The opening screen's icon (Theme.Twangle.Watch.Starting): the launcher icon itself, still, 48 dp across in the
+     middle of the watch's black. Google's Wear OS quality rule WO-V15 asks for exactly that ("a 48x48dp app icon
+     on a black background ... must match the app launcher icon"). Until 2026-11-20 the watch played the phone's plucked
+     opening (ic_opening_animated in :app), which begins as a flat string, and Google turned the watch app down for
+     it ("Missing app icon in splash screen"). -->
+
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="@dimen/splash_screen_icon_size"
+        android:height="@dimen/splash_screen_icon_size"
+        android:drawable="@mipmap/ic_launcher"
+        android:gravity="center" />
+</layer-list>

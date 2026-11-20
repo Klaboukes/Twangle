@@ -7,7 +7,7 @@ ELK INSTRUMENT STEMMEN
 • Gitaarstemmingen: Standaard, Drop D, halve toon lager, hele toon lager, DADGAD, Open G, Open D, Open E en Open C
 • Maak je eigen stemmingen voor elk instrument
 • Chromatische stemmer voor elk ander instrument of je stem
-• Houd een snaar op het scherm vast om de toon te horen en op het gehoor te stemmen
+• Houd een snaar vast om de toon te horen en op het gehoor te stemmen
 • Stel de stemtoon A4 in van 415 tot 466 Hz, bijvoorbeeld 442 Hz om met een orkest te spelen
 
 FUNCTIES DIE MEELUISTEREN
@@ -41,7 +41,7 @@ HELEMAAL VAN JOU
 • Focusmodus: de stemmer schermvullend op een telefoon op zijn kant, goed te lezen van een afstand
 
 VERDER
-• Een app voor Wear OS-horloges: stem met de microfoon van het horloge zelf, zonder telefoon, en veeg naar links voor de metronoom
+• Een app voor Wear OS-horloges met een tegel en een complicatie voor de wijzerplaat: stem met de microfoon van het horloge zelf, zonder telefoon, en veeg naar links voor de metronoom
 • Een widget op je startscherm die de stemmer met één tik opent
 • Houdt het scherm aan terwijl je stemt
 
