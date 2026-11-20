@@ -86,9 +86,9 @@
 #       The reviews with text of the last week (all the API gives), every language, with stars, date,
 #       version and phone, the original text and a translation into <language> (en by default).
 #   scripts/release.sh installs
-#       Installs from Play's monthly statistics reports (a day or two behind): the newest day's new
-#       installs and uninstalls, the last 7 days, and in all how many people installed it and how many
-#       devices have it now. The reports' bucket: $TWANGLE_PLAY_REPORTS_BUCKET (Play Console: Manage
+#       Installs from Play's monthly statistics reports (two or three days behind): the newest day's
+#       installs and uninstalls, the last 7 days, and how many devices have it (a day later still).
+#       The reports' bucket: $TWANGLE_PLAY_REPORTS_BUCKET (Play Console: Manage
 #       account, Play apps reports, Statistics, Copy Cloud Storage URI), else the two usual names from
 #       the account id. Needs the robot user's "View app information and download bulk reports".
 #

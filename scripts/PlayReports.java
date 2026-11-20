@@ -641,16 +641,27 @@ public class PlayReports {
         }
         rows.sort(java.util.Comparator.comparing(r -> r[0]));
         String[] newest = rows.get(rows.size() - 1);
-        int dailyUser = column(header, "Daily User Installs"), uninstalls = column(header, "Daily User Uninstalls");
-        int total = column(header, "Total User Installs"), active = column(header, "Active Device Installs");
+        // Which columns: checked against the Play Console on 2026-11-20. "Install events" and "Uninstall events"
+        // are Google's current daily counts; the older "Daily User Installs" stayed 0 on days with installs, and
+        // "Total User Installs" is always 0 (retired by Google). "Active Device Installs" is filled, but a day
+        // later than the rest (0 on the newest day), so the newest day that has it is shown, with its date.
+        int installEvents = column(header, "Install events"), uninstallEvents = column(header, "Uninstall events");
+        int active = column(header, "Active Device Installs");
         long week = 0;
-        for (String[] r : rows.subList(Math.max(0, rows.size() - 7), rows.size())) week += number(r, dailyUser);
-        out.println("Newest day in the reports: " + newest[0] + " (Google's reports run a day or two behind).");
-        out.println("  that day: " + figure(newest, dailyUser) + " new installs, " + figure(newest, uninstalls) + " uninstalls");
-        out.println("  the last " + Math.min(7, rows.size()) + " days: " + week + " new installs");
-        out.println("  in all: " + figure(newest, total) + " people have installed it; " + figure(newest, active)
-            + " devices have it now");
-        out.println("(Installs by people: one person on two phones counts once; the devices count each phone.)");
+        for (String[] r : rows.subList(Math.max(0, rows.size() - 7), rows.size())) week += number(r, installEvents);
+        String[] withDevices = null;
+        for (int i = rows.size() - 1; i >= 0 && withDevices == null; i--) {
+            if (number(rows.get(i), active) > 0) withDevices = rows.get(i);
+        }
+        out.println("Newest day in the reports: " + newest[0] + " (Google's reports run two or three days behind).");
+        out.println("  that day: " + figure(newest, installEvents) + " installs, " + figure(newest, uninstallEvents)
+            + " uninstalls");
+        out.println("  the last " + Math.min(7, rows.size()) + " days: " + week + " installs");
+        out.println(withDevices == null ? "  devices that have it: not in the reports yet"
+            : "  devices that have it: " + figure(withDevices, active) + " on " + withDevices[0]
+                + " (this figure comes a day later than the others)");
+        out.println("(Installs count every install, a reinstall too. The Play Console's Statistics, \"Installed audience\","
+            + " is newer: it runs about a day behind, these reports about three.)");
         out.println("Read only: nothing was changed on Google Play.");
     }
 
