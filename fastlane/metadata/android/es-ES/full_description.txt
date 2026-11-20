@@ -41,7 +41,7 @@ A TU GUSTO
 • Modo concentración: el afinador a pantalla completa con el teléfono en horizontal, fácil de leer a distancia
 
 ADEMÁS
-• Una app para relojes Wear OS: afina con el micrófono del propio reloj, sin teléfono, y desliza a la izquierda para abrir el metrónomo
+• Una app para relojes Wear OS con tarjeta y complicación para la esfera: afina con el micrófono del propio reloj, sin teléfono, y desliza a la izquierda para abrir el metrónomo
 • Un widget para la pantalla de inicio que abre el afinador con un toque
 • Mantiene la pantalla encendida mientras afinas
 

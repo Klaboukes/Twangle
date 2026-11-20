@@ -41,7 +41,7 @@ GANZ NACH DEINEM GESCHMACK
 • Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy
 
 AUSSERDEM
-• Eine App für Uhren mit Wear OS: Stimm mit dem Mikrofon der Uhr selbst, ganz ohne Handy, und wisch nach links zum Metronom
+• Eine App für Uhren mit Wear OS, mit Kachel und Komplikation fürs Zifferblatt: Stimm mit dem Mikrofon der Uhr selbst, ganz ohne Handy, und wisch nach links zum Metronom
 • Ein Widget für den Startbildschirm, das das Stimmgerät mit einem Tippen öffnet
 • Lässt den Bildschirm an, während du stimmst
 
