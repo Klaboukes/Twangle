@@ -1,0 +1,3 @@
+Gitár-, basszus-, ukulele- és hegedűhangoló. Reklám, fiók és internet nélkül.
+
+- Órás alkalmazás: megnyitáskor a Twangle ikonja látszik.

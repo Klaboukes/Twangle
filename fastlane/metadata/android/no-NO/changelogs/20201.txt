@@ -1,0 +1,3 @@
+Stemmer for gitar, bass, ukulele og fiolin. Ingen reklame, ingen konto, offline.
+
+- Klokkeappen: Twangles ikon vises når appen åpnes.
