@@ -1,0 +1,3 @@
+Stemmer voor gitaar, bas, ukelele en viool. Geen reclame, geen account, offline.
+
+- Horloge-app: het pictogram van Twangle verschijnt terwijl de app opent.
