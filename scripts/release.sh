@@ -425,6 +425,14 @@ play_gradle() {
     ./gradlew --quiet "$@" "-Ptwangle.playServiceAccount=$key"
 }
 
+# The app id as Gradle Play Publisher names its tasks: io.github.x -> IoDotGithubDotX.
+app_id_task_name() {
+    local part out="" parts
+    IFS=. read -ra parts <<< "$APP_ID"
+    for part in "${parts[@]}"; do out+="${out:+Dot}${part^}"; done
+    echo "$out"
+}
+
 # Sends what a Gradle Play Publisher task ($2, its options after it) changes on Play. The plugin fills its
 # edit without committing it (--no-commit, leaving the edit's id in app/build/gpp/<app id>.txt) and
 # PlayReports.java commits it, refused while anything is in Google's review: the plugin's own commit
@@ -434,11 +442,18 @@ play_gradle() {
 # review, which Google then starts again with these changes in it (listing joined). Fails having sent nothing of it, except
 # when the commit's answer was lost (PlayReports.java exits 3): then it ends the script, since it may be on Play.
 # (The plugin always opens a fresh edit; it can't be handed one.)
+# The plugin's commit task is left out (-x): with --no-commit it only validates the edit, and Google refuses
+# that validation, as it does a plain commit, whenever it won't send changes for review by itself (after the
+# watch app's rejection, 2026-11-20: "Changes cannot be sent for review automatically"), so nothing could be
+# sent at all; PlayReports.java's commit is checked by Google anyway and falls back to "not sent for review".
+# --rerun: a task that ran before (one whose commit then failed) would otherwise count as up to date and
+# upload nothing, as happened that day.
 play_send() {
-    local how="$1" task="$2" gpp="app/build/gpp" edit code
+    local how="$1" task="$2" gpp="app/build/gpp" edit code commit_task
     shift 2
+    commit_task="commitEditFor$(app_id_task_name)"
     rm -rf "$gpp"
-    if play_gradle "$task" --no-commit "$@" && [[ -s "$gpp/$APP_ID.txt" ]]; then
+    if play_gradle "$task" --rerun --no-commit -x "$commit_task" "$@" && [[ -s "$gpp/$APP_ID.txt" ]]; then
         edit="$(tr -d '[:space:]' < "$gpp/$APP_ID.txt")"
         rm -rf "$gpp"
         play_read "edit-$how" "$edit" && return
