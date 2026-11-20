@@ -21,7 +21,7 @@ The owner takes turns between the two for the full check. UI tests give the same
 **Samsung Galaxy Watch 5**, the owner's watch, for real-watch checks of `:wear` (model SM-R900, Wear OS 5 / API 34, 396 px round at 320 dpi ≈ 198 dp, smaller than the emulator's 227 dp; set up 2026-10-30).
 
 - It reaches the PC only over Wi-Fi (Wear OS 3+ has no Bluetooth debugging): *Developer options → ADB debugging* and *Wireless debugging* on, Wi-Fi set to *On*, not *Auto*.
-- This PC is paired with it, and adb finds it by itself under the lasting name `adb-RFAW21MWV5T-3XuNKr._adb-tls-connect._tcp` (its port changes on every reconnect; `adb mdns services` shows it), so `export ANDROID_SERIAL=adb-RFAW21MWV5T-3XuNKr._adb-tls-connect._tcp` before `./gradlew :wear:installDebug`.
+- Both PCs are paired with it (the laptop since 2026-11-20), and adb finds it by itself under the lasting name `adb-RFAW21MWV5T-3XuNKr._adb-tls-connect._tcp` (its port changes on every reconnect; `adb mdns services` shows it), so `export ANDROID_SERIAL=adb-RFAW21MWV5T-3XuNKr._adb-tls-connect._tcp` before `./gradlew :wear:installDebug`.
 - The watch drops off when its screen sleeps for a while: ask the owner to wake it, then `adb shell input keyevent KEYCODE_WAKEUP` keeps it up.
 - Another PC pairs once: *Wireless debugging → Pair new device*, then `adb pair <ip>:<port> <code>` while that screen stays open (it expires when the watch dims).
 - The watch records through voice recognition, like the emulator.
