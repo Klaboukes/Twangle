@@ -1,0 +1,447 @@
+<!doctype html>
+<!--
+  Rough mock-up, 2026-11-24, Phase 94 (the guide's sounds, for the owner to pick): what the sound guide could
+  sound like beside the vibration guide (Phase 85, docs/design/tuning-guide-preview.html). A blind player's review
+  asked for a tone that glides up while the string is sharp, down while it is flat, and a steady note when in tune
+  (middle C, for a length the player sets). Every sound here is short and stops by itself; the longest demo ends
+  after 8 s. Nothing loops and no tone is steady.
+  Decisions: waiting on the owner's pick (the section "Your pick" at the end).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Tuning guide sounds</title>
+<style>
+  :root { --page: #F2F3F5; --card: #FFFFFF; --text: #1B1F24; --muted: #4F5864; --line: #D5DAE0;
+          --accent: #1E7FE0; --flat: #B4630A; --sharp: #7A3FC4; --ok: #1F8A4C; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--page); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 32px 0 6px; }
+  p.lead { margin: 0 0 12px; color: var(--muted); max-width: 70ch; }
+  a { color: var(--accent); }
+  .bar { position: sticky; top: 0; z-index: 1; background: var(--page); padding: 10px 0; margin: 0 0 4px;
+         border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  .read { font-variant-numeric: tabular-nums; font-size: 18px; min-width: 15ch; }
+  .read b { display: inline-block; min-width: 7ch; }
+  .dir { color: var(--muted); }
+  .dir.flat { color: var(--flat); } .dir.sharp { color: var(--sharp); } .dir.ok { color: var(--ok); }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--line);
+         vertical-align: -2px; margin-right: 6px; transition: background .25s; }
+  .dot.hit { background: var(--accent); transition: none; }
+  .dot.tune { background: var(--ok); transition: none; }
+  .now { color: var(--muted); font-size: 14px; }
+  .opts { display: grid; gap: 8px; margin-top: 8px; }
+  .opt { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; background: var(--card); border-radius: 12px; padding: 10px 12px; }
+  .opt .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opt .what { flex: 1 1 300px; }
+  .opt.aside { background: transparent; border: 1px dashed var(--line); }
+  button { font: inherit; padding: 6px 14px; border-radius: 16px; border: 1px solid #B8BEC7; background: #fff;
+           cursor: pointer; flex: none; min-width: 64px; }
+  button.play { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.playing { background: #0F5AA6; border-color: #0F5AA6; color: #fff; }
+  #stop { border-color: #B3261E; color: #B3261E; }
+  label { cursor: pointer; }
+  .rule { background: var(--card); border-radius: 12px; padding: 10px 12px; margin-top: 8px; max-width: 70ch; }
+  .controls { display: grid; gap: 6px; background: var(--card); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+  .controls div { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .controls span.k { color: var(--muted); min-width: 9ch; }
+  .heard { color: var(--muted); font-size: 14px; margin: 8px 0 0; min-height: 1.45em; }
+  fieldset { border: 1px solid var(--line); border-radius: 12px; background: var(--card); margin: 10px 0; padding: 8px 14px 10px; max-width: 70ch; }
+  legend { font-weight: 600; padding: 0 4px; }
+  fieldset label { display: block; margin: 4px 0; }
+  .rec { display: inline-block; font-size: 12px; font-weight: 600; color: var(--ok); border: 1px solid var(--ok);
+         border-radius: 8px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
+  .why { display: block; color: var(--muted); font-size: 14px; margin-left: 24px; }
+</style>
+</head>
+<body>
+<main>
+<h1>The tuning guide's sounds</h1>
+<p class="lead">The blind guitarist who reviewed Twangle asked for sounds: a tone that glides up while the string is
+sharp and down while it is flat, and a steady note once it is in tune. Here are a few of each to compare, then a
+string nearing pitch with the guide playing over it. Every sound is short and stops by itself.</p>
+
+<div class="bar">
+  <button id="stop">Stop</button>
+  <span class="read"><span class="dot" id="dot"></span><b id="cents">–</b> <span class="dir" id="dir"></span></span>
+  <span class="now" id="now"></span>
+</div>
+
+<h2>Why the sounds sit so high</h2>
+<p class="lead">A guitar's strings sound from the low E (82 Hz) to the high E's 24th fret (about 1,300 Hz), and the
+tuner listens for pitches up to 1,500 Hz. So the glides sit at 2,000–3,600 Hz: they never sound like a wrong note
+against the string, and the tuner doesn't take them for one. The phone's speaker still goes into its microphone, so
+the tuner sets each sound and a short tail aside (about 0.1 s here, measured on the phone when it is built), as it
+does the reference tones. While it does, it doesn't hear the string either; that is why every sound is short.</p>
+
+<div class="rule"><b>The pace, the vibration guide's:</b> one sound every 700 ms when the string is 30 cents off or
+more, easing in a straight line to one every 300 ms at 5 cents (start to start). Within 5 cents it is in tune: the
+in-tune note once, then quiet while the string holds; the guide starts again once it drifts more than 7 cents off.
+Sharp: the glide goes up. Flat: it goes down.</div>
+
+<h2>Glides</h2>
+<p class="lead">Each pair plays one glide up (too high, loosen) and one down (too low, tighten). <i>Speeding up</i>
+plays 3 s of a string coming from 30 cents sharp to 5, at the pace above. "Near pitch" is how much of the time the
+tuner still hears the string at the quickest pace (300 ms apart).</p>
+<div class="opts">
+  <div class="opt"><div class="btns">
+      <button class="play" data-one="A" data-up="1">Up</button>
+      <button class="play" data-one="A" data-up="0">Down</button>
+      <button data-ramp="A">Speeding up</button></div>
+    <span class="what"><b>A · Short glide.</b> 0.1 s, 2,000 ↔ 2,500 Hz (a major third). Clearly a glide, still short.
+      Near pitch the tuner hears the string a third of the time.</span></div>
+  <div class="opt"><div class="btns">
+      <button class="play" data-one="B" data-up="1">Up</button>
+      <button class="play" data-one="B" data-up="0">Down</button>
+      <button data-ramp="B">Speeding up</button></div>
+    <span class="what"><b>B · Longer glide.</b> 0.16 s, 1,900 ↔ 2,850 Hz (a fifth). Sings more, but near pitch the
+      tuner hears the string only an eighth of the time.</span></div>
+  <div class="opt"><div class="btns">
+      <button class="play" data-one="C" data-up="1">Up</button>
+      <button class="play" data-one="C" data-up="0">Down</button>
+      <button data-ramp="C">Speeding up</button></div>
+    <span class="what"><b>C · Chirp.</b> 0.06 s, 2,400 ↔ 3,600 Hz (a fifth). The quickest; up and down are harder to
+      tell apart. Near pitch the tuner hears the string half the time.</span></div>
+  <div class="opt aside"><div class="btns">
+      <button data-one="D" data-up="1">Up</button>
+      <button data-one="D" data-up="0">Down</button></div>
+    <span class="what"><b>For comparison only · Inside the strings.</b> A's glide at 440 ↔ 550 Hz, where the strings
+      ring: it sounds like a note of its own, and the tuner would read it.</span></div>
+</div>
+
+<h2>The in-tune note</h2>
+<p class="lead">Played once when the string becomes in tune. The reviewer suggested middle C. It sits on the B
+string's first fret, so it clashes with whatever string rings, and a phone's small speaker plays it thinly. High C
+(three octaves up) is the same note, clear of every string and above what the tuner listens for.</p>
+<div class="opts">
+  <div class="opt"><div class="btns">
+      <button class="play" data-note="mid" data-len="0.3">Short</button>
+      <button class="play" data-note="mid" data-len="1">1 s</button>
+      <button class="play" data-note="mid" data-len="2">2 s</button></div>
+    <span class="what"><b>Middle C</b> (262 Hz), the reviewer's suggestion.</span></div>
+  <div class="opt"><div class="btns">
+      <button class="play" data-note="high" data-len="0.3">Short</button>
+      <button class="play" data-note="high" data-len="1">1 s</button>
+      <button class="play" data-note="high" data-len="2">2 s</button></div>
+    <span class="what"><b>High C</b> (2,093 Hz), clear of the guitar. Short is 0.3 s.</span></div>
+</div>
+
+<h2>A string nearing pitch</h2>
+<p class="lead">One string drifts into tune while the guide plays over it, with the picks below. It ends by itself
+after 8 s.</p>
+<div class="controls">
+  <div><span class="k">The string</span>
+    <label><input type="radio" name="scn" value="flat" checked> From 40 cents flat</label>
+    <label><input type="radio" name="scn" value="sharp"> From 35 cents sharp, overshoots</label>
+    <label><input type="checkbox" id="withString" checked> It rings under the guide</label></div>
+  <div><span class="k">Glide</span>
+    <label><input type="radio" name="gl" value="A" checked> A · short</label>
+    <label><input type="radio" name="gl" value="B"> B · longer</label>
+    <label><input type="radio" name="gl" value="C"> C · chirp</label></div>
+  <div><span class="k">In tune</span>
+    <label><input type="radio" name="nt" value="high" checked> High C</label>
+    <label><input type="radio" name="nt" value="mid"> Middle C</label></div>
+  <div><span class="k">Its length</span>
+    <label><input type="radio" name="ln" value="0.3"> Short</label>
+    <label><input type="radio" name="ln" value="1" checked> 1 s</label>
+    <label><input type="radio" name="ln" value="2"> 2 s</label></div>
+  <div><span class="k">Pace</span>
+    <label><input type="radio" name="pc" value="vib" checked> The vibration guide's (700 → 300 ms)</label>
+    <label><input type="radio" name="pc" value="slow"> Slower (1,000 → 500 ms)</label></div>
+  <div><span class="k">Also</span>
+    <label><input type="checkbox" id="withVib"> The vibration guide's taps (heard as a soft thump)</label></div>
+</div>
+<div class="opts">
+  <div class="opt"><div class="btns"><button class="play" data-sim="1">Play</button></div>
+    <span class="what"><b>The string with the guide.</b></span></div>
+  <div class="opt"><div class="btns"><button data-sim="0">Play</button></div>
+    <span class="what"><b>The string alone,</b> for comparison.</span></div>
+</div>
+<p class="heard" id="heard"></p>
+
+<h2>Your pick</h2>
+<p class="lead">These boxes do nothing; they only help to think it through. Tell Claude what you picked.</p>
+<fieldset><legend>Which glide</legend>
+  <label><input type="radio" name="q1" checked> A · Short glide (0.1 s, 2,000 ↔ 2,500 Hz) <span class="rec">Recommended</span>
+    <span class="why">Up and down are easy to tell apart, and the tuner still hears the string between them.</span></label>
+  <label><input type="radio" name="q1"> B · Longer glide (0.16 s)</label>
+  <label><input type="radio" name="q1"> C · Chirp (0.06 s)</label>
+</fieldset>
+<fieldset><legend>Which in-tune note</legend>
+  <label><input type="radio" name="q2" checked> High C (2,093 Hz) <span class="rec">Recommended</span>
+    <span class="why">The reviewer's C, but never a clash with the string that rings or a note the tuner reads.</span></label>
+  <label><input type="radio" name="q2"> Middle C (262 Hz)</label>
+</fieldset>
+<fieldset><legend>How long the in-tune note lasts</legend>
+  <label><input type="radio" name="q3"> Always short (0.3 s)</label>
+  <label><input type="radio" name="q3"> Always 1 s</label>
+  <label><input type="radio" name="q3"> Always 2 s</label>
+  <label><input type="radio" name="q3" checked> The player's choice of the three, 1 s to start <span class="rec">Recommended</span>
+    <span class="why">The reviewer asked to set it; with a good start most players never need to.</span></label>
+</fieldset>
+<fieldset><legend>Vibration, sound or both</legend>
+  <label><input type="radio" name="q4" checked> Two switches in <i>While tuning</i>, each on or off by itself, so both is possible <span class="rec">Recommended</span>
+    <span class="why">Vibration stays on by itself with TalkBack and adds no noise; sound only for who turns it on.</span></label>
+  <label><input type="radio" name="q4"> One row: vibration, sound or both</label>
+  <label><input type="radio" name="q4"> Sound replaces vibration</label>
+</fieldset>
+<fieldset><legend>The sounds' pace</legend>
+  <label><input type="radio" name="q5" checked> The vibration guide's (700 → 300 ms) <span class="rec">Recommended</span>
+    <span class="why">One rule for both guides; slower only if the phone check shows the tuner lagging behind the string.</span></label>
+  <label><input type="radio" name="q5"> Slower (1,000 → 500 ms), so the tuner hears more of the string</label>
+</fieldset>
+</main>
+
+<script>
+// ---- The sounds' settings. ----
+const GLIDES = {          // [low Hz, high Hz, length s]
+  A: [2000, 2500, 0.10],
+  B: [1900, 2850, 0.16],
+  C: [2400, 3600, 0.06],
+  D: [440, 550, 0.10],
+};
+const NOTES = { mid: 261.63, high: 2093.0 };
+const TAIL = 0.1;         // what the tuner sets aside after each sound, an estimate
+const PACES = { vib: [0.7, 0.3], slow: [1.0, 0.5] };   // [30 cents or more, at 5 cents], start to start
+
+// ---- The scenarios: what the tuner reads, cents over time (straight lines between the points). ----
+const SCENARIOS = {
+  flat:  { keys: [[0,-40],[1.2,-38],[2.6,-22],[3.8,-10],[4.8,-4],[5.4,-1],[8,0]], plucks: [0, 2.7, 5.4] },
+  sharp: { keys: [[0,35],[1.0,33],[2.2,14],[3.0,12],[3.2,-7],[4.4,-7],[5.2,-2],[5.8,0],[8,0]], plucks: [0, 2.7, 5.4] },
+};
+const DURATION = 8;       // seconds; the demo ends by itself
+const STRING_HZ = 196;    // the G string
+
+function centsAt(s, t) {
+  const k = s.keys;
+  if (t <= k[0][0]) return k[0][1];
+  for (let i = 1; i < k.length; i++) {
+    if (t <= k[i][0]) {
+      const [t0, c0] = k[i-1], [t1, c1] = k[i];
+      return c0 + (c1 - c0) * (t - t0) / (t1 - t0);
+    }
+  }
+  return k[k.length-1][1];
+}
+
+// ---- The rule (VibrationGuide's): the time to the next sound, from cents. ----
+const IN_TUNE = 5, LEAVE = 7, HOLD = 0.15, FAR = 30, SWAP = 0.3, AFTER_NOTE = 0.15;
+function interval(c, pace) {
+  const [slow, quick] = PACES[pace];
+  const a = Math.min(FAR, Math.max(IN_TUNE, Math.abs(c)));
+  return quick + (slow - quick) * (a - IN_TUNE) / (FAR - IN_TUNE);
+}
+
+// Walks the scenario in 10 ms steps and lists every sound: {t, kind: "glide"|"tune", c}.
+function plan(s, pace, noteLen) {
+  const events = [];
+  let next = 0, last = null, lastDir = 0, inTune = false, since = null, quietUntil = 0;
+  for (let t = 0; t < DURATION - 0.3; t += 0.01) {
+    const c = centsAt(s, t);
+    if (inTune) {
+      if (Math.abs(c) > LEAVE) { inTune = false; since = null; lastDir = 0; next = Math.max(t, quietUntil); }
+      continue;
+    }
+    if (Math.abs(c) <= IN_TUNE) {
+      if (since === null) since = t;
+      if (t - since >= HOLD) {
+        inTune = true; events.push({ t, kind: "tune", c });
+        quietUntil = t + noteLen + AFTER_NOTE;
+        continue;
+      }
+      continue;            // the direction is unsettled inside the window: wait
+    }
+    since = null;
+    const dir = c < 0 ? -1 : 1;
+    if (dir !== lastDir) { next = last === null ? t : Math.max(t, last + SWAP); lastDir = dir; }
+    if (t >= next && t >= quietUntil) {
+      events.push({ t, kind: "glide", c });
+      last = t; next = t + interval(c, pace);
+    }
+  }
+  return events;
+}
+
+// ---- Sound. Every node is kept and stopped; every envelope starts and ends at 0, so nothing clicks. ----
+let ctx = null, master = null, nodes = [], t0 = 0, playing = null, raf = 0, endTimer = 0, flashTimer = 0;
+
+function keep(n) { nodes.push(n); return n; }
+function osc(type, hz) { const o = keep(ctx.createOscillator()); o.type = type; o.frequency.value = hz; return o; }
+function gainTo(dest, v) { const g = ctx.createGain(); g.gain.value = v; g.connect(dest); return g; }
+
+// A glide: a sine sweeping from one end to the other, 8 ms in, 25 ms out.
+function glide(at, name, up) {
+  const [lo, hi, len] = GLIDES[name];
+  const g = gainTo(master, 0), peak = 0.22;
+  g.gain.setValueAtTime(0, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.008);
+  g.gain.setValueAtTime(peak, at + len - 0.025);
+  g.gain.linearRampToValueAtTime(0, at + len);
+  const o = osc("sine", up ? lo : hi);
+  o.frequency.setValueAtTime(up ? lo : hi, at);
+  o.frequency.exponentialRampToValueAtTime(up ? hi : lo, at + len);
+  o.connect(g); o.start(at); o.stop(at + len + 0.01);
+}
+// The in-tune note: a soft attack, a slow ease down, a gentle end. Middle C gets two quiet overtones so a small
+// speaker can play it; high C is almost a pure sine.
+function note(at, which, len) {
+  const hz = NOTES[which], peak = which === "mid" ? 0.26 : 0.16;
+  const rel = Math.min(0.15, len * 0.4);
+  const g = gainTo(master, 0);
+  g.gain.setValueAtTime(0, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.015);
+  g.gain.linearRampToValueAtTime(peak * 0.7, at + len - rel);
+  g.gain.linearRampToValueAtTime(0, at + len);
+  const parts = which === "mid" ? [[1, 1], [2, 0.35], [3, 0.15]] : [[1, 1], [2, 0.06]];
+  parts.forEach(([h, v]) => {
+    const o = osc("sine", hz * h);
+    o.connect(gainTo(g, v)); o.start(at); o.stop(at + len + 0.01);
+  });
+}
+// A vibration heard: a low, slightly buzzy thump, as in tuning-guide-preview.html.
+function thump(at, len) {
+  const g = gainTo(master, 0), peak = 0.4;
+  g.gain.setValueAtTime(0, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.005);
+  g.gain.setValueAtTime(peak, at + Math.max(0.006, len - 0.02));
+  g.gain.linearRampToValueAtTime(0, at + len);
+  const o = osc("sine", 210);
+  o.frequency.setValueAtTime(210, at); o.frequency.exponentialRampToValueAtTime(120, at + Math.min(len, 0.08));
+  o.connect(g); o.start(at); o.stop(at + len + 0.01);
+  const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 520; f.connect(g);
+  const b = osc("square", 120);
+  b.connect(gainTo(f, 0.18)); b.start(at); b.stop(at + len + 0.01);
+}
+// The vibration guide's group for a reading: one 25 ms tap to tighten, two (90 ms apart) to loosen; a long buzz in tune.
+// Played a little longer than the phone's 25 ms so a laptop speaker can sound it.
+function taps(at, c) {
+  thump(at, 0.05);
+  if (c > 0) thump(at + 0.09, 0.05);
+}
+// The string: a few harmonics that fade, plucked again now and then, its pitch following the reading.
+function string(s, start) {
+  s.plucks.forEach((p, i) => {
+    const end = Math.min(DURATION, i + 1 < s.plucks.length ? s.plucks[i+1] + 0.15 : DURATION);
+    for (let h = 1; h <= 6; h++) {
+      const g = gainTo(master, 0);
+      const at = start + p, peak = 0.11 / h;
+      g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(peak, at + 0.004);
+      const fade = 1.1 / h, cut = end - 0.08;
+      g.gain.setTargetAtTime(0, at + 0.004, fade);
+      g.gain.setValueAtTime(peak * Math.exp(-(cut - p - 0.004) / fade), start + cut);
+      g.gain.linearRampToValueAtTime(0, start + end);
+      const o = osc("sine", h * STRING_HZ * Math.pow(2, centsAt(s, p) / 1200));
+      o.frequency.setValueAtTime(h * STRING_HZ * Math.pow(2, centsAt(s, p) / 1200), at);
+      for (let t = p + 0.05; t <= end; t += 0.05)
+        o.frequency.linearRampToValueAtTime(h * STRING_HZ * Math.pow(2, centsAt(s, t) / 1200), start + t);
+      o.connect(g); o.start(at); o.stop(start + end + 0.01);
+    }
+  });
+}
+
+function picked(name) { return document.querySelector('input[name="' + name + '"]:checked').value; }
+
+// Starts a demo: stops whatever plays, schedules the sounds, ends by itself after `length` seconds.
+function begin(button, name, length, sim) {
+  stop();
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === "suspended") ctx.resume();
+  master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+  t0 = ctx.currentTime + 0.08;
+  playing = { button, sim, next: 0, shown: [] };
+  button.classList.add("playing");
+  document.getElementById("now").textContent = "Playing: " + name;
+  endTimer = setTimeout(stop, (length + 0.3) * 1000);
+  if (sim) raf = requestAnimationFrame(draw);
+}
+
+function playOne(button) {
+  const name = button.dataset.one, up = button.dataset.up === "1";
+  begin(button, "glide " + name + (up ? " up" : " down"), 0.4);
+  glide(t0, name, up);
+}
+function playNote(button) {
+  const which = button.dataset.note, len = parseFloat(button.dataset.len);
+  begin(button, (which === "mid" ? "middle C, " : "high C, ") + button.textContent.toLowerCase(), len + 0.2);
+  note(t0, which, len);
+}
+// 3 s of a string coming from 30 cents sharp to 5, glides at the vibration guide's pace.
+function playRamp(button) {
+  const name = button.dataset.ramp, length = 3;
+  begin(button, "glide " + name + ", speeding up", length + 0.2);
+  for (let t = 0; t < length; ) {
+    const c = 30 - 25 * t / length;
+    glide(t0 + t, name, true);
+    t += interval(c, "vib");
+  }
+}
+function playSim(button) {
+  const s = SCENARIOS[picked("scn")], withGuide = button.dataset.sim === "1";
+  const gl = picked("gl"), nt = picked("nt"), len = parseFloat(picked("ln")), pace = picked("pc");
+  begin(button, withGuide ? "the string with the guide" : "the string alone", DURATION, s);
+  if (document.getElementById("withString").checked || !withGuide) string(s, t0);
+  if (!withGuide) { document.getElementById("heard").textContent = ""; return; }
+  const events = plan(s, pace, len), vib = document.getElementById("withVib").checked;
+  events.forEach(e => {
+    const at = t0 + e.t;
+    if (e.kind === "tune") { note(at, nt, len); if (vib) thump(at, 0.375); }
+    else { glide(at, gl, e.c > 0); if (vib) taps(at, e.c); }
+    playing.shown.push({ t: e.t, tune: e.kind === "tune" });
+  });
+  // How much of the time before "in tune" the tuner still heard the string between the glides.
+  const tuneAt = (events.find(e => e.kind === "tune") || { t: DURATION }).t;
+  let heard = 0, all = 0;
+  for (let t = 0; t < tuneAt; t += 0.01) {
+    all++;
+    if (!events.some(e => e.kind === "glide" && t >= e.t && t < e.t + GLIDES[gl][2] + TAIL)) heard++;
+  }
+  document.getElementById("heard").textContent = "Before it was in tune (" + tuneAt.toFixed(1) +
+    " s), the tuner heard the string " + Math.round(100 * heard / all) + " % of the time between the glides.";
+}
+
+function draw() {
+  if (!playing || !playing.sim) return;
+  const t = Math.min(DURATION, ctx.currentTime - t0);
+  const c = centsAt(playing.sim, Math.max(0, t));
+  const a = Math.abs(c);
+  document.getElementById("cents").textContent = (c > 0.05 ? "+" : c < -0.05 ? "−" : "") + a.toFixed(0) + " cents";
+  const dir = document.getElementById("dir");
+  if (a <= IN_TUNE) { dir.textContent = "in tune"; dir.className = "dir ok"; }
+  else if (c < 0) { dir.textContent = "too low · tighten"; dir.className = "dir flat"; }
+  else { dir.textContent = "too high · loosen"; dir.className = "dir sharp"; }
+  const shown = playing.shown;
+  while (playing.next < shown.length && shown[playing.next].t <= t) {
+    const dot = document.getElementById("dot");
+    dot.className = "dot " + (shown[playing.next].tune ? "tune" : "hit");
+    clearTimeout(flashTimer); flashTimer = setTimeout(() => dot.className = "dot", 70);
+    playing.next++;
+  }
+  raf = requestAnimationFrame(draw);
+}
+
+function stop() {
+  clearTimeout(endTimer); cancelAnimationFrame(raf); clearTimeout(flashTimer);
+  nodes.forEach(n => { try { n.stop(); } catch (e) {} });
+  nodes = [];
+  if (master) { master.disconnect(); master = null; }
+  if (playing) playing.button.classList.remove("playing");
+  playing = null;
+  document.getElementById("now").textContent = "";
+  document.getElementById("dot").className = "dot";
+  document.getElementById("cents").textContent = "–";
+  document.getElementById("dir").textContent = "";
+}
+
+document.querySelectorAll("button[data-one]").forEach(b => b.addEventListener("click", () => playOne(b)));
+document.querySelectorAll("button[data-note]").forEach(b => b.addEventListener("click", () => playNote(b)));
+document.querySelectorAll("button[data-ramp]").forEach(b => b.addEventListener("click", () => playRamp(b)));
+document.querySelectorAll("button[data-sim]").forEach(b => b.addEventListener("click", () => playSim(b)));
+document.getElementById("stop").addEventListener("click", stop);
+</script>
+</body>
+</html>
