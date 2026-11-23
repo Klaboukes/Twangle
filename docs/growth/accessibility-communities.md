@@ -87,6 +87,16 @@ goes into [IDEAS.md](../../IDEAS.md).
   was left out (still in Google's review). Their editors review by hand; what they or their readers
   answer goes to Claude. Once the watch app is on Play, a line on its vibration guide is worth
   sending them.
+- **Reviewed** (shared by the owner 2026-11-23): a blind guitarist's review on the site, warm. What
+  works for them: the 12th-fret check (setting up their guitar's intonation without sighted help),
+  clear labels everywhere, "Locked" on the string button telling them where they are, the
+  metronome's meters and tap tempo, the accuracy. Their answer to question 1 is **sounds**: a tone
+  gliding up for sharp and down for flat, a steady note in tune for a length they set; failing
+  that, TalkBack saying tighten, loosen and in tune quicker. They felt the taps only with the phone
+  laid against the guitar. One wish more: the guitar on a 6.35 mm to USB-C cable with the phone's
+  sounds still on the phone. All three are in [IDEAS.md](../../IDEAS.md): *A sound guide*, *The
+  word first*, *A guitar on a cable*. Worth asking back: were the taps too weak with the phone on
+  the lap or in a pocket, and would the sounds come from the phone's speaker or earbuds.
 
 ## Blind Android Users: week 4
 - **What it is:** a long-running podcast for blind and low-vision Android users, with a mailing list
