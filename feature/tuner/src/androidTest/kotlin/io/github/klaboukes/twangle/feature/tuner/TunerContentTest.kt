@@ -1323,7 +1323,7 @@ class TunerContentTest {
         show(detected(-12.3f))
         val spoken = "E 2, $twelveCentsFlat, ${text(R.string.tuner_word_tighten)}"
         compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
-        compose.onNode(hasContentDescription(spoken) and hasAnyAncestor(hasTestTag(TunerTestTags.WORD))).assertExists()
+        compose.onNode(hasContentDescription(spoken) and hasTestTag(TunerTestTags.WORD)).assertExists()
         // Nothing else says the note's line: the word and the cents are hidden behind the spoken block.
         word.assert(hiddenFromTalkBack)
         wordCents.assert(hiddenFromTalkBack)

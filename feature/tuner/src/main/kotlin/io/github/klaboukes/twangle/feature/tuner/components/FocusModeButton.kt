@@ -1,20 +1,14 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.NameTooltip
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -38,7 +32,6 @@ internal enum class FocusAction {
  * top start corner (owner, 2026-10-19: a bare icon in a corner was hardly visible). No word, only the icon for its
  * [action]; TalkBack and the long-press tooltip say its name.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val label = stringResource(
@@ -48,12 +41,7 @@ internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier:
             FocusAction.HIDE_CONTROLS -> R.string.tuner_hide_controls
         },
     )
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(label) } },
-        state = rememberTooltipState(),
-        modifier = modifier,
-    ) {
+    NameTooltip(label, above = true, modifier = modifier) {
         StyleButton(
             onClick = onClick,
             label = label,

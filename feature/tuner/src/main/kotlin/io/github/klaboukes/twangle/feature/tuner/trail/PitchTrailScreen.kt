@@ -188,7 +188,6 @@ fun PitchTrailContent(
             quiet = stringResource(R.string.tuner_hint_play_note),
             motion = motion,
             tone = tone,
-            modifier = Modifier.testTag(TunerTestTags.WORD),
         )
     }
 }

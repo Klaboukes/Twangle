@@ -175,6 +175,8 @@ private fun ListenWords(
             .semantics(mergeDescendants = true) {
                 liveRegion = LiveRegionMode.Polite
                 if (spokenTempo != null) contentDescription = spokenTempo
+                // Empty, it is no stop for TalkBack: a stop with nothing to say is "Unlabeled" (Phase 94).
+                if (shown == LineText.Nothing) hideFromAccessibility()
             },
         contentAlignment = Alignment.Center,
     ) {

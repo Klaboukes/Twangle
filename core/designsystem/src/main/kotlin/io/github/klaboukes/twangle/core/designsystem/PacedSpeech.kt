@@ -48,10 +48,11 @@ fun rememberPacedSpeech(vararg keys: Any?): PacedSpeech = remember(*keys) { Pace
 
 /**
  * [text], passed on to TalkBack through [speech] (see [SpokenReadingThrottle] for [key]): what the
- * live region should say now.
+ * live region should say now. Until the first text has been passed on (the first frame) it is [text]
+ * itself, so the region never has an empty name that TalkBack would call "Unlabeled" (Phase 94).
  */
 @Composable
 fun pacedSpeech(text: String, key: Any?, speech: PacedSpeech = rememberPacedSpeech()): String {
     LaunchedEffect(speech, text, key) { speech.offer(text, key) }
-    return speech.spoken
+    return speech.spoken.ifEmpty { text }
 }
