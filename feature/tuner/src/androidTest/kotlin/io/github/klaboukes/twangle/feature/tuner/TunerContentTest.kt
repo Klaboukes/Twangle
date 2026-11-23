@@ -312,8 +312,8 @@ class TunerContentTest {
         val label = word.replaceFirstChar { it.titlecase(context.resources.configuration.locales[0]) }
         compose.onNodeWithText(label).assertIsDisplayed()
         compose.onNodeWithText(centsFlat(7)).assertDoesNotExist()
-        // TalkBack says it as before.
-        compose.onNode(hasContentDescription("E 2, $word")).assertExists()
+        // TalkBack says it first (Phase 94).
+        compose.onNode(hasContentDescription("$label, E 2")).assertExists()
     }
 
     @Test
@@ -1134,14 +1134,14 @@ class TunerContentTest {
     @Test
     fun dutchTalkBackSaysNoteNamesTheDutchWay() {
         show(detected(2f, inTune = true, noteName = "F♯"), locale = "nl")
-        compose.onNode(hasContentDescription("fis 2, ${dutch.getString(R.string.tuner_in_tune)}")).assertExists()
+        compose.onNode(hasContentDescription("Zuiver, fis 2")).assertExists()
     }
 
     @Test
     fun dutchTalkBackSaysFlatsAsEsAndCents() {
         show(detected(-12.3f, noteName = "E♭"), locale = "nl")
         val cents = dutch.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
-        compose.onNode(hasContentDescription("es 2, $cents, Strakker")).assertExists()
+        compose.onNode(hasContentDescription("Strakker, es 2, $cents")).assertExists()
     }
 
     @Test
@@ -1277,14 +1277,14 @@ class TunerContentTest {
         word.assertTextEquals(inTuneLabel)
         wordCents.assertTextEquals(context.resources.getQuantityString(R.plurals.tuner_cents_off, 3, 3))
         compose.onNodeWithText(centsFlat(3)).assertDoesNotExist()
-        compose.onNode(hasContentDescription("E 2, ${text(R.string.tuner_in_tune)}")).assertExists()
+        compose.onNode(hasContentDescription("${text(R.string.tuner_in_tune).replaceFirstChar { it.titlecase(context.resources.configuration.locales[0]) }}, E 2")).assertExists()
     }
 
     @Test
     fun inAnyNoteTheWordSaysTooLowOrTooHigh() {
         show(chromatic(-12.3f), TunerMode.CHROMATIC)
         word.assertTextEquals(text(R.string.tuner_word_too_low))
-        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat, ${text(R.string.tuner_word_too_low)}")).assertExists()
+        compose.onNode(hasContentDescription("${text(R.string.tuner_word_too_low)}, E 2, $twelveCentsFlat")).assertExists()
         shownState.value = chromatic(9f)
         compose.waitForIdle()
         word.assertTextEquals(text(R.string.tuner_word_too_high))
@@ -1451,7 +1451,7 @@ class TunerContentTest {
     fun talkBackHearsTheTipInsteadOfTheWord() {
         show(detected(-12.3f).copy(tip = ReceptionTip.TOO_SOFT))
         val tip = text(R.string.tuner_tip_too_soft)
-        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat, $tip")).assertExists()
+        compose.onNode(hasContentDescription("$tip, E 2, $twelveCentsFlat")).assertExists()
     }
 
     /** The whole screen's tint (Phase 71): toward the reading's tone while a note is heard, off in the quiet state. */
@@ -1641,14 +1641,14 @@ class TunerContentTest {
     @Test
     fun dutchTalkBackHearsTheReadingInDutch() {
         show(detected(2f, inTune = true, noteName = "F♯"), locale = "nl")
-        compose.onAllNodes(hasContentDescription("fis 2, ${dutch.getString(R.string.tuner_in_tune)}")).assertCountEquals(1)
+        compose.onAllNodes(hasContentDescription("Zuiver, fis 2")).assertCountEquals(1)
     }
 
     /** TalkBack skips the meter (the note says the reading in words, once). */
     @Test
     fun talkBackSkipsTheMeterAndHearsTheReadingInWords() {
         show(detected(-12.3f))
-        val spoken = "E 2, $twelveCentsFlat, ${context.getString(R.string.tuner_word_tighten)}"
+        val spoken = "${context.getString(R.string.tuner_word_tighten)}, E 2, $twelveCentsFlat"
         val node = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().fetchSemanticsNode()
         assertNull(node.config.getOrNull(SemanticsProperties.ContentDescription))
         assertNull(node.config.getOrNull(SemanticsProperties.Text))
@@ -1801,7 +1801,7 @@ class TunerContentTest {
     @Test
     fun talkBackDoesntHearTheChromaticNumbersTwice() {
         show(chromatic(-12.3f), TunerMode.CHROMATIC)
-        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat, $spokenTooLow")).assertExists()
+        compose.onNode(hasContentDescription("$spokenTooLow, E 2, $twelveCentsFlat")).assertExists()
         compose.onNodeWithText(twelveCentsFlat).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
     }
 
@@ -1852,7 +1852,7 @@ class TunerContentTest {
     fun talkBackHearsTuneDownForASharpNote() {
         show(detected(8f))
         val spoken = context.getString(R.string.tuner_word_loosen)
-        compose.onNode(hasContentDescription("E 2, ${centsSharp(8)}, $spoken")).assertExists()
+        compose.onNode(hasContentDescription("$spoken, E 2, ${centsSharp(8)}")).assertExists()
     }
 
     @Test
@@ -1865,7 +1865,7 @@ class TunerContentTest {
     @Test
     fun talkBackHearsTheWordInChromaticMode() {
         show(chromatic(-12.3f), TunerMode.CHROMATIC)
-        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat, $spokenTooLow")).assertExists()
+        compose.onNode(hasContentDescription("$spokenTooLow, E 2, $twelveCentsFlat")).assertExists()
         compose.onNodeWithText(spokenTooLow).assert(hiddenFromTalkBack)
         compose.onNodeWithText(twelveCentsFlat).assert(hiddenFromTalkBack)
     }
@@ -2343,7 +2343,7 @@ class TunerContentTest {
         show(detected(-12.3f), size = PHONE_FULL_SCREEN, focusMode = true, locale = "nl")
         compose.onNode(hasContentDescription("Bediening tonen")).assertExists()
         val cents = dutch.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
-        compose.onNode(hasContentDescription("e 2, $cents, Strakker")).assertExists()
+        compose.onNode(hasContentDescription("Strakker, e 2, $cents")).assertExists()
     }
 
     private companion object {

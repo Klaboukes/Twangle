@@ -220,7 +220,7 @@ class TunerStylesTest {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "${if (dark) "dark" else "light"}"
-            val spoken = "A 2, $twelveCentsFlat, ${context.getString(R.string.tuner_word_tighten)}"
+            val spoken = "${context.getString(R.string.tuner_word_tighten)}, A 2, $twelveCentsFlat"
             compose.onNode(hasContentDescription(spoken)).assertExists()
             val node = gauge.fetchSemanticsNode()
             assertNull("$case: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.ContentDescription))
