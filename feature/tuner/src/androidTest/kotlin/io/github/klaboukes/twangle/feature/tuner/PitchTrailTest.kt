@@ -165,8 +165,8 @@ class PitchTrailTest {
         shownState.value = LensLooksTest.detected(-12f)
         shownHistory.value = LensLooksTestHistory.of { -12f }
         show()
-        // Any note: "E 2, 12 cents flat, Too low".
-        val reading = "E 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}, ${context.getString(R.string.tuner_word_too_low)}"
+        // Any note: "Too low, E 2, 12 cents flat" (the word first, Phase 94), the trail's words last.
+        val reading = "${context.getString(R.string.tuner_word_too_low)}, E 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}"
         compose.waitUntil(WORDS_WAIT_MS) { compose.onAllNodes(hasContentDescription(reading)).fetchSemanticsNodes().size == 1 }
         shownHistory.value = LensLooksTestHistory.of { t -> if (t < 3f) -12f else -12f + (t - 3f) * 25f }
         val bending = "$reading, ${context.getString(R.string.tuner_trail_bending_up)}"

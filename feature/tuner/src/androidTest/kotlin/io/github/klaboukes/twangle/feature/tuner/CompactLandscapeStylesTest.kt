@@ -215,7 +215,7 @@ class CompactLandscapeStylesTest {
         shownDark.value = true
         compose.mainClock.advanceTimeBy(FADE_MS)
         // TalkBack hears the reading as one sentence, and the screen is a "Show controls" button.
-        val spoken = "A 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}, ${context.getString(R.string.tuner_word_tighten)}"
+        val spoken = "${context.getString(R.string.tuner_word_tighten)}, A 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}"
         compose.onNode(hasContentDescription(spoken)).assertExists()
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
             .performSemanticsAction(SemanticsActions.OnClick)

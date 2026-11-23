@@ -94,8 +94,8 @@ data class NoteReadout(
  * taken toward the ink as the word is.
  *
  * For TalkBack it is the tuner's one speaking item (the lens and the ruler are silent): a polite live region that
- * says "E 2, 12 cents flat, Tighten", "E 2, in tune", "A 3, 8 cents sharp, Too high" (the [tip] in the word's place,
- * then the trail's [motion]: "…, Tighten, wavering"), or [spokenQuiet] without a note, paced by [speech] so it
+ * says "Tighten, E 2, 12 cents flat", "In tune, E 2", "Too high, A 3, 8 cents sharp" (what to do first, Phase 94;
+ * the [tip] in the word's place, the trail's [motion] last: "Tighten, …, wavering"), or [spokenQuiet] without a note, paced by [speech] so it
  * doesn't talk over itself (pass the screen's one [PacedSpeech]): a reading once its note has settled, then again
  * only for in tune, Tighten ↔ Loosen or another note, never while only its cents move ([spokenReadingKey]). Each line keeps its height whatever it says, and
  * keeps to one line, set smaller where it doesn't fit, so nothing under it moves. [compact] sets both smaller.
@@ -461,7 +461,8 @@ internal val ReceptionTip.label: Int
 /**
  * The situation a spoken reading belongs to, for its pacing ([PacedSpeech], [SpokenReadingKey]): the note and which
  * way the [word] on screen says to turn the peg (Tighten or Too low, Loosen or Too high, In tune; none while it hasn't
- * settled), and the [tip] or the trail's [motion] said with it. The reading is said once it has lasted 400 ms, then not
+ * settled), and the [tip] or the trail's [motion] said with it. The reading is said once it has lasted 300 ms (a second
+ * while its word hasn't settled; Phase 94, 400 ms before), then not
  * again while only its cents move (Phase 81): a new note, in tune, Tighten ↔ Loosen, or a tip or motion coming or
  * going is a new situation. Each is held steady where it comes from (the word near the note by [SteadyHint] with
  * [TuningCue]'s margins), so a reading wobbling across the note doesn't make TalkBack speak. The watch keys its
@@ -480,24 +481,25 @@ private val TuneWord.spokenSide: SpokenSide?
     }
 
 /**
- * "E 2, 12 cents flat, Tighten", "C sharp 4, in tune": the readout as a screen reader says it, since TalkBack
- * can't see the lens. The [word] (only a direction: in tune is said already) is added, or a [tip] in its place:
- * "E 2, 12 cents flat, Play a bit louder"; then the trail's [motion]: "E 2, 12 cents flat, Tighten, wavering".
+ * "Tighten, E 2, 12 cents flat", "In tune, C sharp 4": the readout as a screen reader says it, since TalkBack
+ * can't see the lens. What to do comes first (Phase 94: a blind player hears it at once, not after the note and the
+ * cents): the [word] (a direction), or a [tip] in its place, "Play a bit louder, E 2, 12 cents flat", or "In tune";
+ * then the trail's [motion] last: "Tighten, E 2, 12 cents flat, wavering". A note whose word hasn't settled yet is
+ * "E 2, 12 cents flat" (`SpokenReadingThrottle` holds that back a second, so it is hardly ever said).
  */
 @Composable
 private fun spokenReading(readout: NoteReadout, word: String?, tip: String?, motion: String?): String {
     val note = rememberNoteNameSpeech().name(readout.noteName)
-    val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
     val first = tip ?: word
-    val extra = when {
-        first != null && motion != null -> first + stringResource(R.string.tuner_spoken_separator) + motion
-        else -> first ?: motion
+    val reading = when {
+        first != null -> {
+            val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
+            stringResource(R.string.tuner_spoken_reading_hint, note, readout.octave, state, first)
+        }
+        readout.inTune -> stringResource(R.string.tuner_spoken_reading_in_tune, note, readout.octave, inTuneLabel())
+        else -> stringResource(R.string.tuner_spoken_reading, note, readout.octave, centsText(readout.cents))
     }
-    return if (extra == null) {
-        stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
-    } else {
-        stringResource(R.string.tuner_spoken_reading_hint, note, readout.octave, state, extra)
-    }
+    return if (motion == null) reading else reading + stringResource(R.string.tuner_spoken_separator) + motion
 }
 
 /**

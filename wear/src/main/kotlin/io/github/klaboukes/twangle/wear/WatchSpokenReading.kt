@@ -22,7 +22,8 @@ import kotlin.math.abs
 
 /**
  * What the watch's polite live region gives TalkBack, paced by the phone's [SpokenReadingThrottle]
- * (`:core:dsp`): the first text at once, a new note or word (Tighten, Loosen, In tune) after 400 ms, losing
+ * (`:core:dsp`): the first text at once, a new note or word (Tighten, Loosen, In tune) after 400 ms (a reading with no word
+ * yet after a second), losing
  * the note after 1.5 s, the cents alone never (Phase 81: a reading is said once); "Play a note" again after a pluck dies away
  * is held for a touch, not announced ([announced]). The phone's `PacedSpeech` does the same; this one
  * keeps the watch free of the phone's design system. Remember it above the tuner's states, so the
@@ -79,10 +80,11 @@ internal fun watchReadingKey(reading: WatchTunerState.Detected, word: WatchWord?
     )
 
 /**
- * The reading as TalkBack says it, in words as on the phone: "A sharp 2, 12 cents flat, Tighten", "E 2, in tune",
- * "E 2, 0 cents" while right on the note but not yet counted in tune. The [word] shown under the note follows when it
- * says which way to turn the peg (in tune is said already), so TalkBack says what the screen shows. The note is named
- * as on screen (the watch's language's notation) and said as the phone says it ([NoteNameSpeech]: "ais 2" in Dutch).
+ * The reading as TalkBack says it, in words as on the phone, what to do first (Phase 94): "Tighten, A sharp 2, 12 cents
+ * flat", "In tune, E 2", and "E 2, 0 cents" while right on the note but not yet counted in tune (no word yet). The [word]
+ * shown under the note leads when it says which way to turn the peg, so TalkBack says what the screen shows. The note
+ * is named as on screen (the watch's language's notation) and said as the phone says it ([NoteNameSpeech]: "ais 2" in
+ * Dutch).
  */
 @Composable
 internal fun spokenWatchReading(reading: WatchTunerState.Detected, word: WatchWord?): String {
@@ -104,10 +106,10 @@ internal fun spokenWatchReading(reading: WatchTunerState.Detected, word: WatchWo
         WatchWord.LOOSEN -> stringResource(R.string.wear_word_loosen)
         WatchWord.IN_TUNE, null -> null
     }
-    return if (direction == null) {
-        stringResource(R.string.wear_spoken_reading, note, octave, state)
-    } else {
-        stringResource(R.string.wear_spoken_reading_hint, note, octave, state, direction)
+    return when {
+        direction != null -> stringResource(R.string.wear_spoken_reading_hint, note, octave, state, direction)
+        side == SpokenSide.IN_TUNE -> stringResource(R.string.wear_spoken_reading_in_tune, note, octave, inTuneWord())
+        else -> stringResource(R.string.wear_spoken_reading, note, octave, state)
     }
 }
 

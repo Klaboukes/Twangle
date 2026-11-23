@@ -84,7 +84,7 @@ Eight screenshots, the first three the strongest, because search results show on
 | 5 | Chords with Listen on after a strummed A minor: "A minor" in the name pill, the microphone button lit, its chart | blue | Strum a chord. \| *See its name.* |
 | 6 | The Practice tab's cards under the *Last used* row ("Chords · C major"), large | blue | *Practise* chords and scales \| Capo helper and ear training too |
 | 7 | The strum check after a strum of the open strings with the A 15 cents flat and the G 14 sharp: each string's column and mark, "4 of 6 in tune" | in tune | Strum once. \| *See every string.* |
-| 8 | Tuner at 2× text in the high-contrast look (Phase 86), the canvas too, the low E 10 cents sharp, with a TalkBack-style speech bubble "E 2, 10 cents sharp, Loosen": the ruler, the needle and the word | amber on black | Big, clear, *high contrast*. \| It even speaks the note. |
+| 8 | Tuner at 2× text in the high-contrast look (Phase 86), the canvas too, the low E 10 cents sharp, with a TalkBack-style speech bubble "Loosen, E 2, 10 cents sharp" (the word first since Phase 94): the ruler, the needle and the word | amber on black | Big, clear, *high contrast*. \| It even speaks the note. |
 
 2.0's first set (2026-11-05 to 11-09) was: the tuner in tune ("Open it and tune. No sign-up, no signal needed."), low E flat ("Tells you which way to turn"), the microphone prompt, the strum check, the metronome and the Practice tab as two phones ("Tuner, metronome and chords in one app"), the chord name, the instruments' sheet and TalkBack, each the screen in a frame, cut in on its focus.
 

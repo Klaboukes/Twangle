@@ -7,12 +7,14 @@
         <item quantity="one">%1$s cent</item>
         <item quantity="other">%1$s cents</item>
     </plurals>
-    <!-- Watch: what TalkBack says while the note is in tune (the arc turns green), after the note: "E 2, in tune". Lower case here; with a capital it is also the word under the note. -->
+    <!-- Watch: what TalkBack says while the note is in tune (the arc turns green), before the note: "In tune, E 2". Lower case here; with a capital it is also the word under the note. -->
     <string name="wear_in_tune">in tune</string>
-    <!-- Watch, TalkBack: the reading read aloud. %1$s is the note as said ("A sharp", in Dutch "ais"), %2$d its octave, %3$s how far off it is or "in tune", e.g. "A sharp 2, in tune". -->
+    <!-- Watch, TalkBack: the reading read aloud before there is a word under the note. %1$s is the note as said ("A sharp", in Dutch "ais"), %2$d its octave, %3$s how far off it is, e.g. "A sharp 2, 0 cents". -->
     <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
-    <!-- Watch, TalkBack: the same while the note is off, with the word under the note that says which way to turn the peg. %4$s is that word ("Tighten" or "Loosen"), e.g. "A sharp 2, 12 cents flat, Tighten". -->
-    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <!-- Watch, TalkBack: the reading while the note is off, the word under the note that says which way to turn the peg first, so a player hears it at once. %4$s is that word ("Tighten" or "Loosen"), %1$s the note, %2$d its octave, %3$s how far off it is, e.g. "Tighten, A sharp 2, 12 cents flat". Keep the word first if your language allows. -->
+    <string name="wear_spoken_reading_hint">%4$s, %1$s %2$d, %3$s</string>
+    <!-- Watch, TalkBack: the reading while the note is in tune, the words first. %3$s is "In tune", %1$s the note, %2$d its octave, e.g. "In tune, E 2". Keep "In tune" first if your language allows. -->
+    <string name="wear_spoken_reading_in_tune">%3$s, %1$s %2$d</string>
     <!-- Watch: how far too low the note is, small under the word "Tighten", and in the reading TalkBack reads aloud. %1$d is how many cents (hundredths of a semitone). -->
     <plurals name="wear_spoken_cents_flat">
         <item quantity="one">%1$d cent flat</item>
@@ -23,7 +25,7 @@
         <item quantity="one">%1$d cent sharp</item>
         <item quantity="other">%1$d cents sharp</item>
     </plurals>
-    <!-- Watch: the word under the note while the string is too low: turn its peg to tighten it (raise its pitch). One short word, imperative, starts with a capital (the phone's word under its tuner). Also said by TalkBack after the reading. -->
+    <!-- Watch: the word under the note while the string is too low: turn its peg to tighten it (raise its pitch). One short word, imperative, starts with a capital (the phone's word under its tuner). Also said by TalkBack, before the note. -->
     <string name="wear_word_tighten">Tighten</string>
     <!-- Watch: the word under the note while the string is too high: turn its peg to loosen it (lower its pitch). One short word, imperative, starts with a capital. Also said by TalkBack. -->
     <string name="wear_word_loosen">Loosen</string>
