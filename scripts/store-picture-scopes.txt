@@ -35,3 +35,4 @@
 #830 none     the opening's and the About icon's motion only; both end in the same pose, and no store picture shows the opening screen
 #20 none     the feature graphic only (bigger name, line and meter); no screenshot shows it
 #31 none     TalkBack names only (the word line's node, empty live regions hidden, the tooltips' long press watched without a node of its own); nothing drawn changes
+#32 8        TalkBack's reading in picture 8's speech bubble now starts with the word ("Loosen, E 2, 10 cents sharp"); nothing drawn on the screens changes
