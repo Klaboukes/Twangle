@@ -94,9 +94,12 @@ goes into [IDEAS.md](../../IDEAS.md).
   gliding up for sharp and down for flat, a steady note in tune for a length they set; failing
   that, TalkBack saying tighten, loosen and in tune quicker. They felt the taps only with the phone
   laid against the guitar. One wish more: the guitar on a 6.35 mm to USB-C cable with the phone's
-  sounds still on the phone. All three are in [IDEAS.md](../../IDEAS.md): *A sound guide*, *The
-  word first*, *A guitar on a cable*. Worth asking back: were the taps too weak with the phone on
-  the lap or in a pocket, and would the sounds come from the phone's speaker or earbuds.
+  sounds still on the phone. The sounds and the quicker speech are
+  [ROADMAP.md](../../ROADMAP.md)'s Phase 94; the cable waits in [IDEAS.md](../../IDEAS.md), *A
+  guitar on a cable*, for a cable to check with. Worth asking back: were the taps too weak with the
+  phone on the lap or in a pocket, and would the sounds come from the phone's speaker or earbuds.
+- **A second remark** (2026-11-23): with TalkBack, a swipe left from the Settings button lands on
+  something announced as "Unlabeled", heading or control unknown. Phase 94's first item.
 
 ## Blind Android Users: week 4
 - **What it is:** a long-running podcast for blind and low-vision Android users, with a mailing list
