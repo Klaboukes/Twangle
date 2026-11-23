@@ -11,7 +11,8 @@
     </plurals>
     <string name="wear_in_tune">مضبوط</string>
     <string name="wear_spoken_reading">%1$s %2$d، %3$s</string>
-    <string name="wear_spoken_reading_hint">%1$s %2$d، %3$s، %4$s</string>
+    <string name="wear_spoken_reading_hint">%4$s، %1$s %2$d، %3$s</string>
+    <string name="wear_spoken_reading_in_tune">%3$s، %1$s %2$d</string>
     <plurals name="wear_spoken_cents_flat">
         <item quantity="zero">أخفض بـ%1$d سنت</item>
         <item quantity="one">أخفض بسنت واحد</item>

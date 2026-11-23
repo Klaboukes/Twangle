@@ -436,7 +436,8 @@ feature/tuner tuner_show_controls e3e3f1ac
 feature/tuner tuner_spoken_octave_course 6b5c678f
 feature/tuner tuner_spoken_picker 75e53fce
 feature/tuner tuner_spoken_reading 6a076bf0
-feature/tuner tuner_spoken_reading_hint 6a8c05b0
+feature/tuner tuner_spoken_reading_hint 3b9a527d
+feature/tuner tuner_spoken_reading_in_tune a28fd4f4
 feature/tuner tuner_spoken_separator f240463d
 feature/tuner tuner_spoken_string d2911fe6
 feature/tuner tuner_spoken_tuning 75e53fce
@@ -534,7 +535,8 @@ wear wear_shortcut_tune 22c58d84
 wear wear_spoken_cents_flat 8d383020
 wear wear_spoken_cents_sharp bad7d782
 wear wear_spoken_reading 6a076bf0
-wear wear_spoken_reading_hint 6a8c05b0
+wear wear_spoken_reading_hint 3b9a527d
+wear wear_spoken_reading_in_tune a28fd4f4
 wear wear_spoken_sharp 0dc644eb
 wear wear_tile_metronome 3634f122
 wear wear_tile_open_metronome bca7059f
