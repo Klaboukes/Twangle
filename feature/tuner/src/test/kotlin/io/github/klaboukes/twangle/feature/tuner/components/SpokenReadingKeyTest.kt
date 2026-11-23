@@ -57,11 +57,11 @@ class SpokenReadingKeyTest {
     @Test
     fun `turning past the note is said after 400 ms, the cents alone never`() {
         val throttle = SpokenReadingThrottle()
-        throttle.publish("E 2, 12 cents flat, Tighten", spokenReadingKey(readout(-12f), TuneWord.TIGHTEN), 0)
-        assertNull(throttle.delayFor("E 2, 10 cents flat, Tighten", spokenReadingKey(readout(-10f), TuneWord.TIGHTEN), 5_000))
+        throttle.publish("Tighten, E 2, 12 cents flat", spokenReadingKey(readout(-12f), TuneWord.TIGHTEN), 0)
+        assertNull(throttle.delayFor("Tighten, E 2, 10 cents flat", spokenReadingKey(readout(-10f), TuneWord.TIGHTEN), 5_000))
         assertEquals(
             SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS,
-            throttle.delayFor("E 2, 9 cents sharp, Loosen", spokenReadingKey(readout(9f), TuneWord.LOOSEN), 6_000),
+            throttle.delayFor("Loosen, E 2, 9 cents sharp", spokenReadingKey(readout(9f), TuneWord.LOOSEN), 6_000),
         )
     }
 }

@@ -6,7 +6,8 @@
     </plurals>
     <string name="wear_in_tune">zuiver</string>
     <string name="wear_spoken_reading">%1$s %2$d, %3$s</string>
-    <string name="wear_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="wear_spoken_reading_hint">%4$s, %1$s %2$d, %3$s</string>
+    <string name="wear_spoken_reading_in_tune">%3$s, %1$s %2$d</string>
     <plurals name="wear_spoken_cents_flat">
         <item quantity="one">%1$d cent te laag</item>
         <item quantity="other">%1$d cent te laag</item>

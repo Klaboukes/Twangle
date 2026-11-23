@@ -15,7 +15,7 @@ Be honest that you are sighted and tested it with TalkBack yourself; that is why
 
 ## What to say about Twangle (pick from it)
 **TalkBack in the tuner**
-- The reading in words: "E 2, 12 cents flat, tighten", "F sharp 2, in tune", "Play a string".
+- The reading in words, what to do first: "Tighten, E 2, 12 cents flat", "In tune, F sharp 2", "Play a string".
 - It never floods you: a new note or "in tune" is said after 0.4 s, small changes in cents aren't
   said at all, so TalkBack isn't talking over the string.
 - TalkBack's own voice isn't taken for a note: the microphone ignores what the screen reader says
@@ -33,7 +33,7 @@ Be honest that you are sighted and tested it with TalkBack yourself; that is why
   Scales: the neck the same way, every note named.
 - Ear training: the answer buttons in words ("minor seventh", "5th").
 - The metronome and the Practice tools work without the microphone; the permission screen says so.
-- On the watch: the dial in words, "A 2, 12 cents flat, Tighten".
+- On the watch: the dial in words, "Tighten, A 2, 12 cents flat".
 
 **The vibration guide** (Settings → *While tuning* → *Vibration guide*; on by itself while TalkBack is
 on): while the tuner hears a string the phone taps, **one tap to tighten, two to loosen**, quicker as

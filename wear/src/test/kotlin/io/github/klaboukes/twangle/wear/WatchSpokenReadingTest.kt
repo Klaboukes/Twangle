@@ -47,13 +47,13 @@ class WatchSpokenReadingTest {
     @Test
     fun `turning past the note is said after 400 ms, the cents alone never, as on the phone`() {
         val throttle = SpokenReadingThrottle()
-        throttle.publish("E 2, 12 cents flat, Tighten", key(reading(-12)), 0)
+        throttle.publish("Tighten, E 2, 12 cents flat", key(reading(-12)), 0)
         assertEquals(
             SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS,
-            throttle.delayFor("E 2, 9 cents sharp, Loosen", key(reading(9)), 100),
+            throttle.delayFor("Loosen, E 2, 9 cents sharp", key(reading(9)), 100),
         )
         // Only the cents moving: held as it was said, however long.
-        assertNull(throttle.delayFor("E 2, 10 cents flat, Tighten", key(reading(-10)), 30_000))
+        assertNull(throttle.delayFor("Tighten, E 2, 10 cents flat", key(reading(-10)), 30_000))
     }
 
     /** The watch says note names as the phone does: its `speech.xml` is a copy of the phone's, every language. */

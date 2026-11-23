@@ -372,7 +372,7 @@ class LensLooksTest {
         assertNull(node.config.getOrNull(SemanticsProperties.ContentDescription))
         assertNull(node.config.getOrNull(SemanticsProperties.Text))
         assertTrue("nothing inside the meter for TalkBack", node.children.isEmpty())
-        // The word speaks the reading (Phase 71): "E 2, 12 cents flat, Tighten".
+        // The word speaks the reading (Phase 71), the word first (Phase 94): "Tighten, E 2, 12 cents flat".
         val reading = "E 2, ${context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)}, ${context.getString(R.string.tuner_word_tighten)}"
         compose.waitUntil(WORDS_WAIT_MS) { compose.onAllNodes(hasContentDescription(reading)).fetchSemanticsNodes().size == 1 }
     }

@@ -127,7 +127,7 @@ class WatchTunerTest {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), 1, inTune = true))
         word.assertTextEquals("In tune")
         compose.onNodeWithText("1 cent", useUnmergedTree = true).assertIsDisplayed()
-        assertSpoken("E 2, in tune")
+        assertSpoken("In tune, E 2")
     }
 
     /** A reading wobbling to the other side near the note keeps its word: it never swaps Tighten and Loosen there. */
@@ -148,7 +148,7 @@ class WatchTunerTest {
     @Test
     fun talkBackHearsFlatAndTheWord() {
         show(WatchTunerState.Detected(Note.of(PitchClass.A_SHARP, 2), -12))
-        assertSpoken("A sharp 2, 12 cents flat, Tighten")
+        assertSpoken("Tighten, A sharp 2, 12 cents flat")
         compose.onAllNodes(polite).assertCountEquals(1)
         compose.onNodeWithText("A♯").assert(hiddenFromTalkBack)
         word.assert(hiddenFromTalkBack)
@@ -157,7 +157,7 @@ class WatchTunerTest {
     @Test
     fun talkBackHearsSharpAndLoosen() {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), 7))
-        assertSpoken("E 2, 7 cents sharp, Loosen")
+        assertSpoken("Loosen, E 2, 7 cents sharp")
     }
 
     @Test
@@ -172,10 +172,10 @@ class WatchTunerTest {
     @Test
     fun turningPastTheNoteIsSaidSoon() {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
-        assertSpoken("E 2, 12 cents flat, Tighten")
+        assertSpoken("Tighten, E 2, 12 cents flat")
         state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), 6)
-        awaitSpoken(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900, "E 2, 6 cents sharp, Loosen")
-        assertEquals("E 2, 6 cents sharp, Loosen", spoken())
+        awaitSpoken(SpokenReadingThrottle.DEFAULT_SETTLE_MILLIS + 900, "Loosen, E 2, 6 cents sharp")
+        assertEquals("Loosen, E 2, 6 cents sharp", spoken())
     }
 
     /**
@@ -185,12 +185,12 @@ class WatchTunerTest {
     @Test
     fun onlyTheCentsMovingIsNeverSaidAgain() {
         show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -12))
-        assertSpoken("E 2, 12 cents flat, Tighten")
+        assertSpoken("Tighten, E 2, 12 cents flat")
         for (cents in listOf(-9, -14, -3, 2, -1)) {
             state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), cents)
             compose.mainClock.advanceTimeBy(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 500)
             compose.waitForIdle()
-            assertEquals("$cents cents", "E 2, 12 cents flat, Tighten", spoken())
+            assertEquals("$cents cents", "Tighten, E 2, 12 cents flat", spoken())
         }
     }
 
@@ -200,7 +200,7 @@ class WatchTunerTest {
         show(WatchTunerState.Listening)
         assertSpoken("Play a note")
         state = WatchTunerState.Detected(Note.of(PitchClass.G, 3), 0, inTune = true)
-        assertSpoken("G 3, in tune")
+        assertSpoken("In tune, G 3")
         state = WatchTunerState.Listening
         assertSpoken("Play a note", announced = false)
         word.assert(hiddenFromTalkBack)
@@ -210,7 +210,7 @@ class WatchTunerTest {
     @Test
     fun dutchSaysAisTeLaagAndStrakker() {
         show(WatchTunerState.Detected(Note.of(PitchClass.A_SHARP, 2), -12), language = "nl")
-        assertSpoken("ais 2, 12 cent te laag, Strakker")
+        assertSpoken("Strakker, ais 2, 12 cent te laag")
         word.assertTextEquals("Strakker")
     }
 

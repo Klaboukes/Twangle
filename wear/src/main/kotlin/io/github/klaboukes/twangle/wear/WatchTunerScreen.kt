@@ -185,8 +185,8 @@ fun WatchTunerPage(tuner: @Composable () -> WatchTunerViewModel) {
  * the muted colour, and the note fades out. A failure shows a message instead, which TalkBack says as it comes (a
  * polite live region). Stateless but for the pacing of what TalkBack says and the word held near the note.
  *
- * For TalkBack the dial is one polite live region under the rest that says the reading in words, "A sharp 2,
- * 12 cents flat, Tighten", "E 2, in tune" or "Play a note" ([spokenWatchReading]), paced as on the phone by [speech]
+ * For TalkBack the dial is one polite live region under the rest that says the reading in words, what to do first,
+ * "Tighten, A sharp 2, 12 cents flat", "In tune, E 2" or "Play a note" ([spokenWatchReading]), paced as on the phone by [speech]
  * ([WatchPacedSpeech]); the texts on screen are hidden from it.
  *
  * The tuner's one setting sits small at the bottom, in the arc's opening: the vibration guide's switch (Phase 85,
@@ -401,7 +401,7 @@ private class LastCents {
 
 /** "In tune" as the word: TalkBack's words for it (`wear_in_tune`, "in tune", "zuiver"), with a capital since it stands alone, as on the phone. */
 @Composable
-private fun inTuneWord(): String {
+internal fun inTuneWord(): String {
     val word = stringResource(R.string.wear_in_tune)
     val locale = LocalConfiguration.current.locales[0]
     return remember(word, locale) { capitalised(word, locale) }
