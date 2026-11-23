@@ -19,7 +19,8 @@ import kotlinx.coroutines.delay
  */
 @Stable
 class PacedSpeech {
-    private val throttle = SpokenReadingThrottle()
+    // A tuner reading's word is held steady where it comes from, so it may be said a little sooner (Phase 94).
+    private val throttle = SpokenReadingThrottle(readingSettleMillis = SpokenReadingThrottle.HELD_WORD_SETTLE_MILLIS)
 
     /** The text TalkBack has been given, "" before the first. */
     var spoken by mutableStateOf("")

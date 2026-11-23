@@ -16,6 +16,12 @@ android {
     }
 }
 
+// SpokenPluckTest hears :core:dsp's real recordings, so a change there reruns it.
+tasks.withType<Test>().configureEach {
+    inputs.files(rootProject.fileTree("core/dsp/src/test/resources/fixtures"))
+        .withPropertyName("realPlucks").withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 dependencies {
     implementation(project(":core:audio"))
     implementation(project(":core:dsp"))

@@ -8,7 +8,10 @@ import kotlin.math.max
  * to (target note and in-tune, or null while nothing is heard):
  * - the first text is spoken straight away;
  * - a new situation is spoken once it has lasted [settleMillis] ([listeningSettleMillis] for "no
- *   note", so a short drop-out isn't announced);
+ *   note", so a short drop-out isn't announced); a played note's reading once it has lasted
+ *   [readingSettleMillis], or [unsettledMillis] while its word hasn't settled ([SpokenReadingKey.side]
+ *   null), so the first thing said after a pluck is what to do, never the note and cents alone a
+ *   moment before the word (Phase 94: at 400 ms, 25 of 1,530 simulated plucks said that first);
  * - a played note's reading ([SpokenReadingKey]) is spoken once per situation: while only its cents
  *   move, TalkBack keeps the text it was given, cents included, until the note, the word (Tighten ↔
  *   Loosen, in tune) or what else it says in words changes, so a sound TalkBack's own voice slipped
@@ -31,6 +34,8 @@ class SpokenReadingThrottle(
     private val settleMillis: Long = DEFAULT_SETTLE_MILLIS,
     private val listeningSettleMillis: Long = DEFAULT_LISTENING_SETTLE_MILLIS,
     private val repeatMillis: Long = DEFAULT_REPEAT_MILLIS,
+    private val readingSettleMillis: Long = settleMillis,
+    private val unsettledMillis: Long = DEFAULT_UNSETTLED_SETTLE_MILLIS,
 ) {
     /** The text TalkBack was last given, or null before the first one. */
     var published: String? = null
@@ -63,6 +68,8 @@ class SpokenReadingThrottle(
             key is SpokenReadingKey && key == publishedKey -> return null
             key == publishedKey -> publishedAtMillis + repeatMillis
             key == null -> candidateSinceMillis + listeningSettleMillis
+            key is SpokenReadingKey && key.side == null -> candidateSinceMillis + unsettledMillis
+            key is SpokenReadingKey -> candidateSinceMillis + readingSettleMillis
             else -> candidateSinceMillis + settleMillis
         }
         return max(0L, readyAtMillis - nowMillis)
@@ -85,6 +92,19 @@ class SpokenReadingThrottle(
 
     companion object {
         const val DEFAULT_SETTLE_MILLIS = 400L
+
+        /**
+         * How long the phone's reading must hold before it is said (`PacedSpeech`): less than [DEFAULT_SETTLE_MILLIS],
+         * since its word is held steady already where it comes from (the tuner's `SteadyHint`: a direction shows after
+         * 0.2 s, in tune after the 0.3 s hold, and either stays at least 0.5 s). Phase 94, from the real recordings
+         * (`SpokenPluckTest` in `:feature:tuner`, 30 takes each detuned −25 to +25 cents): at 300 ms the first word comes
+         * about 0.1 s sooner and no more plucks say two readings in their first second than at 400; at 275 ms five times
+         * as many do (the attack's word, then the settled one). The watch's word has no such hold, so it keeps 400.
+         */
+        const val HELD_WORD_SETTLE_MILLIS = 300L
+
+        /** How long a reading whose word hasn't settled yet must hold before it is said: about never after a pluck. */
+        const val DEFAULT_UNSETTLED_SETTLE_MILLIS = 1_000L
         const val DEFAULT_LISTENING_SETTLE_MILLIS = 1_500L
         const val DEFAULT_REPEAT_MILLIS = 2_000L
 
