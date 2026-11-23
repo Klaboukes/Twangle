@@ -113,7 +113,8 @@
     <string name="tuner_tip_too_loud">Prea tare, depărtați telefonul</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
-    <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="tuner_spoken_reading_hint">%4$s, %1$s %2$d, %3$s</string>
+    <string name="tuner_spoken_reading_in_tune">%3$s, %1$s %2$d</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_octave_course">%1$s, cu coardă la octavă</string>
