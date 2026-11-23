@@ -62,6 +62,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -716,7 +717,11 @@ private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: No
         color = if (right) MaterialTheme.styleTokens.inTune else MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
         // Across the column, so an empty line (while waiting) keeps its place and height too.
-        modifier = Modifier.fillMaxWidth().testTag(EarTrainingTestTags.HEARD_LINE).semantics { liveRegion = LiveRegionMode.Polite },
+        modifier = Modifier.fillMaxWidth().testTag(EarTrainingTestTags.HEARD_LINE).semantics {
+            liveRegion = LiveRegionMode.Polite
+            // Empty, it is no stop for TalkBack: a stop with nothing to say is "Unlabeled" (Phase 94).
+            if (text.isEmpty()) hideFromAccessibility()
+        },
     )
 }
 

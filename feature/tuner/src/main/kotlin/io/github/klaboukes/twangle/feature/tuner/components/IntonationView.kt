@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import io.github.klaboukes.twangle.core.designsystem.NameTooltip
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.stringChipFill
@@ -19,15 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -672,7 +667,6 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
  * tuner is back; Back does the same. TalkBack hears "Close the 12th-fret check"; a long-press shows it in a tooltip.
  * The strum check's panel has the same × with its own [label] and [tag].
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun IntonationCloseButton(
     onClick: () -> Unit,
@@ -680,12 +674,7 @@ internal fun IntonationCloseButton(
     label: String = stringResource(R.string.tuner_intonation_close),
     tag: String = TunerTestTags.INTONATION_CLOSE,
 ) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below),
-        tooltip = { PlainTooltip { Text(label) } },
-        state = rememberTooltipState(),
-        modifier = modifier,
-    ) {
+    NameTooltip(label, above = false, modifier = modifier) {
         StyleButton(
             onClick = onClick,
             label = label,

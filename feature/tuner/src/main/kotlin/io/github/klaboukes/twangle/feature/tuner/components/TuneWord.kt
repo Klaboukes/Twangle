@@ -204,15 +204,23 @@ fun TuneWordLine(
     val smallLine = rememberLineHeight(MaterialTheme.typography.bodyMedium, lineSample)
     val density = LocalDensity.current
     // The texts are hidden from TalkBack; this layer under them speaks for both, so nothing changing inside can
-    // make TalkBack read it again early.
-    Box(modifier.testTag(TunerTestTags.WORD), contentAlignment = if (start) Alignment.CenterStart else Alignment.Center, propagateMinConstraints = true) {
+    // make TalkBack read it again early. It carries the line's test tag itself, and the box round it has no
+    // semantics of its own: a tagged box round the layer was a second node of the same size with nothing to say,
+    // and TalkBack landed on it, swiping back from the Settings gear, as "Unlabeled" (Phase 94). Before the first
+    // words are passed on it is hidden, so it is never a stop with nothing to say either.
+    Box(modifier, contentAlignment = if (start) Alignment.CenterStart else Alignment.Center, propagateMinConstraints = true) {
         Box(
             Modifier
                 .matchParentSize()
+                .testTag(TunerTestTags.WORD)
                 .semantics {
-                    contentDescription = spoken
-                    // Not for "Play a string" said again after a pluck dies away (PacedSpeech.announced).
-                    if (speech.announced) liveRegion = LiveRegionMode.Polite
+                    if (spoken.isEmpty()) {
+                        hideFromAccessibility()
+                    } else {
+                        contentDescription = spoken
+                        // Not for "Play a string" said again after a pluck dies away (PacedSpeech.announced).
+                        if (speech.announced) liveRegion = LiveRegionMode.Polite
+                    }
                 },
         )
         Column(

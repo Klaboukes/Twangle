@@ -4,15 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -35,6 +28,7 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.NameTooltip
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
@@ -158,15 +152,10 @@ fun strumHasLessSure(check: TunerUiState.StrumCheck): Boolean =
  * above the pegs, and once it has rung out the button turns itself off; a tap while on turns it off. TalkBack hears it
  * as a switch, "Strum check, on"; a long-press shows its name in a tooltip.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StrumCheckButton(on: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val label = stringResource(R.string.tuner_strum_check)
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(label) } },
-        state = rememberTooltipState(),
-    ) {
+    NameTooltip(label, above = true) {
         StyleButton(
             onClick = { onChange(!on) },
             label = label,
