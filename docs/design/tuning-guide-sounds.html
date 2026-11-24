@@ -178,7 +178,10 @@ sit lower, at 700–1,300 Hz: still above a phone speaker's floor and, as steady
 The tuner sets its own sounds aside anyway, so they needn't stay above its 1,500 Hz top. Each is a WAV file made by
 <code>scripts/guide-sounds.py</code>, peak −12 dBFS, the same files the public page
 (<code>website/pages/en/sound-guide.html</code>) plays for the blind reviewer. Each demo is a string coming up from 40
-cents flat at the vibration guide's pace, then the bell at 0.3 s (about 6.6 s; only the guide, no string). Not yet
+cents flat at the vibration guide's pace, then the bell at 0.3 s (about 6.6 s; only the guide, no string). Every file
+starts after 0.6 s of silence, so a screen reader (TalkBack says “Pause” as Play is double-tapped) can finish
+speaking first; then a sharp or flat sound plays three times, one every 0.7 s (the guide's far-off pace), and an
+in-tune sound three times with 0.6 s of quiet after each; a demo plays once. The lengths below are one play's. Not yet
 heard by anyone: they were checked by their samples only. The Stop button above doesn't stop these; each player has
 its own.</p>
 <div class="opts">
