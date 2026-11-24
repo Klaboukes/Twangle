@@ -118,6 +118,33 @@ wake_phone() {
     fi
 }
 
+# Stops another app whose window's opening animation (`starting_reveal`, a fraction of a second when
+# it works) is stuck in the window manager. While any window animates, every tap UI Automator makes
+# waits for it, up to 5 s for each touch down and up (Android 13's injectInputEvent with its wait for
+# animations): 10 s a click, so the app's UI Automator tests time out at 40 s or miss a screen. The
+# Xiaomi's Gallery stuck that way left `:app`'s TunerTabTest, PracticeTabTest and FocusModeOrientationTest
+# failing in the full check of 2026-11-24, at every version back to 2.2.1; force-stopped, they passed.
+# Seen twice 2 s apart before it counts, so an app just opening is left alone; never Twangle itself.
+clear_stuck_animations() {
+    local stuck again p
+    stuck="$(stuck_reveal_packages)"
+    [ -z "$stuck" ] && return 0
+    sleep 2
+    again="$(stuck_reveal_packages)"
+    for p in $stuck; do
+        case " $again " in *" $p "*) ;; *) continue ;; esac
+        echo "Stopped $p: its window's opening animation was stuck, which makes every UI Automator tap wait 10 s." >&2
+        adb shell am force-stop "$p" > /dev/null 2>&1
+    done
+}
+
+# The packages (not Twangle's) whose window has a `starting_reveal` animation running now, on one line.
+stuck_reveal_packages() {
+    adb shell dumpsys window windows 2>/dev/null | tr -d '\r' |
+        sed -n 's|.*mLeash=Surface(name=Surface(name=[0-9a-f]* \([^/ )]*\)/.*animation-leash of starting_reveal.*|\1|p' |
+        grep -v '^io\.github\.klaboukes\.twangle' | sort -u | tr '\n' ' '
+}
+
 # The battery's temperature in whole degrees (the device reports tenths).
 COOL_BELOW="${COOL_BELOW:-37}"
 phone_temp() {
