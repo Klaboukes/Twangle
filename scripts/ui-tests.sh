@@ -450,6 +450,8 @@ for module in "${modules[@]}"; do
     fi
     install_apk "$apk" "$package" || { status=1; continue; }
     wake_phone
+    # Another app's window animation stuck in the window manager makes every UI Automator tap wait 10 s.
+    clear_stuck_animations
     runner="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:\($package/[^ ]*\) .*|\1|p" | head -1)"
 
     # Extra files a test writes (StyleScreenshots' pictures, a language check's failing screen) go
