@@ -10,6 +10,11 @@ Round 1 (docs/design/tuning-guide-sounds.html) glided at 2,000-3,600 Hz, which t
 softer. The files are for listening: the owner's page (that design page, *Round 2*) and the public, unlisted
 website/pages/<language>/sound-guide.html, which a blind reviewer is sent.
 
+Every file starts with 0.6 s of silence (LEAD), so a screen reader (TalkBack says "Pause" as Play is double-tapped)
+can finish speaking before the sound comes. A sharp or flat sound then plays three times at the guide's far-off pace
+(one every 0.7 s, start to start), an in-tune sound three times with 0.6 s of quiet after each, so a listener hears it
+again without finding Play again; a demo plays once, after the same lead-in.
+
 Every file: mono, 22,050 Hz, 16 bit, its peak at about -12 dBFS (E's glide -14), starting and ending on a
 sample of exactly 0, with smooth fades, so nothing clicks. No steady note sits on an open string's pitch
 (E2 A2 D3 G3 B3 E4 and their octaves); a glide passes through such pitches only on its way. Python standard
@@ -26,6 +31,11 @@ from pathlib import Path
 RATE = 22050
 OUT = Path(__file__).resolve().parent.parent / "website" / "static" / "sounds" / "guide"
 PEAK_DB = -12.0
+LEAD = 0.6          # silence at the start of every file, for a screen reader to finish speaking
+PLAYS = 3           # each sound plays this many times in its file
+PAIR_EVERY = 0.70   # start to start for the sharp and flat sounds: the guide's far-off pace (SLOW below)
+TUNE_GAP = 0.60     # quiet after each in-tune sound before the next
+TAIL = 0.2          # silence after the last play
 
 # Notes used below, equal temperament from A4 = 440 Hz. None is an open string's pitch class (E A D G B).
 C5, F5, FS5, GS5, AS5, C6 = 523.25, 698.46, 739.99, 830.61, 932.33, 1046.50
@@ -268,20 +278,26 @@ def demo(pair):
     flats, tune = plan()
     flat = PAIRS[pair](False)
     ding = bell(0.3)
-    return mix([(t, flat) for t in flats] + [(tune, ding)], tune + 0.3 + 0.5)
+    return mix([(LEAD + t, flat) for t in flats] + [(LEAD + tune, ding)], LEAD + tune + 0.3 + 0.5)
 
 
 # ---- Files ---------------------------------------------------------------------------------------------------------
 
+def repeated(x, every):
+    """The file for one sound: LEAD of silence, the sound PLAYS times, `every` seconds start to start, then TAIL."""
+    starts = [LEAD + k * every for k in range(PLAYS)]
+    return mix([(t, x) for t in starts], starts[-1] + len(x) / RATE + TAIL)
+
+
 def sounds():
     out = {}
     for name, make in PAIRS.items():
-        out[f"{name}-sharp"] = make(True)
-        out[f"{name}-flat"] = make(False)
+        out[f"{name}-sharp"] = repeated(make(True), PAIR_EVERY)
+        out[f"{name}-flat"] = repeated(make(False), PAIR_EVERY)
     for label, length in LENGTHS.items():
-        out[f"bell-{label}"] = bell(length)
-        out[f"chime-{label}"] = chime(length)
-    out["high-c-short"] = high_c()
+        out[f"bell-{label}"] = repeated(bell(length), length + TUNE_GAP)
+        out[f"chime-{label}"] = repeated(chime(length), length + TUNE_GAP)
+    out["high-c-short"] = repeated(high_c(), 0.3 + TUNE_GAP)
     for name in "bcde":
         out[f"demo-{name}"] = demo(name)
     return out
@@ -310,24 +326,43 @@ def zc_hz(x):
     return (len(ups) - 1) * RATE / (ups[-1] - ups[0]) if len(ups) > 2 else 0.0
 
 
+def plays(x, quiet=0.25):
+    """(first, last) sample of each play: stretches of sound separated by at least `quiet` seconds of near silence."""
+    nz = [i for i, v in enumerate(x) if abs(v) > 1e-4]
+    out, gap = [], int(quiet * RATE)
+    for i in nz:
+        if out and i - out[-1][1] <= gap:
+            out[-1][1] = i
+        else:
+            out.append([i, i])
+    return out
+
+
 def check():
-    """For each file: length, peak, DC, the first and last samples, the step from the first sample to the second and
-    from the last but one to the last (a sound that starts or stops with a jump clicks; a faded one moves off 0 by a
-    hair), and, for the pairs, the pitch near the start and near the end, so up and down go the right way."""
+    """For each file: length, the lead-in's silence, how many plays, peak, DC, the first and last samples, the step from
+    the first sample to the second and from the last but one to the last (a sound that starts or stops with a jump
+    clicks; a faded one moves off 0 by a hair), and, for the pairs, the pitch near the start and near the end of the
+    first play, so up and down go the right way."""
     problems, total = [], 0
-    print(f"{'file':<16}{'s':>6}{'peak dBFS':>10}{'DC':>9}{'ends':>7}{'end step':>10}  pitch start -> end")
+    print(f"{'file':<16}{'s':>6}{'lead':>6}{'plays':>6}{'peak dBFS':>10}{'DC':>9}{'ends':>7}{'end step':>10}"
+          f"  pitch start -> end")
     for path in sorted(OUT.glob("*.wav")):
         x = read(path)
         total += path.stat().st_size
         peak = max(abs(v) for v in x)
         dc = sum(x) / len(x)
         edge = max(abs(x[1] - x[0]), abs(x[-1] - x[-2]))
-        line = (f"{path.stem:<16}{len(x) / RATE:>6.2f}{20 * math.log10(peak):>10.1f}{dc:>9.5f}"
-                f"{'0 0' if x[0] == 0 and x[-1] == 0 else 'NO':>7}{edge:>10.5f}")
         stem = path.stem
+        heard = plays(x)
+        lead = heard[0][0] / RATE if heard else 0.0
+        line = (f"{stem:<16}{len(x) / RATE:>6.2f}{lead:>6.2f}{len(heard):>6}{20 * math.log10(peak):>10.1f}"
+                f"{dc:>9.5f}{'0 0' if x[0] == 0 and x[-1] == 0 else 'NO':>7}{edge:>10.5f}")
+        if lead < LEAD - 0.01:
+            problems.append(f"{stem}: only {lead:.2f} s of silence before the sound")
+        if not stem.startswith("demo-") and len(heard) != PLAYS:
+            problems.append(f"{stem}: {len(heard)} plays, not {PLAYS}")
         if stem[0] in PAIRS and stem.endswith(("sharp", "flat")):
-            nz = [i for i, v in enumerate(x) if abs(v) > 1e-4]
-            body = x[nz[0]:nz[-1]]
+            body = x[heard[0][0]:heard[0][1]]
             k = max(len(body) // 4, int(0.012 * RATE))
             a, b = zc_hz(body[:k]), zc_hz(body[-k:])
             line += f"  {a:6.0f} -> {b:6.0f} Hz"
@@ -350,7 +385,8 @@ def check():
     if problems:
         print("Problems:\n  " + "\n  ".join(problems))
         sys.exit(1)
-    print("All start and end on 0, no clicks at the ends, no DC, the pairs go the right way.")
+    print(f"All start with {LEAD} s of silence and end on 0, play {PLAYS} times (the demos once), no clicks at the "
+          "ends, no DC, the pairs go the right way.")
 
 
 def main():
