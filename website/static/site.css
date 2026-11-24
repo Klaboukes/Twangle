@@ -229,6 +229,15 @@ details[open] { padding-bottom: 10px; }
 .kit img { display: block; width: 100%; height: auto; border-radius: 18px; box-shadow: var(--lift); margin-bottom: 12px; }
 .press .shots a { color: inherit; text-decoration: none; }
 
+/* ---- The sound guide's sounds (Phase 94): an unlisted page for players to compare them, each pair side by side --- */
+.sounds { max-width: 780px; }
+.sounds h2 { font-size: 24px; margin-top: 40px; }
+.sounds h3 { margin-top: 28px; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 10px 0 0; }
+.pair figure { margin: 0; background: var(--surface); box-shadow: var(--soft); border-radius: 18px; padding: 12px 16px 14px; }
+.pair figcaption { font-weight: 700; margin-bottom: 8px; }
+.pair audio { display: block; width: 100%; }
+
 footer { color: var(--muted); font-size: 15px; }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; padding-top: 26px; padding-bottom: 32px; border-top: 1px solid var(--track); }
 .home footer .wrap { border-top: 0; }
