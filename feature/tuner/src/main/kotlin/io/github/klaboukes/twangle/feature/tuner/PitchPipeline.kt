@@ -76,6 +76,15 @@ class PitchPipeline(
     /** Time between two readings: one hop at the recorder's sample rate (~21 ms). */
     val frameSeconds: Float get() = AnalysisSettings.forSampleRate(sampleRate.coerceIn(SUPPORTED_RATES)).hopSeconds
 
+    /**
+     * How much sound one reading in [range] hears (~85 ms, twice that in the low range): a sound that has just stopped
+     * is still in the readings this long after.
+     */
+    fun windowSeconds(range: PitchRange): Float {
+        val settings = AnalysisSettings.forSampleRate(sampleRate.coerceIn(SUPPORTED_RATES), range)
+        return settings.windowSize.toFloat() / settings.sampleRate
+    }
+
     /** One reading per hop; [range] is asked every frame how low to listen (it must not allocate). */
     fun readings(range: () -> PitchRange = { PitchRange.STANDARD }): Flow<PitchReading> =
         listen(range).map { it as PitchReading }

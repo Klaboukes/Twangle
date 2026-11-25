@@ -105,6 +105,23 @@ enum class UnderMeter {
 }
 
 /**
+ * How long the sound guide's in-tune bell rings (Phase 94): the player's choice, as the blind reviewer of 2026-11-23
+ * asked. Short by default (the owner's pick, 2026-11-24). While it rings the tuner can't hear the string, so a longer
+ * bell is a longer wait before it hears a string that slips. Saved by [name] under `in_tune_sound_length`, so don't
+ * rename the entries.
+ */
+enum class InTuneSoundLength(val seconds: Float) {
+    SHORT(0.3f),
+    ONE_SECOND(1f),
+    TWO_SECONDS(2f),
+    ;
+
+    companion object {
+        val DEFAULT = SHORT
+    }
+}
+
+/**
  * A tool of the Practice tab (Phase 32, with its switch on, [ToolSwitches.practiceTab]). Saved in
  * settings by [name], so don't rename the entries. The metronome was one until 2.0 gave it a tab of its
  * own (Phase 69): a saved `METRONOME` reads as nothing used yet.
@@ -181,6 +198,15 @@ data class AppSettings(
      * it, their choice holds.
      */
     val vibrationGuide: Boolean? = null,
+    /**
+     * The sound guide (Phase 94): short sounds while the tuner hears a string, stepping up while it is too high, down
+     * while too low, at the vibration guide's pace, and a soft bell in tune. Off until the player turns it on (a sound
+     * from the speaker is what blind players disliked most in phone tuners), whatever TalkBack does; a switch of its
+     * own beside [vibrationGuide], so either or both can be on.
+     */
+    val soundGuide: Boolean = false,
+    /** How long the sound guide's in-tune bell rings ([InTuneSoundLength]). */
+    val inTuneSoundLength: InTuneSoundLength = InTuneSoundLength.DEFAULT,
     /**
      * The string tick-off (2.0, Phase 71), a beginner's help: each peg gets a check once its string is in tune, and
      * "In tune. Play." shows once all have one. Off by default and when missing, so a 1.1 player (who had the ticks

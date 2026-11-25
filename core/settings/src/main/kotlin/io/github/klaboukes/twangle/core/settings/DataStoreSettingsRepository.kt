@@ -265,6 +265,14 @@ class DataStoreSettingsRepository internal constructor(
         save { it[VIBRATION_GUIDE] = enabled }
     }
 
+    override suspend fun setSoundGuide(enabled: Boolean) {
+        save { it[SOUND_GUIDE] = enabled }
+    }
+
+    override suspend fun setInTuneSoundLength(length: InTuneSoundLength) {
+        save { it[IN_TUNE_SOUND_LENGTH] = length.name }
+    }
+
     override suspend fun setStringTickOff(enabled: Boolean) {
         save { it[STRING_TICK_OFF] = enabled }
     }
@@ -441,6 +449,8 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             vibrationGuide = prefs[VIBRATION_GUIDE] ?: defaults.vibrationGuide,
+            soundGuide = prefs[SOUND_GUIDE] ?: defaults.soundGuide,
+            inTuneSoundLength = enumOrNull<InTuneSoundLength>(prefs[IN_TUNE_SOUND_LENGTH]) ?: defaults.inTuneSoundLength,
             stringTickOff = prefs[STRING_TICK_OFF] ?: defaults.stringTickOff,
             underMeter = underMeter(prefs),
             lensLook = lensLook(prefs) ?: defaults.lensLook,
@@ -505,6 +515,11 @@ class DataStoreSettingsRepository internal constructor(
 
         /** The vibration guide (Phase 85); no key while the player has never set it, so it follows the screen reader. */
         private val VIBRATION_GUIDE = booleanPreferencesKey("vibration_guide")
+
+        /** The sound guide (Phase 94), off when missing, and its in-tune bell's length ([InTuneSoundLength], by its name). */
+        private val SOUND_GUIDE = booleanPreferencesKey("sound_guide")
+        private val IN_TUNE_SOUND_LENGTH = stringPreferencesKey("in_tune_sound_length")
+
         /** The string tick-off (2.0); 1.1's `show_tune_hint` ("Show tuning help") has no say in it. */
         private val STRING_TICK_OFF = booleanPreferencesKey("string_tick_off")
 

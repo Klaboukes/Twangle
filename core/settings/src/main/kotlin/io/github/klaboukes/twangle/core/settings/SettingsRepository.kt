@@ -109,6 +109,12 @@ interface SettingsRepository {
     /** The player's own choice for the vibration guide ([AppSettings.vibrationGuide]): from then on it no longer follows the screen reader. */
     suspend fun setVibrationGuide(enabled: Boolean)
 
+    /** The sound guide on or off ([AppSettings.soundGuide]). */
+    suspend fun setSoundGuide(enabled: Boolean)
+
+    /** How long the sound guide's in-tune bell rings ([AppSettings.inTuneSoundLength]). */
+    suspend fun setInTuneSoundLength(length: InTuneSoundLength)
+
     suspend fun setStringTickOff(enabled: Boolean)
 
     /** What goes under the meter. Also removes 1.1's `show_tune_hint`, which decides only until one is picked. */

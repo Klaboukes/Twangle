@@ -41,6 +41,10 @@ import kotlinx.coroutines.flow.asStateFlow
  * itself, and refused focus (during a call) means no sound. With [stopsWhenNoisy], headphones coming
  * unplugged (`ACTION_AUDIO_BECOMING_NOISY`, Bluetooth ones too) call [stop] as well, so it never
  * carries on out of the speaker. At media volume 0 a session shows the phone's own volume panel.
+ *
+ * The sound guide's short sounds (Phase 94, [AndroidGuideSoundPlayer]) come up to three times a second, so they ask
+ * for no focus ([holdsFocus] false: another app's music would pause and resume with each) and show the volume panel
+ * only when [showsVolume] says so (not with every sound); [contentType] says what the sound is to the system.
  */
 internal class PlayerSessions<R : Any>(
     context: Context,
@@ -50,6 +54,9 @@ internal class PlayerSessions<R : Any>(
     private val stop: () -> Unit,
     private val startSession: () -> Chunks<R>,
     private val whenFailed: () -> Unit = {},
+    private val holdsFocus: Boolean = true,
+    private val showsVolume: () -> Boolean = { true },
+    contentType: Int = AudioAttributes.CONTENT_TYPE_MUSIC,
 ) {
 
     /** One session's sound, made by `startSession` on the writer thread as the session begins. */
@@ -91,7 +98,7 @@ internal class PlayerSessions<R : Any>(
 
     private val attributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .setContentType(contentType)
         .build()
 
     // Asked for when a session starts, given up when it ends.
@@ -149,11 +156,13 @@ internal class PlayerSessions<R : Any>(
         var focused = false
         var listening = false
         try {
-            if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                Log.i(name, "No audio focus (a call?): no sound")
-                return
+            if (holdsFocus) {
+                if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    Log.i(name, "No audio focus (a call?): no sound")
+                    return
+                }
+                focused = true
             }
-            focused = true
             if (stopsWhenNoisy) {
                 // Only the system sends it (a protected broadcast), which reaches a not-exported receiver too.
                 val noisy = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
@@ -164,7 +173,7 @@ internal class PlayerSessions<R : Any>(
                 }
                 listening = true
             }
-            AudioOutput.showVolumeIfSilent(audioManager)
+            if (showsVolume()) AudioOutput.showVolumeIfSilent(audioManager)
             val sound = startSession()
             val opened = AudioOutput.openTrack(sampleRate, attributes, trackFrames)
             track = opened

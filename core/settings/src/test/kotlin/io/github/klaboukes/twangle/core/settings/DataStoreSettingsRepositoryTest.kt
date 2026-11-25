@@ -111,6 +111,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals("the vibration guide was never set: it follows the screen reader", null, settings.vibrationGuide)
+        assertEquals("the sound guide is off until the player turns it on", false, settings.soundGuide)
+        assertEquals("the in-tune bell is short to start with", InTuneSoundLength.SHORT, settings.inTuneSoundLength)
         assertEquals("the string tick-off is off on a fresh install", false, settings.stringTickOff)
         assertEquals("the word under the meter on a fresh install", UnderMeter.WORDS, settings.underMeter)
         assertEquals("a fresh install's meter shows the Classic needle", LensLook.CLASSIC, settings.lensLook)
@@ -150,6 +152,8 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setVibrationGuide(true)
+        repo.setSoundGuide(true)
+        repo.setInTuneSoundLength(InTuneSoundLength.TWO_SECONDS)
         repo.setStringTickOff(true)
         repo.setUnderMeter(UnderMeter.CENTS)
         repo.setLensLook(LensLook.STROBE)
@@ -187,6 +191,8 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             vibrationGuide = true,
+            soundGuide = true,
+            inTuneSoundLength = InTuneSoundLength.TWO_SECONDS,
             stringTickOff = true,
             underMeter = UnderMeter.CENTS,
             lensLook = LensLook.STROBE,
@@ -1446,6 +1452,8 @@ class DataStoreSettingsRepositoryTest {
             "setKeepScreenOn" to { repo.setKeepScreenOn(!before.keepScreenOn) },
             "setVibrateInTune" to { repo.setVibrateInTune(!before.vibrateInTune) },
             "setVibrationGuide" to { repo.setVibrationGuide(true) },
+            "setSoundGuide" to { repo.setSoundGuide(!before.soundGuide) },
+            "setInTuneSoundLength" to { repo.setInTuneSoundLength(InTuneSoundLength.entries.last()) },
             "setStringTickOff" to { repo.setStringTickOff(!before.stringTickOff) },
             "setUnderMeter" to { repo.setUnderMeter(UnderMeter.CENTS) },
             "setLensLook" to { repo.setLensLook(LensLook.entries.last()) },
