@@ -48,6 +48,7 @@ import io.github.klaboukes.twangle.core.designsystem.topScaleFor
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.InTuneSoundLength
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
@@ -99,6 +100,8 @@ class SettingsContentTest {
     private val lensLookChanges = mutableListOf<LensLook>()
     private val leftHandedChanges = mutableListOf<Boolean>()
     private val guideChanges = mutableListOf<Boolean>()
+    private val soundGuideChanges = mutableListOf<Boolean>()
+    private val inTuneSoundChanges = mutableListOf<InTuneSoundLength>()
     private val highContrastChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
@@ -168,6 +171,8 @@ class SettingsContentTest {
                         onAppLanguageChange = { languageChanges += it },
                         screenReaderOn = screenReaderOn,
                         onVibrationGuideChange = { guideChanges += it },
+                        onSoundGuideChange = { soundGuideChanges += it },
+                        onInTuneSoundLengthChange = { inTuneSoundChanges += it },
                         phoneHighContrast = phoneHighContrast,
                         onHighContrastChange = { highContrastChanges += it },
                         onBack = if (settingsBack) ({ backs++ }) else null,
@@ -562,6 +567,59 @@ class SettingsContentTest {
         show(AppSettings(), locale = "nl")
         assertEquals("Hoog contrast", resourcesIn("nl").getString(R.string.settings_high_contrast_title))
         compose.onNodeWithText("Hoog contrast").performScrollTo().assertIsOff()
+    }
+
+    /**
+     * The sound guide's switch (Phase 94), right after the vibration guide's: TalkBack hears it as a switch with its
+     * name, off on a fresh install even with TalkBack on, and the bell's length is hidden while it is off.
+     */
+    @Test
+    fun theSoundGuideSwitchIsOffUntilTurnedOnTalkBackOrNot() {
+        show(AppSettings(), screenReaderOn = true)
+        val title = context.getString(R.string.settings_sound_guide_title)
+        val guide = compose.onNodeWithTag(SOUND_GUIDE_SETTING_TAG)
+        guide.performScrollTo().assertIsOff().assertHasClickAction()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+            .assert(hasText(title))
+        compose.onNodeWithText(context.getString(R.string.settings_sound_guide_summary)).assertIsDisplayed()
+        compose.onAllNodesWithText(context.getString(R.string.settings_in_tune_sound_title)).assertCountEquals(0)
+        // Under the vibration guide's switch.
+        val vibration = compose.onNodeWithText(context.getString(R.string.settings_vibration_guide_title)).getUnclippedBoundsInRoot()
+        assertTrue(guide.getUnclippedBoundsInRoot().top >= vibration.bottom)
+        guide.performClick()
+        assertEquals(listOf(true), soundGuideChanges)
+    }
+
+    /** On, the bell's three lengths show as radio buttons, Short picked on a fresh install; a tap saves another. */
+    @Test
+    fun theSoundGuideOnOffersTheBellsLength() {
+        show(AppSettings(soundGuide = true))
+        compose.onNodeWithTag(SOUND_GUIDE_SETTING_TAG).performScrollTo().assertIsOn()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_sound_title)).performScrollTo().assertIsDisplayed()
+        val lengths = listOf(
+            R.string.settings_in_tune_sound_short,
+            R.string.settings_in_tune_sound_one_second,
+            R.string.settings_in_tune_sound_two_seconds,
+        ).map { compose.onNodeWithText(context.getString(it)) }
+        lengths.forEachIndexed { i, row ->
+            row.performScrollTo().assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            if (i == 0) row.assertIsSelected() else row.assertIsNotSelected()
+        }
+        lengths[2].performClick()
+        assertEquals(listOf(InTuneSoundLength.TWO_SECONDS), inTuneSoundChanges)
+    }
+
+    /** In Dutch: "Stemmen op geluid", with the tuner's own words, and the bell's lengths in seconds. */
+    @Test
+    fun dutchSoundGuideHasItsWords() {
+        show(AppSettings(soundGuide = true), locale = "nl")
+        val res = resourcesIn("nl")
+        assertEquals("Stemmen op geluid", res.getString(R.string.settings_sound_guide_title))
+        val summary = res.getString(R.string.settings_sound_guide_summary)
+        assertTrue("the tuner's own words: $summary", "te hoog" in summary && "te laag" in summary && "zuiver" in summary)
+        compose.onNodeWithText("Stemmen op geluid").performScrollTo().assertIsOn()
+        compose.onNodeWithText(summary).assertIsDisplayed()
+        compose.onNodeWithText(res.getString(R.string.settings_in_tune_sound_two_seconds)).performScrollTo().assertIsDisplayed()
     }
 
     /** The player's choice holds whatever the screen reader does. */

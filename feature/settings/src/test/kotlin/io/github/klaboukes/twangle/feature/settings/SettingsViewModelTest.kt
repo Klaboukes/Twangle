@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.InTuneSoundLength
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.UnderMeter
@@ -112,6 +113,17 @@ class SettingsViewModelTest {
         vm.setVibrationGuide(true)
         runCurrent()
         assertEquals(true, repository.current.vibrationGuide)
+    }
+
+    @Test
+    fun `saves the sound guide and its bell's length`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        assertEquals("off at first", false, repository.current.soundGuide)
+        vm.setSoundGuide(true)
+        vm.setInTuneSoundLength(InTuneSoundLength.ONE_SECOND)
+        runCurrent()
+        assertEquals(true, repository.current.soundGuide)
+        assertEquals(InTuneSoundLength.ONE_SECOND, repository.current.inTuneSoundLength)
     }
 
     @Test

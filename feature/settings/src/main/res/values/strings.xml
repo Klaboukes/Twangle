@@ -97,6 +97,18 @@
     <string name="settings_vibration_guide_title">Vibration guide</string>
     <!-- The line under the Vibration guide switch: one short tap means the string is too low (tighten it), two taps too high (loosen it), a long buzz means in tune. -->
     <string name="settings_vibration_guide_summary">Taps while you tune: one to tighten, two to loosen, long when in tune</string>
+    <!-- Switch title, off by default: while the tuner hears a string, the phone plays short sounds that tell which way the string is off, so a player can tune without looking at the screen (e.g. a blind player). Beside the Vibration guide switch, which does the same with taps. -->
+    <string name="settings_sound_guide_title">Sound guide</string>
+    <!-- The line under the Sound guide switch: two short notes going up mean the string is too high, going down too low, and a soft bell means it is in tune. Use the same words for too high, too low and in tune as the tuner (tuner_word_too_high, tuner_word_too_low and the in-tune word). -->
+    <string name="settings_sound_guide_summary">Short sounds while you tune: up when too high, down when too low, a bell when in tune</string>
+    <!-- Title of a choice (three radio buttons), shown under the Sound guide switch while it is on: how long the soft bell rings when the string is in tune. -->
+    <string name="settings_in_tune_sound_title">In-tune bell</string>
+    <!-- In-tune bell choice, the default: a short ring (0.3 seconds). -->
+    <string name="settings_in_tune_sound_short">Short</string>
+    <!-- In-tune bell choice: it rings for one second. Keep the no-break space between the number and the word. -->
+    <string name="settings_in_tune_sound_one_second">1 second</string>
+    <!-- In-tune bell choice: it rings for two seconds. Keep the no-break space between the number and the word. -->
+    <string name="settings_in_tune_sound_two_seconds">2 seconds</string>
     <!-- Switch title: a help for beginners, off by default: each string's round button (peg) on the tuner gets a small check mark once that string is in tune. -->
     <string name="settings_string_tick_off_title">Tick off tuned strings</string>
     <!-- The line under the Tick off tuned strings switch. The quoted words are the tuner's own line once every string is in tune (tuner_hint_all_in_tune): use the same translation. -->

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.InTuneSoundLength
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -70,6 +71,14 @@ class SettingsViewModel(
     /** The player's own choice: from now on the guide no longer follows the screen reader. */
     fun setVibrationGuide(enabled: Boolean) {
         viewModelScope.launch { repository.setVibrationGuide(enabled) }
+    }
+
+    fun setSoundGuide(enabled: Boolean) {
+        viewModelScope.launch { repository.setSoundGuide(enabled) }
+    }
+
+    fun setInTuneSoundLength(length: InTuneSoundLength) {
+        viewModelScope.launch { repository.setInTuneSoundLength(length) }
     }
 
     fun setStringTickOff(enabled: Boolean) {
