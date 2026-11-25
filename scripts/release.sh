@@ -91,10 +91,18 @@
 #       The reports' bucket: $TWANGLE_PLAY_REPORTS_BUCKET (Play Console: Manage
 #       account, Play apps reports, Statistics, Copy Cloud Storage URI), else the two usual names from
 #       the account id. Needs the robot user's "View app information and download bulk reports".
+#   scripts/release.sh exodus <version>
+#       Asks Exodus Privacy (https://reports.exodus-privacy.eu.org/) for a new report of the app on Google
+#       Play, as its "Perform a new analysis" form does (no account, no key), waits for it (up to 20
+#       minutes) and checks it: no tracker, and no permission outside EXODUS_PERMISSIONS below. <version>
+#       is the phone app's version on production (not always the latest tag: 2.2.1 went to the watch
+#       alone); a report of it already there is only read. Run once a version is on production for everyone (owner, 2026-11-25: one a release; the
+#       README links to the latest report). Exit 0 clean, 1 a tracker or a new permission, 2 no report.
 #
 # status, health, reviews and installs only read (scripts/PlayReports.java; status opens a temporary edit and
 # deletes it, never commits it), so they need no yes from the owner. They need the robot user's key too.
-# listing-changes and full-check only read (git, and the full check's record).
+# listing-changes and full-check only read (git, and the full check's record). exodus sends only the
+# app's public ID to Exodus, which anyone may do, so it needs no yes either (owner, 2026-11-25).
 #
 # upload, promote, rollout, halt and listing change what people get or see on Google Play, so Claude
 # asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
@@ -137,6 +145,12 @@ PROFILE_SOURCES=(app/src/main ':(glob)feature/*/src/main/**' core/designsystem/s
 # The first step of a staged rollout to production (promote production staged), in percent
 # (docs/release.md, The idea).
 FIRST_ROLLOUT=20
+# Exodus Privacy: where its reports and form are, and the permissions its report of the Play version may
+# list (docs/growth/f-droid.md, *Exodus Privacy*): the microphone, vibration, AndroidX's own lock on
+# the app's receivers, and Play's licence check, which Google Play adds to the app it delivers.
+EXODUS="https://reports.exodus-privacy.eu.org"
+EXODUS_PERMISSIONS="RECORD_AUDIO VIBRATE DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION CHECK_LICENSE"
+EXODUS_WAIT_SECONDS=1200
 
 fail() { echo "release: $*" >&2; exit 1; }
 
@@ -965,6 +979,64 @@ reviews() {
     play_read reviews "$language"
 }
 
+# The latest report's page as "<version> <trackers> <permission> <permission> ...", or nothing when
+# there is none yet.
+exodus_latest() {
+    local page title_version trackers
+    page="$(curl -sSL --max-time 60 "$EXODUS/en/reports/$APP_ID/latest/" 2>/dev/null)" || return 0
+    title_version="$(sed -n "s|.*<title>Report for $APP_ID \([^ ]*\) - .*|\1|p" <<<"$page" | head -1)"
+    [[ -n "$title_version" ]] || return 0
+    trackers="$(grep -A1 'href="#trackers"' <<<"$page" | grep -o '>[0-9]*<' | tr -d '<>' | head -1)"
+    # Each permission is a tooltip span ("android.permission.RECORD_AUDIO" over "RECORD_AUDIO") in the
+    # permissions section, which ends where "What's next?" begins.
+    echo "$title_version ${trackers:-?} $(sed -n '/id="permissions"/,/What.s next/p' <<<"$page" |
+        sed -n 's|.*data-toggle="tooltip"[^>]*title="[^"]*">\([A-Z][A-Z0-9_]*\)</span>.*|\1|p' | sort -u | tr '\n' ' ')"
+}
+
+exodus() {
+    [[ $# -eq 1 && "$1" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
+        fail "usage: scripts/release.sh exodus <version>, the phone app's version on production, e.g. 2.3.0"
+    local wanted="${1#v}"
+    local latest
+    latest="$(exodus_latest)"
+    if [[ "${latest%% *}" != "$wanted" ]]; then
+        echo "Asking Exodus Privacy for a report of Twangle $wanted on Google Play (its latest: ${latest%% *})..."
+        local jar form token code
+        jar="$(mktemp)"
+        form="$(curl -sS --max-time 60 -c "$jar" -b "$jar" "$EXODUS/en/analysis/submit/")" ||
+            { rm -f "$jar"; fail "Exodus's form didn't open"; }
+        token="$(sed -n 's/.*name="csrfmiddlewaretoken" value="\([^"]*\)".*/\1/p' <<<"$form" | tail -1)"
+        [[ -n "$token" ]] || { rm -f "$jar"; fail "Exodus's form has changed (no form token): ask for it by hand at $EXODUS/en/analysis/submit/"; }
+        code="$(curl -sS --max-time 60 -o /dev/null -w '%{http_code}' -c "$jar" -b "$jar" \
+            -e "$EXODUS/en/analysis/submit/" --data-urlencode "csrfmiddlewaretoken=$token" \
+            --data-urlencode "handle=$APP_ID" --data-urlencode "source=google" "$EXODUS/en/analysis/submit/")"
+        rm -f "$jar"
+        [[ "$code" =~ ^(200|302|303)$ ]] || fail "Exodus refused the request (HTTP $code): ask for it by hand at $EXODUS/en/analysis/submit/"
+        local waited=0
+        while latest="$(exodus_latest)"; [[ "${latest%% *}" != "$wanted" ]]; do
+            (( waited < EXODUS_WAIT_SECONDS )) || {
+                echo "No report of $wanted after $((EXODUS_WAIT_SECONDS / 60)) minutes (the latest is of ${latest%% *}). Exodus may still be busy, or Play may not hand out $wanted to everyone yet (a staged rollout): run it again later." >&2
+                exit 2
+            }
+            sleep 30
+            waited=$((waited + 30))
+        done
+    fi
+    local version trackers permissions extra="" p
+    read -r version trackers permissions <<<"$latest"
+    for p in $permissions; do
+        [[ " $EXODUS_PERMISSIONS " == *" $p "* ]] || extra+=" $p"
+    done
+    echo "Exodus Privacy's report of Twangle $version: $trackers trackers; permissions: ${permissions% }."
+    echo "  $EXODUS/en/reports/$APP_ID/latest/"
+    if [[ "$trackers" != 0 || -n "$extra" ]]; then
+        [[ "$trackers" == 0 ]] || echo "A TRACKER: Exodus found $trackers. Look into it before anything else." >&2
+        [[ -z "$extra" ]] || echo "A NEW PERMISSION:$extra (not in EXODUS_PERMISSIONS). Find where it comes from (the release build's merged manifest), then take it out, or explain it in docs/growth/f-droid.md and add it." >&2
+        exit 1
+    fi
+    echo "Clean: no tracker, no permission beyond the usual four."
+}
+
 COMMAND="${1:-}"
 [[ $# -eq 0 ]] || shift
 # "watch" right after a Play step: the watch app's bundle on its Wear OS tracks.
@@ -987,9 +1059,10 @@ case "$COMMAND" in
     health) health "$@" ;;
     reviews) reviews "$@" ;;
     installs) installs "$@" ;;
+    exodus) exodus "$@" ;;
     *) fail "usage: scripts/release.sh bump patch|minor|major | notes | profile | full-check
        | bundle [--keep-old-profile] [--watch-untested]
        | upload [watch] [draft|completed] | promote [watch] closed [draft|completed]
        | promote [watch] production [draft] | rollout [watch] <percent> | halt [watch] | listing
-       | listing-changes | status | health [days] | reviews [language]" ;;
+       | listing-changes | status | health [days] | reviews [language] | installs | exodus <version>" ;;
 esac

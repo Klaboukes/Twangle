@@ -131,7 +131,9 @@ of 2.2.0 shows **0 trackers** and 4 permissions, none of them internet:
 
 The README links to the latest report
 (`https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/`). Exodus
-doesn't analyse each new version by itself; anyone can ask for a newer one on the same page.
+doesn't analyse each new version by itself, so `scripts/release.sh exodus <version>` asks for one
+after each release reaches everyone (the release skill, step 10) and checks it: no tracker, and no
+permission outside the four above (`EXODUS_PERMISSIONS` in the script).
 
 ## Show HN
 
