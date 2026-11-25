@@ -258,6 +258,13 @@ next and when: their Xiaomi check, a promotion, the next rollout step in a few d
 Once a version reaches people (the closed test, production), look at `reviews` now and then (it shows
 only the last week) and tell the owner what players say, translated; replies are theirs to write in
 the Play Console.
+**Exodus Privacy, each release** (owner, 2026-11-25): once a version is on production for everyone (a
+full rollout, or `rollout 100`), remind the owner to ask Exodus for a new report: *Perform a new
+analysis* at https://reports.exodus-privacy.eu.org/en/analysis/submit/ with `io.github.klaboukes.twangle`
+(Google Play). Exodus doesn't look at new versions by itself, and the README links to the latest. When
+the owner sends its link, read it and compare it with the last report (docs/growth/f-droid.md, *Exodus
+Privacy*): a tracker, or a permission that wasn't there, is looked into first; otherwise update that
+section's version and date.
 
 ## For now
 True in October 2026; drop each line once it no longer is.
