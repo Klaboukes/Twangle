@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Rung ngắn khi nốt đạt đúng cao độ</string>
     <string name="settings_vibration_guide_title">Rung chỉ dẫn</string>
     <string name="settings_vibration_guide_summary">Rung khi lên dây: một lần là căng lên, hai lần là chùng xuống, dài là đã chuẩn</string>
+    <string name="settings_sound_guide_title">Âm thanh chỉ dẫn</string>
+    <string name="settings_sound_guide_summary">Âm ngắn khi lên dây: đi lên là quá cao, đi xuống là quá thấp, tiếng chuông là đã chuẩn</string>
+    <string name="settings_in_tune_sound_title">Chuông khi chuẩn</string>
+    <string name="settings_in_tune_sound_short">Ngắn</string>
+    <string name="settings_in_tune_sound_one_second">1 giây</string>
+    <string name="settings_in_tune_sound_two_seconds">2 giây</string>
     <string name="settings_string_tick_off_title">Đánh dấu dây đã chuẩn</string>
     <string name="settings_string_tick_off_summary">Dấu tích trên mỗi dây khi đã chuẩn, và “Đã chuẩn. Đàn thôi.” khi tất cả đều chuẩn</string>
 

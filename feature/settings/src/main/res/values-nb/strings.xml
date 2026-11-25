@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">En kort summing når tonen treffer riktig</string>
     <string name="settings_vibration_guide_title">Vibrasjonsguide</string>
     <string name="settings_vibration_guide_summary">Korte vibrasjoner mens du stemmer: én = stram, to = slakk, lang = stemt</string>
+    <string name="settings_sound_guide_title">Lydguide</string>
+    <string name="settings_sound_guide_summary">Korte lyder mens du stemmer: opp = for høy, ned = for lav, bjelle = stemt</string>
+    <string name="settings_in_tune_sound_title">Bjelle ved stemt tone</string>
+    <string name="settings_in_tune_sound_short">Kort</string>
+    <string name="settings_in_tune_sound_one_second">1 sekund</string>
+    <string name="settings_in_tune_sound_two_seconds">2 sekunder</string>
     <string name="settings_string_tick_off_title">Huk av stemte strenger</string>
     <string name="settings_string_tick_off_summary">En hake på hver streng når den er stemt, og «Stemt. Spill i vei.» når alle er det</string>
 

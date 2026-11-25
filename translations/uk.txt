@@ -301,6 +301,10 @@ feature/settings settings_group_tuning 2abeefba
 feature/settings settings_group_while_tuning d30f1d0c
 feature/settings settings_high_contrast_summary 0bbdf3c5
 feature/settings settings_high_contrast_title 415a8336
+feature/settings settings_in_tune_sound_one_second 4b2c5423
+feature/settings settings_in_tune_sound_short f5d61ead
+feature/settings settings_in_tune_sound_title 2ba77a20
+feature/settings settings_in_tune_sound_two_seconds 2541190d
 feature/settings settings_keep_screen_on_summary 9d43b861
 feature/settings settings_keep_screen_on_title 177d4076
 feature/settings settings_language_cancel 19766ed6
@@ -321,6 +325,8 @@ feature/settings settings_notation_solfege 86108139
 feature/settings settings_notation_title dab557ae
 feature/settings settings_precise_summary cdda877b
 feature/settings settings_precise_title 3e2f8bc4
+feature/settings settings_sound_guide_summary 4bc35668
+feature/settings settings_sound_guide_title f0324057
 feature/settings settings_string_tick_off_summary f5894e6f
 feature/settings settings_string_tick_off_title be2c9e21
 feature/settings settings_theme_dark 60acc53f

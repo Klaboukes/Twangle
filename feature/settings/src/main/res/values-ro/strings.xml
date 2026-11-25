@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">O vibrație scurtă când nota ajunge la înălțimea corectă</string>
     <string name="settings_vibration_guide_title">Ghid prin vibrații</string>
     <string name="settings_vibration_guide_summary">Vibrații cât acordați: una pentru întindere, două pentru slăbire, lungă când e acordat</string>
+    <string name="settings_sound_guide_title">Ghid prin sunete</string>
+    <string name="settings_sound_guide_summary">Sunete scurte cât acordați: urcă când e prea sus, coboară când e prea jos, un clopoțel când e acordat</string>
+    <string name="settings_in_tune_sound_title">Clopoțel când e acordat</string>
+    <string name="settings_in_tune_sound_short">Scurt</string>
+    <string name="settings_in_tune_sound_one_second">1 secundă</string>
+    <string name="settings_in_tune_sound_two_seconds">2 secunde</string>
     <string name="settings_string_tick_off_title">Bifați corzile acordate</string>
     <string name="settings_string_tick_off_summary">O bifă pe fiecare coardă acordată și „Acordat. Cântați.” când sunt toate</string>
 

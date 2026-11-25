@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Kurzes Vibrieren, sobald der Ton stimmt</string>
     <string name="settings_vibration_guide_title">Stimmen per Vibration</string>
     <string name="settings_vibration_guide_summary">Impulse beim Stimmen: einer = spannen, zwei = lockern, lang = gestimmt</string>
+    <string name="settings_sound_guide_title">Stimmen per Klang</string>
+    <string name="settings_sound_guide_summary">Kurze Töne beim Stimmen: steigend = zu hoch, fallend = zu tief, Glöckchen = gestimmt</string>
+    <string name="settings_in_tune_sound_title">Glöckchen, wenn gestimmt</string>
+    <string name="settings_in_tune_sound_short">Kurz</string>
+    <string name="settings_in_tune_sound_one_second">1 Sekunde</string>
+    <string name="settings_in_tune_sound_two_seconds">2 Sekunden</string>
     <string name="settings_string_tick_off_title">Gestimmte Saiten abhaken</string>
     <string name="settings_string_tick_off_summary">Ein Haken an jeder Saite, sobald sie gestimmt ist, und „Gestimmt. Spiel los.“, wenn alle stimmen</string>
 

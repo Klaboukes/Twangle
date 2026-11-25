@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">음이 맞으면 짧게 진동해요</string>
     <string name="settings_vibration_guide_title">진동 가이드</string>
     <string name="settings_vibration_guide_summary">튜닝 중 진동: 한 번은 조이기, 두 번은 풀기, 길면 음이 맞음</string>
+    <string name="settings_sound_guide_title">소리 가이드</string>
+    <string name="settings_sound_guide_summary">튜닝 중 짧은 소리: 올라가면 너무 높음, 내려가면 너무 낮음, 종소리는 음이 맞음</string>
+    <string name="settings_in_tune_sound_title">음이 맞을 때 종소리</string>
+    <string name="settings_in_tune_sound_short">짧게</string>
+    <string name="settings_in_tune_sound_one_second">1초</string>
+    <string name="settings_in_tune_sound_two_seconds">2초</string>
     <string name="settings_string_tick_off_title">맞춘 줄 체크 표시</string>
     <string name="settings_string_tick_off_summary">음이 맞은 줄에 체크 표시, 모두 맞으면 “음이 맞아요. 연주하세요.”</string>
 

@@ -52,6 +52,12 @@
     <string name="settings_vibrate_in_tune_summary">स्वर अचूक पिचवर पोहोचताच छोटेसे व्हायब्रेशन</string>
     <string name="settings_vibration_guide_title">व्हायब्रेशन मार्गदर्शक</string>
     <string name="settings_vibration_guide_summary">ट्यून करताना टॅप: एक म्हणजे ताणा, दोन म्हणजे सैल करा, सुरात आल्यावर लांब</string>
+    <string name="settings_sound_guide_title">आवाज मार्गदर्शक</string>
+    <string name="settings_sound_guide_summary">ट्यून करताना छोटे आवाज: खूप चढलेला असल्यास वर, खूप उतरलेला असल्यास खाली, सुरात आल्यावर घंटी</string>
+    <string name="settings_in_tune_sound_title">सुरात आल्यावर घंटी</string>
+    <string name="settings_in_tune_sound_short">छोटी</string>
+    <string name="settings_in_tune_sound_one_second">१ सेकंद</string>
+    <string name="settings_in_tune_sound_two_seconds">२ सेकंद</string>
     <string name="settings_string_tick_off_title">ट्यून झालेल्या तारांवर खूण</string>
     <string name="settings_string_tick_off_summary">प्रत्येक तार सुरात येताच तिच्यावर खूण, आणि सर्व सुरात आल्यावर “सुरात. आता वाजवा.”</string>
 

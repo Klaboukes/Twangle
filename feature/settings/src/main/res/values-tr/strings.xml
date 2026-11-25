@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Nota akortlu olunca kısa bir titreşim</string>
     <string name="settings_vibration_guide_title">Titreşim rehberi</string>
     <string name="settings_vibration_guide_summary">Akort ederken titreşir: bir kez yükselt, iki kez düşür, uzun ise akortlu</string>
+    <string name="settings_sound_guide_title">Ses rehberi</string>
+    <string name="settings_sound_guide_summary">Akort ederken kısa sesler: yukarı çıkarsa yüksek, inerse düşük, zil çalarsa akortlu</string>
+    <string name="settings_in_tune_sound_title">Akort zili</string>
+    <string name="settings_in_tune_sound_short">Kısa</string>
+    <string name="settings_in_tune_sound_one_second">1 saniye</string>
+    <string name="settings_in_tune_sound_two_seconds">2 saniye</string>
     <string name="settings_string_tick_off_title">Akortlu telleri işaretle</string>
     <string name="settings_string_tick_off_summary">Akortlu olan her tele bir işaret, hepsi akortluysa “Akort tamam. Çal.”</string>
 

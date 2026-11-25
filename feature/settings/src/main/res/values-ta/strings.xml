@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">நோட் சுருதியை அடைந்ததும் சிறு அதிர்வு</string>
     <string name="settings_vibration_guide_title">அதிர்வு வழிகாட்டி</string>
     <string name="settings_vibration_guide_summary">ட்யூன் செய்யும்போது தட்டல்கள்: ஒன்று இறுக்க, இரண்டு தளர்த்த, சுருதி சரியானால் நீளமாக</string>
+    <string name="settings_sound_guide_title">ஒலி வழிகாட்டி</string>
+    <string name="settings_sound_guide_summary">ட்யூன் செய்யும்போது சிறு ஒலிகள்: உயர்வு என்றால் ஏறும், தாழ்வு என்றால் இறங்கும், சுருதி சரியானால் மணி</string>
+    <string name="settings_in_tune_sound_title">சுருதி சரியானதும் மணி</string>
+    <string name="settings_in_tune_sound_short">சிறிது நேரம்</string>
+    <string name="settings_in_tune_sound_one_second">1 வினாடி</string>
+    <string name="settings_in_tune_sound_two_seconds">2 வினாடிகள்</string>
     <string name="settings_string_tick_off_title">ட்யூன் ஆன கம்பிகளைக் குறி</string>
     <string name="settings_string_tick_off_summary">ஒவ்வொரு கம்பியும் சுருதி சரியானதும் ஒரு குறி, எல்லாம் சரியானதும் “சுருதி சரி. வாசிக்கவும்.”</string>
 

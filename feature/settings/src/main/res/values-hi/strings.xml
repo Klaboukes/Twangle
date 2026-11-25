@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">नोट सही पिच पर पहुँचते ही हल्का-सा वाइब्रेशन</string>
     <string name="settings_vibration_guide_title">वाइब्रेशन गाइड</string>
     <string name="settings_vibration_guide_summary">ट्यून करते समय टैप: एक यानी कसें, दो यानी ढीला करें, सुर में आने पर लंबा</string>
+    <string name="settings_sound_guide_title">साउंड गाइड</string>
+    <string name="settings_sound_guide_summary">ट्यून करते समय छोटी आवाज़ें: बहुत ऊँचा हो तो ऊपर, बहुत नीचा हो तो नीचे, सुर में आने पर घंटी</string>
+    <string name="settings_in_tune_sound_title">सुर में आने पर घंटी</string>
+    <string name="settings_in_tune_sound_short">छोटी</string>
+    <string name="settings_in_tune_sound_one_second">1 सेकंड</string>
+    <string name="settings_in_tune_sound_two_seconds">2 सेकंड</string>
     <string name="settings_string_tick_off_title">ट्यून हुए तारों पर टिक</string>
     <string name="settings_string_tick_off_summary">सुर में आते ही हर तार पर टिक, और सब सुर में होने पर “सुर में। अब बजाएँ।”</string>
 

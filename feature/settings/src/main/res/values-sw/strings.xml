@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Mtetemo mfupi noti inapofikia sauti sahihi</string>
     <string name="settings_vibration_guide_title">Mwongozo wa mtetemo</string>
     <string name="settings_vibration_guide_summary">Mitetemo unaporekebisha: mmoja ni kaza, miwili ni legeza, mrefu ni sauti sawa</string>
+    <string name="settings_sound_guide_title">Mwongozo wa sauti</string>
+    <string name="settings_sound_guide_summary">Sauti fupi unaporekebisha: zinapanda ikiwa juu mno, zinashuka ikiwa chini mno, kengele ikiwa sauti sawa</string>
+    <string name="settings_in_tune_sound_title">Kengele ya sauti sawa</string>
+    <string name="settings_in_tune_sound_short">Fupi</string>
+    <string name="settings_in_tune_sound_one_second">Sekunde 1</string>
+    <string name="settings_in_tune_sound_two_seconds">Sekunde 2</string>
     <string name="settings_string_tick_off_title">Weka alama kwa nyuzi zilizo sawa</string>
     <string name="settings_string_tick_off_summary">Alama kwenye kila uzi ukishakuwa sawa, na “Sauti sawa. Anza kupiga.” zote zikiwa sawa</string>
 

@@ -50,6 +50,12 @@
     <string name="settings_vibrate_in_tune_summary">Une courte vibration quand la note est juste</string>
     <string name="settings_vibration_guide_title">Guidage par vibration</string>
     <string name="settings_vibration_guide_summary">Vibrations en accordant : une pour tendre, deux pour détendre, longue si c\'est juste</string>
+    <string name="settings_sound_guide_title">Guidage sonore</string>
+    <string name="settings_sound_guide_summary">Petits sons en accordant : ils montent si trop haut, descendent si trop bas, une clochette si c\'est juste</string>
+    <string name="settings_in_tune_sound_title">Clochette quand c\'est juste</string>
+    <string name="settings_in_tune_sound_short">Courte</string>
+    <string name="settings_in_tune_sound_one_second">1 seconde</string>
+    <string name="settings_in_tune_sound_two_seconds">2 secondes</string>
     <string name="settings_string_tick_off_title">Cocher les cordes accordées</string>
     <string name="settings_string_tick_off_summary">Une coche sur chaque corde juste, et « Tout est juste. Jouez. » quand toutes le sont</string>
 

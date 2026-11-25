@@ -50,6 +50,12 @@
     <string name="settings_vibrate_in_tune_summary">నోట్ సరైన పిచ్ చేరగానే చిన్న వైబ్రేషన్</string>
     <string name="settings_vibration_guide_title">వైబ్రేషన్ గైడ్</string>
     <string name="settings_vibration_guide_summary">ట్యూన్ చేస్తున్నప్పుడు ట్యాప్‌లు: బిగించడానికి ఒకటి, సడలించడానికి రెండు, శ్రుతి సరైతే పొడవైనది</string>
+    <string name="settings_sound_guide_title">సౌండ్ గైడ్</string>
+    <string name="settings_sound_guide_summary">ట్యూన్ చేస్తున్నప్పుడు చిన్న ధ్వనులు: మరీ ఎక్కువైతే పైకి, మరీ తక్కువైతే కిందికి, శ్రుతి సరైతే గంట</string>
+    <string name="settings_in_tune_sound_title">శ్రుతి సరైనప్పుడు గంట</string>
+    <string name="settings_in_tune_sound_short">కొద్దిసేపు</string>
+    <string name="settings_in_tune_sound_one_second">1 సెకను</string>
+    <string name="settings_in_tune_sound_two_seconds">2 సెకన్లు</string>
     <string name="settings_string_tick_off_title">ట్యూన్ అయిన తీగలకు టిక్</string>
     <string name="settings_string_tick_off_summary">ప్రతి తీగ శ్రుతిలోకి రాగానే దానిపై టిక్, అన్నీ వచ్చాక “శ్రుతి సరి. వాయించండి.”</string>
 

@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Krátké zavibrování, když tón dosáhne správné výšky</string>
     <string name="settings_vibration_guide_title">Vibrační navádění</string>
     <string name="settings_vibration_guide_summary">Ťuknutí při ladění: jedno přitáhni, dvě povol, dlouhé naladěno</string>
+    <string name="settings_sound_guide_title">Zvukové navádění</string>
+    <string name="settings_sound_guide_summary">Krátké zvuky při ladění: nahoru – moc vysoko, dolů – moc nízko, zvoneček – naladěno</string>
+    <string name="settings_in_tune_sound_title">Zvoneček při naladění</string>
+    <string name="settings_in_tune_sound_short">Krátce</string>
+    <string name="settings_in_tune_sound_one_second">1 sekunda</string>
+    <string name="settings_in_tune_sound_two_seconds">2 sekundy</string>
     <string name="settings_string_tick_off_title">Odškrtávat naladěné struny</string>
     <string name="settings_string_tick_off_summary">Fajfka u každé naladěné struny a „Naladěno. Hraj.“, když jsou všechny</string>
 

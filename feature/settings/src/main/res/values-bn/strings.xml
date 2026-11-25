@@ -42,6 +42,12 @@
     <string name="settings_vibrate_in_tune_summary">নোট ঠিক পিচে পৌঁছালে একটি ছোট ভাইব্রেশন</string>
     <string name="settings_vibration_guide_title">ভাইব্রেশন গাইড</string>
     <string name="settings_vibration_guide_summary">টিউন করার সময় ট্যাপ: একটি মানে টাইট করুন, দুটি মানে ঢিলা করুন, সুরে এলে লম্বা</string>
+    <string name="settings_sound_guide_title">সাউন্ড গাইড</string>
+    <string name="settings_sound_guide_summary">টিউন করার সময় ছোট শব্দ: খুব উঁচু হলে ওপরে, খুব নিচু হলে নিচে, সুরে এলে ঘণ্টি</string>
+    <string name="settings_in_tune_sound_title">সুরে এলে ঘণ্টি</string>
+    <string name="settings_in_tune_sound_short">ছোট</string>
+    <string name="settings_in_tune_sound_one_second">১ সেকেন্ড</string>
+    <string name="settings_in_tune_sound_two_seconds">২ সেকেন্ড</string>
     <string name="settings_string_tick_off_title">টিউন হওয়া তারে টিক দিন</string>
     <string name="settings_string_tick_off_summary">প্রতিটি তার সুরে এলে তাতে একটি টিক, আর সব সুরে এলে “সুরে আছে। এবার বাজান।”</string>
     <string name="settings_language_title">ভাষা</string>

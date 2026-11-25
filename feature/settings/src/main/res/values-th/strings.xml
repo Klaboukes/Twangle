@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">สั่นสั้นๆ เมื่อโน้ตตรงเสียง</string>
     <string name="settings_vibration_guide_title">สั่นช่วยจูน</string>
     <string name="settings_vibration_guide_summary">สั่นขณะจูน หนึ่งครั้งให้จูนขึ้น สองครั้งให้จูนลง สั่นยาวเมื่อตรงเสียง</string>
+    <string name="settings_sound_guide_title">เสียงช่วยจูน</string>
+    <string name="settings_sound_guide_summary">เสียงสั้นๆ ขณะจูน เสียงไล่ขึ้นเมื่อสูงไป เสียงไล่ลงเมื่อต่ำไป เสียงกระดิ่งเมื่อตรงเสียง</string>
+    <string name="settings_in_tune_sound_title">กระดิ่งเมื่อตรงเสียง</string>
+    <string name="settings_in_tune_sound_short">สั้น</string>
+    <string name="settings_in_tune_sound_one_second">1 วินาที</string>
+    <string name="settings_in_tune_sound_two_seconds">2 วินาที</string>
     <string name="settings_string_tick_off_title">ติ๊กสายที่จูนแล้ว</string>
     <string name="settings_string_tick_off_summary">ติ๊กที่สายแต่ละสายเมื่อตรงเสียง และขึ้น “ตรงเสียงแล้ว เล่นได้เลย” เมื่อครบทุกสาย</string>
 

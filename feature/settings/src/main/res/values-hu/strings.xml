@@ -50,6 +50,12 @@
     <string name="settings_vibrate_in_tune_summary">Rövid rezgés, amikor a hang eléri a helyes magasságot</string>
     <string name="settings_vibration_guide_title">Rezgő útmutató</string>
     <string name="settings_vibration_guide_summary">Rezgés hangolás közben: egy a feszítéshez, kettő a lazításhoz, hosszú, ha tiszta</string>
+    <string name="settings_sound_guide_title">Hangjelzéses útmutató</string>
+    <string name="settings_sound_guide_summary">Rövid hangok hangolás közben: felfelé, ha túl magas, lefelé, ha túl mély, csengő, ha tiszta</string>
+    <string name="settings_in_tune_sound_title">Csengő, ha tiszta</string>
+    <string name="settings_in_tune_sound_short">Rövid</string>
+    <string name="settings_in_tune_sound_one_second">1 másodperc</string>
+    <string name="settings_in_tune_sound_two_seconds">2 másodperc</string>
     <string name="settings_string_tick_off_title">Hangolt húrok kipipálása</string>
     <string name="settings_string_tick_off_summary">Pipa minden húron, ha tiszta, és „Tiszta. Játssz!”, ha mind az</string>
 
