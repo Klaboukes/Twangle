@@ -41,6 +41,7 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
+import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -480,15 +481,19 @@ class StoreScreenshots(private val locale: String, private val shot: Shot) {
      * up to [READING_WAIT_MS], the tree read afresh every [READING_POLL_MS]: the reading is paced
      * (`PacedSpeech`, the region's text blank until the first is published), and on a phone warm from
      * the earlier languages, at twice the text size, it once came after the note's 3 s settle (sv-SE
-     * and vi, 2026-10-29).
+     * and vi, 2026-10-29). Only a text with the word on screen ("Loosen") counts: until the reading is published the
+     * region still holds the waiting line ("Play a string"), and since Phase 94 a reading whose word hasn't settled
+     * waits a second, so ja-JP, km-KH and zh-CN once drew "Play a string" in the bubble (2026-11-25).
      */
     private fun reading(): SpeechBubble {
+        val word = app.getString(TunerR.string.tuner_word_loosen)
         val end = SystemClock.uptimeMillis() + READING_WAIT_MS
         var said = spokenNote()
-        while (said == null && SystemClock.uptimeMillis() < end) {
+        while (said?.contains(word, ignoreCase = true) != true && SystemClock.uptimeMillis() < end) {
             settle(READING_POLL_MS)
             said = spokenNote()
         }
+        check(said?.contains(word, ignoreCase = true) == true) { "TalkBack's reading never said \"$word\"; it said \"$said\"" }
         // As a sentence on the screen: Dutch note names are said in small letters ("e 2, …").
         return SpeechBubble((said ?: error("TalkBack's reading of the note wasn't found")).replaceFirstChar { it.titlecase(Locale.forLanguageTag(locale)) })
     }
