@@ -65,6 +65,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.InTuneSoundLength
 import io.github.klaboukes.twangle.core.settings.LensLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -130,6 +131,8 @@ fun SettingsScreen(
         modifier = modifier,
         screenReaderOn = screenReader,
         onVibrationGuideChange = viewModel::setVibrationGuide,
+        onSoundGuideChange = viewModel::setSoundGuide,
+        onInTuneSoundLengthChange = viewModel::setInTuneSoundLength,
         phoneHighContrast = phoneHighContrast,
         onHighContrastChange = viewModel::setHighContrast,
         onBack = onBack,
@@ -176,6 +179,8 @@ fun SettingsContent(
     onAppLanguageChange: (String?) -> Unit = {},
     screenReaderOn: Boolean = false,
     onVibrationGuideChange: (Boolean) -> Unit = {},
+    onSoundGuideChange: (Boolean) -> Unit = {},
+    onInTuneSoundLengthChange: (InTuneSoundLength) -> Unit = {},
     phoneHighContrast: Boolean = false,
     onHighContrastChange: (Boolean) -> Unit = {},
     onBack: (() -> Unit)? = null,
@@ -203,6 +208,8 @@ fun SettingsContent(
                 dynamicColorAvailable = dynamicColorAvailable,
                 screenReaderOn = screenReaderOn,
                 onVibrationGuideChange = onVibrationGuideChange,
+                onSoundGuideChange = onSoundGuideChange,
+                onInTuneSoundLengthChange = onInTuneSoundLengthChange,
                 phoneHighContrast = phoneHighContrast,
                 onHighContrastChange = onHighContrastChange,
             )
@@ -345,6 +352,8 @@ private fun SettingsGroups(
     dynamicColorAvailable: Boolean,
     screenReaderOn: Boolean,
     onVibrationGuideChange: (Boolean) -> Unit,
+    onSoundGuideChange: (Boolean) -> Unit,
+    onInTuneSoundLengthChange: (InTuneSoundLength) -> Unit,
     phoneHighContrast: Boolean,
     onHighContrastChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -433,6 +442,24 @@ private fun SettingsGroups(
                     checked = settings.vibrationGuideOn(screenReaderOn),
                     onCheckedChange = onVibrationGuideChange,
                 )
+                // The sound guide (Phase 94): the same pace and rule in sound, a switch of its own so either or both can
+                // be on. Off until the player turns it on, TalkBack or not: a sound from the speaker is what blind
+                // players disliked most in phone tuners. The bell's length shows only while it is on.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_sound_guide_title),
+                    summary = stringResource(R.string.settings_sound_guide_summary),
+                    checked = settings.soundGuide,
+                    onCheckedChange = onSoundGuideChange,
+                    modifier = Modifier.testTag(SOUND_GUIDE_SETTING_TAG),
+                )
+                if (settings.soundGuide) {
+                    RadioGroupSetting(
+                        title = stringResource(R.string.settings_in_tune_sound_title),
+                        options = InTuneSoundLength.entries,
+                        selected = settings.inTuneSoundLength,
+                        onSelect = onInTuneSoundLengthChange,
+                    ) { stringResource(inTuneSoundLengthLabel(it)) }
+                }
                 // The beginner's help (2.0, Phase 71), off by default: 1.1's "Show tuning help" went, as the word always shows.
                 SwitchSetting(
                     title = stringResource(R.string.settings_string_tick_off_title),
@@ -533,6 +560,15 @@ private fun Rows(content: @Composable ColumnScope.() -> Unit) {
 
 /** Space between two groups, so each heading clearly starts a new one. */
 private val GROUP_GAP = 32.dp
+
+/** Test tag of the sound guide's switch row. */
+const val SOUND_GUIDE_SETTING_TAG = "settings_sound_guide"
+
+private fun inTuneSoundLengthLabel(length: InTuneSoundLength): Int = when (length) {
+    InTuneSoundLength.SHORT -> R.string.settings_in_tune_sound_short
+    InTuneSoundLength.ONE_SECOND -> R.string.settings_in_tune_sound_one_second
+    InTuneSoundLength.TWO_SECONDS -> R.string.settings_in_tune_sound_two_seconds
+}
 
 /** Test tag of the row that opens the About page (the Baseline Profile generator opens it). */
 const val ABOUT_LINK_TAG = "settings_about"

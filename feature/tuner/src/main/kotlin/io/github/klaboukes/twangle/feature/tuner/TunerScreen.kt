@@ -33,6 +33,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.audio.AndroidGuideSoundPlayer
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
@@ -114,6 +115,7 @@ fun TunerScreen(
             tools = tools,
             screenReaderSpeech = screenReaderSpeech,
             guideVibrator = AndroidGuideVibrator(appContext),
+            guideSounds = AndroidGuideSoundPlayer(appContext),
             listenLog = ListenLog.ANDROID,
         )
     }

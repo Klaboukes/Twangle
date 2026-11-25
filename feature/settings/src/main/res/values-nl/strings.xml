@@ -55,6 +55,12 @@
     <string name="settings_vibrate_in_tune_summary">Kort trillen zodra de noot zuiver is</string>
     <string name="settings_vibration_guide_title">Stemmen op gevoel</string>
     <string name="settings_vibration_guide_summary">Tikjes tijdens het stemmen: één = strakker, twee = losser, lang = zuiver</string>
+    <string name="settings_sound_guide_title">Stemmen op geluid</string>
+    <string name="settings_sound_guide_summary">Korte geluidjes tijdens het stemmen: omhoog = te hoog, omlaag = te laag, belletje = zuiver</string>
+    <string name="settings_in_tune_sound_title">Belletje bij zuiver</string>
+    <string name="settings_in_tune_sound_short">Kort</string>
+    <string name="settings_in_tune_sound_one_second">1 seconde</string>
+    <string name="settings_in_tune_sound_two_seconds">2 seconden</string>
     <string name="settings_string_tick_off_title">Gestemde snaren afvinken</string>
     <string name="settings_string_tick_off_summary">Een vinkje op elke snaar zodra die zuiver is, en “Zuiver. Speel maar.” als ze allemaal zuiver zijn</string>
 

@@ -135,6 +135,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setVibrationGuide(enabled: Boolean) = write { it.copy(vibrationGuide = enabled) }
 
+    override suspend fun setSoundGuide(enabled: Boolean) = write { it.copy(soundGuide = enabled) }
+
+    override suspend fun setInTuneSoundLength(length: InTuneSoundLength) = write { it.copy(inTuneSoundLength = length) }
+
     override suspend fun setStringTickOff(enabled: Boolean) = write { it.copy(stringTickOff = enabled) }
 
     override suspend fun setUnderMeter(choice: UnderMeter) = write { it.copy(underMeter = choice) }
