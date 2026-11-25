@@ -50,6 +50,12 @@
     <string name="settings_vibrate_in_tune_summary">Μια σύντομη δόνηση όταν η νότα φτάσει στον τόνο της</string>
     <string name="settings_vibration_guide_title">Οδηγός δόνησης</string>
     <string name="settings_vibration_guide_summary">Χτυπήματα όσο κουρδίζετε: ένα για σφίξιμο, δύο για χαλάρωμα, μακρύ όταν είναι κουρδισμένη</string>
+    <string name="settings_sound_guide_title">Οδηγός ήχου</string>
+    <string name="settings_sound_guide_summary">Σύντομοι ήχοι όσο κουρδίζετε: πάνω για πολύ ψηλά, κάτω για πολύ χαμηλά, καμπανάκι για κουρδισμένη</string>
+    <string name="settings_in_tune_sound_title">Καμπανάκι κουρδίσματος</string>
+    <string name="settings_in_tune_sound_short">Σύντομο</string>
+    <string name="settings_in_tune_sound_one_second">1 δευτερόλεπτο</string>
+    <string name="settings_in_tune_sound_two_seconds">2 δευτερόλεπτα</string>
     <string name="settings_string_tick_off_title">Σημάδι στις κουρδισμένες χορδές</string>
     <string name="settings_string_tick_off_summary">Ένα τικ σε κάθε χορδή μόλις κουρδιστεί, και «Κουρδισμένο. Παίξτε.» όταν κουρδιστούν όλες</string>
 

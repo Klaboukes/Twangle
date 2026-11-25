@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Lyhyt värähdys, kun sävel osuu vireeseen</string>
     <string name="settings_vibration_guide_title">Viritys värinällä</string>
     <string name="settings_vibration_guide_summary">Napautuksia virittäessä: yksi = kiristä, kaksi = löysää, pitkä = vireessä</string>
+    <string name="settings_sound_guide_title">Viritys äänellä</string>
+    <string name="settings_sound_guide_summary">Lyhyitä ääniä virittäessä: nouseva = liian korkea, laskeva = liian matala, kello = vireessä</string>
+    <string name="settings_in_tune_sound_title">Kello vireessä</string>
+    <string name="settings_in_tune_sound_short">Lyhyt</string>
+    <string name="settings_in_tune_sound_one_second">1 sekunti</string>
+    <string name="settings_in_tune_sound_two_seconds">2 sekuntia</string>
     <string name="settings_string_tick_off_title">Merkitse viritetyt kielet</string>
     <string name="settings_string_tick_off_summary">Merkki kieleen, kun se on vireessä, ja ”Vireessä. Soita.”, kun kaikki ovat</string>
 

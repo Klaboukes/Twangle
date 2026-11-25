@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">音準到位時短暫震動一下</string>
     <string name="settings_vibration_guide_title">震動引導</string>
     <string name="settings_vibration_guide_summary">調音時震動提示：一下調緊，兩下調鬆，長震即已調準</string>
+    <string name="settings_sound_guide_title">聲音引導</string>
+    <string name="settings_sound_guide_summary">調音時短音提示：上行為太高，下行為太低，鈴聲即已調準</string>
+    <string name="settings_in_tune_sound_title">調準鈴聲</string>
+    <string name="settings_in_tune_sound_short">短</string>
+    <string name="settings_in_tune_sound_one_second">1 秒</string>
+    <string name="settings_in_tune_sound_two_seconds">2 秒</string>
     <string name="settings_string_tick_off_title">為調準的弦打勾</string>
     <string name="settings_string_tick_off_summary">每根弦調準後打勾，全部調準時顯示「已調準。開彈吧。」</string>
 

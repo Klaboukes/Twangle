@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota fica afinada</string>
     <string name="settings_vibration_guide_title">Guia por vibração</string>
     <string name="settings_vibration_guide_summary">Toques ao afinar: um para apertar, dois para afrouxar, longo quando afinado</string>
+    <string name="settings_sound_guide_title">Guia por som</string>
+    <string name="settings_sound_guide_summary">Sons curtos ao afinar: sobem quando alto demais, descem quando baixo demais, um sino quando afinado</string>
+    <string name="settings_in_tune_sound_title">Sino quando afinado</string>
+    <string name="settings_in_tune_sound_short">Curto</string>
+    <string name="settings_in_tune_sound_one_second">1 segundo</string>
+    <string name="settings_in_tune_sound_two_seconds">2 segundos</string>
     <string name="settings_string_tick_off_title">Marcar cordas afinadas</string>
     <string name="settings_string_tick_off_summary">Uma marca em cada corda afinada, e “Tudo afinado. Pode tocar.” quando todas estiverem</string>
 

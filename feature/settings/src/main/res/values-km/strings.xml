@@ -43,6 +43,12 @@
     <string name="settings_vibrate_in_tune_summary">ញ័រ\u200Bខ្លី\u200Bមួយ\u200Bពេល\u200Bណុ\u2060ត\u200Bត្រូវ\u200Bសំឡេង</string>
     <string name="settings_vibration_guide_title">ការ\u200Bណែនាំ\u200Bដោយ\u200Bញ័រ</string>
     <string name="settings_vibration_guide_summary">ញ័រ\u200Bពេល\u200Bតម្រូវ\u200Bសំឡេង៖ ម្ដង\u200Bឱ្យ\u200Bរឹត ពីរ\u200Bដង\u200Bឱ្យ\u200Bបន្ធូរ ញ័រ\u200Bយូរ\u200Bពេល\u200Bត្រូវ\u200Bសំឡេង</string>
+    <string name="settings_sound_guide_title">ការ\u200Bណែនាំ\u200Bដោយ\u200Bសំឡេង</string>
+    <string name="settings_sound_guide_summary">សំឡេង\u200Bខ្លី\u200Bពេល\u200Bតម្រូវ\u200Bសំឡេង៖ ឡើង\u200Bពេល\u200Bខ្ពស់\u200Bពេក ចុះ\u200Bពេល\u200Bទាប\u200Bពេក កណ្ដឹង\u200Bពេល\u200Bត្រូវ\u200Bសំឡេង</string>
+    <string name="settings_in_tune_sound_title">កណ្ដឹង\u200Bពេល\u200Bត្រូវ\u200Bសំឡេង</string>
+    <string name="settings_in_tune_sound_short">ខ្លី</string>
+    <string name="settings_in_tune_sound_one_second">1\u00A0វិនាទី</string>
+    <string name="settings_in_tune_sound_two_seconds">2\u00A0វិនាទី</string>
     <string name="settings_string_tick_off_title">គូស\u200Bធី\u2060ក\u200Bខ្សែ\u200Bដែល\u200Bបាន\u200Bតម្រូវ</string>
     <string name="settings_string_tick_off_summary">សញ្ញា\u200Bធី\u2060ក\u200Bលើ\u200Bខ្សែ\u200Bនីមួយៗ\u200Bពេល\u200Bវា\u200Bត្រូវ\u200Bសំឡេង និង «ត្រូវ\u200Bសំឡេង។ លេង\u200Bបាន\u200Bហើយ។» ពេល\u200Bត្រូវ\u200Bទាំង\u200Bអស់</string>
     <string name="settings_language_title">ភាសា</string>

@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
     <string name="settings_vibration_guide_title">الضبط بالاهتزاز</string>
     <string name="settings_vibration_guide_summary">نقرات أثناء الضبط: نقرة للشدّ، نقرتان للإرخاء، وطويلة حين يصبح مضبوطًا</string>
+    <string name="settings_sound_guide_title">الضبط بالصوت</string>
+    <string name="settings_sound_guide_summary">أصوات قصيرة أثناء الضبط: صاعدة إن كانت مرتفعة جدًا، وهابطة إن كانت منخفضة جدًا، وجرس حين يصبح مضبوطًا</string>
+    <string name="settings_in_tune_sound_title">جرس عند الضبط</string>
+    <string name="settings_in_tune_sound_short">قصير</string>
+    <string name="settings_in_tune_sound_one_second">١\u00A0ثانية</string>
+    <string name="settings_in_tune_sound_two_seconds">٢\u00A0ثانية</string>
     <string name="settings_string_tick_off_title">وضع علامة على الأوتار المضبوطة</string>
     <string name="settings_string_tick_off_summary">علامة على كل وتر حين يُضبط، و«مضبوط. اعزف.» حين تُضبط كلها</string>
 

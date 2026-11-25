@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
     <string name="settings_vibration_guide_title">Guida a vibrazione</string>
     <string name="settings_vibration_guide_summary">Colpetti mentre accordi: uno per tendere, due per allentare, lungo se è intonato</string>
+    <string name="settings_sound_guide_title">Guida sonora</string>
+    <string name="settings_sound_guide_summary">Brevi suoni mentre accordi: salgono se troppo alto, scendono se troppo basso, un campanello se è intonato</string>
+    <string name="settings_in_tune_sound_title">Campanello se è intonato</string>
+    <string name="settings_in_tune_sound_short">Breve</string>
+    <string name="settings_in_tune_sound_one_second">1 secondo</string>
+    <string name="settings_in_tune_sound_two_seconds">2 secondi</string>
     <string name="settings_string_tick_off_title">Spunta le corde intonate</string>
     <string name="settings_string_tick_off_summary">Una spunta su ogni corda intonata, e «Tutto intonato. Suona!» quando lo sono tutte</string>
 

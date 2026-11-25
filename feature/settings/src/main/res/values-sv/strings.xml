@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">En kort vibration när tonen når rätt tonhöjd</string>
     <string name="settings_vibration_guide_title">Vibrationsguide</string>
     <string name="settings_vibration_guide_summary">Korta vibrationer när du stämmer: en = spänn, två = slacka, lång = stämd</string>
+    <string name="settings_sound_guide_title">Ljudguide</string>
+    <string name="settings_sound_guide_summary">Korta ljud när du stämmer: upp = för hög, ner = för låg, klocka = stämd</string>
+    <string name="settings_in_tune_sound_title">Klocka vid stämd ton</string>
+    <string name="settings_in_tune_sound_short">Kort</string>
+    <string name="settings_in_tune_sound_one_second">1 sekund</string>
+    <string name="settings_in_tune_sound_two_seconds">2 sekunder</string>
     <string name="settings_string_tick_off_title">Bocka av stämda strängar</string>
     <string name="settings_string_tick_off_summary">En bock på varje sträng när den är stämd, och ”Stämd. Spela på.” när alla är det</string>
 

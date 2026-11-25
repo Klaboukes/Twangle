@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">ኖታው ልክ ሲደርስ አጭር ንዝረት</string>
     <string name="settings_vibration_guide_title">የንዝረት መመሪያ</string>
     <string name="settings_vibration_guide_summary">ሲቃኙ ንዝረቶች፦ አንድ ለማጥበቅ፣ ሁለት ለማላላት፣ ሲቃኝ ረጅም</string>
+    <string name="settings_sound_guide_title">የድምፅ መመሪያ</string>
+    <string name="settings_sound_guide_summary">ሲቃኙ አጫጭር ድምፆች፦ ወደ ላይ ከሆነ ከፍ ብሏል፣ ወደ ታች ከሆነ ዝቅ ብሏል፣ ደወል ከሆነ ተቃኝቷል</string>
+    <string name="settings_in_tune_sound_title">ሲቃኝ ደወል</string>
+    <string name="settings_in_tune_sound_short">አጭር</string>
+    <string name="settings_in_tune_sound_one_second">1 ሰከንድ</string>
+    <string name="settings_in_tune_sound_two_seconds">2 ሰከንድ</string>
     <string name="settings_string_tick_off_title">የተቃኙ ክሮችን ምልክት አድርግ</string>
     <string name="settings_string_tick_off_summary">እያንዳንዱ ክር ሲቃኝ ምልክት፣ ሁሉም ሲቃኙ ደግሞ «ተቃኝቷል። ይጫወቱ።»</string>
 

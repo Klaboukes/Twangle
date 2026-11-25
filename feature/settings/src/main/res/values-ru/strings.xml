@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
     <string name="settings_vibration_guide_title">Подсказка вибрацией</string>
     <string name="settings_vibration_guide_summary">Импульсы при настройке: один — подтяни, два — ослабь, длинный — настроено</string>
+    <string name="settings_sound_guide_title">Подсказка звуком</string>
+    <string name="settings_sound_guide_summary">Короткие звуки при настройке: вверх — высоко, вниз — низко, колокольчик — настроено</string>
+    <string name="settings_in_tune_sound_title">Колокольчик «настроено»</string>
+    <string name="settings_in_tune_sound_short">Коротко</string>
+    <string name="settings_in_tune_sound_one_second">1 секунда</string>
+    <string name="settings_in_tune_sound_two_seconds">2 секунды</string>
     <string name="settings_string_tick_off_title">Отмечать настроенные струны</string>
     <string name="settings_string_tick_off_summary">Галочка на каждой струне, когда она настроена, и «Настроено. Играй.», когда все</string>
 

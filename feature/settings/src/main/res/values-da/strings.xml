@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">En kort vibration, når tonen rammer rent</string>
     <string name="settings_vibration_guide_title">Vibrationsguide</string>
     <string name="settings_vibration_guide_summary">Korte vibrationer, mens du stemmer: én = stram, to = slæk, lang = stemt</string>
+    <string name="settings_sound_guide_title">Lydguide</string>
+    <string name="settings_sound_guide_summary">Korte lyde, mens du stemmer: op = for høj, ned = for lav, klokke = stemt</string>
+    <string name="settings_in_tune_sound_title">Klokke ved stemt tone</string>
+    <string name="settings_in_tune_sound_short">Kort</string>
+    <string name="settings_in_tune_sound_one_second">1 sekund</string>
+    <string name="settings_in_tune_sound_two_seconds">2 sekunder</string>
     <string name="settings_string_tick_off_title">Afkryds stemte strenge</string>
     <string name="settings_string_tick_off_summary">Et flueben ved hver streng, når den er stemt, og »Stemt. Spil løs.«, når alle er det</string>
 

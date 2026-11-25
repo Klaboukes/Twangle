@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">音が合うと短く振動します</string>
     <string name="settings_vibration_guide_title">振動ガイド</string>
     <string name="settings_vibration_guide_summary">チューニング中に振動：1回は締める、2回は緩める、長いと合っています</string>
+    <string name="settings_sound_guide_title">サウンドガイド</string>
+    <string name="settings_sound_guide_summary">チューニング中に短い音：上がる音は高すぎ、下がる音は低すぎ、ベルは合っています</string>
+    <string name="settings_in_tune_sound_title">合ったときのベル</string>
+    <string name="settings_in_tune_sound_short">短い</string>
+    <string name="settings_in_tune_sound_one_second">1秒</string>
+    <string name="settings_in_tune_sound_two_seconds">2秒</string>
     <string name="settings_string_tick_off_title">合った弦にチェック</string>
     <string name="settings_string_tick_off_summary">合った弦にチェックを付け、すべて合うと「合っています。弾きましょう。」と表示します</string>
 

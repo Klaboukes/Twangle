@@ -42,6 +42,12 @@
     <string name="settings_vibrate_in_tune_summary">Коротка вібрація, коли нота досягає потрібної висоти</string>
     <string name="settings_vibration_guide_title">Підказка вібрацією</string>
     <string name="settings_vibration_guide_summary">Імпульси під час налаштування: один — підтягни, два — послаб, довгий — налаштовано</string>
+    <string name="settings_sound_guide_title">Підказка звуком</string>
+    <string name="settings_sound_guide_summary">Короткі звуки під час налаштування: вгору — високо, вниз — низько, дзвіночок — налаштовано</string>
+    <string name="settings_in_tune_sound_title">Дзвіночок «налаштовано»</string>
+    <string name="settings_in_tune_sound_short">Коротко</string>
+    <string name="settings_in_tune_sound_one_second">1 секунда</string>
+    <string name="settings_in_tune_sound_two_seconds">2 секунди</string>
     <string name="settings_string_tick_off_title">Позначати налаштовані струни</string>
     <string name="settings_string_tick_off_summary">Позначка на кожній струні, щойно вона налаштована, і «Налаштовано. Грай.», коли всі</string>
     <string name="settings_language_title">Мова</string>

@@ -49,6 +49,12 @@
     <string name="settings_vibrate_in_tune_summary">နုတ် အသံမှန်သည့်အခါ ခဏ တုန်ခါသည်</string>
     <string name="settings_vibration_guide_title">တုန်ခါမှု လမ်းညွှန်</string>
     <string name="settings_vibration_guide_summary">ညှိနေစဉ် တုန်ခါချက်: တစ်ချက် တင်းရန်၊ နှစ်ချက် လျှော့ရန်၊ အရှည် အသံမှန်</string>
+    <string name="settings_sound_guide_title">အသံ လမ်းညွှန်</string>
+    <string name="settings_sound_guide_summary">ညှိနေစဉ် အသံတိုများ: အတက် မြင့်လွန်း၊ အဆင်း နိမ့်လွန်း၊ ခေါင်းလောင်းသံ အသံမှန်</string>
+    <string name="settings_in_tune_sound_title">အသံမှန် ခေါင်းလောင်းသံ</string>
+    <string name="settings_in_tune_sound_short">တို</string>
+    <string name="settings_in_tune_sound_one_second">၁ စက္ကန့်</string>
+    <string name="settings_in_tune_sound_two_seconds">၂ စက္ကန့်</string>
     <string name="settings_string_tick_off_title">ညှိပြီး ကြိုးများကို အမှန်ခြစ်ရန်</string>
     <string name="settings_string_tick_off_summary">ကြိုးတစ်ချောင်း အသံမှန်လျှင် အမှန်ခြစ်၊ အားလုံးမှန်လျှင် “အသံမှန်ပြီ။ တီးပါတော့။”</string>
 
