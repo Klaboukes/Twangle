@@ -339,12 +339,13 @@ say yes.
       and out in the next release (a halted version can't be uploaded again, the fix gets a higher
       version). A halt isn't on Google's list of changes that go through at once, so look in
       *Publishing overview* right after and *Publish changes* if it waits there.
-- [ ] **A new Exodus Privacy report**, once the version is on production for everyone (owner,
-      2026-11-25): *Perform a new analysis* at https://reports.exodus-privacy.eu.org/en/analysis/submit/
-      with `io.github.klaboukes.twangle`, Google Play as the source. Exodus doesn't look at new versions
-      by itself, and the README links to the latest report. Claude reads the report and compares it with
-      the last one (2.2.0: 0 trackers, 4 permissions, [growth/f-droid.md](growth/f-droid.md), *Exodus
-      Privacy*): a tracker, or a permission that wasn't there, is looked into before anything else.
+- Nothing to do for **the new Exodus Privacy report** (owner, 2026-11-25): once the version is on
+  production for everyone, Claude runs `scripts/release.sh exodus <version>`, which asks Exodus for it
+  as its *Perform a new analysis* form does, waits and checks it against the last one (2.2.0: 0 trackers,
+  4 permissions, [growth/f-droid.md](growth/f-droid.md), *Exodus Privacy*); a tracker or a new
+  permission is looked into before anything else. Exodus doesn't look at new versions by itself, and
+  the README links to the latest report. By hand, if the script can't:
+  https://reports.exodus-privacy.eu.org/en/analysis/submit/, `io.github.klaboukes.twangle`, Google Play.
 
 **Only in the Play Console** (the Google Play API can't do these)
 - [ ] The first time: the *App content* forms (privacy policy, ads, app access, content rating, target
