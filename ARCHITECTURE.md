@@ -22,7 +22,7 @@ Topic files:
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
-  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · Vibration guide · The strum check · 12th-fret check view · Lens · Under the lens
+  - **[Tuner screen](docs/architecture/ui-tuner.md)**: Tuner screen · Vibration guide · Sound guide · The strum check · 12th-fret check view · Lens · Under the lens
   - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Strobe · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · Day and night · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
@@ -129,7 +129,8 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling,
                 LoweredTunings (any tuning lowered by up to 2½ steps)
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector, InTuneTickRule (the in-tune tap, phone and watch)
-    guide/      VibrationGuide (+ GuideCue, GuidePulse, GuideTiming: the phone's and the watch's): the vibration guide's taps from the tuner's cue and cents (Phase 85)
+    guide/      VibrationGuide (+ GuideCue, GuidePulse, GuideTiming: the phone's and the watch's): the vibration guide's taps from the tuner's cue and cents (Phase 85), the sound guide's too;
+                GuideSounds: the sound guide's steps and in-tune bell (Phase 94)
     strobe/     StrobeMotion
     trail/      PitchHistory (the pitch trail's last seconds of readings)
     synth/      StringSynth, StringVoice (+ BodyMode, StringVoices): the reference tone in each instrument's voice
@@ -162,9 +163,9 @@ core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     SampleFormat (+ Pcm16Reads: 16-bit recording as floats),
     BlockingTransfer (transferFully: read/write loops that fail instead of spinning), MicPermissionRules,
     TonePlayer (interface), AndroidTonePlayer, MetronomePlayer (interface, + MetronomeBeat),
-    AndroidMetronomePlayer, DronePlayer (interface), AndroidDronePlayer,
-    AudioOutput (shared AudioTrack helpers), PlayerSessions (the tone's and the drone's requests, session, padding and focus)
-core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer, FakeDronePlayer
+    AndroidMetronomePlayer, DronePlayer (interface), AndroidDronePlayer, GuideSoundPlayer (interface), AndroidGuideSoundPlayer,
+    AudioOutput (shared AudioTrack helpers), PlayerSessions (the tone's, the drone's and the sound guide's requests, session, padding and focus)
+core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer, FakeDronePlayer, FakeGuideSoundPlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ TunerMode, InTunePrecision, ThemeMode, LensLook, …),
