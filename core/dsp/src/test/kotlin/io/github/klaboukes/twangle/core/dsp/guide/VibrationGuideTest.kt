@@ -199,6 +199,25 @@ class VibrationGuideTest {
     }
 
     @Test
+    fun `held while its own sound plays, the time counts and nothing is forgotten`() {
+        // A tap, then 0.4 s held (the sound guide's sound and its tail): the next tap 0.7 s after the first, not afresh.
+        assertEquals(GuidePulse.TIGHTEN, guide.update(GuideCue.TIGHTEN, -40f, E2, FRAME))
+        val held = (0.4f / FRAME).toInt()
+        repeat(held) { guide.hold(FRAME) }
+        val played = run(GuideCue.TIGHTEN, -40f, 1f)
+        assertEquals(GuidePulse.TIGHTEN, played.first().second)
+        assertEquals(0.7f - (held + 1) * FRAME, played.first().first, FRAME + 1e-4f)
+    }
+
+    @Test
+    fun `a long in-tune sound held over doesn't ring again for the same note`() {
+        assertEquals(listOf(GuidePulse.IN_TUNE), run(GuideCue.IN_TUNE, 0f, FRAME).map { it.second })
+        // A 2 s bell and its tail, longer than the 1.5 s after which a note in tune again would ring again.
+        repeat((2.3f / FRAME).toInt()) { guide.hold(FRAME) }
+        assertTrue(run(GuideCue.IN_TUNE, 0f, 2f).isEmpty())
+    }
+
+    @Test
     fun `reset forgets the note`() {
         run(GuideCue.IN_TUNE, 0f, 1f)
         guide.reset()

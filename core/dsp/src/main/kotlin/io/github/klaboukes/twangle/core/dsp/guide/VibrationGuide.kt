@@ -105,6 +105,16 @@ class VibrationGuide(val timing: GuideTiming = GuideTiming.PHONE) {
         }
     }
 
+    /**
+     * Lets one frame of [frameSeconds] pass with nothing new heard: the sound guide's own sound plays (or has only just
+     * stopped) and the tuner sets its frames aside (Phase 94). Plays nothing and forgets nothing: the note, its
+     * direction and whether it was in tune all hold, so the guide goes on at its pace when the tuner hears again, and an
+     * in-tune bell never rings twice for one note in tune because it had covered the string for a while.
+     */
+    fun hold(frameSeconds: Float) {
+        nowSeconds += frameSeconds
+    }
+
     /** Starts over, as at the start: nothing played, no note. */
     fun reset() {
         nowSeconds = 0.0
