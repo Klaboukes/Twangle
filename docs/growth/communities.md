@@ -182,8 +182,9 @@ For a community whose rules don't clearly allow it (Reddit: *Message the mods* i
   So **don't post Twangle there.**
 - **Instead:** answer only where someone asks for a privacy-friendly tuner or music app, or about
   apps that ask for more than they need, with the short answer below. Twangle's case is easy to
-  check: the Play page's permissions list, the public code, and the Exodus Privacy report once the
-  owner has asked for it (*Waiting on the owner*).
+  check: the Play page's permissions list, the public code, and the
+  [Exodus Privacy report](https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/)
+  (0 trackers, no internet; 2026-11-25).
 - **Short answer (say it your way):**
   > Disclosure, I'm its developer: Twangle (guitar tuner, Android) has no internet permission at
   > all, so the mic audio can't leave the phone; no ads or analytics either, and the code is public

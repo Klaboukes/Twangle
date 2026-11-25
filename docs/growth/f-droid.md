@@ -120,12 +120,18 @@ Twangle may have to leave; Google Play is unaffected either way.
 ## Exodus Privacy
 
 [Exodus Privacy](https://reports.exodus-privacy.eu.org/) analyses an app from Google Play and lists
-its trackers and permissions. Twangle's report should show zero trackers and one permission, the
-microphone. Exodus had no report for Twangle on 2026-11-12. **The owner** asks for one:
-*Analyze an app* on their site, the app ID `io.github.klaboukes.twangle`. The README already links
-to the address the report will have
-(`https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/`), which
-works once the analysis is done.
+its trackers and permissions. The owner asked for Twangle's on 2026-11-25 (*Perform a new analysis*,
+the app ID `io.github.klaboukes.twangle`): [report 802136](https://reports.exodus-privacy.eu.org/en/reports/802136/)
+of 2.2.0 shows **0 trackers** and 4 permissions, none of them internet:
+- `RECORD_AUDIO`, the microphone, the only one the player is asked for;
+- `VIBRATE`, the in-tune buzz and the vibration guide, granted at install;
+- `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, AndroidX's own lock on the app's receivers, held by Twangle alone;
+- `CHECK_LICENSE`, not in Twangle's manifest: Google Play adds it to the app it delivers, for its own
+  check that the app came from Play.
+
+The README links to the latest report
+(`https://reports.exodus-privacy.eu.org/en/reports/io.github.klaboukes.twangle/latest/`). Exodus
+doesn't analyse each new version by itself; anyone can ask for a newer one on the same page.
 
 ## Show HN
 
