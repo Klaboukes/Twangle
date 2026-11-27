@@ -46,7 +46,7 @@ Pick the 3–5 that fit the community (each section below says which).
 - A metronome (30–250, tap tempo, clicks between the beats, a speed trainer), chord charts and
   scales for your tuning, a capo helper and ear training.
 - A standalone Wear OS watch tuner with the watch's own microphone, and a metronome that taps your
-  wrist (in Google's review for Play since 2026-11-16, Phase 88; say it only once it is on Play).
+  wrist (on Play since 2026-11-27, Phase 88).
 - Works with TalkBack, large text, a high-contrast look and a vibration guide; in 36 languages.
 - The code is public under GPL 3 (GitHub `Klaboukes/Twangle`).
 - Links: Play https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle ,
