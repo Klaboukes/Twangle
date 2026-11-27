@@ -16,8 +16,8 @@ Be honest that you are sighted and tested it with TalkBack yourself; that is why
 ## What to say about Twangle (pick from it)
 **TalkBack in the tuner**
 - The reading in words, what to do first: "Tighten, E 2, 12 cents flat", "In tune, F sharp 2", "Play a string".
-- It never floods you: a new note or "in tune" is said after 0.4 s, small changes in cents aren't
-  said at all, so TalkBack isn't talking over the string.
+- It never floods you: a new note or "in tune" is said after 0.3 s (0.4 s on the watch), small
+  changes in cents aren't said at all, so TalkBack isn't talking over the string.
 - TalkBack's own voice isn't taken for a note: the microphone ignores what the screen reader says
   (and 0.4 s after), so a spoken reading can't set off the next one.
 - The string buttons say "A 2", "selected" or "Locked"; hold one to hear its note ("Play A 2") and
