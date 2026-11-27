@@ -25,9 +25,9 @@ Show HN: Twangle – a guitar tuner for Android with no ads and no internet perm
 https://github.com/Klaboukes/Twangle
 
 ## First comment
-> Hi HN, I made Twangle, a free guitar tuner for Android (and Wear OS). Most free tuners on the Play
-> Store show ads, or ask for an account or more permissions than a tuner needs. I wanted one that does
-> none of that and stays free, so I built it.
+> Hi HN, I made Twangle, a guitar tuner for Android (and Wear OS) that you can use without looking:
+> it taps once to tighten and twice to loosen, on the phone or on your wrist, and TalkBack says what
+> to do first. It's free and has no INTERNET permission at all.
 >
 > - It finds the pitch with YIN (de Cheveigné & Kawahara, 2002), about 47 times a second, within
 >   ±1 cent on test signals, from a 5-string bass's low B to the highest frets.
@@ -54,6 +54,9 @@ https://github.com/Klaboukes/Twangle
 
 ## Before posting
 - Check the facts against the app as it is then (version, languages, tools).
+- Lead with what Twangle does, not "free, no ads": since late 2026 a new AI-made tuner appears every
+  week with that story ([communities.md](communities.md), *Standing out*). The title keeps "no
+  internet permission", which HN's readers care about.
 - If F-Droid has Twangle by then, add its link
   (`https://f-droid.org/packages/io.github.klaboukes.twangle/`) beside Google Play's; if not, leave
   F-Droid out rather than promise it.

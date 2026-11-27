@@ -16,7 +16,12 @@ and clearly written for them, is the whole idea. A few a week at most, each one 
 - **One honest line on how it's made:** the code is written with Claude (an AI), to your design, and
   you test it on real phones (and a watch) with a real guitar.
 - **The safe claim:** every feature free, no ads, no purchases, no account, no internet permission.
-  Never "the only free tuner", "the best" or "the most accurate".
+  Never "the only free tuner", "the best" or "the most accurate", nor "the only one with" a feature.
+- **Lead with what Twangle does for their readers, not with "free, no ads".** New tuners from solo
+  developers arrive every week and nearly all pitch "free, no ads" first, so editors and channels
+  have heard it; it goes after the lead, in a line (communities.md, *Standing out*, checked
+  2026-11-27). The privacy angle is the one exception: for a privacy site, no internet permission
+  *is* the lead.
 - **No other app named**, compared or criticised, not even "unlike the big tuners".
 - **Nothing in return.** No payment, no gift, no "I'll share your channel", no asking for a review,
   a rating, a video or a mention. "If it's useful to you, here it is" is the whole ask. (Google
@@ -51,9 +56,10 @@ and clearly written for them, is the whole idea. A few a week at most, each one 
   when they list a business email; YouTube asks you to sign in and pass a check first, which you do
   yourself. Or a contact form on the channel's own website. If neither exists, skip them; don't
   write in the comments.
-- **Angle:** beginners. "Tighten" or "Loosen" under the meter, hold a string to hear its note, chord
-  charts, a metronome, nothing to sign up for and no ads in a child's lesson. The watch angle suits
-  channels that review gear.
+- **Angle:** beginners. Hold a string to hear its note and tune by ear, chord charts for the tuning
+  they play in, a metronome with a speed trainer, ear training; nothing to sign up for and no ads in
+  a child's lesson. (Not "it says which way to turn": every tuner shows flat or sharp.) The watch
+  angle suits channels that review gear.
 
 ### 2. Guitar teachers who teach online
 - **Who fits:** teachers with their own website who give lessons by video call or sell a course,
@@ -92,12 +98,14 @@ Lead with one, mention another in a line at most.
 - **Privacy:** no internet permission at all, so the microphone's sound can't leave the phone; it is
   analysed live and never recorded. No ads, no account, no analytics or tracking. The code is public
   under GPL 3 (GitHub `Klaboukes/Twangle`), and the Play page's permission list shows it.
-- **The watch app:** a Wear OS tuner that runs on the watch alone, listening with the watch's own
-  microphone, no phone needed; one tap on the wrist when the string is in tune, a vibration guide
-  (one tap tighten, two loosen); swipe left for a metronome that taps the beat on the wrist; a tile
-  and a watch-face shortcut. Wear OS 3 or newer, tested on a Galaxy Watch 5. On Play since
+- **The watch app:** tuning by feel on the wrist: the vibration guide taps once to tighten, twice to
+  loosen, quicker as the note gets close, and one long buzz in tune, so the player's eyes stay on the
+  guitar; swipe left for a metronome that taps the beat on the wrist, set with the bezel or crown.
+  Then: it runs on the watch alone with the watch's own microphone, with a tile and a watch-face
+  shortcut. Several other Wear OS tuners also listen on the watch alone (communities.md, *Standing
+  out*), so that part isn't the news. Wear OS 3 or newer, tested on a Galaxy Watch 5. On Play since
   2026-11-27 (search Twangle in the watch's own Play Store).
-- **Accessibility:** TalkBack says the reading in words ("E 2, 12 cents flat, tighten") without
+- **Accessibility:** TalkBack says the reading in words ("Tighten, E 2, 12 cents flat") without
   talking over the string; the vibration guide lets you tune by feel alone; a high-contrast look; every
   screen works with text twice the normal size; 36 languages.
 
@@ -108,17 +116,17 @@ Each is a starting point of 80–150 words. **Make it your own:** change the wor
 always write the personal line yourself. Square brackets are for you to fill.
 
 ### To a YouTube channel for beginners
-**Subject:** A free tuner for your beginners, no ads
+**Subject:** A tuner your beginners can also practise with
 
 > Hi [name],
 >
 > I watched your [video] and liked how you [one real thing]. I'm the developer of Twangle, a guitar
 > tuner for Android, and thought it might help beginners who tune with their phone.
 >
+> Holding a string's button plays its note, so a beginner can learn to tune by ear, and the same app
+> has chord charts for the tuning they're in, a metronome with a speed trainer and ear training.
 > Every feature is free: no ads, no purchases, no account, and it doesn't even have the internet
-> permission. A word under the meter says "Tighten" or "Loosen", so a beginner knows which way to
-> turn the peg, and holding a string plays its note to tune by ear. There's a metronome and chord
-> charts too.
+> permission.
 >
 > To be open about how it's made: the code is written with Claude, an AI, to my design, and I test
 > every version on real phones with my own guitar.
@@ -197,13 +205,15 @@ always write the personal line yourself. Square brackets are for you to fill.
 > [your name]
 
 **For a site about Wear OS,** swap the subject and the first facts:
-- *Subject:* Tip: a Wear OS tuner that doesn't need your phone
-- *Lead:* "Twangle has a Wear OS app that tunes with the watch's own microphone, no phone needed. It
-  taps your wrist when the string is in tune, and swipe left for a metronome that taps the beat."
+- *Subject:* Tip: a Wear OS tuner you use by feel
+- *Lead:* "Twangle's Wear OS app lets you tune without looking: it taps your wrist once to tighten
+  and twice to loosen, quicker as you get close, then one long buzz in tune. Swipe left for a
+  metronome that taps the beat on your wrist, set with the bezel. It runs on the watch alone, with
+  its own microphone."
 
 **For a site about accessibility,** likewise:
 - *Subject:* Tip: a guitar tuner that works with TalkBack
-- *Lead:* "Twangle says the note in words with TalkBack ("E 2, 12 cents flat, tighten") without
+- *Lead:* "Twangle says the note in words with TalkBack ("Tighten, E 2, 12 cents flat") without
   talking over the string, and has a vibration guide: one tap to tighten, two to loosen, a long buzz
   when in tune. There's a high-contrast look too."
 
