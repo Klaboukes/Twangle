@@ -85,8 +85,8 @@ goes into [IDEAS.md](../../IDEAS.md).
   Twangle 2.2.0, the description and accessibility comments from the facts above (with the known
   chord-root spot and the two questions), tested with TalkBack on the owner's phones. The watch app
   was left out (still in Google's review). Their editors review by hand; what they or their readers
-  answer goes to Claude. Once the watch app is on Play, a line on its vibration guide is worth
-  sending them.
+  answer goes to Claude. The watch app is on Play since 2026-11-27, so a line on its vibration
+  guide (tuning by feel alone, on the wrist) is now worth sending them.
 - **Reviewed** (shared by the owner 2026-11-23): a blind guitarist's review on the site, warm. What
   works for them: the 12th-fret check (setting up their guitar's intonation without sighted help),
   clear labels everywhere, "Locked" on the string button telling them where they are, the
