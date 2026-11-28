@@ -1,0 +1,5 @@
+Stemmer voor gitaar, bas, ukelele en viool. Geen reclame, geen account, offline.
+
+- Stemmen op geluid (Instellingen, Tijdens het stemmen): korte geluidjes tijdens het stemmen, omhoog als het te hoog is, omlaag als het te laag is, een belletje als het zuiver is.
+- TalkBack zegt eerst wat je moet doen, en iets sneller.
+- TalkBack stopt niet meer bij onderdelen zonder naam.

@@ -1,0 +1,5 @@
+Lên dây guitar, bass, ukulele, violin. Không quảng cáo, tài khoản hay internet.
+
+- Âm thanh chỉ dẫn (Cài đặt, Khi lên dây): âm ngắn khi lên dây, đi lên khi quá cao, đi xuống khi quá thấp, tiếng chuông khi đã chuẩn.
+- TalkBack nói việc cần làm trước, và sớm hơn một chút.
+- TalkBack không còn dừng ở các mục không có tên.

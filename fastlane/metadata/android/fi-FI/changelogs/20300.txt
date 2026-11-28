@@ -1,0 +1,5 @@
+Kitaran, basson, ukulelen ja viulun viritin. Ei mainoksia, ei tiliä, ei nettiä.
+
+- Viritys äänellä (Asetukset, Viritettäessä): lyhyitä ääniä virittäessä, nouseva kun liian korkea, laskeva kun liian matala, kello kun vireessä.
+- TalkBack kertoo ensin, mitä tehdä, ja vähän aiemmin.
+- TalkBack ei enää pysähdy kohtiin, joilla ei ole nimeä.

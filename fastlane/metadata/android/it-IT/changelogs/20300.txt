@@ -1,0 +1,5 @@
+Accordatore per chitarra, basso, ukulele, violino. Senza pubblicità né internet.
+
+- Guida sonora (Impostazioni, Mentre accordi): brevi suoni mentre accordi, salgono se troppo alto, scendono se troppo basso, un campanello se è intonato.
+- TalkBack dice prima cosa fare, e un po' più presto.
+- TalkBack non si ferma più sugli elementi senza nome.

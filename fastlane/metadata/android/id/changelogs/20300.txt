@@ -1,0 +1,5 @@
+Tuner untuk gitar, bass, ukulele, dan biola. Tanpa iklan, tanpa akun, offline.
+
+- Panduan suara (Setelan, Saat menyetem): bunyi singkat saat menyetem, naik jika terlalu tinggi, turun jika terlalu rendah, lonceng jika pas.
+- TalkBack menyebut dulu apa yang perlu dilakukan, dan sedikit lebih cepat.
+- TalkBack tidak lagi berhenti di item tanpa nama.

@@ -1,0 +1,5 @@
+Ladička pro kytaru, baskytaru, ukulele a housle. Bez reklam, bez účtu, offline.
+
+- Zvukové navádění (Nastavení, Při ladění): krátké zvuky při ladění, stoupají, když je tón moc vysoko, klesají, když moc nízko, a zvoneček, když je naladěno.
+- TalkBack nejdřív řekne, co dělat, a o něco dřív.
+- TalkBack se už nezastavuje u prvků bez názvu.
