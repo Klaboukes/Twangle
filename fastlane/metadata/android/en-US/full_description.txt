@@ -1,47 +1,51 @@
-Twangle is a guitar tuner you can use without looking. Play a string and the meter shows the note and how far off it is, to a single cent. Turn on the vibration guide and your phone taps once to tighten and twice to loosen, quicker as you get close, then gives one long buzz when the string is in tune. On a Wear OS watch the taps come on your wrist.
+It does what you need it to do. And nothing else.
 
-Everything in Twangle is free: no ads, no account, no in-app purchases and no tracking. It doesn't even have permission to use the internet, so the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
+Twangle is a guitar tuner that gets out of your way. Open it, play a string, and you see the note and how far off it is, right down to a single cent. No ads popping up mid-tune. No account. Nothing to unlock. Every feature is free, and it stays that way.
 
-It is a bass tuner, ukulele tuner, violin tuner and chromatic tuner too, and once you're in tune it helps you play: a metronome, chord charts, scales, a capo helper and ear training.
+Only you hear it. Twangle doesn't even have permission to use the internet, so the sound from your microphone stays on your phone: analysed live, never recorded, never sent.
 
-TUNE ANY INSTRUMENT
+And it's not just for guitar. It's a bass tuner, ukulele tuner, violin tuner and chromatic tuner too. Once you're in tune, it keeps going: a metronome, chord charts, scales, a capo helper and ear training. One app, nothing to pay.
+
+TUNE ANYTHING WITH STRINGS
 • Guitar (6, 7, 8 or 12 strings), bass (4 or 5 strings, down to the low B), ukulele (low G and baritone too), violin, viola, cello, mandolin and 5-string banjo
-• Guitar tunings: Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D, Open E and Open C
-• Make your own tunings for any instrument
-• Chromatic tuner for any other instrument or your voice
-• Hold a string to hear its note and tune by ear
-• Set A4 from 415 to 466 Hz, for example 442 Hz to play with an orchestra
+• Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D, Open E, Open C, or a tuning you make yourself
+• Anything else, your voice included: the chromatic tuner has you covered
+• Tune by ear: hold a string to hear its note
+• Playing with an orchestra? Set A4 anywhere from 415 to 466 Hz
 
-TUNE WITHOUT LOOKING
-• Vibration guide: one tap to tighten, two to loosen, a long buzz when in tune
-• Sound guide: short sounds while you tune, up when too high, down when too low, a bell when in tune
-• TalkBack says what to do first ("Tighten, E 2, 12 cents flat"), reads chord charts and scales string by string, and never talks over your string
-• Every screen works with large text, up to twice the normal size, and a high-contrast look
+TOOLS THAT LISTEN
+• 12th-fret check: play a string open, then at the 12th fret. Twangle tells you if the saddle should move, which way, and on a guitar about how far
+• Pitch trail: watch your bends, your vibrato and your long notes as a line. Works for singers too
+• Chord name: strum a chord on guitar, ukulele or mandolin and see what it's called
+• Strum check: strum all the strings at once and see which ones are off
 
-ON YOUR WATCH
-• A Wear OS watch app with a tile and a watch-face complication: tune with the watch's own microphone, no phone needed, feel the vibration guide on your wrist, and swipe left for a metronome that taps the beat
+IT KEEPS TIME, TOO
+• A metronome from 30 to 250 beats per minute: slide the tempo ruler or just tap the beat
+• 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on the first beat and lights to follow
+• Clicks between the beats in eighths, triplets or sixteenths
+• Speed trainer: the tempo climbs step by step until you hit your goal
+• Clicks along with your own music or backing track, and can vibrate on the beat
 
-LISTENING TOOLS
-• 12th-fret check: play a string open and at the 12th fret, and learn whether its saddle should move, which way, and on a guitar about how far
-• Pitch trail: see how steady a held note, a bend or your vibrato is, for singers too
-• Chord name: strum a chord on guitar, ukulele or mandolin and see its name
-• Strum check: strum all strings at once and see which ones are flat, sharp or in tune
-
-PRACTICE
-• Metronome: 30 to 250 beats per minute on a tempo ruler you slide, with tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on the first beat, lights to follow along, and a vibration on the beat if you like
-• Between the beats: extra clicks in eighths, triplets or sixteenths
-• Speed trainer: the tempo climbs step by step to your goal
-• Chord charts for your instrument and tuning, your own tunings included
+PRACTISE
+• Chord charts for your instrument and your tuning, even the ones you made yourself
 • Scales on the fretboard: major, minor, pentatonic and blues, every note named
 • Capo helper: pick the song's key and the shapes you like, and see where the capo goes
-• Ear training: Play it back (play the notes you hear on your instrument), Intervals and Chord type
+• Ear training: Play it back (hear the notes, play them on your instrument), Intervals and Chord type
+
+ON YOUR WRIST
+• A Wear OS watch app with a tile and a watch-face complication: tune with the watch's own microphone, no phone needed, and swipe left for a metronome that taps the beat on your wrist
+
+TUNE WITHOUT LOOKING
+• Vibration guide: one tap means tighten, two mean loosen, a long buzz means you're in tune
+• Sound guide: short sounds tell you too high or too low, and a bell rings when you're in tune
+• TalkBack says what to do first ("Tighten, E 2, 12 cents flat") and never talks over your string
+• Large text up to twice the normal size, and a high-contrast look
 
 MAKE IT YOURS
-• In 36 languages, with note names the way you learned them: C D E, with H for B, or Do Re Mi
-• Light, dark, or following your phone, with your wallpaper's colours on Android 12 and newer
-• Three meters to choose from: the classic needle, the light arc or the strobe
-• Focus mode: the tuner full screen on a phone on its side, easy to read from a distance
-• A home-screen widget that opens the tuner with one tap, and the screen stays on while you tune
+• Light, dark, or whatever your phone does, in your wallpaper's colours on Android 12 and newer
+• Three meters: the classic needle, the light arc or the strobe
+• Focus mode: turn your phone on its side and the tuner fills the screen, easy to read from across the room
+• A home-screen widget that opens the tuner in one tap
+• In 36 languages, with note names the way you learned them: C D E, H for B, or Do Re Mi
 
-Twangle will stay free and offline, for good.
+Free and offline. For good.

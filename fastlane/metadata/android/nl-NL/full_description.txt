@@ -1,47 +1,51 @@
-Twangle is een gitaarstemmer die je kunt gebruiken zonder te kijken. Speel een snaar en de meter laat zien welke noot het is en hoe ver die van zuiver zit, tot op de cent. Zet Stemmen op gevoel aan en je telefoon tikt één keer voor strakker en twee keer voor losser, sneller naarmate je dichterbij komt, en trilt één keer lang als de snaar zuiver is. Op een Wear OS-horloge voel je de tikjes op je pols.
+Doet wat je nodig hebt. En verder niets.
 
-Alles in Twangle is gratis: geen advertenties, geen account, geen aankopen in de app en geen tracking. Twangle heeft zelfs geen toestemming om internet te gebruiken: het geluid van je microfoon wordt live op je telefoon geanalyseerd en nooit opgenomen of verstuurd.
+Twangle is een gitaarstemmer die je niet in de weg zit. Openen, snaar spelen, en je ziet de noot en hoe ver die ernaast zit, tot op de cent. Geen reclame die tussendoor opduikt. Geen account. Niets te ontgrendelen. Elke functie is gratis, en dat blijft zo.
 
-Het is ook een basstemmer, ukelelestemmer, vioolstemmer en chromatische stemmer, en ben je eenmaal gestemd, dan helpt het je spelen: een metronoom, akkoordschema's, toonladders, een capohulp en gehoortraining.
+Alleen jij hoort het. Twangle heeft zelfs geen toestemming om internet te gebruiken, dus het geluid van je microfoon blijft op je telefoon: live geanalyseerd, nooit opgenomen, nooit verstuurd.
 
-ELK INSTRUMENT STEMMEN
+En het is niet alleen voor gitaar. Het is ook een basstemmer, ukelelestemmer, vioolstemmer en chromatische stemmer. Ben je gestemd, dan gaat het gewoon door: een metronoom, akkoordschema's, toonladders, een capohulp en gehoortraining. Eén app, niets te betalen.
+
+STEM ALLES MET SNAREN
 • Gitaar (6, 7, 8 of 12 snaren), bas (4 of 5 snaren, tot de lage B), ukelele (ook lage G en bariton), viool, altviool, cello, mandoline en 5-snarige banjo
-• Gitaarstemmingen: Standaard, Drop D, halve toon lager, hele toon lager, DADGAD, Open G, Open D, Open E en Open C
-• Maak je eigen stemmingen voor elk instrument
-• Chromatische stemmer voor elk ander instrument of je stem
-• Houd een snaar vast om de toon te horen en op het gehoor te stemmen
-• Stel de stemtoon A4 in van 415 tot 466 Hz, bijvoorbeeld 442 Hz om met een orkest te spelen
-
-STEMMEN ZONDER TE KIJKEN
-• Stemmen op gevoel: één tik = strakker, twee = losser, lang trillen = zuiver
-• Stemmen op geluid: korte geluidjes tijdens het stemmen, omhoog als het te hoog is, omlaag als het te laag is, een belletje als het zuiver is
-• TalkBack zegt eerst wat je moet doen ("Strakker, E 2, 12 cent te laag"), leest akkoordschema's en toonladders snaar voor snaar voor, en praat nooit door je snaar heen
-• Elk scherm werkt met grote tekst, tot twee keer de normale grootte, en met hoog contrast
-
-OP JE HORLOGE
-• Een app voor Wear OS-horloges met een tegel en een complicatie voor de wijzerplaat: stem met de microfoon van het horloge zelf, zonder telefoon, voel Stemmen op gevoel op je pols, en veeg naar links voor een metronoom die de tel tikt
+• Standaard, Drop D, halve toon lager, hele toon lager, DADGAD, Open G, Open D, Open E, Open C, of een stemming die je zelf maakt
+• Iets anders, je stem ook: daar is de chromatische stemmer voor
+• Op het gehoor stemmen: houd een snaar vast om de toon te horen
+• Speel je met een orkest? Zet A4 ergens tussen 415 en 466 Hz
 
 FUNCTIES DIE MEELUISTEREN
-• 12e-fretcheck: speel een snaar los en op de 12e fret, en ontdek of het zadel moet verschuiven, welke kant op, en op een gitaar ongeveer hoeveel
-• Toonlijn: zie hoe stabiel een aangehouden noot, een bend of je vibrato is, ook voor zangers
+• 12e-fretcheck: speel een snaar los en dan op de 12e fret. Twangle zegt of het zadel moet verschuiven, welke kant op, en op een gitaar ongeveer hoeveel
+• Toonlijn: zie je bends, je vibrato en je lange noten als een lijn. Ook voor zangers
 • Akkoordnaam: sla een akkoord aan op gitaar, ukelele of mandoline en zie hoe het heet
-• Strumcheck: sla alle snaren tegelijk aan en zie welke te laag, te hoog of zuiver zijn
+• Strumcheck: sla alle snaren tegelijk aan en zie welke ernaast zitten
+
+HOUDT OOK DE MAAT
+• Een metronoom van 30 tot 250 tellen per minuut: schuif de tempoliniaal of tik gewoon de tel
+• 2/4, 3/4, 4/4, 5/4, 6/8 en 7/8, met een accent op de eerste tel en lampjes om mee te volgen
+• Tikken tussen de tellen in achtsten, triolen of zestienden
+• Tempotrainer: het tempo klimt stap voor stap tot je je doel haalt
+• Tikt mee met je eigen muziek of backingtrack, en kan trillen op de tel
 
 OEFENEN
-• Metronoom: 30 tot 250 tellen per minuut op een tempoliniaal die je verschuift, met tempo tikken
-• 2/4, 3/4, 4/4, 5/4, 6/8 en 7/8, met een accent op de eerste tel, lampjes om mee te volgen, en als je wilt een trilling op de tel
-• Tussen de tellen: extra tikken in achtsten, triolen of zestienden
-• Tempotrainer: het tempo klimt stap voor stap naar je doel
-• Akkoordschema's voor je instrument en stemming, ook voor je eigen stemmingen
+• Akkoordschema's voor je instrument en je stemming, ook voor de stemmingen die je zelf maakte
 • Toonladders op de hals: majeur, mineur, pentatonisch en blues, elke noot met naam
 • Capo: kies de toonsoort van het nummer en de grepen die je graag speelt, en zie waar de capo moet
-• Gehoortraining: Naspelen (speel de noten die je hoort op je instrument), Intervallen en Akkoordsoort
+• Gehoortraining: Naspelen (hoor de noten, speel ze op je instrument), Intervallen en Akkoordsoort
+
+OP JE POLS
+• Een app voor Wear OS-horloges met een tegel en een complicatie voor de wijzerplaat: stem met de microfoon van het horloge zelf, zonder telefoon, en veeg naar links voor een metronoom die de tel op je pols tikt
+
+STEMMEN ZONDER TE KIJKEN
+• Stemmen op gevoel: één tik is strakker, twee is losser, lang trillen is zuiver
+• Stemmen op geluid: korte geluidjes zeggen te hoog of te laag, en een belletje klinkt als het zuiver is
+• TalkBack zegt eerst wat je moet doen ("Strakker, E 2, 12 cent te laag") en praat nooit door je snaar heen
+• Grote tekst tot twee keer de normale grootte, en hoog contrast
 
 HELEMAAL VAN JOU
-• In 36 talen, met nootnamen zoals jij ze kent: C D E, met H in plaats van B, of Do Re Mi
-• Licht, donker of zoals je telefoon, met de kleuren van je achtergrond op Android 12 en nieuwer
-• Drie meters om uit te kiezen: de klassieke naald, de lichtboog of de stroboscoop
-• Focusmodus: de stemmer schermvullend op een telefoon op zijn kant, goed te lezen van een afstand
-• Een widget op je startscherm die de stemmer met één tik opent, en het scherm blijft aan terwijl je stemt
+• Licht, donker of zoals je telefoon, in de kleuren van je achtergrond op Android 12 en nieuwer
+• Drie meters: de klassieke naald, de lichtboog of de stroboscoop
+• Focusmodus: zet je telefoon op zijn kant en de stemmer vult het scherm, goed te lezen van een afstand
+• Een widget op je startscherm die de stemmer met één tik opent
+• In 36 talen, met nootnamen zoals jij ze kent: C D E, H in plaats van B, of Do Re Mi
 
-Twangle blijft gratis en offline, voorgoed.
+Gratis en offline. Voorgoed.
