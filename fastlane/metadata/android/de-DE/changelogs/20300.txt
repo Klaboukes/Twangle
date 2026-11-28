@@ -1,0 +1,5 @@
+Stimmgerät für Gitarre, Bass, Ukulele, Geige. Ohne Werbung, ohne Konto, offline.
+
+- Stimmen per Klang (Einstellungen, Beim Stimmen): kurze Töne beim Stimmen, steigend, wenn zu hoch, fallend, wenn zu tief, ein Glöckchen, wenn gestimmt.
+- TalkBack sagt zuerst, was zu tun ist, und etwas früher.
+- TalkBack hält nicht mehr bei Elementen ohne Namen an.
