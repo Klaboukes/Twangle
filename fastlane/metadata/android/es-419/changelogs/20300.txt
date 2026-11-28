@@ -1,4 +1,4 @@
-Afinador de guitarra, bajo, ukelele, violín. Sin anuncios ni cuenta ni internet.
+Afinador y metrónomo: guitarra, bajo, ukelele y violín. Sin anuncios. Offline.
 
 - Guía por sonido (Ajustes, Al afinar): sonidos cortos al afinar, suben si está demasiado alto, bajan si está demasiado bajo, una campana si está afinado.
 - TalkBack dice primero qué hacer, y un poco antes.

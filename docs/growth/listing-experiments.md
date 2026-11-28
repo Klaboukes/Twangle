@@ -23,6 +23,8 @@ From Play Console Help, *Run A/B tests on your store listing* (https://support.g
 
 ## Experiment 1: the short description, TalkBack against the current one
 
+**2026-11-28, before starting it:** the listing was rewritten that day (store-listing.md, *Short description*), so the control column below is each language's new short line. The owner also said then that leading with tuning without looking speaks to few players, so ask the owner whether the TalkBack variant is still the one to test before setting it up.
+
 **Set-up:**
 - **Type:** localized experiment. **Name:** `Short description: TalkBack` (under Google's 50 characters).
 - **Languages (5):** English (United States), Spanish (Latin America), Portuguese (Brazil), French (France), Dutch (Netherlands).

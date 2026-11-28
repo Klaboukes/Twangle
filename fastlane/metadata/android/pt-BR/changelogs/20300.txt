@@ -1,4 +1,4 @@
-Afinador de violão, baixo, ukulele e violino. Sem anúncios, sem conta, offline.
+Afinador e metrônomo: violão, baixo, ukulele e violino. Sem anúncios. Offline.
 
 - Guia por som (Configurações, Ao afinar): sons curtos ao afinar, sobem quando alto demais, descem quando baixo demais, um sino quando afinado.
 - O TalkBack diz primeiro o que fazer, e um pouco antes.

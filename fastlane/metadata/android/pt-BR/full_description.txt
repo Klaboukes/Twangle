@@ -1,48 +1,53 @@
-O Twangle é um afinador de violão, também para guitarra, baixo, ukulele, violino e mais, e todos os recursos são gratuitos. Sem anúncios, sem conta, sem compras no app e sem rastreamento. O Twangle nem sequer tem permissão para usar a internet: o som do microfone é analisado ao vivo no seu celular e nunca é gravado nem enviado.
+Um afinador que faz o que você precisa. E nada mais.
 
-O Twangle é fácil de usar e preciso até o cent. Toque uma corda e o Twangle mostra a nota e quanto ela está fora da afinação, em um medidor grande e claro. "Aperte" ou "Afrouxe" diz para que lado girar a tarraxa. Depois de afinar, o Twangle ajuda você a tocar: reconhece os acordes que você toca, mostra diagramas de acordes e escalas, calcula onde vai o capotraste, treina seu ouvido e marca o tempo.
+O Twangle não atrapalha. Abra, toque uma corda e veja a nota e quanto ela está fora, até o último cent. Nenhum anúncio pulando no meio da afinação. Sem conta. Nada para desbloquear. Todos os recursos são gratuitos, e vão continuar assim.
 
-AFINE QUALQUER INSTRUMENTO
-• Violão e guitarra (6, 7, 8 ou 12 cordas), baixo (4 ou 5 cordas), ukulele (também barítono), violino, viola, violoncelo, bandolim e banjo de 5 cordas
-• Afinações de violão: Padrão, Drop D, meio tom abaixo, um tom abaixo, DADGAD, Open G, Open D, Open E e Open C
-• Crie suas próprias afinações para qualquer instrumento
-• Afinador cromático para qualquer outro instrumento ou para sua voz
-• Toque e segure uma corda na tela para ouvir a nota e afinar de ouvido
-• Ajuste o diapasão (A4) de 415 a 466 Hz, por exemplo 442 Hz para tocar com uma orquestra
+Só você ouve. O Twangle nem sequer tem permissão para usar a internet, então o som do microfone fica no seu celular: analisado ao vivo, nunca gravado, nunca enviado. O código é aberto, então qualquer pessoa pode conferir.
 
-FERRAMENTAS QUE ESCUTAM
-• Teste com batida: toque todas as cordas de uma vez e veja quais estão baixas, altas ou afinadas
-• Nome do acorde: toque um acorde no violão, no ukulele ou no bandolim e veja o nome dele
-• Linha de afinação: veja o quanto é estável uma nota sustentada, um bend ou seu vibrato, para cantores também
-• Teste da casa 12: toque uma corda solta e na casa 12 para saber se o rastilho precisa ser ajustado
+E não é só para violão e guitarra. Também é afinador de baixo, afinador de ukulele, afinador de violino e afinador cromático. Depois de afinar, ele continua com você: um metrônomo, diagramas de acordes, escalas, uma ajuda para o capotraste e treino de ouvido.
+
+AFINE TUDO QUE TOCA UMA NOTA
+• Violão e guitarra (6, 7, 8 ou 12 cordas), baixo (4 ou 5 cordas, até o Si grave), ukulele (também Low G e barítono), violino, viola, violoncelo, bandolim e banjo de 5 cordas
+• Padrão, Drop D, meio tom abaixo, um tom abaixo, DADGAD, Open G, Open D, Open E, Open C, ou uma afinação que você mesmo cria
+• Qualquer outra coisa que toque uma nota clara: sua voz, um sax, um trompete, uma gaita, uma kalimba… o afinador cromático resolve
+• Afine de ouvido: toque e segure uma corda na tela para ouvir a nota
+• Vai tocar com uma orquestra? Ajuste o diapasão (A4) para qualquer valor de 415 a 466 Hz
+
+TAMBÉM MARCA O TEMPO
+• Um metrônomo de 30 a 250 batidas por minuto: deslize a régua de andamento ou simplesmente toque no ritmo
+• 2/4, 3/4, 4/4, 5/4, 6/8 e 7/8, com acento no primeiro tempo e luzes para acompanhar
+• Cliques entre os tempos em colcheias, tercinas ou semicolcheias
+• Treino de andamento: o andamento sobe passo a passo até você chegar à sua meta
+• Continua marcando enquanto toca a sua música ou o seu playback, e pode vibrar na batida
 
 PRÁTICA
-• Diagramas de acordes para seu instrumento e sua afinação, incluindo as afinações que você criou
+• Diagramas de acordes para seu instrumento e sua afinação, até para as afinações que você criou
 • Escalas no braço: maior, menor, pentatônica e blues, com o nome de cada nota
 • Capotraste: escolha o tom da música e as posições que você gosta, e veja onde vai o capotraste
-• Treino de ouvido: Tirar de ouvido (toque no seu instrumento as notas que você ouve), Intervalos e Tipo de acorde
-• Metrônomo: de 30 a 250 batidas por minuto em uma régua de andamento que você desliza, com tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 e 7/8, com acento no primeiro tempo e luzes para acompanhar
-• Dá para ouvir por cima da sua música ou do seu playback, e pode vibrar na batida
-• Entre os tempos: cliques em colcheias, tercinas ou semicolcheias
-• Treino de andamento: o andamento sobe passo a passo até a sua meta
+• Treino de ouvido: Tirar de ouvido (ouça as notas e toque no seu instrumento), Intervalos e Tipo de acorde
 
-PARA TODOS
-• Funciona com o TalkBack: o Twangle fala a nota e quanto ela está fora ("Mi 2, 12 cents abaixo, aperte"), lê diagramas de acordes e escalas corda por corda, todo botão tem um nome claro e ele nunca sobrecarrega você com fala
-• Todas as telas funcionam com texto grande, até o dobro do tamanho normal
-• Alto contraste: preto e branco puros, com linhas mais grossas
-• Uma vibração curta quando uma corda está afinada, para você sentir também
-• Em 36 idiomas, entre eles português e inglês
-• Nomes das notas do jeito que você aprendeu: Do Re Mi, ou as letras C D E, também com H no estilo alemão
+FERRAMENTAS QUE ESCUTAM
+• Teste da casa 12: toque uma corda solta, depois na casa 12. O Twangle diz se o rastilho precisa ser ajustado, para que lado e, no violão e na guitarra, mais ou menos quanto
+• Linha de afinação: veja seus bends, seu vibrato e suas notas longas como uma linha. Para cantores também
+• Nome do acorde: toque um acorde no violão, no ukulele ou no bandolim e veja o nome dele
+• Teste com batida: toque todas as cordas de uma vez e veja quais estão fora
+
+NO SEU PULSO
+• Um app para Wear OS que afina com o microfone do próprio relógio, sem celular
+• Deslize para a esquerda para um metrônomo que marca o tempo no seu pulso
+• Um bloco e uma complicação para o mostrador, sempre a um toque
+
+AFINE SEM OLHAR
+• Guia por vibração: um toque é apertar, dois é afrouxar, uma vibração longa é afinado
+• Guia por som: sons curtos dizem se está alto ou baixo demais, e um sino toca quando está afinado
+• O TalkBack diz primeiro o que fazer ("Aperte, Mi 2, 12 cents abaixo") e nunca fala por cima da sua corda
 
 DO SEU JEITO
 • Claro, escuro ou igual ao celular, com as cores do seu papel de parede no Android 12 ou mais recente
-• Três indicadores para escolher: o ponteiro clássico, o arco de luzes ou o estroboscópio
-• Modo foco: o afinador em tela cheia com o celular na horizontal, fácil de ler de longe
+• Texto grande até o dobro do tamanho normal, e um visual de alto contraste
+• Três indicadores: o ponteiro clássico, o arco de luzes ou o estroboscópio
+• Modo foco: vire o celular de lado e o afinador ocupa a tela toda, fácil de ler do outro lado da sala
+• Um widget na tela inicial que abre o afinador com um toque
+• Em 36 idiomas, com nomes das notas do jeito que você aprendeu: Do Re Mi, ou C D E, também com H no lugar de B
 
-E MAIS
-• Um app para relógios Wear OS com bloco e complicação para o mostrador: afine com o microfone do próprio relógio, sem celular, e o metrônomo está a um deslize para a esquerda
-• Um widget para a tela inicial que abre o afinador com um toque
-• Mantém a tela ligada enquanto você afina
-
-O Twangle vai continuar gratuito e offline, para sempre.
+Gratuito e offline. Para sempre.

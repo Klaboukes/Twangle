@@ -1,48 +1,53 @@
-Twangle ni tuner ya gitaa ambayo pia hurekebisha sauti ya besi, ukulele, fidla na zaidi, na kila kipengele ni bure. Hakuna matangazo, akaunti, ununuzi ndani ya programu wala ufuatiliaji. Twangle haina hata ruhusa ya kutumia intaneti: sauti kutoka kwenye maikrofoni yako huchanganuliwa papo hapo kwenye simu yako na hairekodiwi wala kutumwa popote.
+Tuner inayofanya unachohitaji. Hakuna zaidi.
 
-Twangle ni rahisi kutumia na sahihi hadi senti moja. Piga uzi, na Twangle inaonyesha noti na umbali wake kutoka sauti sahihi, kwenye kiashiria kikubwa na wazi. "Kaza" au "Legeza" inakuambia ugeuze kigingi upande gani. Sauti ikishakuwa sawa, Twangle inakusaidia kupiga: inataja kodi unazopiga, inaonyesha chati za kodi na skeli, inahesabu kapo, inafunza sikio lako na inashika mdundo.
+Twangle haikusumbui. Ifungue, piga uzi, na unaona noti na umbali wake kutoka sauti sahihi, hadi senti moja. Hakuna matangazo yanayoibuka katikati ya kurekebisha. Hakuna akaunti. Hakuna kilichofungiwa. Kila kipengele ni bure, na kitabaki hivyo.
 
-REKEBISHA ALA YOYOTE
-• Gitaa (nyuzi 6, 7, 8 au 12), besi (nyuzi 4 au 5), ukulele (baritoni pia), fidla, viola, selo, mandolini na banjo ya nyuzi 5
-• Tuning za gitaa: Kawaida, Drop D, nusu hatua chini, hatua moja chini, DADGAD, Open G, Open D, Open E na Open C
-• Tengeneza tuning zako mwenyewe kwa ala yoyote
-• Tuner ya kromatiki kwa ala nyingine yoyote au sauti yako
-• Shikilia uzi ili usikie noti yake na urekebishe kwa sikio
-• Weka A4 kutoka 415 hadi 466 Hz, kwa mfano 442 Hz ili upige pamoja na okestra
+Ni wewe tu unayesikia. Twangle haina hata ruhusa ya kutumia intaneti, kwa hiyo sauti kutoka kwenye maikrofoni yako inabaki kwenye simu yako: inachanganuliwa papo hapo, hairekodiwi kamwe, haitumwi kamwe. Msimbo wake ni wa chanzo huria (open source), kwa hiyo mtu yeyote anaweza kuukagua.
 
-ZANA ZA KUSIKILIZA
-• Ukaguzi wa nyuzi: piga nyuzi zote pamoja na uone zipi ziko chini, juu au sawa
-• Jina la kodi: piga kodi kwenye gitaa, ukulele au mandolini na uone jina lake
-• Mstari wa sauti: ona jinsi noti iliyoshikiliwa, bend au vibrato yako ilivyo thabiti, kwa waimbaji pia
-• Ukaguzi wa fret ya 12: piga uzi ukiwa wazi na kwenye fret ya 12 ili ujue kama saddle yake inapaswa kusogezwa
+Na si kwa gitaa tu. Ni tuner ya besi, tuner ya ukulele, tuner ya fidla na tuner ya kromatiki pia. Sauti ikishakuwa sawa, inaendelea: metronomu, chati za kodi, skeli, msaidizi wa kapo na mazoezi ya sikio.
+
+REKEBISHA CHOCHOTE KINACHOTOA NOTI
+• Gitaa (nyuzi 6, 7, 8 au 12), besi (nyuzi 4 au 5, hadi B ya chini), ukulele (G ya chini na baritoni pia), fidla, viola, selo, mandolini na banjo ya nyuzi 5
+• Kawaida, Drop D, nusu hatua chini, hatua moja chini, DADGAD, Open G, Open D, Open E, Open C, au tuning unayotengeneza mwenyewe
+• Chochote kingine kinachotoa noti moja wazi: sauti yako, saksafoni, tarumbeta, harmonika, kalimba… tuner ya kromatiki inakushughulikia
+• Rekebisha kwa sikio: gusa na ushikilie uzi kwenye skrini ili usikie noti yake
+• Unapiga na okestra? Weka A4 popote kutoka 415 hadi 466 Hz
+
+PIA INASHIKA MDUNDO
+• Metronomu ya midundo 30 hadi 250 kwa dakika: sogeza rula ya tempo au gusa tu mdundo
+• 2/4, 3/4, 4/4, 5/4, 6/8 na 7/8, mdundo wa kwanza ukiwa na msisitizo na taa za kufuata
+• Mibofyo kati ya midundo kwa noti za nane, tripleti au noti za kumi na sita
+• Mazoezi ya kasi: tempo inapanda hatua kwa hatua hadi ufikie lengo lako
+• Inaendelea kubofya wakati muziki wako au wimbo wa kuambatana nao unacheza, na inaweza kutetema kwa kila mdundo
 
 MAZOEZI
-• Chati za kodi kwa ala yako na tuning yako, ikiwemo tuning zako mwenyewe
+• Chati za kodi kwa ala yako na tuning yako, hata zile ulizotengeneza mwenyewe
 • Skeli kwenye shingo: kuu, ndogo, pentatoniki na blues, kila noti ikiwa na jina
 • Msaidizi wa kapo: chagua ufunguo wa wimbo na maumbo unayopenda, na uone kapo inakaa wapi
-• Mazoezi ya sikio: Piga uliyosikia (piga kwenye ala yako noti unazosikia), Vipindi na Aina ya kodi
-• Metronomu: midundo 30 hadi 250 kwa dakika kwenye rula ya tempo unayoisogeza, pamoja na tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 na 7/8, mdundo wa kwanza ukiwa na msisitizo na taa za kufuata
-• Inabofya pamoja na muziki wako au wimbo wa kuambatana nao, na inaweza kutetema kwa kila mdundo
-• Kati ya midundo: mibofyo ya ziada ya noti za nane, tripleti au noti za kumi na sita
-• Mazoezi ya kasi: tempo inapanda hatua kwa hatua hadi lengo lako
+• Mazoezi ya sikio: Piga uliyosikia (sikia noti, kisha zipige kwenye ala yako), Vipindi na Aina ya kodi
 
-IMETENGENEZWA KWA AJILI YA KILA MTU
-• Inafanya kazi na TalkBack: Twangle inatamka noti na umbali wake ("E 2, senti 12 chini, kaza"), inasoma chati za kodi na skeli uzi kwa uzi, kila kitufe kina jina wazi, na haikujazi maneno mengi kupita kiasi
-• Kila skrini inafanya kazi na maandishi makubwa, hadi mara mbili ya ukubwa wa kawaida
-• Utofautishaji wa juu: nyeusi na nyeupe tupu, mistari minene zaidi
-• Mtetemo mfupi uzi unapokuwa sawa, ili uweze kuuhisi pia
-• Katika lugha 36: Kiswahili, Kiingereza, Kiamhari, Kiarabu, Kibengali, Kiburma, Kicheki, Kichina (Kilichorahisishwa), Kichina (Cha Jadi), Kidenmaki, Kifaransa, Kifini, Kigiriki, Kihindi, Kihispania, Kiholanzi, Kihungaria, Kiindonesia, Kiitaliano, Kijapani, Kijerumani, Kikambodia, Kikorea, Kimarathi, Kinorwe, Kipolandi, Kireno, Kiromania, Kirusi, Kiswidi, Kitamili, Kitelugu, Kithai, Kituruki, Kiukreni na Kivietinamu
-• Majina ya noti jinsi ulivyojifunza: C D E, H badala ya B, au Do Re Mi
+ZANA ZA KUSIKILIZA
+• Ukaguzi wa fret ya 12: piga uzi ukiwa wazi, kisha kwenye fret ya 12. Twangle inakuambia kama saddle inapaswa kusogezwa, upande gani, na kwenye gitaa takriban kiasi gani
+• Mstari wa sauti: tazama bend zako, vibrato yako na noti zako ndefu kama mstari. Inafaa waimbaji pia
+• Jina la kodi: piga kodi kwenye gitaa, ukulele au mandolini na uone jina lake
+• Ukaguzi wa nyuzi: piga nyuzi zote pamoja na uone zipi haziko sawa
+
+KWENYE MKONO WAKO
+• Programu ya Wear OS inayorekebisha kwa maikrofoni ya saa yenyewe, bila simu
+• Telezesha kushoto upate metronomu inayogonga mdundo kwenye mkono wako
+• Kigae na kipengele cha uso wa saa, ili iwe daima mguso mmoja tu
+
+REKEBISHA BILA KUTAZAMA
+• Mwongozo wa mtetemo: mguso mmoja ni kaza, miwili ni legeza, mtetemo mrefu ni sauti sawa
+• Mwongozo wa sauti: sauti fupi zinakuambia ni juu mno au chini mno, na kengele inalia sauti ikiwa sawa
+• TalkBack inasema cha kufanya kwanza ("Kaza, E 2, senti 12 chini") na haizungumzi kamwe juu ya sauti ya uzi wako
 
 IFANYE IWE YAKO
-• Mwanga, giza, au kufuata simu yako, pamoja na rangi za mandhari yako kwenye Android 12 na mpya zaidi
-• Viashiria vitatu vya kuchagua: sindano ya asili, upinde wa taa au strobe
-• Hali ya umakini: tuner kwenye skrini nzima simu ikiwa imelazwa, rahisi kusoma ukiwa mbali
-
-PIA
-• Programu ya saa za Wear OS yenye kigae na kipengele cha uso wa saa: rekebisha kwa maikrofoni ya saa yenyewe, bila simu, na telezesha kushoto upate metronomu
+• Mwanga, giza, au kufuata simu yako, kwa rangi za mandhari yako kwenye Android 12 na mpya zaidi
+• Maandishi makubwa hadi mara mbili ya ukubwa wa kawaida, na mwonekano wa utofautishaji wa juu
+• Viashiria vitatu: sindano ya asili, upinde wa taa au strobe
+• Hali ya umakini: laza simu yako ubavuni na tuner inajaza skrini, rahisi kusoma ukiwa upande wa pili wa chumba
 • Wijeti ya skrini ya kwanza inayofungua tuner kwa mguso mmoja
-• Huweka skrini ikiwaka unaporekebisha
+• Katika lugha 36, na majina ya noti jinsi ulivyojifunza: C D E, H badala ya B, au Do Re Mi
 
-Twangle itabaki bure na nje ya mtandao, daima.
+Bure na nje ya mtandao. Daima.

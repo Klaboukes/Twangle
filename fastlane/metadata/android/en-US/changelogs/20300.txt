@@ -1,4 +1,4 @@
-Tuner for guitar, bass, ukulele and violin. No ads, no account, fully offline.
+Tuner for guitar, bass, ukulele and violin, plus a metronome. No ads. Offline.
 
 - Sound guide (Settings, While tuning): short sounds while you tune, up when too high, down when too low, a bell when in tune.
 - TalkBack says what to do first, and a little sooner.

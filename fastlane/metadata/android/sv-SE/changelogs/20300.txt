@@ -1,4 +1,4 @@
-Stämmare för gitarr, bas, ukulele och fiol. Ingen reklam, inget konto, offline.
+Stämmare och metronom för gitarr, bas, ukulele och fiol. Ingen reklam. Offline.
 
 - Ljudguide (Inställningar, Medan du stämmer): korta ljud när du stämmer, uppåt när den är för hög, nedåt när den är för låg, en klocka när den är stämd.
 - TalkBack säger först vad du ska göra, och lite tidigare.

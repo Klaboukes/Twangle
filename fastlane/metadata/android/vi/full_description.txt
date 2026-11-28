@@ -1,48 +1,53 @@
-Twangle là ứng dụng lên dây đàn guitar, lên được cả bass, ukulele, violin và nhiều nhạc cụ khác, với mọi tính năng đều miễn phí. Không quảng cáo, không tài khoản, không mua hàng trong ứng dụng và không theo dõi. Twangle thậm chí không có quyền dùng internet: âm thanh từ micrô được phân tích trực tiếp trên điện thoại của bạn và không bao giờ được ghi âm hay gửi đi đâu.
+Ứng dụng lên dây làm đúng việc bạn cần. Và không gì khác.
 
-Twangle dễ dùng và chính xác đến từng cent. Gảy một dây, Twangle hiện nốt và độ lệch so với chuẩn trên một đồng hồ đo lớn, rõ ràng. "Căng lên" hoặc "Chùng xuống" cho bạn biết nên vặn khóa đàn theo hướng nào. Khi dây đã chuẩn, Twangle giúp bạn chơi đàn: gọi tên hợp âm bạn quét, hiện sơ đồ hợp âm và âm giai, tính vị trí capo, luyện tai và giữ nhịp.
+Twangle không làm phiền bạn. Mở ra, gảy một dây, và bạn thấy ngay nốt nhạc cùng độ lệch, chính xác đến từng cent. Không quảng cáo bật lên giữa lúc lên dây. Không tài khoản. Không có gì phải mở khóa. Mọi tính năng đều miễn phí, và sẽ luôn như vậy.
 
-LÊN DÂY MỌI NHẠC CỤ
-• Guitar (6, 7, 8 hoặc 12 dây), bass (4 hoặc 5 dây), ukulele (cả baritone), violin, viola, cello, mandolin và banjo 5 dây
-• Kiểu lên dây guitar: tiêu chuẩn, Drop D, hạ nửa cung, hạ một cung, DADGAD, Open G, Open D, Open E và Open C
-• Tự tạo kiểu lên dây cho bất kỳ nhạc cụ nào
-• Chế độ Chromatic cho mọi nhạc cụ khác hoặc giọng hát
-• Giữ một dây để nghe nốt của nó và lên dây bằng tai
-• Đặt A4 từ 415 đến 466 Hz, ví dụ 442 Hz để chơi cùng dàn nhạc giao hưởng
+Chỉ bạn nghe thấy. Twangle thậm chí không có quyền dùng internet, nên âm thanh từ micrô luôn ở lại trên điện thoại của bạn: được phân tích trực tiếp, không bao giờ ghi âm, không bao giờ gửi đi. Mã nguồn mở, nên ai cũng có thể kiểm tra.
 
-CÔNG CỤ NGHE
-• Quét kiểm tra: quét tất cả các dây cùng lúc và xem dây nào thấp, cao hay đã chuẩn
-• Tên hợp âm: quét một hợp âm trên guitar, ukulele hoặc mandolin và xem tên của nó
-• Đường cao độ: xem nốt ngân, cú bend hay tiếng rung của bạn đều đến đâu, cho cả ca sĩ
-• Kiểm tra phím 12: gảy một dây buông rồi bấm ở phím 12 để biết có cần dời ngựa đàn không
+Và không chỉ dành cho guitar. Đây còn là ứng dụng lên dây bass, lên dây ukulele, lên dây violin và máy lên dây chromatic. Khi đàn đã chuẩn, Twangle vẫn tiếp tục: máy đếm nhịp, sơ đồ hợp âm, âm giai, trợ giúp capo và luyện tai.
+
+LÊN DÂY MỌI THỨ PHÁT RA NỐT NHẠC
+• Guitar (6, 7, 8 hoặc 12 dây), bass (4 hoặc 5 dây, xuống tận B trầm), ukulele (cả G trầm và baritone), violin, viola, cello, mandolin và banjo 5 dây
+• Tiêu chuẩn, Drop D, hạ nửa cung, hạ một cung, DADGAD, Open G, Open D, Open E, Open C, hoặc kiểu lên dây bạn tự tạo
+• Mọi thứ khác phát ra một nốt rõ ràng: giọng hát, saxophone, kèn trumpet, kèn harmonica, kalimba… chế độ Chromatic lo hết
+• Lên dây bằng tai: chạm và giữ một dây trên màn hình để nghe nốt của nó
+• Chơi cùng dàn nhạc? Đặt A4 ở bất kỳ mức nào từ 415 đến 466 Hz
+
+CÒN GIỮ NHỊP NỮA
+• Máy đếm nhịp từ 30 đến 250 phách mỗi phút: kéo thước nhịp độ hoặc chỉ cần gõ theo nhịp
+• 2/4, 3/4, 4/4, 5/4, 6/8 và 7/8, nhấn mạnh phách đầu và có đèn để theo dõi
+• Tiếng nhịp giữa các phách theo móc đơn, liên ba hoặc móc kép
+• Luyện tốc độ: nhịp độ tăng dần từng bước cho đến khi bạn đạt mục tiêu
+• Vẫn phát tiếng nhịp khi nhạc của bạn hay nhạc đệm đang phát, và có thể rung theo phách
 
 LUYỆN TẬP
-• Sơ đồ hợp âm cho nhạc cụ và kiểu lên dây của bạn, kể cả kiểu lên dây tự tạo
+• Sơ đồ hợp âm cho nhạc cụ và kiểu lên dây của bạn, kể cả kiểu bạn tự tạo
 • Âm giai trên cần đàn: trưởng, thứ, ngũ cung và blues, mọi nốt đều có tên
 • Trợ giúp capo: chọn giọng của bài hát và các thế bấm bạn thích, rồi xem nên kẹp capo ở đâu
-• Luyện tai: Đàn lại (đàn trên nhạc cụ của bạn những nốt bạn nghe được), Quãng và Loại hợp âm
-• Máy đếm nhịp: 30 đến 250 phách mỗi phút trên một thước nhịp độ để kéo, có gõ nhịp
-• 2/4, 3/4, 4/4, 5/4, 6/8 và 7/8, nhấn mạnh phách đầu và có đèn để theo dõi
-• Phát tiếng nhịp cùng nhạc của bạn hay nhạc đệm, và có thể rung theo phách
-• Giữa các phách: thêm tiếng nhịp theo móc đơn, liên ba hoặc móc kép
-• Luyện tốc độ: nhịp độ tăng dần từng bước đến mục tiêu của bạn
+• Luyện tai: Đàn lại (nghe các nốt, đàn lại trên nhạc cụ của bạn), Quãng và Loại hợp âm
 
-DÀNH CHO MỌI NGƯỜI
-• Hoạt động với TalkBack: Twangle đọc nốt và độ lệch ("E 2, thấp 12 cent, căng lên"), đọc sơ đồ hợp âm và âm giai từng dây một, mỗi nút đều có tên rõ ràng, và không bao giờ nói dồn dập
-• Mọi màn hình đều dùng được với chữ lớn, tới gấp đôi cỡ thường
-• Độ tương phản cao: đen trắng thuần, nét dày hơn
-• Rung ngắn khi một dây đã chuẩn, để bạn cảm nhận được
-• Có 36 ngôn ngữ: tiếng Việt, Amharic, Anh, Ả Rập, Ba Lan, Bengal, Bồ Đào Nha, Đan Mạch, Đức, Hà Lan, Hàn, Hindi, Hungary, Hy Lạp, Indonesia, Khmer, Marathi, Miến Điện, Na Uy, Nga, Nhật, Pháp, Phần Lan, Romania, Séc, Swahili, Tamil, Tây Ban Nha, Telugu, Thái, Thổ Nhĩ Kỳ, Thụy Điển, Trung (giản thể), Trung (phồn thể), Ukraina và Ý
-• Tên nốt theo cách bạn đã học: C D E, kiểu Đức với H thay cho B, hoặc Đô Rê Mi
+CÔNG CỤ NGHE
+• Kiểm tra phím 12: gảy một dây buông, rồi bấm ở phím 12. Twangle cho biết có cần dời ngựa đàn không, dời về phía nào, và với guitar thì khoảng bao nhiêu
+• Đường cao độ: xem các cú bend, tiếng rung và nốt ngân của bạn thành một đường kẻ. Dùng được cả cho ca sĩ
+• Tên hợp âm: quét một hợp âm trên guitar, ukulele hoặc mandolin và xem tên của nó
+• Quét kiểm tra: quét tất cả các dây cùng lúc và xem dây nào bị lệch
+
+TRÊN CỔ TAY
+• Ứng dụng Wear OS lên dây bằng micrô của chính đồng hồ, không cần điện thoại
+• Vuốt sang trái để mở máy đếm nhịp gõ nhịp lên cổ tay bạn
+• Thẻ thông tin (tile) và tiện ích mặt đồng hồ (complication), luôn chỉ cách một lần chạm
+
+LÊN DÂY KHÔNG CẦN NHÌN
+• Rung chỉ dẫn: rung một lần là căng lên, hai lần là chùng xuống, rung dài là đã chuẩn
+• Âm thanh chỉ dẫn: âm ngắn báo quá cao hay quá thấp, và tiếng chuông vang lên khi đã chuẩn
+• TalkBack nói việc cần làm trước ("Căng lên, E 2, thấp 12 cent") và không bao giờ nói đè lên tiếng đàn
 
 THEO CÁCH CỦA BẠN
 • Sáng, tối, hoặc theo điện thoại, với màu từ hình nền trên Android 12 trở lên
-• Ba kiểu đồng hồ đo để chọn: kim cổ điển, cung đèn hoặc strobe
-• Chế độ tập trung: máy lên dây toàn màn hình trên điện thoại xoay ngang, dễ đọc từ xa
-
-NGOÀI RA
-• Ứng dụng cho đồng hồ Wear OS có thẻ thông tin (tile) và tiện ích mặt đồng hồ (complication): lên dây bằng micrô của chính đồng hồ, không cần điện thoại, và vuốt sang trái để mở máy đếm nhịp
+• Chữ lớn tới gấp đôi cỡ thường, và giao diện tương phản cao
+• Ba kiểu đồng hồ đo: kim cổ điển, cung đèn hoặc strobe
+• Chế độ tập trung: xoay ngang điện thoại và máy lên dây phủ kín màn hình, dễ đọc từ đầu kia căn phòng
 • Tiện ích màn hình chính mở máy lên dây chỉ với một lần chạm
-• Giữ màn hình luôn bật khi bạn lên dây
+• Có 36 ngôn ngữ, với tên nốt theo cách bạn đã học: C D E, H thay cho B, hoặc Đô Rê Mi
 
-Twangle sẽ luôn miễn phí và offline, mãi mãi.
+Miễn phí và offline. Mãi mãi.

@@ -1,48 +1,53 @@
-Twangle ist ein Gitarrenstimmgerät, auch für Bass, Ukulele, Geige und mehr, und jede Funktion ist kostenlos. Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Twangle hat nicht einmal die Berechtigung, das Internet zu nutzen: Der Ton deines Mikrofons wird live auf deinem Handy analysiert und nie aufgenommen oder irgendwohin gesendet.
+Ein Stimmgerät, das tut, was du brauchst. Und sonst nichts.
 
-Twangle ist einfach zu bedienen und stimmt auf den Cent genau. Spiel eine Saite, und Twangle zeigt auf einer großen, klaren Anzeige den Ton und wie weit er von der richtigen Stimmung entfernt ist. „Spannen“ oder „Lockern“ sagt dir, in welche Richtung du den Wirbel drehst. Ist alles gestimmt, hilft dir Twangle beim Spielen: Es erkennt die Akkorde, die du anschlägst, zeigt Akkordgriffe und Tonleitern, rechnet den Kapo aus, schult dein Gehör und hält den Takt.
+Twangle steht dir nicht im Weg. Öffnen, Saite anschlagen, und du siehst den Ton und wie weit er danebenliegt, bis auf den Cent genau. Keine Werbung, die mitten im Stimmen aufploppt. Kein Konto. Nichts freizuschalten. Jede Funktion ist kostenlos, und das bleibt so.
 
-JEDES INSTRUMENT STIMMEN
-• Gitarre (6, 7, 8 oder 12 Saiten), Bass (4 oder 5 Saiten), Ukulele (auch Bariton), Geige, Bratsche, Cello, Mandoline und 5-saitiges Banjo
-• Gitarrenstimmungen: Standard, Drop D, Halbton tiefer, Ganzton tiefer, DADGAD, Open G, Open D, Open E und Open C
-• Eigene Stimmungen für jedes Instrument
-• Chromatisches Stimmgerät für jedes andere Instrument oder deine Stimme
-• Halte eine Saite gedrückt, um ihren Ton zu hören und nach Gehör zu stimmen
-• Kammerton A4 von 415 bis 466 Hz, etwa 442 Hz fürs Orchester
+Nur du hörst es. Twangle darf nicht einmal ins Internet, also bleibt der Ton deines Mikrofons auf deinem Handy: live analysiert, nie aufgenommen, nie gesendet. Der Code ist Open Source, jeder kann nachsehen.
 
-WERKZEUGE, DIE MITHÖREN
-• Anschlag-Check: Schlag alle Saiten zugleich an und sieh, welche zu tief, zu hoch oder gestimmt sind
-• Akkordname: Schlag einen Akkord auf Gitarre, Ukulele oder Mandoline an und sieh, wie er heißt
-• Tonverlauf: Sieh, wie ruhig ein gehaltener Ton, ein Bending oder dein Vibrato ist, auch zum Singen
-• Check am 12. Bund: Spiel eine Saite leer und am 12. Bund und erfahre, ob der Saitenreiter verschoben werden muss
+Und es ist nicht nur was für Gitarre. Twangle ist auch Bass-Stimmgerät, Ukulele-Stimmgerät, Geigen-Stimmgerät und chromatisches Stimmgerät. Ist alles gestimmt, geht's weiter: Metronom, Akkordgriffe, Tonleitern, Kapo-Helfer und Gehörbildung.
+
+ALLES STIMMEN, WAS EINEN TON SPIELT
+• Gitarre (6, 7, 8 oder 12 Saiten), Bass (4 oder 5 Saiten, bis zum tiefen H), Ukulele (auch Low G und Bariton), Geige, Bratsche, Cello, Mandoline und 5-saitiges Banjo
+• Standard, Drop D, Halbton tiefer, Ganzton tiefer, DADGAD, Open G, Open D, Open E, Open C oder deine eigene Stimmung
+• Alles andere, was einen klaren Ton spielt: deine Stimme, Saxofon, Trompete, Mundharmonika, Kalimba … dafür ist das chromatische Stimmgerät da
+• Nach Gehör stimmen: Halte eine Saite auf dem Bildschirm gedrückt, und du hörst ihren Ton
+• Du spielst im Orchester? Stell A4 beliebig zwischen 415 und 466 Hz ein
+
+HÄLT AUCH DEN TAKT
+• Ein Metronom von 30 bis 250 Schlägen pro Minute: Schieb das Tempo-Lineal oder tipp einfach den Takt
+• 2/4, 3/4, 4/4, 5/4, 6/8 und 7/8, mit Betonung auf dem ersten Schlag und Lichtern zum Mitverfolgen
+• Klicks zwischen den Schlägen in Achteln, Triolen oder Sechzehnteln
+• Tempotrainer: Das Tempo steigt Schritt für Schritt bis zu deinem Ziel
+• Klickt weiter, während deine Musik oder dein Backing Track läuft, und kann im Takt vibrieren
 
 ÜBEN
-• Akkordgriffe für dein Instrument und deine Stimmung, auch für eigene Stimmungen
+• Akkordgriffe für dein Instrument und deine Stimmung, auch für selbst angelegte Stimmungen
 • Tonleitern auf dem Griffbrett: Dur, Moll, Pentatonik und Blues, jeder Ton mit Namen
 • Kapo: Wähl die Tonart des Songs und die Griffe, die du magst, und sieh, wohin der Kapo kommt
-• Gehörbildung: Nachspielen (spiel gehörte Töne auf deinem Instrument), Intervalle und Akkordart
-• Metronom: 30 bis 250 Schläge pro Minute auf einem Tempo-Lineal zum Verschieben, mit Tap-Tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 und 7/8, mit Betonung auf dem ersten Schlag und Lichtern zum Mitverfolgen
-• Gut hörbar über deiner Musik, und kann im Takt vibrieren
-• Zwischen den Schlägen: Klicks in Achteln, Triolen oder Sechzehnteln
-• Tempotrainer: Das Tempo steigt schrittweise bis zu deinem Ziel
+• Gehörbildung: Nachspielen (Töne hören, auf dem Instrument nachspielen), Intervalle und Akkordart
 
-FÜR ALLE GEMACHT
-• Funktioniert mit TalkBack: Twangle sagt den Ton und wie weit er danebenliegt („E 2, 12 Cent zu tief, spannen“), liest Akkordgriffe und Tonleitern Saite für Saite vor, jede Schaltfläche hat einen klaren Namen, und es überflutet dich nie mit Sprache
-• Jeder Bildschirm funktioniert mit großer Schrift, bis zur doppelten Größe
-• Hoher Kontrast: Schwarz-Weiß mit dickeren Linien
-• Eine kurze Vibration, wenn eine Saite gestimmt ist, damit du es auch spürst
-• In 36 Sprachen, darunter Deutsch und Englisch
-• Notennamen, wie du sie gelernt hast: C D E … H, international mit B oder Do Re Mi
+WERKZEUGE, DIE MITHÖREN
+• Check am 12. Bund: Spiel eine Saite leer, dann am 12. Bund. Twangle sagt dir, ob der Saitenreiter verschoben werden muss, in welche Richtung und bei der Gitarre ungefähr wie weit
+• Tonverlauf: Sieh deine Bendings, dein Vibrato und deine langen Töne als Linie. Auch zum Singen
+• Akkordname: Schlag einen Akkord auf Gitarre, Ukulele oder Mandoline an und sieh, wie er heißt
+• Anschlag-Check: Schlag alle Saiten zugleich an und sieh, welche danebenliegen
+
+AM HANDGELENK
+• Eine App für Wear OS, die mit dem Mikrofon der Uhr selbst stimmt, ganz ohne Handy
+• Wisch nach links zum Metronom, das dir den Takt aufs Handgelenk tippt
+• Eine Kachel und eine Komplikation fürs Zifferblatt: immer nur einen Tipp entfernt
+
+STIMMEN OHNE HINZUSEHEN
+• Stimmen per Vibration: Ein Impuls heißt spannen, zwei lockern, ein langes Brummen gestimmt
+• Stimmen per Klang: Kurze Töne sagen zu hoch oder zu tief, ein Glöckchen klingt, wenn du gestimmt bist
+• TalkBack sagt zuerst, was zu tun ist („Spannen, E 2, 12 Cent zu tief“), und redet nie über deine Saite hinweg
 
 GANZ NACH DEINEM GESCHMACK
-• Hell, dunkel oder wie dein Handy, ab Android 12 mit den Farben deines Hintergrundbilds
-• Drei Anzeigen zur Wahl: die klassische Nadel, der LED-Bogen oder das Stroboskop
-• Fokusmodus: das Stimmgerät bildschirmfüllend auf einem quer gehaltenen Handy
-
-AUSSERDEM
-• Eine App für Uhren mit Wear OS, mit Kachel und Komplikation fürs Zifferblatt: Stimm mit dem Mikrofon der Uhr selbst, ganz ohne Handy, und wisch nach links zum Metronom
+• Hell, dunkel oder wie dein Handy, ab Android 12 in den Farben deines Hintergrundbilds
+• Große Schrift bis zur doppelten Größe und ein Look mit hohem Kontrast
+• Drei Anzeigen: die klassische Nadel, der LED-Bogen oder das Stroboskop
+• Fokusmodus: Dreh dein Handy quer, und das Stimmgerät füllt den Bildschirm, gut lesbar auch von Weitem
 • Ein Widget für den Startbildschirm, das das Stimmgerät mit einem Tippen öffnet
-• Lässt den Bildschirm an, während du stimmst
+• In 36 Sprachen, mit Notennamen, wie du sie gelernt hast: C D E mit H, international mit B, oder Do Re Mi
 
-Twangle bleibt kostenlos und offline, für immer.
+Kostenlos und offline. Für immer.

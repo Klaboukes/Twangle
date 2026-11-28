@@ -1,4 +1,4 @@
-Tuner til guitar, bas, ukulele og violin. Ingen reklamer, ingen konto, offline.
+Tuner og metronom til guitar, bas, ukulele og violin. Ingen reklamer. Offline.
 
 - Lydguide (Indstillinger, Mens du stemmer): korte lyde, mens du stemmer, op når den er for høj, ned når den er for lav, en klokke når den er stemt.
 - TalkBack siger først, hvad du skal gøre, og lidt tidligere.

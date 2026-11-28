@@ -1,48 +1,53 @@
-Twangle est un accordeur de guitare, aussi pour la basse, le ukulélé, le violon et bien plus, et toutes ses fonctions sont gratuites. Pas de pub, pas de compte, pas d'achats intégrés, pas de pistage. Twangle n'a même pas l'autorisation d'accéder à Internet : le son de votre micro est analysé en direct sur votre téléphone, jamais enregistré ni envoyé.
+Un accordeur qui fait ce qu'il vous faut. Et rien d'autre.
 
-Twangle est simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Tendez » ou « Détendez » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo, entraîne votre oreille et garde le tempo.
+Twangle ne vous encombre pas. Ouvrez-le, jouez une corde, et vous voyez la note et son écart, au cent près. Pas de pub qui surgit en plein accordage. Pas de compte. Rien à débloquer. Toutes les fonctions sont gratuites, et ça ne changera pas.
 
-ACCORDEZ TOUS VOS INSTRUMENTS
-• Guitare (6, 7, 8 ou 12 cordes), basse (4 ou 5 cordes), ukulélé (baryton aussi), violon, alto, violoncelle, mandoline et banjo 5 cordes
-• Accordages de guitare : Standard, Drop D, un demi-ton plus bas, un ton plus bas, DADGAD, Open G, Open D, Open E et Open C
-• Créez vos propres accordages pour chaque instrument
-• Accordeur chromatique pour tout autre instrument ou votre voix
-• Maintenez une corde pour entendre sa note et accorder à l'oreille
-• Réglez le diapason (A4) de 415 à 466 Hz, par exemple 442 Hz pour l'orchestre
+Rien que pour vos oreilles. Twangle n'a même pas accès à Internet : le son de votre micro reste dans votre téléphone, analysé en direct, jamais enregistré, jamais envoyé. Le code est open source, chacun peut vérifier.
 
-DES OUTILS QUI ÉCOUTENT
-• Test en grattant : grattez toutes les cordes à la fois et voyez lesquelles sont trop basses, trop hautes ou justes
-• Nom d'accord : grattez un accord à la guitare, au ukulélé ou à la mandoline et voyez son nom
-• Trace de hauteur : voyez la stabilité d'une note tenue, d'un bend ou de votre vibrato, pour les chanteurs aussi
-• Test de la 12e case : jouez une corde à vide puis à la 12e case pour savoir s'il faut déplacer le pontet
+Et ce n'est pas que pour la guitare. C'est aussi un accordeur de basse, de ukulélé, de violon et un accordeur chromatique. Une fois accordé, ça continue : métronome, diagrammes d'accords, gammes, aide pour le capo et oreille musicale.
+
+ACCORDEZ TOUT CE QUI JOUE UNE NOTE
+• Guitare (6, 7, 8 ou 12 cordes), basse (4 ou 5 cordes, jusqu'au Si grave), ukulélé (Low G et baryton aussi), violon, alto, violoncelle, mandoline et banjo 5 cordes
+• Standard, Drop D, un demi-ton plus bas, un ton plus bas, DADGAD, Open G, Open D, Open E, Open C, ou votre propre accordage
+• Tout ce qui joue une note claire : votre voix, un saxo, une trompette, un harmonica, un kalimba… l'accordeur chromatique s'en charge
+• Accordez à l'oreille : maintenez une corde à l'écran pour entendre sa note
+• Vous jouez avec un orchestre ? Réglez le diapason (A4) où vous voulez entre 415 et 466 Hz
+
+IL BAT LA MESURE AUSSI
+• Un métronome de 30 à 250 battements par minute : faites glisser la règle de tempo ou tapez le temps
+• 2/4, 3/4, 4/4, 5/4, 6/8 et 7/8, avec un accent sur le premier temps et des voyants pour suivre
+• Clics entre les temps en croches, triolets ou doubles croches
+• Entraîneur de tempo : le tempo monte pas à pas jusqu'à votre objectif
+• Continue de battre pendant votre musique ou votre backing track, et peut vibrer sur le temps
 
 PRATIQUE
 • Diagrammes d'accords pour votre instrument et votre accordage, y compris les vôtres
-• Gammes sur le manche : majeure, mineure, pentatonique et blues, chaque note nommée
-• Capo : choisissez la tonalité du morceau et les doigtés que vous aimez, et voyez où placer le capo
-• Oreille musicale : Rejouer (jouez sur votre instrument les notes entendues), Intervalles et Type d'accord
-• Métronome : de 30 à 250 battements par minute sur une règle de tempo à faire glisser, avec tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 et 7/8, avec un accent sur le premier temps et des voyants pour suivre
-• S'entend par-dessus votre musique, et peut vibrer sur le temps
-• Entre les temps : des clics en croches, triolets ou doubles croches
-• Entraîneur de tempo : le tempo monte pas à pas jusqu'à votre objectif
+• Gammes sur le manche : majeure, mineure, pentatonique et blues, chaque note nommée
+• Capo : choisissez la tonalité du morceau et les doigtés que vous aimez, et voyez où placer le capo
+• Oreille musicale : Rejouer (écoutez les notes, jouez-les sur votre instrument), Intervalles et Type d'accord
 
-POUR TOUT LE MONDE
-• Fonctionne avec TalkBack : Twangle dit la note et son écart (« Mi 2, 12 cents trop bas, tendez »), lit les diagrammes d'accords et les gammes corde par corde, chaque bouton a un nom clair, et il ne vous submerge jamais de paroles
-• Chaque écran fonctionne avec un texte agrandi, jusqu'à deux fois la taille normale
-• Contraste élevé : noir et blanc purs, traits plus épais
-• Une courte vibration quand une corde est juste, pour la sentir aussi
-• En 36 langues, dont le français et l'anglais
-• Les noms de notes comme vous les avez appris : Do Ré Mi, ou C D E à l'anglaise ou à l'allemande
+DES OUTILS QUI ÉCOUTENT
+• Test de la 12e case : jouez une corde à vide, puis à la 12e case. Twangle vous dit s'il faut déplacer le pontet, dans quel sens et, sur une guitare, de combien environ
+• Trace de hauteur : voyez vos bends, votre vibrato et vos notes tenues sous forme de ligne. Pour les chanteurs aussi
+• Nom d'accord : grattez un accord à la guitare, au ukulélé ou à la mandoline et voyez son nom
+• Test en grattant : grattez toutes les cordes à la fois et voyez lesquelles sont fausses
+
+À VOTRE POIGNET
+• Une appli Wear OS qui accorde avec le micro de la montre, sans téléphone
+• Balayez vers la gauche pour un métronome qui bat la mesure sur votre poignet
+• Une carte et une complication pour le cadran, toujours à une touche
+
+ACCORDEZ SANS REGARDER
+• Guidage par vibration : une impulsion pour tendre, deux pour détendre, une longue quand c'est juste
+• Guidage sonore : de petits sons disent trop haut ou trop bas, une clochette sonne quand c'est juste
+• TalkBack dit d'abord quoi faire (« Tendez, Mi 2, 12 cents trop bas ») et ne parle jamais par-dessus votre corde
 
 À VOTRE GOÛT
-• Clair, sombre ou selon le téléphone, avec les couleurs de votre fond d'écran sur Android 12 et plus
-• Trois affichages au choix : l'aiguille classique, l'arc lumineux ou le stroboscope
-• Mode concentration : l'accordeur en plein écran sur le téléphone à l'horizontale
+• Clair, sombre ou selon le téléphone, aux couleurs de votre fond d'écran sur Android 12 et plus
+• Texte agrandi jusqu'à deux fois la taille normale, et un mode contraste élevé
+• Trois affichages : l'aiguille classique, l'arc lumineux ou le stroboscope
+• Mode concentration : téléphone à l'horizontale, l'accordeur remplit l'écran, lisible de loin
+• Un widget sur l'écran d'accueil qui ouvre l'accordeur d'une touche
+• En 36 langues, avec les noms de notes comme vous les avez appris : Do Ré Mi, ou C D E, avec H pour B à l'allemande
 
-AUSSI
-• Une appli pour montres Wear OS, avec carte et complication pour le cadran : accordez avec le micro de la montre, sans téléphone, et balayez vers la gauche pour le métronome
-• Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une touche
-• Garde l'écran allumé pendant que vous accordez
-
-Twangle restera gratuit et hors ligne, pour de bon.
+Gratuit et hors ligne. Pour de bon.

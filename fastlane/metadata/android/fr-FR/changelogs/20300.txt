@@ -1,4 +1,4 @@
-Accordeur de guitare, basse, ukulélé, violon. Sans pub, sans compte, hors ligne.
+Accordeur et métronome : guitare, basse, ukulélé, violon. Sans pub. Hors ligne.
 
 - Guidage sonore (Paramètres, Pendant l'accordage) : de petits sons pendant l'accordage, qui montent si trop haut, descendent si trop bas, une clochette quand c'est juste.
 - TalkBack dit d'abord quoi faire, et un peu plus tôt.

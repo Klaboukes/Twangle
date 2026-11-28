@@ -1,4 +1,4 @@
-Ladička pro kytaru, baskytaru, ukulele a housle. Bez reklam, bez účtu, offline.
+Ladička pro kytaru, baskytaru, ukulele i housle, k tomu metronom. Bez reklam.
 
 - Zvukové navádění (Nastavení, Při ladění): krátké zvuky při ladění, stoupají, když je tón moc vysoko, klesají, když moc nízko, a zvoneček, když je naladěno.
 - TalkBack nejdřív řekne, co dělat, a o něco dřív.

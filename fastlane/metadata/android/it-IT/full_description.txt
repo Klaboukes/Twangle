@@ -1,48 +1,53 @@
-Twangle è un accordatore per chitarra, ma anche per basso, ukulele, violino e altro, e ogni funzione è gratis. Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Twangle non ha nemmeno il permesso di usare internet: il suono del microfono viene analizzato dal vivo sul telefono e mai registrato o inviato.
+Un accordatore che fa quello che ti serve. E nient'altro.
 
-Twangle è semplice da usare e preciso al cent. Suona una corda e Twangle mostra la nota e quanto è lontana dall'intonazione giusta, su un indicatore grande e chiaro. «Tendi» o «Allenta» ti dice in che verso girare la meccanica. Una volta accordato, Twangle ti aiuta a suonare: riconosce gli accordi che suoni, mostra diagrammi degli accordi e scale, calcola dove va il capotasto, allena il tuo orecchio e tiene il tempo.
+Twangle non ti intralcia. Aprilo, suona una corda e vedi la nota e quanto è lontana, fino al singolo cent. Nessuna pubblicità che spunta mentre accordi. Nessun account. Niente da sbloccare. Ogni funzione è gratis, e resterà così.
 
-ACCORDA OGNI STRUMENTO
-• Chitarra (6, 7, 8 o 12 corde), basso (4 o 5 corde), ukulele (anche baritono), violino, viola, violoncello, mandolino e banjo a 5 corde
-• Accordature per chitarra: Standard, Drop D, mezzo tono sotto, un tono sotto, DADGAD, Open G, Open D, Open E e Open C
-• Crea le tue accordature per qualsiasi strumento
-• Accordatore cromatico per ogni altro strumento o per la voce
-• Tieni premuta una corda sullo schermo per sentirne la nota e accordare a orecchio
-• Imposta il diapason (A4) da 415 a 466 Hz, per esempio 442 Hz per suonare con un'orchestra
+Lo senti solo tu. Twangle non ha nemmeno il permesso di usare internet, quindi il suono del microfono resta sul tuo telefono: analizzato dal vivo, mai registrato, mai inviato. Il codice è open source, così chiunque può controllare.
 
-STRUMENTI CHE ASCOLTANO
-• Controllo a pennata: suona tutte le corde insieme e vedi quali sono calanti, crescenti o intonate
-• Nome dell'accordo: suona un accordo su chitarra, ukulele o mandolino e vedi come si chiama
-• Traccia dell'intonazione: vedi quanto è stabile una nota tenuta, un bending o il tuo vibrato, anche per chi canta
-• Controllo al 12° tasto: suona una corda a vuoto e al 12° tasto per sapere se la selletta va spostata
+E non è solo per la chitarra. È anche un accordatore per basso, per ukulele e per violino, e un accordatore cromatico. Una volta accordato, non si ferma lì: un metronomo, diagrammi degli accordi, scale, un aiuto per il capotasto e l'orecchio musicale.
+
+ACCORDA TUTTO CIÒ CHE SUONA UNA NOTA
+• Chitarra (6, 7, 8 o 12 corde), basso (4 o 5 corde, fino al Si grave), ukulele (anche Low G e baritono), violino, viola, violoncello, mandolino e banjo a 5 corde
+• Standard, Drop D, mezzo tono sotto, un tono sotto, DADGAD, Open G, Open D, Open E, Open C, o un'accordatura creata da te
+• Tutto il resto che suona una nota chiara: la tua voce, un sax, una tromba, un'armonica, una kalimba… ci pensa l'accordatore cromatico
+• Accorda a orecchio: tieni premuta una corda sullo schermo per sentirne la nota
+• Suoni con un'orchestra? Imposta il diapason (A4) dove vuoi tra 415 e 466 Hz
+
+TIENE ANCHE IL TEMPO
+• Un metronomo da 30 a 250 battiti al minuto: fai scorrere il righello del tempo o batti il ritmo con un dito
+• 2/4, 3/4, 4/4, 5/4, 6/8 e 7/8, con l'accento sul primo battito e luci da seguire
+• Clic tra i battiti in ottavi, terzine o sedicesimi
+• Allenatore di tempo: il tempo sale passo dopo passo finché raggiungi il tuo obiettivo
+• Continua a battere mentre suona la tua musica o la tua base, e può vibrare a tempo
 
 PRATICA
-• Diagrammi degli accordi per il tuo strumento e la tua accordatura, anche per quelle create da te
+• Diagrammi degli accordi per il tuo strumento e la tua accordatura, anche quelle create da te
 • Scale sulla tastiera: maggiore, minore, pentatonica e blues, con il nome di ogni nota
 • Capotasto: scegli la tonalità del brano e le diteggiature che preferisci, e vedi dove va il capotasto
-• Orecchio musicale: Risuonala (suona sul tuo strumento le note che senti), Intervalli e Tipo di accordo
-• Metronomo: da 30 a 250 battiti al minuto su un righello del tempo da far scorrere, con tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 e 7/8, con l'accento sul primo battito e luci da seguire
-• Si sente sopra la tua musica o la tua base, e può vibrare a tempo
-• Tra i battiti: clic in ottavi, terzine o sedicesimi
-• Allenatore di tempo: il tempo sale passo dopo passo fino al tuo obiettivo
+• Orecchio musicale: Risuonala (ascolta le note, suonale sul tuo strumento), Intervalli e Tipo di accordo
 
-PER TUTTI
-• Funziona con TalkBack: Twangle dice la nota e quanto è lontana («Mi 2, 12 cent calante, tendi»), legge diagrammi degli accordi e scale corda per corda, ogni pulsante ha un nome chiaro e non ti sommerge mai di parole
-• Ogni schermata funziona con il testo grande, fino al doppio della dimensione normale
-• Contrasto elevato: bianco e nero puri con linee più spesse
-• Una breve vibrazione quando una corda è intonata, per sentirlo anche al tatto
-• In 36 lingue, tra cui italiano e inglese
-• I nomi delle note come li hai imparati: Do Re Mi, oppure le lettere C D E, anche con la H alla tedesca
+STRUMENTI CHE ASCOLTANO
+• Controllo al 12° tasto: suona una corda a vuoto, poi al 12° tasto. Twangle ti dice se la selletta va spostata, in che verso e, su una chitarra, di quanto circa
+• Traccia dell'intonazione: guarda i tuoi bending, il vibrato e le note lunghe come una linea. Anche per chi canta
+• Nome dell'accordo: suona un accordo su chitarra, ukulele o mandolino e vedi come si chiama
+• Controllo a pennata: suona tutte le corde insieme e vedi quali sono stonate
+
+AL POLSO
+• Un'app per Wear OS che accorda con il microfono dell'orologio stesso, senza telefono
+• Scorri a sinistra per un metronomo che ti batte il tempo sul polso
+• Un riquadro e una complicazione per il quadrante, sempre a un tocco di distanza
+
+ACCORDA SENZA GUARDARE
+• Guida a vibrazione: un colpetto vuol dire tendi, due allenta, uno lungo che sei intonato
+• Guida sonora: brevi suoni ti dicono se sei troppo alto o troppo basso, e un campanello suona quando sei intonato
+• TalkBack dice prima cosa fare («Tendi, Mi 2, 12 cent calante») e non parla mai sopra la tua corda
 
 A MODO TUO
 • Chiaro, scuro o come il telefono, con i colori dello sfondo da Android 12 in poi
-• Tre indicatori tra cui scegliere: la lancetta classica, l'arco di luci o lo stroboscopio
-• Modalità concentrazione: l'accordatore a schermo intero con il telefono in orizzontale, facile da leggere a distanza
-
-INOLTRE
-• Un'app per orologi Wear OS con riquadro e complicazione per il quadrante: accorda con il microfono dell'orologio stesso, senza telefono, e scorri a sinistra per il metronomo
+• Testo grande fino al doppio della dimensione normale, e un aspetto ad alto contrasto
+• Tre indicatori: la lancetta classica, l'arco di luci o lo stroboscopio
+• Modalità concentrazione: gira il telefono in orizzontale e l'accordatore riempie lo schermo, leggibile anche dall'altra parte della stanza
 • Un widget per la schermata Home che apre l'accordatore con un tocco
-• Tiene lo schermo acceso mentre accordi
+• In 36 lingue, con i nomi delle note come li hai imparati: Do Re Mi, oppure C D E, anche con la H al posto di B
 
-Twangle resterà gratis e offline, per sempre.
+Gratis e offline. Per sempre.

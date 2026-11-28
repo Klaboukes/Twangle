@@ -1,48 +1,53 @@
-Twangle to stroik do gitary, a także do basu, ukulele, skrzypiec i innych instrumentów, a wszystkie jego funkcje są darmowe. Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Twangle nie ma nawet uprawnienia do korzystania z internetu: dźwięk z mikrofonu jest analizowany na bieżąco w telefonie i nigdy nie jest nagrywany ani nigdzie wysyłany.
+Stroik, który robi to, czego potrzebujesz. I nic więcej.
 
-Twangle jest prosty w obsłudze i dokładny co do centa. Zagraj na strunie, a Twangle pokaże na dużym, czytelnym wskaźniku dźwięk i to, jak daleko mu do czystego stroju. „Podciągnij” albo „Popuść” podpowie, w którą stronę kręcić kluczem. Gdy już nastroisz, Twangle pomaga grać: nazywa akordy, które grasz, pokazuje chwyty akordów i skale, wylicza, gdzie założyć kapodaster, ćwiczy twój słuch i trzyma tempo.
+Twangle nie wchodzi ci w drogę. Otwórz, zagraj na strunie i widzisz dźwięk oraz to, jak bardzo odbiega, co do jednego centa. Żadnych reklam w środku strojenia. Żadnego konta. Nic do odblokowania. Każda funkcja jest darmowa i tak zostanie.
 
-NASTRÓJ KAŻDY INSTRUMENT
-• Gitara (6, 7, 8 lub 12 strun), bas (4 lub 5 strun), ukulele (także barytonowe), skrzypce, altówka, wiolonczela, mandolina i banjo 5-strunowe
-• Stroje gitarowe: standardowy, Drop D, pół tonu niżej, cały ton niżej, DADGAD, Open G, Open D, Open E i Open C
-• Własne stroje dla każdego instrumentu
-• Stroik chromatyczny do każdego innego instrumentu lub głosu
-• Przytrzymaj strunę, by usłyszeć jej dźwięk i stroić ze słuchu
-• Dźwięk wzorcowy A4 od 415 do 466 Hz, na przykład 442 Hz do gry z orkiestrą
+Słyszysz tylko ty. Twangle nie ma nawet uprawnienia do internetu, więc dźwięk z mikrofonu zostaje w telefonie: analizowany na bieżąco, nigdy nienagrywany, nigdy niewysyłany. Kod jest open source, więc każdy może to sprawdzić.
 
-NARZĘDZIA, KTÓRE SŁUCHAJĄ
-• Test strun: uderz we wszystkie struny naraz i zobacz, które są za nisko, za wysoko, a które nastrojone
-• Nazwa akordu: zagraj akord na gitarze, ukulele lub mandolinie i zobacz jego nazwę
-• Ślad wysokości: zobacz, jak równo brzmi wytrzymany dźwięk, podciągnięcie albo wibrato, także dla wokalistów
-• Test 12. progu: zagraj strunę pustą i na 12. progu, by sprawdzić, czy trzeba przesunąć siodełko
+I to nie tylko do gitary. To także stroik do basu, stroik do ukulele, stroik do skrzypiec i stroik chromatyczny. A gdy już nastroisz, Twangle działa dalej: metronom, chwyty akordów, skale, pomoc z kapodasterem i trening słuchu.
+
+NASTRÓJ WSZYSTKO, CO GRA DŹWIĘK
+• Gitara (6, 7, 8 lub 12 strun), bas (4 lub 5 strun, aż do niskiego H), ukulele (także z niskim G i barytonowe), skrzypce, altówka, wiolonczela, mandolina i banjo 5-strunowe
+• Standardowy, Drop D, pół tonu niżej, cały ton niżej, DADGAD, Open G, Open D, Open E, Open C albo strój, który zrobisz sam
+• Wszystko inne, co gra jeden czysty dźwięk: twój głos, saksofon, trąbka, harmonijka, kalimba… od tego jest stroik chromatyczny
+• Strojenie ze słuchu: przytrzymaj strunę na ekranie, by usłyszeć jej dźwięk
+• Grasz z orkiestrą? Ustaw A4 w dowolnym miejscu od 415 do 466 Hz
+
+TRZYMA TEŻ TEMPO
+• Metronom od 30 do 250 uderzeń na minutę: przesuń linijkę tempa albo po prostu wystukaj rytm
+• 2/4, 3/4, 4/4, 5/4, 6/8 i 7/8, z akcentem na pierwszym uderzeniu i światełkami, za którymi łatwo nadążyć
+• Kliknięcia między uderzeniami: ósemki, triole lub szesnastki
+• Trener tempa: tempo rośnie krok po kroku, aż osiągniesz cel
+• Klika dalej, gdy gra twoja muzyka lub podkład, i może wibrować w rytm
 
 ĆWICZENIA
-• Chwyty akordów dla twojego instrumentu i stroju, także dla własnych strojów
+• Chwyty akordów dla twojego instrumentu i stroju, nawet dla strojów, które zrobiłeś sam
 • Skale na gryfie: durowa, molowa, pentatonika i bluesowa, z nazwą każdego dźwięku
 • Kapodaster: wybierz tonację piosenki i chwyty, które lubisz, i zobacz, gdzie założyć kapodaster
-• Trening słuchu: Zagraj ze słuchu (zagraj na instrumencie dźwięki, które słyszysz), Interwały i Rodzaj akordu
-• Metronom: od 30 do 250 uderzeń na minutę na przesuwanej linijce tempa, z wystukiwaniem tempa
-• 2/4, 3/4, 4/4, 5/4, 6/8 i 7/8, z akcentem na pierwszym uderzeniu i światełkami, za którymi łatwo nadążyć
-• Słychać go ponad twoją muzyką lub podkładem, a do tego może wibrować w rytm
-• Między uderzeniami: dodatkowe kliknięcia w ósemkach, triolach lub szesnastkach
-• Trener tempa: tempo rośnie krok po kroku aż do twojego celu
+• Trening słuchu: Zagraj ze słuchu (posłuchaj dźwięków i zagraj je na instrumencie), Interwały i Rodzaj akordu
 
-DLA KAŻDEGO
-• Działa z TalkBack: Twangle mówi, jaki to dźwięk i jak bardzo odbiega („E 2, 12 centów za nisko, podciągnij”), czyta chwyty akordów i skale struna po strunie, każdy przycisk ma jasną nazwę i nigdy nie zasypuje cię mową
-• Każdy ekran działa z dużym tekstem, aż do dwukrotności normalnego rozmiaru
-• Wysoki kontrast: czysta czerń i biel z grubszymi liniami
-• Krótka wibracja, gdy struna jest nastrojona, żeby dało się to też poczuć
-• W 36 językach: polski, amharski, angielski, arabski, bengalski, birmański, chiński (uproszczony), chiński (tradycyjny), czeski, duński, fiński, francuski, grecki, hindi, hiszpański, indonezyjski, japoński, khmerski, koreański, marathi, niderlandzki, niemiecki, norweski, portugalski, rosyjski, rumuński, suahili, szwedzki, tajski, tamilski, telugu, turecki, ukraiński, węgierski, wietnamski i włoski
-• Nazwy dźwięków po twojemu: C D E … H, z B zamiast H albo Do Re Mi
+NARZĘDZIA, KTÓRE SŁUCHAJĄ
+• Test 12. progu: zagraj strunę pustą, a potem na 12. progu. Twangle powie, czy przesunąć siodełko, w którą stronę i, na gitarze, mniej więcej o ile
+• Ślad wysokości: zobacz swoje podciągnięcia, wibrato i długie dźwięki jako linię. Także dla wokalistów
+• Nazwa akordu: zagraj akord na gitarze, ukulele lub mandolinie i zobacz, jak się nazywa
+• Test strun: uderz we wszystkie struny naraz i zobacz, które są rozstrojone
+
+NA NADGARSTKU
+• Aplikacja na Wear OS, która stroi mikrofonem samego zegarka, bez telefonu
+• Przesuń w lewo do metronomu, który wystukuje rytm na nadgarstku
+• Kafelek i komplikacja tarczy, więc stroik jest zawsze o jedno dotknięcie
+
+STROJENIE BEZ PATRZENIA
+• Podpowiedź wibracją: jeden impuls to podciągnij, dwa to popuść, długi to nastrojone
+• Podpowiedź dźwiękiem: krótkie dźwięki mówią, czy za wysoko, czy za nisko, a dzwonek brzmi, gdy jest czysto
+• TalkBack najpierw mówi, co zrobić („Podciągnij, E 2, 12 centów za nisko”), i nigdy nie zagłusza twojej struny
 
 DOPASUJ DO SIEBIE
 • Jasny, ciemny lub jak w telefonie, z kolorami tapety na Androidzie 12 i nowszym
-• Trzy wskaźniki do wyboru: klasyczna wskazówka, łuk świetlny albo stroboskop
-• Tryb skupienia: stroik na całym ekranie telefonu obróconego poziomo, czytelny z daleka
-
-PONADTO
-• Aplikacja na zegarki z Wear OS z kafelkiem i komplikacją tarczy: strój mikrofonem zegarka, bez telefonu, i przesuń w lewo do metronomu
+• Duży tekst, aż do dwukrotności normalnego rozmiaru, i wysoki kontrast
+• Trzy wskaźniki: klasyczna wskazówka, łuk świetlny lub stroboskop
+• Tryb skupienia: obróć telefon poziomo, a stroik wypełni ekran, czytelny z drugiego końca pokoju
 • Widżet na ekran główny, który otwiera stroik jednym dotknięciem
-• Nie wygasza ekranu, gdy stroisz
+• W 36 językach, z nazwami dźwięków tak, jak się ich uczyłeś: C D E, H zamiast B albo Do Re Mi
 
-Twangle pozostanie darmowy i offline, na zawsze.
+Darmowy i offline. Na zawsze.

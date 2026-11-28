@@ -1,48 +1,53 @@
-Twangle on kitaraviritin, joka virittää myös basson, ukulelen, viulun ja muita soittimia, ja kaikki sen ominaisuudet ovat ilmaisia. Ei mainoksia, ei tiliä, ei sovelluksen sisäisiä ostoja eikä seurantaa. Twanglella ei ole edes lupaa käyttää internetiä: mikrofonisi ääni analysoidaan reaaliajassa puhelimessasi, eikä sitä koskaan nauhoiteta tai lähetetä minnekään.
+Viritin, joka tekee sen, mitä tarvitset. Eikä mitään muuta.
 
-Twangle on helppokäyttöinen ja sentilleen tarkka. Soita kieli, niin Twangle näyttää isolla, selkeällä mittarilla sävelen ja sen, kuinka paljon se heittää vireestä. ”Kiristä” tai ”Löysää” kertoo, kumpaan suuntaan viritystappia käännetään. Kun soitin on vireessä, Twangle auttaa soittamaan: se tunnistaa soittamasi soinnut, näyttää sointukaaviot ja asteikot, laskee kapon paikan, harjoittaa korvaasi ja pitää tahdin.
+Twangle ei ole tielläsi. Avaa se, soita kieli, niin näet sävelen ja sen, kuinka paljon se heittää, sentilleen. Ei kesken virityksen ponnahtavia mainoksia. Ei tiliä. Ei mitään avattavaa. Jokainen ominaisuus on ilmainen, ja niin se myös pysyy.
 
-VIRITÄ MIKÄ TAHANSA SOITIN
-• Kitara (6, 7, 8 tai 12 kieltä), basso (4 tai 5 kieltä), ukulele (myös baritoni), viulu, alttoviulu, sello, mandoliini ja 5-kielinen banjo
-• Kitaran viritykset: standardi, Drop D, puolisävel alas, kokosävel alas, DADGAD, Open G, Open D, Open E ja Open C
-• Tee omia virityksiä mille tahansa soittimelle
-• Kromaattinen viritin kaikille muille soittimille ja äänellesi
-• Pidä kieltä painettuna, niin kuulet sen sävelen ja voit virittää korvalla
-• Aseta A4 välille 415–466 Hz, esimerkiksi 442 Hz orkesterin kanssa soittamiseen
+Vain sinä kuulet sen. Twanglella ei ole edes lupaa käyttää internetiä, joten mikrofonisi ääni pysyy puhelimessasi: se analysoidaan reaaliajassa, eikä sitä koskaan nauhoiteta tai lähetetä. Koodi on avointa lähdekoodia, joten kuka tahansa voi tarkistaa sen.
 
-KUUNTELEVAT TYÖKALUT
-• Lyöntitesti: soita kaikki kielet kerralla ja näe, mitkä ovat matalalla, korkealla tai vireessä
-• Soinnun nimi: soita sointu kitaralla, ukulelella tai mandoliinilla ja näe sen nimi
-• Sävelkäyrä: näe, kuinka vakaa pidetty sävel, venytys tai vibratosi on, myös laulajille
-• 12. nauhan testi: soita kieli avoimena ja 12. nauhalta ja näe, pitääkö tallaa siirtää
+Eikä se ole vain kitaralle. Se on myös bassoviritin, ukuleleviritin, viuluviritin ja kromaattinen viritin. Kun olet vireessä, se jatkaa: metronomi, sointukaaviot, asteikot, kapoapu ja korvaharjoitus.
+
+VIRITÄ KAIKKI, MISTÄ LÄHTEE SÄVEL
+• Kitara (6, 7, 8 tai 12 kieltä), basso (4 tai 5 kieltä, matalaan H:hon asti), ukulele (myös matala G ja baritoni), viulu, alttoviulu, sello, mandoliini ja 5-kielinen banjo
+• Standardi, Drop D, puolisävel alas, kokosävel alas, DADGAD, Open G, Open D, Open E, Open C tai itse tekemäsi viritys
+• Kaikki muu, mistä lähtee yksi selkeä sävel: äänesi, saksofoni, trumpetti, huuliharppu, kalimba… kromaattinen viritin hoitaa sen
+• Viritä korvalla: pidä näytön kieltä painettuna, niin kuulet sen sävelen
+• Soitatko orkesterissa? Aseta A4 mihin tahansa välillä 415–466 Hz
+
+PITÄÄ MYÖS TAHDIN
+• Metronomi 30–250 iskua minuutissa: liu'uta tempoasteikkoa tai napauta vain tahti
+• 2/4, 3/4, 4/4, 5/4, 6/8 ja 7/8, painotus ensimmäisellä iskulla ja valot, joita seurata
+• Naksut iskujen välissä kahdeksasosina, trioleina tai kuudestoistaosina
+• Tempovalmentaja: tempo nousee askel kerrallaan, kunnes saavutat tavoitteesi
+• Naksuttaa edelleen, kun oma musiikkisi tai taustanauha soi, ja voi väristä iskun tahdissa
 
 HARJOITTELE
-• Sointukaaviot soittimellesi ja viritykseesi, myös omiin virityksiisi
+• Sointukaaviot soittimellesi ja viritykseesi, myös itse tekemiisi virityksiin
 • Asteikot otelaudalla: duuri, molli, pentatoninen ja blues, jokainen sävel nimettynä
 • Kapoapu: valitse kappaleen sävellaji ja mieleisesi otteet, niin näet, mihin kapo tulee
-• Korvaharjoitus: Soita perässä (soita kuulemasi sävelet soittimellasi), Intervallit ja Sointutyyppi
-• Metronomi: 30–250 iskua minuutissa liu'utettavalla tempoasteikolla, ja tempon voi myös napauttaa
-• 2/4, 3/4, 4/4, 5/4, 6/8 ja 7/8, painotus ensimmäisellä iskulla ja valot, joita voi seurata
-• Naksuttaa oman musiikkisi tai taustanauhan päälle ja voi väristä iskun tahdissa
-• Iskujen välissä: lisänaksut kahdeksasosina, trioleina tai kuudestoistaosina
-• Tempovalmentaja: tempo nousee askel kerrallaan tavoitteeseesi
+• Korvaharjoitus: Soita perässä (kuule sävelet, soita ne soittimellasi), Intervallit ja Sointutyyppi
 
-KAIKILLE TEHTY
-• Toimii TalkBackin kanssa: Twangle kertoo sävelen ja kuinka paljon se heittää (”E 2, 12 senttiä matalalla, kiristä”), lukee sointukaaviot ja asteikot kieli kieleltä, jokaisella painikkeella on selkeä nimi, eikä se koskaan hukuta sinua puheeseen
-• Jokainen näkymä toimii suurella tekstillä, aina kaksinkertaiseen kokoon asti
-• Suuri kontrasti: puhdas mustavalkoinen ja paksummat viivat
-• Lyhyt värähdys, kun kieli on vireessä, joten voit myös tuntea sen
-• 36 kielellä: suomi, amhara, arabia, bengali, burma, englanti, espanja, hindi, hollanti, indonesia, italia, japani, khmer, kiina (yksinkertaistettu), kiina (perinteinen), korea, kreikka, marathi, norja, portugali, puola, ranska, romania, ruotsi, saksa, swahili, tamili, tanska, telugu, thai, tšekki, turkki, ukraina, unkari, venäjä ja vietnam
-• Sävelnimet niin kuin olet ne oppinut: C D E, H tai B, tai Do Re Mi
+KUUNTELEVAT TYÖKALUT
+• 12. nauhan testi: soita kieli avoimena ja sitten 12. nauhalta. Twangle kertoo, pitääkö tallaa siirtää, mihin suuntaan ja kitarassa suunnilleen kuinka paljon
+• Sävelkäyrä: näe venytyksesi, vibratosi ja pitkät sävelesi viivana. Toimii myös laulajille
+• Soinnun nimi: soita sointu kitaralla, ukulelella tai mandoliinilla ja näe sen nimi
+• Lyöntitesti: soita kaikki kielet kerralla ja näe, mitkä heittävät
+
+RANTEESSASI
+• Wear OS -sovellus, joka virittää kellon omalla mikrofonilla, ilman puhelinta
+• Pyyhkäise vasemmalle metronomiin, joka napauttaa tahdin ranteeseesi
+• Ruutu ja kellotaulun komplikaatio, joten se on aina yhden napautuksen päässä
+
+VIRITÄ KATSOMATTA
+• Viritys värinällä: yksi napautus tarkoittaa kiristä, kaksi löysää ja pitkä surina, että olet vireessä
+• Viritys äänellä: lyhyet äänet kertovat, oletko liian korkealla vai matalalla, ja kello soi, kun olet vireessä
+• TalkBack kertoo ensin, mitä tehdä (”Kiristä, E 2, 12 senttiä matalalla”), eikä koskaan puhu kielesi päälle
 
 TEE SIITÄ OMASI
 • Vaalea, tumma tai puhelimen mukaan, Android 12:ssa ja uudemmissa taustakuvasi väreillä
-• Kolme mittaria valittavana: klassinen osoitin, valokaari tai strobo
-• Keskittymistila: viritin koko näytöllä kyljellään olevassa puhelimessa, helppo lukea kaukaa
-
-LISÄKSI
-• Sovellus Wear OS -kelloille, mukana ruutu ja kellotaulun komplikaatio: viritä kellon omalla mikrofonilla ilman puhelinta ja pyyhkäise vasemmalle metronomiin
+• Suuri teksti aina kaksinkertaiseen kokoon asti ja suuren kontrastin ulkoasu
+• Kolme mittaria: klassinen osoitin, valokaari tai strobo
+• Keskittymistila: käännä puhelin kyljelleen, niin viritin täyttää näytön, helppo lukea huoneen toiselta puolelta
 • Aloitusnäytön widget, joka avaa virittimen yhdellä napautuksella
-• Pitää näytön päällä, kun virität
+• 36 kielellä, sävelnimet niin kuin olet ne oppinut: C D E, H B:n sijaan tai Do Re Mi
 
-Twangle pysyy ilmaisena ja toimii ilman nettiä, aina.
+Ilmainen ja offline. Pysyvästi.

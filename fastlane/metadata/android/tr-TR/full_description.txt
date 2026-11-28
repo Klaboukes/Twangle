@@ -1,48 +1,53 @@
-Twangle bir gitar akort cihazıdır; bas, ukulele, keman ve daha fazlası için de çalışır ve tüm özellikleri ücretsizdir. Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Twangle'ın internet kullanma izni bile yok: mikrofonundan gelen ses canlı olarak telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.
+İhtiyacın olanı yapan bir akort cihazı. Başka hiçbir şey.
 
-Twangle'ın kullanımı kolaydır ve bir sente kadar hassastır. Bir tel çal; Twangle notayı ve doğru akordan ne kadar uzak olduğunu büyük, net bir göstergede gösterir. "Yükselt" ya da "Düşür", burguyu hangi yöne çevireceğini söyler. Akort bitince Twangle çalmana da yardım eder: çaldığın akorların adını söyler, akor şemalarını ve gamları gösterir, kaponun yerini hesaplar, kulağını eğitir ve tempoyu tutar.
+Twangle yoluna çıkmaz. Aç, bir tel çal; notayı ve ne kadar saptığını tek bir sente kadar gör. Akort ederken araya giren reklam yok. Hesap yok. Kilidini açman gereken hiçbir şey yok. Tüm özellikler ücretsiz ve öyle kalacak.
 
-HER ENSTRÜMANI AKORT ET
-• Gitar (6, 7, 8 veya 12 tel), bas (4 veya 5 tel), ukulele (bariton da), keman, viyola, çello, mandolin ve 5 telli banjo
-• Gitar akortları: Standart, Drop D, yarım ses düşük, tam ses düşük, DADGAD, Open G, Open D, Open E ve Open C
-• Her enstrüman için kendi akortlarını oluştur
-• Diğer tüm enstrümanlar ya da sesin için kromatik akort cihazı
-• Ekrandaki bir teli basılı tutarak notasını duy ve kulaktan akort et
-• Referans sesi A4'ü 415 ile 466 Hz arasında ayarla, örneğin orkestrayla çalmak için 442 Hz
+Sadece sen duyarsın. Twangle'ın internet kullanma izni bile yok, bu yüzden mikrofonundan gelen ses telefonunda kalır: canlı analiz edilir, asla kaydedilmez, asla gönderilmez. Kod açık kaynak, yani herkes kontrol edebilir.
 
-DİNLEYEN ARAÇLAR
-• Tel kontrolü: tüm telleri aynı anda çal ve hangilerinin düşük, yüksek ya da akortlu olduğunu gör
-• Akor adı: gitar, ukulele veya mandolinde bir akor çal ve adını gör
-• Ses izi: uzun tutulan bir notanın, bir bend'in ya da vibratonun ne kadar sabit olduğunu gör; şarkıcılar için de
-• 12. perde kontrolü: bir teli boş ve 12. perdede çal, alt eşiğin kaydırılması gerekip gerekmediğini öğren
+Ve sadece gitar için değil. Aynı zamanda bas akort cihazı, ukulele akort cihazı, keman akort cihazı ve kromatik akort cihazı. Akort bitince de devam eder: metronom, akor şemaları, gamlar, kapo yardımcısı ve kulak eğitimi.
+
+NOTA ÇALAN HER ŞEYİ AKORT ET
+• Gitar (6, 7, 8 veya 12 tel), bas (4 veya 5 tel, kalın Si'ye kadar), ukulele (kalın Sol ve bariton da), keman, viyola, çello, mandolin ve 5 telli banjo
+• Standart, Drop D, yarım ses düşük, tam ses düşük, DADGAD, Open G, Open D, Open E, Open C ya da kendi oluşturduğun bir akort
+• Tek ve net bir nota çalan diğer her şey: sesin, bir saksafon, bir trompet, bir mızıka, bir kalimba… kromatik akort cihazı halleder
+• Kulaktan akort et: notasını duymak için ekrandaki bir teli basılı tut
+• Orkestrayla mı çalıyorsun? A4'ü 415 ile 466 Hz arasında istediğin değere ayarla
+
+ÜSTELİK TEMPO TUTAR
+• Dakikada 30 ile 250 vuruş arası bir metronom: tempo cetvelini kaydır ya da vuruşa dokunarak tempoyu ver
+• 2/4, 3/4, 4/4, 5/4, 6/8 ve 7/8, ilk vuruşta vurgu ve takip etmek için ışıklar
+• Vuruşlar arasında sekizlik, üçleme veya on altılık klikler
+• Tempo antrenörü: tempo, hedefine ulaşana kadar adım adım yükselir
+• Kendi müziğin ya da altyapın çalarken tıklamaya devam eder ve vuruşta titreşebilir
 
 PRATİK
-• Enstrümanına ve akorduna uygun akor şemaları, kendi akortların dahil
+• Enstrümanına ve akorduna göre akor şemaları, kendi oluşturduğun akortlar dahil
 • Klavye üzerinde gamlar: majör, minör, pentatonik ve blues, her notanın adıyla
 • Kapo: şarkının tonunu ve sevdiğin basışları seç, kaponun nereye takılacağını gör
-• Kulak eğitimi: Duyduğunu çal (duyduğun notaları kendi enstrümanında çal), Aralıklar ve Akor türü
-• Metronom: kaydırdığın tempo cetvelinde dakikada 30 ile 250 vuruş, dokunarak tempo ile
-• 2/4, 3/4, 4/4, 5/4, 6/8 ve 7/8, ilk vuruşta vurgu ve takip etmek için ışıklar
-• Kendi müziğinin ya da altyapının üzerinden duyulur ve vuruşta titreşebilir
-• Vuruşlar arası: sekizlik, üçleme veya on altılık ek klikler
-• Tempo antrenörü: tempo adım adım hedefine kadar yükselir
+• Kulak eğitimi: Duyduğunu çal (notaları duy, enstrümanında çal), Aralıklar ve Akor türü
 
-HERKES İÇİN
-• TalkBack ile çalışır: Twangle notayı ve ne kadar saptığını söyler ("Mi 2, 12 sent düşük, yükselt"), akor şemalarını ve gamları tel tel okur, her düğmenin anlaşılır bir adı vardır ve seni asla konuşmaya boğmaz
-• Her ekran, normal boyutun iki katına kadar büyük yazıyla çalışır
-• Yüksek kontrast: daha kalın çizgilerle saf siyah beyaz
-• Bir tel akortlu olduğunda kısa bir titreşim, böylece bunu hissedebilirsin de
-• 36 dilde: Türkçe, Almanca, Amharca, Arapça, Bengalce, Birman dili, Çekçe, Çince (Basitleştirilmiş), Çince (Geleneksel), Danca, Endonezce, Felemenkçe, Fince, Fransızca, Hintçe, İngilizce, İspanyolca, İsveççe, İtalyanca, Japonca, Khmer dili, Korece, Lehçe, Macarca, Marathi dili, Norveççe, Portekizce, Rumence, Rusça, Svahili dili, Tamilce, Tayca, Telugu dili, Ukraynaca, Vietnamca ve Yunanca
-• Nota adları öğrendiğin gibi: Do Re Mi ya da C D E harfleri, Alman usulü H ile de
+DİNLEYEN ARAÇLAR
+• 12. perde kontrolü: bir teli boş, sonra 12. perdede çal. Twangle alt eşiğin kaydırılması gerekip gerekmediğini, hangi yöne ve gitarda yaklaşık ne kadar kaydırılacağını söyler
+• Ses izi: bend'lerini, vibratonu ve uzun notalarını bir çizgi olarak izle. Şarkıcılar için de
+• Akor adı: gitar, ukulele veya mandolinde bir akor çal ve adını gör
+• Tel kontrolü: tüm telleri aynı anda çal ve hangilerinin akortsuz olduğunu gör
+
+BİLEĞİNDE
+• Saatin kendi mikrofonuyla akort eden bir Wear OS uygulaması, telefona gerek yok
+• Vuruşu bileğine tıklatan bir metronom için sola kaydır
+• Bir kutucuk ve bir kadran komplikasyonu, böylece hep bir dokunuş uzağında
+
+BAKMADAN AKORT ET
+• Titreşim rehberi: bir titreşim yükselt, iki titreşim düşür, uzun bir titreşim akortlu demek
+• Ses rehberi: kısa sesler çok yüksek mi çok düşük mü olduğunu söyler, akortlu olunca bir zil çalar
+• TalkBack önce ne yapacağını söyler ("Yükselt, Mi 2, 12 sent düşük") ve telinin sesini asla bastırmaz
 
 SANA GÖRE
 • Açık, koyu ya da telefonuna göre; Android 12 ve sonrasında duvar kâğıdının renkleriyle
-• Seçebileceğin üç gösterge: klasik ibre, ışık yayı ya da stroboskop
-• Odak modu: yana çevrilmiş telefonda tam ekran akort aleti, uzaktan kolayca okunur
-
-AYRICA
-• Kutucuk ve kadran komplikasyonu olan Wear OS saatleri için bir uygulama: saatin kendi mikrofonuyla akort et, telefona gerek yok; metronom için sola kaydır
+• Normal boyutun iki katına kadar büyük yazı ve yüksek kontrastlı görünüm
+• Üç gösterge: klasik ibre, ışık yayı ya da stroboskop
+• Odak modu: telefonunu yana çevir, akort ekranı tüm ekranı kaplasın; odanın öbür ucundan bile kolayca okunur
 • Akort ekranını tek dokunuşla açan bir ana ekran widget'ı
-• Akort ederken ekranı açık tutar
+• 36 dilde, nota adları öğrendiğin gibi: C D E, B yerine H ya da Do Re Mi
 
-Twangle her zaman ücretsiz ve çevrimdışı kalacak.
+Ücretsiz ve çevrimdışı. Hep böyle.
