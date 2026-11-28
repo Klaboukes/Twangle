@@ -19,7 +19,7 @@ further, and does the few things only the Play Console can do (the checklist bel
   full check didn't pass whole. "Passed whole on this code" means: every part passed (a phones' failure
   fixed and re-checked by the run's own fix PR counts, noted with `scripts/full-check.sh --fixed`),
   from a clean tree, at a commit the release follows, and nothing that goes into the bundles changed
-  since: only `*.md`, `docs/`, `.claude/`, `.github/`, `scripts/`, `website/`, `fastlane/` (the
+  since: only `*.md`, the modules' test code (`src/test/`, `src/androidTest/`, `src/testFixtures/`), `docs/`, `.claude/`, `.github/`, `scripts/`, `website/`, `fastlane/` (the
   release notes), a regenerated Baseline Profile and the version lines in `gradle.properties`. A watch
   whose tests didn't run holds it up as well (`scripts/full-check.sh --watch` once it is connected),
   unless the owner says to release the phone without (`bundle --watch-untested`).
