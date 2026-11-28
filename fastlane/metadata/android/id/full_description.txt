@@ -1,48 +1,53 @@
-Twangle adalah tuner gitar yang juga bisa untuk bass, ukulele, biola, dan lainnya, dengan semua fitur gratis. Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Twangle bahkan tidak punya izin untuk memakai internet: suara dari mikrofon Anda dianalisis langsung di ponsel dan tidak pernah direkam atau dikirim ke mana pun.
+Tuner yang melakukan apa yang Anda perlukan. Tidak lebih.
 
-Twangle mudah digunakan dan akurat hingga satu sen. Petik satu senar, dan Twangle menampilkan nada serta seberapa jauh nada itu dari pas, pada meter yang besar dan jelas. "Kencangkan" atau "Kendurkan" memberi tahu ke arah mana dryer diputar. Setelah pas, Twangle membantu Anda bermain: menyebutkan akor yang Anda genjreng, menampilkan diagram akor dan tangga nada, menghitung posisi kapo, melatih pendengaran, dan menjaga tempo.
+Twangle tidak merepotkan. Buka, petik satu senar, dan Anda langsung melihat nadanya serta seberapa meleset, sampai satu sen. Tidak ada iklan yang muncul di tengah menyetem. Tanpa akun. Tidak ada yang perlu dibuka kuncinya. Semua fitur gratis, dan akan tetap begitu.
 
-STEM INSTRUMEN APA PUN
-• Gitar (6, 7, 8, atau 12 senar), bass (4 atau 5 senar), ukulele (juga bariton), biola, viola, selo, mandolin, dan banjo 5 senar
-• Stem gitar: Standar, Drop D, turun setengah nada, turun satu nada, DADGAD, Open G, Open D, Open E, dan Open C
-• Buat stem sendiri untuk instrumen apa pun
-• Tuner kromatik untuk instrumen lain atau suara Anda
-• Tahan satu senar di layar untuk mendengar nadanya dan menyetem dengan telinga
-• Atur nada acuan A4 dari 415 hingga 466 Hz, misalnya 442 Hz untuk bermain bersama orkestra
+Hanya Anda yang mendengar. Twangle bahkan tidak punya izin untuk memakai internet, jadi suara dari mikrofon Anda tetap di ponsel: dianalisis langsung, tidak pernah direkam, tidak pernah dikirim. Kodenya open source, jadi siapa pun bisa memeriksanya.
 
-ALAT YANG IKUT MENDENGAR
-• Cek genjreng: genjreng semua senar sekaligus dan lihat mana yang terlalu rendah, terlalu tinggi, atau sudah pas
-• Nama akor: genjreng akor di gitar, ukulele, atau mandolin dan lihat namanya
-• Jejak nada: lihat seberapa stabil nada panjang, bending, atau vibrato Anda, juga untuk penyanyi
-• Cek fret ke-12: mainkan senar lepas dan di fret ke-12 untuk tahu apakah sadel perlu digeser
+Dan bukan cuma untuk gitar. Twangle juga tuner bass, tuner ukulele, tuner biola, dan tuner kromatik. Setelah senar pas, masih ada lagi: metronom, diagram akor, tangga nada, bantuan kapo, dan latihan pendengaran.
+
+STEM APA PUN YANG MEMAINKAN NADA
+• Gitar (6, 7, 8, atau 12 senar), bass (4 atau 5 senar, sampai B rendah), ukulele (juga G rendah dan bariton), biola, viola, selo, mandolin, dan banjo 5 senar
+• Standar, Drop D, turun setengah nada, turun satu nada, DADGAD, Open G, Open D, Open E, Open C, atau stem buatan Anda sendiri
+• Apa pun yang memainkan satu nada jelas: suara Anda, saksofon, trompet, harmonika, kalimba… tuner kromatik siap membantu
+• Stem dengan telinga: tahan satu senar di layar untuk mendengar nadanya
+• Main bersama orkestra? Atur A4 di mana saja dari 415 hingga 466 Hz
+
+JUGA MENJAGA TEMPO
+• Metronom dari 30 hingga 250 ketukan per menit: geser penggaris tempo atau cukup ketuk temponya
+• 2/4, 3/4, 4/4, 5/4, 6/8, dan 7/8, dengan aksen di ketukan pertama dan lampu untuk diikuti
+• Klik di antara ketukan dalam not seperdelapan, triol, atau not seperenam belas
+• Pelatih tempo: tempo naik selangkah demi selangkah sampai target Anda tercapai
+• Tetap berbunyi saat musik atau backing track Anda diputar, dan bisa bergetar mengikuti ketukan
 
 LATIHAN
 • Diagram akor untuk instrumen dan stem Anda, termasuk stem buatan sendiri
 • Tangga nada di fretboard: mayor, minor, pentatonik, dan blues, setiap nada diberi nama
 • Kapo: pilih kunci lagu dan bentuk akor yang Anda suka, lalu lihat di mana kapo dipasang
-• Latihan pendengaran: Tirukan nada (mainkan nada yang Anda dengar di instrumen Anda), Interval, dan Jenis akor
-• Metronom: 30 hingga 250 ketukan per menit pada penggaris tempo yang digeser, dengan tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8, dan 7/8, dengan aksen di ketukan pertama dan lampu untuk diikuti
-• Terdengar di atas musik atau backing track Anda sendiri, dan bisa bergetar mengikuti ketukan
-• Di antara ketukan: klik tambahan berupa not seperdelapan, triol, atau not seperenam belas
-• Pelatih tempo: tempo naik selangkah demi selangkah hingga target Anda
+• Latihan pendengaran: Tirukan nada (dengarkan nadanya, mainkan di instrumen Anda), Interval, dan Jenis akor
 
-UNTUK SEMUA ORANG
-• Bekerja dengan TalkBack: Twangle menyebutkan nada dan seberapa jauh melesetnya ("E 2, 12 sen terlalu rendah, kencangkan"), membacakan diagram akor dan tangga nada senar demi senar, setiap tombol punya nama yang jelas, dan tidak pernah membanjiri Anda dengan suara
-• Setiap layar berfungsi dengan teks besar, hingga dua kali ukuran normal
-• Kontras tinggi: hitam putih murni dengan garis lebih tebal
-• Getaran singkat saat senar sudah pas, jadi Anda juga bisa merasakannya
-• Dalam 36 bahasa, termasuk Indonesia dan Inggris
-• Nama nada seperti yang Anda pelajari: C D E, gaya Jerman dengan H, atau Do Re Mi
+ALAT YANG IKUT MENDENGAR
+• Cek fret ke-12: mainkan senar lepas, lalu di fret ke-12. Twangle memberi tahu apakah sadel perlu digeser, ke arah mana, dan di gitar kira-kira seberapa jauh
+• Jejak nada: lihat bending, vibrato, dan nada panjang Anda sebagai garis. Cocok juga untuk penyanyi
+• Nama akor: genjreng akor di gitar, ukulele, atau mandolin dan lihat namanya
+• Cek genjreng: genjreng semua senar sekaligus dan lihat mana yang meleset
+
+DI PERGELANGAN TANGAN
+• Aplikasi Wear OS yang menyetem dengan mikrofon jam tangan itu sendiri, tanpa ponsel
+• Geser ke kiri untuk metronom yang mengetukkan tempo di pergelangan tangan Anda
+• Kartu (tile) dan komplikasi tampilan jam, jadi selalu tinggal sekali ketuk
+
+MENYETEM TANPA MELIHAT
+• Panduan getar: satu ketukan berarti kencangkan, dua berarti kendurkan, getaran panjang berarti sudah pas
+• Panduan suara: bunyi singkat memberi tahu terlalu tinggi atau terlalu rendah, dan lonceng berbunyi saat sudah pas
+• TalkBack lebih dulu mengatakan apa yang harus dilakukan ("Kencangkan, E 2, 12 sen terlalu rendah") dan tidak pernah bicara menimpa senar Anda
 
 SESUAI SELERA ANDA
 • Terang, gelap, atau mengikuti ponsel, dengan warna wallpaper Anda di Android 12 dan yang lebih baru
-• Tiga meter untuk dipilih: jarum klasik, busur cahaya, atau strobo
-• Mode fokus: tuner layar penuh saat ponsel diputar ke samping, mudah dibaca dari jauh
-
-LAINNYA
-• Aplikasi untuk jam tangan Wear OS dengan kartu (tile) dan komplikasi tampilan jam: menyetem lewat mikrofon jam tangan itu sendiri, tanpa ponsel, dan geser ke kiri untuk metronom
+• Teks besar hingga dua kali ukuran normal, dan tampilan kontras tinggi
+• Tiga meter: jarum klasik, busur cahaya, atau strobo
+• Mode fokus: putar ponsel ke samping dan tuner memenuhi layar, mudah dibaca dari seberang ruangan
 • Widget layar utama yang membuka tuner dengan sekali ketuk
-• Layar tetap menyala selama Anda menyetem
+• Dalam 36 bahasa, dengan nama nada seperti yang Anda pelajari: C D E, H untuk B, atau Do Re Mi
 
-Twangle akan tetap gratis dan offline, selamanya.
+Gratis dan offline. Selamanya.

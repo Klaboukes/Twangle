@@ -1,48 +1,53 @@
-A Twangle gitárhangoló, amely basszusgitárt, ukulelét, hegedűt és más hangszereket is hangol, és minden funkciója ingyenes. Nincs reklám, nincs fiók, nincsenek alkalmazáson belüli vásárlások és nincs követés. A Twangle-nek még internetengedélye sincs: a mikrofonod hangját élőben, a telefonodon elemzi, és soha nem rögzíti vagy küldi el sehova.
+Egy hangoló, amely azt teszi, amire szükséged van. Semmi mást.
 
-A Twangle egyszerű, és egy centre pontos. Pengess egy húrt, és a Twangle egy nagy, jól olvasható kijelzőn megmutatja a hangot, és hogy mennyire tér el a tiszta hangtól. A „Feszítsd” vagy „Lazítsd” megmondja, merre tekerd a hangolókulcsot. Ha már tiszta, a Twangle a játékban is segít: felismeri a pengetett akkordokat, akkordfogásokat és skálákat mutat, kiszámolja a capo helyét, fejleszti a hallásodat és tartja a tempót.
+A Twangle nem áll az utadba. Nyisd meg, pengess meg egy húrt, és látod a hangot, meg hogy mennyire tér el, egészen egy centig. Nincs hangolás közben felugró reklám. Nincs fiók. Nincs mit feloldani. Minden funkció ingyenes, és az is marad.
 
-BÁRMILYEN HANGSZER HANGOLÁSA
-• Gitár (6, 7, 8 vagy 12 húros), basszusgitár (4 vagy 5 húros), ukulele (bariton is), hegedű, brácsa, cselló, mandolin és 5 húros bendzsó
-• Gitárhangolások: Standard, Drop D, fél hanggal lejjebb, egész hanggal lejjebb, DADGAD, Open G, Open D, Open E és Open C
-• Saját hangolások bármely hangszerhez
-• Kromatikus hangoló bármely más hangszerhez vagy a hangodhoz
-• Tarts nyomva egy húrt, hogy meghalld a hangját, és fülre hangolj
-• Az A4 415 és 466 Hz között állítható, például 442 Hz-re a zenekari játékhoz
+Csak te hallod. A Twangle-nek még internetengedélye sincs, így a mikrofonod hangja a telefonodon marad: élőben elemzi, soha nem rögzíti, soha nem küldi el. A Twangle nyílt forráskódú, így bárki ellenőrizheti.
 
-FIGYELŐ ESZKÖZÖK
-• Pengetéspróba: pengesd végig az összes húrt egyszerre, és lásd, melyik mély, magas vagy tiszta
-• Akkordnév: pengess egy akkordot gitáron, ukulelén vagy mandolinon, és lásd a nevét
-• Hanggörbe: lásd, mennyire stabil egy kitartott hang, egy húzás vagy a vibrátód, énekeseknek is
-• Oktávpróba: pengesd meg a húrt üresen és a 12. bundnál, és megtudod, kell-e mozgatni a nyerget
+És nem csak gitárhoz jó. Basszushangoló, ukulelehangoló, hegedűhangoló és kromatikus hangoló is. Ha pedig már tiszta, megy tovább: metronóm, akkordábrák, skálák, capo-segéd és hallásfejlesztés.
+
+HANGOLJ BÁRMIT, AMI HANGOT AD
+• Gitár (6, 7, 8 vagy 12 húros), basszusgitár (4 vagy 5 húros, egészen a mély H-ig), ukulele (mély G-s és bariton is), hegedű, brácsa, cselló, mandolin és 5 húros bendzsó
+• Standard, Drop D, fél hanggal lejjebb, egész hanggal lejjebb, DADGAD, Open G, Open D, Open E, Open C, vagy egy saját hangolás
+• Bármi más, ami egy tiszta hangot ad: a hangod, egy szaxofon, egy trombita, egy szájharmonika, egy kalimba… erre ott a kromatikus hangoló
+• Fülre hangolás: tarts nyomva egy húrt a képernyőn, és meghallod a hangját
+• Zenekarban játszol? Az A4 bárhová állítható 415 és 466 Hz között
+
+AZ ÜTEMET IS TARTJA
+• Metronóm 30 és 250 ütés között percenként: húzd a tempóvonalzót, vagy csak koppintsd le az ütemet
+• 2/4, 3/4, 4/4, 5/4, 6/8 és 7/8, hangsúllyal az első ütésen és követhető fényekkel
+• Kattanások az ütések között nyolcadokban, triolákban vagy tizenhatodokban
+• Tempóemelő: a tempó lépésről lépésre nő, amíg el nem éred a célodat
+• Tovább kattog, amíg a saját zenéd vagy kísérősávod szól, és ütemre rezeghet is
 
 GYAKORLÁS
-• Akkordábrák a hangszeredhez és a hangolásodhoz, a saját hangolásaidat is beleértve
+• Akkordábrák a hangszeredhez és a hangolásodhoz, még a saját hangolásaidhoz is
 • Skálák a fogólapon: dúr, moll, pentaton és blues, minden hang megnevezve
-• Capo-segéd: válaszd ki a dal hangnemét és a kedvenc fogásaidat, és lásd, hova kerül a capo (kapodaszter)
-• Hallásfejlesztés: Játszd vissza (játszd el a hangszereden a hallott hangokat), Hangközök és Akkordtípus
-• Metronóm: 30–250 ütés percenként egy húzható tempóvonalzón, koppintásos tempóval
-• 2/4, 3/4, 4/4, 5/4, 6/8 és 7/8, hangsúllyal az első ütésen és követhető fényekkel
-• Kattog a saját zenéd vagy kísérősávod alatt, és ütemre rezeghet is
-• Ütések között: extra kattanások nyolcadokban, triolákban vagy tizenhatodokban
-• Tempóemelő: a tempó lépésről lépésre nő a célodig
+• Capo-segéd: válaszd ki a dal hangnemét és a kedvenc fogásaidat, és lásd, hova kerül a capo
+• Hallásfejlesztés: Játszd vissza (hallgasd meg a hangokat, és játszd el őket a hangszereden), Hangközök és Akkordtípus
 
-MINDENKINEK
-• Működik a TalkBackkel: a Twangle kimondja a hangot és az eltérést („E 2, 12 centtel mélyebb, Feszítsd”), húronként felolvassa az akkordábrákat és a skálákat, minden gombnak egyértelmű neve van, és sosem áraszt el beszéddel
-• Minden képernyő működik nagy betűmérettel, egészen a normál méret kétszereséig
-• Nagy kontraszt: tiszta fekete-fehér, vastagabb vonalakkal
-• Rövid rezgés, ha egy húr tiszta, így érezheted is
-• 36 nyelven: magyar, amhara, angol, arab, bengáli, burmai, cseh, dán, finn, francia, görög, hindi, holland, indonéz, japán, khmer, kínai (egyszerűsített), kínai (hagyományos), koreai, lengyel, maráthi, német, norvég, olasz, orosz, portugál, román, spanyol, svéd, szuahéli, tamil, telugu, thai, török, ukrán és vietnámi
-• Hangnevek úgy, ahogy tanultad: C D E … H, angol betűkkel (B) vagy Do Re Mi
+FIGYELŐ ESZKÖZÖK
+• Oktávpróba: pengesd meg a húrt üresen, aztán a 12. bundnál. A Twangle megmondja, kell-e mozgatni a nyerget, merre, és gitáron nagyjából mennyit
+• Hanggörbe: lásd vonalként a húzásaidat, a vibrátódat és a kitartott hangjaidat. Énekeseknek is
+• Akkordnév: pengess egy akkordot gitáron, ukulelén vagy mandolinon, és lásd a nevét
+• Pengetéspróba: pengesd végig az összes húrt egyszerre, és lásd, melyik hamis
+
+A CSUKLÓDON
+• Wear OS-alkalmazás, amely az óra saját mikrofonjával hangol, telefon nélkül
+• Húzz balra egy metronómért, amely a csuklódon koppintja az ütemet
+• Csempe és számlapkomplikáció, így mindig egy koppintásnyira van
+
+HANGOLJ ODANÉZÉS NÉLKÜL
+• Rezgő útmutató: egy koppintás feszítést jelent, kettő lazítást, egy hosszú rezgés azt, hogy tiszta
+• Hangjelzéses útmutató: rövid hangok jelzik, ha túl magas vagy túl mély, és csengő szól, ha tiszta
+• A TalkBack először azt mondja, mit tegyél („Feszítsd, E 2, 12 centtel mélyebb”), és sosem beszél a húrod hangjába
 
 A TE STÍLUSOD
 • Világos, sötét vagy a telefonhoz igazodó, Android 12-től a háttérképed színeivel
-• Három kijelző közül választhatsz: Klasszikus, Fényív vagy Stroboszkóp
-• Fókuszmód: a hangoló teljes képernyőn, oldalra fordított telefonon, messziről is jól olvasható
-
-TOVÁBBÁ
-• Alkalmazás Wear OS-órákra csempével és számlapkomplikációval: hangolj az óra saját mikrofonjával, telefon nélkül, és húzz balra a metronómhoz
+• Nagy betűméret a normál méret kétszereséig, és nagy kontraszt
+• Három kijelző: a klasszikus mutató, a fényív vagy a stroboszkóp
+• Fókuszmód: fordítsd oldalra a telefont, és a hangoló kitölti a képernyőt, a szoba másik végéből is jól olvasható
 • Kezdőképernyő-widget, amely egy koppintással megnyitja a hangolót
-• Hangolás közben ébren tartja a képernyőt
+• 36 nyelven, a hangnevekkel úgy, ahogy tanultad: C D E, H a B helyett, vagy Do Re Mi
 
-A Twangle ingyenes és offline marad, örökre.
+Ingyenes és offline. Örökre.

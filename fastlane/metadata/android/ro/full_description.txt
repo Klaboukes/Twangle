@@ -1,48 +1,53 @@
-Twangle este un acordor de chitară care acordează și bas, ukulele, vioară și altele, cu toate funcțiile gratuite. Fără reclame, fără cont, fără achiziții în aplicație și fără urmărire. Twangle nici măcar nu are permisiunea de a folosi internetul: sunetul din microfon este analizat pe loc, pe telefon, și nu este niciodată înregistrat sau trimis nicăieri.
+Un acordor care face ce vă trebuie. Și nimic altceva.
 
-Twangle este simplu de folosit și precis la un cent. Ciupiți o coardă, iar Twangle arată nota și cât de departe este de nota corectă, pe un indicator mare și clar. „Întindeți” sau „Slăbiți” vă spune în ce parte să rotiți cheia. După acordare, Twangle vă ajută să cântați: numește acordurile pe care le cântați, arată diagrame de acorduri și game, calculează unde se pune capodastrul, vă antrenează auzul și ține tempoul.
+Twangle nu vă stă în cale. Îl deschideți, ciupiți o coardă și vedeți nota și cât de departe e, la un cent precizie. Nicio reclamă care apare în mijlocul acordării. Niciun cont. Nimic de deblocat. Fiecare funcție e gratuită și așa rămâne.
 
-ACORDAȚI ORICE INSTRUMENT
-• Chitară (6, 7, 8 sau 12 corzi), bas (4 sau 5 corzi), ukulele (și bariton), vioară, violă, violoncel, mandolină și banjo cu 5 corzi
-• Acordaje de chitară: Standard, Drop D, un semiton mai jos, un ton mai jos, DADGAD, Open G, Open D, Open E și Open C
-• Creați-vă propriile acordaje pentru orice instrument
-• Acordor cromatic pentru orice alt instrument sau pentru voce
-• Țineți apăsat pe o coardă ca să-i auziți nota și să acordați după ureche
-• Setați A4 între 415 și 466 Hz, de exemplu 442 Hz pentru a cânta cu o orchestră
+Doar dumneavoastră îl auziți. Twangle nici măcar nu are permisiunea de a folosi internetul, așa că sunetul din microfon rămâne pe telefon: analizat pe loc, niciodată înregistrat, niciodată trimis. Codul este open source, așa că oricine poate verifica.
 
-UNELTE CARE ASCULTĂ
-• Test pe toate corzile: loviți toate corzile deodată și vedeți care sunt prea jos, prea sus sau acordate
-• Numele acordului: cântați un acord la chitară, ukulele sau mandolină și vedeți cum se numește
-• Urma notei: vedeți cât de stabile sunt o notă ținută, un bend sau vibrato-ul dumneavoastră, și pentru cântăreți
-• Test la tasta 12: ciupiți o coardă liberă și apoi la tasta 12 ca să aflați dacă trebuie mutat călușul
+Și nu e doar pentru chitară. E și acordor de bas, acordor de ukulele, acordor de vioară și acordor cromatic. Iar după acordare, merge mai departe: metronom, diagrame de acorduri, game, un ajutor pentru capodastru și antrenarea auzului.
+
+ACORDAȚI ORICE CÂNTĂ O NOTĂ
+• Chitară (6, 7, 8 sau 12 corzi), bas (4 sau 5 corzi, până la Si grav), ukulele (și cu Sol grav, și bariton), vioară, violă, violoncel, mandolină și banjo cu 5 corzi
+• Standard, Drop D, un semiton mai jos, un ton mai jos, DADGAD, Open G, Open D, Open E, Open C sau un acordaj creat de dumneavoastră
+• Orice altceva care cântă o notă clară: vocea, un saxofon, o trompetă, o muzicuță, o kalimba… pentru asta e acordorul cromatic
+• Acordați după ureche: țineți apăsat pe o coardă de pe ecran ca să-i auziți nota
+• Cântați cu o orchestră? Setați A4 oriunde între 415 și 466 Hz
+
+ȚINE ȘI TEMPOUL
+• Un metronom de la 30 la 250 de bătăi pe minut: glisați rigla de tempo sau pur și simplu bateți ritmul
+• 2/4, 3/4, 4/4, 5/4, 6/8 și 7/8, cu accent pe primul timp și lumini de urmărit
+• Clicuri între timpi în optimi, triolete sau șaisprezecimi
+• Antrenor de tempo: tempoul crește pas cu pas până vă atingeți ținta
+• Continuă să bată cât timp merge muzica dumneavoastră sau un playback și poate vibra pe fiecare timp
 
 EXERSARE
-• Diagrame de acorduri pentru instrumentul și acordajul dumneavoastră, inclusiv acordajele proprii
+• Diagrame de acorduri pentru instrumentul și acordajul dumneavoastră, chiar și pentru acordajele create de dumneavoastră
 • Game pe grif: majoră, minoră, pentatonică și blues, cu fiecare notă numită
 • Capodastru: alegeți tonalitatea piesei și pozițiile preferate și vedeți unde se pune capodastrul
-• Auz muzical: Reproduceți (cântați la instrument notele auzite), Intervale și Tipul acordului
-• Metronom: de la 30 la 250 de bătăi pe minut, pe o riglă de tempo pe care o glisați, cu tempo prin atingere
-• 2/4, 3/4, 4/4, 5/4, 6/8 și 7/8, cu accent pe primul timp și lumini de urmărit
-• Se aude peste muzica dumneavoastră și poate vibra pe fiecare timp
-• Între timpi: clicuri suplimentare în optimi, triolete sau șaisprezecimi
-• Antrenor de tempo: tempoul crește pas cu pas până la ținta dumneavoastră
+• Auz muzical: Reproduceți (ascultați notele, cântați-le la instrument), Intervale și Tipul acordului
 
-FĂCUT PENTRU TOȚI
-• Funcționează cu TalkBack: Twangle spune nota și cât de departe este („Mi 2, 12 cenți mai jos, întindeți”), citește diagramele de acorduri și gamele coardă cu coardă, fiecare buton are un nume clar și nu vă copleșește niciodată cu vorbe
-• Fiecare ecran funcționează cu text mare, de până la două ori dimensiunea normală
-• Contrast ridicat: alb-negru pur, cu linii mai groase
-• O vibrație scurtă când o coardă este acordată, ca s-o simțiți și la atingere
-• În 36 de limbi, printre care română și engleză
-• Numele notelor așa cum le-ați învățat: Do Re Mi sau literele C D E, inclusiv cu H în loc de B
+UNELTE CARE ASCULTĂ
+• Test la tasta 12: ciupiți o coardă liberă, apoi la tasta 12. Twangle vă spune dacă trebuie mutat călușul, în ce parte și, la chitară, cam cât
+• Urma notei: vedeți ca pe o linie bend-urile, vibrato-ul și notele lungi. Și pentru cântăreți
+• Numele acordului: cântați un acord la chitară, ukulele sau mandolină și vedeți cum se numește
+• Test pe toate corzile: loviți toate corzile deodată și vedeți care sunt dezacordate
+
+LA ÎNCHEIETURĂ
+• O aplicație Wear OS care acordează cu microfonul ceasului, fără telefon
+• Glisați spre stânga pentru un metronom care bate ritmul pe încheietură
+• Un card și o complicație pentru cadran, ca să fie mereu la o atingere distanță
+
+ACORDAȚI FĂRĂ SĂ VĂ UITAȚI
+• Ghid prin vibrații: o atingere înseamnă întindeți, două înseamnă slăbiți, o vibrație lungă înseamnă acordat
+• Ghid prin sunete: sunete scurte vă spun prea sus sau prea jos, iar un clopoțel sună când e acordat
+• TalkBack spune întâi ce e de făcut („Întindeți, Mi 2, 12 cenți mai jos”) și nu vorbește niciodată peste coarda dumneavoastră
 
 CUM VĂ PLACE
 • Luminos, întunecat sau ca telefonul, cu culorile imaginii de fundal pe Android 12 și versiunile mai noi
-• Trei indicatoare dintre care să alegeți: clasic, arcul de lumini sau stroboscopul
-• Mod concentrare: acordorul pe tot ecranul, cu telefonul întors pe orizontală
-
-ȘI ÎN PLUS
-• O aplicație pentru ceasuri Wear OS, cu card și complicație pentru cadran: acordați cu microfonul ceasului, fără telefon, și glisați spre stânga pentru metronom
+• Text mare, de până la două ori dimensiunea normală, și contrast ridicat
+• Trei indicatoare: acul clasic, arcul de lumini sau stroboscopul
+• Mod concentrare: întoarceți telefonul pe orizontală și acordorul umple ecranul, ușor de citit din celălalt capăt al camerei
 • Un widget pe ecranul de pornire care deschide acordorul cu o atingere
-• Ține ecranul aprins cât acordați
+• În 36 de limbi, cu numele notelor așa cum le-ați învățat: Do Re Mi, C D E sau H în loc de B
 
-Twangle va rămâne gratuit și offline, pentru totdeauna.
+Gratuit și offline. Pentru totdeauna.

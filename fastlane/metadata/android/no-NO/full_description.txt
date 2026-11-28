@@ -1,48 +1,53 @@
-Twangle er en gitarstemmer som også stemmer bass, ukulele, fiolin og mer, med alle funksjoner gratis. Ingen reklame, ingen konto, ingen kjøp i appen og ingen sporing. Twangle har ikke engang tillatelse til å bruke internett: lyden fra mikrofonen analyseres direkte på telefonen og blir aldri tatt opp eller sendt noe sted.
+En stemmer som gjør det du trenger. Og ingenting annet.
 
-Twangle er enkel å bruke og presis ned til én cent. Spill en streng, så viser Twangle tonen og hvor langt den er fra å være stemt, på en stor og tydelig måler. «Stram» eller «Slakk» forteller hvilken vei du skal skru stemmeskruen. Når instrumentet er stemt, hjelper Twangle deg å spille: den gir navn til akkordene du slår an, viser akkordskjemaer og skalaer, finner ut av capoen, trener gehøret ditt og holder takten.
+Twangle står ikke i veien. Åpne den, spill en streng, så ser du tonen og hvor langt unna den er, helt ned til én cent. Ingen reklame som dukker opp midt i stemmingen. Ingen konto. Ingenting å låse opp. Alle funksjoner er gratis, og sånn blir det.
 
-STEM ALLE INSTRUMENTER
-• Gitar (6, 7, 8 eller 12 strenger), bass (4 eller 5 strenger), ukulele (også baryton), fiolin, bratsj, cello, mandolin og 5-strengs banjo
-• Gitarstemminger: standard, Drop D, halv tone ned, hel tone ned, DADGAD, åpen G, åpen D, åpen E og åpen C
-• Lag dine egne stemminger for alle instrumenter
-• Kromatisk stemmer for alle andre instrumenter eller stemmen din
-• Hold inne en streng for å høre tonen og stemme etter gehør
-• Still A4 fra 415 til 466 Hz, for eksempel 442 Hz for å spille med et orkester
+Bare du hører det. Twangle har ikke engang tillatelse til å bruke internett, så lyden fra mikrofonen blir på telefonen din: analysert direkte, aldri tatt opp, aldri sendt. Koden er åpen kildekode, så hvem som helst kan sjekke.
 
-VERKTØY SOM LYTTER
-• Strumsjekk: slå an alle strengene på én gang og se hvilke som er for lave, for høye eller stemt
-• Akkordnavn: slå an en akkord på gitar, ukulele eller mandolin og se navnet
-• Tonespor: se hvor stødig en holdt tone, en bending eller vibratoen din er, også for sangere
-• Sjekk på 12. bånd: spill en streng åpen og på 12. bånd for å se om salen bør flyttes
+Og den er ikke bare for gitar. Den er også basstemmer, ukulelestemmer, fiolinstemmer og kromatisk stemmer. Når du er stemt, fortsetter den: en metronom, akkordskjemaer, skalaer, capohjelp og gehørtrening.
+
+STEM ALT SOM SPILLER EN TONE
+• Gitar (6, 7, 8 eller 12 strenger), bass (4 eller 5 strenger, helt ned til dyp H), ukulele (også lav G og baryton), fiolin, bratsj, cello, mandolin og 5-strengs banjo
+• Standard, Drop D, halv tone ned, hel tone ned, DADGAD, åpen G, åpen D, åpen E, åpen C, eller en stemming du lager selv
+• Alt annet som spiller én klar tone: stemmen din, en sax, en trompet, et munnspill, en kalimba … det fikser den kromatiske stemmeren
+• Stem etter gehør: hold inne en streng på skjermen for å høre tonen
+• Spiller du med orkester? Still A4 hvor som helst fra 415 til 466 Hz
+
+DEN HOLDER TAKTEN OGSÅ
+• En metronom fra 30 til 250 slag i minuttet: skyv tempolinjalen eller bare tapp takten
+• 2/4, 3/4, 4/4, 5/4, 6/8 og 7/8, med aksent på første slag og lys å følge med på
+• Klikk mellom slagene i åttendeler, trioler eller sekstendeler
+• Tempotrener: tempoet øker trinn for trinn til du når målet ditt
+• Fortsetter å klikke mens din egen musikk eller et komp spiller, og kan vibrere på slaget
 
 ØVING
-• Akkordskjemaer for instrumentet og stemmingen din, også dine egne stemminger
+• Akkordskjemaer for instrumentet og stemmingen din, også stemmingene du har laget selv
 • Skalaer på gripebrettet: dur, moll, pentatonisk og blues, med navn på hver tone
 • Capohjelp: velg tonearten til sangen og grepene du liker, og se hvor capoen skal sitte
-• Gehørtrening: Spill etter (spill tonene du hører på instrumentet ditt), Intervaller og Akkordtype
-• Metronom: 30 til 250 slag i minuttet på en tempolinjal du skyver, med tap tempo
-• 2/4, 3/4, 4/4, 5/4, 6/8 og 7/8, med aksent på første slag og lys å følge med på
-• Klikker over din egen musikk eller et komp, og kan vibrere på slaget
-• Mellom slagene: ekstra klikk i åttendeler, trioler eller sekstendeler
-• Tempotrener: tempoet øker trinn for trinn til målet ditt
+• Gehørtrening: Spill etter (hør tonene, spill dem på instrumentet ditt), Intervaller og Akkordtype
 
-LAGET FOR ALLE
-• Virker med TalkBack: Twangle sier tonen og hvor mye den er unna («E 2, 12 cent for lavt, stram»), leser akkordskjemaer og skalaer streng for streng, hver knapp har et tydelig navn, og den overøser deg aldri med tale
-• Alle skjermer virker med stor tekst, opptil dobbel normal størrelse
-• Høy kontrast: rent svart og hvitt med tykkere streker
-• En kort vibrering når en streng er stemt, så du kan kjenne det også
-• På 36 språk: norsk, amharisk, arabisk, bengali, burmesisk, dansk, engelsk, finsk, fransk, gresk, hindi, indonesisk, italiensk, japansk, khmer, kinesisk (forenklet), kinesisk (tradisjonell), koreansk, marathi, nederlandsk, polsk, portugisisk, rumensk, russisk, spansk, svensk, swahili, tamil, telugu, thai, tsjekkisk, tyrkisk, tysk, ukrainsk, ungarsk og vietnamesisk
-• Tonenavn slik du lærte dem: C D E, med H for B, eller Do Re Mi
+VERKTØY SOM LYTTER
+• Sjekk på 12. bånd: spill en streng åpen, så på 12. bånd. Twangle sier om salen bør flyttes, hvilken vei og, på en gitar, omtrent hvor mye
+• Tonespor: se bendingene, vibratoen og de lange tonene dine som en linje. Virker for sangere også
+• Akkordnavn: slå an en akkord på gitar, ukulele eller mandolin og se hva den heter
+• Strumsjekk: slå an alle strengene på én gang og se hvilke som er feil
+
+PÅ HÅNDLEDDET
+• En Wear OS-app som stemmer med klokkens egen mikrofon, uten telefon
+• Sveip til venstre for en metronom som banker takten på håndleddet ditt
+• En flis og en komplikasjon for urskiven, så den alltid er ett trykk unna
+
+STEM UTEN Å SE
+• Vibrasjonsguide: ett trykk betyr stram, to betyr slakk, en lang summing betyr at du er stemt
+• Lydguide: korte lyder sier for høyt eller for lavt, og en bjelle ringer når du er stemt
+• TalkBack sier først hva du skal gjøre («Stram, E 2, 12 cent for lavt») og snakker aldri over strengen din
 
 GJØR DEN TIL DIN
-• Lyst, mørkt eller som telefonen, med fargene fra bakgrunnsbildet på Android 12 og nyere
-• Tre målere å velge mellom: den klassiske nålen, LED-buen eller stroboskopet
-• Fokusmodus: stemmeren i fullskjerm på en telefon som ligger på siden, lett å lese på avstand
-
-OGSÅ
-• En app for Wear OS-klokker med en flis og en komplikasjon for urskiven: stem med klokkens egen mikrofon, uten telefon, og sveip til venstre for metronomen
+• Lyst, mørkt eller som telefonen, i fargene fra bakgrunnsbildet på Android 12 og nyere
+• Stor tekst opptil dobbel normal størrelse, og et utseende med høy kontrast
+• Tre målere: den klassiske nålen, LED-buen eller stroboskopet
+• Fokusmodus: legg telefonen på siden, så fyller stemmeren skjermen, lett å lese fra andre siden av rommet
 • En widget på startskjermen som åpner stemmeren med ett trykk
-• Holder skjermen på mens du stemmer
+• På 36 språk, med tonenavn slik du lærte dem: C D E, H for B, eller Do Re Mi
 
-Twangle forblir gratis og offline, for alltid.
+Gratis og offline. For godt.
