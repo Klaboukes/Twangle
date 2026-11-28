@@ -38,3 +38,4 @@
 #32 8        TalkBack's reading in picture 8's speech bubble now starts with the word ("Loosen, E 2, 10 cents sharp"); nothing drawn on the screens changes
 #38 none     the sound guide: a switch in Settings (no store picture shows Settings) and the tuner's guide, off by default; the same pixels in every picture
 #40 none     picture 8's test waits for TalkBack's reading with the word on screen, never the waiting line; the pictures it makes are the same
+#52 none     the Chords chart has no TalkBack description until its shapes are worked out; nothing drawn changes
