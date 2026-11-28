@@ -1,15 +1,15 @@
-It does what you need it to do. And nothing else.
+A tuner that does what you need it to do. And nothing else.
 
-Twangle is a guitar tuner that gets out of your way. Open it, play a string, and you see the note and how far off it is, right down to a single cent. No ads popping up mid-tune. No account. Nothing to unlock. Every feature is free, and it stays that way.
+Twangle gets out of your way. Open it, play a string, and you see the note and how far off it is, right down to a single cent. No ads popping up mid-tune. No account. Nothing to unlock. Every feature is free, and it stays that way.
 
 Only you hear it. Twangle doesn't even have permission to use the internet, so the sound from your microphone stays on your phone: analysed live, never recorded, never sent.
 
 And it's not just for guitar. It's a bass tuner, ukulele tuner, violin tuner and chromatic tuner too. Once you're in tune, it keeps going: a metronome, chord charts, scales, a capo helper and ear training. One app, nothing to pay.
 
-TUNE ANYTHING WITH STRINGS
+TUNE ANYTHING THAT PLAYS A NOTE
 • Guitar (6, 7, 8 or 12 strings), bass (4 or 5 strings, down to the low B), ukulele (low G and baritone too), violin, viola, cello, mandolin and 5-string banjo
 • Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D, Open E, Open C, or a tuning you make yourself
-• Anything else, your voice included: the chromatic tuner has you covered
+• Anything else that plays one clear note: your voice, a sax, a trumpet, a harmonica, a kalimba… the chromatic tuner has you covered
 • Tune by ear: hold a string to hear its note
 • Playing with an orchestra? Set A4 anywhere from 415 to 466 Hz
 
