@@ -259,7 +259,7 @@ profile_current() {
 FULL_CHECK_RECORD="build/full-check/result.txt"
 # What may change after the full check without its pass going stale: nothing that goes into the
 # phone app's or the watch app's bundle (gradle.properties' version line is checked on its own).
-NOT_IN_THE_BUNDLES='(^|/)[^/]*\.md$|^docs/|^\.claude/|^\.github/|^scripts/|^website/|^fastlane/|^app/src/release/generated/'
+NOT_IN_THE_BUNDLES='(^|/)[^/]*\.md$|(^|/)src/(test|androidTest|testFixtures)/|^docs/|^\.claude/|^\.github/|^scripts/|^website/|^fastlane/|^app/src/release/generated/'
 
 # Whether the full check's record of [part] (phones, watch) vouches for this commit; says which, and
 # returns 1 when it doesn't.
