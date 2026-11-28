@@ -244,6 +244,21 @@ class ChordsScreenTest {
         assertEquals(listOf(ChordQuality.MINOR, ChordQuality.POWER_CHORD), savedQualities)
     }
 
+    /**
+     * While the shapes are still worked out the chart has no words yet, so it is no TalkBack stop at all rather than
+     * one with nothing to say: the app's `ScreenReaderStopsTest` caught that empty stop on a freshly installed app
+     * (2026-11-28), where the working out takes longer.
+     */
+    @Test
+    fun theChartIsNoEmptyStopWhileItsShapesAreWorkedOut() {
+        compose.setContent {
+            TwangleTheme(darkTheme = false, animate = false) {
+                ChartArea(found = null, index = 0, notation = Notation.SHARPS, step = {}, modifier = Modifier.fillMaxSize())
+            }
+        }
+        chart().assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
+    }
+
     @Test
     fun talkBackHearsTheNameAsAListAndThePanelAsRadioButtons() {
         show(PitchClass.A_SHARP, ChordQuality.MAJOR)
