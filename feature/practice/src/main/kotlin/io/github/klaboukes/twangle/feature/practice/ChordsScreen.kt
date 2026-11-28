@@ -464,7 +464,7 @@ private const val BREATH_HIGH = 0.75f
 private const val BREATH_STILL = 0.5f
 
 /** Shapes of [chord] on [tuning], found off the main thread; [shapes] easiest first. */
-private class FoundShapes(val chord: Chord, val tuning: Tuning, val shapes: List<ChordShape>)
+internal class FoundShapes(val chord: Chord, val tuning: Tuning, val shapes: List<ChordShape>)
 
 /**
  * The shapes of [chord] on [tuning], or the last ones found while the new ones are worked out (null at
@@ -485,10 +485,12 @@ private fun rememberShapes(chord: Chord, tuning: Tuning): FoundShapes? {
  * The chart of shape [index] of [found] in all of its room, or a quiet line when the chord has no
  * shape within reach. A swipe across it steps to the next or previous shape ([step], +1 or −1; the
  * next lies to the left as a page does, to the right in right-to-left languages). For TalkBack one
- * item in words, a polite live region.
+ * item in words, a polite live region. While the shapes are still worked out ([found] null, a moment
+ * longer on a freshly installed app) it has no words yet and is no stop at all, rather than one with
+ * nothing to say.
  */
 @Composable
-private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step: (Int) -> Unit, modifier: Modifier = Modifier, leftHanded: Boolean = false) {
+internal fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step: (Int) -> Unit, modifier: Modifier = Modifier, leftHanded: Boolean = false) {
     val speech = rememberNoteNameSpeech()
     val words = rememberChartWords()
     val shape = found?.shapes?.getOrNull(index)
@@ -517,7 +519,7 @@ private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step:
                 }
             }
             .clearAndSetSemantics {
-                contentDescription = spoken
+                if (spoken.isNotEmpty()) contentDescription = spoken
                 liveRegion = LiveRegionMode.Polite
             },
         contentAlignment = Alignment.Center,
