@@ -1,4 +1,4 @@
-Stemmer for gitar, bass, ukulele og fiolin. Ingen reklame, ingen konto, offline.
+Stemmer og metronom for gitar, bass, ukulele og fiolin. Ingen reklame. Offline.
 
 - Lydguide (Innstillinger, Mens du stemmer): korte lyder mens du stemmer, opp når den er for høy, ned når den er for lav, en bjelle når den er stemt.
 - TalkBack sier først hva du skal gjøre, og litt tidligere.

@@ -1,4 +1,4 @@
-Stroik do gitary, basu, ukulele i skrzypiec. Bez reklam, bez konta, offline.
+Stroik do gitary, basu, ukulele i skrzypiec, plus metronom. Bez reklam. Offline.
 
 - Podpowiedź dźwiękiem (Ustawienia, Podczas strojenia): krótkie dźwięki podczas strojenia, w górę, gdy za wysoko, w dół, gdy za nisko, dzwonek, gdy nastrojone.
 - TalkBack najpierw mówi, co zrobić, i trochę wcześniej.

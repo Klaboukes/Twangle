@@ -1,4 +1,4 @@
-Gitár-, basszus-, ukulele- és hegedűhangoló. Reklám, fiók és internet nélkül.
+Gitár-, basszus-, ukulele- és hegedűhangoló metronómmal. Nincs reklám. Offline.
 
 - Hangjelzéses útmutató (Beállítások, Hangolás közben): rövid hangok hangolás közben, felfelé, ha túl magas, lefelé, ha túl mély, csengő, ha tiszta.
 - A TalkBack először azt mondja, mit kell tenni, és kicsit hamarabb.
